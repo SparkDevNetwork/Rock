@@ -21,9 +21,13 @@ using System.Linq;
 using System.Net.Http;
 using System.Net;
 using System.Web;
+using Microsoft.Extensions.DependencyInjection;
+using Rock.Attribute;
 using Rock.Common.Tv;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Tv.Classes;
 using Rock.Web.Cache;
 using System;
@@ -130,7 +134,7 @@ namespace Rock.Tv
                 PersonGuid = person.Guid,
                 PersonId = person.Id,
                 AlternateId = alternateId,
-                AuthToken = TvHelper.GetAuthenticationTokenFromPerson( person )
+                AuthToken = TvHelper.GetAuthenticationTokenFromPerson( person, Rock.Net.RockRequestContextAccessor.Current )
             };
         }
 
@@ -159,9 +163,37 @@ namespace Rock.Tv
         /// <summary>
         /// Gets the authentication token.
         /// </summary>
+        /// <remarks>
+        /// Obsolete because callers should pass an explicit
+        /// <see cref="RockRequestContext"/>. This shim resolves the
+        /// context from the ambient <see cref="IRockRequestContextAccessor"/>
+        /// and delegates to the internal overload.
+        /// </remarks>
         /// <param name="person">The person.</param>
         /// <returns></returns>
+        [Obsolete( "Use the GetAuthenticationTokenFromPerson( Person, RockRequestContext ) overload (internal) that accepts an explicit request context. This shim resolves the context from the ambient accessor and delegates." )]
+        [RockObsolete( "20.0" )]
         public static string GetAuthenticationTokenFromPerson( Person person )
+        {
+            var requestContext = RockApp.Current
+                .GetRequiredService<IRockRequestContextAccessor>()
+                ?.RockRequestContext;
+
+            return GetAuthenticationTokenFromPerson( person, requestContext );
+        }
+
+        /// <summary>
+        /// Generate a new-format <see cref="PersonSession"/>-backed
+        /// authentication token for the supplied <paramref name="person"/>.
+        /// Picks the person's first confirmed, non-locked-out
+        /// <see cref="UserLogin"/>; creates one via the Database
+        /// authentication component when none exists (defensive only — the
+        /// caller should have just logged the person in).
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="requestContext">The current <see cref="RockRequestContext"/>, or <c>null</c> when no request is in scope.</param>
+        /// <returns>The opaque encrypted cookie value the device should send back as <c>.ROCK</c>.</returns>
+        internal static string GetAuthenticationTokenFromPerson( Person person, RockRequestContext requestContext )
         {
             var username = person.Users.FirstOrDefault( a => ( a.IsConfirmed ?? true ) && !( a.IsLockedOut ?? false ) )?.UserName;
 
@@ -182,25 +214,55 @@ namespace Rock.Tv
                                 true );
             }
 
-            return GetAuthenticationTokenFromUsername( username );
+            return GetAuthenticationTokenFromUsername( username, requestContext );
         }
 
         /// <summary>
         /// Gets the authentication token from username.
         /// </summary>
+        /// <remarks>
+        /// Obsolete because callers should pass an explicit
+        /// <see cref="RockRequestContext"/>. This shim resolves the
+        /// context from the ambient <see cref="IRockRequestContextAccessor"/>
+        /// and delegates to the internal overload.
+        /// </remarks>
         /// <param name="username">The username.</param>
         /// <returns></returns>
+        [Obsolete( "Use the GetAuthenticationTokenFromUsername( string, RockRequestContext ) overload (internal) that accepts an explicit request context. This shim resolves the context from the ambient accessor and delegates." )]
+        [RockObsolete( "20.0" )]
         public static string GetAuthenticationTokenFromUsername( string username )
         {
-            // Get the auth ticket from the username
-            var ticket = new System.Web.Security.FormsAuthenticationTicket( 1,
-                username,
-                RockDateTime.Now,
-                RockDateTime.Now.Add( System.Web.Security.FormsAuthentication.Timeout ),
-                true,
-                username.StartsWith( "rckipid=" ).ToString() );
+            var requestContext = RockApp.Current
+                .GetRequiredService<IRockRequestContextAccessor>()
+                ?.RockRequestContext;
 
-            return System.Web.Security.FormsAuthentication.Encrypt( ticket );
+            return GetAuthenticationTokenFromUsername( username, requestContext );
+        }
+
+        /// <summary>
+        /// Generate a new-format <see cref="PersonSession"/>-backed
+        /// authentication token for the resolved <see cref="UserLogin"/>.
+        /// Reuses an existing active
+        /// <see cref="PersonSessionCreationSource.Component"/> session when
+        /// present (device-token-refresh case); otherwise creates one via
+        /// <see cref="PersonSessionService.FindOrCreateDeviceComponentSession"/>.
+        /// </summary>
+        /// <param name="username">The username.</param>
+        /// <param name="requestContext">The current <see cref="RockRequestContext"/>, or <c>null</c> when no request is in scope.</param>
+        /// <returns>The opaque encrypted cookie value the device should send back as <c>.ROCK</c>.</returns>
+        internal static string GetAuthenticationTokenFromUsername( string username, RockRequestContext requestContext )
+        {
+            var rockContext = new RockContext();
+            var userLogin = new UserLoginService( rockContext ).GetByUserName( username );
+            if ( userLogin == null )
+            {
+                throw new InvalidOperationException( $"UserLogin '{username}' not found; cannot generate authentication token." );
+            }
+
+            var personSessionService = new PersonSessionService( rockContext );
+            var session = personSessionService.FindOrCreateDeviceComponentSession( requestContext, userLogin );
+
+            return personSessionService.GetCookieValue( session );
         }
 
         #region Roku

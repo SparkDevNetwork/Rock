@@ -127,7 +127,7 @@ namespace Rock.Rest.Controllers
             if ( person != null )
             {
                 launchPacket.CurrentPerson = MobileHelper.GetMobilePerson( person, site );
-                launchPacket.CurrentPerson.AuthToken = MobileHelper.GetAuthenticationToken( principal.Identity.Name );
+                launchPacket.CurrentPerson.AuthToken = MobileHelper.GetAuthenticationToken( principal.Identity.Name, RockRequestContext );
 
                 if ( ChatHelper.IsChatEnabled )
                 {
@@ -532,7 +532,7 @@ namespace Rock.Rest.Controllers
                 rockContext.SaveChanges();
 
                 var mobilePerson = MobileHelper.GetMobilePerson( userLogin.Person, site );
-                mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( loginParameters.Username );
+                mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( loginParameters.Username, RockRequestContext );
 
                 return Ok( mobilePerson );
             }

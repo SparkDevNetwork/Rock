@@ -2015,7 +2015,7 @@ namespace Rock.Blocks.Types.Mobile.Security
 
                     // Set the authentication token to either a normal token so
                     // they can log in.
-                    mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( username );
+                    mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( username, RequestContext );
 
                     // Onboarding was successful; save a history login record.
                     new HistoryLogin
@@ -2125,7 +2125,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                 var mobilePerson = MobileHelper.GetMobilePerson( person, siteCache );
 
                 // Set the authentication token so they get/stay logged in.
-                mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( username );
+                mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( username, RequestContext );
 
                 // Onboarding was successful; save a history login record.
                 new HistoryLogin

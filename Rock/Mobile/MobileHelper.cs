@@ -22,7 +22,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Blocks;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
@@ -201,18 +204,54 @@ namespace Rock.Mobile
         /// <summary>
         /// Generate an authentication token (.ROCK Cookie) for the given username.
         /// </summary>
+        /// <remarks>
+        /// Obsolete because callers should pass an explicit
+        /// <see cref="RockRequestContext"/> rather than rely on the
+        /// ambient <see cref="IRockRequestContextAccessor"/>; the explicit
+        /// overload also lets the device-session helper see the prior
+        /// <c>PersonSession</c> on the current request (used to detect the
+        /// "different person on the same device" case). Existing public
+        /// callers continue to work via this shim, which resolves the
+        /// current request context from the accessor and delegates.
+        /// </remarks>
         /// <param name="username">The username whose token should be generated for.</param>
         /// <returns>A string that represents the user's authentication token.</returns>
+        [Obsolete( "Use the GetAuthenticationToken( string, RockRequestContext ) overload (internal) that accepts an explicit request context. This shim resolves the context from the ambient accessor and delegates." )]
+        [RockObsolete( "20.0" )]
         public static string GetAuthenticationToken( string username )
         {
-            var ticket = new System.Web.Security.FormsAuthenticationTicket( 1,
-                username,
-                RockDateTime.Now,
-                RockDateTime.Now.Add( System.Web.Security.FormsAuthentication.Timeout ),
-                true,
-                username.StartsWith( "rckipid=" ).ToString() );
+            var requestContext = RockApp.Current
+                .GetRequiredService<IRockRequestContextAccessor>()
+                ?.RockRequestContext;
 
-            return System.Web.Security.FormsAuthentication.Encrypt( ticket );
+            return GetAuthenticationToken( username, requestContext );
+        }
+
+        /// <summary>
+        /// Generate an authentication token (.ROCK Cookie) for the given
+        /// username, producing a new-format <see cref="PersonSession"/>-backed
+        /// cookie value. Reuses an existing active
+        /// <see cref="PersonSessionCreationSource.Component"/> session for the
+        /// resolved <see cref="UserLogin"/> when present (device-token-refresh
+        /// case); otherwise creates one via
+        /// <see cref="PersonSessionService.FindOrCreateDeviceComponentSession"/>.
+        /// </summary>
+        /// <param name="username">The username whose token should be generated for.</param>
+        /// <param name="requestContext">The current <see cref="RockRequestContext"/>, or <c>null</c> when no request is in scope.</param>
+        /// <returns>The opaque encrypted cookie value the device should send back as <c>.ROCK</c>.</returns>
+        internal static string GetAuthenticationToken( string username, RockRequestContext requestContext )
+        {
+            var rockContext = new RockContext();
+            var userLogin = new UserLoginService( rockContext ).GetByUserName( username );
+            if ( userLogin == null )
+            {
+                throw new InvalidOperationException( $"UserLogin '{username}' not found; cannot generate authentication token." );
+            }
+
+            var personSessionService = new PersonSessionService( rockContext );
+            var session = personSessionService.FindOrCreateDeviceComponentSession( requestContext, userLogin );
+
+            return personSessionService.GetCookieValue( session );
         }
 
         /// <summary>

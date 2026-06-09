@@ -526,7 +526,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
             if ( user != null )
             {
-                updatedPerson.AuthToken = MobileHelper.GetAuthenticationToken( user.UserName );
+                updatedPerson.AuthToken = MobileHelper.GetAuthenticationToken( user.UserName, RequestContext );
             }
 
             return ActionOk( updatedPerson );

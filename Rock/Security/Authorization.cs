@@ -866,32 +866,60 @@ namespace Rock.Security
         /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
         /// <returns></returns>
         /// <remarks>
-        /// Deprecated as part of the <c>PersonSession</c> rollout. Returns a
-        /// legacy <c>FormsAuthenticationTicket</c>-format cookie value; under
-        /// the new model the canonical cookie producer is
+        /// <para>
+        /// Deprecated as part of the <c>PersonSession</c> rollout. Under the
+        /// new model the canonical cookie producer is
         /// <c>PersonSessionService.GetCookieValue(PersonSession)</c>, called
         /// against a session built via <c>StartComponentSession(...)</c> and
         /// saved through the standard <c>RockContext.SaveChanges()</c> flow.
-        /// Kept usable during the dual-reader window so existing Mobile / TV
-        /// callers continue to function until Phase 11 migrates them; full
-        /// removal targets Rock v23 alongside the rest of the legacy reader.
+        /// </para>
+        /// <para>
+        /// As of Phase 11 of the PersonSession spec, this helper is a thin
+        /// wrapper that resolves (or creates) a <c>Component</c>-source
+        /// <see cref="PersonSession"/> for the named <see cref="UserLogin"/>
+        /// via
+        /// <see cref="PersonSessionService.FindOrCreateDeviceComponentSession(Net.RockRequestContext, UserLogin)"/>
+        /// and returns the resulting new-format cookie wrapped as a
+        /// <see cref="SimpleCookie"/>. The <paramref name="isPersisted"/>
+        /// argument is ignored — every Mobile / TV device session is
+        /// inherently persistent. <paramref name="isImpersonated"/> set to
+        /// <c>true</c> throws <see cref="NotSupportedException"/> because
+        /// admin impersonation now flows through
+        /// <c>PersonSessionService.ImpersonatePerson</c> (Phase 13) and
+        /// must NOT be initiated through this seam.
+        /// </para>
+        /// <para>
+        /// Full removal of this helper targets Rock v23 alongside the rest
+        /// of the legacy auth surface.
+        /// </para>
         /// </remarks>
-        [Obsolete( "Use PersonSessionService.StartComponentSession + RockContext.SaveChanges + PersonSessionService.GetCookieValue(session) instead. This legacy helper produces a FormsAuthenticationTicket-format cookie that the new PersonSession-based auth pipeline does not consume." )]
+        [Obsolete( "Use PersonSessionService.StartComponentSession + RockContext.SaveChanges + PersonSessionService.GetCookieValue(session) instead." )]
         [RockObsolete( "20.0" )]
         public static SimpleCookie GetSimpleAuthCookie( string userName, bool isPersisted, bool isImpersonated )
         {
-            var authCookie = GetAuthCookie( userName, isPersisted, isImpersonated, isTwoFactorAuthenticated: false );
+            if ( isImpersonated )
+            {
+                throw new NotSupportedException( "GetSimpleAuthCookie no longer supports admin impersonation. Use PersonSessionService.ImpersonatePerson (Phase 13 of the PersonSession spec) for that flow." );
+            }
 
-            if ( authCookie == null )
+            var rockContext = new Rock.Data.RockContext();
+            var userLogin = new UserLoginService( rockContext ).GetByUserName( userName );
+            if ( userLogin == null )
             {
                 return null;
             }
 
+            var requestContext = Rock.Net.RockRequestContextAccessor.Current;
+            var personSessionService = new Rock.Model.PersonSessionService( rockContext );
+            var session = personSessionService.FindOrCreateDeviceComponentSession( requestContext, userLogin );
+
             return new SimpleCookie
             {
-                Expires = authCookie.Expires,
-                Name = authCookie.Name,
-                Value = authCookie.Value
+                Name = FormsAuthentication.FormsCookieName,
+                Value = personSessionService.GetCookieValue( session ),
+                Expires = session.IsPersistent
+                    ? RockDateTime.Now.Add( FormsAuthentication.Timeout )
+                    : default
             };
         }
 

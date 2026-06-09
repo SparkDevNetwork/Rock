@@ -855,7 +855,7 @@ namespace Rock.Rest.v2.Controllers
                     var principal = ControllerContext.Request.GetUserPrincipal();
 
                     launchPacket.CurrentPerson = TvHelper.GetTvPerson( person );
-                    launchPacket.CurrentPerson.AuthToken = TvHelper.GetAuthenticationTokenFromUsername( principal.Identity.Name );
+                    launchPacket.CurrentPerson.AuthToken = TvHelper.GetAuthenticationTokenFromUsername( principal.Identity.Name, RockRequestContext );
 
                     UserLoginService.UpdateLastLogin(
                         new UpdateLastLoginArgs {
