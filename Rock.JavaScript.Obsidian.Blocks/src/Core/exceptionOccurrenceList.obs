@@ -45,7 +45,7 @@
                     :filter="numberValueFilter"
                     :exportValue="exportIdValue"
                     visiblePriority="xs"
-                    width="100px" />
+                    width="130px" />
 
         <DateTimeColumn name="createdDateTime"
                         title="Date/Time"
