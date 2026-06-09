@@ -1104,6 +1104,22 @@ namespace Rock.Crm.BulkUpdate
             var stepStatusId = stepStatus?.Id;
             var isCompleteStatus = stepStatus?.IsCompleteStatus ?? false;
             var campusId = ResolveCampusId( _bag.StepUpdate.Campus?.Value );
+
+            /*
+                6/9/26 - MSE
+
+                When Rock has only one active campus the client hides the campus
+                picker (a single-option list is pointless), so no campus reaches
+                the server. A new step should still belong to that campus, so fall
+                back to the lone active campus when the request supplies none.
+
+                Reason: Default new steps to the only campus when the hidden picker sends none.
+            */
+            if ( !campusId.HasValue )
+            {
+                campusId = GetSingleActiveCampusId();
+            }
+
             var startDate = _bag.StepUpdate.StartDate;
             var endDate = stepType.HasEndDate ? _bag.StepUpdate.EndDate : null;
             var note = _bag.StepUpdate.Note;
@@ -1603,6 +1619,18 @@ namespace Rock.Crm.BulkUpdate
             }
 
             return CampusCache.Get( campusGuid.Value )?.Id;
+        }
+
+        /// <summary>
+        /// Returns the identifier of the lone active campus when Rock has exactly
+        /// one, otherwise <c>null</c>. The client hides the campus picker in that
+        /// scenario (a single-option list is pointless), so callers use this to
+        /// default a campus that would otherwise arrive empty.
+        /// </summary>
+        private static int? GetSingleActiveCampusId()
+        {
+            var activeCampuses = CampusCache.All( false );
+            return activeCampuses.Count == 1 ? activeCampuses[0].Id : ( int? ) null;
         }
 
         /// <summary>

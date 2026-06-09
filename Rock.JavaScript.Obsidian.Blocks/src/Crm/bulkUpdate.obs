@@ -7,6 +7,10 @@
 
         <template v-else>
             <template v-if="!isConfirming">
+                <NotificationBox v-if="config.attributeConfigurationWarning" :alertType="AlertType.Warning">
+                    {{ config.attributeConfigurationWarning }}
+                </NotificationBox>
+
                 <RockForm ref="entryFormElement" @submit="onNext">
                     <NotificationBox v-if="validationMessage" ref="validationMessageElement" :alertType="AlertType.Warning">
                         {{ validationMessage }}
@@ -79,14 +83,14 @@
                                         </OptionalControl>
                                     </div>
                                     <div class="col-md-6">
-                                        <OptionalControl v-model="isUpdating.graduationYear" label="Graduation Year">
+                                        <OptionalControl v-model="isUpdating.graduationYear" label="Graduation Year" help="High School Graduation Year.">
                                             <YearPicker v-model="graduationYear" />
                                         </OptionalControl>
                                     </div>
                                 </div>
 
-                                <OptionalControl v-model="isUpdating.campus" label="Campus">
-                                    <CampusPicker v-model="campus" forceVisible showBlankItem />
+                                <OptionalControl v-show="isCampusPickerVisible" v-model="isUpdating.campus" label="Campus">
+                                    <CampusPicker v-model="campus" showBlankItem @isVisible="isCampusPickerVisible = $event" />
                                 </OptionalControl>
 
                                 <OptionalControl v-if="config.canEditConnectionStatus" v-model="isUpdating.connectionStatus" label="Connection Status">
@@ -149,7 +153,7 @@
                             </ContentStack>
                         </ContentSection>
 
-                        <ContentSection title="Attributes" icon="ti ti-binary-tree-2">
+                        <ContentSection v-if="attributeCategories.length > 0" title="Attributes" icon="ti ti-binary-tree-2">
                             <ContentStack v-for="category in attributeCategories" :key="category.guid" :title="category.name!"
                                           :description="category.description ?? `Update ${category.name} attributes for individuals.`">
                                 <AttributeValueControls v-model="attributeValuesByCategory[category.guid]" />
@@ -246,7 +250,7 @@
                                                 <DatePicker v-model="stepUpdate.endDate" label="End Date" />
                                             </div>
 
-                                            <CampusPicker v-model="stepUpdate.campus" label="Campus" showBlankItem forceVisible />
+                                            <CampusPicker v-model="stepUpdate.campus" label="Campus" showBlankItem @isVisible="isCampusPickerVisible = $event" />
 
                                             <TextBox v-model="stepNote" label="Note" textMode="multiline" />
 
@@ -271,8 +275,8 @@
                                                 </OptionalControl>
                                             </div>
 
-                                            <OptionalControl v-model="isUpdatingStep.campus" label="Campus">
-                                                <CampusPicker v-model="stepUpdate.campus" showBlankItem forceVisible />
+                                            <OptionalControl v-show="isCampusPickerVisible" v-model="isUpdatingStep.campus" label="Campus">
+                                                <CampusPicker v-model="stepUpdate.campus" showBlankItem @isVisible="isCampusPickerVisible = $event" />
                                             </OptionalControl>
 
                                             <OptionalControl v-model="isUpdatingStep.note" label="Note">
@@ -543,6 +547,8 @@
     const graduationYear = ref<string>();
 
     const campus = ref<ListItemBag>();
+    const isCampusPickerVisible = ref(false);
+
     const connectionStatus = ref<ListItemBag>();
     const recordStatus = ref<ListItemBag>();
     const inactiveReason = ref<ListItemBag>();
@@ -1402,7 +1408,9 @@
      * @param index The index of the person in the list.
      */
     function onRemovePerson(_person: BulkUpdatePersonBag, index: number): void {
-        updatePersons.value.splice(index, 1);
+        const remaining = [...updatePersons.value];
+        remaining.splice(index, 1);
+        updatePersons.value = remaining;
     }
 
     /**
@@ -1440,7 +1448,7 @@
         if (result.isSuccess && result.data) {
             // Re-check in case a concurrent fetch landed first.
             if (!updatePersons.value.some(p => p.personAliasGuid === result.data?.personAliasGuid)) {
-                updatePersons.value.push(result.data);
+                updatePersons.value = [...updatePersons.value, result.data];
             }
         }
     }

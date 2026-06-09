@@ -52,6 +52,13 @@ namespace Rock.ViewModels.Blocks.Crm.BulkUpdate
         public List<BulkUpdateAttributeCategoryBag> AttributeCategories { get; set; }
 
         /// <summary>
+        /// Gets or sets an optional, non-blocking notice shown to block administrators
+        /// when one or more attributes were configured in more than one selected category
+        /// and de-duplicated to a single category.
+        /// </summary>
+        public string AttributeConfigurationWarning { get; set; }
+
+        /// <summary>
         /// Gets or sets the workflow type options.
         /// </summary>
         public List<ListItemBag> WorkflowTypeOptions { get; set; }
@@ -73,8 +80,7 @@ namespace Rock.ViewModels.Blocks.Crm.BulkUpdate
 
         /// <summary>
         /// Gets or sets an optional configuration error message to display
-        /// to the user when block settings are misconfigured (e.g. an attribute
-        /// appearing in more than one category).
+        /// to the user when block settings are misconfigured.
         /// </summary>
         public string ErrorMessage { get; set; }
     }
