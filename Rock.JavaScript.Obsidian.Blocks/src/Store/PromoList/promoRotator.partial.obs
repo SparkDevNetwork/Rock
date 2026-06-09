@@ -41,13 +41,17 @@
 
 <style scoped>
 .carousel-inner {
-    position: relative;
+    display: grid;
+    max-height: 210px;
     overflow: hidden;
 }
 
 .carousel-inner .item {
-    max-height: 210px;
-    overflow: hidden;
+    grid-area: 1 / 1;
+}
+
+.carousel-inner .item a {
+    display: block;
 }
 
 .carousel-inner .item img {
@@ -78,16 +82,9 @@
 }
 
 .slide-next-enter-active,
-.slide-prev-enter-active {
-    transition: transform 0.65s ease;
-}
-
+.slide-prev-enter-active,
 .slide-next-leave-active,
 .slide-prev-leave-active {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
     transition: transform 0.65s ease;
 }
 
