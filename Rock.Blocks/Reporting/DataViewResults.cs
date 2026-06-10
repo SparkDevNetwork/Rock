@@ -104,18 +104,19 @@ namespace Rock.Blocks.Reporting
         }
 
         /// <summary>
-        /// The fixed pixel widths applied to dynamic columns by value type. Text columns
-        /// get the most room so values such as email addresses fit on a single line, while
-        /// the compact value types use a narrower width. The grid keeps every cell on one
-        /// line and truncates the overflow with an ellipsis, so these widths control how
-        /// much of each value is shown before truncation.
+        /// The relative widths applied to dynamic columns by value type, expressed as percentages.
+        /// Percentages let the columns grow to fill the available width, so a data view with only a
+        /// few columns does not leave a large empty gap on the right, and shrink (down to the grid's
+        /// minimum cell width, after which the grid scrolls) when there are many columns. Text columns
+        /// are the widest so values such as email addresses have room; the compact value types are
+        /// narrower.
         /// </summary>
         private static class ColumnWidth
         {
-            public const string Boolean = "100px";
-            public const string Date = "150px";
-            public const string Number = "120px";
-            public const string Text = "300px";
+            public const string Boolean = "8%";
+            public const string Date = "10%";
+            public const string Number = "10%";
+            public const string Text = "20%";
         }
 
         #endregion Keys
@@ -364,10 +365,10 @@ namespace Rock.Blocks.Reporting
         }
 
         /// <summary>
-        /// Gets the fixed pixel width to use for a dynamic column based on its value type.
+        /// Gets the relative (percentage) width to use for a dynamic column based on its value type.
         /// </summary>
         /// <param name="columnType">The grid column type identifier.</param>
-        /// <returns>A pixel width string suitable for the dynamic column definition.</returns>
+        /// <returns>A width string suitable for the dynamic column definition.</returns>
         private static string GetColumnWidth( string columnType )
         {
             switch ( columnType )
