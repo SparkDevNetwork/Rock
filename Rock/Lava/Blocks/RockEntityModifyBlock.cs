@@ -246,6 +246,50 @@ namespace Rock.Lava.Blocks
                 }
             }
 
+            // For new entities, attach to the service now that the [[ property ]]
+            // values have been applied. This avoids services whose Add() override
+            // validates required properties (e.g., StepService requires StepTypeId)
+            // from failing against a still-empty entity. See the engineering note
+            // in CreateNewEntity for additional context.
+            if ( isAdd )
+            {
+                var addMethod = service.GetType().GetMethod( "Add", new Type[] { _entityType } );
+
+                if ( addMethod == null )
+                {
+                    _result.Success = false;
+                    _result.ErrorMessage = $"Could not attach the new {_entityName} to its service.";
+                    return entity;
+                }
+
+                try
+                {
+                    addMethod.Invoke( service, new object[] { entity } );
+                }
+                catch ( Exception ex )
+                {
+                    _result.Success = false;
+
+                    if ( ex.Message.StartsWith( "Entity Validation Error" ) )
+                    {
+                        _result.ValidationErrors = ParseValidationErrors( ex.Message );
+                        _result.ErrorMessage = "A validation error occurred.";
+                    }
+
+                    // Check for foreign key or other errors. These will have a inner exception
+                    if ( ex.InnerException != null )
+                    {
+                        _result.ErrorMessage = GetBaseExceptionMessage( ex.InnerException );
+                    }
+                    else
+                    {
+                        _result.ErrorMessage = ex.Message;
+                    }
+
+                    return entity;
+                }
+            }
+
             // Update all attributes
             var entityAsIHasAttributes = entity as IHasAttributes;
             var attributesWereUpdated = false;
@@ -297,7 +341,6 @@ namespace Rock.Lava.Blocks
                     _result.Success = false;
                     _result.ErrorMessage = $"You may be missing a required property for {_entityName.Humanize( LetterCasing.Title )}.";
                     _result.ValidationErrors.Add( new ValidationError( "Object reference not set to an instance of an object." ) );
-
                 }
                 catch ( Exception ex )
                 {
@@ -519,7 +562,7 @@ namespace Rock.Lava.Blocks
             // Return a new entity if no id was passed or the id is 0
             if ( id == "0" )
             {
-                return CreateNewEntity( service );
+                return CreateNewEntity();
             }
 
             // Try id as an integer
@@ -549,26 +592,31 @@ namespace Rock.Lava.Blocks
         }
 
         /// <summary>
-        /// Creates a new entity of the provided type and attaches it to the service.
+        /// Creates a new entity of the provided type.
         /// </summary>
-        /// <param name="service">The service used to attach the new entity to the database.</param>
-        /// <returns>An instance of the entity or <c>null</c> if it could not be added.</returns>
-        private IEntity CreateNewEntity( IService service )
+        /// <returns>An instance of the entity or <c>null</c> if it could not be created.</returns>
+        private IEntity CreateNewEntity()
         {
-            // Create a new instance of the entity
-            var entity = ( IEntity ) Activator.CreateInstance( _entityType );
+            /*
+                6/10/2026 - N.A.
 
-            // Attach it to the service for tracking
-            var addMethod = service.GetType().GetMethod( "Add", new Type[] { _entityType } );
+                We intentionally do NOT call service.Add( entity ) here. Some
+                services (e.g., StepService) override Add() to validate required
+                properties such as StepTypeId. At this point in the block's
+                lifecycle, the [[ property ]] values from the Lava markup have
+                not yet been applied to the entity, so any validation that
+                relies on those properties would fail against a still-empty
+                instance (producing errors like "The step type identifier is
+                invalid and the step type could not be found").
 
-            if ( addMethod == null )
-            {
-                return null;
-            }
+                The service.Add() call is deferred to ModifyOrAddEntity, where
+                it runs after the [[ property ]] values have been set on the
+                entity.
 
-            addMethod.Invoke( service, new object[] { entity } );
+                Reason: Fix {% modifystep id:'0' %} throwing on entity creation.
+            */
 
-            return entity;
+            return ( IEntity ) Activator.CreateInstance( _entityType );
         }
 
         /// <summary>

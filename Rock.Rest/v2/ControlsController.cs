@@ -7723,16 +7723,25 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "LocationItemPickerGetActiveChildren" )]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<TreeItemBag> ) )]
         [Rock.SystemGuid.RestActionGuid( "E57312EC-92A7-464C-AA7E-5320DDFAEF3D" )]
         public IActionResult LocationItemPickerGetActiveChildren( [FromBody] LocationItemPickerGetActiveChildrenOptionsBag options )
         {
+            var isReadAllowed = IsCurrentPersonAuthorized( Authorization.EXECUTE_READ );
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            // If they were granted access to the API endpoint or if they were
+            // granted access via the security grant, then allow them to get a
+            // list of named locations.
+            if ( !isReadAllowed && grant?.IsAccessGranted( LocationItemPickerSecurityGrantRule.AccessInstance, Authorization.VIEW ) != true )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var locationService = new LocationService( rockContext );
-                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
                 var locationNameList = LocationItemPickerGetChildrenInternal(
                     options.Guid,

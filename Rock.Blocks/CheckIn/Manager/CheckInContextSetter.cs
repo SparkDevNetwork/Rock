@@ -24,6 +24,8 @@ using System.Text;
 using Rock.Attribute;
 using Rock.Enums.Cms;
 using Rock.Model;
+using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.CheckIn.Manager.CheckInContextSetter;
 using Rock.ViewModels.Utility;
@@ -183,6 +185,16 @@ namespace Rock.Blocks.CheckIn.Manager
             return sb.ToString();
         }
 
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            var grant = new SecurityGrant();
+
+            grant.AddRule( new LocationItemPickerSecurityGrantRule() );
+
+            return grant.ToToken();
+        }
+
         /// <summary>
         /// Get the configuration options that will be sent down to the client.
         /// </summary>
@@ -200,6 +212,7 @@ namespace Rock.Blocks.CheckIn.Manager
                 // for WebForms blocks. Once they have all been converted to
                 // Obsidian, this can be removed.
                 IsRedirectRequired = PageCache.Guid != new Guid( "ba04bf01-5244-4637-b12d-7a962d2a9e77" ),
+                SecurityGrantToken = RenewSecurityGrantToken(),
             };
 
             var context = GetContextEntities();

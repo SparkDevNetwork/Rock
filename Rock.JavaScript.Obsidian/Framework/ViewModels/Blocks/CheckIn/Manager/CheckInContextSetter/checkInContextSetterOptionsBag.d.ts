@@ -45,6 +45,9 @@ export type CheckInContextSetterOptionsBag = {
      */
     schedules?: ListItemBag[] | null;
 
+    /** The security grant token to use when loading additional data. */
+    securityGrantToken?: string | null;
+
     /** The selected campus when the block loaded. */
     selectedCampus?: ListItemBag | null;
 
