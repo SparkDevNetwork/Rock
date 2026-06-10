@@ -403,32 +403,72 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
         protected void lbImpersonate_Click( object sender, EventArgs e )
         {
-            if ( Person != null )
+            if ( Person == null )
             {
-                if ( Person.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                return;
+            }
+
+            if ( !Person.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.CurrentPerson ) )
+            {
+                return;
+            }
+
+            if ( !this.Person.IsPersonTokenUsageAllowed() )
+            {
+                // We hide/disable lbImpersonate in this situation; defend
+                // against direct postbacks anyway. The check predates the
+                // PersonSession model and gates impersonation by the target's
+                // AccountProtectionProfile, which is independent of the
+                // server-side handoff mechanism.
+                return;
+            }
+
+            try
+            {
+                /*
+                    Phase 13 of the PersonSession spec: the handoff is now
+                    cookie-based, with no `PersonToken` write and no `rckipid`
+                    in the URL. `PersonSessionService.ImpersonatePerson`
+                    creates the new `Impersonation`-source PersonSession,
+                    writes the new `.ROCK` cookie via the request context,
+                    and records the `HistoryLogin` audit row. The block is
+                    reduced to invoking the service and redirecting to the
+                    configured target URL.
+                */
+                Rock.Model.PersonSessionService.ImpersonatePerson( this.RockPage.RequestContext, Person.PrimaryAliasId.Value );
+            }
+            catch ( InvalidOperationException )
+            {
+                // Admin's session expired between rendering the Impersonate
+                // button and clicking it. Fall through to the platform's
+                // standard not-authenticated path: redirect to login. Use
+                // the site's configured login page when one is set; fall
+                // back to FormsAuthentication's default otherwise. Mirrors
+                // the pattern other blocks use (e.g.
+                // AttendanceSelfEntry.btnLogin_Click).
+                var site = RockPage.Layout.Site;
+                if ( site.LoginPageId.HasValue )
                 {
-                    if ( !this.Person.IsPersonTokenUsageAllowed() )
-                    {
-                        // we hide/disable the lbImpersonate in this situation, but prevent just in case
-                        return;
-                    }
-
-                    var impersonationToken = this.Person.GetImpersonationToken( RockDateTime.Now.AddMinutes( 5 ), 1, null );
-
-                    // store the current user in Session["ImpersonatedByUser"] so that we can log back in as them from the Admin Bar
-                    Session["ImpersonatedByUser"] = this.CurrentUser;
-
-                    var qryParams = new Dictionary<string, string>();
-                    qryParams.Add( "rckipid", impersonationToken );
-                    if ( !string.IsNullOrEmpty( this.GetAttributeValue( AttributeKey.ImpersonationStartPage ) ) )
-                    {
-                        NavigateToLinkedPage( AttributeKey.ImpersonationStartPage, qryParams );
-                    }
-                    else
-                    {
-                        NavigateToCurrentPageReference( qryParams );
-                    }
+                    site.RedirectToLoginPage( true );
                 }
+                else
+                {
+                    System.Web.Security.FormsAuthentication.RedirectToLoginPage();
+                }
+                return;
+            }
+
+            // No query parameters: the rckipid handoff is gone, and the
+            // configured target URL is whatever the admin or installer set.
+            // Nothing in this code path appends `rckipid`, so the redirect
+            // target is `rckipid`-free by construction.
+            if ( !string.IsNullOrEmpty( this.GetAttributeValue( AttributeKey.ImpersonationStartPage ) ) )
+            {
+                NavigateToLinkedPage( AttributeKey.ImpersonationStartPage );
+            }
+            else
+            {
+                NavigateToCurrentPageReference();
             }
         }
 

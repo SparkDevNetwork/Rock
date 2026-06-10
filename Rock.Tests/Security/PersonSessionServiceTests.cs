@@ -15,15 +15,18 @@
 // </copyright>
 //
 using System;
+using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Configuration;
+using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Model;
 using Rock.Net;
 using Rock.Security;
 using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Shared.Utility;
 
 namespace Rock.Tests.Security;
 
@@ -1052,7 +1055,8 @@ public class PersonSessionServiceTests
         } );
         rockContext.Set<PersonSession>().Add( impersonationSession );
 
-        var requestContext = new RockRequestContext();
+        var response = new TrackingResponseContext();
+        var requestContext = new RockRequestContext( response );
         var service = new PersonSessionService( rockContext );
 
         var restored = service.EndImpersonationAndRestore( impersonationSession, requestContext );
@@ -1062,6 +1066,15 @@ public class PersonSessionServiceTests
         Assert.IsFalse( impersonationSession.IsActive );
         Assert.AreEqual( priorInteractionSession.Guid, requestContext.SessionGuid,
             "Browser-session id should be re-pointed at the impersonator's prior InteractionSession on restore." );
+
+        // Symmetric with ImpersonatePerson: the end-side method writes the
+        // new auth cookie pointing at the restored session and updates the
+        // request context's PersonSession so the rest of the request sees
+        // the admin's restored identity.
+        Assert.HasCount( 1, response.AddedCookies,
+            "EndImpersonationAndRestore must write the new auth cookie for the restored session." );
+        Assert.AreEqual( restored.Guid, requestContext.PersonSession.Guid,
+            "EndImpersonationAndRestore must attach the restored session to the request context." );
     }
 
     /// <summary>
@@ -1094,7 +1107,8 @@ public class PersonSessionServiceTests
         } );
         rockContext.Set<PersonSession>().Add( impersonationSession );
 
-        var requestContext = new RockRequestContext();
+        var response = new TrackingResponseContext();
+        var requestContext = new RockRequestContext( response );
         var priorBrowserSessionId = requestContext.SessionGuid;
         var service = new PersonSessionService( rockContext );
 
@@ -1103,6 +1117,14 @@ public class PersonSessionServiceTests
         Assert.IsNull( restored );
         Assert.AreEqual( priorBrowserSessionId, requestContext.SessionGuid,
             "Browser-session id should not be re-pointed when the restore is refused." );
+
+        // Symmetric failure handling: the dangling-restore path must expire
+        // the auth cookie so the next request resolves anonymously instead
+        // of trying to use the now-inactive impersonation session.
+        Assert.HasCount( 1, response.RemovedCookies,
+            "EndImpersonationAndRestore must expire the auth cookie when the restore reference is dangling." );
+        Assert.HasCount( 0, response.AddedCookies,
+            "No new auth cookie should be written when the restore is refused." );
     }
 
     /// <summary>
@@ -1139,4 +1161,267 @@ public class PersonSessionServiceTests
     }
 
     #endregion Phase 9 — browser-session id reset / restore
+
+    #region ImpersonatePerson (Phase 13)
+
+    /// <summary>
+    /// <see cref="PersonSessionService.ImpersonatePerson"/> on a request
+    /// with an active admin <see cref="PersonSession"/> and matching
+    /// <see cref="InteractionSession"/> creates exactly one new
+    /// <see cref="PersonSessionCreationSource.Impersonation"/> session,
+    /// writes NO <see cref="PersonToken"/> row, and writes one cookie via
+    /// the request context.
+    /// </summary>
+    [TestMethod]
+    public void ImpersonatePerson_ActiveAdminSession_CreatesImpersonationSession_NoPersonToken()
+    {
+        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        var rockContext = scope.App.CreateRockContext();
+
+        SeedAdminImpersonatorEnvironment(
+            rockContext,
+            out var adminSession,
+            out var adminInteractionSession,
+            out var targetPersonAliasId );
+
+        var response = new TrackingResponseContext();
+        var requestContext = new RockRequestContext( response );
+        requestContext.SetPersonSession( adminSession );
+        requestContext.SetBrowserSessionId( adminInteractionSession.Guid );
+
+        PersonSessionService.ImpersonatePerson( requestContext, targetPersonAliasId );
+
+        var newSessions = rockContext.Set<PersonSession>()
+            .Where( s => s.CreationSource == PersonSessionCreationSource.Impersonation )
+            .ToList();
+        Assert.HasCount( 1, newSessions, "ImpersonatePerson must create exactly one Impersonation session." );
+
+        var newSession = newSessions.Single();
+        Assert.AreEqual( targetPersonAliasId, newSession.PersonAliasId );
+        Assert.IsTrue( newSession.IsActive );
+
+        Assert.HasCount( 0, rockContext.Set<PersonToken>().ToList(),
+            "ImpersonatePerson must not write a PersonToken row." );
+
+        Assert.HasCount( 1, response.AddedCookies,
+            "ImpersonatePerson must write the new-format auth cookie via the request context." );
+
+        Assert.AreEqual( newSession.Guid, requestContext.PersonSession.Guid,
+            "ImpersonatePerson must replace the request context's PersonSession with the new impersonation session." );
+    }
+
+    /// <summary>
+    /// <see cref="PersonSessionService.ImpersonatePerson"/> stamps the
+    /// impersonator's prior <see cref="PersonSession.Guid"/> and prior
+    /// <see cref="InteractionSession.Guid"/> onto the new session via
+    /// <see cref="PersonSessionAdminImpersonationSettings"/> so
+    /// <see cref="PersonSessionService.EndImpersonationAndRestore"/> can
+    /// later revert.
+    /// </summary>
+    [TestMethod]
+    public void ImpersonatePerson_StampsAdminImpersonationSettings_OnNewSession()
+    {
+        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        var rockContext = scope.App.CreateRockContext();
+
+        SeedAdminImpersonatorEnvironment(
+            rockContext,
+            out var adminSession,
+            out var adminInteractionSession,
+            out var targetPersonAliasId );
+
+        var requestContext = new RockRequestContext( new TrackingResponseContext() );
+        requestContext.SetPersonSession( adminSession );
+        requestContext.SetBrowserSessionId( adminInteractionSession.Guid );
+
+        PersonSessionService.ImpersonatePerson( requestContext, targetPersonAliasId );
+
+        var newSession = rockContext.Set<PersonSession>()
+            .Single( s => s.CreationSource == PersonSessionCreationSource.Impersonation );
+
+        var settings = newSession.GetAdditionalSettingsOrNull<PersonSessionAdminImpersonationSettings>();
+        Assert.IsNotNull( settings );
+        Assert.AreEqual( adminSession.Guid, settings.ImpersonatorPersonSessionGuid );
+        Assert.AreEqual( adminInteractionSession.Guid, settings.ImpersonatorInteractionSessionGuid );
+    }
+
+    /// <summary>
+    /// <see cref="PersonSessionService.ImpersonatePerson"/> throws
+    /// <see cref="InvalidOperationException"/> when the request has no
+    /// active <see cref="PersonSession"/>. No <see cref="PersonSession"/>,
+    /// no cookie write, and no <see cref="PersonToken"/> mutation occur.
+    /// </summary>
+    [TestMethod]
+    public void ImpersonatePerson_NoActiveSession_ThrowsAndMutatesNothing()
+    {
+        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        var rockContext = scope.App.CreateRockContext();
+
+        var response = new TrackingResponseContext();
+        var requestContext = new RockRequestContext( response );
+        // Intentionally no PersonSession on the request context.
+
+        Assert.Throws<InvalidOperationException>(
+            () => PersonSessionService.ImpersonatePerson( requestContext, targetPersonAliasId: 200 ) );
+
+        Assert.HasCount( 0, rockContext.Set<PersonSession>().ToList(),
+            "No PersonSession should be created when ImpersonatePerson throws." );
+        Assert.HasCount( 0, response.AddedCookies,
+            "No cookie should be written when ImpersonatePerson throws." );
+    }
+
+    /// <summary>
+    /// <see cref="PersonSessionService.ImpersonatePerson"/> does not touch
+    /// any <see cref="PersonToken"/> row's <see cref="PersonToken.TimesUsed"/>.
+    /// Guards against future code accidentally re-coupling admin
+    /// impersonation to the legacy <c>PersonToken</c> path.
+    /// </summary>
+    [TestMethod]
+    public void ImpersonatePerson_DoesNotMutatePersonTokenTimesUsed()
+    {
+        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        var rockContext = scope.App.CreateRockContext();
+
+        SeedAdminImpersonatorEnvironment(
+            rockContext,
+            out var adminSession,
+            out var adminInteractionSession,
+            out var targetPersonAliasId );
+
+        // Seed an unrelated PersonToken so we can verify TimesUsed unchanged.
+        var unrelatedToken = new PersonToken
+        {
+            Id = 99,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = targetPersonAliasId,
+            TimesUsed = 0,
+        };
+        rockContext.Set<PersonToken>().Add( unrelatedToken );
+
+        var requestContext = new RockRequestContext( new TrackingResponseContext() );
+        requestContext.SetPersonSession( adminSession );
+        requestContext.SetBrowserSessionId( adminInteractionSession.Guid );
+
+        PersonSessionService.ImpersonatePerson( requestContext, targetPersonAliasId );
+
+        Assert.AreEqual( 0, unrelatedToken.TimesUsed,
+            "ImpersonatePerson must not increment any PersonToken.TimesUsed." );
+    }
+
+    /// <summary>
+    /// <see cref="PersonSessionService.BuildImpersonationHistoryLogin"/>
+    /// stamps the impersonated person on <see cref="HistoryLogin.PersonAliasId"/>,
+    /// leaves <see cref="HistoryLogin.UserName"/> null (the legacy obfuscated
+    /// rckipid value is gone in the new model), marks the event successful,
+    /// and writes <c>LoginContext = "Impersonation"</c> plus the impersonator's
+    /// full name into the related data. Tests the audit-row construction
+    /// directly because <see cref="HistoryLogin.SaveAfterDelay"/> uses a
+    /// background <c>Task.Run</c> with its own non-mocked <c>RockContext</c>
+    /// and cannot be observed through the mocked save path.
+    /// </summary>
+    [TestMethod]
+    public void BuildImpersonationHistoryLogin_PopulatesExpectedFields()
+    {
+        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        var rockContext = scope.App.CreateRockContext();
+
+        // Admin "Ted Decker" impersonating target person.
+        var admin = new Person
+        {
+            Id = 50,
+            FirstName = "Ted",
+            LastName = "Decker",
+            NickName = "Ted",
+            PrimaryAliasId = 100,
+        };
+        var adminAlias = new PersonAlias { Id = 100, PersonId = 50, Person = admin };
+        rockContext.Set<Person>().Add( admin );
+        rockContext.Set<PersonAlias>().Add( adminAlias );
+
+        var adminSession = new PersonSession
+        {
+            Id = 10,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 100,
+            CreationSource = PersonSessionCreationSource.Component,
+            IsActive = true,
+        };
+        var impersonationSession = new PersonSession
+        {
+            Id = 11,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 200,
+            CreationSource = PersonSessionCreationSource.Impersonation,
+            IsActive = true,
+        };
+
+        var historyLogin = PersonSessionService.BuildImpersonationHistoryLogin(
+            rockContext, impersonationSession, adminSession );
+
+        Assert.IsNotNull( historyLogin );
+        Assert.IsNull( historyLogin.UserName, "UserName must be null under the new model (no rckipid to obfuscate)." );
+        Assert.IsNull( historyLogin.UserLoginId );
+        Assert.AreEqual( 200, historyLogin.PersonAliasId,
+            "PersonAliasId must point at the impersonated person." );
+        Assert.IsTrue( historyLogin.WasLoginSuccessful );
+
+        var relatedData = historyLogin.GetRelatedDataOrNull();
+        Assert.IsNotNull( relatedData );
+        Assert.AreEqual( "Impersonation", relatedData.LoginContext );
+        Assert.AreEqual( admin.FullName, relatedData.ImpersonatedByPersonFullName );
+    }
+
+    /// <summary>
+    /// Seeds a minimum set of entities (impersonator Person + PersonAlias +
+    /// active Component PersonSession + InteractionSession + target
+    /// PersonAlias) so the <see cref="PersonSessionService.ImpersonatePerson"/>
+    /// tests can run end-to-end through the mocked context.
+    /// </summary>
+    private static void SeedAdminImpersonatorEnvironment(
+        RockContext rockContext,
+        out PersonSession adminSession,
+        out InteractionSession adminInteractionSession,
+        out int targetPersonAliasId )
+    {
+        // Admin (Ted Decker).
+        var admin = new Person
+        {
+            Id = 50,
+            FirstName = "Ted",
+            LastName = "Decker",
+            NickName = "Ted",
+            PrimaryAliasId = 100,
+        };
+        var adminAlias = new PersonAlias { Id = 100, PersonId = 50, Person = admin };
+        rockContext.Set<Person>().Add( admin );
+        rockContext.Set<PersonAlias>().Add( adminAlias );
+
+        // Target (impersonated person).
+        var target = new Person { Id = 51, PrimaryAliasId = 200 };
+        var targetAlias = new PersonAlias { Id = 200, PersonId = 51, Person = target };
+        rockContext.Set<Person>().Add( target );
+        rockContext.Set<PersonAlias>().Add( targetAlias );
+        targetPersonAliasId = 200;
+
+        // Admin's active Component session.
+        adminSession = new PersonSession
+        {
+            Id = 10,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 100,
+            CreationSource = PersonSessionCreationSource.Component,
+            IsActive = true,
+        };
+        rockContext.Set<PersonSession>().Add( adminSession );
+
+        // Admin's current InteractionSession (keyed by browser-session id).
+        adminInteractionSession = new InteractionSession
+        {
+            Id = 20,
+            Guid = Guid.NewGuid(),
+        };
+        rockContext.Set<InteractionSession>().Add( adminInteractionSession );
+    }
+
+    #endregion ImpersonatePerson (Phase 13)
 }

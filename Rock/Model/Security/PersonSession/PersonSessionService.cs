@@ -23,6 +23,7 @@ using System.Linq;
 using System.Text.Json;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Net;
@@ -681,6 +682,13 @@ public partial class PersonSessionService
             // Either restore reference is dangling. Fail closed: the user
             // becomes anonymous rather than silently continuing as the
             // impersonated person OR silently dropping back to the admin.
+            // Clear the `.ROCK` cookie so the next request resolves
+            // anonymously instead of trying to use the now-inactive session.
+            if ( requestContext != null )
+            {
+                ExpireAuthCookie( requestContext );
+            }
+
             return null;
         }
 
@@ -691,7 +699,171 @@ public partial class PersonSessionService
         // remains in the database as a historical record).
         requestContext?.SetBrowserSessionId( priorInteractionSession.Guid );
 
+        // Write the new auth cookie pointing at the restored session and
+        // attach it to the request context so the remainder of this
+        // request observes the admin's restored identity. Mirrors the
+        // start-side `ImpersonatePerson` shape so every caller of either
+        // method gets the cookie + context write for free without
+        // duplicating the follow-ups at each site.
+        if ( requestContext != null )
+        {
+            SetAuthCookie( priorSession, requestContext );
+            requestContext.SetPersonSession( priorSession );
+        }
+
         return priorSession;
+    }
+
+    /// <summary>
+    /// Server-side orchestration of an admin-initiated impersonation handoff.
+    /// Reads the admin's current <see cref="PersonSession"/> and
+    /// <see cref="InteractionSession"/> from <paramref name="context"/>,
+    /// builds a new <see cref="PersonSessionCreationSource.Impersonation"/>
+    /// session targeting <paramref name="targetPersonAliasId"/>, writes the
+    /// new <c>.ROCK</c> cookie, attaches the new session to the request
+    /// context, and records the impersonation start in
+    /// <see cref="HistoryLogin"/>. No <see cref="PersonToken"/> row is
+    /// written; the entire handoff is cookie-based.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Lives on the service rather than on the Bio block's code-behind so
+    /// the orchestration is mocked-database testable; Bio.ascx.cs is
+    /// compiled at runtime and cannot be exercised from Rock.Tests. The
+    /// caller (block) is reduced to a thin shim: call this method, then
+    /// redirect to the configured target URL.
+    /// </para>
+    /// <para>
+    /// Owns its own <see cref="RockContext"/> via
+    /// <c>RockApp.Current.CreateRockContext()</c> so the test harness's
+    /// mocked context factory can intercept; that pattern is the same one
+    /// <c>UserLoginService.UpdateLastLogin</c> uses. The redirect to the
+    /// configured target URL is intentionally NOT in this method, since
+    /// the target URL is a block setting and the service should not know
+    /// about it; with no <c>rckipid</c>-appending in this flow, the
+    /// "no token in URL" property holds by construction.
+    /// </para>
+    /// </remarks>
+    /// <param name="context">The current <see cref="RockRequestContext"/>.</param>
+    /// <param name="targetPersonAliasId">The <c>PersonAlias.Id</c> of the person to impersonate.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the request has no active <see cref="PersonSession"/> (e.g., the admin's session expired between rendering the Impersonate button and clicking it).</exception>
+    [RockInternal( "20.0", keepInternalForever: true )]
+    public static void ImpersonatePerson( RockRequestContext context, int targetPersonAliasId )
+    {
+        if ( context == null )
+        {
+            throw new ArgumentNullException( nameof( context ) );
+        }
+
+        var impersonatorSession = context.PersonSession;
+        if ( impersonatorSession == null || !impersonatorSession.IsActive )
+        {
+            // Defensive backstop: the Bio block's rendering check prevents
+            // this from happening in normal flow, but the admin's session
+            // could have expired between render and click. The caller is
+            // responsible for surfacing this through the existing
+            // session-expired error path rather than crashing.
+            throw new InvalidOperationException( "Cannot impersonate: the current request has no active PersonSession." );
+        }
+
+        using ( var rockContext = RockApp.Current.CreateRockContext() )
+        {
+            // Resolve the admin's current InteractionSession via the
+            // browser-session identifier (RockSessionId). StartImpersonationSession
+            // needs this so the impersonation session can later be reversed via
+            // EndImpersonationAndRestore (which re-points the browser back at
+            // the admin's pre-impersonation InteractionSession row).
+            var browserSessionId = context.SessionGuid;
+            var impersonatorInteractionSession = new InteractionSessionService( rockContext )
+                .Queryable()
+                .FirstOrDefault( s => s.Guid == browserSessionId );
+
+            if ( impersonatorInteractionSession == null )
+            {
+                // Same shape as the no-PersonSession case: the admin's request
+                // is missing the state we need to support a clean restore.
+                throw new InvalidOperationException( "Cannot impersonate: the current request has no InteractionSession for the admin's browser." );
+            }
+
+            var service = new PersonSessionService( rockContext );
+
+            var newSession = service.StartImpersonationSession(
+                context,
+                targetPersonAliasId,
+                impersonatorSession,
+                impersonatorInteractionSession );
+
+            service.Add( newSession );
+            rockContext.SaveChanges();
+
+            // Write the new-format auth cookie via the request context.
+            // SetAuthCookie reads the new session's Guid for the cookie's
+            // sid field, and the cookie's Expires attribute is computed
+            // from the new session's IsPersistent + ExpiresDateTime.
+            service.SetAuthCookie( newSession, context );
+
+            // Replace the cached PersonSession on the request context so the
+            // remainder of this request observes the impersonated identity
+            // (the cookie alone takes effect on the NEXT request; this is
+            // the in-request bridge).
+            context.SetPersonSession( newSession );
+
+            // HistoryLogin audit trail. Mirrors the relevant fields from
+            // the legacy UpdateLastLogin impersonation branch: PersonAliasId
+            // points at the impersonated person, LoginContext = "Impersonation",
+            // and ImpersonatedByPersonFullName carries the admin's name.
+            // The legacy UserName field stored an obfuscated rckipid; under
+            // the new model there is no rckipid, so the field is left null
+            // (the admin / target identity is recoverable from PersonAliasId
+            // + RelatedData).
+            BuildImpersonationHistoryLogin( rockContext, newSession, impersonatorSession )
+                .SaveAfterDelay();
+        }
+    }
+
+    /// <summary>
+    /// Builds (but does not save) the <see cref="HistoryLogin"/> audit row
+    /// for an admin impersonation start. Resolves the impersonator's
+    /// display name from the impersonator's <see cref="PersonSession.PersonAlias"/>.
+    /// </summary>
+    /// <remarks>
+    /// Split from the call to <see cref="HistoryLogin.SaveAfterDelay"/> so
+    /// mocked-database tests can assert on the built entity without
+    /// running the real <c>Task.Run</c> background save path (which uses a
+    /// non-mocked <c>RockContext</c>).
+    /// </remarks>
+    /// <param name="rockContext">The rock context to read the impersonator's <see cref="Person"/> through.</param>
+    /// <param name="impersonationSession">The newly created <see cref="PersonSessionCreationSource.Impersonation"/> session.</param>
+    /// <param name="impersonatorSession">The admin's prior <see cref="PersonSession"/>.</param>
+    /// <returns>A populated <see cref="HistoryLogin"/> ready for <c>SaveAfterDelay</c>.</returns>
+    internal static HistoryLogin BuildImpersonationHistoryLogin( RockContext rockContext, PersonSession impersonationSession, PersonSession impersonatorSession )
+    {
+        // Resolve the impersonator's full name through PersonAliasService so
+        // we do not depend on a nav property being lazily loaded.
+        var personAliasService = new PersonAliasService( rockContext );
+        var impersonatorAlias = personAliasService.Get( impersonatorSession.PersonAliasId );
+        var impersonatorFullName = impersonatorAlias?.Person?.FullName;
+
+        var historyLogin = new HistoryLogin
+        {
+            UserName = null,
+            UserLoginId = null,
+            PersonAliasId = impersonationSession.PersonAliasId,
+            WasLoginSuccessful = true,
+        };
+
+        // Always stamp LoginContext = "Impersonation" so audit consumers can
+        // filter by that field even when the impersonator's name cannot be
+        // resolved (PersonAlias deleted between impersonation start and the
+        // service's read, etc.).
+        historyLogin.SetRelatedDataJson( new HistoryLoginRelatedData
+        {
+            ImpersonatedByPersonFullName = impersonatorFullName,
+            LoginContext = "Impersonation",
+        } );
+
+        return historyLogin;
     }
 
     #endregion Impersonation Query Helpers

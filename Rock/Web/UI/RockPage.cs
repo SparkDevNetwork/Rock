@@ -37,6 +37,7 @@ using Rock.Cms.Utm;
 using Rock.Configuration;
 using Rock.Crm.RecordSource;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Net;
@@ -2069,40 +2070,60 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Handles the Click event of the _btnRestoreImpersonatedByUser control.
+        /// Handles the Click event of the _btnRestoreImpersonatedByUser
+        /// control: ends the current admin-impersonation session and
+        /// restores the admin's prior <see cref="PersonSession"/> via
+        /// <see cref="PersonSessionService.EndImpersonationAndRestore"/>.
         /// </summary>
+        /// <remarks>
+        /// Under the PersonSession model the restore reference lives on the
+        /// impersonation session itself (in
+        /// <see cref="PersonSessionAdminImpersonationSettings"/>), not in
+        /// <c>Session["ImpersonatedByUser"]</c>. <c>EndImpersonationAndRestore</c>
+        /// marks the impersonation session inactive, looks up the admin's
+        /// prior <see cref="PersonSession"/> and <see cref="InteractionSession"/>
+        /// from the additional settings, and re-points the browser-session
+        /// identifier at the admin's pre-impersonation row. The new auth
+        /// cookie is written here so the next request resolves to the
+        /// restored session; the MFA-bypass behavior the legacy flow
+        /// hand-rolled is now structural (recency timestamps are copied
+        /// from the impersonator's prior session at start; the restored
+        /// session carries the admin's original recency, so step-up gates
+        /// stay satisfied without a flag).
+        /// </remarks>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void _btnRestoreImpersonatedByUser_Click( object sender, EventArgs e )
         {
-            var impersonatedByUser = Session["ImpersonatedByUser"] as UserLogin;
-            if ( impersonatedByUser != null )
+            var currentSession = RequestContext?.PersonSession;
+            if ( currentSession == null
+                || currentSession.CreationSource != PersonSessionCreationSource.Impersonation )
             {
-                Authorization.SignOut();
-                UserLoginService.UpdateLastLogin(
-                    new UpdateLastLoginArgs
-                    {
-                        UserName = impersonatedByUser.UserName,
-                        ShouldSkipWritingHistoryLog = true
-                    }
-                );
-
-                /*
-                    10/23/2023 - JMH
-
-                    Bypass two-factor authentication when restoring the "impersonated by" user's session;
-                    otherwise, they would have to use two-factor authentication again.
-
-                    Reason: Two-Factor Authentication
-                 */
-                Rock.Security.Authorization.SetAuthCookie(
-                    impersonatedByUser.UserName,
-                    isPersisted: false,
-                    isImpersonated: false,
-                    isTwoFactorAuthenticated: true );
-                Response.Redirect( PageReference.BuildUrl( true ), false );
-                Context.ApplicationInstance.CompleteRequest();
+                // No impersonation session to restore from. Defensive: the
+                // restore button is only rendered when one exists. Fall
+                // through silently rather than crashing.
+                return;
             }
+
+            using var rockContext = new RockContext();
+            var service = new PersonSessionService( rockContext );
+
+            // Refetch the current impersonation session through this
+            // context so the IsActive flip and PreSave hook run against
+            // a tracked entity. EndImpersonationAndRestore handles the
+            // rest of the orchestration (cookie write on success, cookie
+            // expire on dangling, request-context update) so this caller
+            // does not have to duplicate any of it.
+            var trackedSession = service.Get( currentSession.Guid );
+            if ( trackedSession == null )
+            {
+                return;
+            }
+
+            service.EndImpersonationAndRestore( trackedSession, RequestContext );
+
+            Response.Redirect( PageReference.BuildUrl( true ), false );
+            Context.ApplicationInstance.CompleteRequest();
         }
 
         /// <summary>
