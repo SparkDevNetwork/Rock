@@ -1,0 +1,160 @@
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+namespace Rock.Plugin.HotFixes
+{
+    /// <summary>
+    /// Registers the Smarty Streets International Location Service component and adds
+    /// the ISO 3166-1 alpha-3 country attribute on the Countries DefinedType that the
+    /// component uses to map Smarty's alpha-3 responses back to Rock's alpha-2 values.
+    /// </summary>
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 294, "19.0" )]
+    public class AddSmartyStreetsInternational : Migration
+    {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            // Register the new VerificationComponent's EntityType so the row exists
+            // immediately after this migration runs. The class is also decorated with
+            // [Rock.SystemGuid.EntityTypeGuid] which would register it at startup, but
+            // doing it explicitly here keeps the migration intent obvious.
+            // GUID matches [Rock.SystemGuid.EntityTypeGuid] on
+            // Rock.Address.SmartyStreetsInternational. The existing US SmartyStreets
+            // component is registered the same way (inline GUID literal, no SystemGuid
+            // constant), so this follows the established pattern.
+            RockMigrationHelper.UpdateEntityType(
+                "Rock.Address.SmartyStreetsInternational",
+                "Smarty Streets International",
+                "Rock.Address.SmartyStreetsInternational, Rock, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                false,
+                true,
+                "2F47652E-9C13-4407-9094-A14FADE5C51F" );
+
+            // Add the "ISO 3166 Alpha-3" attribute to the Countries DefinedType so each
+            // country DefinedValue can carry its alpha-3 code alongside the existing
+            // alpha-2 stored in DefinedValue.Value.
+            RockMigrationHelper.AddDefinedTypeAttribute(
+                Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES,
+                Rock.SystemGuid.FieldType.TEXT,
+                "ISO 3166 Alpha-3",
+                Rock.SystemKey.CountryAttributeKey.ISO3166Alpha3,
+                "The ISO 3166-1 alpha-3 country code (e.g., \"CAN\" for Canada). Used to match responses from international address verification services.",
+                0,
+                true,
+                string.Empty,
+                false,
+                false,
+                Rock.SystemGuid.Attribute.COUNTRY_ISO3166_ALPHA3 );
+
+            // Seed alpha-3 values for every Country DefinedValue currently in Rock by
+            // joining a static (alpha2, alpha3) VALUES table against [DefinedValue] on
+            // [Value] (alpha-2). The WHERE NOT EXISTS guard makes the migration safe
+            // to re-run and respects any partner who has manually added an alpha-3
+            // value before this migration shipped.
+            //
+            // The 252 entries below cover every Country DefinedValue seeded into Rock
+            // by the original release-1.7.0 InternationalAddress migration. AN, CS,
+            // and XK are not strictly in ISO 3166-1 (Netherlands Antilles and Serbia
+            // and Montenegro are ISO 3166-3 transitional codes; Kosovo is a
+            // user-assigned code), but their commonly-used alpha-3 forms are seeded
+            // here so the SmartyStreets International component does not return a
+            // blank Country for those edge cases.
+            Sql( @"
+DECLARE @DefinedTypeId INT = ( SELECT [Id] FROM [DefinedType] WHERE [Guid] = 'D7979EA1-44E9-46E2-BF37-DDAF7F741378' )
+DECLARE @AttributeId  INT = ( SELECT [Id] FROM [Attribute]  WHERE [Guid] = '65776D88-0C89-4B9C-B705-683F028948E3' )
+
+;WITH [IsoMapping] ( [Alpha2], [Alpha3] ) AS (
+    SELECT [Alpha2], [Alpha3] FROM ( VALUES
+        ( 'AF', 'AFG' ), ( 'AX', 'ALA' ), ( 'AL', 'ALB' ), ( 'DZ', 'DZA' ), ( 'AS', 'ASM' ),
+        ( 'AD', 'AND' ), ( 'AO', 'AGO' ), ( 'AI', 'AIA' ), ( 'AQ', 'ATA' ), ( 'AG', 'ATG' ),
+        ( 'AR', 'ARG' ), ( 'AM', 'ARM' ), ( 'AW', 'ABW' ), ( 'AU', 'AUS' ), ( 'AT', 'AUT' ),
+        ( 'AZ', 'AZE' ), ( 'BS', 'BHS' ), ( 'BH', 'BHR' ), ( 'BD', 'BGD' ), ( 'BB', 'BRB' ),
+        ( 'BY', 'BLR' ), ( 'BE', 'BEL' ), ( 'BZ', 'BLZ' ), ( 'BJ', 'BEN' ), ( 'BM', 'BMU' ),
+        ( 'BT', 'BTN' ), ( 'BO', 'BOL' ), ( 'BQ', 'BES' ), ( 'BA', 'BIH' ), ( 'BW', 'BWA' ),
+        ( 'BV', 'BVT' ), ( 'BR', 'BRA' ), ( 'IO', 'IOT' ), ( 'VG', 'VGB' ), ( 'BN', 'BRN' ),
+        ( 'BG', 'BGR' ), ( 'BF', 'BFA' ), ( 'BI', 'BDI' ), ( 'KH', 'KHM' ), ( 'CM', 'CMR' ),
+        ( 'CA', 'CAN' ), ( 'CV', 'CPV' ), ( 'KY', 'CYM' ), ( 'CF', 'CAF' ), ( 'TD', 'TCD' ),
+        ( 'CL', 'CHL' ), ( 'CN', 'CHN' ), ( 'CX', 'CXR' ), ( 'CC', 'CCK' ), ( 'CO', 'COL' ),
+        ( 'KM', 'COM' ), ( 'CK', 'COK' ), ( 'CR', 'CRI' ), ( 'HR', 'HRV' ), ( 'CU', 'CUB' ),
+        ( 'CW', 'CUW' ), ( 'CY', 'CYP' ), ( 'CZ', 'CZE' ), ( 'CD', 'COD' ), ( 'DK', 'DNK' ),
+        ( 'DJ', 'DJI' ), ( 'DM', 'DMA' ), ( 'DO', 'DOM' ), ( 'TL', 'TLS' ), ( 'EC', 'ECU' ),
+        ( 'EG', 'EGY' ), ( 'SV', 'SLV' ), ( 'GQ', 'GNQ' ), ( 'ER', 'ERI' ), ( 'EE', 'EST' ),
+        ( 'ET', 'ETH' ), ( 'FK', 'FLK' ), ( 'FO', 'FRO' ), ( 'FJ', 'FJI' ), ( 'FI', 'FIN' ),
+        ( 'FR', 'FRA' ), ( 'GF', 'GUF' ), ( 'PF', 'PYF' ), ( 'TF', 'ATF' ), ( 'GA', 'GAB' ),
+        ( 'GM', 'GMB' ), ( 'GE', 'GEO' ), ( 'DE', 'DEU' ), ( 'GH', 'GHA' ), ( 'GI', 'GIB' ),
+        ( 'GR', 'GRC' ), ( 'GL', 'GRL' ), ( 'GD', 'GRD' ), ( 'GP', 'GLP' ), ( 'GU', 'GUM' ),
+        ( 'GT', 'GTM' ), ( 'GG', 'GGY' ), ( 'GN', 'GIN' ), ( 'GW', 'GNB' ), ( 'GY', 'GUY' ),
+        ( 'HT', 'HTI' ), ( 'HM', 'HMD' ), ( 'HN', 'HND' ), ( 'HK', 'HKG' ), ( 'HU', 'HUN' ),
+        ( 'IS', 'ISL' ), ( 'IN', 'IND' ), ( 'ID', 'IDN' ), ( 'IR', 'IRN' ), ( 'IQ', 'IRQ' ),
+        ( 'IE', 'IRL' ), ( 'IM', 'IMN' ), ( 'IL', 'ISR' ), ( 'IT', 'ITA' ), ( 'CI', 'CIV' ),
+        ( 'JM', 'JAM' ), ( 'JP', 'JPN' ), ( 'JE', 'JEY' ), ( 'JO', 'JOR' ), ( 'KZ', 'KAZ' ),
+        ( 'KE', 'KEN' ), ( 'KI', 'KIR' ), ( 'XK', 'XKX' ), ( 'KW', 'KWT' ), ( 'KG', 'KGZ' ),
+        ( 'LA', 'LAO' ), ( 'LV', 'LVA' ), ( 'LB', 'LBN' ), ( 'LS', 'LSO' ), ( 'LR', 'LBR' ),
+        ( 'LY', 'LBY' ), ( 'LI', 'LIE' ), ( 'LT', 'LTU' ), ( 'LU', 'LUX' ), ( 'MO', 'MAC' ),
+        ( 'MK', 'MKD' ), ( 'MG', 'MDG' ), ( 'MW', 'MWI' ), ( 'MY', 'MYS' ), ( 'MV', 'MDV' ),
+        ( 'ML', 'MLI' ), ( 'MT', 'MLT' ), ( 'MH', 'MHL' ), ( 'MQ', 'MTQ' ), ( 'MR', 'MRT' ),
+        ( 'MU', 'MUS' ), ( 'YT', 'MYT' ), ( 'MX', 'MEX' ), ( 'FM', 'FSM' ), ( 'MD', 'MDA' ),
+        ( 'MC', 'MCO' ), ( 'MN', 'MNG' ), ( 'ME', 'MNE' ), ( 'MS', 'MSR' ), ( 'MA', 'MAR' ),
+        ( 'MZ', 'MOZ' ), ( 'MM', 'MMR' ), ( 'NA', 'NAM' ), ( 'NR', 'NRU' ), ( 'NP', 'NPL' ),
+        ( 'NL', 'NLD' ), ( 'AN', 'ANT' ), ( 'NC', 'NCL' ), ( 'NZ', 'NZL' ), ( 'NI', 'NIC' ),
+        ( 'NE', 'NER' ), ( 'NG', 'NGA' ), ( 'NU', 'NIU' ), ( 'NF', 'NFK' ), ( 'KP', 'PRK' ),
+        ( 'MP', 'MNP' ), ( 'NO', 'NOR' ), ( 'OM', 'OMN' ), ( 'PK', 'PAK' ), ( 'PW', 'PLW' ),
+        ( 'PS', 'PSE' ), ( 'PA', 'PAN' ), ( 'PG', 'PNG' ), ( 'PY', 'PRY' ), ( 'PE', 'PER' ),
+        ( 'PH', 'PHL' ), ( 'PN', 'PCN' ), ( 'PL', 'POL' ), ( 'PT', 'PRT' ), ( 'PR', 'PRI' ),
+        ( 'QA', 'QAT' ), ( 'CG', 'COG' ), ( 'RE', 'REU' ), ( 'RO', 'ROU' ), ( 'RU', 'RUS' ),
+        ( 'RW', 'RWA' ), ( 'BL', 'BLM' ), ( 'SH', 'SHN' ), ( 'KN', 'KNA' ), ( 'LC', 'LCA' ),
+        ( 'MF', 'MAF' ), ( 'PM', 'SPM' ), ( 'VC', 'VCT' ), ( 'WS', 'WSM' ), ( 'SM', 'SMR' ),
+        ( 'ST', 'STP' ), ( 'SA', 'SAU' ), ( 'SN', 'SEN' ), ( 'RS', 'SRB' ), ( 'CS', 'SCG' ),
+        ( 'SC', 'SYC' ), ( 'SL', 'SLE' ), ( 'SG', 'SGP' ), ( 'SX', 'SXM' ), ( 'SK', 'SVK' ),
+        ( 'SI', 'SVN' ), ( 'SB', 'SLB' ), ( 'SO', 'SOM' ), ( 'ZA', 'ZAF' ), ( 'GS', 'SGS' ),
+        ( 'KR', 'KOR' ), ( 'SS', 'SSD' ), ( 'ES', 'ESP' ), ( 'LK', 'LKA' ), ( 'SD', 'SDN' ),
+        ( 'SR', 'SUR' ), ( 'SJ', 'SJM' ), ( 'SZ', 'SWZ' ), ( 'SE', 'SWE' ), ( 'CH', 'CHE' ),
+        ( 'SY', 'SYR' ), ( 'TW', 'TWN' ), ( 'TJ', 'TJK' ), ( 'TZ', 'TZA' ), ( 'TH', 'THA' ),
+        ( 'TG', 'TGO' ), ( 'TK', 'TKL' ), ( 'TO', 'TON' ), ( 'TT', 'TTO' ), ( 'TN', 'TUN' ),
+        ( 'TR', 'TUR' ), ( 'TM', 'TKM' ), ( 'TC', 'TCA' ), ( 'TV', 'TUV' ), ( 'VI', 'VIR' ),
+        ( 'UG', 'UGA' ), ( 'UA', 'UKR' ), ( 'AE', 'ARE' ), ( 'GB', 'GBR' ), ( 'US', 'USA' ),
+        ( 'UM', 'UMI' ), ( 'UY', 'URY' ), ( 'UZ', 'UZB' ), ( 'VU', 'VUT' ), ( 'VA', 'VAT' ),
+        ( 'VE', 'VEN' ), ( 'VN', 'VNM' ), ( 'WF', 'WLF' ), ( 'EH', 'ESH' ), ( 'YE', 'YEM' ),
+        ( 'ZM', 'ZMB' ), ( 'ZW', 'ZWE' )
+    ) AS [Mapping] ( [Alpha2], [Alpha3] )
+)
+INSERT INTO [AttributeValue] ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid] )
+SELECT 1, @AttributeId, [dv].[Id], [iso].[Alpha3], NEWID()
+FROM [IsoMapping] AS [iso]
+INNER JOIN [DefinedValue] AS [dv]
+    ON [dv].[Value] = [iso].[Alpha2]
+    AND [dv].[DefinedTypeId] = @DefinedTypeId
+WHERE NOT EXISTS (
+    SELECT 1 FROM [AttributeValue] AS [av]
+    WHERE [av].[AttributeId] = @AttributeId
+    AND [av].[EntityId] = [dv].[Id]
+);
+" );
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            // Down migrations are not yet supported in plug-in migrations.
+        }
+    }
+}

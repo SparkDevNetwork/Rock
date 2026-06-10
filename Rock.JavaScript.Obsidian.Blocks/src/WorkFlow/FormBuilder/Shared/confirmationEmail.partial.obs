@@ -52,7 +52,7 @@
         cleared — the runtime will resolve the recipient from Person Entry
         and additionally send to that person's spouse when present.
     */
-    const RECIPIENT_BOTH = ":both";
+    const recipientBoth = ":both";
 
     const props = defineProps({
         modelValue: {
@@ -152,7 +152,7 @@
         const items: ListItemBag[] = [...(props.recipientOptions ?? [])];
 
         if (props.isPersonEntryEnabled) {
-            items.push({ value: RECIPIENT_BOTH, text: "Both" });
+            items.push({ value: recipientBoth, text: "Both" });
         }
 
         return items;
@@ -178,13 +178,13 @@
     const recipientValue = computed<string>({
         get() {
             if (recipient.value === FormConfirmationEmailRecipientType.Both.toString()) {
-                return RECIPIENT_BOTH;
+                return recipientBoth;
             }
 
             return recipientAttributeGuidOrEmptyString.value;
         },
         set(value: string) {
-            if (value === RECIPIENT_BOTH) {
+            if (value === recipientBoth) {
                 recipient.value = FormConfirmationEmailRecipientType.Both.toString();
                 recipientAttributeGuidOrEmptyString.value = "";
             }

@@ -67,7 +67,9 @@ namespace RockWeb.Blocks.Fundraising
         {
             if ( !Page.IsPostBack )
             {
-                int? groupId = this.PageParameter( "GroupId" ).AsIntegerOrNull();
+                int? groupId = new GroupService( new RockContext() )
+                    .GetSelect( this.PageParameter( "GroupId" ), g => ( int? ) g.Id, !PageCache.Layout.Site.DisablePredictableIds );
+
                 int? groupMemberId = this.PageParameter( "GroupMemberId" ).AsIntegerOrNull();
 
                 if ( groupId.HasValue || groupMemberId.HasValue )

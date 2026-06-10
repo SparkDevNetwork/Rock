@@ -43,7 +43,7 @@ namespace Rock.Blocks.Event
 
     [LinkedPage(
         "Transaction Detail Page",
-        "The page for viewing details about a payment",
+        Description = "The page for viewing details about a payment",
         Key = AttributeKey.DetailPage,
         DefaultValue = Rock.SystemGuid.Page.TRANSACTION_DETAIL_TRANSACTIONS,
         IsRequired = false,
@@ -51,7 +51,7 @@ namespace Rock.Blocks.Event
 
     [LinkedPage(
         "Registration Page",
-        "The page for editing registration and registrant information",
+        Description = "The page for editing registration and registrant information",
         Key = AttributeKey.RegistrationPage,
         DefaultValue = Rock.SystemGuid.Page.REGISTRATION_DETAIL,
         IsRequired = false,

@@ -116,19 +116,32 @@ namespace Rock.Blocks.Mobile
         #region Constants
 
         /// <summary>
-        /// The default Phone/Tablet XAML used for a brand-new mobile
-        /// application's seeded Homepage layout.
+        /// The default Phone/Tablet XAML for a brand-new mobile application's
+        /// seeded Homepage layout: the Main zone in a vertical ScrollView with
+        /// the scrollbar hidden (no wrapper StackLayout - Zone already derives
+        /// from Grid). Kept as a self-contained ContentPage with its namespace
+        /// declarations so the layout is valid standalone XML for the server-side
+        /// zone parser (MobilePageDetail) as well as the mobile shell.
         /// </summary>
-        private const string DefaultLayoutXaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
-<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+        private const string DefaultLayoutXaml = @"<ContentPage xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
              xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-             xmlns:Rock=""clr-namespace:Rock.Mobile.Cms;assembly=Rock.Mobile""
-             xmlns:Common=""clr-namespace:Rock.Mobile.Common;assembly=Rock.Mobile.Common"">
-    <ScrollView>
-        <StackLayout>
-            <Rock:Zone ZoneName=""Main"" />
-        </StackLayout>
+             xmlns:Rock=""clr-namespace:Rock.Mobile.Cms;assembly=Rock.Mobile"">
+    <ScrollView VerticalScrollBarVisibility=""Never"">
+        <Rock:Zone ZoneName=""Main"" />
     </ScrollView>
+</ContentPage>";
+
+        /// <summary>
+        /// The seeded "Full" layout: the Main zone with no scroll wrapper, for
+        /// pages whose blocks manage their own scrolling (e.g. a CollectionView).
+        /// Kept as a self-contained ContentPage with its namespace declarations
+        /// so it is valid standalone XML for the server-side zone parser as well
+        /// as the mobile shell.
+        /// </summary>
+        private const string FullLayoutXaml = @"<ContentPage xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
+             xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+             xmlns:Rock=""clr-namespace:Rock.Mobile.Cms;assembly=Rock.Mobile"">
+    <Rock:Zone ZoneName=""Main"" />
 </ContentPage>";
 
         #endregion
@@ -1489,11 +1502,11 @@ namespace Rock.Blocks.Mobile
 
         /// <summary>
         /// Seeds a freshly-saved mobile application with the defaults the
-        /// Add flow expects: a Homepage layout (using the embedded default
-        /// XAML), a Homepage page, the site's DefaultPageId pointing at
-        /// that page, and a persisted API key. All work is wrapped in a
-        /// single transaction so a partial failure does not leave the
-        /// application in a half-seeded state.
+        /// Add flow expects: a default "Homepage" layout and a minimal "Full"
+        /// layout, a Homepage page that uses the "Homepage" layout, the site's
+        /// DefaultPageId pointing at that page, and a persisted API key. All
+        /// work is wrapped in a single transaction so a partial failure does
+        /// not leave the application in a half-seeded state.
         /// </summary>
         private void SeedNewMobileApplicationDefaults( Site entity, AdditionalSiteSettings settings, string apiKey )
         {
@@ -1510,6 +1523,9 @@ namespace Rock.Blocks.Mobile
                 var layoutService = new LayoutService( RockContext );
                 var pageName = $"{entity.Name} Homepage";
 
+                // Seed the default "Homepage" layout (a scrollable zone) and a
+                // minimal "Full" layout (the zone with no scroll wrapper). The
+                // homepage page uses the "Homepage" layout.
                 var layout = new Layout
                 {
                     Name = "Homepage",
@@ -1520,7 +1536,18 @@ namespace Rock.Blocks.Mobile
                     SiteId = entity.Id
                 };
 
+                var fullLayout = new Layout
+                {
+                    Name = "Full",
+                    FileName = "Full.xaml",
+                    Description = string.Empty,
+                    LayoutMobilePhone = FullLayoutXaml,
+                    LayoutMobileTablet = FullLayoutXaml,
+                    SiteId = entity.Id
+                };
+
                 layoutService.Add( layout );
+                layoutService.Add( fullLayout );
                 RockContext.SaveChanges();
 
                 var page = new Rock.Model.Page

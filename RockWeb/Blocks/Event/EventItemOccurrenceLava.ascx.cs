@@ -46,8 +46,11 @@ namespace RockWeb.Blocks.Event
         DefaultValue = @"{% include '~~/Assets/Lava/CalendarItem.lava' %}",
         Order = 2 )]
 
-    [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar item name.", false )]
-    [LinkedPage( "Registration Page", "Registration page for events" )]
+    [BooleanField( "Set Page Title",
+        Description = "Determines if the block should set the page title with the calendar item name.",
+        DefaultBooleanValue = false )]
+    [LinkedPage( "Registration Page",
+        Description = "Registration page for events" )]
 
     [Rock.SystemGuid.BlockTypeGuid( "18EFAE90-3AB1-40FE-9EC6-A5CF42F2A7D9" )]
     public partial class EventItemOccurrenceLava : Rock.Web.UI.RockBlock

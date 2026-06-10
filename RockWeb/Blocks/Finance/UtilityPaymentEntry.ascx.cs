@@ -3352,6 +3352,10 @@ $('#{btnHostedPaymentInfoNext.ClientID}, #{btnSavedAccountPaymentInfoNext.Client
             var paymentInfo = ( isSavedAccount ) ? GetReferenceInfo( rblSavedAccount.SelectedValueAsId().Value ) : new ReferencePaymentInfo();
 
             paymentInfo.Amount = caapPromptForAccountAmounts.AccountAmounts.Where( a => a.Amount.HasValue ).Sum( a => a.Amount.Value );
+            paymentInfo.AccountAllocations = caapPromptForAccountAmounts.AccountAmounts
+                .Where( a => a.Amount.HasValue )
+                .Select( a => new FinancialTransactionService.AccountAllocation( a.AccountId, a.Amount.Value ) )
+                .ToList();
             paymentInfo.Email = txtEmail.Text;
             paymentInfo.Phone = PhoneNumber.FormattedNumber( pnbPhone.CountryCode, pnbPhone.Number, true );
             paymentInfo.Street1 = acAddress.Street1;

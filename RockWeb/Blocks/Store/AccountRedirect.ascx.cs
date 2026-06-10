@@ -40,7 +40,9 @@ namespace RockWeb.Blocks.Store
     [DisplayName( "Account Redirect" )]
     [Category( "Store" )]
     [Description( "Redirects client to the organization's account page on the Rock website." )]
-    [LinkedPage( "Link Organization Page", "Page to allow the user to link an organization to the store.", false, "", "" )]
+    [LinkedPage( "Link Organization Page",
+        Description = "Page to allow the user to link an organization to the store.",
+        IsRequired = false )]
     [Rock.SystemGuid.BlockTypeGuid( "DBDB7C26-8271-4B1A-9791-71DEC99A7A2F" )]
     public partial class AccountRedirect : Rock.Web.UI.RockBlock
     {

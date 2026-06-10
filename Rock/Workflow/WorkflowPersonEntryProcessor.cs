@@ -152,7 +152,14 @@ namespace Rock.Workflow
         /// <param name="personBag">The bag that describes the changes to make to <paramref name="person"/>.</param>
         private void UpdatePersonFromEntryValues( WorkflowActionFormCache form, Person person, PersonBasicEditorBag personBag )
         {
-            person.FirstName = personBag.FirstName;
+            // If the entered first name matches the existing nick name (case-insensitive),
+            // the submitter is referring to the matched person by their nickname. Preserve
+            // the existing first name rather than overwriting it with the nickname.
+            if ( person.NickName.IsNullOrWhiteSpace() || !personBag.FirstName.Equals( person.NickName, StringComparison.OrdinalIgnoreCase ) )
+            {
+                person.FirstName = personBag.FirstName;
+            }
+
             person.LastName = personBag.LastName;
 
             if ( personBag.NickName.IsNotNullOrWhiteSpace() )

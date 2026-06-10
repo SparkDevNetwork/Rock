@@ -23,6 +23,7 @@ using System.Runtime.Serialization;
 
 using Rock.Configuration;
 using Rock.Data;
+using Rock.Enums.Cms;
 using Rock.Model;
 
 namespace Rock.Web.Cache
@@ -275,6 +276,14 @@ namespace Rock.Web.Cache
         public DateTime? ExpireDateTime { get; private set; }
 
         /// <summary>
+        /// Gets or sets the outcome of the last attempt to persist the <see cref="ResultData"/>.
+        /// </summary>
+        /// <value>
+        /// The status of the persisted dataset.
+        /// </value>
+        public PersistedDatasetStatus Status { get; private set; }
+
+        /// <summary>
         /// Lookup the Id for a PersistedDataSet from AccessKey
         /// </summary>
         private static readonly ConcurrentDictionary<string, int> AccessKeyIdLookup = new ConcurrentDictionary<string, int>();
@@ -355,6 +364,7 @@ namespace Rock.Web.Cache
             TimeToBuildMS = persistedDataset.TimeToBuildMS;
             EntityTypeId = persistedDataset.EntityTypeId;
             ExpireDateTime = persistedDataset.ExpireDateTime;
+            Status = persistedDataset.Status;
 
             // the ResultDataObject is cached in PersistedDatasetValueCache (with a cache expiration), so need to flush that when re-loading
             PersistedDatasetValueCache.FlushItem( this.Id );

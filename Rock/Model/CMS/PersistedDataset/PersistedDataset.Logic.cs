@@ -18,6 +18,7 @@ using System;
 using System.Data.Entity;
 using System.Runtime.Serialization;
 
+using Rock.Enums.Cms;
 using Rock.Lava;
 using Rock.Observability;
 using Rock.Web.Cache;
@@ -122,6 +123,9 @@ namespace Rock.Model
                     timeToBuildStopwatch.Stop();
                     this.TimeToBuildMS = timeToBuildStopwatch.Elapsed.TotalMilliseconds;
                     this.LastRefreshDateTime = RockDateTime.Now;
+                    this.Status = result.IsSuccess
+                        ? PersistedDatasetStatus.Ready
+                        : PersistedDatasetStatus.Failed;
                 }
 
                 activity?.AddTag( "rock.persisted_dataset.build_duration", ( int ) Math.Floor( timeToBuildStopwatch.Elapsed.TotalMilliseconds ) );

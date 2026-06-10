@@ -1,0 +1,59 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockForm @submit="onSubmit">
+        <div class="mb-3" v-html="instructions"></div>
+
+        <PhoneNumberBox v-model="phoneNumber"
+                        v-model:countryCode="countryCode"
+                        :disabled="isProcessing"
+                        inputGroupClasses="input-group-lg"
+                        rules="required" />
+
+        <RockButton :btnType="BtnType.Primary"
+                    :disabled="isProcessing"
+                    :isLoading="isProcessing"
+                    class="btn-lg btn-block mt-3"
+                    type="submit">Lookup</RockButton>
+    </RockForm>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+
+    const props = defineProps({
+        instructions: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        initialPhoneNumber: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        initialCountryCode: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        isProcessing: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "send", phoneNumber: string, countryCode: string): void
+    }>();
+
+    const phoneNumber = ref<string>(props.initialPhoneNumber);
+    const countryCode = ref<string>(props.initialCountryCode);
+
+    function onSubmit(): void {
+        emit("send", phoneNumber.value, countryCode.value);
+    }
+</script>

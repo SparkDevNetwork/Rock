@@ -30,6 +30,12 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationDetail
         public bool IsHidden { get; set; }
 
         /// <summary>
+        /// Gets or sets the URL that redirects a hidden legacy communication to the legacy communication page.
+        /// Temporary; remove when the legacy communication entry wizard block and page are removed.
+        /// </summary>
+        public string LegacyRedirectUrl { get; set; }
+
+        /// <summary>
         /// Gets or sets the detail of this communication.
         /// </summary>
         public CommunicationDetailBag CommunicationDetail { get; set; }

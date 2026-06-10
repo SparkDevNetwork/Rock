@@ -59,6 +59,10 @@ namespace Rock.Configuration
             {
                 return "SQL Server 2022";
             }
+            else if ( database.VersionNumber.StartsWith( "17.0" ) )
+            {
+                return "SQL Server 2025";
+            }
             else
             {
                 return "Unknown";

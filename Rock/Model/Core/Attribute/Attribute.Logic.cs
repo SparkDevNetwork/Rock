@@ -193,6 +193,12 @@ namespace Rock.Model
             {
                 Rock.Web.SystemSettings.Remove();
 
+                if ( this.Key == SystemKey.SystemSetting.ROCK_SECURITY_SETTINGS )
+                {
+                    // Invalidate the cached security settings for all Rock instances.
+                    Rock.Web.Cache.RockCache.Remove( Rock.Security.SecuritySettingsService.SecuritySettingsCacheKey );
+                }
+
                 if ( this.Key == SystemKey.SystemSetting.COUNTRIES_RESTRICTED_FROM_ACCESSING )
                 {
                     // Reinitialize the restricted countries immediately for this instance of Rock.

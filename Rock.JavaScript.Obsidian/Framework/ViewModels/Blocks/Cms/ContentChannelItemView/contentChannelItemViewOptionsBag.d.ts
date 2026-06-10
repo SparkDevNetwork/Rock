@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-/** The configuration values supplied to the Rock.Blocks.Cms.ContentChannelItemView Obsidian client. */
+/** The configuration values supplied to the Content Channel Item View Obsidian client. */
 export type ContentChannelItemViewOptionsBag = {
     /**
      * Gets or sets an opaque, encrypted token the client passes back when registering a "View"

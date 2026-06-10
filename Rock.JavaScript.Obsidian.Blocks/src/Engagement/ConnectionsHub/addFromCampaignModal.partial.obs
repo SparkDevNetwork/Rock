@@ -20,7 +20,7 @@
                              @dismiss="emit('dismissErrorMessage')">
                 {{ errorMessage }}
             </NotificationBox>
-            <template v-else>
+            <template v-else-if="!areNoCampaigns">
                 <div class="row">
                     <div class="col-md-4">
                         <template v-if="!isNullOrWhiteSpace(selectedOpportunityName)">
@@ -121,7 +121,7 @@
 
         campaignRecordBags: {
             type: Object as PropType<Record<string, ConnectionCampaignBag[]> | undefined>,
-            default: {}
+            default: () => ({})
         },
 
         errorMessage: {
@@ -234,7 +234,7 @@
         }
 
         // Set number of requests to the default number whenever the selected campaign changes.
-        numberOfRequests.value = props.campaignRecordBags[opportunity.value].find(c => c.guid === campaign.value)?.defaultNumberOfRequests;
+        numberOfRequests.value = props.campaignRecordBags[opportunity.value]?.find(c => c.guid === campaign.value)?.defaultNumberOfRequests;
     });
 
     watch(isVisible, () => {

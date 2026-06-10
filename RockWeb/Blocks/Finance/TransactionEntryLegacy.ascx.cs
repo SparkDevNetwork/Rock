@@ -2906,6 +2906,9 @@ namespace RockWeb.Blocks.Finance
             }
 
             paymentInfo.Amount = SelectedAccounts.Sum( a => a.Amount );
+            paymentInfo.AccountAllocations = SelectedAccounts
+                .Select( a => new FinancialTransactionService.AccountAllocation( a.Id, a.Amount ) )
+                .ToList();
             paymentInfo.Email = txtEmail.Text;
             paymentInfo.Phone = PhoneNumber.FormattedNumber( pnbPhone.CountryCode, pnbPhone.Number, true );
             paymentInfo.Street1 = acAddress.Street1;

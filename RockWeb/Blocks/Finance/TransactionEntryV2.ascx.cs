@@ -77,15 +77,6 @@ namespace RockWeb.Blocks.Finance
         Category = AttributeCategory.None,
         Order = 3 )]
 
-    [DefinedValueField(
-        "Source",
-        Key = AttributeKey.FinancialSourceType,
-        Description = "The Financial Source Type to use when creating transactions.",
-        DefinedTypeGuid = Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE,
-        DefaultValue = Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE,
-        Category = AttributeCategory.None,
-        Order = 4 )]
-
     [AccountsField(
         "Accounts",
         Key = AttributeKey.AccountsToDisplay,
@@ -3103,6 +3094,9 @@ mission. We are so grateful for your commitment.</p>
             SetPaymentComment( paymentInfo, commentTransactionAccountDetails, tbCommentEntry.Text );
 
             paymentInfo.Amount = commentTransactionAccountDetails.Sum( a => a.Amount );
+            paymentInfo.AccountAllocations = commentTransactionAccountDetails
+                .Select( a => new FinancialTransactionService.AccountAllocation( a.AccountId, a.Amount ) )
+                .ToList();
             var totalFeeCoverageAmounts = commentTransactionAccountDetails.Where( a => a.FeeCoverageAmount.HasValue ).Select( a => a.FeeCoverageAmount.Value );
             if ( totalFeeCoverageAmounts.Any() )
             {

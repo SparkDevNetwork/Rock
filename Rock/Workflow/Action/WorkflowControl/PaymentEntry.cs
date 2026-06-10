@@ -698,6 +698,10 @@ namespace Rock.Workflow.Action
 
             // Update payment info with details about this payment.
             paymentInfo.Amount = paymentData.Amount;
+            paymentInfo.AccountAllocations = new List<FinancialTransactionService.AccountAllocation>
+            {
+                new FinancialTransactionService.AccountAllocation( paymentData.Account.Id, paymentData.Amount )
+            };
             paymentInfo.Email = configuration.AuthorizedPersonAlias.Person.Email;
             paymentInfo.FirstName = configuration.AuthorizedPersonAlias.Person.NickName;
             paymentInfo.LastName = configuration.AuthorizedPersonAlias.Person.LastName;
@@ -736,6 +740,10 @@ namespace Rock.Workflow.Action
                 // Download the existing payment from the gateway.
                 transaction = configuration.ObsidianComponent.FetchPaymentTokenTransaction( rockContext, configuration.FinancialGateway, null, paymentData.Token );
                 paymentInfo.Amount = transaction.TotalAmount;
+                paymentInfo.AccountAllocations = new List<FinancialTransactionService.AccountAllocation>
+                {
+                    new FinancialTransactionService.AccountAllocation( paymentData.Account.Id, transaction.TotalAmount )
+                };
             }
             else
             {

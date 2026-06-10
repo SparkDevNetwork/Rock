@@ -22,7 +22,7 @@
                         <div class="col-md-6">
                             <DateTimePicker :modelValue="transactionDateTime"
                                             @update:modelValue="onTransactionDateTimeChanged"
-                                            label="Transaction Date"
+                                            label="Transaction Date/Time"
                                             :displayCurrentOption="false"
                                             :isCurrentDateOffset="false"
                                             :disableForceParse="false"
@@ -45,17 +45,20 @@
                     </div>
                     <div class="row">
                         <div class="col-md-12">
-                            <div class="d-flex gap-3 flex-wrap w-100">
-                                <div v-for="(image, index) in imageListItems" :key="index" style="width: fit-content;">
+                            <div class="form-group">
+                                <RockLabel help="Upload images related to this transaction, such as a check image or deposit receipt.">Transaction Images</RockLabel>
+                                <div class="control-wrapper d-flex gap-3 flex-wrap w-100 mt-2">
+                                    <div v-for="(image, index) in imageListItems" :key="index" style="width: fit-content;">
+                                        <ImageUploader
+                                                       :modelValue="image"
+                                                       @imageRemoved="onImageRemove(image)" />
+                                    </div>
                                     <ImageUploader
-                                                   :modelValue="image"
-                                                   @imageRemoved="onImageRemove(image)" />
+                                                   :key="currentImageKey"
+                                                   v-model="currentImage"
+                                                   :uploadAsTemporary="true"
+                                                   uploadButtonText="Add Image" />
                                 </div>
-                                <ImageUploader
-                                               :key="currentImageKey"
-                                               v-model="currentImage"
-                                               :uploadAsTemporary="true"
-                                               uploadButtonText="Add Image" />
                             </div>
                         </div>
                     </div>
@@ -83,7 +86,7 @@
                             <template #format="{ row }">
                                 <strong v-if="row.isTotalRow">Total</strong>
                                 <template v-else>
-                                    {{ row.account.text }}
+                                    {{ row.account?.text }}
                                 </template>
                             </template>
                         </Column>
@@ -107,6 +110,8 @@
                                 </template>
                             </template>
                         </Column>
+
+                        <AttributeColumns :attributes="transactionDetailsAttributeFields" :filter="undefined" />
 
                         <Column name="edit" title="" width="52px" headerClass="grid-columncommand" itemClass="grid-columncommand">
                             <template #format="{ row }">
@@ -220,7 +225,7 @@
                                                         label="Credit Card Type"
                                                         :definedTypeGuid="options.creditCardTypesGuid ?? ''"
                                                         :showBlankItem="false"
-                                                        help="Choose why this transaction was refunded." />
+                                                        help="Choose the brand of card used for this payment." />
                                     <DefinedValuePicker
                                                         v-if="showNonCash"
                                                         v-model="nonCashAssetType"
@@ -246,6 +251,7 @@
                     <div class="row" v-if="!isAddingTransaction">
                         <div class="col-md-6">
                             <FinancialGatewayPicker label="Payment Gateway"
+                                                    help="Select the financial gateway used to submit this transaction."
                                                     v-model="financialGateway"
                                                     :showBlankItem="true"
                                                     :showAllGatewayComponents="true"
@@ -319,10 +325,11 @@ strong {
     import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
-    import Grid, { TextColumn, Column } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, TextColumn, Column } from "@Obsidian/Controls/grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { TransactionLineItemBag } from "@Obsidian/ViewModels/Blocks/Finance/TransactionDetail/transactionLineItemBag";
     import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
@@ -390,6 +397,8 @@ strong {
         ?.map(td => ({
             ...td
         })) ?? []);
+
+    const transactionDetailsAttributeFields = ref(props.modelValue.bag?.transactionDetails?.attributeFields ?? []);
 
     const transactionDetailsToDelete = propertyRef(props.modelValue.bag?.transactionDetails?.rowsToDelete ?? [] as string[], "TransactionDetailsToDelete");
 
@@ -468,10 +477,13 @@ strong {
 
     /** Grid rows for the allocations table, including a computed totals row appended at the bottom. */
     const transactionDetailsGridData = computed<GridDataBag>(() => {
-        const rows = [...transactionDetails.value];
+        const rows = transactionDetails.value.map(row => ({
+            ...row,
+            ...row.attributeDisplayValues
+        }));
 
-        const feeTotal = rows.reduce((sum, row) => sum + (row.feeAmount ?? 0), 0);
-        const amountTotal = rows.reduce((sum, row) => sum + (row.amount ?? 0), 0);
+        const feeTotal = rows.reduce((sum, row) => sum + ((row.feeAmount as number) ?? 0), 0);
+        const amountTotal = rows.reduce((sum, row) => sum + ((row.amount as number) ?? 0), 0);
 
         return {
             rows: [
@@ -629,19 +641,45 @@ strong {
 
     /**
      * Called when the transaction detail modal emits a save event.
-     * Updates the matching line item in transactionDetails.
+     * Updates the matching line item in transactionDetails, then refreshes its
+     * attributeDisplayValues from the server so the grid shows current rendered values.
      */
-    function onTransactionDetailSave(updatedDetail: TransactionLineItemBag): void {
-        const index = transactionDetails.value.findIndex(td => td.guid === updatedDetail.guid);
+    async function onTransactionDetailSave(updatedDetail: TransactionLineItemBag): Promise<void> {
+        const row = { ...updatedDetail };
+
+        const index = transactionDetails.value.findIndex(td => td.guid === row.guid);
 
         if (index >= 0) {
-            transactionDetails.value.splice(index, 1, updatedDetail);
+            transactionDetails.value.splice(index, 1, row);
         }
         else {
-            transactionDetails.value.push({ ...updatedDetail });
+            transactionDetails.value.push(row);
         }
 
         isEditTransactionDetailVisible.value = false;
+
+        if (transactionDetailsAttributeFields.value.length > 0) {
+            try {
+                const result = await invokeBlockAction<Record<string, { html?: string; text?: string }>>(
+                    "GetLineItemAttributeDisplay",
+                    { attributeValues: row.attributeValues ?? {} }
+                );
+
+                if (result.isSuccess && result.data) {
+                    const currentIndex = transactionDetails.value.findIndex(td => td.guid === row.guid);
+
+                    if (currentIndex >= 0) {
+                        transactionDetails.value.splice(currentIndex, 1, {
+                            ...transactionDetails.value[currentIndex],
+                            attributeDisplayValues: result.data
+                        });
+                    }
+                }
+            }
+            catch (error) {
+                console.error("Error refreshing attribute display values:", error);
+            }
+        }
     }
 
     /**
@@ -660,7 +698,6 @@ strong {
             const transactionDetailAttributes = await invokeBlockAction<TransactionDetailsBag>("GetTransactionDetailAttributes", {
                 guid: ""
             });
-
             editTransactionDetail.value = {
                 guid: newGuid(),
                 attributes: transactionDetailAttributes.data?.attributes ?? {},
@@ -736,6 +773,7 @@ strong {
             })) ?? [];
 
         updateRefValue(transactionDetails, newTransactionDetails);
+        updateRefValue(transactionDetailsAttributeFields, props.modelValue.bag?.transactionDetails?.attributeFields ?? []);
 
         updateRefValue(personOrBusiness, updatedPerson);
     });
@@ -753,7 +791,7 @@ strong {
         setPropertiesBoxValue(newValue, "summary", summary.value ?? "");
         setPropertiesBoxValue(newValue, "transactionCode", transactionCode.value ?? "");
         setPropertiesBoxValue(newValue, "images", images.value ?? []);
-        setPropertiesBoxValue(newValue, "transactionDetails", { rows: transactionDetails.value, rowsToDelete: transactionDetailsToDelete.value });
+        setPropertiesBoxValue(newValue, "transactionDetails", { rows: transactionDetails.value, rowsToDelete: transactionDetailsToDelete.value, attributeFields: transactionDetailsAttributeFields.value } as TransactionDetailsBag);
 
         setPropertiesBoxValue(newValue, "transactionType", transactionType.value ?? null);
 

@@ -332,8 +332,12 @@ namespace Rock.Blocks.Engagement
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
+            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+
+            // Match the WebForms behavior: editing is allowed by block-level Administrate rights or
+            // Administrate rights on the connection type itself.
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson )
+                || entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
 
             if ( entity.Id != 0 )
             {
@@ -634,7 +638,10 @@ namespace Rock.Blocks.Engagement
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            // Match the WebForms behavior: editing is allowed by block-level Administrate rights or
+            // Administrate rights on the connection type itself.
+            if ( !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson )
+                && !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit {ConnectionType.FriendlyTypeName}." );
                 return false;
@@ -1776,6 +1783,14 @@ namespace Rock.Blocks.Engagement
             if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
                 return actionError;
+            }
+
+            // Match the WebForms behavior: deleting a connection type ( and cascading to its
+            // opportunities and request activities ) requires Administrate rights on the connection
+            // type itself, not merely block-level Administrate.
+            if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete {ConnectionType.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

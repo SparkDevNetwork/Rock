@@ -34,8 +34,17 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Removes or excludes check-in groups that require the person to be in a data view." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By Data View" )]
-    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "DataView Group Attribute", "Select the attribute used to filter by DataView.", true, false, defaultValue: "E8F8498F-5C51-4216-AC81-875349D6C2D0", order: 0 )]
-    [BooleanField( "Remove", "Select 'Yes' if groups should be removed.  Select 'No' if they should just be marked as excluded.", true, order: 1 )]
+    [AttributeField( "DataView Group Attribute",
+        Description = "Select the attribute used to filter by DataView.",
+        IsRequired = true,
+        AllowMultiple = false,
+        EntityTypeGuid = Rock.SystemGuid.EntityType.GROUP,
+        DefaultValue = "E8F8498F-5C51-4216-AC81-875349D6C2D0",
+        Order = 0 )]
+    [BooleanField( "Remove",
+        Description = "Select 'Yes' if groups should be removed.  Select 'No' if they should just be marked as excluded.",
+        DefaultBooleanValue = true,
+        Order = 1 )]
     [Rock.SystemGuid.EntityTypeGuid( "E6490F9B-21C6-4D0F-AD15-9729AC22C094")]
     public class FilterGroupsByDataView : CheckInActionComponent
     {

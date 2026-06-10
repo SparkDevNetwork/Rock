@@ -29,9 +29,18 @@ namespace Rock.Jobs
     [DisplayName( "Location Services Verify" )]
     [Description( "Attempts to standardize and geocode addresses that have not been verified yet. It also attempts to re-verify address that failed in the past after a given wait period." )]
 
-    [IntegerField( "Max Records Per Run", "The maximum number of records to run per run.", true, 1000 )]
-    [IntegerField( "Throttle Period", "The number of milliseconds to wait between records. This helps to throttle requests to the lookup services.", true, 500 )]
-    [IntegerField( "Retry Period", "The number of days to wait before retrying a unsuccessful address lookup.", true, 200 )]
+    [IntegerField( "Max Records Per Run",
+        Description = "The maximum number of records to run per run.",
+        IsRequired = true,
+        DefaultIntegerValue = 1000 )]
+    [IntegerField( "Throttle Period",
+        Description = "The number of milliseconds to wait between records. This helps to throttle requests to the lookup services.",
+        IsRequired = true,
+        DefaultIntegerValue = 500 )]
+    [IntegerField( "Retry Period",
+        Description = "The number of days to wait before retrying a unsuccessful address lookup.",
+        IsRequired = true,
+        DefaultIntegerValue = 200 )]
     public class LocationServicesVerify : RockJob
     {
         

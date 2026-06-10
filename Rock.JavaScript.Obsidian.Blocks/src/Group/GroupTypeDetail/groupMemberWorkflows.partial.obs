@@ -16,7 +16,7 @@
         </Grid>
     </ContentStack>
 
-    <Modal v-model="isModalVisible" :title="`${isEditing ? 'Edit' : 'Add'} Group Member Workflow`" saveText="Save"
+    <Modal v-model="isModalVisible" title="Configure Group Member Workflow" saveText="Save"
            cancelText="Cancel" :onSave="onSave">
         <NotificationBox v-if="errorMessage" :alertType="AlertType.Danger">
             {{ errorMessage }}
@@ -33,30 +33,30 @@
 
         <WorkflowTypePicker label="Start Workflow" v-model="theWorkflowTrigger.workflowType" rules="required" help="Specifies the workflow type to start when the requirement or event is triggered." />
 
-        <DropDownList label="When" v-model="workflowTriggerTypeValue"
+        <DropDownList label="Trigger Event" v-model="workflowTriggerTypeValue"
                       :items="enumToListItemBag(GroupMemberWorkflowTriggerTypeDescription)" />
 
         <ConditionalWell>
             <div v-if="theWorkflowTrigger.triggerType === GroupMemberWorkflowTriggerType.MemberAddedToGroup
                 || theWorkflowTrigger.triggerType === GroupMemberWorkflowTriggerType.MemberRemovedFromGroup">
-                <DropDownList label="With Status Of" v-model="toStatusValue"
+                <DropDownList label="Status" v-model="toStatusValue"
                               :items="enumToListItemBag(GroupMemberStatusDescription)" />
 
-                <DropDownList label="With Role" v-model="toRoleGuidValue" :items="props.groupRoleOptions" />
+                <DropDownList label="Role" v-model="toRoleGuidValue" :items="props.groupRoleOptions" />
             </div>
 
             <div v-if="theWorkflowTrigger.triggerType === GroupMemberWorkflowTriggerType.MemberStatusChanged">
-                <DropDownList label="From Status Of" v-model="fromStatusValue"
+                <DropDownList label="From" v-model="fromStatusValue"
                               :items="enumToListItemBag(GroupMemberStatusDescription)" />
 
-                <DropDownList label="To Status Of" v-model="toStatusValue"
+                <DropDownList label="To" v-model="toStatusValue"
                               :items="enumToListItemBag(GroupMemberStatusDescription)" />
             </div>
 
             <div v-if="theWorkflowTrigger.triggerType === GroupMemberWorkflowTriggerType.MemberRoleChanged">
-                <DropDownList label="From Role" v-model="fromRoleGuidValue" :items="props.groupRoleOptions" />
+                <DropDownList label="From" v-model="fromRoleGuidValue" :items="props.groupRoleOptions" />
 
-                <DropDownList label="To Role" v-model="toRoleGuidValue" :items="props.groupRoleOptions" />
+                <DropDownList label="To" v-model="toRoleGuidValue" :items="props.groupRoleOptions" />
             </div>
 
             <div v-if="theWorkflowTrigger.triggerType === GroupMemberWorkflowTriggerType.MemberAttendedGroup">
@@ -98,6 +98,7 @@
     import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
     import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
     import { GroupMemberStatus, GroupMemberStatusDescription } from "@Obsidian/Enums/Group/groupMemberStatus";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -132,7 +133,6 @@
     const theWorkflowTrigger = ref<GroupTypeGroupMemberWorkflowTriggerBag>(createNewWorkflowTrigger());
 
     const isModalVisible = ref(false);
-    const isEditing = ref(false);
     const errorMessage = ref<string | null>(null);
 
     // #endregion Values
@@ -241,11 +241,12 @@
         if (trigger.toRoleGuid) {
             const role = props.groupRoleOptions.find(r => r.value?.toUpperCase() === trigger.toRoleGuid?.toUpperCase());
             if (role) {
+                const roleText = escapeHtml(role.text ?? "");
                 if (trigger.triggerType === GroupMemberWorkflowTriggerType.MemberRoleChanged) {
-                    qualifiers.push(` to role of <strong>${role.text}</strong>`);
+                    qualifiers.push(` to role of <strong>${roleText}</strong>`);
                 }
                 else {
-                    qualifiers.push(` with role of <strong>${role.text}</strong>`);
+                    qualifiers.push(` with role of <strong>${roleText}</strong>`);
                 }
             }
         }
@@ -254,7 +255,7 @@
         if (trigger.fromRoleGuid) {
             const role = props.groupRoleOptions.find(r => r.value?.toUpperCase() === trigger.fromRoleGuid?.toUpperCase());
             if (role) {
-                qualifiers.push(` from role of <strong>${role.text}</strong>`);
+                qualifiers.push(` from role of <strong>${escapeHtml(role.text ?? "")}</strong>`);
             }
         }
 
@@ -270,6 +271,40 @@
         return typeText;
     }
 
+    /*
+     * Builds a comparison key from a trigger's workflow type + the
+     * qualifier fields that actually influence the fire condition for
+     * its triggerType. Irrelevant fields (e.g. a stale toRoleGuid on a
+     * MemberStatusChanged trigger) are excluded so they don't create
+     * phantom "differences" between functionally identical triggers.
+     * showNoteOnPlacement / requireNoteOnPlacement are output-UX
+     * settings, not fire-condition qualifiers, so they're omitted too.
+     */
+    function getDuplicateKey(t: GroupTypeGroupMemberWorkflowTriggerBag): string {
+        const parts: (string | number | boolean | null | undefined)[] = [
+            (t.workflowType?.value ?? "").toLowerCase(),
+            t.triggerType
+        ];
+
+        switch (t.triggerType) {
+            case GroupMemberWorkflowTriggerType.MemberAddedToGroup:
+            case GroupMemberWorkflowTriggerType.MemberRemovedFromGroup:
+                parts.push(t.toStatus ?? "", (t.toRoleGuid ?? "").toLowerCase());
+                break;
+            case GroupMemberWorkflowTriggerType.MemberStatusChanged:
+                parts.push(t.fromStatus ?? "", t.toStatus ?? "");
+                break;
+            case GroupMemberWorkflowTriggerType.MemberRoleChanged:
+                parts.push((t.fromRoleGuid ?? "").toLowerCase(), (t.toRoleGuid ?? "").toLowerCase());
+                break;
+            case GroupMemberWorkflowTriggerType.MemberAttendedGroup:
+                parts.push(t.triggerOnFirstAttendance);
+                break;
+        }
+
+        return parts.join("|");
+    }
+
     /**
      * Creates a new workflow trigger record for the grid and edit modal.
      */
@@ -277,7 +312,6 @@
         return {
             guid: newGuid(),
             isActive: true,
-            order: 0,
             requireNoteOnPlacement: false,
             showNoteOnPlacement: false,
             triggerOnFirstAttendance: false,
@@ -293,7 +327,6 @@
      * Called when the Add Workflow Trigger button is clicked.
      */
     function onAdd(): void {
-        isEditing.value = false;
         errorMessage.value = null;
 
         theWorkflowTrigger.value = createNewWorkflowTrigger();
@@ -312,7 +345,6 @@
             return;
         }
 
-        isEditing.value = true;
         theWorkflowTrigger.value = { ...selected };
 
         errorMessage.value = null;
@@ -357,6 +389,20 @@
         }
 
         const current = props.groupMemberWorkflowTriggers ?? [];
+
+        const newKey = getDuplicateKey(theWorkflowTrigger.value);
+        const duplicate = current.find(t =>
+            t.guid !== theWorkflowTrigger.value?.guid
+            && getDuplicateKey(t) === newKey);
+
+        if (duplicate) {
+            const dupName = duplicate.name?.trim();
+            errorMessage.value = dupName
+                ? `A workflow trigger with the same trigger event, workflow, and qualifiers already exists ("${dupName}"). Please change one of those values.`
+                : "A workflow trigger with the same trigger event, workflow, and qualifiers already exists. Please change one of those values.";
+            return;
+        }
+
         const index = current.findIndex(t => t.guid === theWorkflowTrigger.value?.guid);
 
         let updatedTriggers: GroupTypeGroupMemberWorkflowTriggerBag[];
@@ -370,6 +416,7 @@
         }
 
         emit("update:groupMemberWorkflowTriggers", updatedTriggers);
+        errorMessage.value = null;
         isModalVisible.value = false;
     }
 

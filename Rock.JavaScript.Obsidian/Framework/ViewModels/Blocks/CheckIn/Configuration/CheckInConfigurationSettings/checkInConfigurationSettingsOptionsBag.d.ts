@@ -37,9 +37,6 @@ export type CheckInConfigurationSettingsOptionsBag = {
      */
     familyAttributes?: ListItemBag[] | null;
 
-    /** Gets or sets whether the block should be hidden. */
-    isHidden: boolean;
-
     /**
      * Gets or sets the available person attributes that can be selected for the
      * required/optional adult and child attribute pickers during registration.

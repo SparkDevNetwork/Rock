@@ -35,10 +35,26 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "SMS Communication Process Response" )]
 
-    [WorkflowTextOrAttribute( "From Number", "Or Attribute", "The number to report that the message was received from. <span class='tip tip-lava'></span>", true, order: 0, key: "FromNumber" )]
-    [WorkflowTextOrAttribute( "To Number", "Or Attribute", "The number to report that the message was sent to. <span class='tip tip-lava'></span>", true, order: 1, key: "ToNumber" )]
-    [TextField( "Message", "The message content to process. <span class='tip tip-lava'></span>", true, order: 2 )]
-    [WorkflowAttribute( "Error Attribute", "Filled in by the SMS system if an error occurred processing the message. This error should generally be sent back to the original sender. Empty string is set if no error occurred.", false, order: 3 )]
+    [WorkflowTextOrAttribute( "From Number",
+        "Or Attribute",
+        Description = "The number to report that the message was received from. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 0,
+        Key = "FromNumber" )]
+    [WorkflowTextOrAttribute( "To Number",
+        "Or Attribute",
+        Description = "The number to report that the message was sent to. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 1,
+        Key = "ToNumber" )]
+    [TextField( "Message",
+        Description = "The message content to process. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 2 )]
+    [WorkflowAttribute( "Error Attribute",
+        Description = "Filled in by the SMS system if an error occurred processing the message. This error should generally be sent back to the original sender. Empty string is set if no error occurred.",
+        IsRequired = false,
+        Order = 3 )]
     [Rock.SystemGuid.EntityTypeGuid( "7E29CC59-50BA-4AFA-B619-0BA2A3637C46")]
     public class SmsCommunicationProcessResponse : ActionComponent
     {

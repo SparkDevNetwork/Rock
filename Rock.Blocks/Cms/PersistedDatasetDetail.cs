@@ -24,6 +24,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Cms;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
@@ -601,6 +602,7 @@ namespace Rock.Blocks.Cms
                 // treated as a reason to refetch.
                 entity.LastRefreshDateTime = null;
                 entity.TimeToBuildMS = null;
+                entity.Status = PersistedDatasetStatus.Unknown;
 
                 var isNew = entity.Id == 0;
 

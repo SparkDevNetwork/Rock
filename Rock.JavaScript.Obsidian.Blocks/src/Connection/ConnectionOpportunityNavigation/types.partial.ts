@@ -23,7 +23,10 @@ export const enum NavigationUrlKey {
     // Connection Opportunity-level URLs.
     OpportunityConnectionsHubListViewPage = "OpportunityConnectionsHubListViewPage",
     OpportunityConnectionsHubBoardViewPage = "OpportunityConnectionsHubBoardViewPage",
-    OpportunityConnectionsHubGridViewPage = "OpportunityConnectionsHubGridViewPage"
+    OpportunityConnectionsHubGridViewPage = "OpportunityConnectionsHubGridViewPage",
+
+    // My Connections-level URLs.
+    MyConnectionsPage = "MyConnectionsPage"
 }
 
 export const enum PreferenceKey {

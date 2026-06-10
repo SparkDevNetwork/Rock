@@ -38,14 +38,39 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Prompts for name and email, creates a person record if none exists, and adds the person to a group." )]
 
-    [GroupField( "Group", "The group to add people to", true )]
-    [TextField( "Save Button Text", "The text to use for the Save button", false, "Save" )]
-    [TextField( "Success Message", "The message to display when user is successfully added to the group", false, "Please check your email to verify your registration" )]
-    [SystemCommunicationField( "Confirmation Email", "The email to send the person to confirm their registration.  If not specified, the user will not need to confirm their registration", false )]
-    [LinkedPage( "Confirmation Page", "The page that user should be directed to to confirm their registration" )]
-    [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2" )]
-    [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49" )]
-    [BooleanField( "Load Current Person from Page", "If set to true the form will autopopulate fields from the person profile", false, key: "LoadPerson" )]
+    [GroupField( "Group",
+        Description = "The group to add people to",
+        IsRequired = true )]
+    [TextField( "Save Button Text",
+        Description = "The text to use for the Save button",
+        IsRequired = false,
+        DefaultValue = "Save" )]
+    [TextField( "Success Message",
+        Description = "The message to display when user is successfully added to the group",
+        IsRequired = false,
+        DefaultValue = "Please check your email to verify your registration" )]
+    [SystemCommunicationField( "Confirmation Email",
+        Description = "The email to send the person to confirm their registration.  If not specified, the user will not need to confirm their registration",
+        IsRequired = false )]
+    [LinkedPage( "Confirmation Page",
+        Description = "The page that user should be directed to to confirm their registration",
+        IsRequired = true )]
+    [DefinedValueField( "Connection Status",
+        Description = "The connection status to use for new individuals (default: 'Prospect'.)",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefinedTypeGuid = "2E6540EA-63F0-40FE-BE50-F2A84735E600",
+        DefaultValue = "368DD475-242C-49C4-A42C-7278BE690CC2" )]
+    [DefinedValueField( "Record Status",
+        Description = "The record status to use for new individuals (default: 'Pending'.)",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefinedTypeGuid = "8522BADD-2871-45A5-81DD-C76DA07E2E7E",
+        DefaultValue = "283999EC-7346-42E3-B807-BCE9B2BABB49" )]
+    [BooleanField( "Load Current Person from Page",
+        Description = "If set to true the form will autopopulate fields from the person profile",
+        DefaultBooleanValue = false,
+        Key = "LoadPerson" )]
     [BooleanField(
         "Disable Captcha Support",
         Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",

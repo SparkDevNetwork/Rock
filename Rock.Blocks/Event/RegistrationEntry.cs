@@ -4972,6 +4972,10 @@ namespace Rock.Blocks.Event
 
             // Update payment into with details about this payment.
             paymentInfo.Amount = args.AmountToPayNow;
+            paymentInfo.AccountAllocations = new List<FinancialTransactionService.AccountAllocation>
+            {
+                new FinancialTransactionService.AccountAllocation( financialAccount.Id, args.AmountToPayNow )
+            };
             paymentInfo.Email = args.Registrar.Email;
             paymentInfo.FirstName = args.Registrar.NickName;
             paymentInfo.LastName = args.Registrar.LastName;
@@ -5035,6 +5039,10 @@ namespace Rock.Blocks.Event
 
             // Update payment into with details about this payment.
             paymentInfo.Amount = args.PaymentPlan.AmountPerPayment;
+            paymentInfo.AccountAllocations = new List<FinancialTransactionService.AccountAllocation>
+            {
+                new FinancialTransactionService.AccountAllocation( financialAccount.Id, args.PaymentPlan.AmountPerPayment )
+            };
             paymentInfo.Email = args.Registrar.Email;
             paymentInfo.FirstName = args.Registrar.NickName;
             paymentInfo.LastName = args.Registrar.LastName;
@@ -5084,6 +5092,10 @@ namespace Rock.Blocks.Event
                 var fundId = context.RegistrationSettings.ExternalGatewayFundId;
                 transaction = redirectionGateway.FetchPaymentTokenTransaction( rockContext, financialGateway, fundId, args.GatewayToken );
                 paymentInfo.Amount = transaction.TotalAmount;
+                paymentInfo.AccountAllocations = new List<FinancialTransactionService.AccountAllocation>
+                {
+                    new FinancialTransactionService.AccountAllocation( context.RegistrationSettings.FinancialAccountId ?? 0, transaction.TotalAmount )
+                };
             }
             else if ( gateway is IObsidianHostedGatewayComponent obsidianGateway )
             {
@@ -5106,6 +5118,10 @@ namespace Rock.Blocks.Event
 
                     transaction = obsidianGateway.FetchPaymentTokenTransaction( rockContext, financialGateway, fundId, args.GatewayToken );
                     paymentInfo.Amount = transaction.TotalAmount;
+                    paymentInfo.AccountAllocations = new List<FinancialTransactionService.AccountAllocation>
+                    {
+                        new FinancialTransactionService.AccountAllocation( context.RegistrationSettings.FinancialAccountId ?? 0, transaction.TotalAmount )
+                    };
                 }
                 else
                 {

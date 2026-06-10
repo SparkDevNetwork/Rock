@@ -4,6 +4,7 @@
             <slot name="label">
                 {{ label }}
             </slot>
+            <i class="ti ti-info-circle kpi-tile-help" v-tooltip="help"></i>
         </div>
 
         <div class="kpi-tile-value" :style="{ color: valueColor }" v-ellipsis-tooltip>
@@ -42,6 +43,12 @@
     margin-bottom: var(--spacing-medium);
 }
 
+.kpi-tile-help {
+    color: var(--color-interface-medium);
+    cursor: pointer;
+    margin-left: var(--spacing-tiny);
+}
+
 .kpi-tile-value {
     font-size: var(--font-size-h3);
     font-weight: var(--font-weight-bold);
@@ -57,9 +64,13 @@
 <script setup lang="ts">
     import { PropType } from "vue";
     import { ellipsisTooltip as vEllipsisTooltip } from "./ellipsisTooltipDirective.partial";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
 
     defineProps({
         label: {
+            type: String as PropType<string | undefined>
+        },
+        help: {
             type: String as PropType<string | undefined>
         },
         value: {

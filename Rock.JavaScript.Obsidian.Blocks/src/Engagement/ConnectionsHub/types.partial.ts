@@ -33,11 +33,13 @@ export const enum PreferenceKey {
     FilterDueConnectionTypIdKey = "FilterDue_ConnectionTypeIdKey_{0}",
     FilterAttributeValuesConnectionTypeIdKey = "FilterAttributeValues_ConnectionTypeIdKey_{0}",
     SelectedViewConnectionTypeIdKey = "SelectedView_ConnectionTypeIdKey_{0}",
+    FilterConnectionType = "FilterConnectionType"
 }
 
 export const enum NavigationUrlKey {
     PersonProfilePage = "PersonProfilePage",
     GroupDetailPage = "GroupDetailPage",
+    MyConnectionsPage = "MyConnectionsPage",
 }
 
 export type ViewOptions = {

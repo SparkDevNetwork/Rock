@@ -1,0 +1,160 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="connection-type-settings-picker">
+        <DropDownList label="Connection Type"
+                      :modelValue="connectionTypeValue"
+                      @update:modelValue="onTypeChanged"
+                      :items="connectionTypes"
+                      :rules="rules"
+                      showBlankItem />
+
+        <template v-if="hasConnectionType">
+            <DropDownList label="Connection Opportunity"
+                          :modelValue="connectionOpportunityValue"
+                          @update:modelValue="onOpportunityChanged"
+                          :items="opportunitiesForCurrentType"
+                          :rules="rules"
+                          showBlankItem />
+
+            <DropDownList label="Connection Status"
+                          :modelValue="connectionStatusValue"
+                          @update:modelValue="onStatusChanged"
+                          :items="statusesForCurrentType"
+                          showBlankItem />
+
+            <DropDownList label="Connection Type Source"
+                          :modelValue="connectionTypeSourceValue"
+                          @update:modelValue="onSourceChanged"
+                          :items="sourcesForCurrentType"
+                          showBlankItem />
+        </template>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
+    import DropDownList from "./dropDownList.obs";
+
+    const props = defineProps({
+        connectionType: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
+        },
+
+        connectionOpportunity: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
+        },
+
+        connectionStatus: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
+        },
+
+        connectionTypeSource: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
+        },
+
+        connectionTypes: {
+            type: Array as PropType<ListItemBag[]>,
+            default: () => []
+        },
+
+        connectionOpportunitiesByType: {
+            type: Object as PropType<Record<string, ListItemBag[]>>,
+            default: () => ({})
+        },
+
+        connectionStatusesByType: {
+            type: Object as PropType<Record<string, ListItemBag[]>>,
+            default: () => ({})
+        },
+
+        connectionTypeSourcesByType: {
+            type: Object as PropType<Record<string, ListItemBag[]>>,
+            default: () => ({})
+        },
+
+        // Rules apply to Type + Opportunity only; Status and Source are optional.
+        rules: {
+            type: [Array, Object, String] as PropType<ValidationRule | ValidationRule[]>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:connectionType", value: ListItemBag | null): void;
+        (e: "update:connectionOpportunity", value: ListItemBag | null): void;
+        (e: "update:connectionStatus", value: ListItemBag | null): void;
+        (e: "update:connectionTypeSource", value: ListItemBag | null): void;
+    }>();
+
+    // #region Computed Values
+
+    const connectionTypeValue = computed(() => props.connectionType?.value ?? "");
+    const connectionOpportunityValue = computed(() => props.connectionOpportunity?.value ?? "");
+    const connectionStatusValue = computed(() => props.connectionStatus?.value ?? "");
+    const connectionTypeSourceValue = computed(() => props.connectionTypeSource?.value ?? "");
+
+    const hasConnectionType = computed(() => !!connectionTypeValue.value);
+
+    const opportunitiesForCurrentType = computed<ListItemBag[]>(() => {
+        const guid = connectionTypeValue.value;
+        return guid ? (props.connectionOpportunitiesByType[guid] ?? []) : [];
+    });
+
+    const statusesForCurrentType = computed<ListItemBag[]>(() => {
+        const guid = connectionTypeValue.value;
+        return guid ? (props.connectionStatusesByType[guid] ?? []) : [];
+    });
+
+    const sourcesForCurrentType = computed<ListItemBag[]>(() => {
+        const guid = connectionTypeValue.value;
+        return guid ? (props.connectionTypeSourcesByType[guid] ?? []) : [];
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onTypeChanged(value: string | string[]): void {
+        const singleValue = Array.isArray(value) ? (value[0] ?? "") : value;
+        const bag = findBag(props.connectionTypes, singleValue);
+
+        emit("update:connectionType", bag);
+        emit("update:connectionOpportunity", null);
+        emit("update:connectionStatus", null);
+        emit("update:connectionTypeSource", null);
+    }
+
+    function onOpportunityChanged(value: string | string[]): void {
+        const singleValue = Array.isArray(value) ? (value[0] ?? "") : value;
+        emit("update:connectionOpportunity", findBag(opportunitiesForCurrentType.value, singleValue));
+    }
+
+    function onStatusChanged(value: string | string[]): void {
+        const singleValue = Array.isArray(value) ? (value[0] ?? "") : value;
+        emit("update:connectionStatus", findBag(statusesForCurrentType.value, singleValue));
+    }
+
+    function onSourceChanged(value: string | string[]): void {
+        const singleValue = Array.isArray(value) ? (value[0] ?? "") : value;
+        emit("update:connectionTypeSource", findBag(sourcesForCurrentType.value, singleValue));
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    function findBag(items: ListItemBag[], value: string): ListItemBag | null {
+        if (!value) {
+            return null;
+        }
+        return items.find(i => i.value === value) ?? null;
+    }
+
+    // #endregion Functions
+</script>

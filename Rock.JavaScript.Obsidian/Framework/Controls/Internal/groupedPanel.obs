@@ -6,13 +6,15 @@
            panelHeaderCssClass="flex-shrink-0">
         <template #headerActions>
             <div v-if="groupingFields.length > 1" class="d-flex align-items-center gap-xs">
-                <RockLabel class="text-interface-stronger text-xs">
-                    Group By
-                </RockLabel>
                 <ButtonDropDownList v-model="groupingKey"
                                     :items="groupingFields"
                                     :dropdownClass="viewModeItems.length > 1 ? 'dropdown-right' : ''"
-                                    :btnSize="BtnSize.ExtraSmall" />
+                                    :btnSize="BtnSize.ExtraSmall">
+                    <template #selectionPrepend>
+                        <i class="ti ti-list-details mr-spacing-tiny"></i>
+                        <span>Group By:</span>
+                    </template>
+                </ButtonDropDownList>
             </div>
             <ButtonGroup v-if="viewModeItems.length > 1"
                          v-model="internalViewMode"
@@ -31,6 +33,14 @@
                     @click.prevent.stop="props.onPanelSettingsClick">
                 <i class="ti ti-adjustments-horizontal"></i>
             </button>
+            <button v-if="props.onSnapshotClick"
+                    type="button"
+                    class="btn btn-panel-action"
+                    :class="{ active: isSnapshotVisible }"
+                    title="Toggle Snapshot"
+                    @click.prevent.stop="props.onSnapshotClick">
+                <i class="ti ti-chart-bar-popular"></i>
+            </button>
             <button v-if="props.onAddItem"
                     type="button"
                     class="btn btn-add btn-panel-action"
@@ -41,21 +51,28 @@
             </button>
         </template>
         <template #preBody>
-            <transition name="action-toolbar-slide">
-                <div v-if="isSelectedView" class="action-toolbar-slide">
-                    <div class="action-toolbar-slide-inner">
-                        <ActionToolbar v-model:groupingKey="groupingKey"
-                                       v-model:viewMode="internalViewMode"
-                                       :viewModeItems="viewModeItems"
-                                       :groupingFields="groupingFields"
-                                       :isSelectedView="isSelectedView">
-                            <template #selectedActionToolbar>
-                                <slot name="selectedActionToolbar" />
-                            </template>
-                        </ActionToolbar>
+            <div>
+                <TransitionVerticalCollapse>
+                    <div v-show="isSnapshotVisible">
+                        <slot name="snapshot" />
                     </div>
-                </div>
-            </transition>
+                </TransitionVerticalCollapse>
+                <transition name="action-toolbar-slide">
+                    <div v-if="isSelectedView" class="action-toolbar-slide">
+                        <div class="action-toolbar-slide-inner">
+                            <ActionToolbar v-model:groupingKey="groupingKey"
+                                           v-model:viewMode="internalViewMode"
+                                           :viewModeItems="viewModeItems"
+                                           :groupingFields="groupingFields"
+                                           :isSelectedView="isSelectedView">
+                                <template #selectedActionToolbar>
+                                    <slot name="selectedActionToolbar" />
+                                </template>
+                            </ActionToolbar>
+                        </div>
+                    </div>
+                </transition>
+            </div>
         </template>
         <template v-if="rows.length > 0">
             <GroupedListView v-if="isListView"
@@ -64,7 +81,8 @@
                              :totalGroupCounts="totalGroupCounts"
                              :groupingKey="groupingKey"
                              :isAutoCollapseEnabled="isAutoCollapseEnabled"
-                             :itemTerm="itemTerm">
+                             :itemTerm="itemTerm"
+                             :isCountMessageVisible="isCountMessageVisible">
                 <template #headerActions="slotProps">
                     <slot name="headerActions" v-bind="slotProps" />
                 </template>
@@ -152,6 +170,7 @@
     import ButtonDropDownList from "../buttonDropDownList.obs";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { GroupedGrid } from "./GroupedPanel/types.partial";
+    import TransitionVerticalCollapse from "../transitionVerticalCollapse.obs";
 
     /** Items used by the view-mode toggle in the action toolbar. */
     type ViewModeItem = {
@@ -271,6 +290,31 @@
             type: Number,
             required: false,
             default: 0
+        },
+
+        /**
+         * Controls visibility of the per-group count label in the list view's
+         * section headers. Accepts a boolean for uniform behavior across all
+         * groups, or a predicate that receives the group so individual sections
+         * can show/hide the label independently.
+         */
+        isCountMessageVisible: {
+            type: [Boolean, Function] as PropType<boolean | ((group: GroupedGrid) => boolean)>,
+            default: true
+        },
+
+        /**
+         * The function to call in response to the snapshot being clicked.
+         * Providing this function will automatically enable the snapshot button.
+         */
+        onSnapshotClick: {
+            type: Function as PropType<(() => void | Promise<void>)>,
+            required: false
+        },
+
+        isSnapshotVisible: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 

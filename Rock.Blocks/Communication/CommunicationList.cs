@@ -84,7 +84,7 @@ namespace Rock.Blocks.Communication
 
         private static class PageParameterKey
         {
-            public const string Communication = "Communication";
+            public const string CommunicationId = "CommunicationId";
         }
 
         private static class PersonPreferenceKey
@@ -536,11 +536,11 @@ WHERE (@RecipientCountLower IS NULL OR counts.[RecipientCount] >= @RecipientCoun
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, PageParameterKey.Communication, "((Key))" ),
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, PageParameterKey.CommunicationId, "((Key))" ),
                 // Remove this in v20.0 when the legacy detail page is removed.
                 [NavigationUrlKey.LegacyDetailPage] = GetLegacyCommunicationUrl( new Dictionary<string, string>()
                 {
-                    [PageParameterKey.Communication] = "((Key))"
+                    [PageParameterKey.CommunicationId] = "((Key))"
                 } )
             };
         }

@@ -39,8 +39,14 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "List all the Interaction Session" )]
 
-    [LinkedPage( "Component Detail Page", "Page reference to the component detail page. This will be included as a variable in the Lava.", false, order: 0 )]
-    [LinkedPage( "Interaction Detail Page", "Page reference to the interaction detail page. This will be included as a variable in the Lava.", false, order: 1 )]
+    [LinkedPage( "Component Detail Page",
+        Description = "Page reference to the component detail page. This will be included as a variable in the Lava.",
+        IsRequired = false,
+        Order = 0 )]
+    [LinkedPage( "Interaction Detail Page",
+        Description = "Page reference to the interaction detail page. This will be included as a variable in the Lava.",
+        IsRequired = false,
+        Order = 1 )]
 
     [CodeEditorField( "Default Template",
         Description = "The Lava template to use as default.",
@@ -92,7 +98,11 @@ namespace RockWeb.Blocks.Reporting
     {% endfor %}
 {% endif %}" )]
 
-    [IntegerField( "Session Count", "The number of sessions to show per page.", true, 20, "", 3 )]
+    [IntegerField( "Session Count",
+        Description = "The number of sessions to show per page.",
+        IsRequired = true,
+        DefaultIntegerValue = 20,
+        Order = 3 )]
 
     [ContextAware( typeof( Person ) )]
     [Rock.SystemGuid.BlockTypeGuid( "EA90EF4F-C783-48CD-B575-AD785DE896E9" )]

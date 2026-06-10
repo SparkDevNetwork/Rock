@@ -57,7 +57,12 @@ namespace Rock.Workflow.Action
         Order = 1,
         Key = AttributeKey.EntityType )]
 
-    [WorkflowTextOrAttribute( "Entity To Follow", "Attribute Value", "The Entity Id or Guid or an attribute that contains the entity to follow. <span class='tip tip-lava'></span>", true, "", "", 2, AttributeKey.Entity )]
+    [WorkflowTextOrAttribute( "Entity To Follow",
+        "Attribute Value",
+        Description = "The Entity Id or Guid or an attribute that contains the entity to follow. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 2,
+        Key = AttributeKey.Entity )]
 
     [TextField(
         "Purpose Key",

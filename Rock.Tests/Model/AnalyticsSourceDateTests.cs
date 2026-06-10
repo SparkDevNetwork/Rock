@@ -168,6 +168,57 @@ namespace Rock.Tests.Model
         }
 
         /// <summary>
+        /// Issue #6838 - FiscalWeekNumberInYear must be fiscal-aware, not calendar-anchored.
+        /// Reproduces the reporter's scenario (fiscal start = July) and adds an April fiscal-start
+        /// regression row using the dates already covered by the FiscalWeek tests above so this
+        /// test pins line 247 to the same helper FiscalWeek already uses.
+        /// </summary>
+        [TestMethod]
+        // Fiscal Start == July (issue's scenario)
+        /*
+            ----------- 2025 -----------
+            FWK     Mo Tu We Th Fr Sa Su
+            ----------------------------
+            52 Jun  23 24 25 26 27 28 29
+            53 Jun  30                   <-- See "Weeks per year" https://en.wikipedia.org/wiki/ISO_week_date#cite_note-fns-1
+            01         01 02 03 04 05 06 <-- FY2026 begins (4-day rule, week 1)
+            02      07 08 09 10 11 12 13 <-- Mon Jul 7 is FY2026 week 2 (issue example)
+            03      14 15 16 17 18 19 20
+         */
+        [DataRow( "Sun, June 29, 2025", 7, 52 )]  // tail of previous FY
+        [DataRow( "Mon, June 30, 2025", 7, 53 )]  // See "Weeks per year" https://en.wikipedia.org/wiki/ISO_week_date#cite_note-fns-1
+        [DataRow( "Tue, July 1, 2025", 7, 1 )]
+        [DataRow( "Sun, July 6, 2025", 7, 1 )]
+        [DataRow( "Mon, July 7, 2025", 7, 2 )]    // Issue #6838 case: was 28, should be 2
+        [DataRow( "Sun, July 13, 2025", 7, 2 )]
+        [DataRow( "Mon, July 14, 2025", 7, 3 )]
+        // Fiscal Start == April
+        /*
+            ----------- 2023 -----------
+            FWK     Mo Tu We Th Fr Sa Su
+            ----------------------------
+            52 Mar  27 28 29 30 31
+            52 Apr                 01 02 <-- This should be FWK 52 of FY2023
+            01      03 04 05 06 07 08 09 <-- start FY2024
+            02      10 11 12 13 14 15 16 
+            03      17 18 19 20 21 22 23 
+            04      24 25 26 27 28 29 30
+        */
+        [DataRow( "Sat, April 1, 2023", 4, 52 )]
+        [DataRow( "Sun, April 2, 2023", 4, 52 )]
+        [DataRow( "Mon, April 3, 2023", 4, 1 )]
+        // Fiscal Start == January (must remain unchanged for Jan-fiscal tenants)
+        [DataRow( "Mon, January 6, 2025", 1, 2 )]
+        public void Date_WithVariousFiscalMonthStart_HasValidFiscalWeekNumberInYear( string date, int fiscalMonthStart, int expectedFiscalWeekNumberInYear )
+        {
+            var dateTime = DateTime.Parse( date );
+
+            int actual = AnalyticsSourceDate.GetFiscalWeekNumberInYear( dateTime, fiscalMonthStart, DayOfWeek.Monday );
+
+            Assert.AreEqual( expectedFiscalWeekNumberInYear, actual );
+        }
+
+        /// <summary>
         /// Tests that the correct fiscal month number is calculated for a given date,
         /// based on a specified fiscal year start month. This helps verify edge cases across year transitions,
         /// such as December to January and fiscal starts in months like October or April.
@@ -185,10 +236,9 @@ namespace Rock.Tests.Model
         [DataRow( "Mon, April 3, 2023", 1, 4 )]
         // Fiscal Start == April
         /*
-            ----------------------------
+            ----------- 2023 -----------
             FWK     Mo Tu We Th Fr Sa Su
             ----------------------------
-                         2023
             53 Mar  27 28 29 30 31
             53 Apr                 01 02 <-- This should be Month 12 of FY2022
             01      03 04 05 06 07 08 09 <-- start FY2024
@@ -226,10 +276,9 @@ namespace Rock.Tests.Model
         [DataRow( "Mon, April 3, 2023", 1, "April" )]
         // Fiscal Start == April
         /*
-            ----------------------------
+            ----------- 2023 -----------
             FWK     Mo Tu We Th Fr Sa Su
             ----------------------------
-                         2023
             53 Mar  27 28 29 30 31
             53 Apr                 01 02 <-- This should be Month 12 of FY2022
             01      03 04 05 06 07 08 09 <-- start FY2024
@@ -257,10 +306,9 @@ namespace Rock.Tests.Model
         /// <param name="expectedFiscalYear">The expected fiscal year result for the input date</param>
         [TestMethod]
         /*
-            ----------------------------
+            ----------- 2023 -----------
             FWK     Mo Tu We Th Fr Sa Su
             ----------------------------
-                         2023
             53 Mar  27 28 29 30 31
             53 Apr                 01 02 
             01      03 04 05 06 07 08 09 <-- start FY2024
@@ -274,7 +322,9 @@ namespace Rock.Tests.Model
             38      18 19 20 21 22 23 24 
             39      25 26 27 28 29 30 31
 
-                         2024
+            ----------- 2024 -----------
+            FWK     Mo Tu We Th Fr Sa Su
+            ----------------------------
             40 Jan  01 02 03 04 05 06 07
             41      08 09 10 11 12 13 14 
             42      15 16 17 18 19 20 21 

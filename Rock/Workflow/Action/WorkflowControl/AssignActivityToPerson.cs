@@ -34,7 +34,8 @@ namespace Rock.Workflow.Action
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Activity Assign to Person" )]
 
-    [PersonField( "Person", "The person to assign this activity to.")]
+    [PersonField( "Person",
+        Description = "The person to assign this activity to." )]
     [Rock.SystemGuid.EntityTypeGuid( "FB2981B7-7922-42E1-8ACF-7F63BB7989E6")]
     public class AssignActivityToPerson : ActionComponent
     {

@@ -38,8 +38,14 @@ namespace Rock.Jobs
     [DisplayName( "Send Following Event Notification" )]
     [Description( "Calculates and sends any following event notices to those that are following the entities that have an event that occurred." )]
 
-    [SystemCommunicationField( "Following Event Notification Email Template", required: true, order: 0, key: "EmailTemplate" )]
-    [SecurityRoleField( "Eligible Followers", "The group that contains individuals who should receive following event notification", true, order: 1 )]
+    [SystemCommunicationField( "Following Event Notification Email Template",
+        IsRequired = true,
+        Order = 0,
+        Key = "EmailTemplate" )]
+    [SecurityRoleField( "Eligible Followers",
+        Description = "The group that contains individuals who should receive following event notification",
+        IsRequired = true,
+        Order = 1 )]
     public class SendFollowingEvents : RockJob
     {
         /// <summary> 

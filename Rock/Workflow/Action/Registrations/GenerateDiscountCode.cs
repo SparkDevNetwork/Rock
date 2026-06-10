@@ -35,31 +35,72 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Generate Discount Code" )]
 
-    [CustomDropdownListField( "Registration Template", "Registration template to add the discount code to.",
-        "SELECT [Guid] AS [Value], [Name] AS [Text] FROM [RegistrationTemplate] ORDER BY [Name]", true, "", "", 0 )]
+    [CustomDropdownListField( "Registration Template",
+        Description = "Registration template to add the discount code to.",
+        ListSource = "SELECT [Guid] AS [Value], [Name] AS [Text] FROM [RegistrationTemplate] ORDER BY [Name]",
+        IsRequired = true,
+        Order = 0 )]
 
-    [WorkflowTextOrAttribute( "Discount Code Length", "Discount Code Length Attribute", "Length to set the discount code (minimum value is 3)", true,
-        "", "", 1, "DiscountCodeLength", new string[] { "Rock.Field.Types.IntegerFieldType" } )]
+    [WorkflowTextOrAttribute( "Discount Code Length",
+        "Discount Code Length Attribute",
+        Description = "Length to set the discount code (minimum value is 3)",
+        IsRequired = true,
+        Order = 1,
+        Key = "DiscountCodeLength",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.IntegerFieldType" } )]
 
-    [CustomRadioListField( "Discount Type", "Type of discount to apply, percent or Amount", "Percent, Amount", true, "Percent", "", 2, "DiscountType" )]
+    [CustomRadioListField( "Discount Type",
+        Description = "Type of discount to apply, percent or Amount",
+        ListSource = "Percent, Amount",
+        IsRequired = true,
+        DefaultValue = "Percent",
+        Order = 2,
+        Key = "DiscountType" )]
 
-    [WorkflowTextOrAttribute( "Discount Amount", "Discount Amount Attribute", "Amount in decimal to set the discount (percent or Amount)", true,
-        "", "", 3, "DiscountAmount", new string[] { "Rock.Field.Types.DecimalFieldType" } )]
+    [WorkflowTextOrAttribute( "Discount Amount",
+        "Discount Amount Attribute",
+        Description = "Amount in decimal to set the discount (percent or Amount)",
+        IsRequired = true,
+        Order = 3,
+        Key = "DiscountAmount",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.DecimalFieldType" } )]
 
-    [WorkflowTextOrAttribute( "Maximum Usage", "Maximum Usage Attribute", "The maximum number of times (registrations) that the discount code can be used.", false,
-        "", "", 4, "MaximumUsage", new string[] { "Rock.Field.Types.IntegerFieldType" } )]
+    [WorkflowTextOrAttribute( "Maximum Usage",
+        "Maximum Usage Attribute",
+        Description = "The maximum number of times (registrations) that the discount code can be used.",
+        IsRequired = false,
+        Order = 4,
+        Key = "MaximumUsage",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.IntegerFieldType" } )]
 
-    [WorkflowTextOrAttribute( "Maximum Registrants", "Maximum Registrants Attribute", "The maximum number of registrants (per registration) that the discount code should apply to. ", false,
-        "", "", 5, "MaximumRegistrants", new string[] { "Rock.Field.Types.IntegerFieldType" } )]
+    [WorkflowTextOrAttribute( "Maximum Registrants",
+        "Maximum Registrants Attribute",
+        Description = "The maximum number of registrants (per registration) that the discount code should apply to. ",
+        IsRequired = false,
+        Order = 5,
+        Key = "MaximumRegistrants",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.IntegerFieldType" } )]
 
-    [WorkflowTextOrAttribute( "Minimum Registrants", "Minimum Registrants Attribute", "The minimum number of registrants (per registration) that are required in order to use this discount code.", false,
-        "", "", 6, "MinimumRegistrants", new string[] { "Rock.Field.Types.IntegerFieldType" } )]
+    [WorkflowTextOrAttribute( "Minimum Registrants",
+        "Minimum Registrants Attribute",
+        Description = "The minimum number of registrants (per registration) that are required in order to use this discount code.",
+        IsRequired = false,
+        Order = 6,
+        Key = "MinimumRegistrants",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.IntegerFieldType" } )]
 
-    [WorkflowAttribute( "Effective Dates Attribute", "The date range in which the discount code is valid.", false,
-        "", "", 7, "EffectiveDates", new string[] { "Rock.Field.Types.DateRangeFieldType" } )]
+    [WorkflowAttribute( "Effective Dates Attribute",
+        Description = "The date range in which the discount code is valid.",
+        IsRequired = false,
+        Order = 7,
+        Key = "EffectiveDates",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.DateRangeFieldType" } )]
 
-    [WorkflowAttribute( "Discount Code Attribute", "Attribute to save the discount code into.", false, "", "", 8, null,
-        new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [WorkflowAttribute( "Discount Code Attribute",
+        Description = "Attribute to save the discount code into.",
+        IsRequired = false,
+        Order = 8,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType" } )]
 
     [Rock.SystemGuid.EntityTypeGuid( "EAE81C0A-A61F-45F2-BE45-8C5B664494B4")]
     public class GenerateDiscountCode : ActionComponent

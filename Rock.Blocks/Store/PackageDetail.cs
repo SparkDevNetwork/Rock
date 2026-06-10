@@ -46,7 +46,10 @@ namespace Rock.Blocks.Store
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
-    [LinkedPage( "Install Page", "Page reference to use for the install / update page.", false, "", "", 1 )]
+    [LinkedPage( "Install Page",
+        Description = "Page reference to use for the install / update page.",
+        IsRequired = false,
+        Order = 1 )]
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "33509fe0-f134-4985-aa7b-fb4dfcfd0775" )]

@@ -57,8 +57,16 @@ namespace Rock.Jobs
     [DisplayName( "Group Sync" )]
     [Description( "Processes groups that are marked to be synced with a data view." )]
 
-    [BooleanField( "Require Password Reset On New Logins", "Determines if new logins will require the individual to reset their password on the first log in.", Key = "RequirePasswordReset" )]
-    [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for each operation to complete. Leave blank to use the default for this job (180).", false, 3 * 60, "General", 1, "CommandTimeout" )]
+    [BooleanField( "Require Password Reset On New Logins",
+        Description = "Determines if new logins will require the individual to reset their password on the first log in.",
+        Key = "RequirePasswordReset" )]
+    [IntegerField( "Command Timeout",
+        Description = "Maximum amount of time (in seconds) to wait for each operation to complete. Leave blank to use the default for this job (180).",
+        IsRequired = false,
+        DefaultIntegerValue = 3 * 60,
+        Category = "General",
+        Order = 1,
+        Key = "CommandTimeout" )]
     [RockLoggingCategory]
     public class GroupSync : RockJob
     {

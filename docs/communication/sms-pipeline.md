@@ -1,6 +1,8 @@
 ---
 title: SMS Pipeline
-last_updated: 2026-05-01
+last_updated: 2026-05-28
+related_specs:
+  - specs/completed/communication/260506-sms-action-create-connection-request.md
 related_files:
   - Rock/Model/Communication/SmsPipeline/SmsPipeline.cs
   - Rock/Model/Communication/SmsAction/SmsAction.cs
@@ -8,6 +10,7 @@ related_files:
   - Rock/Model/Communication/SmsAction/SmsActionService.cs
   - Rock/Model/Communication/SystemPhoneNumber/SystemPhoneNumber.cs
   - Rock/Model/Communication/SystemPhoneNumber/SystemPhoneNumberService.cs
+  - Rock/Communication/SmsActions/SmsActionCreateConnectionRequest.cs
 ---
 
 # SMS Pipeline
@@ -141,6 +144,7 @@ Rejected. Carrier requirements differ; admins must be able to configure per numb
 - Forward to Group
 - Workflow launcher
 - Send Auto Reply
+- Create Connection Request (direct shortcut so the message body lands as `ConnectionRequest.Comments` without a workflow as glue; configured via a composite `ConnectionTypeSettings` attribute, see [Composite Field Type Pattern](../core/composite-field-type-pattern.md))
 - Custom action subclasses
 
 ### Affected Blocks
@@ -155,7 +159,12 @@ Rejected. Carrier requirements differ; admins must be able to configure per numb
 
 ## Recent Impactful Changes
 
+- **2026-05-28** ([commit `35309ee571`](https://github.com/SparkDevNetwork/Rock/commit/35309ee571)). Added a Create Connection Request SMS action that writes a `ConnectionRequest` directly when an inbound message matches its filters, removing the need to chain through a workflow.
 - **2025-11-10** ([commit `0766628398`](https://github.com/SparkDevNetwork/Rock/commit/0766628398)). Each SMS Pipeline Action gained a configuration option to create a new Communication record when sending an outbound reply.
 - **2025-08-15** ([commit `f9bce642f1`](https://github.com/SparkDevNetwork/Rock/commit/f9bce642f1)). Opt-in/opt-out keywords (START/STOP) now appear in SMS Conversation history when the SMS Conversations Action is configured (Fixes #6397).
 - **2025-08-14** ([commit `832716a068`](https://github.com/SparkDevNetwork/Rock/commit/832716a068)). Added per-`SystemPhoneNumber` configuration options for SMS opt-in/opt-out: suppress automatic responses, prevent communication-preference updates.
 - **2025-08-13** ([commit `02e8ba5f86`](https://github.com/SparkDevNetwork/Rock/commit/02e8ba5f86)). Default SMS Opt-In/Opt-Out response messages updated to meet Short Code compliance standards.
+
+## Related Specs
+
+- [Create Connection Request SMS Action](../../specs/completed/communication/260506-sms-action-create-connection-request.md) — 2026-05-06 (Josh Henninger)

@@ -23,12 +23,13 @@ namespace Rock.ViewModels.Blocks.Communication.SnippetDetail
     public class SnippetDetailOptionsBag
     {
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is authorized to edit.
+        /// Gets or sets a value indicating whether the current person can edit the snippet type,
+        /// which determines whether they may make a snippet shared (public) rather than personal.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is authorized to edit; otherwise, <c>false</c>.
+        ///   <c>true</c> if the current person can edit the snippet type; otherwise, <c>false</c>.
         /// </value>
-        public bool IsAuthorizedToEdit { get; set; }
+        public bool CanEditSnippetType { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is personal allowed.

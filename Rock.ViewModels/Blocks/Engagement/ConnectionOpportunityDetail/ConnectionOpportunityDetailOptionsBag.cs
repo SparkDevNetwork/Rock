@@ -15,7 +15,10 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 using Rock.Enums.Connection;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Engagement.ConnectionOpportunityDetail
 {
@@ -31,6 +34,13 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionOpportunityDetail
         /// Whether the reorder column is visible.
         /// </value>
         public bool? IsReOrderColumnVisible { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of all active campuses in the system. This is used as a fallback
+        /// for the Default Connectors section when the opportunity itself has no campuses selected,
+        /// so that a Default Connector can be configured per active campus.
+        /// </summary>
+        public List<ListItemBag> AllActiveCampuses { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether Future Follow-Up is enabled on the associated Connection Type.

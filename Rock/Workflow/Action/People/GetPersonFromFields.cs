@@ -37,42 +37,100 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Person Attribute From Fields" )]
 
     // Person Search Fields
-    [WorkflowTextOrAttribute( "First Name", "Attribute Value", "The first name or an attribute that contains the first name of the person. <span class='tip tip-lava'></span>",
-        false, "", "", 0, FIRST_NAME_KEY, new string[] { "Rock.Field.Types.TextFieldType" } )]
-    [WorkflowTextOrAttribute( "Last Name", "Attribute Value", "The last name or an attribute that contains the last name of the person. <span class='tip tip-lava'></span>",
-        false, "", "", 1, LAST_NAME_KEY, new string[] { "Rock.Field.Types.TextFieldType" } )]
-    [WorkflowTextOrAttribute( "Email Address", "Attribute Value", "The email address or an attribute that contains the email address of the person. <span class='tip tip-lava'></span>",
-        false, "", "", 2, EMAIL_KEY, new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType" } )]
-    [WorkflowTextOrAttribute( "Mobile Number", "Attribute Value", "The mobile phone number or an attribute that contains the mobile phone number of the person ) <span class='tip tip-lava'></span>",
-        false, "", "", 3, MOBILE_NUMBER_KEY, new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PhoneNumberFieldType" } )]
+    [WorkflowTextOrAttribute( "First Name",
+        "Attribute Value",
+        Description = "The first name or an attribute that contains the first name of the person. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 0,
+        Key = FIRST_NAME_KEY,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [WorkflowTextOrAttribute( "Last Name",
+        "Attribute Value",
+        Description = "The last name or an attribute that contains the last name of the person. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 1,
+        Key = LAST_NAME_KEY,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [WorkflowTextOrAttribute( "Email Address",
+        "Attribute Value",
+        Description = "The email address or an attribute that contains the email address of the person. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 2,
+        Key = EMAIL_KEY,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType" } )]
+    [WorkflowTextOrAttribute( "Mobile Number",
+        "Attribute Value",
+        Description = "The mobile phone number or an attribute that contains the mobile phone number of the person ) <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 3,
+        Key = MOBILE_NUMBER_KEY,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PhoneNumberFieldType" } )]
 
     // Person Search Birth Date Fields
-    [WorkflowTextOrAttribute( "Birth Day", "Attribute Value", "The number corresponding to the birth day of a person or the attribute that contains the number corresponding to a birth day for a person  <span class='tip tip-lava'></span>",
-        false, "", "", 4, BIRTH_DAY_KEY, new string[] { "Rock.Field.Types.TextFieldType" } )]
-    [WorkflowTextOrAttribute( "Birth Month", "Attribute Value", "The number corresponding to the birth month of a person or the attribute that contains the number corresponding to a birth month for a person  <span class='tip tip-lava'></span>",
-        false, "", "", 5, BIRTH_MONTH_KEY, new string[] { "Rock.Field.Types.TextFieldType" } )]
-    [WorkflowTextOrAttribute( "Birth Year", "Attribute Value", "The number corresponding to the birth year of a person or the attribute that contains the number corresponding to a birth year for a person  <span class='tip tip-lava'></span>",
-        false, "", "", 6, BIRTH_YEAR_KEY, new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [WorkflowTextOrAttribute( "Birth Day",
+        "Attribute Value",
+        Description = "The number corresponding to the birth day of a person or the attribute that contains the number corresponding to a birth day for a person  <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 4,
+        Key = BIRTH_DAY_KEY,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [WorkflowTextOrAttribute( "Birth Month",
+        "Attribute Value",
+        Description = "The number corresponding to the birth month of a person or the attribute that contains the number corresponding to a birth month for a person  <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 5,
+        Key = BIRTH_MONTH_KEY,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [WorkflowTextOrAttribute( "Birth Year",
+        "Attribute Value",
+        Description = "The number corresponding to the birth year of a person or the attribute that contains the number corresponding to a birth year for a person  <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 6,
+        Key = BIRTH_YEAR_KEY,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType" } )]
 
     // New Person Config
-    [WorkflowAttribute( "Person Attribute", "The person attribute to set the value to the person found or created.",
-        true, "", "", 7, PERSON_ATTRIBUTE_KEY, new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS, "Default Record Status", "The record status to use when creating a new person", false, false,
-        Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING, "", 8 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE, "Default Record Source", "The record source to use when creating a new person (default = 'Workflow'). If a 'RecordSource' page parameter is found, it will be used instead.", false, false,
-        Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_WORKFLOW, "", 9 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status", "The connection status to use when creating a new person", false, false,
-        Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT, "", 10 )]
-    [WorkflowAttribute( "Default Campus", "The attribute value to use as the default campus when creating a new person.",
-        false, "", "", 11, DEFAULT_CAMPUS_KEY, new string[] { "Rock.Field.Types.CampusFieldType" } )]
+    [WorkflowAttribute( "Person Attribute",
+        Description = "The person attribute to set the value to the person found or created.",
+        IsRequired = true,
+        Order = 7,
+        Key = PERSON_ATTRIBUTE_KEY,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [DefinedValueField( "Default Record Status",
+        Description = "The record status to use when creating a new person",
+        IsRequired = false,
+        AllowMultiple = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
+        Order = 8 )]
+    [DefinedValueField( "Default Record Source",
+        Description = "The record source to use when creating a new person (default = 'Workflow'). If a 'RecordSource' page parameter is found, it will be used instead.",
+        IsRequired = false,
+        AllowMultiple = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE,
+        DefaultValue = Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_WORKFLOW,
+        Order = 9 )]
+    [DefinedValueField( "Default Connection Status",
+        Description = "The connection status to use when creating a new person",
+        IsRequired = false,
+        AllowMultiple = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
+        Order = 10 )]
+    [WorkflowAttribute( "Default Campus",
+        Description = "The attribute value to use as the default campus when creating a new person.",
+        IsRequired = false,
+        Order = 11,
+        Key = DEFAULT_CAMPUS_KEY,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.CampusFieldType" } )]
 
     // Update settings
     [BooleanField(
-        name: "Update Email?",
-        description: "If a person is found matching the various attributes, but the primary email is different, should the person's primary email be updated?",
-        key: UPDATE_PRIMARY_EMAIL,
-        defaultValue: true, // "true" to preserve functionality before this setting was added
-        order: 11 )]
+        "Update Email?",
+        Description = "If a person is found matching the various attributes, but the primary email is different, should the person's primary email be updated?",
+        Key = UPDATE_PRIMARY_EMAIL,
+        DefaultBooleanValue = true, // "true" to preserve functionality before this setting was added
+        Order = 11 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "E5E7CA24-7030-4D48-9C39-04B5809E71A8")]
     public class GetPersonFromFields : ActionComponent

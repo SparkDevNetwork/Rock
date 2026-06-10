@@ -70,12 +70,12 @@ namespace Rock.Jobs
         DefaultValue = "1",
         Order = 3 )]
 
-    [CampusesField( name:"Campuses",
-        description: "When set will filter groups by the campuses selected. This requires that groups have a campus set to work.",
-        required: false,
-        includeInactive: false,
-        order: 4,
-        key: AttributeKey.Campuses )]
+    [CampusesField( "Campuses",
+        Description = "When set will filter groups by the campuses selected. This requires that groups have a campus set to work.",
+        IsRequired = false,
+        IncludeInactive = false,
+        Order = 4,
+        Key = AttributeKey.Campuses )]
 
     [GroupField( "Parent Group",
         Description = "When set only groups under this parent (at any level in the hierarchy) will be considered.",

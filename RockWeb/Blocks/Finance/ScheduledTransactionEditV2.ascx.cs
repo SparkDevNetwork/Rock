@@ -1128,6 +1128,9 @@ mission. We are so grateful for your commitment.</p>
 
             var selectedAccountAmounts = caapPromptForAccountAmounts.AccountAmounts.Where( a => a.Amount.HasValue && a.Amount.Value != 0 ).Select( a => new { a.AccountId, Amount = a.Amount.Value } ).ToArray();
             referencePaymentInfo.Amount = selectedAccountAmounts.Sum( a => a.Amount );
+            referencePaymentInfo.AccountAllocations = selectedAccountAmounts
+                .Select( a => new FinancialTransactionService.AccountAllocation( a.AccountId, a.Amount ) )
+                .ToList();
 
             // Validate that an amount was entered
             if ( selectedAccountAmounts.Sum( a => a.Amount ) <= 0 )

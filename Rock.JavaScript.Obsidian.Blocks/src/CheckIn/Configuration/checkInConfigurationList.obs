@@ -8,17 +8,12 @@
             <div class="check-ins-list col-md-9">
                 <Panel title="Active Check-in Configurations">
                     <template #helpContent>
-                        <div class="check-ins-help">
-                            If you need help getting started with Check-in Configurations, check out our documentation.
-                        </div>
+                        <div class="check-ins-help" v-html="helpText"></div>
                     </template>
 
                     <template #headerActions>
                         <div v-if="breakpointHelper?.isSmOrLarger" class="action">
-                            <ButtonDropDownList v-model="sortBy"
-                                                :items="config.sortByItems ?? []"
-                                                title="Sort By"
-                                                selectionStyle="checkmark" />
+                            <SortDropDown v-model="sortBy" :items="sortItems" />
                         </div>
                         <button v-if="addCheckInConfigurationPageUrl"
                                 type="button"
@@ -82,6 +77,20 @@
                                 <i class="ti ti-wifi"></i> Cloud Print
                             </a>
                         </div>
+                        <div class="check-ins-related-section">
+                            <span class="section-header">
+                                Additional Configuration
+                            </span>
+                            <a v-if="classicLabelMergeFieldsPageUrl" :href="classicLabelMergeFieldsPageUrl" class="list-group-item check-ins-related-link">
+                                <i class="ti ti-tag-plus"></i> Classic Label Merge Fields
+                            </a>
+                            <a v-if="abilityLevelsPageUrl" :href="abilityLevelsPageUrl" class="list-group-item check-ins-related-link">
+                                <i class="ti ti-user-screen"></i> Ability Levels
+                            </a>
+                            <a v-if="searchTypePageUrl" :href="searchTypePageUrl" class="list-group-item check-ins-related-link">
+                                <i class="ti ti-search"></i> Search Type
+                            </a>
+                        </div>
                     </div>
                 </Panel>
             </div>
@@ -133,8 +142,8 @@
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
     import BreakpointObserver from "./CheckInConfigurationList/breakpointObserver.partial.obs";
-    import { BreakpointHelper, NavigationUrlKey, PreferenceKey } from "./CheckInConfigurationList/types.partial";
-    import ButtonDropDownList from "@Obsidian/Controls/buttonDropDownList.obs";
+    import SortDropDown from "./CheckInConfigurationList/sortDropDown.partial.obs";
+    import { BreakpointHelper, NavigationUrlKey, PreferenceKey, SortItem } from "./CheckInConfigurationList/types.partial";
     import DisplayCard from "@Obsidian/Controls/displayCard.obs";
     import DisplayCardContainer from "@Obsidian/Controls/displayCardContainer.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -147,33 +156,55 @@
 
     const config = useConfigurationValues<CheckInConfigurationListInitializationBox>();
     const preferences = usePersonPreferences().blockPreferences;
-    const breakpointHelper = ref<BreakpointHelper>();
     const invokeBlockAction = useInvokeBlockAction();
 
     onConfigurationValuesChanged(useReloadBlock());
 
     // #region Values
 
-    const sortBy = ref(preferences.getValue(PreferenceKey.SortBy) || "alphabetical");
+    const breakpointHelper = ref<BreakpointHelper>();
+
+    const sortBy = ref(config.sortBy ?? "");
 
     const checkInConfigurations = ref<CheckInConfigurationBag[]>(config.checkInConfigurations || []);
     const isFetchingCheckInConfigurations = ref(false);
     const fetchCheckInConfigurationsErrorMessage = ref("");
 
+    // Per-config URLs:
     const areasAndGroupsPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.AreasAndGroupsPage]);
     const scheduleBuilderPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ScheduleBuilderPage]);
     const configurationSettingsPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ConfigurationSettingsPage]);
 
+    // Related settings URLs:
     const namedLocationsPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.NamedLocationsPage]);
     const schedulesPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.SchedulesPage]);
+
     const devicesPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.DevicesPage]);
     const labelsPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.LabelsPage]);
     const classicLabelsPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ClassicLabelsPage]);
     const cloudPrintPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.CloudPrintPage]);
 
+    const classicLabelMergeFieldsPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ClassicLabelMergeFields]);
+    const abilityLevelsPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.AbilityLevels]);
+    const searchTypePageUrl = ref(config.navigationUrls?.[NavigationUrlKey.SearchType]);
+
+    // Public-Facing Docs URLs:
+    const checkInManualUrl = ref(config.navigationUrls?.[NavigationUrlKey.CheckInManual]);
+
     // #endregion Values
 
     // #region Computed Values
+
+    /** Gets the help text. */
+    const helpText = computed((): string => {
+        const baseText = "If you need help getting started with Check-in Configurations, check out our";
+
+        if (checkInManualUrl.value) {
+            return `${baseText} <a href="${checkInManualUrl.value}" target="_blank" rel="noopener">documentation</a>.`;
+        }
+
+        return `${baseText} documentation.`;
+    });
 
     /** Indicates whether there are any check-in configurations available. */
     const anyCheckinConfigurations = computed((): boolean => {
@@ -186,7 +217,21 @@
             return "";
         }
 
-        return configurationSettingsPageUrl.value.replace("((Key))", "0");
+        return `${configurationSettingsPageUrl.value.replace("((Key))", "0")}?autoEdit=true`;
+    });
+
+    /** Maps each sort option from the server to the icon shown next to its label. */
+    const sortItems = computed((): SortItem[] => {
+        const iconCssClassByValue: Record<string, string> = {
+            "alphabetical": "ti ti-sort-ascending-letters",
+            "most-activity": "ti ti-timeline"
+        };
+
+        return (config.sortByItems ?? []).map(item => ({
+            value: item.value ?? "",
+            text: item.text ?? "",
+            iconCssClass: iconCssClassByValue[item.value ?? ""] ?? ""
+        }));
     });
 
     // #endregion Computed Values

@@ -1,6 +1,6 @@
 ---
 title: Group Members and Roles
-last_updated: 2026-05-01
+last_updated: 2026-05-26
 related_files:
   - Rock/Model/Group/GroupMember/GroupMember.cs
   - Rock/Model/Group/GroupMember/GroupMember.Logic.cs
@@ -168,6 +168,7 @@ Composite index `(GroupId, GroupRoleId, GroupMemberStatus)` at [GroupMember.cs:7
 - **Group Member Detail** (still WebForms in some shipped versions). Per-member editor.
 - **Group Type Detail roles tab** ([Rock.JavaScript.Obsidian.Blocks/src/Group/GroupTypeDetail/roles.partial.obs](../../Rock.JavaScript.Obsidian.Blocks/src/Group/GroupTypeDetail/roles.partial.obs)).
 - **Group Member Schedule Template Detail and List** ([Rock.Blocks/Group/GroupMemberScheduleTemplateDetail.cs](../../Rock.Blocks/Group/GroupMemberScheduleTemplateDetail.cs), [Rock.Blocks/Group/Scheduling/GroupMemberScheduleTemplateList.cs](../../Rock.Blocks/Group/Scheduling/GroupMemberScheduleTemplateList.cs)).
+- **Group Detail "Group Member Attributes" and "Member Workflows" tabs** ([groupMemberAttributes.partial.obs](../../Rock.JavaScript.Obsidian.Blocks/src/Group/GroupDetail/groupMemberAttributes.partial.obs), [groupMemberWorkflows.partial.obs](../../Rock.JavaScript.Obsidian.Blocks/src/Group/GroupDetail/groupMemberWorkflows.partial.obs)). Per-Group GroupMember attribute definitions and member workflow trigger configuration (visible when the GroupType allows specific per-Group overrides; gated server-side on `ADMINISTRATE`).
 
 ### Extension Points
 

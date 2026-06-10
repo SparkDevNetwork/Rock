@@ -36,7 +36,12 @@ namespace RockWeb.Blocks.Prayer
     [Description( "Shows a list of prayer comments and allows the noteId that is passed in (via querystring) to be editable." )]
 
     [ContextAware( typeof( PrayerRequest ) )]
-    [TextField( "Title", "The title of the notes/comments section.", false, "Comments", "Behavior", 0 )]
+    [TextField( "Title",
+        Description = "The title of the notes/comments section.",
+        IsRequired = false,
+        DefaultValue = "Comments",
+        Category = "Behavior",
+        Order = 0 )]
     [Rock.SystemGuid.BlockTypeGuid( "4F3778DF-A25C-4E59-9242-B1D6813311E1" )]
     public partial class PrayerCommentDetail : RockBlock
     {

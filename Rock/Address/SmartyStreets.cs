@@ -53,8 +53,39 @@ namespace Rock.Address
         /// </returns>
         public override VerificationResult Verify( Rock.Model.Location location, out string resultMsg )
         {
-            VerificationResult result = VerificationResult.None;
             resultMsg = string.Empty;
+
+            if ( location == null )
+            {
+                resultMsg = "No location provided.";
+                return VerificationResult.None;
+            }
+
+            /*
+                 6/8/2026 - NA
+
+                 The Smarty US Street API only validates US addresses. If a location has a non-empty
+                 country value that is not "US" or "USA", skip verification entirely and return
+                 VerificationResult.None. Passing a non-US address produces no result and wastes an API call.
+            
+                 Reason: Confirmed with Smarty Support:
+                        "I can confirm that it will not attempt to standardize or geocode any address
+                        outside the US and US Territories."
+
+            */
+            var country = location.Country?.Trim();
+            var isNonUsNonEmptyCountry =
+                !string.IsNullOrWhiteSpace( country )
+                && !country.Equals( "US", StringComparison.OrdinalIgnoreCase )
+                && !country.Equals( "USA", StringComparison.OrdinalIgnoreCase );
+
+            if ( isNonUsNonEmptyCountry )
+            {
+                resultMsg = "Skipped: non-US country for this service.";
+                return VerificationResult.None;
+            }
+
+            VerificationResult result = VerificationResult.None;
 
             SmartyStreetsAPIKey apiKey = GetAPIKey();
 

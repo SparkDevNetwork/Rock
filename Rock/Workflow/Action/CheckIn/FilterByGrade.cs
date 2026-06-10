@@ -34,7 +34,9 @@ namespace Rock.Workflow.Action.CheckIn
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter By Grade" )]
 
-    [BooleanField( "Remove", "Select 'Yes' if group types should be removed.  Select 'No' if they should just be marked as excluded.", true )]
+    [BooleanField( "Remove",
+        Description = "Select 'Yes' if group types should be removed.  Select 'No' if they should just be marked as excluded.",
+        DefaultBooleanValue = true )]
     [Rock.SystemGuid.EntityTypeGuid( "BA1D77F3-CC92-4C1F-8DC5-AEBADF114E74")]
     public class FilterByGrade : CheckInActionComponent
     {

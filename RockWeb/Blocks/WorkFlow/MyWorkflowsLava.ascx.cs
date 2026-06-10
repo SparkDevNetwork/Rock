@@ -39,9 +39,22 @@ namespace RockWeb.Blocks.WorkFlow
     [Category( "WorkFlow" )]
     [Description( "Block to display active workflow activities assigned to the current user that have a form entry action.  The display format is controlled by a lava template." )]
 
-    [CustomRadioListField("Role", "Display the active workflows that the current user Initiated, or is currently Assigned To.", "0^Assigned To,1^Initiated", true, "0", "", 0 )]
-    [CategoryField( "Categories", "Optional categories to limit display to.", true, "Rock.Model.WorkflowType", "", "", false, "", "", 1 )]
-    [BooleanField( "Include Child Categories", "Should descendent categories of the selected Categories be included?", true, "", 2 )]
+    [CustomRadioListField( "Role",
+        Description = "Display the active workflows that the current user Initiated, or is currently Assigned To.",
+        ListSource = "0^Assigned To,1^Initiated",
+        IsRequired = true,
+        DefaultValue = "0",
+        Order = 0 )]
+    [CategoryField( "Categories",
+        Description = "Optional categories to limit display to.",
+        AllowMultiple = true,
+        EntityTypeName = "Rock.Model.WorkflowType",
+        IsRequired = false,
+        Order = 1 )]
+    [BooleanField( "Include Child Categories",
+        Description = "Should descendent categories of the selected Categories be included?",
+        DefaultBooleanValue = true,
+        Order = 2 )]
 
     [CodeEditorField( "Contents",
         Description = @"The Lava template to use for displaying activities assigned to current user.",
@@ -51,8 +64,14 @@ namespace RockWeb.Blocks.WorkFlow
         DefaultValue = @"{% include '/Assets/Lava/MyWorkflowsSortable.lava' %}",
         Order = 3 )]
 
-    [TextField( "Set Panel Title", "The title to display in the panel header. Leave empty to have the block name.", required: false, order: 4 )]
-    [TextField( "Set Panel Icon", "The icon to display in the panel header.", required: false, order: 5 )]
+    [TextField( "Set Panel Title",
+        Description = "The title to display in the panel header. Leave empty to have the block name.",
+        IsRequired = false,
+        Order = 4 )]
+    [TextField( "Set Panel Icon",
+        Description = "The icon to display in the panel header.",
+        IsRequired = false,
+        Order = 5 )]
 
     [Rock.SystemGuid.BlockTypeGuid( "4F217A7F-A34E-489E-AE0E-2B7EDCF69CD1" )]
     public partial class MyWorkflowsLava : Rock.Web.UI.RockBlock

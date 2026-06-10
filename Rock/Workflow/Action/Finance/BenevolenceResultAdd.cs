@@ -34,23 +34,50 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Benevolence Result Add" )]
 
-    [WorkflowAttribute( "Benevolence Request", "Workflow attribute to use to set the resut for.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.BenevolenceRequestFieldType" } )]
+    [WorkflowAttribute( "Benevolence Request",
+        Description = "Workflow attribute to use to set the resut for.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.BenevolenceRequestFieldType" } )]
 
-    [WorkflowTextOrAttribute( "Result Details", "Results Detail Attribute", "Text or workflow attribute that contains the result's details. <span class='tip tip-lava'></span>", false, "", "", 1, "ResultDetails",
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" }, 2 )]
+    [WorkflowTextOrAttribute( "Result Details",
+        "Results Detail Attribute",
+        Description = "Text or workflow attribute that contains the result's details. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 1,
+        Key = "ResultDetails",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" },
+        Rows = 2 )]
 
-    [WorkflowTextOrAttribute( "Next Steps", "Next Steps Attribute", "Text or workflow attribute that contains the next steps provided. <span class='tip tip-lava'></span>", false, "", "", 1, "NextSteps",
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" }, 2 )]
+    [WorkflowTextOrAttribute( "Next Steps",
+        "Next Steps Attribute",
+        Description = "Text or workflow attribute that contains the next steps provided. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 1,
+        Key = "NextSteps",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" },
+        Rows = 2 )]
 
-    [WorkflowAttribute( "Result Type", "Workflow attribute that contains the result type defined value.", true, "", "", 3, null,
-        new string[] { "Rock.Field.Types.DefinedValueFieldType" } )]
+    [WorkflowAttribute( "Result Type",
+        Description = "Workflow attribute that contains the result type defined value.",
+        IsRequired = true,
+        Order = 3,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.DefinedValueFieldType" } )]
 
-    [WorkflowAttribute( "Result Amount", "Workflow attribute that contains the amount of assistance that was given.", true, "", "", 4, null,
-        new string[] { "Rock.Field.Types.CurrencyFieldType" } )]
+    [WorkflowAttribute( "Result Amount",
+        Description = "Workflow attribute that contains the amount of assistance that was given.",
+        IsRequired = true,
+        Order = 4,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.CurrencyFieldType" } )]
 
-    [WorkflowTextOrAttribute( "Result Summary", "Result Summary Attribute", "Text or workflow attribute that contains the benevolence result summary. <span class='tip tip-lava'></span>", false, "", "", 5, "ResultSummary",
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" }, 2 )]
+    [WorkflowTextOrAttribute( "Result Summary",
+        "Result Summary Attribute",
+        Description = "Text or workflow attribute that contains the benevolence result summary. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 5,
+        Key = "ResultSummary",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" },
+        Rows = 2 )]
 
 
     [Rock.SystemGuid.EntityTypeGuid( "A0E1945F-DE59-4D53-927C-F432C30039F4")]

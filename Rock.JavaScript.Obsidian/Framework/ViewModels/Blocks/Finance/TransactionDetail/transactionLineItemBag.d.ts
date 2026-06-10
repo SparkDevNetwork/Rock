@@ -36,6 +36,13 @@ export type TransactionLineItemBag = {
     /** Gets or sets the net amount allocated to the account (excluding fee coverage). */
     amount: number;
 
+    /**
+     * Gets or sets the condensed display values for each attribute on this line item,
+     * keyed by attr_{attributeKey}. Each value contains Html and Text
+     * representations in the format expected by the grid attribute column renderer.
+     */
+    attributeDisplayValues?: Record<string, unknown> | null;
+
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 

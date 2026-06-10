@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
     [BooleanField(
         "Show Only Parent Group",
-        "When enabled, only the actual parent group for each check-in group-location will be shown and groups under the same parent group in the same location will be combined into one row.",
+        Description = "When enabled, only the actual parent group for each check-in group-location will be shown and groups under the same parent group in the same location will be combined into one row.",
         Key = AttributeKey.ShowOnlyParentGroup,
         DefaultBooleanValue = false,
         Order = 5 )]

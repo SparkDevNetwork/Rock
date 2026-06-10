@@ -569,6 +569,13 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string COUNTRY_ADDRESS_POSTCODE_REQUIREMENT = "0037453D-0D26-4F02-8AB3-6AD675D85AAE";
 
+        /// <summary>
+        /// Country - ISO 3166-1 Alpha-3 Code. Stored on each Country DefinedValue so
+        /// responses from the Smarty International Street Address API (which return alpha-3)
+        /// can be mapped back to Rock's alpha-2 country values.
+        /// </summary>
+        public const string COUNTRY_ISO3166_ALPHA3 = "65776D88-0C89-4B9C-B705-683F028948E3";
+
         #endregion
 
         #region Fundraising Attributes

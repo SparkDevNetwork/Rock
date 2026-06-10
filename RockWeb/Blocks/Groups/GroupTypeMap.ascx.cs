@@ -41,15 +41,43 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Displays groups on a map." )]
 
-    [GroupTypeField( "Group Type", "The type of group to map.", false, "", "", 0 )]
+    [GroupTypeField( "Group Type",
+        Description = "The type of group to map.",
+        IsRequired = false,
+        Order = 0 )]
     //[GroupRoleField("", "Display Group Role", "")]
-    [IntegerField( "Map Height", "Height of the map in pixels (default value is 600px)", false, 600, "", 2 )]
-    [LinkedPage( "Group Detail Page", "Page to use as a link to the group details (optional).", false, "", "", 3 )]
-    [LinkedPage( "Person Profile Page", "Page to use as a link to the person profile page (optional).", false, "", "", 4 )]
-    [BooleanField( "Show Map Info Window", "Control whether a info window should be displayed when clicking on a map point.", true, "", 5 )]
-    [BooleanField( "Include Inactive Groups", "Determines if inactive groups should be included on the map.", false, "", 6 )]
-    [TextField( "Attributes", "Comma delimited list of attribute keys to include values for in the map info window (e.g. 'StudyTopic,MeetingTime').", false, "", "", 7 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_GOOGLE, "", 8 )]
+    [IntegerField( "Map Height",
+        Description = "Height of the map in pixels (default value is 600px)",
+        IsRequired = false,
+        DefaultIntegerValue = 600,
+        Order = 2 )]
+    [LinkedPage( "Group Detail Page",
+        Description = "Page to use as a link to the group details (optional).",
+        IsRequired = false,
+        Order = 3 )]
+    [LinkedPage( "Person Profile Page",
+        Description = "Page to use as a link to the person profile page (optional).",
+        IsRequired = false,
+        Order = 4 )]
+    [BooleanField( "Show Map Info Window",
+        Description = "Control whether a info window should be displayed when clicking on a map point.",
+        DefaultBooleanValue = true,
+        Order = 5 )]
+    [BooleanField( "Include Inactive Groups",
+        Description = "Determines if inactive groups should be included on the map.",
+        DefaultBooleanValue = false,
+        Order = 6 )]
+    [TextField( "Attributes",
+        Description = "Comma delimited list of attribute keys to include values for in the map info window (e.g. 'StudyTopic,MeetingTime').",
+        IsRequired = false,
+        Order = 7 )]
+    [DefinedValueField( "Map Style",
+        Description = "The map theme that should be used for styling the map.",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.MAP_STYLES,
+        DefaultValue = Rock.SystemGuid.DefinedValue.MAP_STYLE_GOOGLE,
+        Order = 8 )]
 
     [CodeEditorField( "Info Window Contents",
         Description = "Lava template for the info window. To suppress the window provide a blank template.",

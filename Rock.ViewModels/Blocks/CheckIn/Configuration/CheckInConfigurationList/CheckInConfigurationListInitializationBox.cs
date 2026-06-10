@@ -32,6 +32,12 @@ namespace Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInConfigurationList
         public List<ListItemBag> SortByItems { get; set; }
 
         /// <summary>
+        /// Gets or sets the currently effective "sort by" value (the individual's stored preference, or the block
+        /// default when none is stored).
+        /// </summary>
+        public string SortBy { get; set; }
+
+        /// <summary>
         /// Gets or sets whether to show the add check-in configuration button.
         /// </summary>
         public bool ShowAddCheckInConfigurationButton { get; set; }

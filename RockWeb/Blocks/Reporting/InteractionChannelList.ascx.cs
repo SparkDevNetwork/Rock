@@ -40,8 +40,14 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "List all the Interaction Channel" )]
 
-    [LinkedPage( "Session List Page", "Page reference to the session list page. This will be included as a variable in the Lava.", false, order: 0 )]
-    [LinkedPage( "Component List Page", "Page reference to the component list page. This will be included as a variable in the Lava.", false, order: 1 )]
+    [LinkedPage( "Session List Page",
+        Description = "Page reference to the session list page. This will be included as a variable in the Lava.",
+        IsRequired = false,
+        Order = 0 )]
+    [LinkedPage( "Component List Page",
+        Description = "Page reference to the component list page. This will be included as a variable in the Lava.",
+        IsRequired = false,
+        Order = 1 )]
     [CodeEditorField( "Default Template",
         Description = "The Lava template to use as default.",
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
@@ -63,7 +69,10 @@ namespace RockWeb.Blocks.Reporting
     </a>
 {% endif %}" )]
 
-    [InteractionChannelsField( "Interaction Channels", "Select interaction channel to limit the display. No selection will show all.", false, "", "", order: 3 )]
+    [InteractionChannelsField( "Interaction Channels",
+        Description = "Select interaction channel to limit the display. No selection will show all.",
+        IsRequired = false,
+        Order = 3 )]
     [ContextAware( typeof( Person ) )]
     [Rock.SystemGuid.BlockTypeGuid( "FBC2066B-8E7C-43CB-AFD2-FA9408F6699D" )]
     public partial class InteractionChannelList : Rock.Web.UI.RockBlock

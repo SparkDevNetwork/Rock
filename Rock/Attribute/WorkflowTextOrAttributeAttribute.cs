@@ -100,5 +100,24 @@ namespace Rock.Attribute
                 }
             }
         }
+
+        /// <summary>
+        /// The number of rows that the text box will be configured to display.
+        /// </summary>
+        public int Rows
+        {
+            get => FieldConfigurationValues.GetValueOrNull( TEXTBOX_ROWS_KEY ).AsIntegerOrNull() ?? 1;
+            set
+            {
+                if ( value > 1 )
+                {
+                    FieldConfigurationValues.Add( TEXTBOX_ROWS_KEY, new Field.ConfigurationValue( value.ToString() ) );
+                }
+                else
+                {
+                    FieldConfigurationValues.Remove( TEXTBOX_ROWS_KEY );
+                }
+            }
+        }
     }
 }

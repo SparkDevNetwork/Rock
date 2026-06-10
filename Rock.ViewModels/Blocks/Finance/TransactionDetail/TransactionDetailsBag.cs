@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.ViewModels.Core.Grid;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Finance.TransactionDetail
@@ -39,5 +40,12 @@ namespace Rock.ViewModels.Blocks.Finance.TransactionDetail
         /// by the user and should be deleted from the database on save.
         /// </summary>
         public List<Guid> RowsToDelete { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attribute field definitions for the allocations grid.
+        /// Each entry describes one attribute column: its field key (<c>attr_{attributeKey}</c>),
+        /// display title, and field type, matching the format used by <see cref="GridDefinitionBag.AttributeFields"/>.
+        /// </summary>
+        public List<AttributeFieldDefinitionBag> AttributeFields { get; set; }
     }
 }

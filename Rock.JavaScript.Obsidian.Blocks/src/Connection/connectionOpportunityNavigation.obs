@@ -12,6 +12,14 @@
             <DropDownList v-model="opportunityVisibility"
                           :items="config.opportunityVisibilityItems ?? []"
                           :showBlankItem="false" />
+            <template #rightContent>
+                <RockButton isSquare
+                            title="My Connections"
+                            :btnSize="BtnSize.Small"
+                            @click="onMyConnectionsClick">
+                    <i class="ti ti-user-circle"></i>
+                </RockButton>
+            </template>
         </ContextSlicer>
 
         <Panel :title="connectionTypeName"
@@ -240,6 +248,7 @@
     import { BarSeries, LinearGaugeSeries, TooltipContext } from "@Obsidian/Core/Controls/chart";
     import { useContextEntities } from "@Obsidian/Core/Utilities/contextEntity";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
@@ -264,7 +273,6 @@
 
     const config = useConfigurationValues<ConnectionOpportunityNavigationInitializationBox>();
     const preferences = usePersonPreferences().blockPreferences;
-    const breakpointHelper = ref<BreakpointHelper>();
     const contextEntities = useContextEntities();
     const browserBus = useBlockBrowserBus();
     const invokeBlockAction = useInvokeBlockAction();
@@ -282,6 +290,8 @@
     });
 
     // #region Values
+
+    const breakpointHelper = ref<BreakpointHelper>();
 
     const selectedCampus = ref<ListItemBag | null>(null);
     const connectionTypeIdKey = ref("");
@@ -302,6 +312,9 @@
     const opportunityConnectionsHubListViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubListViewPage]);
     const opportunityConnectionsHubBoardViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubBoardViewPage]);
     const opportunityConnectionsHubGridViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubGridViewPage]);
+
+    // My Connections-level URLs.
+    const myConnectionsPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.MyConnectionsPage]);
 
     syncRefsWithQueryParams([
         { param: "ConnectionType", ref: connectionTypeIdKey, type: "string" }
@@ -623,6 +636,27 @@
         if (typeOperationalSnapshotPageUrl.value) {
             window.location.href = typeOperationalSnapshotPageUrl.value;
         }
+    }
+
+    /** Navigates to the My Connections page for the current person, pre-filtered to the current connection type. */
+    function onMyConnectionsClick(): void {
+        if (!myConnectionsPageUrl.value) {
+            return;
+        }
+
+        // The server-built URL encodes the connection type the page loaded with. Changing the type
+        // dropdown only updates the query string (not the server URLs), so override the ConnectionType
+        // with the live selection before navigating.
+        const url = new URL(myConnectionsPageUrl.value, window.location.origin);
+
+        if (connectionTypeIdKey.value) {
+            url.searchParams.set("ConnectionType", connectionTypeIdKey.value);
+        }
+        else {
+            url.searchParams.delete("ConnectionType");
+        }
+
+        window.location.href = url.toString();
     }
 
     /**

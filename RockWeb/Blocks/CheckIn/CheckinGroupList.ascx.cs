@@ -40,8 +40,13 @@ namespace RockWeb.Blocks.Checkin
     [Category( "Check-in" )]
     [Description( "Lists group types and their groups based off group types from query string." )]
 
-    [LinkedPage("Group Detail Page", "Link to the group details page", false)]
-    [BooleanField( "Allow Campus Filter", "Should block add an option to allow filtering attendance counts and percentage by campus?", false, "", 2 )]
+    [LinkedPage( "Group Detail Page",
+        Description = "Link to the group details page",
+        IsRequired = false )]
+    [BooleanField( "Allow Campus Filter",
+        Description = "Should block add an option to allow filtering attendance counts and percentage by campus?",
+        DefaultBooleanValue = false,
+        Order = 2 )]
     [Rock.SystemGuid.BlockTypeGuid( "67E83A02-6D23-4B90-A861-F81FF78B56C7" )]
     public partial class CheckinGroupList : Rock.Web.UI.RockBlock
     {

@@ -52,5 +52,13 @@ export default defineComponent({
     </template>
 
     <slot />
+
+    <template v-if="$slots.footerActions" #footerActions>
+        <slot name="footerActions" />
+    </template>
+
+    <template v-if="$slots.footerSecondaryActions" #footerSecondaryActions>
+        <slot name="footerSecondaryActions" />
+    </template>
 </Panel>`
 });

@@ -35,6 +35,18 @@ export type CheckInScheduleBuilderOptionsBag = {
      */
     campusRootLocations?: Record<string, string> | null;
 
+    /**
+     * Gets or sets the hashed identifier of the check-in configuration. The client scopes the shared
+     * selected-area person preference to this configuration entity when persisting a new selection.
+     */
+    configurationIdKey?: string | null;
+
+    /**
+     * Gets or sets the display name of the check-in configuration or null when this block is rendered
+     * without a configuration.
+     */
+    configurationName?: string | null;
+
     /** The Default Schedule Category */
     defaultScheduleCategory?: ListItemBag | null;
 
@@ -46,4 +58,10 @@ export type CheckInScheduleBuilderOptionsBag = {
 
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
+
+    /**
+     * Gets or sets the Guid of the currently-selected area (empty / null for "All Areas"), resolved
+     * from the configuration-scoped person preference.
+     */
+    selectedAreaGuid?: Guid | null;
 };

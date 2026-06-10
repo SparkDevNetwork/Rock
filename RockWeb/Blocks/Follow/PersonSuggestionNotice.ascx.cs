@@ -38,9 +38,15 @@ namespace RockWeb.Blocks.Follow
     [DisplayName( "Person Suggestion Notice" )]
     [Category( "Follow" )]
     [Description( "Block for displaying a button and count of suggested people that can be used to navigate to person suggestion list block." )]
-    [LinkedPage( "Suggestion Page", key: "ListPage", order: 0 )]
-    [LinkedPage( "Followers Page", order: 1 )]
-    [BooleanField("Show Followers Page", "Determines whether the link to the followers page should be shown", true, order: 2)]
+    [LinkedPage( "Suggestion Page",
+        Key = "ListPage",
+        Order = 0 )]
+    [LinkedPage( "Followers Page",
+        Order = 1 )]
+    [BooleanField("Show Followers Page",
+        Description = "Determines whether the link to the followers page should be shown",
+        DefaultBooleanValue = true,
+        Order = 2 )]
     [Rock.SystemGuid.BlockTypeGuid( "983B9EBE-BDD9-49A6-87FF-7E1A585E97E4" )]
     public partial class PersonSuggestionNotice : RockBlock
     {

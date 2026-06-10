@@ -71,14 +71,38 @@ namespace RockWeb.Blocks.Fundraising
         DefaultValue = @"{% include '~~/Assets/Lava/FundraisingOpportunityParticipant.lava' %}",
         Order = 4 )]
 
-    [NoteTypeField( "Note Type", "Note Type to use for comments", false, "Rock.Model.Group", defaultValue: "9BB1A7B6-0E51-4E0E-BFC0-1E42F4F2DA95", order: 5 )]
-    [LinkedPage( "Donation Page", "The page where a person can donate to the fundraising opportunity", required: false, order: 6 )]
-    [LinkedPage( "Leader Toolbox Page", "The toolbox page for a leader of this fundraising opportunity", required: false, order: 7 )]
-    [LinkedPage( "Participant Page", "The participant page for a participant of this fundraising opportunity", required: false, order: 8 )]
+    [NoteTypeField( "Note Type",
+        Description = "Note Type to use for comments",
+        IsRequired = true,
+        EntityTypeName = "Rock.Model.Group",
+        DefaultValue = "9BB1A7B6-0E51-4E0E-BFC0-1E42F4F2DA95",
+        Order = 5 )]
+    [LinkedPage( "Donation Page",
+        Description = "The page where a person can donate to the fundraising opportunity",
+        IsRequired = false,
+        Order = 6 )]
+    [LinkedPage( "Leader Toolbox Page",
+        Description = "The toolbox page for a leader of this fundraising opportunity",
+        IsRequired = false,
+        Order = 7 )]
+    [LinkedPage( "Participant Page",
+        Description = "The participant page for a participant of this fundraising opportunity",
+        IsRequired = false,
+        Order = 8 )]
 
-    [BooleanField( "Set Page Title to Opportunity Title", "", true, order: 9 )]
-    [LinkedPage( "Registration Page", "The page to use for registrations.", required: false, order: 10 )]
-    [TextField( "Image CSS Class", "CSS class to apply to the image.", false, "img-thumbnail", key: "ImageCssClass", order: 11 )]
+    [BooleanField( "Set Page Title to Opportunity Title",
+        DefaultBooleanValue = true,
+        Order = 9 )]
+    [LinkedPage( "Registration Page",
+        Description = "The page to use for registrations.",
+        IsRequired = false,
+        Order = 10 )]
+    [TextField( "Image CSS Class",
+        Description = "CSS class to apply to the image.",
+        IsRequired = false,
+        DefaultValue = "img-thumbnail",
+        Key = "ImageCssClass",
+        Order = 11 )]
     [Rock.SystemGuid.BlockTypeGuid( "DA5F83B9-7F6A-4CF6-AF23-0D89DA4D4241" )]
     public partial class FundraisingOpportunityView : RockBlock
     {

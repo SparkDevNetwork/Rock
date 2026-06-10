@@ -1,6 +1,8 @@
 ---
 title: Check-in Domain Overview
-last_updated: 2026-05-01
+last_updated: 2026-06-03
+related_specs:
+  - specs/completed/check-in/260506-check-in-areas-and-groups-obsidian-conversion.md
 related_files:
   - Rock/CheckIn/CheckInState.cs
   - Rock/CheckIn/CheckInBlock.cs
@@ -13,6 +15,7 @@ related_files:
   - Rock/Model/Event/Attendance/Attendance.cs
   - Rock/Model/Event/AttendanceOccurrence/AttendanceOccurrence.cs
   - Rock/Model/Event/AttendanceCode/AttendanceCode.cs
+  - Rock.Blocks/CheckIn/Configuration/CheckInAreasAndGroups.cs
 ---
 
 # Check-in Domain Overview
@@ -168,7 +171,7 @@ It reads from `Group`, `GroupType`, `GroupLocation`, `Schedule`, and the active 
 
 - **Kiosk:** Welcome, Search, Family Select, Person Select, Group Type / Group / Location / Schedule Select, Action Select (check-in vs check-out), Success, Edit Family.
 - **Manager:** Check-in Manager (live roster, Obsidian as of `3ab0ca2523`).
-- **Configuration:** Check-in Configuration, CheckinType Detail, Label Designer, Check-in Label Detail/List, Check-in Schedule Builder.
+- **Configuration:** Check-in Areas and Groups, Check-in Configuration List, Check-in Configuration Settings, CheckinType Detail, Label Designer, Check-in Label Detail/List, Check-in Schedule Builder.
 - **Mobile:** Mobile check-in flows in `Rock.Blocks.CheckIn` and `Rock.Blocks.Types.Mobile`.
 
 ### Extension Points
@@ -192,3 +195,7 @@ It reads from `Group`, `GroupType`, `GroupLocation`, `Schedule`, and the active 
 - **2026-03-03** ([commit `780ab66a77`](https://github.com/SparkDevNetwork/Rock/commit/780ab66a77)). Family search no longer times out on short-name queries like "te de" (Fixes #6715).
 - **2026-02-09** ([commit `3ab0ca2523`](https://github.com/SparkDevNetwork/Rock/commit/3ab0ca2523)). Check-in Manager Roster block updated to Obsidian with real-time check-in tracking.
 - **2025-12-11** ([commit `cd1ee3883c`](https://github.com/SparkDevNetwork/Rock/commit/cd1ee3883c)). Archived groups are no longer eligible for check-in, including overrides (Fixes #6618).
+
+## Related Specs
+
+- [Check-in Areas and Groups: WebForms to Obsidian Conversion](../../specs/completed/check-in/260506-check-in-areas-and-groups-obsidian-conversion.md) (2026-05-06, Jason Hendee)
