@@ -940,8 +940,14 @@ namespace Rock.Web.UI
                 // Check that they are two-factor authenticated if two-factor authentication is required for their protection profile.
                 var securitySettings = new SecuritySettingsService().SecuritySettings;
 
+                // MFA enforcement now reads the current session's strength
+                // via PersonSession rather than the legacy
+                // UserData.IsTwoFactorAuthenticated flag. MeetsRequirement
+                // returns true only when the session's
+                // LastMultiFactorAuthenticationDateTime is within the
+                // MultiFactor recency window.
                 if ( securitySettings.RequireTwoFactorAuthenticationForAccountProtectionProfiles?.Contains( user.Person.AccountProtectionProfile ) == true
-                     && !user.IsTwoFactorAuthenticated )
+                     && !RequestContext.MeetsRequirement( AuthenticationRequirement.MultiFactor ) )
                 {
                     // Sign out and redirect to the login page to force two-factor authentication.
                     Authorization.SignOut();
@@ -1111,13 +1117,25 @@ namespace Rock.Web.UI
                     // may have edit and/or administrate access to the page.
                     if ( !canAdministratePage || !canEditPage )
                     {
-                        // if the current user is being impersonated by another user (typically an admin), then check their security
-                        var impersonatedByUser = Session["ImpersonatedByUser"] as UserLogin;
-                        var currentUserIsImpersonated = ( HttpContext.Current?.User?.Identity?.Name ?? string.Empty ).StartsWith( "rckipid=" );
-                        if ( impersonatedByUser != null && currentUserIsImpersonated )
+                        // Pattern A read against PersonSession: when the current
+                        // session represents admin-initiated impersonation, fall
+                        // back to the impersonator's permissions for ADMINISTRATE
+                        // and EDIT. UserToken sessions also report IsImpersonated,
+                        // but they have no impersonator to fall back to —
+                        // GetImpersonatorSession returns null for those, so the
+                        // permission grant below is naturally skipped.
+                        var currentSession = RequestContext?.PersonSession;
+                        if ( currentSession?.IsImpersonated() == true )
                         {
-                            canAdministratePage = canAdministratePage || _pageCache.IsAuthorized( Authorization.ADMINISTRATE, impersonatedByUser.Person );
-                            canEditPage = canEditPage || _pageCache.IsAuthorized( Authorization.EDIT, impersonatedByUser.Person );
+                            using var impersonatorRockContext = new RockContext();
+                            var impersonatorSession = new PersonSessionService( impersonatorRockContext ).GetImpersonatorSession( currentSession );
+                            var impersonatorPerson = impersonatorSession?.PersonAlias?.Person;
+
+                            if ( impersonatorPerson != null )
+                            {
+                                canAdministratePage = canAdministratePage || _pageCache.IsAuthorized( Authorization.ADMINISTRATE, impersonatorPerson );
+                                canEditPage = canEditPage || _pageCache.IsAuthorized( Authorization.EDIT, impersonatorPerson );
+                            }
                         }
                     }
 
@@ -1401,21 +1419,34 @@ namespace Rock.Web.UI
                         lbCacheControl.Text = "<i class='ti ti-run'></i>";
                         adminFooter.Controls.Add( lbCacheControl );
 
-                        // If the current user is Impersonated by another user, show a link on the admin bar to log back in as the original user
-                        var impersonatedByUser = Session["ImpersonatedByUser"] as UserLogin;
-                        var currentUserIsImpersonated = ( HttpContext.Current?.User?.Identity?.Name ?? string.Empty ).StartsWith( "rckipid=" );
-                        if ( canAdministratePage && currentUserIsImpersonated && impersonatedByUser != null )
+                        // Pattern A read against PersonSession: the "Restore"
+                        // affordance only renders for admin-initiated
+                        // impersonation (CreationSource = Impersonation), and
+                        // only when the impersonator's prior session is still
+                        // recoverable. GetImpersonatorSession returns null when
+                        // the source is UserToken, when the prior session row
+                        // has been deleted, or when the restore reference on
+                        // the impersonation session's AdditionalSettings is
+                        // dangling.
+                        var currentSession = RequestContext?.PersonSession;
+                        if ( canAdministratePage && currentSession?.CreationSource == PersonSessionCreationSource.Impersonation )
                         {
-                            HtmlGenericControl impersonatedByUserDiv = new HtmlGenericControl( "span" );
-                            impersonatedByUserDiv.AddCssClass( "label label-default margin-l-md" );
-                            _btnRestoreImpersonatedByUser = new LinkButton();
-                            _btnRestoreImpersonatedByUser.ID = "_btnRestoreImpersonatedByUser";
-                            //_btnRestoreImpersonatedByUser.CssClass = "btn";
-                            _btnRestoreImpersonatedByUser.Visible = impersonatedByUser != null;
-                            _btnRestoreImpersonatedByUser.Click += _btnRestoreImpersonatedByUser_Click;
-                            _btnRestoreImpersonatedByUser.Text = $"<i class='ti-fw ti ti-lock-open'></i> " + $"Restore {impersonatedByUser?.Person?.ToString()}";
-                            impersonatedByUserDiv.Controls.Add( _btnRestoreImpersonatedByUser );
-                            adminFooter.Controls.Add( impersonatedByUserDiv );
+                            using var impersonatorRockContext = new RockContext();
+                            var impersonatorSession = new PersonSessionService( impersonatorRockContext ).GetImpersonatorSession( currentSession );
+                            var impersonatorPerson = impersonatorSession?.PersonAlias?.Person;
+
+                            if ( impersonatorPerson != null )
+                            {
+                                HtmlGenericControl impersonatedByUserDiv = new HtmlGenericControl( "span" );
+                                impersonatedByUserDiv.AddCssClass( "label label-default margin-l-md" );
+                                _btnRestoreImpersonatedByUser = new LinkButton();
+                                _btnRestoreImpersonatedByUser.ID = "_btnRestoreImpersonatedByUser";
+                                _btnRestoreImpersonatedByUser.Visible = true;
+                                _btnRestoreImpersonatedByUser.Click += _btnRestoreImpersonatedByUser_Click;
+                                _btnRestoreImpersonatedByUser.Text = $"<i class='ti-fw ti ti-lock-open'></i> " + $"Restore {impersonatorPerson}";
+                                impersonatedByUserDiv.Controls.Add( _btnRestoreImpersonatedByUser );
+                                adminFooter.Controls.Add( impersonatedByUserDiv );
+                            }
                         }
 
                         HtmlGenericControl buttonBar = new HtmlGenericControl( "div" );

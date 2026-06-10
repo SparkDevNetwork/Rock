@@ -32,46 +32,61 @@ namespace Rock.Model
         /// <value>
         ///   A <see cref="System.Boolean"/> value that is <c>true</c> if the user actually authenticated; otherwise <c>false</c>.
         /// </value>
+        /// <remarks>
+        /// Under the PersonSession model authentication strength lives on the
+        /// current <see cref="PersonSession"/>, not on the legacy
+        /// <c>FormsAuthenticationTicket.UserData</c>. This property is
+        /// preserved as a Pattern A bridge so existing readers still compile
+        /// during the dual-reader window: it returns <c>true</c> only when the
+        /// current request's <see cref="PersonSession"/> is active AND is not
+        /// an impersonated session. New callers should read
+        /// <c>RockRequestContext.PersonSession</c> (or call
+        /// <see cref="Rock.Net.RockRequestContext.MeetsRequirement"/>) directly;
+        /// this property will be obsoleted in a follow-up phase.
+        /// </remarks>
         [NotMapped]
         [LavaVisible]
         public virtual bool IsAuthenticated
         {
             get
             {
-                System.Web.Security.FormsIdentity identity = HttpContext.Current.User?.Identity as System.Web.Security.FormsIdentity;
-
-                if ( identity == null )
+                var personSession = Rock.Net.RockRequestContextAccessor.Current?.PersonSession;
+                if ( personSession == null || !personSession.IsActive )
                 {
                     return false;
                 }
 
-                if ( Rock.Security.Authorization.GetUserData( identity.Ticket )?.IsImpersonated == true )
-                {
-                    return false;
-                }
-
-                return true;
+                return !personSession.IsImpersonated();
             }
         }
+
         /// <summary>
         /// Gets a flag indicating if the User is two-factor authenticated.
         /// </summary>
         /// <value>
         ///   A <see cref="System.Boolean"/> value that is <c>true</c> if the user is two-factor authenticated; otherwise <c>false</c>.
         /// </value>
+        /// <remarks>
+        /// Under the PersonSession model two-factor recency lives on the
+        /// current <see cref="PersonSession"/>. This Pattern A bridge returns
+        /// <c>true</c> only when the current request's session meets the
+        /// <see cref="Rock.Enums.Security.AuthenticationRequirement.MultiFactor"/>
+        /// requirement. New callers should call
+        /// <c>RockRequestContext.MeetsRequirement(MultiFactor)</c> directly;
+        /// this property will be obsoleted in a follow-up phase.
+        /// </remarks>
         [NotMapped]
         public virtual bool IsTwoFactorAuthenticated
         {
             get
             {
-                System.Web.Security.FormsIdentity identity = HttpContext.Current.User?.Identity as System.Web.Security.FormsIdentity;
-
-                if ( identity == null )
+                var requestContext = Rock.Net.RockRequestContextAccessor.Current;
+                if ( requestContext == null )
                 {
                     return false;
                 }
 
-                return Rock.Security.Authorization.GetUserData( identity.Ticket )?.IsTwoFactorAuthenticated == true;
+                return requestContext.MeetsRequirement( Rock.Enums.Security.AuthenticationRequirement.MultiFactor );
             }
         }
 

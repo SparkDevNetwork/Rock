@@ -171,7 +171,7 @@ namespace Rock.Blocks.Cms
         /// <returns>The ordered list of <see cref="ActiveUserBag"/> entries to display.</returns>
         private List<ActiveUserBag> GetActiveUsers( int siteId, int pageViewCount )
         {
-            var currentUserName = RequestContext.CurrentUser?.UserName;
+            var currentPersonId = RequestContext.CurrentPerson?.Id;
 
             var last24Hours = RockDateTime.Now.AddDays( -1 );
 
@@ -185,40 +185,59 @@ namespace Rock.Blocks.Cms
             var pageViewQry = new InteractionService( RockContext ).Queryable()
                 .Where( pv => pv.PersonAliasId.HasValue && pv.InteractionDateTime > last24Hours );
 
-            var activeLoginsQuery = new UserLoginService( RockContext ).Queryable()
-                .Where( l => l.PersonId.HasValue && l.IsOnLine == true );
+            var activeSessionsQuery = new PersonSessionService( RockContext ).Queryable()
+                .Where( s => s.IsActive );
 
-            if ( currentUserName.IsNotNullOrWhiteSpace() )
+            if ( currentPersonId.HasValue )
             {
-                activeLoginsQuery = activeLoginsQuery.Where( l => l.UserName != currentUserName );
+                activeSessionsQuery = activeSessionsQuery.Where( s => s.PersonAlias.PersonId != currentPersonId.Value );
             }
+
+            // Collapse multiple sessions per person to a single row keyed on
+            // the most recent LastActivityDateTime so each person shows up at
+            // most once in the list. The Person fields are projected from the
+            // PersonAlias.Person navigation; the GroupBy is materialized
+            // server-side and a follow-up join pulls the projected Person
+            // columns.
+            var personQuery = new PersonService( RockContext ).Queryable();
+
+            var activePeopleQuery = activeSessionsQuery
+                .GroupBy( s => s.PersonAlias.PersonId )
+                .Select( g => new
+                {
+                    PersonId = g.Key,
+                    LastActivityDateTime = g.Max( s => s.LastActivityDateTime )
+                } );
 
             // The inner .Take( pageViewTakeCount ) caps each user's row count, preventing
             // unbounded fetches on heavily-trafficked sites where admins may rack up thousands
             // of interactions per day.
-            var activeLogins = activeLoginsQuery
+            var activeLogins = activePeopleQuery
+                .Join(
+                    personQuery,
+                    sessionRow => sessionRow.PersonId,
+                    person => person.Id,
+                    ( sessionRow, person ) => new ActiveLogin
+                    {
+                        LastActivityDateTime = sessionRow.LastActivityDateTime,
+                        PersonId = sessionRow.PersonId,
+                        NickName = person.NickName,
+                        LastName = person.LastName,
+                        SuffixValueId = person.SuffixValueId,
+                        RecordTypeValueId = person.RecordTypeValueId,
+                        PageViews = pageViewQry
+                            .Where( pv => pv.PersonAlias.PersonId == sessionRow.PersonId )
+                            .OrderByDescending( pv => pv.InteractionDateTime )
+                            .Take( pageViewTakeCount )
+                            .Select( pv => new ActiveLoginPageView
+                            {
+                                ChannelEntityId = pv.InteractionComponent.InteractionChannel.ChannelEntityId,
+                                InteractionSessionId = pv.InteractionSessionId,
+                                Title = pv.InteractionComponent.Name
+                            } )
+                            .ToList()
+                    } )
                 .OrderByDescending( l => l.LastActivityDateTime )
-                .Select( l => new ActiveLogin
-                {
-                    UserName = l.UserName,
-                    LastActivityDateTime = l.LastActivityDateTime,
-                    PersonId = l.PersonId.Value,
-                    NickName = l.Person.NickName,
-                    LastName = l.Person.LastName,
-                    SuffixValueId = l.Person.SuffixValueId,
-                    RecordTypeValueId = l.Person.RecordTypeValueId,
-                    PageViews = pageViewQry
-                        .Where( pv => pv.PersonAlias.PersonId == l.PersonId.Value )
-                        .OrderByDescending( pv => pv.InteractionDateTime )
-                        .Take( pageViewTakeCount )
-                        .Select( pv => new ActiveLoginPageView
-                        {
-                            ChannelEntityId = pv.InteractionComponent.InteractionChannel.ChannelEntityId,
-                            InteractionSessionId = pv.InteractionSessionId,
-                            Title = pv.InteractionComponent.Name
-                        } )
-                        .ToList()
-                } )
                 .ToList();
 
             // Pre-resolve the profile page setting so we don't re-read it per iteration.
@@ -332,20 +351,16 @@ namespace Rock.Blocks.Cms
         #region Supporting Types
 
         /// <summary>
-        /// Internal query projection for an online <see cref="UserLogin"/> together with that
-        /// user's most recent page-view interactions. Shape is driven by
+        /// Internal query projection for an active person session together with
+        /// that person's most recent page-view interactions. Shape is driven by
         /// <see cref="GetActiveUsers( int, int )"/>; not intended for use outside this block.
         /// </summary>
         private class ActiveLogin
         {
             /// <summary>
-            /// Gets or sets the UserLogin.UserName — used to hide the current viewer's login.
-            /// </summary>
-            public string UserName { get; set; }
-
-            /// <summary>
-            /// Gets or sets the last activity timestamp on the UserLogin — drives the recent vs
-            /// not-recent indicator color.
+            /// Gets or sets the maximum LastActivityDateTime across the
+            /// person's active <see cref="PersonSession"/> rows — drives the
+            /// recent vs not-recent indicator color.
             /// </summary>
             public DateTime? LastActivityDateTime { get; set; }
 

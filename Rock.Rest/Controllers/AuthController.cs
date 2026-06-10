@@ -49,7 +49,26 @@ namespace Rock.Rest.Controllers
                 throw new HttpResponseException( errorResponse );
             }
 
-            // TODO: Add 2FA support to API authentication.
+            /*
+                6/10/26 - DSH
+
+                This endpoint passes isTwoFactorAuthenticated: true without
+                actually verifying a second factor. Any caller with a valid
+                username/password (or JWT) lands a session that the
+                PersonSession model will treat as MultiFactor-strength on
+                subsequent requests, bypassing MFA-gated pages.
+
+                The legacy behavior is preserved here intentionally so the v1
+                REST API does not break for existing API consumers. The
+                security concern is tracked against the v2 REST conversion,
+                where the API auth flow will be redesigned to either (a) drop
+                the MFA recency stamping entirely or (b) require a real second
+                factor before stamping it.
+
+                Reason: Deferred to v2 REST conversion to avoid breaking
+                existing API consumers; see PersonSession spec
+                "Touch-points to update / AuthController.Login".
+            */
             Rock.Security.Authorization.SetAuthCookie(
                 userName,
                 loginParameters.Persisted,

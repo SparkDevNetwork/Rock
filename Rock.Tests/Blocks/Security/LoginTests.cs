@@ -416,9 +416,10 @@ public class LoginTests
 
         var component = container.Components.Values.Select( v => v.Value ).OfType<Database>().FirstOrDefault();
 
-        component.LoadAttributes( rockContext );
-        component.SetAttributeValue( "Active", true.ToString() );
-        component.SaveAttributeValues( rockContext );
+        component.AttributeValues = new System.Collections.Generic.Dictionary<string, AttributeValueCache>
+        {
+            ["Active"] = new AttributeValueCache { Value = "True" },
+        };
 
         return component;
     }

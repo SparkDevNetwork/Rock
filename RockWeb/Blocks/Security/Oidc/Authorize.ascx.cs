@@ -187,7 +187,12 @@ namespace RockWeb.Blocks.Security.Oidc
 
                 Reason: Allow OIDC `client_id` verification before auto-redirect to login page.
              */
-            if ( CurrentUser?.IsAuthenticated != true )
+            // The CurrentUser null-check is retained because downstream code in
+            // this block (CurrentPerson reads, scope-cookie lookups, etc.)
+            // depends on CurrentUser being non-null. A future refactor could
+            // replace this with `RequestContext.PersonSession == null` once
+            // those downstream reads are migrated off CurrentUser.
+            if ( CurrentUser == null || RequestContext.PersonSession?.IsImpersonated() == true )
             {
                 var loginUrl = RockPage.GetLoginUrlWithReturnUrl();
                 Response.Redirect( loginUrl );

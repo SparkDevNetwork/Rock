@@ -1534,13 +1534,10 @@ Update Family Status: {updateFamilyStatus}
             {
                 var startDate = RockDateTime.Now.AddDays( -periodInDays );
 
-                return new UserLoginService( rockContext )
+                return new PersonSessionService( rockContext )
                     .Queryable().AsNoTracking()
-                    .Where( u =>
-                        u.LastActivityDateTime >= startDate ||
-                        u.LastActivityDateTime >= startDate )
-                    .Where( u => u.PersonId != null )
-                    .Select( u => u.PersonId ?? 0 )
+                    .Where( s => s.LastActivityDateTime >= startDate )
+                    .Select( s => s.PersonAlias.PersonId )
                     .Distinct()
                     .ToList();
             }
