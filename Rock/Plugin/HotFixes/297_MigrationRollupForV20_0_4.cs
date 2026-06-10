@@ -1,0 +1,72 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+using System;
+
+namespace Rock.Plugin.HotFixes
+{
+    /// <summary>
+    /// Plug-in migration
+    /// </summary>
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 297, "20.0" )]
+    public class MigrationRollupsForV20_0_4 : Migration
+    {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            NA_Update_PersonalizationSegmentsPageIcon_Up();
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            // Down migrations are not yet supported in plug-in migrations.
+            NA_Update_PersonalizationSegmentsPageIcon_Down();
+        }
+
+        /// <summary>
+        /// Updates the icon for the Personalization Segments page.
+        /// </summary>
+        /// <remarks>
+        /// This migration locates the well-known <c>Page</c> record by its known <c>Guid</c>
+        /// (905F6132-AE1C-4C85-9752-18D22E604C3A) and sets its <c>IconCssClass</c>
+        /// to <c>ti ti-user-circle</c>.
+        /// </remarks>
+        private void NA_Update_PersonalizationSegmentsPageIcon_Up()
+        {
+            Sql( $@"UPDATE [dbo].[Page] SET [IconCssClass] = 'ti ti-user-circle' WHERE [Guid] = '905F6132-AE1C-4C85-9752-18D22E604C3A'" ); // Personalization Segments Page
+        }
+
+        /// <summary>
+        /// Reverts the icon for the Personalization Segments page back to its previous value.
+        /// </summary>
+        /// <remarks>
+        /// This migration locates the well-known <c>Page</c> record by its known <c>Guid</c>
+        /// (905F6132-AE1C-4C85-9752-18D22E604C3A) and restores its <c>IconCssClass</c>
+        /// to <c>ti ti-user-dollar</c>.
+        /// </remarks>
+        private void NA_Update_PersonalizationSegmentsPageIcon_Down()
+        {
+            Sql( $@"UPDATE [dbo].[Page] SET [IconCssClass] = 'ti ti-user-dollar' WHERE [Guid] = '905F6132-AE1C-4C85-9752-18D22E604C3A'" ); // Personalization Segments Page
+        }
+    }
+}
