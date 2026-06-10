@@ -255,7 +255,14 @@ namespace Rock.Model
                     CommunicationSMSMessage = j.CommunicationRecipient.Communication.SMSMessage,
                     j.CommunicationRecipient.SentMessage,
                     RecipientPersonAliasId = j.CommunicationRecipient.PersonAliasId,
-                    RecipientPersonGuid = j.CommunicationRecipient.PersonAlias.Person.Guid
+                    RecipientPersonGuid = j.CommunicationRecipient.PersonAlias.Person.Guid,
+                    PersonAge = j.PersonAlias.Person.Age,
+                    PersonGender = j.PersonAlias.Person.Gender,
+                    PersonAgeClassification = j.PersonAlias.Person.AgeClassification,
+                    PersonPrimaryAliasGuid = j.PersonAlias.Person.Aliases
+                        .Where( a => a.AliasPersonId == j.PersonAlias.PersonId )
+                        .Select( a => ( Guid? ) a.Guid )
+                        .FirstOrDefault()
                 } );
 
             var mostRecentCommunicationRecipientQuery = communicationRecipientJoinQuery
@@ -282,7 +289,11 @@ namespace Rock.Model
                         s.SmsFromSystemPhoneNumberId,
                         s.SentMessage,
                         s.RecipientPersonAliasId,
-                        s.RecipientPersonGuid
+                        s.RecipientPersonGuid,
+                        s.PersonAge,
+                        s.PersonGender,
+                        s.PersonAgeClassification,
+                        s.PersonPrimaryAliasGuid
                     } ).OrderByDescending( s => s.CreatedDateTime ).FirstOrDefault()
                 ).OrderByDescending( s => s.CreatedDateTime );
 
@@ -303,7 +314,14 @@ namespace Rock.Model
                     FromPersonNickName = r.FromPersonAlias.Person.NickName,
                     FromPersonLastName = r.FromPersonAlias.Person.LastName,
                     FromPersonSuffixValueId = r.FromPersonAlias.Person.SuffixValueId,
-                    FromPersonPhotoId = r.FromPersonAlias.Person.PhotoId
+                    FromPersonPhotoId = r.FromPersonAlias.Person.PhotoId,
+                    FromPersonAge = r.FromPersonAlias.Person.Age,
+                    FromPersonGender = r.FromPersonAlias.Person.Gender,
+                    FromPersonAgeClassification = r.FromPersonAlias.Person.AgeClassification,
+                    FromPersonPrimaryAliasGuid = r.FromPersonAlias.Person.Aliases
+                        .Where( a => a.AliasPersonId == r.FromPersonAlias.PersonId )
+                        .Select( a => ( Guid? ) a.Guid )
+                        .FirstOrDefault()
                 } )
                 .Take( maxCount )
                 .ToList();
@@ -332,7 +350,12 @@ namespace Rock.Model
                     RecipientPersonAliasId = mostRecentResponse.FromPersonAliasId,
                     RecipientPersonGuid = mostRecentResponse.FromPersonGuid,
                     SMSMessage = mostRecentResponse.Response,
-                    CommunicationResponseId = mostRecentResponse.Id
+                    CommunicationResponseId = mostRecentResponse.Id,
+                    RecipientPrimaryAliasGuid = mostRecentResponse.FromPersonPrimaryAliasGuid,
+                    Initials = GetInitials( mostRecentResponse.FromPersonNickName, mostRecentResponse.FromPersonLastName ),
+                    Age = mostRecentResponse.FromPersonAge,
+                    Gender = mostRecentResponse.FromPersonGender,
+                    AgeClassification = mostRecentResponse.FromPersonAgeClassification
                 };
 
                 communicationRecipientResponseList.Add( communicationRecipientResponse );
@@ -371,7 +394,12 @@ namespace Rock.Model
                     RecipientPersonAliasId = mostRecentCommunicationRecipient.RecipientPersonAliasId,
                     RecipientPersonGuid = mostRecentCommunicationRecipient.RecipientPersonGuid,
                     SMSMessage = mostRecentCommunicationRecipient.SentMessage.IsNullOrWhiteSpace() ? mostRecentCommunicationRecipient.CommunicationSMSMessage : mostRecentCommunicationRecipient.SentMessage,
-                    CommunicationId = mostRecentCommunicationRecipient.CommunicationId
+                    CommunicationId = mostRecentCommunicationRecipient.CommunicationId,
+                    RecipientPrimaryAliasGuid = mostRecentCommunicationRecipient.PersonPrimaryAliasGuid,
+                    Initials = GetInitials( mostRecentCommunicationRecipient.PersonNickName, mostRecentCommunicationRecipient.PersonLastName ),
+                    Age = mostRecentCommunicationRecipient.PersonAge,
+                    Gender = mostRecentCommunicationRecipient.PersonGender,
+                    AgeClassification = mostRecentCommunicationRecipient.PersonAgeClassification
                 };
 
                 if ( mostRecentCommunicationRecipient?.PersonRecordTypeValueId == recordTypeValueIdNamelessId )
@@ -397,6 +425,22 @@ namespace Rock.Model
                 .OrderByDescending( a => a.CreatedDateTime ).Take( maxCount ).ToList();
 
             return communicationRecipientResponseList;
+        }
+
+        /// <summary>
+        /// Builds a person's initials (first character of nick name + last name) the same way
+        /// <see cref="Person.Initials"/> does, from values the conversation queries already
+        /// project - so we don't have to materialize the <see cref="Person"/>.
+        /// </summary>
+        /// <param name="nickName">The person's nick name.</param>
+        /// <param name="lastName">The person's last name.</param>
+        /// <returns>The person's initials.</returns>
+        private static string GetInitials( string nickName, string lastName )
+        {
+            var firstInitial = string.IsNullOrEmpty( nickName ) ? string.Empty : nickName.Substring( 0, 1 );
+            var lastInitial = string.IsNullOrEmpty( lastName ) ? string.Empty : lastName.Substring( 0, 1 );
+
+            return firstInitial + lastInitial;
         }
 
         /// <summary>
@@ -482,7 +526,14 @@ namespace Rock.Model
                     FromPersonNickName = r.FromPersonAlias.Person.NickName,
                     FromPersonLastName = r.FromPersonAlias.Person.LastName,
                     FromPersonSuffixValueId = r.FromPersonAlias.Person.SuffixValueId,
-                    FromPersonPhotoId = r.FromPersonAlias.Person.PhotoId
+                    FromPersonPhotoId = r.FromPersonAlias.Person.PhotoId,
+                    FromPersonAge = r.FromPersonAlias.Person.Age,
+                    FromPersonGender = r.FromPersonAlias.Person.Gender,
+                    FromPersonAgeClassification = r.FromPersonAlias.Person.AgeClassification,
+                    FromPersonPrimaryAliasGuid = r.FromPersonAlias.Person.Aliases
+                        .Where( a => a.AliasPersonId == r.FromPersonAlias.PersonId )
+                        .Select( a => ( Guid? ) a.Guid )
+                        .FirstOrDefault()
                 } );
 
             var communicationResponseList = communicationResponseQuery.ToList();
@@ -509,6 +560,11 @@ namespace Rock.Model
                     SMSMessage = communicationResponse.Response,
                     MessageStatus = CommunicationRecipientStatus.Delivered, // We are just going to call these delivered because we have them. Setting this will tell the UI to not display the status.
                     CommunicationResponseId = communicationResponse.Id,
+                    RecipientPrimaryAliasGuid = communicationResponse.FromPersonPrimaryAliasGuid,
+                    Initials = GetInitials( communicationResponse.FromPersonNickName, communicationResponse.FromPersonLastName ),
+                    Age = communicationResponse.FromPersonAge,
+                    Gender = communicationResponse.FromPersonGender,
+                    AgeClassification = communicationResponse.FromPersonAgeClassification,
                 };
 
                 communicationRecipientResponseList.Add( communicationRecipientResponse );
@@ -540,7 +596,14 @@ namespace Rock.Model
                     SenderPersonRecordTypeValueId = r.Communication.SenderPersonAlias.Person.RecordTypeValueId,
                     SenderPersonNickName = r.Communication.SenderPersonAlias.Person.NickName,
                     SenderPersonLastName = r.Communication.SenderPersonAlias.Person.LastName,
-                    SenderPersonSuffixValueId = r.Communication.SenderPersonAlias.Person.SuffixValueId
+                    SenderPersonSuffixValueId = r.Communication.SenderPersonAlias.Person.SuffixValueId,
+                    PersonAge = r.PersonAlias.Person.Age,
+                    PersonGender = r.PersonAlias.Person.Gender,
+                    PersonAgeClassification = r.PersonAlias.Person.AgeClassification,
+                    PersonPrimaryAliasGuid = r.PersonAlias.Person.Aliases
+                        .Where( a => a.AliasPersonId == r.PersonAlias.PersonId )
+                        .Select( a => ( Guid? ) a.Guid )
+                        .FirstOrDefault()
                 } )
                 .ToList();
 
@@ -572,6 +635,11 @@ namespace Rock.Model
                     SMSMessage = communicationRecipient.SentMessage,
                     MessageStatus = communicationRecipient.Status,
                     CommunicationId = communicationRecipient.CommunicationId,
+                    RecipientPrimaryAliasGuid = communicationRecipient.PersonPrimaryAliasGuid,
+                    Initials = GetInitials( communicationRecipient.PersonNickName, communicationRecipient.PersonLastName ),
+                    Age = communicationRecipient.PersonAge,
+                    Gender = communicationRecipient.PersonGender,
+                    AgeClassification = communicationRecipient.PersonAgeClassification,
                 };
 
                 if ( communicationRecipient.PersonRecordTypeValueId == recordTypeValueIdNamelessId )
