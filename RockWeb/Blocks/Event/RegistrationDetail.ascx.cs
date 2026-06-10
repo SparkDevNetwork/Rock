@@ -117,6 +117,7 @@ namespace RockWeb.Blocks.Event
         {
             public const string RegistrationInstanceId = "RegistrationInstanceId";
             public const string RegistrationId = "RegistrationId";
+            public const string ReturnUrl = "ReturnUrl";
         }
 
         #endregion Page Parameter Keys
@@ -339,6 +340,42 @@ namespace RockWeb.Blocks.Event
             return key.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( key );
         }
 
+        /// <summary>
+        /// Navigates to the ReturnUrl page parameter if it is a safe local URL,
+        /// otherwise navigates to the parent page with the supplied query parameters.
+        /// </summary>
+        /// <param name="pageParams">The query parameters to use when falling back to the parent page.</param>
+        private void NavigateToReturnUrlOrParentPage( Dictionary<string, string> pageParams )
+        {
+            /*
+                6/5/26 - MSE
+
+                This block's parent page is the Registrations tab, so navigating to
+                the parent page loses the tab the individual came from (Registrants,
+                Payments, etc.). Linking blocks pass ReturnUrl so we can send them back.
+
+                Reason: Preserve the source tab when navigating away from this block.
+            */
+            var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
+
+            // Only allow site-relative paths to prevent open redirects.
+            // "//" and "/\" are rejected because browsers treat them as protocol-relative.
+            var isSafeLocalUrl = returnUrl.IsNotNullOrWhiteSpace()
+                && returnUrl.StartsWith( "/" )
+                && !returnUrl.StartsWith( "//" )
+                && !returnUrl.StartsWith( @"/\" )
+                && !returnUrl.RedirectUrlContainsXss();
+
+            if ( isSafeLocalUrl )
+            {
+                Response.Redirect( returnUrl, false );
+                Context.ApplicationInstance.CompleteRequest();
+                return;
+            }
+
+            NavigateToParentPage( pageParams );
+        }
+
         #endregion Page Parameter Helpers
 
         #region Control Methods
@@ -546,7 +583,7 @@ namespace RockWeb.Blocks.Event
 
                     var pageParams = new Dictionary<string, string>();
                     pageParams.Add( "RegistrationInstanceId", RegistrationInstanceId.ToString() );
-                    NavigateToParentPage( pageParams );
+                    NavigateToReturnUrlOrParentPage( pageParams );
                 }
             }
         }
@@ -704,7 +741,7 @@ namespace RockWeb.Blocks.Event
             {
                 var pageParams = new Dictionary<string, string>();
                 pageParams.Add( "RegistrationInstanceId", RegistrationInstanceId.ToString() );
-                NavigateToParentPage( pageParams );
+                NavigateToReturnUrlOrParentPage( pageParams );
             }
             else
             {
