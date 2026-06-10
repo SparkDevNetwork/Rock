@@ -20,10 +20,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Web.UI.WebControls;
 
 using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -59,13 +57,6 @@ namespace Rock.Blocks.Event
         /// Gets the friendly type name of the entity being managed.
         /// </summary>
         private string FriendlyTypeName => "Registration Instance Linkage";
-
-        /// <summary>
-        /// Gets a value indicating whether the current person has authorization to administrate or edit the block.
-        /// </summary>
-        private bool IsCurrentPersonAuthorized =>
-                BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) ||
-                BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
         private EventItemOccurrenceGroupMapService EventItemOccurrenceGroupMapService => new EventItemOccurrenceGroupMapService( RockContext );
         private EventCalendarService EventCalendarService => new EventCalendarService( RockContext );
@@ -121,9 +112,13 @@ namespace Rock.Blocks.Event
         {
             var options = new RegistrationInstanceLinkageDetailOptionsBag()
             {
+                // Only include calendars the current person is authorized to view,
+                // matching the legacy WebForms block.
                 Calendars = EventCalendarService.Queryable().AsNoTracking()
                     .Where( c => c.IsActive )
                     .OrderBy( c => c.Name )
+                    .ToList()
+                    .Where( c => c.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
                     .Select( c => new ListItemBag
                     {
                         Text = c.Name,
@@ -171,17 +166,16 @@ namespace Rock.Blocks.Event
                 return;
             }
 
-            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            /*
+                6/10/26 - MSE
 
-            // New entity is being created, prepare for edit mode by default.
-            if ( box.IsEditable )
-            {
-                box.Entity = GetEntityBagForEdit( entity );
-            }
-            else
-            {
-                box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( EventItem.FriendlyTypeName );
-            }
+                This block intentionally has no EDIT security gate. The legacy WebForms
+                block allowed anyone who could view the page to add or edit linkages.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/6865
+            */
+            box.IsEditable = true;
+            box.Entity = GetEntityBagForEdit( entity );
         }
 
         /// <summary>
@@ -314,11 +308,6 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<RegistrationInstanceLinkageDetailBag, RegistrationInstanceLinkageDetailOptionsBag> box )
         {
-            if ( !IsCurrentPersonAuthorized )
-            {
-                return ActionBadRequest( EditModeMessage.NotAuthorizedToEdit( FriendlyTypeName ) );
-            }
-
             var service = new EventItemOccurrenceGroupMapService( RockContext );
 
             EventItemOccurrenceGroupMap linkage = null;
@@ -383,11 +372,6 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult FetchGroupType( Guid groupGuid )
         {
-            if ( !IsCurrentPersonAuthorized )
-            {
-                return ActionBadRequest( EditModeMessage.NotAuthorizedToEdit( FriendlyTypeName ) );
-            }
-
             var group = GroupCache.Get( groupGuid );
 
             if ( group != null && group.GroupType != null )
