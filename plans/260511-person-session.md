@@ -576,26 +576,84 @@ Every reader of the deprecated `UserLogin.*` properties or the legacy auth ticke
 ## Phase 15 — Deprecations and writer removals
 
 ### Goal
-Mark deprecated public surface `[Obsolete]` `[RockObsolete( "20.0" )]`. Remove every writer of properties that the new model no longer needs. After this phase, the new model is the only authority.
+Mark deprecated public surface `[Obsolete]` `[RockObsolete( "20.0" )]`. Remove every writer of properties that the new model no longer needs. Add the `PersonSessionService.SignOut` seam that logout paths migrate onto. After this phase, the new model is the only authority.
+
+### Pre-implementation notes (folded in from Phase-15 prep)
+- Plan line numbers from the original draft are stale after Phases 1-14. Current locations are inlined in each deliverable below.
+- `Authorization.GetAuthCookie` is already `private` (all three overloads) and the internal `SetAuthCookie( ..., TimeSpan expiresIn )` is `internal`. The original draft listed `GetAuthCookie` for `[Obsolete]` treatment but there is no public surface left to mark. **Interpretation 1 stands: skip private/internal helpers in this phase; Phase 16 (or a later final-cleanup pass) will look at the full legacy auth-cookie family with the obsolete-warning surface to guide what else should go.**
+- `UserLastActivityTransaction` is already gone (grep finds zero matches). The deliverable below is preserved as a regression check, not as work.
 
 ### Deliverables
-- **`UserLogin.LastActivityDateTime`** — `[Obsolete]` `[RockObsolete( "20.0" )]`. All writers removed.
-- **`UserLogin.IsOnLine`** — `[Obsolete]` `[RockObsolete( "20.0" )]`. ALL writers removed wholesale (code that has to go: `MarkOnlineUsersOffline()` at app startup and shutdown in `Global.asax.cs:203,782,834`; the `Session_End` handler's offline-flag write at `Global.asax.cs:547-568`; every `UpdateUserLastActivity.Message.Send( ..., IsOnline = false )` call from logout paths — `Rock.Blocks/Security/Logout.cs:109`, `LoginStatus.cs:332`, `ConfirmAccount.cs:391`, `Rock/Web/UI/RockPage.cs:843`, `Rock/Model/CRM/UserLogin/UserLoginService.WebForms.cs:78`).
-- **`UserLogin.IsAuthenticated`, `UserLogin.IsTwoFactorAuthenticated`** — `[Obsolete]` `[RockObsolete( "20.0" )]`. Both keep their signatures but always return `false`. Lava templates that referenced these properties get `false` silently — intentional, so template authors notice and migrate.
-- **`UserLastActivityTransaction`** — remove (already deprecated in v13).
-- **`UpdateUserLastActivity` bus task** — `[Obsolete]` `[RockObsolete( "20.0" )]`. The `IsOnline` property on the task is also deprecated.
-- **`Authorization.SetAuthCookie` (and overloads), `Authorization.GetAuthCookie`, `Authorization.GetSimpleAuthCookie`, `Authorization.SignOut`** — `[Obsolete]` `[RockObsolete( "20.0" )]`. Each `[Obsolete]` message names its replacement.
-- **`FormsAuthentication.SignOut` callers** — route through `PersonSessionService` (which marks the current `PersonSession` inactive and clears the `.ROCK` cookie via `RockRequestContext`).
-- **Sweep for additional helpers in the same family.** Use the compiler-warning surface to find every internal Rock caller of the obsoleted helpers; convert each to the new API. Apply the same `[Obsolete]` treatment to any additional legacy login/logout helpers discovered.
+
+#### New `PersonSessionService` method
+- **`PersonSessionService.SignOut( RockRequestContext requestContext )`** — `public`, `[RockInternal( "20.0" )]`. The single seam every logout path migrates onto in this phase. Steps:
+  1. Read `requestContext.PersonSession`. If null, no-op (anonymous already; nothing to sign out).
+  2. Reload that session through the service's `RockContext` so the `IsActive` flip + `PreSave` hook run against a tracked entity (mirrors the pattern in `_btnRestoreImpersonatedByUser_Click`). `Get( session.Guid )` is the path.
+  3. Set `IsActive = false` on the tracked entity and call `SaveChanges()`. The existing `PreSave` hook stamps `InactiveDateTime`.
+  4. Call the existing private `ExpireAuthCookie( requestContext )` helper at `Rock/Model/Security/PersonSession/PersonSessionService.cs:1367` to clear the `.ROCK` cookie via `requestContext.Response`.
+  5. Call `requestContext.SetPersonSession( null )` so downstream code in the same request observes the anonymous state without having to re-resolve from the cookie.
+  6. Returns `void`. Failure modes (session row already deleted, cookie already expired) are all silent; the post-condition "this request is anonymous" holds either way.
+  - **Why on `PersonSessionService` and not `RockRequestContext`.** Symmetry with `StartComponentSession`, `StartImpersonationSession`, `StartUserTokenSession`, and `EndImpersonationAndRestore` — every other session-lifecycle method is on the service. Putting `SignOut` on the context would force the context to acquire a `RockContext` (it has none today) and call back into the service, creating a circular layering against the current direction ("service uses context as a parameter for cookie work"). The caller verbosity tradeoff (`new PersonSessionService( rockContext ).SignOut( RequestContext )` vs a hypothetical `RequestContext.SignOut()`) is acceptable; if it becomes annoying we can add a thin `RockRequestContext.SignOut()` sugar method later — adding sugar is easy, undoing a layering inversion is not.
+  - **Does NOT regenerate `RockSessionId`.** That stays the caller's responsibility, mirroring `Rock.Blocks/Security/Logout.cs:146` which calls `RequestContext.RegenerateBrowserSessionId()` after `Authorization.SignOut()` today. The reason: not every signout caller wants browser-session regen (the MFA bounce-out in `RockPage` is arguably a "re-login expected, keep the trail" case, whereas the explicit Logout block IS a "new session next request" case). Keeping the regen call at the caller's site preserves that distinction.
+
+#### Obsolete markers — `UserLogin` properties
+- **`UserLogin.LastActivityDateTime`** — `[Obsolete]` `[RockObsolete( "20.0" )]`. Property at `Rock/Model/CRM/UserLogin/UserLogin.cs:93`. All in-core writers removed (see "Writer removals" below). The writer inside the obsoleted `UpdateUserLastActivity` bus task body (`Rock/Tasks/UpdateUserLastActivity.cs:93`) is intentionally LEFT IN PLACE — plugins still calling the obsolete bus task should continue to function during the dual-reader window; the bus task itself is the obsolete entry point.
+- **`UserLogin.IsOnLine`** — `[Obsolete]` `[RockObsolete( "20.0" )]`. Property at `Rock/Model/CRM/UserLogin/UserLogin.cs:123`. Same writer-retention reasoning as `LastActivityDateTime` for `Rock/Tasks/UpdateUserLastActivity.cs:94`.
+- **`UserLogin.IsAuthenticated`, `UserLogin.IsTwoFactorAuthenticated`** — `[Obsolete]` `[RockObsolete( "20.0" )]`. Properties at `Rock/Model/CRM/UserLogin/UserLogin.WebForms.cs:49,79`. Both keep their signatures but the Phase 14 PersonSession-bridge bodies are replaced with `return false;`. Lava templates that referenced these properties get `false` silently — intentional, so template authors notice and migrate. All in-core readers already moved to `MeetsRequirement` in Phase 14, so no compile breakage.
+
+#### Writer removals — `UserLogin.IsOnLine` / `UserLogin.LastActivityDateTime`
+- **`MarkOnlineUsersOffline()`** — remove the method entirely (`RockWeb/App_Code/Global.asax.cs:998`) and both call sites (`Global.asax.cs:204` startup, `Global.asax.cs:946` shutdown). Plan-draft line numbers `:203,782,834` are stale; only two call sites exist today.
+- **`Session_End` offline-flag block** — at `RockWeb/App_Code/Global.asax.cs:556-578` (plan draft said `:547-568`). Remove the `try` body that sets `user.IsOnLine = false`. The `Session_End` method shell stays (other handlers may live there in the future) but its body becomes empty after the removal.
+- **`UpdateUserLastActivity.Message.Send( ..., IsOnline = false )` callers** — delete the entire `new UpdateUserLastActivity.Message { ... }.Send()` block (including the `#pragma warning disable 618` wrapper) at:
+  - `Rock.Blocks/Security/Logout.cs:109-117`
+  - `Rock.Blocks/Security/LoginStatus.cs:332-340`
+  - `Rock.Blocks/Security/ConfirmAccount.cs:391` (block continues to next non-Send line — pragma + Message + Send + restore)
+  - `Rock/Web/UI/RockPage.cs:844-852` (plan draft said `:843`; off by one)
+  - `Rock/Model/CRM/UserLogin/UserLoginService.WebForms.cs:78-118` — this file has TWO `UpdateUserLastActivity.Message.Send*` calls. Remove BOTH: the `userIsOnline == true` branch's `message.SendIfNeeded()` AND the locked-out/unconfirmed branch's `message.SendIfNeeded()` with `IsOnline = false`. The replacement is the existing `FireUpdatePersonSessionLastActivityIfPresent()` call already in place; nothing else has to change here besides the deletes.
+
+#### Bus task and transaction
+- **`UpdateUserLastActivity` bus task** — already marked `[Obsolete]` `[RockObsolete( "20.0" )]` in Phase 8 (at `Rock/Tasks/UpdateUserLastActivity.cs:37-38`). The `IsOnline` property on the message is already obsoleted (`:134-135`). No new markers needed in this phase; just delete the in-core callers per the section above. The `Execute` body that writes `user.LastActivityDateTime` / `user.IsOnLine` stays in place for plugin compatibility (the whole class is the obsolete entry point — plugins still calling it should continue to function until the v23 removal target).
+- **`UserLastActivityTransaction`** — already removed in a previous version (grep finds zero matches). No work; preserved as a regression checkpoint.
+
+#### Obsolete markers — `Authorization` helpers
+Public surface only; private helpers are out of scope for this phase per the interpretation note above.
+- **`Authorization.GetSimpleAuthCookie`** at `Rock/Security/Authorization.cs:898` — already `[Obsolete]` (Phase 11). No new marker needed.
+- **`Authorization.SetAuthCookie( string, bool, bool )`** at `Rock/Security/Authorization.cs:969` — add `[Obsolete]` `[RockObsolete( "20.0" )]`. Message: `"Use PersonSessionService.StartComponentSession + RockContext.SaveChanges + PersonSessionService.SetAuthCookie( session, requestContext ) instead."`
+- **`Authorization.SetAuthCookie( string, bool, bool, bool )`** at `Rock/Security/Authorization.cs:981` — same marker and message.
+- **`Authorization.SignOut()`** at `Rock/Security/Authorization.cs:1050` — add `[Obsolete]` `[RockObsolete( "20.0" )]`. Message: `"Use PersonSessionService.SignOut( requestContext ) instead."` The body — including the `FormsAuthentication.SignOut()` call at `:1076` — stays as-is during the dual-reader window (the obsolete body is what keeps the bridge functional for plugins).
+
+#### `Authorization.SignOut` caller migration (7 sites)
+Convert each to `new PersonSessionService( rockContext ).SignOut( RequestContext )`. The `rockContext` source varies per site; all 7 already have a `RockContext` and `RockRequestContext` (or equivalent) in scope:
+- `RockWeb/Blocks/Security/Oidc/Logout.ascx.cs:73` — uses `RockPage.RequestContext`; build a local `RockContext` (no service field exists).
+- `Rock.Blocks/Security/Logout.cs:138` — block has `RockContext` and `RequestContext` properties.
+- `Rock.Blocks/Security/LoginStatus.cs:357` — same pattern as Logout.
+- `Rock.Blocks/Security/ConfirmAccount.cs:402` — same pattern.
+- `Rock/Web/UI/RockPage.cs:855` — the `?Logout` page-parameter handler. `RequestContext` is on the page; build a local `RockContext`.
+- `Rock/Web/UI/RockPage.cs:953` — the MFA-not-satisfied bounce-out branch added in Phase 14. Same as `:855`.
+- `Rock/Model/CRM/UserLogin/UserLoginService.WebForms.cs:115` — the locked-out / unconfirmed fallback. Service already has `RockContext` (it IS a service); `RequestContext` comes from `RockRequestContextAccessor.Current` since this method runs outside a block.
+
+#### `Authorization.SetAuthCookie` caller migration (4 sites)
+These callers create a new auth session and write the cookie. After the obsolete marker lands they'll emit warnings. Convert each to the documented replacement (`StartComponentSession` + save + `SetAuthCookie`):
+- `Rock.Blocks/Security/PhoneNumberIdentification.cs:429`
+- `Rock.Blocks/Security/AccountEntry.cs:598`
+- `RockWeb/Blocks/CheckIn/AttendanceSelfEntry.ascx.cs:874`
+- `Rock.Rest/Controllers/AuthController.cs:72` — leave the call in place but wrap in `#pragma warning disable 618` / `#pragma warning restore 618` so the engineering note added in Phase 14 (deferred to v2 REST conversion) is preserved without warning noise. This is the documented exception, not a migration.
+
+#### `Authorization.GetSimpleAuthCookie` callers
+4 sites in `Rock/Blocks/Types/Mobile/Cms/{Register,Login}.cs` (`Register.cs:630`, `Login.cs:327`, `Login.cs:1002`, `Login.cs:1123`). These already wrap their calls in `#pragma warning disable 618` (Phase 11). No action required — the wrappers continue to suppress the existing obsolete warning.
+
+#### Sweep
+After the markers land, run `build` and treat every new `CS0618` warning as a migration candidate. Most will be in the lists above; surface anything unexpected before deleting it.
 
 ### Tests
-- Mocked-database: `UserLogin.IsAuthenticated` always returns false (compile-time consumers tested in Phase 14 already exercise the migrated paths; this is a regression guard).
-- Mocked-database: `UserLogin.IsTwoFactorAuthenticated` always returns false.
+- Plain unit: `UserLogin.IsAuthenticated` always returns `false`. New file or addition to `Rock.Tests/Security/PersonSessionTests.cs` — single-line assertion against a fresh `UserLogin` instance, no mocked context needed once the body is hardcoded.
+- Plain unit: `UserLogin.IsTwoFactorAuthenticated` always returns `false`. Same shape.
 - Static check (not a runtime test): `MarkOnlineUsersOffline()` no longer exists or has zero call sites — grep the codebase to confirm. (Booting `Global.asax` startup inside Rock.Tests is not feasible; see Guardrails. The cleanup is verified by absence at compile time and by the "App pool recycle does NOT mark all users offline" item in the Phase 17 manual checklist.)
-- Mocked-database: a logout request marks the current `PersonSession` inactive AND clears the `.ROCK` cookie AND does NOT send `UpdateUserLastActivity( IsOnline = false )`.
+- Mocked-database: a logout via `PersonSessionService.SignOut( requestContext )` marks the current `PersonSession` inactive (verify `IsActive == false` AND `InactiveDateTime != null`), clears the `.ROCK` cookie (verify via `TrackingResponseContext.RemovedCookies` like the existing Phase 6 legacy-upgrade tests do), and clears `requestContext.PersonSession`. New file: `Rock.Tests/Security/PersonSessionServiceSignOutTests.cs` (or fold into an existing file; the "Phase 17 follow-ups" already note that file consolidation is a pre-merge sweep).
+- Mocked-database: `PersonSessionService.SignOut` on a `requestContext` with no `PersonSession` is a no-op (no `SaveChanges` call, no cookie remove). Defensive regression test.
 
 ### Verification
-- `build` clean (warnings about obsoletes are expected and are exactly the point).
+- `build` clean (warnings about obsoletes are expected and are exactly the point — every `CS0618` warning was a deliberate decision in this phase).
 
 ### Spec references
 - "Design / Deprecations and removals"
@@ -784,31 +842,38 @@ For each file the implementation will modify, the phase that owns the change. Us
 | `Rock/Model/Core/Interaction/InteractionService.cs:583` (SQL upsert) | 9 |
 | `RockWeb/App_Code/Global.asax.cs:582-604` (BeginRequest shim → `ResolveSessionForRequest`; existing kill-switch block retained in place at the top of the handler, with a sunset comment marking it for retirement alongside `FindOrCreateLegacyUpgradeSession`) | 5 |
 | `RockWeb/App_Code/Global.asax.cs` (PostAuthenticateRequest shim → `UpgradeLegacyCookieForRequest`) | 6 |
-| `RockWeb/App_Code/Global.asax.cs:203,547-568,782,834` (online flag removals) | 15 |
+| `RockWeb/App_Code/Global.asax.cs:204,556-578,946,998` (online-flag removals: two `MarkOnlineUsersOffline()` call sites, the method body itself, and the `Session_End` offline-flag block) | 15 |
 | `Rock/Net/RockRequestContext.cs` (PersonSession + MeetsRequirement) | 7 |
 | `Rock.Blocks/Security/Login.cs:718-734` | 7 |
 | `Rock.Blocks/Security/ChangePassword.cs:132,228` | 14 |
-| `Rock.Blocks/Security/Logout.cs:109` | 15 |
-| `Rock.Blocks/Security/LoginStatus.cs:332` | 15 |
-| `Rock.Blocks/Security/ConfirmAccount.cs:391` | 15 |
-| `RockWeb/Blocks/Security/Authorize.ascx.cs` | 14 |
-| `Rock/Web/UI/RockPage.cs:843` (online flag) | 15 |
-| `Rock/Web/UI/RockPage.cs:941` (MFA gate) | 14 |
+| `Rock.Blocks/Security/Logout.cs:109` (UpdateUserLastActivity removal) and `:138` (SignOut migration) | 15 |
+| `Rock.Blocks/Security/LoginStatus.cs:332` (UpdateUserLastActivity removal) and `:357` (SignOut migration) | 15 |
+| `Rock.Blocks/Security/ConfirmAccount.cs:391` (UpdateUserLastActivity removal) and `:402` (SignOut migration) | 15 |
+| `Rock.Blocks/Security/PhoneNumberIdentification.cs:429` (Authorization.SetAuthCookie migration) | 15 |
+| `Rock.Blocks/Security/AccountEntry.cs:598` (Authorization.SetAuthCookie migration) | 15 |
+| `RockWeb/Blocks/CheckIn/AttendanceSelfEntry.ascx.cs:874` (Authorization.SetAuthCookie migration) | 15 |
+| `RockWeb/Blocks/Security/Oidc/Logout.ascx.cs:73` (SignOut migration) | 15 |
+| `RockWeb/Blocks/Security/Oidc/Authorize.ascx.cs` (IsAuthenticated → PersonSession check) | 14 |
+| `Rock/Web/UI/RockPage.cs:844` (UpdateUserLastActivity removal) and `:855` (SignOut migration) | 15 |
+| `Rock/Web/UI/RockPage.cs:944-950` (MFA gate, MeetsRequirement) | 14 |
+| `Rock/Web/UI/RockPage.cs:953` (SignOut migration in MFA-not-satisfied branch) | 15 |
 | `Rock/Web/UI/RockPage.cs:954` (fallback redirect, verify only) | 16 |
-| `Rock/Web/UI/RockPage.cs:2076` (IsImpersonated read, Pattern A) | 14 |
-| `Rock/Web/UI/RockPage.cs:2111` (ProcessImpersonation, Pattern B) | 12 |
+| `Rock/Web/UI/RockPage.cs:1112-1136,1411-1437` (IsImpersonated reads, Pattern A) | 14 |
+| `Rock/Web/UI/RockPage.cs:2148` area (ProcessImpersonation, Pattern B) | 12 |
 | `Rock.Rest/Filters/AuthenticateAttribute.cs` | 10 |
 | `Rock.Rest/ApiControllerBase.cs:103` | 12 |
 | `Rock/Web/HttpModules/RockGateway.cs:499` | 12 |
-| `Rock/Model/CRM/UserLogin/UserLogin.cs` (Obsolete markers) | 15 |
-| `Rock/Model/CRM/UserLogin/UserLogin.WebForms.cs:101` (Pattern A) | 14 |
-| `Rock/Model/CRM/UserLogin/UserLoginService.WebForms.cs:78` (online flag) | 15 |
+| `Rock/Model/CRM/UserLogin/UserLogin.cs:93,123` (Obsolete markers on `LastActivityDateTime` and `IsOnLine`) | 15 |
+| `Rock/Model/CRM/UserLogin/UserLogin.WebForms.cs:49,79` (Obsolete markers + body → `return false;` on `IsAuthenticated` and `IsTwoFactorAuthenticated`; Pattern A bridge was added in Phase 14) | 14 (bridge) / 15 (obsolete + body collapse) |
+| `Rock/Model/CRM/UserLogin/UserLoginService.WebForms.cs:78-118` (UpdateUserLastActivity removals, both branches) and `:115` (SignOut migration) | 15 |
 | `Rock/Mobile/MobileHelper.cs:206` | 11 |
 | `Rock/Tv/TvHelper.cs:193` | 11 |
+| `Rock/Blocks/Types/Mobile/Cms/Register.cs:630` and `Login.cs:327,1002,1123` (already-wrapped GetSimpleAuthCookie callers; no action in 15) | 11 |
 | `RockWeb/Blocks/Crm/PersonDetail/Bio.ascx.cs` (impersonate-button shim → `PersonSessionService.ImpersonatePerson`, then `Response.Redirect` to configured target URL) | 13 |
-| `Rock/Security/Authorization.cs:812,823,853,927` (Obsolete markers) | 15 |
+| `Rock/Security/Authorization.cs:969,981` (SetAuthCookie obsolete markers) and `:1050` (SignOut obsolete marker). `GetAuthCookie` and `internal SetAuthCookie(... TimeSpan)` are private/internal and out of scope per the Phase 15 interpretation note. | 15 |
+| `Rock/Model/Security/PersonSession/PersonSessionService.cs` (new `SignOut( RockRequestContext )` public method) | 15 |
 | `Rock/Security/SecuritySettings.cs:123` (kill-switch read) | 5 |
-| `Rock.Rest/Controllers/AuthController.cs:43-58` (engineering note) | 14 |
+| `Rock.Rest/Controllers/AuthController.cs:43-77` (engineering note in Phase 14; pragma 618 wrap around `Authorization.SetAuthCookie` call in Phase 15) | 14, 15 |
 | Active Users block | 14 |
 | Data Automation job | 14 |
 | Rock Cleanup job | 16 |
