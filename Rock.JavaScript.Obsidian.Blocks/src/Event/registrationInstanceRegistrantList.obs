@@ -1,0 +1,718 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Registrant"
+          title="Registrants"
+          :entityTypeGuid="EntityType.RegistrationRegistrant"
+          personKeyField="personIdKey"
+          :preferencePrefix="config.options?.registrationTemplateGuid ?? ''"
+          :exportTitle="config.options?.exportTitle ?? 'Registrants'"
+          emptyDataText="No Registrants Found"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          :customActions="customActions"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem"
+          @gridSettingsClick="isGridSettingsVisible = true">
+
+        <SelectColumn />
+
+        <TextColumn name="registrantName"
+                    title="Registrant"
+                    field="registrantName"
+                    :filter="textValueFilter"
+                    :filterValue="getRegistrantNameFilterValue"
+                    :quickFilterValue="getRegistrantNameFilterValue"
+                    :excludeFromExport="true"
+                    width="200px" />
+
+        <Column v-if="config.options?.isSignedDocumentColumnVisible"
+                name="signedDocument"
+                title="Signed Documents"
+                field="signedDocumentUrl"
+                :exportValue="getSignedDocumentExportValue"
+                :quickFilterValue="getSignedDocumentExportValue"
+                headerClass="title-center"
+                itemClass="justify-content-center">
+            <template #format="{ row }">
+                <a v-if="row.signedDocumentUrl"
+                   :href="row.signedDocumentUrl"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   @click.stop>
+                    <i class="ti ti-file-invoice"></i>
+                </a>
+                <i v-else class="ti ti-edit text-danger" :title="(row.signatureNotSignedMessage as string) ?? ''"></i>
+            </template>
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <Column name="group"
+                title="Group"
+                field="groupName"
+                :filter="textValueFilter"
+                width="200px">
+            <template #format="{ row }">
+                <a v-if="row.groupName" :href="getGroupUrl(row)" @click.stop>{{ row.groupName }}</a>
+            </template>
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <Column v-if="hasPersonField(RegistrationPersonFieldType.Campus)"
+                name="campus"
+                title="Campus"
+                field="campus"
+                :filter="pickExistingValueFilter"
+                :filterValues="getCampusFilterValues"
+                :quickFilterValue="getCampusExportValue"
+                :exportValue="getCampusExportValue"
+                width="150px">
+            <template #format="{ row }">
+                <div>
+                    <div v-for="(campusName, index) in (row.campus as string[] | null) ?? []" :key="index">{{ campusName }}</div>
+                </div>
+            </template>
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.Email)"
+                    name="email"
+                    title="Email"
+                    field="email"
+                    :filter="textValueFilter"
+                    width="300px" />
+
+        <DateColumn v-if="hasPersonField(RegistrationPersonFieldType.Birthdate)"
+                    name="birthdate"
+                    title="Birthdate"
+                    field="birthdate"
+                    :filter="dateValueFilter"
+                    :exportValue="getBirthdateExportValue">
+            <template #format="{ row }">
+                {{ getDateWithAgeText(row.birthdate, row.birthdateAge) }}
+            </template>
+        </DateColumn>
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.MiddleName)"
+                    name="middleName"
+                    title="Middle Name"
+                    field="middleName"
+                    :filter="textValueFilter" />
+
+        <DateColumn v-if="hasPersonField(RegistrationPersonFieldType.AnniversaryDate)"
+                    name="anniversaryDate"
+                    title="Anniversary Date"
+                    field="anniversaryDate"
+                    :filter="dateValueFilter"
+                    :exportValue="getAnniversaryDateExportValue">
+            <template #format="{ row }">
+                {{ getDateWithAgeText(row.anniversaryDate, row.anniversaryDateAge) }}
+            </template>
+        </DateColumn>
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.Grade)"
+                    name="grade"
+                    title="Grade"
+                    field="grade"
+                    :filter="pickExistingValueFilter" />
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.Gender)"
+                    name="gender"
+                    title="Gender"
+                    field="gender"
+                    :filter="pickExistingValueFilter" />
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.MaritalStatus)"
+                    name="maritalStatus"
+                    title="Marital Status"
+                    field="maritalStatus"
+                    :filter="pickExistingValueFilter" />
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.ConnectionStatus)"
+                    name="connectionStatus"
+                    title="Connection Status"
+                    field="connectionStatus"
+                    :filter="pickExistingValueFilter" />
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.MobilePhone)"
+                    name="mobilePhone"
+                    :title="config.options?.mobilePhoneLabel ?? 'Mobile'"
+                    field="mobilePhone"
+                    :filter="textValueFilter"
+                    :quickFilterValue="getPhoneQuickFilterValue"
+                    width="150px" />
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.HomePhone)"
+                    name="homePhone"
+                    :title="config.options?.homePhoneLabel ?? 'Home'"
+                    field="homePhone"
+                    :filter="textValueFilter"
+                    :quickFilterValue="getPhoneQuickFilterValue"
+                    width="150px" />
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.WorkPhone)"
+                    name="workPhone"
+                    :title="config.options?.workPhoneLabel ?? 'Work'"
+                    field="workPhone"
+                    :filter="textValueFilter"
+                    :quickFilterValue="getPhoneQuickFilterValue"
+                    width="150px" />
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.Address)"
+                    name="address"
+                    title="Address"
+                    field="address"
+                    :filter="textValueFilter"
+                    width="350px" />
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.Race)"
+                    name="race"
+                    title="Race"
+                    field="race"
+                    :filter="pickExistingValueFilter" />
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.Ethnicity)"
+                    name="ethnicity"
+                    title="Ethnicity"
+                    field="ethnicity"
+                    :filter="pickExistingValueFilter" />
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+
+        <Column name="fees"
+                title="Fees"
+                field="fees"
+                :filter="textValueFilter"
+                :filterValue="getFeesFilterValue"
+                :quickFilterValue="getFeesFilterValue"
+                :exportValue="getFeesExportValue">
+            <template #format="{ row }">
+                <div>
+                    <div v-for="(fee, index) in (row.fees as string[] | null) ?? []" :key="index">{{ fee }}</div>
+                </div>
+            </template>
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <Column v-if="(config.options?.placements ?? []).length > 0"
+                name="placements"
+                title="Placements"
+                field="placements"
+                :quickFilterValue="getPlacementsExportValue"
+                :exportValue="getPlacementsExportValue">
+            <template #format="{ row }">
+                <div class="placement-list">
+                    <a v-for="placement in config.options?.placements ?? []"
+                       :key="placement.id"
+                       :class="getPlacementButtonCssClass(row, placement)"
+                       :href="getPlacementUrl(row, placement)"
+                       :title="getPlacementTooltip(row, placement)"
+                       :aria-label="placement.name ?? undefined"
+                       @click.stop>
+                        <i :class="placement.iconCssClass ?? 'ti ti-users'"></i>{{ getPlacementCountText(row, placement) }}
+                    </a>
+                </div>
+            </template>
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <TextColumn name="firstName"
+                    title="First Name"
+                    field="firstName"
+                    :hideOnScreen="true" />
+
+        <TextColumn name="lastName"
+                    title="Last Name"
+                    field="lastName"
+                    :hideOnScreen="true" />
+
+        <TextColumn name="street1"
+                    title="Street 1"
+                    field="street1"
+                    :hideOnScreen="true" />
+
+        <TextColumn name="street2"
+                    title="Street 2"
+                    field="street2"
+                    :hideOnScreen="true" />
+
+        <TextColumn name="city"
+                    title="City"
+                    field="city"
+                    :hideOnScreen="true" />
+
+        <TextColumn name="state"
+                    title="State"
+                    field="state"
+                    :hideOnScreen="true" />
+
+        <TextColumn name="postalCode"
+                    title="Postal Code"
+                    field="postalCode"
+                    :hideOnScreen="true" />
+
+        <TextColumn name="country"
+                    title="Country"
+                    field="country"
+                    :hideOnScreen="true" />
+
+        <DateTimeColumn name="createdDateTime"
+                        title="Created Datetime"
+                        field="createdDateTime"
+                        :hideOnScreen="true" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :isSignedDocumentFilterVisible="config.options?.isSignedDocumentColumnVisible ?? false"
+                       @close="isGridSettingsVisible = false" />
+</template>
+
+<style scoped>
+:deep(.title-center .grid-column-title) {
+    text-align: center;
+}
+
+:deep(.placement-list .btn-placement-status) {
+    margin-right: 4px;
+}
+</style>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { AttributeColumns, Column, TextColumn, DateColumn, DateTimeColumn, DeleteColumn, SelectColumn, textValueFilter, dateValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { RegistrationInstanceRegistrantListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceRegistrantList/registrationInstanceRegistrantListOptionsBag";
+    import { RegistrantPlacementBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceRegistrantList/registrantPlacementBag";
+    import { RegistrantPlacementConfigBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceRegistrantList/registrantPlacementConfigBag";
+    import { RegistrationPersonFieldType } from "@Obsidian/Enums/Event/registrationPersonFieldType";
+    import { ColumnDefinition, GridAction, IGridState, MultiValueFilterItem } from "@Obsidian/Types/Controls/grid";
+    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./RegistrationInstanceRegistrantList/types.partial";
+    import GridSettingsModal from "./RegistrationInstanceRegistrantList/gridSettingsModal.partial.obs";
+    import { computed, reactive, ref, watch } from "vue";
+    import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    const config = useConfigurationValues<ListBlockBox<RegistrationInstanceRegistrantListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        dateRange: parseSlidingDateRangeString(preferences.getValue(scopedKey(PreferenceKey.FilterDateRange))),
+        inGroup: preferences.getValue(scopedKey(PreferenceKey.FilterInGroup)) ?? "",
+        signedDocument: preferences.getValue(scopedKey(PreferenceKey.FilterSignedDocument)) ?? ""
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        // The signed-document filter only counts when its column is visible.
+        // A stale preference left over from when the template required a
+        // signed document would otherwise light the settings indicator while
+        // its control is hidden, and the server ignores it anyway.
+        const isSignedDocumentFiltering = !!gridSettings.value.signedDocument
+            && (config.options?.isSignedDocumentColumnVisible ?? false);
+
+        return !!gridSettings.value.dateRange
+            || !!gridSettings.value.inGroup
+            || isSignedDocumentFiltering;
+    });
+
+    /** The custom actions supported by this grid. */
+    const customActions = computed((): GridAction[] => {
+        // The action's availability follows the communication page's
+        // security, matching the WebForms behavior.
+        if (!config.options?.isRegistrarCommunicationVisible) {
+            return [];
+        }
+
+        return [
+            {
+                title: "Communicate to Registrars",
+                tooltip: "Communicate to Registrars",
+                iconCssClass: "ti ti-user-check",
+                handler: onCommunicateToRegistrarsClick
+            }
+        ];
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Builds a preference key scoped to the current registration template's
+     * Guid so that switching templates does not leak filter state.
+     */
+    function scopedKey(key: string): string {
+        if (config.options?.registrationTemplateGuid) {
+            return `${config.options.registrationTemplateGuid}-${key}`;
+        }
+
+        return key;
+    }
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Determines if the registration template shows the given person field
+     * on the grid.
+     */
+    function hasPersonField(fieldType: RegistrationPersonFieldType): boolean {
+        return config.options?.visiblePersonFieldTypes?.includes(fieldType) ?? false;
+    }
+
+    /**
+     * Gets the text used to filter and search the Registrant column. The
+     * legal first name is included so searches match it in addition to the
+     * displayed nick name, like the WebForms First Name filter did. The
+     * server only sends the legal first name when it differs from the nick
+     * name.
+     */
+    function getRegistrantNameFilterValue(row: Record<string, unknown>): string {
+        const name = (row.registrantName as string | null) ?? "";
+        const legalFirstName = (row.legalFirstName as string | null) ?? "";
+
+        return legalFirstName ? `${name} ${legalFirstName}` : name;
+    }
+
+    /**
+     * Gets the text used to quick search and export the Campus column. The
+     * column filter uses the per-campus values from getCampusFilterValues
+     * instead, because the pick-existing filter matches by exact equality.
+     */
+    function getCampusExportValue(row: Record<string, unknown>): string {
+        const campusNames = (row.campus as string[] | null) ?? [];
+
+        return campusNames.join(", ");
+    }
+
+    /**
+     * Gets the individual campus name values used by the Campus column
+     * filter. Each campus is returned as its own value so the pick-existing
+     * filter offers one option per campus and a single-campus pick matches
+     * registrants in multiple campuses, like the WebForms campus filter.
+     */
+    function getCampusFilterValues(row: Record<string, unknown>): MultiValueFilterItem[] {
+        const campusNames = (row.campus as string[] | null) ?? [];
+
+        return campusNames.map(c => ({ value: c, rowData: { ...row, campus: c } }));
+    }
+
+    /**
+     * Gets the text used to quick search a phone column. Includes the
+     * digits-only form so searching by raw digits matches the formatted
+     * number.
+     */
+    function getPhoneQuickFilterValue(row: Record<string, unknown>, column: ColumnDefinition): string {
+        const formatted = (row[column.field ?? ""] as string | null) ?? "";
+        const digits = formatted.replace(/\D/g, "");
+
+        return digits && digits !== formatted ? `${formatted} ${digits}` : formatted;
+    }
+
+    /**
+     * Gets the text used when exporting the Signed Document column.
+     */
+    function getSignedDocumentExportValue(row: Record<string, unknown>): string {
+        return row.signedDocumentUrl ? "Yes" : "No";
+    }
+
+    /**
+     * Formats a date cell as a short date with the server-computed age text
+     * appended, e.g. "1/2/1990 (35 yrs)".
+     */
+    function getDateWithAgeText(dateValue: unknown, ageValue: unknown): string {
+        const date = RockDateTime.parseISO(dateValue as string ?? "");
+        const dateText = date?.toASPString("d") ?? "";
+        const age = ageValue as string | null | undefined;
+
+        return age ? `${dateText} (${age})` : dateText;
+    }
+
+    /**
+     * Gets the text used when exporting the Birthdate column.
+     */
+    function getBirthdateExportValue(row: Record<string, unknown>): string {
+        return getDateWithAgeText(row.birthdate, row.birthdateAge);
+    }
+
+    /**
+     * Gets the text used when exporting the Anniversary Date column.
+     */
+    function getAnniversaryDateExportValue(row: Record<string, unknown>): string {
+        return getDateWithAgeText(row.anniversaryDate, row.anniversaryDateAge);
+    }
+
+    /**
+     * Gets the URL of the group detail page for the row's group.
+     */
+    function getGroupUrl(row: Record<string, unknown>): string {
+        const template = config.navigationUrls?.[NavigationUrlKey.GroupDetailPage];
+
+        if (!template || !row.groupId) {
+            return "#";
+        }
+
+        return template.replace("((GroupId))", String(row.groupId));
+    }
+
+    /**
+     * Gets the text used to filter and search the Fees column.
+     */
+    function getFeesFilterValue(row: Record<string, unknown>): string {
+        const fees = (row.fees as string[] | null) ?? [];
+        return fees.join(" ");
+    }
+
+    /**
+     * Gets the text used when exporting the Fees column.
+     */
+    function getFeesExportValue(row: Record<string, unknown>): string {
+        const fees = (row.fees as string[] | null) ?? [];
+        return fees.join(", ");
+    }
+
+    /**
+     * Gets the row's placement state for one configured placement.
+     */
+    function getRowPlacement(row: Record<string, unknown>, placementId: number): RegistrantPlacementBag | undefined {
+        const placements = (row.placements as RegistrantPlacementBag[] | null) ?? [];
+        return placements.find(p => p.placementId === placementId);
+    }
+
+    /**
+     * Gets the button CSS classes for a placement, varying by whether the
+     * registrant has been placed in at least one group.
+     */
+    function getPlacementButtonCssClass(row: Record<string, unknown>, placement: RegistrantPlacementConfigBag): string {
+        const groupCount = getRowPlacement(row, placement.id)?.groupCount ?? 0;
+
+        return groupCount > 0
+            ? "btn btn-success btn-xs btn-placement-status registrant-is-placed"
+            : "btn btn-default btn-xs btn-placement-status registrant-not-placed";
+    }
+
+    /**
+     * Gets the tooltip for a placement button: the names of the groups the
+     * registrant is placed in, e.g. "Bus 1, Bus 2 and Bus 3".
+     */
+    function getPlacementTooltip(row: Record<string, unknown>, placement: RegistrantPlacementConfigBag): string {
+        const groupNames = getRowPlacement(row, placement.id)?.groupNames ?? [];
+
+        if (groupNames.length <= 1) {
+            return groupNames[0] ?? "";
+        }
+
+        return `${groupNames.slice(0, -1).join(", ")} and ${groupNames[groupNames.length - 1]}`;
+    }
+
+    /**
+     * Gets the group count text shown on a placement button. Only shown when
+     * the placement allows multiple placements.
+     */
+    function getPlacementCountText(row: Record<string, unknown>, placement: RegistrantPlacementConfigBag): string {
+        if (!placement.isMultiplePlacementAllowed) {
+            return "";
+        }
+
+        return String(getRowPlacement(row, placement.id)?.groupCount ?? 0);
+    }
+
+    /**
+     * Gets the URL of the group placement page for the row and placement,
+     * including a return URL back to this page and an anchor that scrolls to
+     * the registrant's person.
+     */
+    function getPlacementUrl(row: Record<string, unknown>, placement: RegistrantPlacementConfigBag): string {
+        const template = config.navigationUrls?.[NavigationUrlKey.GroupPlacementPage];
+
+        if (!template || !row.personId) {
+            return "#";
+        }
+
+        const personId = String(row.personId);
+        const url = template
+            .replace("((PlacementId))", String(placement.id))
+            .replace("((PersonId))", personId);
+        const separator = url.includes("?") ? "&" : "?";
+
+        return `${url}${separator}ReturnUrl=${encodeURIComponent(window.location.href)}#PersonId_${personId}`;
+    }
+
+    /**
+     * Gets the text used to quick search and export the Placements column.
+     * Matches the WebForms export format: one line per placement, each
+     * listing its placed group names as "A, B and C". Placements with no
+     * placed groups are omitted.
+     */
+    function getPlacementsExportValue(row: Record<string, unknown>): string {
+        return (config.options?.placements ?? [])
+            .map(placement => getPlacementTooltip(row, placement))
+            .filter(text => !!text)
+            .join("\n");
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     */
+    function onSelectItem(key: string): void {
+        const template = config.navigationUrls?.[NavigationUrlKey.RegistrationPage];
+        const row = gridData?.rows?.find(r => r["idKey"] === key);
+
+        if (!template || !row?.registrationIdKey) {
+            return;
+        }
+
+        const url = template.replace("((Key))", String(row.registrationIdKey));
+
+        // The anchor scrolls the registration detail page to this registrant.
+        window.location.href = `${url}#${row.registrantId}`;
+    }
+
+    /**
+     * Called when the add button has been clicked by the individual.
+     */
+    function onAddItem(): void {
+        const template = config.navigationUrls?.[NavigationUrlKey.RegistrationPage];
+
+        if (!template) {
+            return;
+        }
+
+        const url = template.replace("((Key))", "0");
+        const separator = url.includes("?") ? "&" : "?";
+
+        // ReturnUrl lets the registration detail page navigate back to this
+        // page rather than its parent page (the Registrations tab). It is sent
+        // as a site-relative path so the consumer can reject non-local URLs.
+        const returnUrl = `${window.location.pathname}${window.location.search}`;
+
+        window.location.href = `${url}${separator}ReturnUrl=${encodeURIComponent(returnUrl)}`;
+    }
+
+    /**
+     * Called when a row's delete button has been clicked. This happens only
+     * after the individual has confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", { key });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete registrant.");
+        }
+    }
+
+    /**
+     * Called when the "Communicate to Registrars" action has been clicked.
+     * Creates a bulk communication addressed to the people who registered
+     * the selected registrants (everyone in the list when nothing is
+     * selected) and navigates to the communication page.
+     */
+    async function onCommunicateToRegistrarsClick(state: IGridState): Promise<void> {
+        let keys = [...state.selectedKeys];
+
+        // With no selection the server communicates to everyone in the list,
+        // but it can only apply the grid-settings filters. When client-side
+        // filters are active, send the visible rows' keys so the recipients
+        // match what the individual sees, like the WebForms block did.
+        if (keys.length === 0 && state.isFiltered) {
+            keys = state.filteredRows
+                .map(row => state.getRowKey(row))
+                .filter((key): key is string => !!key);
+
+            if (keys.length === 0) {
+                await alert("No registrants match the current filters.");
+                return;
+            }
+        }
+
+        const result = await invokeBlockAction<string>("CreateRegistrarCommunication", {
+            keys,
+            pageUrl: window.location.href
+        });
+
+        if (result.isSuccess && result.data) {
+            window.location.href = result.data;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to create the communication.");
+        }
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        preferences.setValue(
+            scopedKey(PreferenceKey.FilterDateRange),
+            gridSettings.value.dateRange ? slidingDateRangeToString(gridSettings.value.dateRange) : "");
+        preferences.setValue(
+            scopedKey(PreferenceKey.FilterInGroup),
+            gridSettings.value.inGroup ?? "");
+        preferences.setValue(
+            scopedKey(PreferenceKey.FilterSignedDocument),
+            gridSettings.value.signedDocument ?? "");
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    gridDataSource.value = loadGridData();
+</script>
