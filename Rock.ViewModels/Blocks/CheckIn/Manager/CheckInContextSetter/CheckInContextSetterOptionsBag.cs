@@ -63,5 +63,10 @@ namespace Rock.ViewModels.Blocks.CheckIn.Manager.CheckInContextSetter
         /// WebForms blocks.
         /// </summary>
         public bool IsRedirectRequired { get; set; }
+
+        /// <summary>
+        /// The security grant token to use when loading additional data.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
     }
 }
