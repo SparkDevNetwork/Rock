@@ -761,8 +761,15 @@ namespace Rock.Blocks.Group
                 }
                 else
                 {
-                    // updating current existing person
-                    person.Email = groupRegistrationBag.Email;
+                    // Updating current existing person. Only overwrite the email
+                    // when a value was actually provided. The email field can be
+                    // optional, so a blank submission must not wipe out an email
+                    // address that is already on record for the matched person.
+                    var email = groupRegistrationBag.Email?.Trim();
+                    if ( email.IsNotNullOrWhiteSpace() )
+                    {
+                        person.Email = email;
+                    }
 
                     // Get the current person's families
                     var families = person.GetFamilies( rockContext );
@@ -878,7 +885,14 @@ namespace Rock.Blocks.Group
                             person.MaritalStatusValueId = married.Id;
                         }
 
-                        spouse.Email = groupRegistrationBag.SpouseEmail;
+                        // Only overwrite the spouse email when a value was
+                        // provided so a blank submission does not wipe out the
+                        // email address of an existing matched spouse.
+                        var spouseEmail = groupRegistrationBag.SpouseEmail?.Trim();
+                        if ( spouseEmail.IsNotNullOrWhiteSpace() )
+                        {
+                            spouse.Email = spouseEmail;
+                        }
 
                         if ( !isSpouseMatch || !string.IsNullOrWhiteSpace( groupRegistrationBag.HomePhone ) )
                         {
