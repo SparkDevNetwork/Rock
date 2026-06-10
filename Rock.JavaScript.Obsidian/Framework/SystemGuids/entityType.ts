@@ -801,6 +801,8 @@ export const EntityType = {
     SmsAction: "1F5E26BE-0ED4-4250-8FFC-1DED5E9EACF0",
     /** The SMS Conversation Action */
     SmsActionConversation: "E808A9FD-06A7-4FB2-AD01-C826A53B0ABB",
+    /** The SMS Create Connection Request Action */
+    SmsActionCreateConnectionRequest: "4E8B12C7-A93F-4D85-B621-6A7F398C2E1D",
     /** The EntityType Guid for Rock.Model.SmsPipeline  */
     SmsPipeline: "64DA3A06-FD39-4E5B-8126-38404FB0092A",
     /** The EntityType Guid for Rock.Model.Snippet */

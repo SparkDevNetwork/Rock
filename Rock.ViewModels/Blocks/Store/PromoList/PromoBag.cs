@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,7 +19,7 @@ namespace Rock.ViewModels.Blocks.Store.PromoList
 {
     /// <summary>
     /// Contains the promo data sent to the Promo List block for rendering.
-    /// All image URLs are resolved server-side from <see cref="Rock.Store.StoreImage.ImageUrl"/>
+    /// All image URLs are resolved server-side from <c>Rock.Store.StoreImage.ImageUrl</c>
     /// before being placed in this bag.
     /// </summary>
     public class PromoBag

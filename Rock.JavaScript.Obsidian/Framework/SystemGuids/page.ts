@@ -230,6 +230,11 @@ export const Page = {
      */
     ChangePasswordMySettings: "4508223C-2989-4592-B764-B3F372B6051B",
     /**
+     * Gets the Check-in Areas and Groups page guid
+     * ParentPage: Check-in
+     */
+    CheckInAreasAndGroups: "BAF3E806-8555-41D4-825B-838673DAFEB5",
+    /**
      * Gets the Check-in Configuration page guid
      * ParentPage: Check-in
      */
@@ -470,6 +475,11 @@ export const Page = {
      * ParentPage: Connections opportunity select
      */
     ConnectionsBoard: "4FBCEB52-8892-4035-BDEA-112A494BE81F",
+    /**
+     * Gets the Connections Hub page guid.
+     * ParentPage: Connections
+     */
+    ConnectionsHub: "8B5F2875-0D36-4625-8EE4-B738AE8E12F5",
     /**
      * Gets the Connections List page guid.
      * ParentPage: Connections
@@ -1045,6 +1055,11 @@ export const Page = {
      */
     MyAccountSecurity: "290C53DC-0960-484C-B314-8301882A454C",
     /**
+     * Gets the My Connections page guid.
+     * ParentPage: Connections
+     */
+    MyConnections: "3E55BE64-C8E8-487B-9BD4-E94C7F99BE1B",
+    /**
      * Gets the My Dashboard page guid
      * ParentPage: Internal Homepage
      */
@@ -1069,6 +1084,8 @@ export const Page = {
      * ParentPage: General Settings
      */
     NamedLocationsGeneralSettings: "2BECFB85-D566-464F-B6AC-0BE90189A418",
+    /** The Ncoa Process Page */
+    NcoaProcess: "56EDE500-CEE6-41F4-B724-E44E66A4432F",
     /**
      * Gets the New Account page guid
      * ParentPage: Security
