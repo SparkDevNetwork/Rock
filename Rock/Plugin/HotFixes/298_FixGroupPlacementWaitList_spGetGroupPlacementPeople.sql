@@ -165,7 +165,7 @@
 */
 
 
-ALTER PROCEDURE [dbo].[spGetGroupPlacementPeople]
+CREATE PROCEDURE [dbo].[spGetGroupPlacementPeople]
     @RegistrationTemplatePlacementEntityTypeId INT = NULL,
     @RegistrationInstanceEntityTypeId INT = NULL,
 	@PersonEntityTypeId INT = NULL,
