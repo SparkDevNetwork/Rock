@@ -37,16 +37,18 @@ namespace Rock.ViewModels.Rest.Controls
         /// <summary>
         /// The number of days back to look for an existing interaction
         /// for the media element. Will be used to find where the user left off
-        /// previously and resume from that point.
+        /// previously and resume from that point. A <c>null</c> value is
+        /// treated as <c>0</c> (auto-resume disabled).
         /// </summary>
-        public int AutoResumeInDays { get; set; }
+        public int? AutoResumeInDays { get; set; }
 
         /// <summary>
         /// The number of days back to look for an existing
         /// interaction for the media element that should be updated. If one
         /// is not found then a new interaction will be created. Set to
-        /// <c>0</c> to always create a new interaction.
+        /// <c>0</c> to always create a new interaction. A <c>null</c> value
+        /// is treated as <c>0</c>.
         /// </summary>
-        public int CombinePlayStatisticsInDays { get; set; }
+        public int? CombinePlayStatisticsInDays { get; set; }
     }
 }

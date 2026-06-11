@@ -8124,7 +8124,7 @@ namespace Rock.Rest.v2
                 WriteInteraction = options.PlayerOptions.WriteInteraction
             };
 
-            playerOptions.UpdateValuesFromMedia( null, options.MediaElementGuid, options.AutoResumeInDays, options.CombinePlayStatisticsInDays, RockRequestContext.CurrentPerson, RockRequestContext.CurrentVisitorId );
+            playerOptions.UpdateValuesFromMedia( null, options.MediaElementGuid, options.AutoResumeInDays ?? 0, options.CombinePlayStatisticsInDays ?? 0, RockRequestContext.CurrentPerson, RockRequestContext.CurrentVisitorId );
 
             return Ok( playerOptions );
         }
