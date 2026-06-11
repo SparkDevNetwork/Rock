@@ -1,0 +1,175 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel type="block"
+           title="Package Install"
+           titleIconCssClass="ti ti-gift">
+
+        <!-- Store unavailable -->
+        <NotificationBox v-if="errorMessage" alertType="warning">
+            <h4>Store Currently Not Available</h4>
+            <p>We're sorry, the Rock Store is currently not available. Check back soon!</p>
+            <small><em>{{ errorMessage }}</em></small>
+        </NotificationBox>
+
+        <template v-else>
+            <div class="packagedetail-banner">
+                <img v-if="packageIconImageUrl"
+                     :src="packageIconImageUrl"
+                     :alt="packageName"
+                     class="packagedetail-banner-image" />
+            </div>
+            <!-- Install complete -->
+            <NotificationBox v-if="isInstalled" alertType="success">
+                <strong>Package Installed</strong>
+                <p v-html="postInstallInstructions"></p>
+            </NotificationBox>
+
+            <!-- Already up to date -->
+            <div v-else-if="isUpToDate" class="row text-center mb-4">
+                <h4 class="text-semibold">Package Up to Date</h4>
+                <p>This package is installed and up to date.</p>
+            </div>
+
+            <!-- Install form -->
+            <div v-else class="d-flex-column">
+                <div class="row text-center mb-4">
+                    <h4 class="text-semibold">{{ installButtonText }} Package</h4>
+                    <div v-html="installMessage"></div>
+                </div>
+                <div class="row d-flex justify-content-center">
+                    <div class="col-sm-8 col-md-8 col-lg-6">
+                        <NotificationBox alertType="warning">
+                            <strong>Note</strong><br />
+                            <p>
+                                The installation of plugins may cause Rock to restart. You may want to consider
+                                installing during off-peak times.
+                            </p>
+                        </NotificationBox>
+                        <RockForm @submit="onInstall">
+                            <TextBox v-model="username"
+                                     label="Store Username"
+                                     :inputProps="{ autocomplete: 'off' }" />
+
+                            <TextBox v-model="password"
+                                     label="Store Password"
+                                     type="password"
+                                     :inputProps="{ autocomplete: 'off' }" />
+
+                            <CheckBox v-model="hasAgreedToTerms"
+                                      label=""
+                                      text="I have read and agree to the terms of the Rock Store">
+                                <template #textAppend>
+                                    <small><a href="http://www.rockrms.com/Store/Terms" target="_blank" rel="noopener noreferrer">(read terms)</a></small>
+                                </template>
+                            </CheckBox>
+
+                            <div class="mb-3 mt-4">
+                                <RockButton :btnType="BtnType.Primary"
+                                            type="submit"
+                                            :disabled="!hasAgreedToTerms"
+                                            :isLoading="isInstalling">
+                                    {{ installButtonText }}
+                                </RockButton>
+                            </div>
+                        </RockForm>
+
+                        <NotificationBox v-if="resultMessage" :alertType="resultAlertType">
+                            <span v-html="resultMessage"></span>
+                        </NotificationBox>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { onMounted, ref } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { PackageInstallInitializationBox } from "@Obsidian/ViewModels/Blocks/Store/PackageInstall/packageInstallInitializationBox";
+    import { InstallPackageRequestBag } from "@Obsidian/ViewModels/Blocks/Store/PackageInstall/installPackageRequestBag";
+    import { InstallPackageResponseBag } from "@Obsidian/ViewModels/Blocks/Store/PackageInstall/installPackageResponseBag";
+
+    // #region Values
+
+    const config = useConfigurationValues<PackageInstallInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const packageName = ref(config.packageName ?? "");
+    const packageIconImageUrl = ref(config.packageIconImageUrl ?? "");
+    const installMessage = ref(config.installMessage ?? "");
+    const installButtonText = ref(config.installButtonText ?? "Install");
+    const errorMessage = ref(config.errorMessage ?? "");
+    const isUpToDate = ref(config.isUpToDate ?? false);
+
+    const username = ref("");
+    const password = ref("");
+    const hasAgreedToTerms = ref(false);
+
+    const isInstalling = ref(false);
+    const isInstalled = ref(false);
+    const postInstallInstructions = ref("");
+
+    const resultMessage = ref("");
+    const resultAlertType = ref<AlertType>(AlertType.Warning);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Authenticates with the store, purchases the package if needed, and
+     * installs it, then applies the result to the UI.
+     */
+    async function onInstall(): Promise<void> {
+        resultMessage.value = "";
+        isInstalling.value = true;
+
+        try {
+            const request: InstallPackageRequestBag = {
+                username: username.value,
+                password: password.value
+            };
+
+            const result = await invokeBlockAction<InstallPackageResponseBag>("Install", { bag: request });
+
+            // A failed purchase or install returns the reason as an HTML
+            // message; keep the form visible and show it below.
+            if (!result.isSuccess || !result.data) {
+                resultMessage.value = result.errorMessage ?? "Unable to install the package.";
+                resultAlertType.value = AlertType.Warning;
+                return;
+            }
+
+            // A successful install hides the form and shows the post-install
+            // instructions.
+            postInstallInstructions.value = result.data.postInstallInstructions ?? "";
+            isInstalled.value = true;
+        }
+        finally {
+            isInstalling.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        // When the store has not been configured, send the user to the Link
+        // Organization page so they can configure it before installing.
+        if (!config.isStoreConfigured) {
+            window.location.href = config.linkOrganizationPageUrl ?? "/RockShop";
+        }
+    });
+
+    // #endregion Lifecycle Hooks
+</script>
