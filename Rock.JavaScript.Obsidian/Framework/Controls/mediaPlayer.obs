@@ -294,8 +294,8 @@
         const options: MediaPlayerGetPlayerOptionsOptionsBag = {
             playerOptions: basePlayerOptions.value,
             mediaElementGuid: props.mediaElementGuid || emptyGuid,
-            autoResumeInDays: props.autoResumeInDays,
-            combinePlayStatisticsInDays: props.combinePlayStatisticsInDays
+            autoResumeInDays: props.autoResumeInDays ?? 0,
+            combinePlayStatisticsInDays: props.combinePlayStatisticsInDays ?? 0
         };
 
         const response = await http.post<MediaPlayerOptionsBag>("/api/v2/Controls/MediaPlayerGetPlayerOptions", undefined, options);
