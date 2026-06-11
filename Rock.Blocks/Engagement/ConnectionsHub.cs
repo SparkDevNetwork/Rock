@@ -1420,20 +1420,24 @@ namespace Rock.Blocks.Engagement
                 return null;
             }
 
-            // Exclude inactive and archived placement groups. A global query filter sets the
-            // Group navigation property to null for archived groups, so guard against null as well.
-            var placementGroups = connectionOpportunity.ConnectionOpportunityGroups
-                .Where( g => g.Group != null && g.Group.IsActive && !g.Group.IsArchived )
-                .Select( g => g.Group )
-                .Where( g => !campusId.HasValue || !g.CampusId.HasValue || g.CampusId.Value == campusId.Value )
+            // Fetch the groups available for placement on this opportunity (both explicitly
+            // assigned groups and every group of a Group Type configured with "use all groups of
+            // this type"), filtered to the requested campus. The Campus is eager loaded for the
+            // display text below, and groups are ordered by name for the picker.
+            var placementGroups = new ConnectionOpportunityService( RockContext )
+                .GetPlacementGroups( connectionOpportunity.Id, campusId )
+                .Include( g => g.Campus )
+                .OrderBy( g => g.Name )
+                .ThenBy( g => g.Id )
+                .ToList();
+
+            return placementGroups
                 .Select( g => new ListItemBag
                 {
                     Text = g.CampusId.HasValue ? $"{g.Name} ({g.Campus.Name})" : $"{g.Name} (No Campus)",
                     Value = g.Guid.ToString()
                 } )
                 .ToList();
-
-            return placementGroups;
         }
 
         /// <summary>
@@ -2252,10 +2256,15 @@ namespace Rock.Blocks.Engagement
                     .Where( c => c.ConnectionOpportunityId == connectionRequest.ConnectionOpportunityId )
                     .ToList();
 
-                var opportunityGroups = new ConnectionOpportunityGroupService( RockContext )
-                    .Queryable()
-                    .Include( g => g.Group.Campus )
-                    .Where( g => g.ConnectionOpportunityId == connectionRequest.ConnectionOpportunityId )
+                // Fetch the groups available for placement on this opportunity (both explicitly
+                // assigned groups and every group of a Group Type configured with "use all groups
+                // of this type"). The Campus is eager loaded for the display text below, and groups
+                // are ordered by name for the picker.
+                var placementGroups = new ConnectionOpportunityService( RockContext )
+                    .GetPlacementGroups( connectionRequest.ConnectionOpportunityId )
+                    .Include( g => g.Campus )
+                    .OrderBy( g => g.Name )
+                    .ThenBy( g => g.Id )
                     .ToList();
 
                 var configsByGroupTypeId = groupConfigs
@@ -2265,24 +2274,24 @@ namespace Rock.Blocks.Engagement
                         grp => grp.Select( c => new { Role = c.GroupMemberRole, Status = c.GroupMemberStatus } ).ToList()
                     );
 
-                optionsBag.PlacementGroups = opportunityGroups
-                    .Where( g => g.Group != null && g.Group.IsActive && !g.Group.IsArchived )
-                    .Where( g => configsByGroupTypeId.ContainsKey( g.Group.GroupTypeId ) )
+                optionsBag.PlacementGroups = placementGroups
+                    .Where( g => g != null && g.IsActive && !g.IsArchived )
+                    .Where( g => configsByGroupTypeId.ContainsKey( g.GroupTypeId ) )
                     .Select( g =>
                     {
-                        var configs = configsByGroupTypeId[g.Group.GroupTypeId];
+                        var configs = configsByGroupTypeId[g.GroupTypeId];
 
-                        var tempGroupMember = new Rock.Model.GroupMember { GroupId = g.GroupId };
+                        var tempGroupMember = new Rock.Model.GroupMember { GroupId = g.Id };
                         tempGroupMember.LoadAttributes();
 
                         return new PlacementGroupDetailsBag
                         {
                             ListItemBag = new ListItemBag
                             {
-                                Text = g.Group.CampusId.HasValue ? $"{g.Group.Name} ({g.Group.Campus.Name})" : $"{g.Group.Name} (No Campus)",
-                                Value = g.Group.Guid.ToString()
+                                Text = g.CampusId.HasValue ? $"{g.Name} ({g.Campus.Name})" : $"{g.Name} (No Campus)",
+                                Value = g.Guid.ToString()
                             },
-                            CampusGuid = g.Group.Campus?.Guid,
+                            CampusGuid = g.Campus?.Guid,
                             GroupMemberRoles = configs
                                 .DistinctBy( c => c.Role.Guid )
                                 .Select( c => c.Role.ToListItemBag() )

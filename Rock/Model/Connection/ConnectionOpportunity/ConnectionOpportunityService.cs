@@ -98,6 +98,68 @@ namespace Rock.Model
                 .ToList();
         }
 
+        /// <summary>
+        /// Gets the active, non-archived groups available for placement on the specified
+        /// Connection Opportunity. This combines both placement configurations the opportunity
+        /// supports: groups explicitly assigned to the opportunity (see <see cref="ConnectionOpportunityGroup"/>)
+        /// and every group belonging to a Group Type whose configuration has
+        /// <see cref="ConnectionOpportunityGroupConfig.UseAllGroupsOfType"/> set to <c>true</c>.
+        /// An <see cref="IQueryable{T}"/> is returned so callers can add their own includes,
+        /// filters, or projections without materializing more groups than they need.
+        /// </summary>
+        /// <param name="connectionOpportunityId">The identifier of the Connection Opportunity to retrieve placement groups for.</param>
+        /// <returns>A queryable of the <see cref="Group"/> objects available for placement on the opportunity.</returns>
+        /// <exception cref="System.InvalidOperationException">Context is not a RockContext.</exception>
+        public IQueryable<Group> GetPlacementGroups( int connectionOpportunityId )
+        {
+            if ( !( Context is RockContext rockContext ) )
+            {
+                throw new InvalidOperationException( "Context is not a RockContext." );
+            }
+
+            // Group Ids explicitly assigned to this opportunity.
+            var explicitGroupIdsQuery = new ConnectionOpportunityGroupService( rockContext )
+                .Queryable()
+                .Where( g => g.ConnectionOpportunityId == connectionOpportunityId )
+                .Select( g => g.GroupId );
+
+            // Group Type Ids configured with "use all groups of this type" for this opportunity.
+            var allGroupTypeIdsQuery = new ConnectionOpportunityGroupConfigService( rockContext )
+                .Queryable()
+                .Where( c => c.ConnectionOpportunityId == connectionOpportunityId && c.UseAllGroupsOfType )
+                .Select( c => c.GroupTypeId );
+
+            // A single query returns groups from both sources, deduplicated (each group is one
+            // row), excluding inactive and archived groups.
+            return new GroupService( rockContext )
+                .Queryable()
+                .Where( g => g.IsActive && !g.IsArchived )
+                .Where( g => explicitGroupIdsQuery.Contains( g.Id ) || allGroupTypeIdsQuery.Contains( g.GroupTypeId ) );
+        }
+
+        /// <summary>
+        /// Gets the active, non-archived groups available for placement on the specified
+        /// Connection Opportunity, filtered to those available for the given campus. A group is
+        /// included when no campus is specified, when the group has no campus, or when the group's
+        /// campus matches the specified campus. See <see cref="GetPlacementGroups(int)"/> for how
+        /// the available groups are determined.
+        /// </summary>
+        /// <param name="connectionOpportunityId">The identifier of the Connection Opportunity to retrieve placement groups for.</param>
+        /// <param name="campusId">The identifier of the campus to filter the groups by, or <c>null</c> to return groups for all campuses.</param>
+        /// <returns>A queryable of the <see cref="Group"/> objects available for placement on the opportunity for the specified campus.</returns>
+        /// <exception cref="System.InvalidOperationException">Context is not a RockContext.</exception>
+        public IQueryable<Group> GetPlacementGroups( int connectionOpportunityId, int? campusId )
+        {
+            var qry = GetPlacementGroups( connectionOpportunityId );
+
+            if ( campusId.HasValue )
+            {
+                qry = qry.Where( g => !g.CampusId.HasValue || g.CampusId.Value == campusId.Value );
+            }
+
+            return qry;
+        }
+
         #endregion
     }
 }
