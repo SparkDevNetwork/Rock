@@ -91,17 +91,25 @@ namespace RockWeb.Blocks.WorkFlow
         {
             base.OnInit( e );
 
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "DefaultWorkflowType" ) ) )
+            var workflowTypeService = new WorkflowTypeService( new RockContext() );
+
+            // Prefer the WorkflowTypeId page parameter when it is supplied and
+            // resolves to a valid workflow type. This ensures that links like
+            // "Manage Workflows" navigate to the workflow type the user actually
+            // clicked rather than the configured default.
+            int workflowTypeId = PageParameter( "WorkflowTypeId" ).AsInteger();
+            if ( workflowTypeId > 0 )
+            {
+                _workflowType = workflowTypeService.Get( workflowTypeId );
+            }
+
+            // Fall back to the configured Default Workflow Type when no page
+            // parameter was supplied (or it did not resolve to a workflow type).
+            if ( _workflowType == null && !string.IsNullOrWhiteSpace( GetAttributeValue( "DefaultWorkflowType" ) ) )
             {
                 Guid workflowTypeGuid = Guid.Empty;
                 Guid.TryParse( GetAttributeValue( "DefaultWorkflowType" ), out workflowTypeGuid );
-                _workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeGuid );
-            }
-            else
-            {
-                int workflowTypeId = 0;
-                workflowTypeId = PageParameter( "WorkflowTypeId" ).AsInteger();
-                _workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeId );
+                _workflowType = workflowTypeService.Get( workflowTypeGuid );
             }
 
             if ( _workflowType != null )
@@ -184,19 +192,26 @@ namespace RockWeb.Blocks.WorkFlow
         public override List<BreadCrumb> GetBreadCrumbs( Rock.Web.PageReference pageReference )
         {
             var breadCrumbs = new List<BreadCrumb>();
-            WorkflowType workflowType;
+            WorkflowType workflowType = null;
+            var workflowTypeService = new WorkflowTypeService( new RockContext() );
 
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "DefaultWorkflowType" ) ) )
+            // Prefer the WorkflowTypeId page parameter when it is supplied and
+            // resolves to a valid workflow type, so the breadcrumb reflects the
+            // workflow type the user actually navigated to rather than the
+            // configured default.
+            int workflowTypeId = PageParameter( "WorkflowTypeId" ).AsInteger();
+            if ( workflowTypeId > 0 )
+            {
+                workflowType = workflowTypeService.Get( workflowTypeId );
+            }
+
+            // Fall back to the configured Default Workflow Type when no page
+            // parameter was supplied (or it did not resolve to a workflow type).
+            if ( workflowType == null && !string.IsNullOrWhiteSpace( GetAttributeValue( "DefaultWorkflowType" ) ) )
             {
                 Guid workflowTypeGuid = Guid.Empty;
                 Guid.TryParse( GetAttributeValue( "DefaultWorkflowType" ), out workflowTypeGuid );
-                workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeGuid );
-            }
-            else
-            {
-                int workflowTypeId = 0;
-                workflowTypeId = PageParameter( "WorkflowTypeId" ).AsInteger();
-                workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeId );
+                workflowType = workflowTypeService.Get( workflowTypeGuid );
             }
 
             if ( workflowType != null )

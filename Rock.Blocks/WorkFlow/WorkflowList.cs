@@ -263,14 +263,27 @@ namespace Rock.Blocks.Workflow
         /// <returns></returns>
         public WorkflowTypeCache GetWorkflowType()
         {
-            var workflowTypeGuid = GetAttributeValue( AttributeKey.DefaultWorkflowType ).AsGuidOrNull();
+            // Prefer the WorkflowTypeId page parameter when it is supplied and
+            // resolves to a valid workflow type. This ensures that links like
+            // "Manage Workflows" navigate to the workflow type the user actually
+            // clicked rather than the configured default.
+            var workflowTypeFromParameter = WorkflowTypeCache.Get( PageParameter( PageParameterKey.WorkflowTypeId ), !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( workflowTypeGuid.HasValue )
+            if ( workflowTypeFromParameter != null )
             {
-                return WorkflowTypeCache.Get( workflowTypeGuid.Value );
+                return workflowTypeFromParameter;
             }
 
-            return WorkflowTypeCache.Get( PageParameter( PageParameterKey.WorkflowTypeId ), !PageCache.Layout.Site.DisablePredictableIds );
+            // Fall back to the configured Default Workflow Type when no page
+            // parameter was supplied (or it did not resolve to a workflow type).
+            var defaultWorkflowTypeGuid = GetAttributeValue( AttributeKey.DefaultWorkflowType ).AsGuidOrNull();
+
+            if ( defaultWorkflowTypeGuid.HasValue )
+            {
+                return WorkflowTypeCache.Get( defaultWorkflowTypeGuid.Value );
+            }
+
+            return null;
         }
 
         /// <inheritdoc/>
@@ -322,17 +335,24 @@ namespace Rock.Blocks.Workflow
         {
             WorkflowTypeCache workflowType = null;
 
-            var defaultGuid = GetAttributeValue( AttributeKey.DefaultWorkflowType ).AsGuidOrNull();
-            if ( defaultGuid.HasValue )
+            // Prefer the WorkflowTypeId page parameter when it is supplied and
+            // resolves to a valid workflow type, so the breadcrumb reflects the
+            // workflow type the user actually navigated to rather than the
+            // configured default.
+            var workflowTypeId = pageReference.GetPageParameter( PageParameterKey.WorkflowTypeId );
+            if ( !string.IsNullOrWhiteSpace( workflowTypeId ) )
             {
-                workflowType = WorkflowTypeCache.Get( defaultGuid.Value );
+                workflowType = WorkflowTypeCache.Get( workflowTypeId, !PageCache.Layout.Site.DisablePredictableIds );
             }
-            else
+
+            // Fall back to the configured Default Workflow Type when no page
+            // parameter was supplied (or it did not resolve to a workflow type).
+            if ( workflowType == null )
             {
-                var workflowTypeId = pageReference.GetPageParameter( PageParameterKey.WorkflowTypeId );
-                if ( !string.IsNullOrWhiteSpace( workflowTypeId ) )
+                var defaultGuid = GetAttributeValue( AttributeKey.DefaultWorkflowType ).AsGuidOrNull();
+                if ( defaultGuid.HasValue )
                 {
-                    workflowType = WorkflowTypeCache.Get( workflowTypeId, !PageCache.Layout.Site.DisablePredictableIds );
+                    workflowType = WorkflowTypeCache.Get( defaultGuid.Value );
                 }
             }
 
@@ -341,7 +361,6 @@ namespace Rock.Blocks.Workflow
             if ( workflowType != null )
             {
                 var pageParameters = new Dictionary<string, string>();
-                var workflowTypeId = pageReference.GetPageParameter( PageParameterKey.WorkflowTypeId );
 
                 if ( !string.IsNullOrWhiteSpace( workflowTypeId ) )
                 {
