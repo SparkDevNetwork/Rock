@@ -113,7 +113,7 @@ namespace Rock.Blocks.Communication
             var options = new SnippetDetailOptionsBag();
 
             var snippetType = GetSnippetType();
-            options.IsAuthorizedToEdit = snippetType?.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) ?? false;
+            options.CanEditSnippetType = snippetType?.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) ?? false;
             options.IsPersonalAllowed = snippetType?.IsPersonalAllowed ?? false;
 
             return options;
@@ -140,6 +140,32 @@ namespace Rock.Blocks.Communication
         }
 
         /// <summary>
+        /// Determines whether the current person is authorized to add or edit the snippet.
+        /// </summary>
+        /// <param name="entity">The snippet being added or edited.</param>
+        /// <returns><c>true</c> if the current person is authorized to edit the snippet; otherwise <c>false</c>.</returns>
+        private bool IsAuthorizedToEditSnippet( Snippet entity )
+        {
+            var currentPerson = RequestContext.CurrentPerson;
+
+            // Match the WebForms behavior: block-level Edit rights allow adding and editing snippets.
+            if ( BlockCache.IsAuthorized( Authorization.EDIT, currentPerson ) )
+            {
+                return true;
+            }
+
+            // Edit security on the snippet itself also grants edit ( e.g. the owner of a personal snippet ).
+            if ( entity != null && entity.IsAuthorized( Authorization.EDIT, currentPerson ) )
+            {
+                return true;
+            }
+
+            // Edit security on the snippet type grants edit of its snippets.
+            var snippetType = GetSnippetType();
+            return snippetType != null && snippetType.IsAuthorized( Authorization.EDIT, currentPerson );
+        }
+
+        /// <summary>
         /// Sets the initial entity state of the box. Populates the Entity or
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
@@ -161,7 +187,7 @@ namespace Rock.Blocks.Communication
 
             if ( entity.Id != 0 )
             {
-                box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+                box.IsEditable = IsAuthorizedToEditSnippet( entity );
                 // Existing entity was found, prepare for view mode by default.
                 if ( isViewable )
                 {
@@ -176,7 +202,7 @@ namespace Rock.Blocks.Communication
             }
             else
             {
-                box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || snippetType.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+                box.IsEditable = IsAuthorizedToEditSnippet( entity );
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
@@ -357,10 +383,9 @@ namespace Rock.Blocks.Communication
                 return false;
             }
 
-            var snippetType = GetSnippetType();
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) && snippetType?.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) == false )
+            if ( !IsAuthorizedToEditSnippet( entity ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${Snippet.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {Snippet.FriendlyTypeName}." );
                 return false;
             }
 

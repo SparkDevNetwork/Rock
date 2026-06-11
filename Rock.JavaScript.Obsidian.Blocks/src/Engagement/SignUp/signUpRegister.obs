@@ -65,13 +65,13 @@
                            :registrants="registrants"
                            :title="config.title" />
 
-            <Loading :isLoading="isRegistering">
+          <div class="captcha-container">
+                <div v-if="!config.disableCaptchaSupport" v-show="!isCaptchaComplete">
+                    <Captcha ref="captchaElement" validationTitle="Captcha" />
+                </div>
+            </div>
+           <Loading :isLoading="isRegistering">
                 <div v-if="anyEligibleRegistrants" class="actions">
-                    <div class="captcha-container">
-                        <div v-if="!config.disableCaptchaSupport" v-show="!isCaptchaComplete">
-                            <Captcha ref="captchaElement" validationTitle="Captcha" />
-                        </div>
-                    </div>
                     <RockButton v-if="isCaptchaComplete || config.disableCaptchaSupport" type="submit" :btnType="BtnType.Primary" :disabled="isRegistering">{{ submitButtonText }}</RockButton>
                 </div>
             </Loading>
@@ -219,7 +219,6 @@
         const actionContext: BlockActionContextBag = {};
         if (!config.disableCaptchaSupport && captchaElement.value) {
             actionContext.captcha = await captchaElement.value.getToken();
-            captchaElement.value.refreshToken();
         }
 
         const result: HttpResult<SignUpRegisterResponseBag> = await invokeBlockAction("Register", { bag }, actionContext);

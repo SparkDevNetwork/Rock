@@ -2,113 +2,162 @@
 <template>
     <fieldset>
 
-        <div v-if="!isSystem">
-            <div class="row">
-                <div class="col-md-6">
-                    <TextBox v-model="name"
-                             label="Name"
-                             rules="required" />
+        <ContentSectionContainer :sidebar="false">
 
-                    <TextBox v-model="tagName"
-                             help="This will be the name of the shortcode when used in Lava."
-                             label="Tag Name"
-                             rules="required" />
-                </div>
+            <template v-if="!isSystem">
+                <ContentSection light>
+                    <ContentStack>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <TextBox v-model="name"
+                                         label="Name"
+                                         rules="required" />
+                            </div>
+                            <div class="col-md-6">
+                                <CheckBox v-model="isActive"
+                                          label="Active" />
+                            </div>
+                        </div>
 
-                <div class="col-md-6">
-                    <CheckBox v-model="isActive"
-                              label="Active" />
+                        <TextBox v-model="description"
+                                 label="Description"
+                                 textMode="multiline" />
 
-                    <RadioButtonList v-model="tagType"
-                                     :items="tagTypes"
-                                     :repeatColumns="0"
-                                     label="Tag Type"
-                                     rules="required"
-                                     help="Block tags require an end tag while inline do not."
-                                     horizontal />
-                </div>
-            </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <CategoryPicker v-model="categories"
+                                                label="Categories"
+                                                multiple
+                                                :entityTypeGuid="EntityType.LavaShortcode" />
+                            </div>
+                        </div>
+                    </ContentStack>
+                </ContentSection>
 
-            <div class="row">
-                <div class="col-md-2">
-                    <CategoryPicker v-model="categories"
-                                    label="Categories"
-                                    multiple
-                                    :entityTypeGuid="EntityType.LavaShortcode" />
-                </div>
-            </div>
+                <ContentSection title="Documentation" icon="ti ti-book">
+                    <ContentStack
+                        headerLocation="top"
+                        description="Document the shortcode's technical details and provide clear instructions on its properties, usage, and parameters.">
 
-            <TextBox v-model="description"
-                     label="Description"
-                     textMode="multiline" />
+                        <HtmlEditor v-model="documentation"
+                                    :editorHeight="250"
+                                    toolbar="light"
+                                    :isTogglableCodeEditorForced="true" />
+                    </ContentStack>
+                </ContentSection>
 
-            <HtmlEditor v-model="documentation"
-                        label="Documentation"
-                        help="Technical description of the internals of the shortcode."
-                        :editorHeight="250"
-                        toolbar="light"
-                        :isTogglableCodeEditorForced="true" />
+                <ContentSection title="Shortcode Markup" icon="ti ti-code">
+                    <ContentStack>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <TextBox v-model="tagName"
+                                         help="Set the name used to reference this shortcode in Lava."
+                                         label="Tag Name"
+                                         rules="required" />
+                            </div>
+                        </div>
 
-            <CodeEditor v-model="markup"
-                        label="Short Code Markup"
-                        theme="rock"
-                        mode="text"
-                        readonly
-                        :editorHeight="350"
-                        rules="required" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <RadioButtonList v-model="tagType"
+                                                 :items="tagTypes"
+                                                 :repeatColumns="0"
+                                                 label="Tag Type"
+                                                 rules="required"
+                                                 help="Choose whether the tag is inline or block. Block tags require an end tag." />
+                            </div>
+                        </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <KeyValueList label="Parameters"
-                                  help="List the parameters for your shortcode. If you provide a value here it will become the default value if none is provided."
-                                  keyPlaceholder="Key"
-                                  valuePlaceholder="Value"
-                                  v-model="parameters" />
-                </div>
+                        <CodeEditor v-model="markup"
+                                    editor="monaco"
+                                    label="Shortcode Markup"
+                                    mode="text"
+                                    readonly
+                                    :editorHeight="350"
+                                    rules="required" />
+                    </ContentStack>
+                </ContentSection>
 
-                <div class="col-md-6">
-                    <LavaCommandPicker v-model="enabledCommands" label="Enabled Lava Commands" :multiple="true" />
-                </div>
-            </div>
-        </div>
+                <ContentSection title="Lava Settings" icon="ti ti-settings">
+                    <ContentStack>
+                        <LavaCommandPicker v-model="enabledCommands"
+                                           label="Enabled Lava Commands"
+                                           help="Select which Lava commands can run inside this shortcode. These commands don't need to be enabled in the source block."
+                                           :multiple="true"
+                                           :displayStyle="PickerDisplayStyle.Condensed" />
 
-        <div v-else>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <RadioButtonList v-model="shortcodeScopeBehavior"
+                                                 :items="shortcodeScopeBehaviors"
+                                                 :repeatColumns="0"
+                                                 label="Variable Scope Context"
+                                                 help="Determines how variables defined within the shortcode are scoped. Choose Isolated to keep variables contained within the shortcode, preventing them from affecting Lava outside of it. Choose Shared to allow variables defined in the shortcode to be accessible in the surrounding Lava after the shortcode runs." />
+                            </div>
+                        </div>
 
-            <p v-text="description" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <KeyValueList label="Parameters"
+                                              help="Add shortcode parameters. Values set here act as defaults."
+                                              keyPlaceholder="Key"
+                                              valuePlaceholder="Value"
+                                              v-model="parameters" />
+                            </div>
+                        </div>
+                    </ContentStack>
+                </ContentSection>
+            </template>
 
-            <NotificationBox alertType="info">
-                <strong>Note</strong> This is a system lava shortcode so editing is limited.
-            </NotificationBox>
+            <template v-else>
+                <ContentSection light>
+                    <ContentStack>
+                        <NotificationBox alertType="info">
+                            <strong>Note</strong> This is a system lava shortcode so editing is limited.
+                        </NotificationBox>
 
-            <div class="row">
-                <div class="col-md-12">
-                    <ValueDetailList :modelValue="propertyValues" />
-                </div>
+                        <ValueDetailList :modelValue="generalPropertyValues" />
 
-                <div class="col-md-2">
-                    <CategoryPicker v-model="categories"
-                                    label="Categories"
-                                    multiple
-                                    :entityTypeGuid="EntityType.LavaShortcode" />
-                </div>
-            </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <CategoryPicker v-model="categories"
+                                                label="Categories"
+                                                multiple
+                                                :entityTypeGuid="EntityType.LavaShortcode" />
+                            </div>
+                        </div>
+                    </ContentStack>
+                </ContentSection>
 
-            <CodeEditor v-model="markup"
-                        label="Short Code Markup"
-                        theme="rock"
-                        mode="text"
-                        :editorHeight="850"
-                        :disabled="isSystem"
-                        rules="required" />
+                <ContentSection title="Shortcode Markup" icon="ti ti-code">
+                    <ContentStack>
+                        <ValueDetailList :modelValue="shortcodeMarkupPropertyValues" />
 
-            <strong>Parameters</strong>
-            <pre>
-                <p v-for="parameter in parameters"><strong>{{ parameter.key }} : </strong>{{ parameter.value }}</p>
-            </pre>
+                        <CodeEditor v-model="markup"
+                                    editor="monaco"
+                                    label="Shortcode Markup"
+                                    mode="text"
+                                    readonly
+                                    :editorHeight="350"
+                                    rules="required" />
+                    </ContentStack>
+                </ContentSection>
 
-            <strong>Enabled Commands</strong>
-            <p v-text="enabledCommandsText" />
-        </div>
+                <ContentSection title="Lava Settings" icon="ti ti-settings">
+                    <ContentStack>
+                        <ValueDetailList :modelValue="lavaSettingsPropertyValues" />
+
+                        <template v-if="anyParameters">
+                            <div class="mb-spacing-tiny font-size-sm text-interface-medium">Parameters</div>
+                            <pre>
+                                <p v-for="parameter in parameters"><strong>{{ parameter.key }} : </strong>{{ parameter.value }}</p>
+                            </pre>
+                        </template>
+                    </ContentStack>
+                </ContentSection>
+            </template>
+
+        </ContentSectionContainer>
 
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
     </fieldset>
@@ -136,6 +185,10 @@
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
 
     const props = defineProps({
         modelValue: {
@@ -170,25 +223,42 @@
     const enabledCommands = propertyRef<ListItemBag[]>(props.modelValue.enabledCommands ?? [], "EnabledCommands");
     const parameters = propertyRef((props.modelValue.parameters ?? []).map((s): KeyValueItem => ({ key: s.text, value: s.value })), "Parameters");
     const enabledCommandsText = ref(enabledCommands.value.map((c): string => c.value ?? "").join(", ") ?? "");
+    const shortcodeScopeBehavior = propertyRef(props.modelValue.shortcodeScopeBehavior ?? "", "ShortcodeSopeBehavior");
+    const shortcodeScopeBehaviors = ref(props.options.shortcodeScopeBehaviors ?? []);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, isActive, name, tagName, tagType, documentation, markup, enabledCommands, parameters, categories];
+    const propRefs = [description, isActive, name, tagName, tagType, documentation, markup, enabledCommands, parameters, categories, shortcodeScopeBehavior];
 
-    // #endregion
+    // #endregion Values
 
     // #region Computed Values
+
     const isSystem = computed((): boolean => props.modelValue?.isSystem ?? false);
 
-    const propertyValues = computed((): ValueDetailListItem[] => {
+    const generalPropertyValues = computed((): ValueDetailListItem[] => {
         const valueBuilder = new ValueDetailListItemBuilder();
 
         if (!props.modelValue) {
             return valueBuilder.build();
         }
 
+        if (props.modelValue.description) {
+            valueBuilder.addTextValue("Description", props.modelValue.description);
+        }
+
         if (props.modelValue.isSystem) {
             valueBuilder.addTextValue("System", props.modelValue.isSystem ? "Yes" : "No");
+        }
+
+        return valueBuilder.build();
+    });
+
+    const shortcodeMarkupPropertyValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
         }
 
         if (props.modelValue.tagName) {
@@ -202,15 +272,32 @@
         return valueBuilder.build();
     });
 
-    // #endregion
+    const lavaSettingsPropertyValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
 
-    // #region Functions
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
 
-    // #endregion
+        if (enabledCommandsText.value) {
+            valueBuilder.addTextValue("Enabled Commands", enabledCommandsText.value);
+        }
 
-    // #region Event Handlers
+        if (props.modelValue.shortcodeScopeBehavior) {
+            valueBuilder.addTextValue("Variable Scope Context", props.modelValue.shortcodeScopeBehavior);
+        }
 
-    // #endregion
+        return valueBuilder.build();
+    });
+
+    const anyParameters = computed((): boolean => {
+        return !!(
+            props.modelValue.parameters
+                ?.some(p => p.text)
+        );
+    });
+
+    // #endregion Computed Values
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
@@ -226,6 +313,7 @@
         updateRefValue(enabledCommands, props.modelValue.enabledCommands ?? []);
         updateRefValue(parameters, (props.modelValue.parameters ?? []).map((s): KeyValueItem => ({ key: s.text, value: s.value })));
         updateRefValue(categories, props.modelValue.categories ?? []);
+        updateRefValue(shortcodeScopeBehavior, props.modelValue.shortcodeScopeBehavior ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -243,7 +331,8 @@
             markup: markup.value,
             enabledCommands: enabledCommands.value,
             parameters: parameters.value.map((s): ListItemBag => ({ value: s.value ?? "", text: s.key ?? "" })),
-            categories: categories.value
+            categories: categories.value,
+            shortcodeScopeBehavior: shortcodeScopeBehavior.value
         };
 
         emit("update:modelValue", newValue);

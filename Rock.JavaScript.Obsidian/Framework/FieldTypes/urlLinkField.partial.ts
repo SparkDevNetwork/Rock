@@ -22,7 +22,7 @@ import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 import { FieldTypeBase } from "./fieldType";
 import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     ShouldRequireTrailingForwardSlash = "ShouldRequireTrailingForwardSlash",
     ShouldAlwaysShowCondensed = "ShouldAlwaysShowCondensed"
 }
@@ -41,7 +41,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  */
 export class UrlLinkFieldType extends FieldTypeBase {
     public override getHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
-        const shouldAlwaysShowCondensed = asBoolean(configurationValues[ConfigurationValueKey.ShouldAlwaysShowCondensed]);
+        const shouldAlwaysShowCondensed = asBoolean(configurationValues[ConfigurationKey.ShouldAlwaysShowCondensed]);
         const textValue = this.getTextValue(value, configurationValues);
 
         let htmlValue = "";
@@ -62,7 +62,7 @@ export class UrlLinkFieldType extends FieldTypeBase {
     }
 
     public override getTextValue(value: string, configurationValues: Record<string, string>): string {
-        const shouldAlwaysShowCondensed = asBoolean(configurationValues[ConfigurationValueKey.ShouldAlwaysShowCondensed]);
+        const shouldAlwaysShowCondensed = asBoolean(configurationValues[ConfigurationKey.ShouldAlwaysShowCondensed]);
         if (shouldAlwaysShowCondensed) {
             return `<a href="${value}">${value}</a>`;
         }

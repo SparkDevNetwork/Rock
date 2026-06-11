@@ -20,6 +20,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Cms;
 using Rock.Model;
 
 namespace Rock.Web.Cache
@@ -125,6 +126,15 @@ namespace Rock.Web.Cache
         [DataMember]
         public string EnabledLavaCommands { get; private set; }
 
+        /// <summary>
+        /// Gets or sets how variables defined within this shortcode are scoped.
+        /// </summary>
+        /// <value>
+        /// The shortcode scope behavior.
+        /// </value>
+        [DataMember]
+        public ShortcodeScopeBehavior ShortcodeScopeBehavior { get; private set; }
+
         #endregion
 
         #region Public Methods
@@ -152,6 +162,7 @@ namespace Rock.Web.Cache
             Parameters = shortcode.Parameters;
             EnabledLavaCommands = shortcode.EnabledLavaCommands;
             CategoryIds = shortcode.Categories.Select( c => c.Id ).ToList();
+            ShortcodeScopeBehavior = shortcode.ShortcodeScopeBehavior;
         }
 
         /// <summary>
@@ -173,7 +184,7 @@ namespace Rock.Web.Cache
         {
             return Name;
         }
-        
+
         /// <summary>
         /// Returns all Lava shortcodes
         /// </summary>

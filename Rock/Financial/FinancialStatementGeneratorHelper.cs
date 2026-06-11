@@ -485,6 +485,9 @@ namespace Rock.Financial
                             givingSalutation shouldn't be a noticeable performance impact.
                         */
 
+                        // In this case, get the giving group members
+                        var givingGroupPersonIds = personList.Select( p => p.Id ).ToArray();
+
                         string givingSalutation;
 
                         var calculateFamilySalutationArgs = new Person.CalculateFamilySalutationArgs( false )
@@ -492,6 +495,7 @@ namespace Rock.Financial
                             RockContext = rockContext,
                             IncludeInactive = !financialStatementGeneratorOptions.ExcludeInActiveIndividuals,
                             UseFormalNames = true,
+                            LimitToPersonIds = givingGroupPersonIds,
                             IncludeChildren = false,
                         };
 

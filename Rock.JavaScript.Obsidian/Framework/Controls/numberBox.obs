@@ -20,8 +20,8 @@
                            :maxlength="maxLength ?? undefined"
                            :placeholder="placeholder"
                            :step="internalStep"
-                           :min="minimumValue"
-                           :max="maximumValue"
+                           :min="minimumValue ?? undefined"
+                           :max="maximumValue ?? undefined"
                            @input="onInput"
                            @change="onChange"
                            @blur="formatInternalValue" />

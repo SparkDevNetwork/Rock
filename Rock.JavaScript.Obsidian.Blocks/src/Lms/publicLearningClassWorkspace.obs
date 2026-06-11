@@ -185,12 +185,12 @@
 
             </div>
 
-            <div class="workspace-block-content" v-if="selectedTab === activitiesTab">
+            <div ref="workspaceBlockContentElement" class="workspace-block-content" v-if="selectedTab === activitiesTab">
                 <div class="empty-activities-container" v-if="activities.length === 0">
 
                 </div>
                 <template v-if="activities.length > 0">
-                    <div class="workspace-navigation-pane-container">
+                    <div :class="navigationPaneContainerClass">
                         <CustomSelect
                                       v-model="viewingCompletionBag"
                                       :items="activities"
@@ -198,7 +198,7 @@
                                       itemKey="learningClassActivityIdKey"
                                       :itemClass="getActivityContainerClasses"
                                       :disabledKey="isActivityUnavailable"
-                                      :mobileThreshold="767"
+                                      :mobileThreshold="mobileThreshold"
                                       selectedClass="is-selected">
                             <template #placeholder>
                                 <p class="text-muted">Tap here to select an activity</p>
@@ -212,11 +212,11 @@
                                      data-container="body"
                                      :data-original-title="getActivityTooltip(item)">
                                     <div class="activity-item-completion-container">
-                                        <i v-if="isCompleted(item)" class="ti ti-circle-check ti-2x text-success"></i>
-                                        <i v-if="!isCompleted(item)" class="ti ti-circle ti-2x is-incomplete"></i>
+                                        <i v-if="isCompleted(item)" class="ti ti-circle-check text-success"></i>
+                                        <i v-if="!isCompleted(item)" class="ti ti-circle is-incomplete"></i>
                                     </div>
                                     <div class="activity-item-detail-container">
-                                        <h5 class="activity-name">{{ item?.classActivityBag?.name }}</h5>
+                                        <h6 class="activity-name">{{ item?.classActivityBag?.name }}</h6>
                                         <div class="activity-item-time" v-if="getActivityTimeText(item)">
                                             <div class="text-muted" :class="{ 'text-warning': isDueSoonAndIncomplete(item) }">{{ getActivityTimeText(item) }}</div>
                                         </div>
@@ -244,7 +244,7 @@
                         </div>
                     </div>
 
-                    <div class="workspace-main-content">
+                    <div :class="workspaceMainContentClass">
                         <div v-if="showCompletedScreen"
                              class="course-completed-content">
                             <div>
@@ -277,10 +277,10 @@
 
                             </div>
 
-                            <activityTypeComponent v-else
-                                                   :activityBag="viewingCompletionBag.classActivityBag"
+                            <activityTypeComponent :activityBag="viewingCompletionBag.classActivityBag"
                                                    :completionBag="viewingCompletionBag"
                                                    :screenToShow="screenToShow"
+                                                   @loaded="onActivityLoaded"
                                                    @commentChanged="onCommentChanged"
                                                    @completionValuesChanged="onCompletionValuesChanged"
                                                    @closed="onClosed"
@@ -317,13 +317,20 @@
     import { useStore } from "@Obsidian/PageState";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
+    import { useViewportWidth } from "@Obsidian/Utility/screenSize";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
 
     const config = useConfigurationValues<PublicLearningClassWorkspaceBox>();
     const invokeBlockAction = useInvokeBlockAction();
     const store = useStore();
     onConfigurationValuesChanged(useReloadBlock());
 
+    const mobileThreshold = 767;
+    let isInitialLoad = true;
+
     // #region Values
+
+    const { isMobile } = useViewportWidth(mobileThreshold);
 
     const blockError = ref("");
     const errorMessage = ref("");
@@ -340,6 +347,8 @@
     const activities = ref<LearningClassActivityCompletionBag[]>(config.activities ?? []);
 
     const viewingCompletionBag = ref(getInitialActivitySelection());
+    const workspaceBlockContentElement = ref<HTMLElement | undefined>();
+    const enableSmartScroll = ref(config.enableSmartScroll);
 
     const announcements = ref(config.announcements ?? []);
     const isAcademicCalendarMode = ref(config.programConfigurationMode === ConfigurationMode.AcademicCalendar);
@@ -455,6 +464,29 @@
         return store.state.currentPerson?.nickName ?? "";
     });
 
+    /** The container classes used for the activity navigation pane. */
+    const navigationPaneContainerClass = computed(() => {
+        const classes = ["workspace-navigation-pane-container"];
+
+        if (enableSmartScroll.value && !isMobile.value) {
+            classes.push("smart-scroll");
+            classes.push("styled-scroll");
+        }
+
+        return classes;
+    });
+
+    /** The container classes used for the main content area. */
+    const workspaceMainContentClass = computed(() => {
+        const classes = ["workspace-main-content"];
+
+        if (enableSmartScroll.value && !isMobile.value) {
+            classes.push("smart-scroll");
+        }
+
+        return classes;
+    });
+
     // #endregion
 
     // #region Functions
@@ -516,8 +548,8 @@
         ];
     }
 
-    function isCompleted(activity): boolean {
-        return activity.isStudentCompleted || activity.isFacilitatorCompleted;
+    function isCompleted(activity: LearningClassActivityCompletionBag): boolean {
+        return activity.isCompleted;
     }
 
     function getBadgeText(activity: LearningClassActivityCompletionBag): string | undefined {
@@ -640,9 +672,85 @@
         return activity?.isAvailable !== true;
     }
 
+    /**
+     * Scrolls the activity into view. This is only applied for desktop view.
+     */
+    function scrollActivityIntoView(): void {
+        if (!workspaceBlockContentElement.value) {
+            return;
+        }
+
+        // Scroll slightly higher so the activity isn't right up against the top
+        // of the viewport.
+        const extraPaddingPx = parseInt(getCssVariableValue("--spacing-medium", "16"));
+
+        // If the activity is already visible, don't scroll.
+        if (isActivityVisible(workspaceBlockContentElement.value, extraPaddingPx)) {
+            return;
+        }
+
+        // Element's position relative to the top of the page.
+        const currentScrollPosition = window.pageYOffset;
+        const elementPosition = workspaceBlockContentElement.value
+            .getBoundingClientRect().top + currentScrollPosition;
+
+        const scrollToPosition = elementPosition - extraPaddingPx;
+
+        // Jump immediately to avoid sticky nav flicker.
+        window.scrollTo({
+            top: scrollToPosition,
+            behavior: "auto"
+        });
+    }
+
+    /**
+     * Determines if an activity element is visible within the viewport.
+     * Conditions:
+     * 1. The element's top must be visible.
+     * 2. At least 50% of the element must be visible.
+     * @param element The activity element to check.
+     * @param extraPaddingPx The extra padding in pixels to consider whether the
+     * top of the element is right up against the top of the viewport.
+     * @returns True if the activity is visible; otherwise, false.
+     */
+    function isActivityVisible(element: HTMLElement, extraPaddingPx: number): boolean {
+        const rect = element.getBoundingClientRect();
+        const viewportTop = extraPaddingPx;
+        const viewportBottom = window.innerHeight;
+
+        // Tiny tolerance in case of sub-pixel layout.
+        const epsilon = 1;
+
+        // Condition 1: top must be visible.
+        if (rect.top < viewportTop + epsilon || rect.top > viewportBottom - epsilon) {
+            return false;
+        }
+
+        const elementHeight = rect.height;
+
+        // Condition 2: at least 50% of the element must be visible.
+        const visibleHeight =
+            Math.min(rect.bottom, viewportBottom) -
+            Math.max(rect.top, viewportTop);
+
+        return visibleHeight >= elementHeight * 0.5;
+    }
+
     // #endregion
 
     // #region Event Handlers
+
+    /**
+     * Called when the activity component emits the loaded event.
+     */
+    function onActivityLoaded(): void {
+        if (isInitialLoad || !enableSmartScroll.value || isMobile.value) {
+            isInitialLoad = false;
+            return;
+        }
+
+        scrollActivityIntoView();
+    }
 
     function onCommentChanged(comment: string): void {
         const newValue = { ...viewingCompletionBag.value };

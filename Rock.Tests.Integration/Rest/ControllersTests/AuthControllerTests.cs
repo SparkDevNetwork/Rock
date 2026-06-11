@@ -6,7 +6,6 @@ using System.Web.Http.Controllers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Rest.Controllers;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Rest.ControllersTests
@@ -19,7 +18,7 @@ namespace Rock.Tests.Integration.Rest.ControllersTests
         {
             var expectedMessage = "Invalid login type.";
 
-            var exception = Assert.That.ThrowsException<HttpResponseException>( () =>
+            var exception = Assert.Throws<HttpResponseException>( () =>
             {
                 var controller = new AuthController
                 {
@@ -37,7 +36,7 @@ namespace Rock.Tests.Integration.Rest.ControllersTests
             var responseContent = await exception.Response.Content.ReadAsStringAsync();
             var error = responseContent.FromJsonOrThrow<HttpError>();
 
-            Assert.That.AreEqual( expectedMessage, error.Message );
+            Assert.AreEqual( expectedMessage, error.Message );
         }
     }
 }

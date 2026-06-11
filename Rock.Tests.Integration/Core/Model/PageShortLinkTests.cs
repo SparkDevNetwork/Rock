@@ -24,7 +24,6 @@ using Rock.Cms.Utm;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData.Cms;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -67,14 +66,14 @@ namespace Rock.Tests.Integration.Core.Model
             interaction.SetUTMFieldsFromURL( $"http://www.rocksolidchurchdemo.com/signup?utm_source={dvSource.Value}&utm_medium={dvMedium.Value}&utm_campaign={dvCampaign.Value}" );
 
             // Verify that the elements are recorded as defined values.
-            Assert.That.AreEqual( dvSource.Id, interaction.SourceValueId );
-            Assert.That.AreEqual( "youtube", interaction.Source );
+            Assert.AreEqual( dvSource.Id, interaction.SourceValueId );
+            Assert.AreEqual( "youtube", interaction.Source );
 
-            Assert.That.AreEqual( dvMedium.Id, interaction.MediumValueId );
-            Assert.That.AreEqual( "organic", interaction.Medium );
+            Assert.AreEqual( dvMedium.Id, interaction.MediumValueId );
+            Assert.AreEqual( "organic", interaction.Medium );
 
-            Assert.That.AreEqual( dvCampaign.Id, interaction.CampaignValueId );
-            Assert.That.AreEqual( _testCampaignNameBlog, interaction.Campaign );
+            Assert.AreEqual( dvCampaign.Id, interaction.CampaignValueId );
+            Assert.AreEqual( _testCampaignNameBlog, interaction.Campaign );
         }
 
         [TestMethod]
@@ -85,14 +84,14 @@ namespace Rock.Tests.Integration.Core.Model
             interaction.SetUTMFieldsFromURL( "http://www.rocksolidchurchdemo.com/signup?utm_source=undefinedsource&utm_medium=undefinedmedium&utm_campaign=undefinedcampaign" );
 
             // Verify that the unmatched values are recorded as free-form text, but the value field is not populated.
-            Assert.That.IsNull( interaction.SourceValueId );
-            Assert.That.AreEqual( "undefinedsource", interaction.Source );
+            Assert.IsNull( interaction.SourceValueId );
+            Assert.AreEqual( "undefinedsource", interaction.Source );
 
-            Assert.That.IsNull( interaction.MediumValueId );
-            Assert.That.AreEqual( "undefinedmedium", interaction.Medium );
+            Assert.IsNull( interaction.MediumValueId );
+            Assert.AreEqual( "undefinedmedium", interaction.Medium );
 
-            Assert.That.IsNull( interaction.CampaignValueId );
-            Assert.That.AreEqual( "undefinedcampaign", interaction.Campaign );
+            Assert.IsNull( interaction.CampaignValueId );
+            Assert.AreEqual( "undefinedcampaign", interaction.Campaign );
         }
 
         [TestMethod]
@@ -104,8 +103,8 @@ namespace Rock.Tests.Integration.Core.Model
             interaction.SetUTMFieldsFromURL( $"http://www.rocksolidchurchdemo.com/signup?utm_source=google&utm_medium=organic&utm_campaign" );
             interaction.SetUTMFieldsFromURL( $"http://www.rocksolidchurchdemo.com/signup?utm_source=google&utm_medium=organic" );
 
-            Assert.That.IsEmpty( $"{interaction.Campaign}{interaction.CampaignValueId}" );
-            Assert.That.IsNotEmpty( $"{interaction.Source}{interaction.SourceValueId}" );
+            Assert.IsEmpty( $"{interaction.Campaign}{interaction.CampaignValueId}" );
+            Assert.IsNotEmpty( $"{interaction.Source}{interaction.SourceValueId}" );
         }
 
         [TestMethod]
@@ -115,7 +114,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             interaction.SetUTMFieldsFromURL( $"/give?utm_content=newsletter-image#howtogive" );
 
-            Assert.That.AreEqual( "newsletter-image", interaction.Content );
+            Assert.AreEqual( "newsletter-image", interaction.Content );
         }
 
         [TestMethod]
@@ -126,7 +125,7 @@ namespace Rock.Tests.Integration.Core.Model
             // Verify that fields specified more than once are overwritten by the later value.
             interaction.SetUTMFieldsFromURL( $"http://www.rocksolidchurchdemo.com/signup?utm_source=source1&utm_medium=organic&utm_source=source2" );
 
-            Assert.That.AreEqual( "source2", interaction.Source );
+            Assert.AreEqual( "source2", interaction.Source );
         }
 
         [TestMethod]
@@ -147,14 +146,14 @@ namespace Rock.Tests.Integration.Core.Model
             var interaction = CreateNewPageInteractionWithTransaction( utmInfo );
 
             // Verify that the elements are recorded as defined values.
-            Assert.That.AreEqual( dvSource.Id, interaction.SourceValueId );
-            Assert.That.AreEqual( "youtube", interaction.Source );
+            Assert.AreEqual( dvSource.Id, interaction.SourceValueId );
+            Assert.AreEqual( "youtube", interaction.Source );
 
-            Assert.That.AreEqual( dvMedium.Id, interaction.MediumValueId );
-            Assert.That.AreEqual( "organic", interaction.Medium );
+            Assert.AreEqual( dvMedium.Id, interaction.MediumValueId );
+            Assert.AreEqual( "organic", interaction.Medium );
 
-            Assert.That.AreEqual( dvCampaign.Id, interaction.CampaignValueId );
-            Assert.That.AreEqual( _testCampaignNameBlog, interaction.Campaign );
+            Assert.AreEqual( dvCampaign.Id, interaction.CampaignValueId );
+            Assert.AreEqual( _testCampaignNameBlog, interaction.Campaign );
         }
 
         [TestMethod]
@@ -171,14 +170,14 @@ namespace Rock.Tests.Integration.Core.Model
             var interaction = CreateNewPageInteractionWithTransaction( utmInfo );
 
             // Verify that the elements are recorded as defined values, but the free-form text field is not populated.
-            Assert.That.AreEqual( utmInfo.Source, interaction.Source );
-            Assert.That.IsNull( interaction.SourceValueId );
+            Assert.AreEqual( utmInfo.Source, interaction.Source );
+            Assert.IsNull( interaction.SourceValueId );
 
-            Assert.That.AreEqual( utmInfo.Medium, interaction.Medium );
-            Assert.That.IsNull( interaction.MediumValueId );
+            Assert.AreEqual( utmInfo.Medium, interaction.Medium );
+            Assert.IsNull( interaction.MediumValueId );
 
-            Assert.That.AreEqual( utmInfo.Campaign, interaction.Campaign );
-            Assert.That.IsNull( interaction.CampaignValueId );
+            Assert.AreEqual( utmInfo.Campaign, interaction.Campaign );
+            Assert.IsNull( interaction.CampaignValueId );
         }
 
         private Interaction CreateNewPageInteractionWithTransaction( UtmCookieData utmInfo )
@@ -243,14 +242,14 @@ namespace Rock.Tests.Integration.Core.Model
 
             utmSettings = shortlink.GetAdditionalSettings<UtmSettings>();
 
-            Assert.That.AreEqual( sourceValueId, utmSettings.UtmSourceValueId );
-            Assert.That.AreEqual( mediumValueId, utmSettings.UtmMediumValueId );
-            Assert.That.AreEqual( campaignValueId, utmSettings.UtmCampaignValueId );
-            Assert.That.AreEqual( "special", utmSettings.UtmTerm );
-            Assert.That.AreEqual( "banner_image", utmSettings.UtmContent );
+            Assert.AreEqual( sourceValueId, utmSettings.UtmSourceValueId );
+            Assert.AreEqual( mediumValueId, utmSettings.UtmMediumValueId );
+            Assert.AreEqual( campaignValueId, utmSettings.UtmCampaignValueId );
+            Assert.AreEqual( "special", utmSettings.UtmTerm );
+            Assert.AreEqual( "banner_image", utmSettings.UtmContent );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "/give?param1=1&param2=2#howtogive", "google", "/give?param1=1&param2=2&utm_source=google#howtogive" )]
         [DataRow( "~/blog#entry123", "google", "~/blog?utm_source=google#entry123" )]
         [DataRow( "https://prealpha.rocksolidchurchdemo.com/watch", null, "https://prealpha.rocksolidchurchdemo.com/watch" )]
@@ -259,10 +258,10 @@ namespace Rock.Tests.Integration.Core.Model
             // If the shortlink Url is incomplete, the UrlWithUtm property should continue to return the correct query parameters.
             var shortlink = CreateTestPageShortlinkWithUtmValues( "test-promotion", baseUrl, utmSource, null, null, null, null );
 
-            Assert.That.AreEqual( expectedOutput, shortlink.UrlWithUtm );
+            Assert.AreEqual( expectedOutput, shortlink.UrlWithUtm );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "google", null, null, null, null, "utm_source=google" )]
         [DataRow( null, "post", null, null, null, "utm_medium=post" )]
         [DataRow( null, null, _testCampaignNameBlog, null, null, "utm_campaign=blog%20promotion" )]
@@ -282,7 +281,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             var expectedUrl = uriBuilder.Uri.OriginalString;
 
-            Assert.That.AreEqual( expectedUrl, shortlink.UrlWithUtm );
+            Assert.AreEqual( expectedUrl, shortlink.UrlWithUtm );
         }
 
         [TestMethod]
@@ -297,8 +296,129 @@ namespace Rock.Tests.Integration.Core.Model
                 "term1&term2",
                 "http://embedded-link" );
 
-            Assert.That.AreEqual( "https://mywebsite.com/?utm_source=source%3Atest%21&utm_medium=medium%3Atest%21&utm_campaign=new%20campaign%20%28%2Apending%29&utm_term=term1%26term2&utm_content=http%3A%2F%2Fembedded-link",
+            Assert.AreEqual( "https://mywebsite.com/?utm_source=source%3Atest%21&utm_medium=medium%3Atest%21&utm_campaign=new%20campaign%20%28%2Apending%29&utm_term=term1%26term2&utm_content=http%3A%2F%2Fembedded-link",
                 shortlink.UrlWithUtm );
+        }
+
+        [TestMethod]
+        public void PageShortlink_GetUrlWithUtm_WithInboundUtm_FillsUnconfiguredKeys()
+        {
+            // When the shortlink has no UTM values configured, UTM values appended to the inbound shortlink URL flow
+            // through to the resolved destination URL. Prior to the inbound-fallback fix, these values were silently
+            // dropped.
+            var settings = new UtmSettings();
+
+            var result = PageShortLinkCache.GetUrlWithUtm(
+                "https://mywebsite.com/landing",
+                settings,
+                "https://shortener.example/myToken?utm_source=fb&utm_campaign=spring" );
+
+            var parsed = new Interaction();
+            parsed.SetUTMFieldsFromURL( result );
+
+            Assert.AreEqual( "https://mywebsite.com/landing", new Uri( result ).GetLeftPart( UriPartial.Path ) );
+            Assert.AreEqual( "fb", parsed.Source );
+            Assert.AreEqual( "spring", parsed.Campaign );
+            Assert.IsTrue( parsed.Medium.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Term.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Content.IsNullOrWhiteSpace() );
+        }
+
+        [TestMethod]
+        public void PageShortlink_GetUrlWithUtm_WithConfiguredAndInbound_ConfiguredWins()
+        {
+            // When both the shortlink configuration and the inbound URL specify the same UTM key, the configured value wins.
+            var sourceValueId = CoreDataManager.Current.GetDefinedValueIdOrNull( SystemGuid.DefinedType.UTM_SOURCE, "youtube" );
+            var settings = new UtmSettings { UtmSourceValueId = sourceValueId };
+
+            var result = PageShortLinkCache.GetUrlWithUtm(
+                "https://mywebsite.com/landing",
+                settings,
+                "https://shortener.example/myToken?utm_source=fb" );
+
+            var parsed = new Interaction();
+            parsed.SetUTMFieldsFromURL( result );
+
+            Assert.AreEqual( "https://mywebsite.com/landing", new Uri( result ).GetLeftPart( UriPartial.Path ) );
+            Assert.AreEqual( sourceValueId, parsed.SourceValueId );
+            Assert.AreEqual( "youtube", parsed.Source );
+            Assert.IsTrue( parsed.Medium.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Campaign.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Term.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Content.IsNullOrWhiteSpace() );
+        }
+
+        [TestMethod]
+        public void PageShortlink_GetUrlWithUtm_WithPartialConfigured_InboundFillsRemaining()
+        {
+            // Per-key fallback: a configured utm_source still wins over an inbound utm_source, but an inbound
+            // utm_medium flows through because nothing was configured for that key.
+            var sourceValueId = CoreDataManager.Current.GetDefinedValueIdOrNull( SystemGuid.DefinedType.UTM_SOURCE, "youtube" );
+            var settings = new UtmSettings { UtmSourceValueId = sourceValueId };
+
+            var result = PageShortLinkCache.GetUrlWithUtm(
+                "https://mywebsite.com/landing",
+                settings,
+                "https://shortener.example/myToken?utm_medium=newsletter" );
+
+            var parsed = new Interaction();
+            parsed.SetUTMFieldsFromURL( result );
+
+            Assert.AreEqual( "https://mywebsite.com/landing", new Uri( result ).GetLeftPart( UriPartial.Path ) );
+            Assert.AreEqual( sourceValueId, parsed.SourceValueId );
+            Assert.AreEqual( "youtube", parsed.Source );
+            Assert.AreEqual( "newsletter", parsed.Medium );
+            Assert.IsTrue( parsed.Campaign.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Term.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Content.IsNullOrWhiteSpace() );
+        }
+
+        [TestMethod]
+        public void PageShortlink_GetUrlWithUtm_WithInboundAndBaked_InboundOverridesBaked()
+        {
+            // Precedence: when nothing is configured on the shortlink and the destination URL has a baked-in UTM,
+            // an inbound UTM overrides the baked-in value.
+            var settings = new UtmSettings();
+
+            var result = PageShortLinkCache.GetUrlWithUtm(
+                "https://mywebsite.com/landing?utm_source=baked",
+                settings,
+                "https://shortener.example/myToken?utm_source=fb" );
+
+            var parsed = new Interaction();
+            parsed.SetUTMFieldsFromURL( result );
+
+            Assert.AreEqual( "https://mywebsite.com/landing", new Uri( result ).GetLeftPart( UriPartial.Path ) );
+            Assert.AreEqual( "fb", parsed.Source );
+            Assert.IsTrue( parsed.Medium.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Campaign.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Term.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Content.IsNullOrWhiteSpace() );
+        }
+
+        [TestMethod]
+        public void PageShortlink_GetUrlWithUtm_WithConfiguredAndBaked_ConfiguredReplacesBaked()
+        {
+            // Latent bug fix: a configured utm_term replaces a destination-baked utm_term rather than appending to it.
+            // Before the fix, NameValueCollection.Add produced two utm_term entries in the query string which downstream
+            // parsers then lost entirely. Parsing via SetUTMFieldsFromURL would have returned "baked,alpha" (comma-joined)
+            // for the duplicate-key shape, so asserting Term == "alpha" guards against regression.
+            var settings = new UtmSettings { UtmTerm = "alpha" };
+
+            var result = PageShortLinkCache.GetUrlWithUtm(
+                "https://mywebsite.com/landing?utm_term=baked",
+                settings,
+                null );
+
+            var parsed = new Interaction();
+            parsed.SetUTMFieldsFromURL( result );
+
+            Assert.AreEqual( "https://mywebsite.com/landing", new Uri( result ).GetLeftPart( UriPartial.Path ) );
+            Assert.AreEqual( "alpha", parsed.Term );
+            Assert.IsTrue( parsed.Source.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Medium.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Campaign.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Content.IsNullOrWhiteSpace() );
         }
 
         private static PageShortLink CreateTestPageShortlinkWithUtmValues( string token, string url, string sourceValue, string mediumValue, string campaignValue, string term, string content )

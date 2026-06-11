@@ -1,0 +1,132 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Flyout v-model="isVisible"
+            :anchorEl="anchorEl"
+            @flyoutEnter="emit('flyoutEnter')"
+            @flyoutLeave="emit('flyoutLeave')">
+
+        <NotificationBox v-if="errorMessage"
+                         :type="AlertType.Warning"
+                         v-html="errorMessage" />
+
+        <Loading v-else :isLoading="isLoading">
+            <RockLabel>Linked Media Elements</RockLabel>
+            <ul class="linked-media-elements">
+                <li v-for="linkedMediaElement in linkedMediaElements" :key="linkedMediaElement.idKey!">
+                    <a :href="getMediaElementUrl(linkedMediaElement.idKey!)">
+                        {{ linkedMediaElement.name }}
+                    </a>
+                </li>
+            </ul>
+        </Loading>
+
+    </Flyout>
+</template>
+
+<style scoped>
+.linked-media-elements {
+    margin-bottom: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { useMediaElementUrl } from "./utils.partial";
+    import Flyout from "@Obsidian/Controls/flyout.obs";
+    import Loading from "@Obsidian/Controls/loading.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { GetLinkedMediaElementsRequestBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemList/getLinkedMediaElementsRequestBag";
+    import { GetLinkedMediaElementsResponseBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemList/getLinkedMediaElementsResponseBag";
+    import { LinkedMediaElementBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemList/linkedMediaElementBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        anchorEl: {
+            type: Object as PropType<HTMLElement | null>,
+            required: true
+        },
+
+        contentChannelItemIdKey: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "flyoutEnter"): void;
+        (e: "flyoutLeave"): void;
+    }>();
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "modelValue", emit);
+
+    const isLoading = ref(false);
+    const errorMessage = ref("");
+
+    const mediaElementUrl = useMediaElementUrl();
+
+    const linkedMediaElements = ref<LinkedMediaElementBag[]>([]);
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Gets the linked media elements for the content channel item.
+     */
+    async function getLinkedMediaElements(): Promise<void> {
+        if (isLoading.value || linkedMediaElements.value.length) {
+            return;
+        }
+
+        isLoading.value = true;
+        errorMessage.value = "";
+
+        const bag: GetLinkedMediaElementsRequestBag = {
+            contentChannelItemIdKey: props.contentChannelItemIdKey
+        };
+
+        const result = await invokeBlockAction<GetLinkedMediaElementsResponseBag>("GetLinkedMediaElements", { bag });
+        isLoading.value = false;
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage || "Unknown error while trying to get linked media elements.";
+            return;
+        }
+
+        linkedMediaElements.value = result.data.linkedMediaElements || [];
+    }
+
+    /**
+     * Gets the URL to the media element details page for the specified media element.
+     *
+     * @param idKey The media element identifier key.
+     */
+    function getMediaElementUrl(idKey: string): string {
+        return mediaElementUrl?.value.replace("((Key))", idKey) || "";
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(isVisible, () => {
+        if (isVisible.value) {
+            getLinkedMediaElements();
+        }
+    });
+
+    // #endregion Watchers
+</script>

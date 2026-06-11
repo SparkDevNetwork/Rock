@@ -32,7 +32,7 @@ namespace Rock.Lava.Shortcodes
     [LavaShortcodeMetadata(
         Name = "Scheduled Content",
         TagName = "scheduledcontent",
-        Description = "The scheduled content shortcode will show/hide a block of content based on a provided Rock schedule.",
+        Description = "Show or hide content dynamically based on a Rock schedule.",
         Documentation = DocumentationMetadata,
         Parameters = "scheduleid,showwhen,roleid",
         Categories = "C3270142-E72E-4FBF-BE94-9A2505DE7D54" )]

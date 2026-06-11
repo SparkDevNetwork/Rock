@@ -943,7 +943,11 @@ namespace Rock.Blocks.Engagement
             var avgDaysToComplete = 0;
             var avgQuery = completedQuery
                 .Where( s => s.StartDateTime != null && s.CompletedDateTime != null )
+#if NET472_OR_GREATER
                 .Select( s => SqlFunctions.DateDiff( "DAY", s.StartDateTime, s.CompletedDateTime ) )
+#else
+                .Select( s => EF.Functions.DateDiffDay( s.StartDateTime, s.CompletedDateTime ) )
+#endif
                 .Where( diff => diff.HasValue )
                 .Select( diff => diff.Value );
 
@@ -1612,6 +1616,42 @@ namespace Rock.Blocks.Engagement
             }
 
             stepType.StepProgramId = targetStepProgram.Id;
+
+            // Update workflow triggers for the transferred step type.
+            var stepWorkflowTriggerService = new StepWorkflowTriggerService( RockContext );
+            var stepTypeTriggers = stepWorkflowTriggerService.Queryable()
+                .Where( t => t.StepTypeId == stepType.Id )
+                .ToList();
+
+            foreach ( var trigger in stepTypeTriggers )
+            {
+                trigger.StepProgramId = targetStepProgram.Id;
+
+                /*
+                     4/1/2026 - MSE
+
+                     Updates Step Workflow Triggers when copying to a new Step Program by remapping
+                     any status-based qualifiers to the corresponding statuses in the target program.
+                     This ensures StatusChanged triggers continue to function correctly after the copy.
+
+                     Reason: Status IDs differ between programs, so existing qualifiers must be remapped to remain valid.
+                */
+                if ( trigger.TriggerType == StepWorkflowTrigger.WorkflowTriggerCondition.StatusChanged )
+                {
+                    var settings = new StepWorkflowTrigger.StatusChangeTriggerSettings( trigger.TypeQualifier );
+                    if ( settings.FromStatusId.HasValue && statusIdMappings.TryGetValue( settings.FromStatusId.Value, out var newFromId ) )
+                    {
+                        settings.FromStatusId = newFromId;
+                    }
+
+                    if ( settings.ToStatusId.HasValue && statusIdMappings.TryGetValue( settings.ToStatusId.Value, out var newToId ) )
+                    {
+                        settings.ToStatusId = newToId;
+                    }
+
+                    trigger.TypeQualifier = settings.ToSelectionString();
+                }
+            }
 
             DeletePrerequisites( stepType.Id );
 

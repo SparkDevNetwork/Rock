@@ -956,7 +956,6 @@ namespace Rock.Web.UI.Controls
                 _ceDetails.ID = this.ID + "_ceDetails";
                 _ceDetails.Label = "Details";
                 _ceDetails.EditorMode = CodeEditorMode.Html;
-                _ceDetails.EditorTheme = CodeEditorTheme.Rock;
                 _ceDetails.EditorHeight = "100";
                 _ceDetails.Visible = false; // hiding this out for now. Struggling where we'd even use this, but instead of removing it we'll just comment it out for now.
                 Controls.Add( _ceDetails );

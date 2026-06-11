@@ -19,7 +19,7 @@ import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import TextBox from "@Obsidian/Controls/textBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import GroupTypeGroupPicker from "@Obsidian/Controls/groupTypeGroupPicker.obs";
-import { ConfigurationValueKey, GroupAndGroupType } from "./groupTypeGroupField.partial";
+import { ConfigurationKey, GroupAndGroupType } from "./groupTypeGroupField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export const EditComponent = defineComponent({
@@ -38,7 +38,7 @@ export const EditComponent = defineComponent({
         const group = ref({} as ListItemBag);
         const groupType = ref({} as ListItemBag);
 
-        const groupPickerLabel = computed((): string => props.configurationValues[ConfigurationValueKey.GroupPickerLabel]);
+        const groupPickerLabel = computed((): string => props.configurationValues[ConfigurationKey.GroupPickerLabel]);
 
         watch(() => props.modelValue, () => {
             if (props.modelValue) {
@@ -102,10 +102,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.GroupPickerLabel] = groupPickerLabel.value;
+            newValue[ConfigurationKey.GroupPickerLabel] = groupPickerLabel.value;
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.GroupPickerLabel] !== (props.modelValue[ConfigurationValueKey.GroupPickerLabel]);
+            const anyValueChanged = newValue[ConfigurationKey.GroupPickerLabel] !== (props.modelValue[ConfigurationKey.GroupPickerLabel]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -128,11 +128,11 @@ export const ConfigurationComponent = defineComponent({
         };
 
         const groupPickerLabel = computed((): string => {
-            return props.modelValue[ConfigurationValueKey.GroupPickerLabel] ?? "Group";
+            return props.modelValue[ConfigurationKey.GroupPickerLabel] ?? "Group";
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(groupPickerLabel, () => maybeUpdateConfiguration(ConfigurationValueKey.GroupPickerLabel, groupPickerLabel.value));
+        watch(groupPickerLabel, () => maybeUpdateConfiguration(ConfigurationKey.GroupPickerLabel, groupPickerLabel.value));
 
         return { groupPickerLabel };
     },

@@ -33,6 +33,7 @@ export function deepEqual(a: unknown, b: unknown, strict: boolean): boolean {
     if (strict && a === b) {
         return true;
     }
+    // eslint-disable-next-line eqeqeq
     else if (!strict && a == b) {
         return true;
     }

@@ -2807,7 +2807,7 @@ function createDividerGlobalAdapter(): DividerGlobalAdapter {
                 setStylePaddingPx(marginWrapperTdRule?.style, globalProps.marginPx);
 
                 // horizontalAlignment
-                        // Only set attribute values on components that don't have the data attribute.
+                // Only set attribute values on components that don't have the data attribute.
                 emailDocument.querySelectorAll(`.component-divider:not([${attributeNames.DATA_COMPONENT_HORIZONTAL_ALIGNMENT}]) ${marginWrapperTdSelector}`)
                     .forEach(marginWrapperTd => {
                         setAttributePropertyValue(marginWrapperTd, "align", globalProps.horizontalAlignment);
@@ -4077,7 +4077,7 @@ function addOrUpdateMetaTag(emailDocument: Document, name: string, content: stri
 }
 
 function createBodyGlobalAdapter(): BodyGlobalAdapter {
-    const globalVersions = ["v0", "v17.3-alpha", "v18.2"] as const;
+    const globalVersions = ["v0", "v17.3-alpha", "v18.2", "v19.1"] as const;
     type BodyGlobalVersion = (typeof globalVersions)[number];
 
     const attributeValues = {
@@ -4351,6 +4351,47 @@ function createBodyGlobalAdapter(): BodyGlobalAdapter {
                 addOrUpdateMetaTag(emailDocument, attributeValues.META_NAME_GLOBAL_BODY_VERSION, "v18.2");
 
                 adapters["v17.3-alpha"].writeGlobalProps(emailDocument, globalProps);
+            }
+        },
+
+        /*
+            - Removed the mobile `.email-wrapper { min-height: 100vh; }` declaration.
+         */
+        "v19.1": {
+            version: "v19.1",
+
+            readGlobalProps(emailDocument: Document): BodyGlobalProps {
+                return adapters["v18.2"].readGlobalProps(emailDocument);
+            },
+
+            writeGlobalProps(emailDocument: Document, globalProps: BodyGlobalProps): void {
+                adapters["v18.2"].writeGlobalProps(emailDocument, globalProps);
+
+                addOrUpdateMetaTag(emailDocument, attributeValues.META_NAME_GLOBAL_BODY_VERSION, "v19.1");
+
+                const emailWindow = emailDocument.defaultView;
+                const updatedRules: CSSRule[] = [];
+
+                findRockMediaStyleSheets(emailDocument).forEach(sheet => {
+                    const rules = Array.from(sheet.cssRules);
+
+                    rules.forEach(rule => {
+                        if (emailWindow && rule instanceof emailWindow.CSSMediaRule) {
+                            const nestedRules = Array.from(rule.cssRules);
+
+                            nestedRules.forEach(nestedRule => {
+                                if (emailWindow && nestedRule instanceof emailWindow.CSSStyleRule
+                                    && nestedRule.selectorText === ".email-wrapper"
+                                    && nestedRule.style.getPropertyValue("min-height") === "100vh") {
+                                    nestedRule.style.removeProperty("min-height");
+                                    updatedRules.push(nestedRule);
+                                }
+                            });
+                        }
+                    });
+                });
+
+                synchronizeRulesToDom(updatedRules);
             }
         }
     };
@@ -5288,7 +5329,7 @@ export function getComponentHelper(componentTypeName: ComponentTypeName) {
         case "divider":
         case "rsvp":
         case "code":
-        // These components have their own adapters and are not used by callers of getComponentHelper.
+            // These components have their own adapters and are not used by callers of getComponentHelper.
             return null;
         default:
             console.error(`Unknown component type: ${componentTypeName}`);
@@ -5581,8 +5622,8 @@ function createButtonComponentAdapter(): ButtonComponentAdapter {
             },
 
             writeLocalProps(componentElement: HTMLElement, localProps: ButtonLocalProps): void {
-            // This always assumes the componentElement is already migrated to latest version.
-            // We don't keep track of version-specific writers; only the latest writer.
+                // This always assumes the componentElement is already migrated to latest version.
+                // We don't keep track of version-specific writers; only the latest writer.
 
                 const {
                     text,
@@ -6807,7 +6848,7 @@ function findRockStyleRules(doc: Document, rulesetSelector: string): Enumerable<
 /**
  * Finds rock style CSS rules matching the specified ruleset selector within the document.
  *
- * This looks for `<style class="rock-styles">` elements within the `<body>` of the document
+ * This looks for `<style class="rock-media-styles">` elements within the `<head>` of the document
  *
  * @param emailDocument The document in which to find the rock style rules.
  * @returns An enumerable of matching CSSStyleRule objects.
@@ -6832,7 +6873,7 @@ function createRockMediaStyleSheet(emailDocument: Document): CSSStyleSheet {
         throw new Error("Document has no defaultView.");
     }
 
-    // Create the <style class="rock-media-styles"> element within <body>.
+    // Create the <style class="rock-media-styles"> element within <head>.
     const styleEl = emailDocument.createElement("style");
     styleEl.className = "rock-media-styles";
     emailDocument.head.append(styleEl);

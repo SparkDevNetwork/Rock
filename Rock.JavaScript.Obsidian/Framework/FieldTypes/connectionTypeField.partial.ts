@@ -19,7 +19,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     Values = "values"
 }
 
@@ -43,8 +43,8 @@ export class ConnectionTypeField extends FieldTypeBase {
         }
 
         try {
-            const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
-            const userValues = value.split(",").map(a=>a.toLowerCase());
+            const values = JSON.parse(configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
+            const userValues = value.split(",").map(a => a.toLowerCase());
             const selectedValues = values.filter(v => userValues.includes(v.value ?? ""));
             return selectedValues.map(v => v.text)
                 .map(v => v?.split(":").pop()) // just get the name of the note type

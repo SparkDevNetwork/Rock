@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -438,8 +439,8 @@ namespace Rock.Blocks
             var rootElementStyle = "";
             var rootElementClasses = "obsidian-block-loading";
             var placeholderContent = GetPlaceholderContent( RockClientType.Web );
-            var initialContent = GetInitialHtmlContent() ?? string.Empty;
             var config = await GetConfigBagAsync( rootElementId );
+            var initialContent = GetInitialHtmlContent() ?? string.Empty;
 
             if ( !IsBrowserSupported() )
             {
@@ -534,7 +535,7 @@ Obsidian.onReady(() => {{
                 TimeStamp = DateTimeOffset.Now.ToUnixTimeMilliseconds()
             };
 
-            return new ObsidianBlockConfigBag
+            var configBag = new ObsidianBlockConfigBag
             {
                 BlockFileUrl = RequestContext.ResolveRockUrl( ObsidianFileUrl ),
                 RootElementId = rootElementId,
@@ -546,6 +547,15 @@ Obsidian.onReady(() => {{
                 ReloadMode = reloadModeAttribute?.ReloadMode ?? Enums.Cms.BlockReloadMode.None,
                 Role = BlockCache.Role ?? BlockCache.BlockType?.DefaultRole ?? Enums.Cms.BlockRole.Content,
             };
+
+            var activity = Activity.Current;
+
+            if ( activity != null )
+            {
+                configBag.ParentTrace = $"00-{activity.TraceId}-{activity.SpanId}-{( ( int ) activity.ActivityTraceFlags ):00}";
+            }
+
+            return configBag;
         }
 
         /// <summary>

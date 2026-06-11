@@ -65,7 +65,7 @@
             <Modal v-model="isAttributeModalOpen" title="Calendar Event Attribute" saveText="Save" :onSave="onStartSaveAttribute">
                 <hr />
                 <RockForm v-model:submit="submitEditAttribute" @submit="onSaveAttribute">
-                    <AttributeEditor v-model="eventAttribute" :reservedKeyNames="reservedKeyNames" />
+                    <AttributeEditor v-model="eventAttribute" :reservedKeyNames="reservedKeyNames" :attributeEntityTypeGuid="EntityType.EventCalendarItem" />
                 </RockForm>
             </Modal>
         </Panel>
@@ -116,11 +116,11 @@
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import { emptyGuid, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { newGuid } from "@Obsidian/Utility/guid";
     import Grid, { TextColumn, DeleteColumn, BooleanColumn, EditColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
-    import { Guid } from "@Obsidian/Types";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
@@ -212,8 +212,8 @@
     const onSaveContentChannel = (): void => {
         isContentChannelModalOpen.value = false;
 
-        if (!savedContentChannels.value.some(x => x.value == contentChannel.value)) {
-            const selectedContentChannel = contentChannelsList.value.find(x => x.value == contentChannel.value);
+        if (!savedContentChannels.value.some(x => x.value === contentChannel.value)) {
+            const selectedContentChannel = contentChannelsList.value.find(x => x.value === contentChannel.value);
             if (selectedContentChannel) {
                 savedContentChannels.value.push(selectedContentChannel);
 
@@ -289,8 +289,8 @@
             const index = eventAttributes.value.findIndex(a => a.attribute?.guid === eventAttribute.value?.guid);
 
             if (index !== -1) {
-                let editedAttribute = eventAttributes.value.find(a => a.attribute?.guid == eventAttribute.value?.guid);
-                let rowItem = eventAttributesGridData.rows?.find(x => x.key == eventAttribute.value?.key);
+                let editedAttribute = eventAttributes.value.find(a => a.attribute?.guid === eventAttribute.value?.guid);
+                let rowItem = eventAttributesGridData.rows?.find(x => x.key === eventAttribute.value?.key);
 
                 if (editedAttribute?.attribute) {
                     editedAttribute.attribute = eventAttribute.value;

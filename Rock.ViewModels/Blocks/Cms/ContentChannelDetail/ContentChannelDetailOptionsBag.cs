@@ -83,14 +83,6 @@ namespace Rock.ViewModels.Blocks.Cms.ContentChannelDetail
         public bool IsOrganizationConfigured { get; set; }
 
         /// <summary>
-        /// Gets or sets the content library attributes.
-        /// </summary>
-        /// <value>
-        /// The content library attributes.
-        /// </value>
-        public List<ListItemBag> ContentLibraryAttributes { get; set; }
-
-        /// <summary>
         /// Gets or sets the content channel list.
         /// </summary>
         /// <value>
@@ -113,5 +105,12 @@ namespace Rock.ViewModels.Blocks.Cms.ContentChannelDetail
         ///   <c>true</c> if [disable content field]; otherwise, <c>false</c>.
         /// </value>
         public bool DisableContentField { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content library inherited item attributes
+        /// from the Content Channel Type. These are provided on initial
+        /// load so dropdown selections persist before the async fetch completes.
+        /// </summary>
+        public List<ListItemBag> ContentLibraryInheritedItemAttributes { get; set; }
     }
 }

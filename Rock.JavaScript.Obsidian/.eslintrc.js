@@ -100,6 +100,12 @@ module.exports = {
             {
                 selector: "typeLike",
                 format: ["PascalCase"]
+            },
+
+            // Default import names can be in either camelCase or PascalCase.
+            {
+                selector: "import",
+                format: ["camelCase", "PascalCase"]
             }
         ],
 
@@ -109,11 +115,15 @@ module.exports = {
         "@typescript-eslint/brace-style": ["warn", "stroustrup"],
 
         // Make unwanted white-space inside parenthesis an error.
-        "space-in-parens": ["error", "never"]
+        "space-in-parens": ["error", "never"],
+
+        // Require === and !== instead of == and !=, except when comparing with
+        // null or literal values.
+        "eqeqeq": ["error", "smart"],
     },
     overrides: [
         {
-            "files": ["src/**/*.ts", "src/**/*.vue", "src/**/*.obs"],
+            "files": ["**/*.ts", "**/*.obs"],
             "rules": {
                 // Disable undefined use warnings, TypeScript will tell us.
                 "no-undef": 0

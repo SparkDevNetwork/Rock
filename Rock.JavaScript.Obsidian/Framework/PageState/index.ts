@@ -39,7 +39,8 @@ const state: State = reactive({
     interactionGuid: "",
     executionStartTime: RockDateTime.now().toMilliseconds(),
     debugTimings: [],
-    loginUrlWithReturnUrl: ""
+    loginUrlWithReturnUrl: "",
+    trailblazerMode: false,
 });
 
 export class Store {
@@ -64,6 +65,7 @@ export class Store {
         state.interactionGuid = pageConfig.interactionGuid;
         state.executionStartTime = pageConfig.executionStartTime;
         state.loginUrlWithReturnUrl = pageConfig.loginUrlWithReturnUrl;
+        state.trailblazerMode = pageConfig.trailblazerMode;
     }
 
     addPageDebugTiming(timing: PageDebugTiming): void {
@@ -94,6 +96,10 @@ export class Store {
 
     getPageParameter(key: string): unknown {
         return state.pageParameters[key];
+    }
+
+    setTrailblazerMode(isTrailblazer: boolean): void {
+        state.trailblazerMode = isTrailblazer;
     }
 }
 

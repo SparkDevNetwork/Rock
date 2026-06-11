@@ -19,11 +19,19 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Web;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
+using Microsoft.Extensions.DependencyInjection;
 
 using Newtonsoft.Json;
 
 using RestSharp;
+
+using Rock.Configuration;
+using Rock.Enums.Cms;
+using Rock.SystemKey;
+using Rock.Utility.CaptchaApi;
 
 namespace Rock.Web.UI.Controls
 {
@@ -63,30 +71,19 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// The public site key to use when obtaining user responses.
         /// </summary>
-        public string SiteKey
+        public CaptchaMode CaptchaMode
         {
             get
             {
-                return ( string ) ViewState["SiteKey"];
+                return ( ( string ) ViewState["CaptchaMode"] ).ConvertToEnum<CaptchaMode>( CaptchaMode.Visible );
             }
             set
             {
-                ViewState["SiteKey"] = value;
-            }
-        }
-
-        /// <summary>
-        /// The secret key to use when verifying user responses.
-        /// </summary>
-        public string SecretKey
-        {
-            get
-            {
-                return ( string ) ViewState["SecretKey"];
-            }
-            set
-            {
-                ViewState["SecretKey"] = value;
+                // Store the underlying integer value rather than the enum's name. ToIntSafe
+                // operates on the enum's ToString() output (e.g., "Invisible"), which fails
+                // int.TryParse and silently falls back to 0, so every value would be persisted
+                // as Visible.
+                ViewState["CaptchaMode"] = value.ConvertToInt().ToString();
             }
         }
 
@@ -98,7 +95,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return !string.IsNullOrWhiteSpace( SiteKey ) && !string.IsNullOrWhiteSpace( SecretKey );
+                return CaptchaMode != CaptchaMode.Disabled;
             }
         }
 
@@ -326,8 +323,9 @@ namespace Rock.Web.UI.Controls
         public Captcha() : base()
         {
             CustomValidator = new CustomValidator();
-            SiteKey = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SITE_KEY );
-            SecretKey = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SECRET_KEY );
+            CaptchaMode = SystemSettings
+                .GetValue( SystemKey.SystemSetting.CAPTCHA_MODE )
+                .ConvertToEnum<CaptchaMode>( CaptchaMode.Visible );
             _hfToken = new HiddenField();
         }
 
@@ -371,22 +369,12 @@ namespace Rock.Web.UI.Controls
                 ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "TokenReceived" ), false ).Replace( '\'', '"' )
                 : "";
 
-            if ( SiteKey.IsNotNullOrWhiteSpace() )
+            if ( IsAvailable )
             {
-                // Add the cloudflare script tag to head.
-                var additionalAttributes = new Dictionary<string, string> { { "defer", null } };
-                RockPage.AddScriptSrcToHead(
-                    this.Page,
-                    "rockCloudflareTurnstile",
-                    "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit",
-                    additionalAttributes
-                );
-
                 string script = $@"
 ;(function () {{
     Rock.controls.captcha.initialize({{
         id: '{ClientID}',
-        key: '{SiteKey}',
         postBackScript: '{postBackScript}'
     }});
 }})();
@@ -434,42 +422,22 @@ namespace Rock.Web.UI.Controls
         /// <returns>True if the user response to the captcha is valid.</returns>
         public bool IsResponseValid()
         {
-            var userResponse = HttpContext.Current.Request.Form[$"{UniqueID}_hfToken"];
-            string remoteIp = HttpContext.Current.Request.UserHostAddress;
-
-            if ( string.IsNullOrWhiteSpace( SiteKey ) || string.IsNullOrWhiteSpace( SecretKey ) )
-            {
-                return true;
-            }
+            var captchaToken = HttpContext.Current.Request.Form[$"{UniqueID}_hfToken"];
 
             if ( ValidatedResult.HasValue )
             {
                 return ValidatedResult.Value;
             }
 
-            if ( string.IsNullOrWhiteSpace( userResponse ) )
+            if ( captchaToken.IsNullOrWhiteSpace() )
             {
                 return false;
             }
 
-            if ( !string.IsNullOrWhiteSpace( HttpContext.Current.Request.Headers["HTTP_X_FORWARDED_FOR"] ) )
-            {
-                remoteIp = HttpContext.Current.Request.Headers["HTTP_X_FORWARDED_FOR"];
-            }
-
             try
             {
-                var client = new RestClient( "https://challenges.cloudflare.com/turnstile/v0/siteverify" );
-                var request = new RestRequest( Method.POST );
-
-                request.AddParameter( "secret", SecretKey );
-                request.AddParameter( "response", userResponse );
-                request.AddParameter( "remoteip", remoteIp );
-                request.Timeout = 5000;
-
-                var response = client.Execute<CloudFlareCaptchaResponse>( request );
-
-                ValidatedResult = response.Data.Success;
+                // Calling .Result is fine for now since we know the implementation is going to return synchronously.
+                ValidatedResult = RockApp.Current.GetRequiredService<ICaptchaProvider>().IsTokenValidAsync( captchaToken ).Result;
             }
             catch ( Exception e )
             {
@@ -488,8 +456,7 @@ namespace Rock.Web.UI.Controls
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             writer.AddAttribute( HtmlTextWriterAttribute.Id, ClientID );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, $"cf-turnstile js-captcha {CssClass}" );
-            writer.AddAttribute( "data-sitekey", SiteKey );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, $"capjs-widget js-captcha {CssClass}" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.RenderEndTag();
 
@@ -559,14 +526,12 @@ namespace Rock.Web.UI.Controls
         public static class CaptchaService
         {
             /// <summary>
-            /// Determines whether CAPTCHA is properly configured with site and secret keys.
+            /// Determines whether CAPTCHA is properly configured.
             /// </summary>
-            /// <returns>True if both keys are present and not empty; otherwise, false.</returns>
+            /// <returns><see langword="true"/> if all required settings are configured; otherwise, <see langword="false"/>.</returns>
             public static bool IsCaptchaConfigured()
             {
-                var siteKey = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SITE_KEY );
-                var secretKey = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SECRET_KEY );
-                return siteKey.IsNotNullOrWhiteSpace() && secretKey.IsNotNullOrWhiteSpace();
+                return true;
             }
 
             /// <summary>
@@ -576,7 +541,10 @@ namespace Rock.Web.UI.Controls
             /// <returns>True if CAPTCHA should be disabled; otherwise, false.</returns>
             public static bool ShouldDisableCaptcha( bool? disableCaptchaAttributeValue )
             {
-                return ( disableCaptchaAttributeValue ?? false ) || !IsCaptchaConfigured();
+                var mode = SystemSettings.GetValue( SystemSetting.CAPTCHA_MODE )
+                    .ConvertToEnum<CaptchaMode>( CaptchaMode.Visible );
+
+                return ( disableCaptchaAttributeValue ?? false ) || mode == CaptchaMode.Disabled;
             }
         }
 

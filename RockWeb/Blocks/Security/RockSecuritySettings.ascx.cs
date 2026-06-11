@@ -124,6 +124,7 @@ namespace RockWeb.Blocks.Security
             }
 
             _securitySettingsService.SecuritySettings.DisablePredictableIds = cbDisablePredictableIds.Checked;
+            _securitySettingsService.SecuritySettings.EnableServerModelValidation = cbEnableServerModelValidation.Checked;
 
             _securitySettingsService.SecuritySettings.AccountProtectionProfilesForDuplicateDetectionToIgnore =
                 cblIgnoredAccountProtectionProfiles.SelectedValuesAsInt.Select( a => ( AccountProtectionProfile ) a ).ToList();
@@ -268,6 +269,7 @@ namespace RockWeb.Blocks.Security
                     .Select( a => a.ConvertToInt().ToString() ) );
 
             cbDisablePredictableIds.Checked = _securitySettingsService.SecuritySettings.DisablePredictableIds;
+            cbEnableServerModelValidation.Checked = _securitySettingsService.SecuritySettings.EnableServerModelValidation;
 
             tbMessageForDisabledPasswordlessSignIn.Text = _securitySettingsService.SecuritySettings.MessageForDisabledPasswordlessSignIn;
 

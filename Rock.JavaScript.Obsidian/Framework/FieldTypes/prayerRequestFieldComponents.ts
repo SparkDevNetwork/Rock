@@ -18,10 +18,10 @@ import { defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps } from "./utils";
 import TextBox from "@Obsidian/Controls/textBox.obs";
 
-// We can't import the ConfigurationValueKey from textField.partial.ts
+// We can't import the ConfigurationKey from textField.partial.ts
 // because it causes a recursive import back to this file by way of
 // the fieldType.ts import in textField.partial.ts.
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     /** Contains "True" if the text field is designed for password entry. */
     IsPassword = "ispassword",
 

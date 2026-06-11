@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 
 using Rock.Attribute;
 using Rock.CheckIn.v2;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.CheckIn;
 using Rock.Enums.Communication.Chat;
@@ -539,29 +540,7 @@ namespace Rock.Web.Cache
         /// The scheduled communication template identifier.
         /// </value>
         [DataMember]
-        [Obsolete( "Use ScheduleConfirmationSystemCommunicationId instead.", true )]
-        [RockObsolete( "1.10" )]
-        public int? ScheduleConfirmationSystemEmailId { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the communication template to use when a person is scheduled or when the schedule has been updated
-        /// </summary>
-        /// <value>
-        /// The scheduled communication template identifier.
-        /// </value>
-        [DataMember]
         public int? ScheduleConfirmationSystemCommunicationId { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the communication template to use when sending a schedule reminder
-        /// </summary>
-        /// <value>
-        /// The schedule reminder communication template identifier.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use ScheduleReminderSystemCommunicationId instead.", true )]
-        [RockObsolete( "1.10" )]
-        public int? ScheduleReminderSystemEmailId { get; private set; }
 
         /// <summary>
         /// Gets or sets the communication template to use when sending a schedule reminder
@@ -674,7 +653,7 @@ namespace Rock.Web.Cache
             {
                 if ( _roles == null )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var roleIds = new GroupTypeRoleService( rockContext )
                             .Queryable()
@@ -710,7 +689,7 @@ namespace Rock.Web.Cache
             {
                 if ( _groupScheduleExclusions == null )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         _groupScheduleExclusions = new GroupScheduleExclusionService( rockContext )
                             .Queryable().AsNoTracking()
@@ -774,7 +753,7 @@ namespace Rock.Web.Cache
             {
                 if ( _childGroupTypeIds == null )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         _childGroupTypeIds = new GroupTypeService( rockContext )
                             .GetChildGroupTypes( Id )
@@ -960,7 +939,7 @@ namespace Rock.Web.Cache
 
             if ( rockContext == null )
             {
-                ownedRockContext = rockContext = new RockContext();
+                ownedRockContext = rockContext = RockApp.Current.CreateRockContext();
             }
 
             foreach ( var id in GetParentGroupTypeIds( rockContext ) )
@@ -992,7 +971,7 @@ namespace Rock.Web.Cache
 
                 if ( rockContext == null )
                 {
-                    ownedRockContext = rockContext = new RockContext();
+                    ownedRockContext = rockContext = RockApp.Current.CreateRockContext();
                 }
 
                 _parentGroupTypeIds = new GroupTypeService( rockContext )

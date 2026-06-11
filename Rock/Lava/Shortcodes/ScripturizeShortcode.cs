@@ -27,7 +27,7 @@ namespace Rock.Lava.Shortcodes
     [LavaShortcodeMetadata(
         Name = "Scripturize ",
         TagName = "scripturize",
-        Description ="Scripturize reads through text finding scripture references and converts them into links to popular Bible websites.",
+        Description = "Automatically detect and convert scripture references into clickable links to online Bible resources.",
         Documentation = DocumentationMetadata,
         Parameters = "defaulttranslation,landingsite,cssclass",
         Categories = "C3270142-E72E-4FBF-BE94-9A2505DE7D54" )]

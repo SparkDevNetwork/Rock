@@ -39,14 +39,15 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of request filters." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the request filter details.",
         Key = AttributeKey.DetailPage )]
 
     [Rock.SystemGuid.EntityTypeGuid( "03a39945-3e6e-4a40-b537-4dd4516bc8bf" )]
-    [Rock.SystemGuid.BlockTypeGuid( "719542df-4d02-4df5-bab0-7eb205540090" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "719542df-4d02-4df5-bab0-7eb205540090" )]
+    [Rock.SystemGuid.BlockTypeGuid( "650E16B0-8B97-4336-9CE0-EAF8AAC20BDF" )]
     [CustomizedGrid]
     public class RequestFilterList : RockEntityListBlockType<RequestFilter>
     {
@@ -72,8 +73,9 @@ namespace Rock.Blocks.Cms
             var box = new ListBlockBox<RequestFilterListOptionsBag>();
             var builder = GetGridBuilder();
 
-            box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var isAddDeleteEnabled = GetIsAddDeleteEnabled();
+            box.IsAddEnabled = isAddDeleteEnabled;
+            box.IsDeleteEnabled = isAddDeleteEnabled;
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -94,14 +96,12 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
-        /// Determines if the add button should be enabled in the grid.
-        /// <summary>
-        /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
-        private bool GetIsAddEnabled()
+        /// Determines if the add and delete actions should be enabled in the grid, which requires block-level Edit rights.
+        /// </summary>
+        /// <returns>A boolean value that indicates if the add and delete actions should be enabled.</returns>
+        private bool GetIsAddDeleteEnabled()
         {
-            var entity = new RequestFilter();
-
-            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -126,6 +126,8 @@ namespace Rock.Blocks.Cms
         {
             return base.GetListQueryable( rockContext ).Include( a => a.Site );
         }
+
+        /// <inheritdoc/>
         protected override IQueryable<RequestFilter> GetOrderedListQueryable( IQueryable<RequestFilter> queryable, RockContext rockContext )
         {
             return queryable.OrderBy( a => a.Name );
@@ -163,7 +165,7 @@ namespace Rock.Blocks.Cms
                 return ActionBadRequest( $"{RequestFilter.FriendlyTypeName} not found." );
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !GetIsAddDeleteEnabled() )
             {
                 return ActionBadRequest( $"Not authorized to delete {RequestFilter.FriendlyTypeName}." );
             }

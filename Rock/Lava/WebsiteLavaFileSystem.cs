@@ -100,6 +100,22 @@ namespace Rock.Lava
             throw new LavaException( $"LavaFileSystem Template Not Found. The file \"{templatePath}\" does not exist." );
         }
 
+        DateTimeOffset? ILavaFileSystem.FileLastModified( string filePath )
+        {
+            var resolvedPath = ResolveTemplatePath( filePath );
+
+            // Try to find exact file specified
+            var file = new FileInfo( resolvedPath );
+            if ( file.Exists )
+            {
+                return file.LastWriteTimeUtc;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         private string GetMatchingFileFromPath( string templateFilePath )
         {
             var resolvedPath = ResolveTemplatePath( templateFilePath );
@@ -153,7 +169,7 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="templatePath">The template path.</param>
         /// <returns></returns>
-        private string ResolveTemplatePath( string templatePath )
+        public string ResolveTemplatePath( string templatePath )
         {
             if ( templatePath == null )
             {
@@ -171,14 +187,14 @@ namespace Rock.Lava
 
             if ( templatePath.StartsWith( "~~" ) )
             {
-                var rockPage = RockRequestContextAccessor.Current.Page;
+                var rockPage = RockRequestContextAccessor.Current?.Page;
 
                 if ( rockPage == null && HttpContext.Current?.Items?.Contains( "Rock:PageId" ) == true )
                 {
                     rockPage = PageCache.Get( HttpContext.Current.Items["Rock:PageId"].ToString().AsInteger() );
                 }
 
-                return RockApp.Current.MapPath( templatePath, rockPage.Layout.Site.Theme ?? "Rock" );
+                return RockApp.Current.MapPath( templatePath, rockPage?.Layout.Site.Theme ?? "Rock" );
             }
             else if ( templatePath.StartsWith( "~" ) )
             {

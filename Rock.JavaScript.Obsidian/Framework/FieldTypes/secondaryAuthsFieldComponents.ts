@@ -17,7 +17,7 @@
 import { computed, defineComponent, ref, watch } from "vue";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
 import { updateRefValue } from "@Obsidian/Utility/component";
-import { ConfigurationValueKey } from "./secondaryAuthsField.partial";
+import { ConfigurationKey } from "./secondaryAuthsField.partial";
 import { getFieldEditorProps } from "./utils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -37,7 +37,7 @@ export const EditComponent = defineComponent({
         /** The options to choose from in the checkbox list */
         const options = computed((): ListItemBag[] => {
             try {
-                return JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+                return JSON.parse(props.configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
             }
             catch {
                 return [];

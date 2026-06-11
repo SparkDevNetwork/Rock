@@ -1,0 +1,123 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Apply Filters"
+           saveText="Apply"
+           @save="onSave">
+
+        <SlidingDateRangePicker v-model="sendDateRange"
+                                label="Send Date Range" />
+
+        <SlidingDateRangePicker v-model="unsubscribeDateRange"
+                                label="Unsubscribed Date Range" />
+
+        <DropDownList v-model="unsubscribeLevel"
+                      label="Level"
+                      :items="unsubscribeLevelItems"
+                      :showBlankItem="true" />
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { nextTick, PropType, ref, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        unsubscribeLevelItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        defaultSlidingDateRange: {
+            type: Object as PropType<SlidingDateRange>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const sendDateRange = ref<SlidingDateRange | null>(props.modelValue.sendDateRange ?? props.defaultSlidingDateRange);
+    const unsubscribeDateRange = ref<SlidingDateRange | null>(props.modelValue.unsubscribeDateRange ?? props.defaultSlidingDateRange);
+    const unsubscribeLevel = ref(props.modelValue.unsubscribeLevel);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the save button is clicked.
+     */
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            sendDateRange: sendDateRange.value,
+            unsubscribeDateRange: unsubscribeDateRange.value,
+            unsubscribeLevel: unsubscribeLevel.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        sendDateRange.value = props.modelValue.sendDateRange ?? props.defaultSlidingDateRange;
+        unsubscribeDateRange.value = props.modelValue.unsubscribeDateRange ?? props.defaultSlidingDateRange;
+        unsubscribeLevel.value = props.modelValue.unsubscribeLevel;
+    });
+
+    watch(sendDateRange, () => {
+        nextTick(() => {
+            if (!sendDateRange.value) {
+                sendDateRange.value = props.defaultSlidingDateRange;
+            }
+        });
+    });
+
+    watch(unsubscribeDateRange, () => {
+        nextTick(() => {
+            if (!unsubscribeDateRange.value) {
+                unsubscribeDateRange.value = props.defaultSlidingDateRange;
+            }
+        });
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+
+    // #endregion Watchers
+</script>

@@ -1,0 +1,275 @@
+/* Used to manage styles related to Rock's store */
+
+//  ROCK STORE
+
+// =============================================================
+// Table of Contents
+//  + Promo Rotator
+//  + Package Summary
+//  + Package Detail
+//  + Components
+//  + Purchased Package
+//  + Store Categories
+// =============================================================
+
+.promotionrotator {
+  margin-bottom: 48px;
+
+  .carousel-inner img {
+    width: 100%;
+  }
+
+  .carousel-indicators {
+    bottom: -44px;
+
+    li {
+      border-color: var(--color-interface-medium);
+    }
+
+    .active {
+      background-color: var(--color-interface-medium);
+    }
+
+  }
+
+  .carousel-control {
+
+    .ti-chevron-right {
+      right: 20px;
+    }
+
+    .ti-chevron-left {
+      left: 20px;
+    }
+
+  }
+
+}
+
+
+/* Package Summary */
+.packagesummary {
+  position: relative;
+  max-width: 282px;
+  height: 100%;
+  margin-right: auto;
+  margin-left: auto;
+  cursor: pointer;
+  background-color: var(--color-interface-softest);
+  border: 1px solid var(--color-interface-soft);
+  border-radius: var(--rounded-medium);
+  overflow: clip;
+}
+
+.packagesummary .packagesummary-body {
+  padding: var(--spacing-medium);
+  background-color: var(--color-interface-softest);
+}
+
+.packagesummary .packagesummary-body h2 {
+  margin: 0;
+  overflow: hidden;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.packagesummary .packagesummary-body .vendor {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.packagesummary-footer {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  background-color: var(--color-interface-softest);
+  border-top: 1px solid var(--color-interface-soft);
+}
+
+
+// ====================PACKAGE DETAIL====================
+
+.packagedetail-banner {
+  margin:              calc(var(--spacing-medium) * -1);
+  margin-bottom:       var(--spacing-medium);
+}
+
+.packagedetail-banner-image {
+  width: 100%;
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.packagedetail-additionalversions {
+  display: none;
+}
+
+.btn-install {
+  width: 100%;
+}
+
+.packagedetail h1 > small,
+.packagedetail h2 > small {
+    color: var(--color-interface-medium);
+}
+
+.packagedetail dl dt {
+    font-weight: var(--font-weight-semibold);
+    margin-top: var(--spacing-small);
+}
+
+.packagedetail dl dd {
+    margin-left: 0;
+    margin-bottom: var(--spacing-xsmall);
+}
+
+/* Fullscreen overlay */
+.image-zoom-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: 9999;
+    display: grid;
+    place-items: center;
+    cursor: zoom-out;
+}
+
+/* Fullscreen image */
+.image-zoom-overlay img {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+}
+
+/* Transition for overlay */
+.img-zoom-enter-active,
+.img-zoom-leave-active {
+    transition: opacity 300ms ease;
+}
+
+.img-zoom-enter-from,
+.img-zoom-leave-to {
+    opacity: 0;
+}
+
+/* Transition for the image inside the overlay */
+.img-zoom-enter-active img,
+.img-zoom-leave-active img {
+    transition: transform 300ms ease;
+}
+
+.img-zoom-enter-from img,
+.img-zoom-leave-to img {
+    transform: scale(0.9);
+}
+
+/* Rotate chevron when open */
+.ti-chevron-down {
+    display: inline-block;
+    transition: transform 200ms ease;
+}
+
+.chev-rotated {
+    transform: rotate(180deg);
+}
+
+/* Slide + fade container */
+.additional-versions-enter-active,
+.additional-versions-leave-active {
+    transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.additional-versions-enter-from,
+.additional-versions-leave-to {
+    opacity: 0;
+    transform: translateY(-6px);
+}
+
+.additional-versions-enter-to,
+.additional-versions-leave-from {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Components */
+.rating-bg {
+  position: absolute;
+  right: 0;
+  left: 0;
+  margin: 0 auto;
+  opacity: .08;
+}
+
+.pricelabel {
+  padding: 10px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  text-align: center;
+  border-radius: 4px;
+}
+
+.pricelabel.cost {
+  color: var(--color-success-strong);
+  background-color: var(--color-success-soft);
+  border-color: var(--color-success-strong);
+}
+
+.pricelabel.free {
+  color: var(--color-info-strong);
+  background-color: var(--color-info-soft);
+  border-color: var(--color-info-strong);
+}
+
+.pricelabel h4 {
+  font-size: 24px;
+  font-weight: 700;
+  color: inherit;
+}
+
+.store-categories h4 {
+  margin-top: 0;
+  font-weight: 700;
+}
+
+
+
+/* Purchased Package */
+.purchasedpackage h1 {
+  margin-top: 0;
+  overflow: hidden;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.purchasedpackage .purchasedpackage-install a {
+  width: 100%;
+}
+
+.store-category-list > li {
+  margin: 0 12px 6px 0;
+}
+
+@media (max-width: 1199px) {
+  .store-category-list > li {
+    margin-right: 8px;
+  }
+
+  .store-category-list > li a {
+    padding: 5px 8px;
+    font-size: 14px;
+  }
+}
+
+.store-category-list > li + li {
+  margin-left: 0 !important;
+}

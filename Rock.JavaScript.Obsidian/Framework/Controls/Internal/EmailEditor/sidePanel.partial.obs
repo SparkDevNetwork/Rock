@@ -340,7 +340,7 @@
     import FlatPanel from "./flatPanel.partial.obs";
     import GlobalPropertyPanel from "./propertyPanels/globalPropertyPanel.partial.obs";
     import { BodyGlobalProps, ButtonGlobalProps, CloneComponentRequest, CompleteComponentRequest, ComponentTypeDragEndRequest, ComponentTypeDragStartRequest, DeleteComponentRequest, DividerGlobalProps, EditorComponentTypeName, ReplaceComponentRequest } from "./types.partial";
-    import { UsageType } from "./types";
+    import { UsageType } from "./types.partial";
     import { getComponentIconHtml, getComponentTitle } from "./utils.partial";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
@@ -364,15 +364,15 @@
     type SidePanelMenuItemType = "blocks" | "sections" | "styles";
 
     type SidePanelMenuItem = {
-    type: SidePanelMenuItemType;
-    iconCssClass: string;
-    title: string;
+        type: SidePanelMenuItemType;
+        iconCssClass: string;
+        title: string;
     };
 
     type ComponentTypeListItem = {
-    componentTypeName: EditorComponentTypeName;
-    iconHtml: string;
-    title: string;
+        componentTypeName: EditorComponentTypeName;
+        iconHtml: string;
+        title: string;
     };
 
     // #endregion Types
@@ -688,34 +688,31 @@
     }
 
     function getEmailSectionMenuItems(emailSection: EmailEditorEmailSectionBag): MenuAction[] {
-        if (emailSection.isSystem) {
-            return [
-                {
-                    title: "Clone",
-                    type: "default",
-                    handler: () => onEmailSectionCloneClicked(emailSection)
-                }
-            ];
+        const menuItems: MenuAction[] = [];
+
+        if (emailSection.canEdit) {
+            menuItems.push({
+                title: "Edit Details",
+                type: "default",
+                handler: () => onEmailSectionEditClicked(emailSection)
+            });
         }
-        else {
-            return [
-                {
-                    title: "Edit Details",
-                    type: "default",
-                    handler: () => onEmailSectionEditClicked(emailSection)
-                },
-                {
-                    title: "Clone",
-                    type: "default",
-                    handler: () => onEmailSectionCloneClicked(emailSection)
-                },
-                {
-                    title: "Delete",
-                    type: "danger",
-                    handler: () => onEmailSectionDeleteClicked(emailSection)
-                }
-            ];
+
+        menuItems.push({
+            title: "Clone",
+            type: "default",
+            handler: () => onEmailSectionCloneClicked(emailSection)
+        });
+
+        if (emailSection.canDelete) {
+            menuItems.push({
+                title: "Delete",
+                type: "danger",
+                handler: () => onEmailSectionDeleteClicked(emailSection)
+            });
         }
+
+        return menuItems;
     }
 
     async function loadEmailSections(): Promise<void> {

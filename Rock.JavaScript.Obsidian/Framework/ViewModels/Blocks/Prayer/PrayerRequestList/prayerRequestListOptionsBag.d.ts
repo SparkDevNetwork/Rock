@@ -22,4 +22,16 @@
 //
 
 export type PrayerRequestListOptionsBag = {
+    /**
+     * Gets or sets a value indicating whether the Campus column should be
+     * visible. This is typically only true when the organization has more
+     * than one active campus.
+     */
+    isCampusColumnVisible: boolean;
+
+    /**
+     * Gets or sets a value indicating whether the current person is authorized
+     * to approve prayer requests (via the block's "Approve" security action).
+     */
+    showIsApprovedColumn: boolean;
 };

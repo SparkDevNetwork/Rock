@@ -186,7 +186,7 @@ namespace Rock.Model
             if ( toDateTime.HasValue )
             {
                 var toDate = toDateTime.Value.Date;
-                qry = qry.Where( a => a.OccurrenceDate < ( toDate ) );
+                qry = qry.Where( a => a.OccurrenceDate <= ( toDate ) );
             }
 
             // Location Filter
@@ -224,7 +224,20 @@ namespace Rock.Model
                 .ToList();
 
             var startDate = fromDateTime ?? RockDateTime.Today.AddMonths( -2 );
-            var endDate = toDateTime ?? RockDateTime.Today.AddDays( 1 );
+
+            /*
+                 3/26/2026 - NA
+
+                 Adjust endDate handling for GetICalOccurrences to ensure full-day inclusion when a date-only value is provided. 
+                 Date-only inputs default to midnight, which excludes later occurrences on that day. To correct this, we extend 
+                 the end boundary by one day, but only when an explicit end date is provided. This also addresses the
+                 groupSchedule.WeeklyDayOfWeek case for a similar problem below.
+
+                 Reason: Prevents end-date occurrences from being unintentionally excluded. (issue #6749)
+            */
+            var endDate = toDateTime.HasValue
+                ? toDateTime.Value.AddDays( 1 )
+                : RockDateTime.Today.AddDays( 1 );
 
             if ( !string.IsNullOrWhiteSpace( groupSchedule.iCalendarContent ) )
             {
@@ -817,26 +830,43 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// AttendanceOccurrence that either have attendees or are marked as "Did not occur".
+        /// Filters <see cref="AttendanceOccurrence"/> records to those that:
+        /// <list type="bullet">
+        ///    <item>Have at least one attendee who actually attended (<c>DidAttend == true</c>), OR</item>
+        ///    <item>The occurrence is marked as <c>DidNotOccur</c>.</item>
+        /// </list>
+        /// Scheduling/RSVP-only attendance records (e.g., <c>RequestedToAttend</c> / <c>ScheduledToAttend</c> without <c>DidAttend</c>)
+        /// do not cause an occurrence to be treated as having attendees.
         /// </summary>
-        /// <param name="attendanceOccurrences">The attendance occurrences.</param>
-        /// <returns></returns>
+        /// <param name="attendanceOccurrences">The attendance occurrences query.</param>
+        /// <returns>
+        /// An <see cref="IQueryable{T}"/> containing AttendanceOccurrences that have actual attendees or did not occur.
+        /// </returns>
         public static IQueryable<AttendanceOccurrence> HasAttendeesOrDidNotOccur( this IQueryable<AttendanceOccurrence> attendanceOccurrences )
         {
             return attendanceOccurrences
-                    .Where( a => a.Attendees.Any() || ( a.DidNotOccur.HasValue && a.DidNotOccur.Value ) );
+                    .Where( a => a.Attendees.Any( at => at.DidAttend.HasValue && at.DidAttend.Value ) || ( a.DidNotOccur.HasValue && a.DidNotOccur.Value ) );
         }
 
         /// <summary>
-        /// AttendanceOccurrence that either have attendees, or are marked as "Did not occur", or has already had an attendance reminder sent today.
+        /// Filters <see cref="AttendanceOccurrence"/> records to those that:
+        /// <list type="bullet">
+        ///    <item>Have at least one attendee who actually attended (<c>DidAttend == true</c>), OR</item>
+        ///    <item>The occurrence is marked as <c>DidNotOccur</c>, OR</item>
+        ///    <item>Already had an attendance reminder sent today.</item>
+        /// </list>
+        /// Scheduling/RSVP-only attendance records (e.g., <c>RequestedToAttend</c> / <c>ScheduledToAttend</c> without <c>DidAttend</c>)
+        /// do not cause an occurrence to be treated as having attendees.
         /// </summary>
-        /// <param name="attendanceOccurrences">The attendance occurrences.</param>
-        /// <returns></returns>
+        /// <param name="attendanceOccurrences">The attendance occurrences query.</param>
+        /// <returns>
+        /// An <see cref="IQueryable{T}"/> containing AttendanceOccurrences that have actual attendees, did not occur, or were already reminded today.
+        /// </returns>
         public static IQueryable<AttendanceOccurrence> HasAttendeesOrDidNotOccurOrRemindersAlreadySentToday( this IQueryable<AttendanceOccurrence> attendanceOccurrences )
         {
             return attendanceOccurrences
-                    .Where(
-                        a => a.Attendees.Any()
+                    .Where( a =>
+                        a.Attendees.Any( at => at.DidAttend.HasValue && at.DidAttend.Value )
                         || ( a.DidNotOccur.HasValue && a.DidNotOccur.Value )
                         || a.AttendanceReminderLastSentDateTime >= RockDateTime.Today
                     );

@@ -274,7 +274,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             var output = html.SanitizeHtml( strict: true );
 
-            Assert.IsFalse( output.Contains("Comment") );
+            Assert.DoesNotContain( "Comment", output );
         }
 
         [TestMethod]

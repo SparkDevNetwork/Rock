@@ -20,7 +20,7 @@
     import { NumberUpDownGroupOption } from "@Obsidian/Types/Controls/numberUpDownGroup";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { areEqual } from "@Obsidian/Utility/guid";
-    import { asFormattedString, toCurrencyOrNull} from "@Obsidian/Utility/numberUtils";
+    import { asFormattedString, toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
     import { isNullish } from "@Obsidian/Utility/util";
     import { ValidationRule } from "@Obsidian/ValidationRules";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

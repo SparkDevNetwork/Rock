@@ -128,11 +128,6 @@ namespace Rock.Reporting.DataSelect.Person
                 var template = new RegistrationTemplateService( rockContext ).Get( templateGuid.Value );
                 selectionConfig.RegistrationTemplateId = template.Id;
             }
-            else
-            {
-                var template = new RegistrationTemplateService( rockContext ).Queryable().FirstOrDefault();
-                selectionConfig.RegistrationTemplateId = template.Id;
-            }
 
             var instanceGuid = data.GetValueOrNull( "instance" )?.FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
             selectionConfig.RegistrationInstanceGuid = instanceGuid;
@@ -212,10 +207,14 @@ function() {
             {
                 return string.Format( "{0} in registration instance '{1}' {2}", filterOptions, registrationInstance.Name, waitlistFilterStatus );
             }
+            else if ( registrationInstance == null && selectionConfig.RegistrationInstanceGuid.HasValue )
+            {
+                return string.Format( "{0} in registration instance '{1}' {2}", filterOptions, "[MISSING]", waitlistFilterStatus );
+            }
             else
             {
                 var registrationTemplate = new RegistrationTemplateService( new RockContext() ).Queryable().Where( t => t.Id == selectionConfig.RegistrationTemplateId ).FirstOrDefault();
-                return string.Format( "{0} in any registration instance of template '{1}' {2}", filterOptions, registrationTemplate.Name, waitlistFilterStatus );
+                return string.Format( "{0} in any registration instance of template '{1}' {2}", filterOptions, registrationTemplate?.Name ?? selectionConfig.RegistrationTemplateId + " [MISSING]", waitlistFilterStatus );
             }
         }
 
@@ -244,6 +243,7 @@ function() {
                 } )
             .ToList();
             _ddlRegistrationTemplate.DataBind();
+            _ddlRegistrationTemplate.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
             _ddlRegistrationTemplate.SelectedIndexChanged += ddlRegistrationTemplate_SelectedIndexChanged;
             _ddlRegistrationTemplate.AutoPostBack = true;
             filterControl.Controls.Add( _ddlRegistrationTemplate );
@@ -372,6 +372,11 @@ function() {
             if ( registrationTemplate != null )
             {
                 ddlRegistrationTemplate.SetValue( selectionConfig.RegistrationTemplateId );
+            }
+            else
+            {
+                ddlRegistrationTemplate.ClearSelection();
+                ddlRegistrationTemplate.SelectedIndex = -1;
             }
 
             ddlRegistrationTemplate_SelectedIndexChanged( ddlRegistrationTemplate, new EventArgs() );

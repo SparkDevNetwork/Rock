@@ -1,5 +1,25 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MyConnectionOpportunities.ascx.cs" Inherits="RockWeb.Blocks.Connection.MyConnectionOpportunities" %>
 <%@ Import namespace="Rock" %>
+
+<style>
+    .status-indicators {
+        justify-content: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-xsmall);
+    }
+
+    .status-indicators i {
+        margin: 0 !important;
+        font-size: var(--font-size-small) !important;
+        color: inherit !important;
+    }
+
+    .grid-select-cell .status-indicators {
+        justify-content: flex-start;
+    }
+</style>
+
 <script>
     Sys.Application.add_load(function () {
         $('.js-legend-badge').tooltip({ html: true, container: 'body', delay: { show: 200, hide: 100 } });
@@ -31,7 +51,6 @@
                     My Connection Requests</h1>
 
                 <div class="pull-right">
-                    <asp:Literal ID="lStatusBarContent" runat="server" />
                     <Rock:Toggle ID="tglShowActive" CssClass="margin-r-sm pull-left" runat="server" OffText="All Types" ActiveButtonCssClass="btn-primary" ButtonSizeCssClass="btn-xs" OnText="Active Types" AutoPostBack="true" OnCheckedChanged="tglShowActive_CheckedChanged" Checked="true" />
                     <Rock:Toggle ID="tglMyOpportunities" CssClass="margin-r-sm pull-left" runat="server" OnText="My Requests" OnCssClass="btn-primary" OffCssClass="btn-outline-primary" ActiveButtonCssClass="btn-primary" ButtonSizeCssClass="btn-xs" OffText="All Requests" AutoPostBack="true" OnCheckedChanged="tglMyOpportunities_CheckedChanged" Checked="true" />
                     <asp:Label ID="lTotal" runat="server" CssClass="margin-r-sm pull-left label label-default" Style="line-height:1.6;" />
@@ -46,7 +65,7 @@
                 <asp:Repeater ID="rptConnnectionTypes" runat="server" OnItemDataBound="rptConnnectionTypes_ItemDataBound">
                     <ItemTemplate>
                         <asp:Literal ID="lConnectionTypeName" runat="server" />
-                        <div class="list-as-blocks has-count clearfix">
+                        <div class="list-as-blocks clearfix">
                             <ul>
                                 <asp:Repeater ID="rptConnectionOpportunities" runat="server" OnItemCommand="rptConnectionOpportunities_ItemCommand">
                                     <ItemTemplate>
@@ -89,7 +108,7 @@
                     <Rock:Grid ID="gRequests" runat="server" OnRowSelected="gRequests_Edit" CssClass="js-grid-requests" AllowSorting="true" OnRowDataBound="gRequests_RowDataBound" >
                         <Columns>
                             <Rock:SelectField />
-                            <Rock:RockLiteralField ID="lStatusIcons" HeaderText="" ItemStyle-HorizontalAlign="Left" HeaderStyle-HorizontalAlign="Left" />
+                            <Rock:RockLiteralField ID="lStatusIndicators" HeaderText="" ItemStyle-HorizontalAlign="Left" HeaderStyle-HorizontalAlign="Left" />
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
                             <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus.Name" />
                             <Rock:RockTemplateField HeaderText="Group" SortExpression="AssignedGroup.Name">

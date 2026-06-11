@@ -7,7 +7,7 @@ using Moq;
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Filters;
 using Rock.Data;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Utility;
 using Rock.ViewModels.CheckIn;
 
@@ -19,7 +19,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
     /// </summary>
     /// <seealso cref="PreferredGroupsOpportunityFilter"/>
     [TestClass]
-    public class PreferredGroupsFilterTests : CheckInMockDatabase
+    public class PreferredGroupsFilterTests : MockDatabaseTestsBase
     {
         #region IsGroupValid Tests
 
@@ -30,7 +30,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var secondGroupId = 20;
             int locationId = 30;
 
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var filter = CreateFilter( rockContextMock.Object );
             var firstGroupOpportunity = CreateGroupOpportunity( firstGroupId, false, locationId );
             var secondGroupOpportunity = CreateGroupOpportunity( secondGroupId, false, locationId );
@@ -54,7 +54,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             filter.FilterGroups( opportunities );
 
-            Assert.That.AreEqual( 2, opportunities.Groups.Count );
+            Assert.HasCount( 2, opportunities.Groups );
         }
 
         [TestMethod]
@@ -64,7 +64,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var secondGroupId = 20;
             int locationId = 30;
 
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var filter = CreateFilter( rockContextMock.Object );
             var firstGroupOpportunity = CreateGroupOpportunity( firstGroupId, true, locationId );
             var secondGroupOpportunity = CreateGroupOpportunity( secondGroupId, false, locationId );
@@ -88,8 +88,8 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             filter.FilterGroups( opportunities );
 
-            Assert.That.AreEqual( 1, opportunities.Groups.Count );
-            Assert.That.AreEqual( firstGroupId, IdHasher.Instance.GetId( firstGroupOpportunity.Id ) );
+            Assert.HasCount( 1, opportunities.Groups );
+            Assert.AreEqual( firstGroupId, IdHasher.Instance.GetId( firstGroupOpportunity.Id ) );
         }
 
         [TestMethod]
@@ -99,7 +99,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var secondGroupId = 20;
             int locationId = 30;
 
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var filter = CreateFilter( rockContextMock.Object );
             var firstGroupOpportunity = CreateGroupOpportunity( firstGroupId, true, locationId );
             var secondGroupOpportunity = CreateGroupOpportunity( secondGroupId, false, locationId );
@@ -123,7 +123,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             filter.FilterGroups( opportunities );
 
-            Assert.That.AreEqual( 2, opportunities.Groups.Count );
+            Assert.HasCount( 2, opportunities.Groups );
         }
 
         [TestMethod]
@@ -133,7 +133,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var secondGroupId = 20;
             int locationId = 30;
 
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var filter = CreateFilter( rockContextMock.Object );
             var firstGroupOpportunity = CreateGroupOpportunity( firstGroupId, true, locationId );
             var secondGroupOpportunity = CreateGroupOpportunity( secondGroupId, true, locationId );
@@ -157,7 +157,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             filter.FilterGroups( opportunities );
 
-            Assert.That.AreEqual( 2, opportunities.Groups.Count );
+            Assert.HasCount( 2, opportunities.Groups );
         }
 
         #endregion

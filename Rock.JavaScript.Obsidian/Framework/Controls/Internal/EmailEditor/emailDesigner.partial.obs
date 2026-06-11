@@ -54,7 +54,7 @@
         DeleteComponentRequest,
         ReplaceComponentRequest
     } from "./types.partial";
-    import { GetHtmlRequest } from "./types";
+    import { GetHtmlRequest } from "./types.partial";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
     const props = defineProps({
@@ -243,7 +243,8 @@
                 "--spacing-tiny",
                 "--spacing-xsmall",
                 "--spacing-medium",
-                "--spacing-large"
+                "--spacing-large",
+                "--font-family-sans"
             ];
 
             for (const cssVariableName of cssVariableNames) {

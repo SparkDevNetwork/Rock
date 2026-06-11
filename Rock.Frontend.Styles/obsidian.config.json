@@ -1,0 +1,23 @@
+[
+  {
+    "source": "src/styles",
+    "destination": "../RockWeb/Styles",
+    "copy": true
+  },
+  {
+    "source": "src/themes",
+    "destination": "../RockWeb/Themes",
+    "copy": true,
+    "staticFiles": {
+      "includeExtensions": [
+        "aspx",
+        "cs",
+        "Master",
+        "json",
+        "system",
+        "mp3",
+        "js"
+      ]
+    }
+  }
+]

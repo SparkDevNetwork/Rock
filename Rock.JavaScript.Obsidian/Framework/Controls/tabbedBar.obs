@@ -10,7 +10,7 @@
 
             <li class="more-items">
                 <DropDownMenu :items="overflowTabActions" align="right">
-                    <span class="title text-muted">More <i class="ti ti-chevron-down"></i></span>
+                    <span class="title">More <i class="ti ti-chevron-down"></i></span>
                 </DropDownMenu>
             </li>
         </ul>

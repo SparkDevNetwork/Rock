@@ -604,9 +604,13 @@ namespace Rock.UniversalSearch.IndexComponents
             QueryContainer matchQuery = null;
             if ( fieldCriteria != null && fieldCriteria.FieldValues?.Count > 0 )
             {
+                var nonIndexedSearchFields = GetNonIndexedSearchFields( indexModelTypes );
+
                 foreach ( var match in fieldCriteria.FieldValues )
                 {
-                    var searchField = searchFields.FindBySearchFieldByName( match.Field );
+                    var searchField = searchFields.FindBySearchFieldByName( match.Field )
+                        ?? nonIndexedSearchFields.FindBySearchFieldByName( match.Field );
+
                     if ( searchField == null )
                     {
                         continue;
@@ -1027,6 +1031,35 @@ namespace Rock.UniversalSearch.IndexComponents
                 foreach ( var attribute in indexableAttributes )
                 {
                     searchFields.Add( new Nest.Field( attribute.Key ) );
+                }
+            }
+
+            return searchFields.ToArray();
+        }
+
+        /// <summary>
+        /// Gets the search fields that are marked as non-indexed. These should
+        /// only be used when performing field criteria filtering.
+        /// </summary>
+        /// <param name="indexModelTypes">The index model types.</param>
+        /// <returns>Nest.Field[].</returns>
+        private static Nest.Field[] GetNonIndexedSearchFields( List<Type> indexModelTypes )
+        {
+            var searchFields = new List<Nest.Field>();
+
+            foreach ( var indexModelType in indexModelTypes )
+            {
+                var properties = indexModelType.GetProperties().ToList();
+
+                foreach ( var property in properties )
+                {
+                    var rockIndexFieldAttribute = property.GetCustomAttribute<RockIndexField>();
+                    if ( rockIndexFieldAttribute == null || rockIndexFieldAttribute.Index != IndexType.NotIndexed )
+                    {
+                        continue;
+                    }
+
+                    searchFields.Add( new Nest.Field( property, boost: rockIndexFieldAttribute.Boost ) );
                 }
             }
 

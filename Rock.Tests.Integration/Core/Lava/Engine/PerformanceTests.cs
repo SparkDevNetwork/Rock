@@ -24,7 +24,6 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
 
 namespace Rock.Tests.Integration.Core.Lava.Engine
@@ -49,7 +48,7 @@ namespace Rock.Tests.Integration.Core.Lava.Engine
             // Create a Fluid engine with template caching disabled.
             var engineOptions = new LavaEngineConfigurationOptions { CacheService = new NullTemplateCacheService() };
 
-            var engine = LavaService.NewEngineInstance( typeof ( FluidEngine ), engineOptions );
+            var engine = LavaService.NewEngineInstance( typeof( FluidEngine ), engineOptions );
 
             var standardLavaDictionary = new Dictionary<string, object>();
 
@@ -130,7 +129,7 @@ Ted's other contact numbers are: (623) 555-3322,(623) 555-2444.'
 
             var phones = personTedDecker.PhoneNumbers;
 
-            Assert.That.IsNotNull( personTedDecker, "Test person not found in current database." );
+            Assert.IsNotNull( personTedDecker, "Test person not found in current database." );
 
             return personTedDecker;
         }

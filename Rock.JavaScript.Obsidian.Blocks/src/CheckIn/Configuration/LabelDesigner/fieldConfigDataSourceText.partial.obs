@@ -62,7 +62,7 @@
     const isSelectedFieldCollection = computed((): boolean => {
         const field = blockConfig.dataSources
             ?.find(s => s.textSubType === props.labelManager.selectedField.value?.fieldSubType
-                && s.key == selectedField.value);
+                && s.key === selectedField.value);
 
         return field?.isCollection === true;
     });
@@ -74,7 +74,7 @@
     const formatterOptionItems = computed((): ListItemBag[] => {
         const field = blockConfig.dataSources
             ?.find(s => s.textSubType === props.labelManager.selectedField.value?.fieldSubType
-                && s.key == selectedField.value);
+                && s.key === selectedField.value);
 
         if (!field?.formatterOptions) {
             return [];
@@ -91,7 +91,7 @@
     const customFields = computed((): CustomFieldInputBag[] => {
         const field = blockConfig.dataSources
             ?.find(s => s.textSubType === props.labelManager.selectedField.value?.fieldSubType
-                && s.key == selectedField.value);
+                && s.key === selectedField.value);
 
         if (!field?.customFields) {
             return [];
@@ -160,7 +160,7 @@
             if (newValues[0] !== oldValues[0]) {
                 const field = blockConfig.dataSources
                     ?.find(s => s.textSubType === props.labelManager.selectedField.value?.fieldSubType
-                        && s.key == selectedField.value);
+                        && s.key === selectedField.value);
 
                 if (field) {
                     fieldConfig.placeholderText = field.name;

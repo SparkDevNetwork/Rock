@@ -35,6 +35,7 @@
                                           toolbarLabel="Message" />
 
                         <FileUploader v-model="smsAttachmentBinaryFile"
+                                      :binaryFileTypeGuid="BinaryFiletype.CommunicationAttachment"
                                       :disabled="disabled"
                                       label="Attachments" />
                     </RockForm>
@@ -119,6 +120,7 @@
     import SmsMessageEditor from "@Obsidian/Controls/smsMessageEditor.obs";
     import SmsMobilePreview from "./smsMobilePreview.partial.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { emptyGuid, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { CommunicationFlowDetailCommunicationTemplateBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowDetail/communicationFlowDetailCommunicationTemplateBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

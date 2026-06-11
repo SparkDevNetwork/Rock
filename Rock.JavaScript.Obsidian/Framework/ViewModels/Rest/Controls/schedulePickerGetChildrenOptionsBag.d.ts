@@ -28,6 +28,21 @@ import { Guid } from "@Obsidian/Types";
  * the RegistrationTemplatePicker control.
  */
 export type SchedulePickerGetChildrenOptionsBag = {
+    /**
+     * Gets or sets the values that need to be expanded to. This is used
+     * when opening the tree view with an already selected value. Each
+     * selected value is included in this property. When getting the list
+     * of root items, you should automatically expand your results until
+     * each of these values is reached.
+     */
+    expandToValues?: string[] | null;
+
+    /**
+     * The category unique identifier to filter schedules by.
+     * If null then schedules from all categories are included.
+     */
+    includeCategoryGuids?: Guid[] | null;
+
     /** Whether to include schedules marked as inactive in the results. */
     includeInactiveItems: boolean;
 

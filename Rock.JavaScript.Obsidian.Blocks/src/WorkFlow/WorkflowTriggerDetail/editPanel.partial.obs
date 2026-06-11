@@ -166,7 +166,7 @@
 
         let showPreviousField = false;
 
-        if (workflowTriggerType.value == "PreSave" || workflowTriggerType.value == "PostSave" || workflowTriggerType.value == "ImmediatePostSave") {
+        if (workflowTriggerType.value === "PreSave" || workflowTriggerType.value === "PostSave" || workflowTriggerType.value === "ImmediatePostSave") {
             showPreviousField = true;
         }
 

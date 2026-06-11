@@ -26,26 +26,26 @@
 
 <!-- These styles cannot be scoped since they're being used in a tooltip. -->
 <style>
-.group-scheduler-v2 .progress-bar-tooltip {
+.group-scheduler-progress-bar-tooltip {
     min-width: 130px;
 }
 
-.group-scheduler-v2 .progress-bar-tooltip-label {
+.group-scheduler-progress-bar-tooltip-label {
     font-weight: bold;
 }
 
-.group-scheduler-v2 .progress-bar-tooltip-responses {
+.group-scheduler-progress-bar-tooltip-responses {
     margin-top: 12px;
 }
 
-.group-scheduler-v2 .progress-bar-tooltip-counts {
+.group-scheduler-progress-bar-tooltip-counts {
     margin-top: 4px;
     display: flex;
     justify-content: space-around;
     align-items: center;
 }
 
-.group-scheduler-v2 .progress-bar-tooltip-counts > span {
+.group-scheduler-progress-bar-tooltip-counts > span {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -74,10 +74,10 @@
 
     const progressBarTooltip = computed((): string => {
         return `
-<div class='progress-bar-tooltip'>
-    <div class='progress-bar-tooltip-configured'>
-        <span class="progress-bar-tooltip-label">Configured</span>
-        <div class='progress-bar-tooltip-counts'>
+<div class='group-scheduler-progress-bar-tooltip'>
+    <div class='group-scheduler-progress-bar-tooltip-configured'>
+        <span class="group-scheduler-progress-bar-tooltip-label">Configured</span>
+        <div class='group-scheduler-progress-bar-tooltip-counts'>
             <span>
                 <i class='ti ti-square-rounded-minus'></i>
                 ${minimumCapacity.value === 0 ? "-" : minimumCapacity.value}
@@ -92,9 +92,9 @@
             </span>
         </div>
     </div>
-    <div class='progress-bar-tooltip-responses'>
-        <span class="progress-bar-tooltip-label">Responses</span>
-        <div class='progress-bar-tooltip-counts'>
+    <div class='group-scheduler-progress-bar-tooltip-responses'>
+        <span class="group-scheduler-progress-bar-tooltip-label">Responses</span>
+        <div class='group-scheduler-progress-bar-tooltip-counts'>
             <span><i class='ti ti-calendar-check'></i> ${confirmedCount.value}</span>
             <span><i class='ti ti-question-mark'></i> ${pendingCount.value}</span>
             <span><i class='ti ti-calendar-x'></i> ${declinedCount.value}</span>

@@ -63,7 +63,8 @@
             <MediaPlayer v-model:watchedPercentage="watchedPercentage"
                          :mediaElementGuid="video?.value ?? ''"
                          :autoResumeInDays="60"
-                         :combinePlayStatisticsInDays="60" />
+                         :combinePlayStatisticsInDays="60"
+                         @loaded="onMediaPlayerLoaded" />
         </div>
 
         <div class="footer-section">
@@ -85,7 +86,7 @@
     </div>
 </template>
 <script setup lang="ts">
-    import { computed, ref, watch } from "vue";
+    import { computed, nextTick, ref, watch } from "vue";
     import { debounce } from "@Obsidian/Utility/util";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
@@ -198,6 +199,16 @@
     // #endregion
 
     // #region Event Handlers
+
+    /**
+     * Since activity components are dynamically loaded, this gives the parent
+     * component the opportunity to perform any custom actions once it's sure
+     * the child component is fully loaded and ready.
+     */
+    async function onMediaPlayerLoaded(): Promise<void> {
+        await nextTick();
+        emits("loaded");
+    }
 
     function onCompletedAndClosed(): void {
         if (isCompleted.value === false) {

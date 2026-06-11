@@ -23,7 +23,7 @@
                 <div class="assessment-item assessment-item-reorder-section">
                     <i class="ti ti-menu-2 reorder-handle" :style="reorderIconStyle"></i>
 
-                    <button aria-label="Remove this item" :disabled="disabled" class="btn btn-default btn-square remove-item-button" @click.prevent="items.splice(index, 1)">
+                    <button aria-label="Remove this item" :disabled="disabled" class="btn btn-default btn-square remove-item-button" type="button" @click.prevent="items.splice(index, 1)">
                         <i class="ti ti-x" aria-hidden="true"></i>
                     </button>
                 </div>
@@ -104,7 +104,7 @@
 
 <script setup lang="ts">
     import { ContentArticleItem, ContentArticleItemType } from "./contentArticleLearningActivity.partial";
-    import { computed, ref, watch, toValue } from "vue";
+    import { computed, nextTick, onMounted, ref, watch, toValue } from "vue";
     import { debounce } from "@Obsidian/Utility/util";
     import Panel from "@Obsidian/Controls/panel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -325,6 +325,16 @@
 
     watch(() => [props.activityBag, props.completionBag], () => {
         updateLocalValues();
+    });
+
+    /**
+     * Since activity components are dynamically loaded, this gives the parent
+     * component the opportunity to perform any custom actions once it's sure
+     * the child component is fully loaded and ready.
+     */
+    onMounted(async () => {
+        await nextTick();
+        emits("loaded");
     });
 
     updateLocalValues();

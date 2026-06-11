@@ -2,7 +2,10 @@
     <div class="contentstack" :class="additionalStackClasses">
         <div v-if="title || description || $slots.header" class="contentstack-sidebar">
             <div class="contentstack-header">
-                <p v-if="title" class="contentstack-header-title">{{ title }}</p>
+                <p v-if="title" class="contentstack-header-title">
+                    {{ title }}
+                    <HelpBlock v-if="help" :text="help" />
+                </p>
                 <p v-if="description" class="contentstack-header-description">{{ description }}</p>
 
                 <slot name="header" />
@@ -17,6 +20,7 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
+    import HelpBlock from "./helpBlock.obs";
 
     const props = defineProps({
         /**
@@ -24,6 +28,14 @@
          * about the contents of the stack.
          */
         title: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /**
+         * Help text associated with this stack.
+         */
+        help: {
             type: String as PropType<string>,
             default: ""
         },

@@ -36,7 +36,13 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Benevolence Request Statement Lava" )]
     [Category( "Finance" )]
     [Description( "Block for displaying a Lava based Benevolence Request detail." )]
-    [CodeEditorField( "Lava Template", "The Lava template to use for the Benevolence Request statement.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 500, true, @"
+
+    [CodeEditorField( "Lava Template",
+        Description = "The Lava template to use for the Benevolence Request statement.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 500,
+        IsRequired = true,
+        DefaultValue = @"
 {% capture pageTitle %}
     Benevolence Request for {{ Request.FirstName }} {{ Request.LastName }}
 {% endcapture %}
@@ -166,7 +172,9 @@ namespace RockWeb.Blocks.Finance
             </table>
         </div>
     </div>
-{% endif %}", order: 2 )]
+{% endif %}",
+        Order = 2 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "C2D8FCA3-BC8F-44FF-85AA-440BF41CEF5D" )]
     public partial class BenevolenceRequestStatementLava : Rock.Web.UI.RockBlock
     {
@@ -224,11 +232,16 @@ namespace RockWeb.Blocks.Finance
         private void DisplayResults()
         {
             RockContext rockContext = new RockContext();
-            var benevolenceRequestId = PageParameter( "BenevolenceRequestId" ).AsInteger();
-            if ( benevolenceRequestId > 0 )
-            {
-                var benevolenceRequest = new BenevolenceRequestService( rockContext ).Get( benevolenceRequestId );
+            var benevolenceRequestService = new BenevolenceRequestService( rockContext );
+            var benevolenceRequest = benevolenceRequestService
+                                       .GetQueryableByKey(
+                                           PageParameter( "BenevolenceRequestId" ),
+                                           !PageCache.Layout.Site.DisablePredictableIds
+                                       )
+                                       .FirstOrDefault();
 
+            if ( benevolenceRequest != null )
+            {
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "Request", benevolenceRequest );
 

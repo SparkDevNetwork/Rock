@@ -80,12 +80,20 @@
                     </div>
                 </div>
                 <div class="row mt-3">
-                    <div class="col-md-6">
+                    <div class="col-md-3">
                         <Rock:RockCheckBox
                             ID="cbDisablePredictableIds"
                             runat="server"
                             Label="Disable Predictable IDs"
                             Help="When checked, the GetFile, GetImage and GetAvatar endpoints will use IdKeys and GUID values instead of predictable IDs.  Note: Enabling this may cause plugins that are not yet compatible with this feature to stop working correctly." />
+                    </div>
+
+                    <div class="col-md-3">
+                        <Rock:RockCheckBox
+                            ID="cbEnableServerModelValidation"
+                            runat="server"
+                            Label="Enable Server Model Validation"
+                            Help="When checked, the server will enable additional validation checks when saving data to the database. Rock must be restarted for this change to take effect. This is a temporary option, in the future this will no longer be optional." />
                     </div>
                 </div>
                 <div class="row mt-3">
@@ -121,7 +129,7 @@
                             runat="server"
                             ID="cblRequireTwoFactorAuthenticationForAccountProtectionProfiles"
                             Label="Require Two-Factor Authentication for the Following Protection Profiles"
-                            Help="2FA - Selected protection profiles will require two-factor authentication when logging in. If you turn on two-factor authentication (2FA) for a Protection Profile, make sure Passwordless login for that Protection Profile is also turned on. If two-factor authentication (2FA) is enabled without Passwordless login, someone could get locked out."
+                            Help="Any selected Protection Profiles will require Two-Factor Authentication (2FA) when logging in. If you enable 2FA for a protection profile, <b>do not also disable Passwordless Sign-In</b> for that same profile. Doing so could prevent individuals from being able to log in."
                             RepeatDirection="Horizontal"
                             CssClass="js-ignored-protection-profile" />
                         <Rock:NotificationBox
@@ -163,7 +171,7 @@
                                     runat="server"
                                     ID="cblDisablePasswordlessSignInForAccountProtectionProfiles"
                                     Label="Disable Passwordless Sign-In for the Following Protection Profiles"
-                                    Help="Determines which individuals can use passwordless login depending on their protection profile. If you turn off Passwordless login for a Protection Profile, make sure two-factor authentication (2FA) for that Protection Profile is also turned off. If two-factor authentication (2FA) is enabled without Passwordless login, someone could get locked out."
+                                    Help="Any selected Protection Profiles will not be able to use Passwordless Sign-In. If Two-Factor Authentication (2FA) is enabled for a profile, make sure Passwordless Sign-In is not disabled. Otherwise, someone could get locked out."
                                     RepeatDirection="Horizontal" />
                             </div>
                             <div class="col-md-6">

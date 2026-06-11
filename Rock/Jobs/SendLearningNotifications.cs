@@ -575,7 +575,7 @@ namespace Rock.Jobs
                     LearningClassActivityCompletionId = null,
                     ActivityName = activity.Name,
                     AvailableDate = activity.AvailableDateCalculated,
-                    DueDate = activity.DueDateCalculated,
+                    DueDate = activity.DueDateCalculated?.EndOfDay(),
                     Order = activity.Order
                 } );
             }

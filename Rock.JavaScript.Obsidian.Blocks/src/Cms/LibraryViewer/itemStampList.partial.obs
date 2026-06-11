@@ -61,14 +61,6 @@
     </span>
 </template>
 
-<style scoped>
-    .library-viewer-item-stamp-list {
-        display: flex;
-        flex-shrink: 0;
-        gap: 6px;
-    }
-</style>
-
 <script setup lang="ts">
     import { PropType } from "vue";
     import { LibraryViewerItemBag } from "@Obsidian/ViewModels/Blocks/Cms/LibraryViewer/libraryViewerItemBag";

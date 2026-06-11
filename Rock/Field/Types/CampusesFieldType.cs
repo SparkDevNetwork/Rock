@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -251,6 +252,30 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var campuses = GetListSource( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
+                .Select( kvp => new ListItemBag
+                {
+                    Value = kvp.Key,
+                    Text = kvp.Value
+                } )
+                .OrderBy( c => c.Text )
+                .ToList();
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = true,
+                Values = campuses,
+                ValueFormat = $"One or more comma delimited guids that represents entities from the Campus table.",
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 
@@ -288,7 +313,7 @@ namespace Rock.Field.Types
             cblCampusTypes.SelectedIndexChanged += OnQualifierUpdated;
             cblCampusTypes.RepeatDirection = RepeatDirection.Horizontal;
             cblCampusTypes.Label = "Filter Campus Types";
-            cblCampusTypes.Help = "When set this will filter the campuses displayed in the list to the selected Types. Setting a filter will cause the campus picker to display even if 0 campuses are in the list.";
+            cblCampusTypes.Help = "When set, this will filter the campuses displayed in the list to the selected Types. Setting a filter will cause the campus picker to display even if 0 campuses are in the list.";
             cblCampusTypes.DataTextField = "Text";
             cblCampusTypes.DataValueField = "Value";
             cblCampusTypes.DataSource = campusTypeDefinedValues;
@@ -301,7 +326,7 @@ namespace Rock.Field.Types
             cblCampusStatuses.SelectedIndexChanged += OnQualifierUpdated;
             cblCampusStatuses.RepeatDirection = RepeatDirection.Horizontal;
             cblCampusStatuses.Label = "Filter Campus Status";
-            cblCampusStatuses.Help = "When set this will filter the campuses displayed in the list to the selected Statuses. Setting a filter will cause the campus picker to display even if 0 campuses are in the list.";
+            cblCampusStatuses.Help = "When set, this will filter the campuses displayed in the list to the selected Statuses. Setting a filter will cause the campus picker to display even if 0 campuses are in the list.";
             cblCampusStatuses.DataTextField = "Text";
             cblCampusStatuses.DataValueField = "Value";
             cblCampusStatuses.DataSource = campusStatusDefinedValues;
@@ -313,6 +338,7 @@ namespace Rock.Field.Types
                 AutoPostBack = true,
                 RepeatDirection = RepeatDirection.Horizontal,
                 Label = "Selectable Campuses",
+                Help = "When set, this limits the campuses that can be selected. Keep in mind that campuses must also match the selected filters above. If a campus does not match those filters, it will not appear as an option for the individual.",
                 DataTextField = "Text",
                 DataValueField = "Value",
                 DataSource = activeCampuses

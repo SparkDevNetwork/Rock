@@ -238,11 +238,7 @@ namespace Rock.Lava.Fluid
             }
             else if ( value is ArrayValue )
             {
-                var fieldInfo = value.GetType().GetField( "_value", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance );
-
-                var values = ( IEnumerable<FluidValue> ) fieldInfo.GetValue( value );
-
-                return values.Select( a => a.ToRealObjectValue() ).ToList();
+                return ( ( ArrayValue ) value ).Values.Select( a => a.ToRealObjectValue() ).ToList();
             }
             else if ( value is NumberValue nv )
             {
@@ -253,7 +249,14 @@ namespace Rock.Lava.Fluid
 
                 if ( placeCount == 0 )
                 {
-                    return ( int ) d;
+                    if ( d >= int.MinValue && d <= int.MaxValue )
+                    {
+                        return ( int ) d;
+                    }
+                    else
+                    {
+                        return ( long ) d;
+                    }
                 }
 
                 return d;

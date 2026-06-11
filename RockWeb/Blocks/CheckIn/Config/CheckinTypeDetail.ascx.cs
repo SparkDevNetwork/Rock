@@ -316,6 +316,8 @@ namespace RockWeb.Blocks.CheckIn.Config
                     Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORFAMILIES,
                     lbRegistrationOptionalAttributesForFamilies.SelectedValues.AsDelimited( "," ) );
 
+                templateSettings.DisplayAddressOnFamilies = ddlRegistrationDisplayAddressOnFamilies.SelectedValueAsEnum<RequirementLevel>();
+
                 groupType.SetAttributeValue(
                     Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONCHILDREN,
                     ddlRegistrationDisplayBirthdateOnChildren.SelectedValue );
@@ -627,6 +629,7 @@ namespace RockWeb.Blocks.CheckIn.Config
 
                 lbRegistrationRequiredAttributesForFamilies.SetValues( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_REQUIREDATTRIBUTESFORFAMILIES ).SplitDelimitedValues() );
                 lbRegistrationOptionalAttributesForFamilies.SetValues( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORFAMILIES ).SplitDelimitedValues() );
+                ddlRegistrationDisplayAddressOnFamilies.SetValue( templateSettings.DisplayAddressOnFamilies.ToString() );
 
                 ddlRegistrationDisplayBirthdateOnChildren.SetValue( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONCHILDREN ) );
                 ddlRegistrationDisplayBirthdateOnAdults.SetValue( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONADULTS ) );
@@ -874,10 +877,11 @@ namespace RockWeb.Blocks.CheckIn.Config
                     var descendantGroupTypeIds = new GroupTypeService( rockContext ).GetCheckinAreaDescendants( groupType.Id ).Select( a => a.Id );
                     scheduleList = new GroupLocationService( rockContext )
                         .Queryable().AsNoTracking()
-                        .Where( a =>
-                            a.Group.GroupType.Id == groupType.Id ||
-                            descendantGroupTypeIds.Contains( a.Group.GroupTypeId ) )
-                        .SelectMany( a => a.Schedules )
+                        .Where( gl =>
+                            gl.Group.GroupType.Id == groupType.Id ||
+                            descendantGroupTypeIds.Contains( gl.Group.GroupTypeId ) )
+                        .Where( gl => gl.Group.IsActive && !gl.Group.IsArchived )
+                        .SelectMany( gl => gl.Schedules )
                         .Where( s => s.IsActive )
                         .Select( s => s.Name )
                         .Distinct()
@@ -1004,6 +1008,11 @@ namespace RockWeb.Blocks.CheckIn.Config
                 lbRegistrationRequiredAttributesForFamilies.Items.Add( new ListItem( groupTypeFamilyAttribute.Name, groupTypeFamilyAttribute.Value ) );
                 lbRegistrationOptionalAttributesForFamilies.Items.Add( new ListItem( groupTypeFamilyAttribute.Name, groupTypeFamilyAttribute.Value ) );
             }
+
+            ddlRegistrationDisplayAddressOnFamilies.Items.Clear();
+            ddlRegistrationDisplayAddressOnFamilies.Items.Add( new ListItem( ControlOptions.HIDE, RequirementLevel.Unavailable.ToString() ) );
+            ddlRegistrationDisplayAddressOnFamilies.Items.Add( new ListItem( ControlOptions.OPTIONAL, RequirementLevel.Optional.ToString() ) );
+            ddlRegistrationDisplayAddressOnFamilies.Items.Add( new ListItem( ControlOptions.REQUIRED, RequirementLevel.Required.ToString() ) );
 
             ddlSuccessTemplateOverrideDisplayMode.Items.Clear();
             ddlSuccessTemplateOverrideDisplayMode.BindToEnum<SuccessLavaTemplateDisplayMode>();

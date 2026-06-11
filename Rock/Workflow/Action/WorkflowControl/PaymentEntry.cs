@@ -42,7 +42,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Take a payment from a person using a financial gateway.
     /// </summary>
-    [ActionCategory( "Workflow Control" )]
+    [ActionCategory( "Finance" )]
     [Description( "Take a payment from a person using a financial gateway." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Payment Entry" )]

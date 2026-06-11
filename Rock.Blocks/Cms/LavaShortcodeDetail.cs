@@ -24,6 +24,7 @@ using System.Text;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Cms;
 using Rock.Lava;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
@@ -94,8 +95,11 @@ namespace Rock.Blocks.Cms
         /// <returns>The options that provide additional details to the block.</returns>
         private LavaShortcodeDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
         {
-            var options = new LavaShortcodeDetailOptionsBag();
-            options.TagTypes = Enum.GetNames( typeof( TagType ) ).Select( t => new ViewModels.Utility.ListItemBag() { Text = t, Value = t } ).ToList();
+            var options = new LavaShortcodeDetailOptionsBag
+            {
+                TagTypes = Enum.GetNames( typeof( TagType ) ).Select( t => new ListItemBag() { Text = t, Value = t } ).ToList(),
+                ShortcodeScopeBehaviors = Enum.GetNames( typeof( ShortcodeScopeBehavior ) ).Select( t => new ListItemBag { Text = t, Value = t } ).ToList()
+            };
             return options;
         }
 
@@ -198,6 +202,7 @@ namespace Rock.Blocks.Cms
                 Name = entity.Name,
                 TagName = entity.TagName,
                 TagType = entity.TagType.ToString(),
+                ShortcodeScopeBehavior = entity.ShortcodeScopeBehavior.ToString()
             };
 
             return bag;
@@ -288,6 +293,9 @@ namespace Rock.Blocks.Cms
 
                 box.IfValidProperty( nameof( box.Entity.EnabledCommands ),
                     () => entity.EnabledLavaCommands = box.Entity.EnabledCommands.Select( p => p.Value ).JoinStrings( "," ) );
+
+                box.IfValidProperty( nameof( box.Entity.ShortcodeScopeBehavior ),
+                    () => entity.ShortcodeScopeBehavior = box.Entity.ShortcodeScopeBehavior.ConvertToEnum<ShortcodeScopeBehavior>() );
             }
 
             box.IfValidProperty( nameof( box.Entity.Categories ),

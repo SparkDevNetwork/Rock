@@ -8,29 +8,58 @@
                        label="Image Uploader"
                        :uploadAsTemporary="uploadAsTemporary"
                        :binaryFileTypeGuid="binaryFileTypeGuid"
+                       :enableCrop="enableCrop"
+                       :minimumHeight="minimumHeight ?? undefined"
+                       :minimumWidth="minimumWidth ?? undefined"
+                       :targetHeight="targetHeight ?? undefined"
+                       :targetWidth="targetWidth ?? undefined"
                        :uploadButtonText="uploadButtonText"
                        :showDeleteButton="showDeleteButton" />
 
         <template #settings>
-            <div class="row">
-                <CheckBox formGroupClasses="col-sm-4" v-model="uploadAsTemporary" label="Upload As Temporary" />
-                <TextBox formGroupClasses="col-sm-8" v-model="binaryFileTypeGuid" label="Binary File Type Guid" />
-            </div>
-            <div class="row">
-                <CheckBox formGroupClasses="col-sm-4" v-model="showDeleteButton" label="Show Delete Button" />
-                <TextBox formGroupClasses="col-sm-8" v-model="uploadButtonText" label="Upload Button Text" />
-            </div>
+            <div class="settings">
+                <div class="row">
+                    <CheckBox formGroupClasses="col-sm-4" v-model="uploadAsTemporary" label="Upload As Temporary" />
+                    <TextBox formGroupClasses="col-sm-8" v-model="binaryFileTypeGuid" label="Binary File Type Guid" />
+                </div>
 
-            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+                <div class="row">
+                    <CheckBox formGroupClasses="col-sm-4" v-model="showDeleteButton" label="Show Delete Button" />
+                    <TextBox formGroupClasses="col-sm-8" v-model="uploadButtonText" label="Upload Button Text" />
+                </div>
+
+                <div class="row">
+                    <NumberBox formGroupClasses="col-sm-4" v-model="minimumWidth" label="Minimum Width" :help="minimumWidthHelpText" />
+                    <NumberBox formGroupClasses="col-sm-4" v-model="minimumHeight" label="Minimum Height" :help="minimumHeightHelpText" />
+                </div>
+
+                <div class="row">
+                    <NumberBox formGroupClasses="col-sm-4" v-model="targetWidth" label="Target Width" :help="targetWidthHelpText" />
+                    <NumberBox formGroupClasses="col-sm-4" v-model="targetHeight" label="Target Height" :help="targetHeightHelpText" />
+                </div>
+
+                <Switch v-model="enableCrop" label="Enable Crop" :help="enableCropHelpText" />
+
+                <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+            </div>
         </template>
     </GalleryAndResult>
 </template>
+
+<style scoped>
+.settings {
+    max-height: 350px;
+    overflow: auto;
+}
+</style>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { getSfcControlImportPath } from "./common/utils.partial";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
@@ -40,9 +69,22 @@
     const showDeleteButton = ref(true);
     const uploadAsTemporary = ref(true);
     const uploadButtonText = ref("Upload");
+    const minimumHeight = ref<number | null>(null);
+    const minimumWidth = ref<number | null>(null);
+    const targetHeight = ref<number | null>(null);
+    const targetWidth = ref<number | null>(null);
+    const enableCrop = ref(false);
 
     const importCode = getSfcControlImportPath("imageUploader");
     const exampleCode = computed(() => {
         return `<ImageUploader v-model="value" label="Image Uploader" :uploadAsTemporary="true" :binaryFileTypeGuid="BinaryFiletype.Default" uploadButtonText="Upload" :showDeleteButton="true" />`;
     });
+
+    const minimumWidthHelpText = `If specified, selected images must have this minimum width in pixels.<br/><br/>If an image with a smaller width is selected, it will be rejected and an error message will be shown.`;
+    const minimumHeightHelpText = `If specified, selected images must have this minimum height in pixels.<br/><br/>If an image with a smaller height is selected, it will be rejected and an error message will be shown.`;
+
+    const targetWidthHelpText = `If specified, the image will be resized to this width in pixels before being uploaded. If the <strong>Target Height</strong> is not specified, then the resized image will maintain its aspect ratio.<br/><br/>If both <strong>Target Width</strong> and <strong>Target Height</strong> are defined, then the cropper will always be shown, regardless of the enableCrop setting. The crop area will be constrained to the (Target Width):(Target Height) aspect ratio.`;
+    const targetHeightHelpText = `If specified, the image will be resized to this height in pixels before being uploaded. If the <strong>Target Width</strong> is not specified, then the resized image will maintain its aspect ratio.<br/><br/>If both <strong>Target Width</strong> and <strong>Target Height</strong> are defined, then the cropper will always be shown, regardless of the enableCrop setting. The crop area will be constrained to the (Target Width):(Target Height) aspect ratio.`;
+
+    const enableCropHelpText = `If enabled, after the user selects an image and before the image is uploaded, they will be given the opportunity to crop the image.<br/><br/>If both <strong>Target Width</strong> and <strong>Target Height</strong> are defined, then the cropper will always be shown, regardless of this setting. The crop area will be constrained to the (Target Width):(Target Height) aspect ratio.`;
 </script>

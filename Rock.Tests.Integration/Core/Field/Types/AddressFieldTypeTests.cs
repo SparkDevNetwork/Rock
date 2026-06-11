@@ -48,13 +48,13 @@ namespace Rock.Tests.Integration.Core.Field.Types
             var configurationValues = new Dictionary<string, ConfigurationValue>();
             var editValue = addressFieldType.GetEditValue( addressControl, configurationValues );
             var locationGuid = editValue.AsGuidOrNull();
-            Assert.That.IsNotNull( locationGuid );
+            Assert.IsNotNull( locationGuid );
         }
 
         [TestMethod]
         [DataRow( false )]
         [DataRow( true )]
-        public void GetEditValue_ShouldReturnLocationNullForBlankAddressField(bool isRequired)
+        public void GetEditValue_ShouldReturnLocationNullForBlankAddressField( bool isRequired )
         {
             var addressFieldType = new AddressFieldType();
             var addressControl = new Rock.Web.UI.Controls.AddressControl();
@@ -71,7 +71,7 @@ namespace Rock.Tests.Integration.Core.Field.Types
             var configurationValues = new Dictionary<string, ConfigurationValue>();
             var editValue = addressFieldType.GetEditValue( addressControl, configurationValues );
             var locationGuid = editValue.AsGuidOrNull();
-            Assert.That.IsNull( locationGuid );
+            Assert.IsNull( locationGuid );
         }
 
         [TestMethod]
@@ -101,7 +101,7 @@ namespace Rock.Tests.Integration.Core.Field.Types
             var configurationValues = new Dictionary<string, ConfigurationValue>();
             var editValue = addressFieldType.GetEditValue( addressControl, configurationValues );
             var locationGuid = editValue.AsGuidOrNull();
-            Assert.That.IsNull( locationGuid );
+            Assert.IsNull( locationGuid );
         }
 
         [TestMethod]
@@ -116,7 +116,7 @@ namespace Rock.Tests.Integration.Core.Field.Types
 
             var textValue = addressFieldType.GetTextValue( locationGuidString, configurationValues );
 
-            Assert.That.AreEqual( string.Empty, textValue );
+            Assert.AreEqual( string.Empty, textValue );
         }
 
         [TestMethod]

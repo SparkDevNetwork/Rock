@@ -7,7 +7,6 @@ using Moq;
 
 using Rock.CheckIn.v2.Labels;
 using Rock.CheckIn.v2.Labels.Renderers;
-using Rock.Tests.Shared;
 
 namespace Rock.Tests.CheckIn.v2.Labels.Renderers
 {
@@ -33,7 +32,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
                 renderer.Object.EndLabel();
                 renderer.Object.Dispose();
 
-                Assert.That.IsTrue( stream.CanRead, "Stream was closed." );
+                Assert.IsTrue( stream.CanRead, "Stream was closed." );
             }
         }
 
@@ -54,7 +53,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
 
                 using ( var stream2 = new MemoryStream() )
                 {
-                    Assert.That.ThrowsException<InvalidOperationException>( () => renderer.Object.BeginLabel( stream2, request2 ) );
+                    Assert.Throws<InvalidOperationException>( () => renderer.Object.BeginLabel( stream2, request2 ) );
                 }
             }
         }
@@ -78,7 +77,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
                 stream.Position = 0;
                 var actualByte = stream.ReadByte();
 
-                Assert.That.AreNotEqual( utf8ByteOrderMark, actualByte, "Byte order mark was present." );
+                Assert.AreNotEqual( utf8ByteOrderMark, actualByte, "Byte order mark was present." );
             }
         }
     }

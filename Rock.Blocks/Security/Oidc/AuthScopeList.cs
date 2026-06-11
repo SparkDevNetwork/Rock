@@ -37,15 +37,20 @@ namespace Rock.Blocks.Security.Oidc
     [Category( "Security > OIDC" )]
     [Description( "Block for displaying and editing available OpenID Connect scopes." )]
     [IconCssClass( "ti ti-list" )]
-    //[SupportedSiteTypes( SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
+
+    #region Block Attributes
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the auth scope details.",
         Key = AttributeKey.DetailPage )]
 
+    #endregion Block Attributes
+
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [SystemGuid.EntityTypeGuid( "a4f6030a-c5a9-44f8-abb2-22df2fcb7d91" )]
-    [SystemGuid.BlockTypeGuid( "9ff39411-d9ce-4a5d-b04a-2db169a688f4" )]
+    [SystemGuid.BlockTypeGuid( "0E407FC8-B5B9-488E-81E4-8EA5F7CFCAB3" )]
+    // was [SystemGuid.BlockTypeGuid( "9ff39411-d9ce-4a5d-b04a-2db169a688f4" )]
     [CustomizedGrid]
     public class AuthScopeList : RockEntityListBlockType<AuthScope>
     {

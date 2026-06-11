@@ -1,0 +1,355 @@
+<template>
+    <Panel v-model:quickFilterValue="internalQuickFilterValue"
+           panelHeaderCssClass="flex-shrink-0">
+        <template #headerActions>
+            <HighlightLabel>
+                {{ countMessage }}
+            </HighlightLabel>
+        </template>
+        <template #postFilterHeaderActions>
+            <button v-if="props.onPanelSettingsClick"
+                    type="button"
+                    class="btn btn-panel-action"
+                    :class="{ active: panelSettingsActive }"
+                    title="Settings"
+                    @click.prevent.stop="props.onPanelSettingsClick">
+                <i class="ti ti-adjustments-horizontal"></i>
+            </button>
+            <button v-if="props.onAddItem"
+                    type="button"
+                    class="btn btn-add btn-panel-action"
+                    title="Add a new item. (Alt+N)"
+                    data-shortcut-key="n"
+                    @click.prevent.stop="props.onAddItem">
+                <i class="ti ti-square-plus"></i>
+            </button>
+        </template>
+        <template #preBody>
+            <ActionToolbar v-model:groupingKey="groupingKey"
+                           :groupingFields="groupingFields"
+                           :isSelectedView="isSelectedView">
+                <template #selectedActionToolbar>
+                    <slot name="selectedActionToolbar" />
+                </template>
+            </ActionToolbar>
+        </template>
+        <ContentSectionContainer v-if="rows.length > 0" ref="sectionContainer" :sidebar="false">
+            <template v-for="(group, index) in filteredGroups" :key="`${groupingKey}-${group.key}`">
+                <ContentSection :isCollapsed="getInitialIsCollapsed(group.key, index)"
+                                :unmountOnCollapse="true"
+                                @onSectionTransition="(isCollapsed) => onGroupTransition(`${groupingKey}-${group.key}`, isCollapsed)"
+                                @onSectionHeaderClick="onSectionHeaderClick">
+                    <template #title>
+                        <div class="d-flex align-items-center" :class="group.textColorCssClass">
+                            <template v-if="group.type === 'person'">
+                                <PersonAvatar :photoUrl="group.photoUrl ?? ''"
+                                              :photoSize="24" />
+                            </template>
+                            <template v-else>
+                                <i v-if="group.iconCssClass" :class="group.iconCssClass" class="mr-3"></i>
+                            </template>
+                            <span>{{ group.label }}</span>
+                        </div>
+                    </template>
+                    <template #headerActions>
+                        <slot name="headerActions" v-bind="{ groupRows: group.gridData.rows }" />
+                        <HighlightLabel>
+                            {{ getCountMessage(group.key, group.gridData.rows) }}
+                        </HighlightLabel>
+                    </template>
+                    <ContentStack>
+                        <slot name="grid"
+                              v-bind="{ group, setGridRef }" />
+                    </ContentStack>
+                </ContentSection>
+            </template>
+        </ContentSectionContainer>
+        <template v-else>
+            <slot name="emptyView" />
+        </template>
+    </Panel>
+</template>
+
+<style scoped>
+:deep(.contentsection-list) {
+    gap: var(--spacing-medium);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch, PropType, ComponentPublicInstance, Ref } from "vue";
+    import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { IContentSectionHolder } from "@Obsidian/Core/Controls/contentSection";
+    import ActionToolbar from "./actionToolbar.obs";
+    import PersonAvatar from "../personAvatar.obs";
+    import ContentSectionContainer from "../contentSectionContainer.obs";
+    import ContentSection from "../contentSection.obs";
+    import ContentStack from "../contentStack.obs";
+    import HighlightLabel from "../highlightLabel.obs";
+    import Panel from "../panel.obs";
+
+    const props = defineProps({
+        groupingKey: {
+            type: String,
+            default: ""
+        },
+        groupingFields: {
+            type: Array as PropType<ListItemBag[]>,
+            default: []
+        },
+        isAutoCollapseEnabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        itemTerm: {
+            type: String,
+            default: "Item"
+        },
+        isSelectedView: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        rows: {
+            type: Object as PropType<Record<string, unknown>[]>,
+            required: true
+        },
+        filteredAndSortedRows: {
+            type: Object as PropType<Record<string, unknown>[]>,
+            required: true
+        },
+        panelSettingsActive: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        /**
+         * The current text being used for the quick filter search box.
+         * The quick filter will only be shown if this value is not undefined.
+         */
+        quickFilterValue: {
+            type: String as PropType<string | undefined>,
+            default: undefined
+        },
+        /**
+         * The function to call in response to the add button being clicked.
+         * Providing this function will automatically enable the add button.
+         */
+        onAddItem: {
+            type: Function as PropType<(() => void | Promise<void>)>,
+            required: false
+        },
+        /**
+         * The function to call in response to the add button being clicked.
+         * Providing this function will automatically enable the add button.
+         */
+        onPanelSettingsClick: {
+            type: Function as PropType<(() => void | Promise<void>)>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:quickFilterValue", value: string): void;
+        (e: "update:groupingKey", value: string): void;
+        (e: "update:orderedRequestKeys", value: string[]): void;
+    }>();
+
+    type GroupedGrid = {
+        gridData: {
+            rows: Record<string, unknown>[];
+        };
+        iconCssClass?: string | null;
+        key?: string | null;
+        label?: string | null;
+        order?: number | null;
+        photoUrl?: string | null;
+        textColorCssClass?: string | null;
+        type?: string | null;
+    };
+
+    const internalQuickFilterValue = useVModelPassthrough(props, "quickFilterValue", emit);
+    const groupingKey = useVModelPassthrough(props, "groupingKey", emit);
+    const sectionContainer = ref<{
+        getSections: () => IContentSectionHolder[];
+        getRootElRef: () => Ref<HTMLElement | null>;
+    } | null>(null);
+
+    let collapsedGroupDictionary: Record<string, boolean> = {};
+
+    type ClearableGridInstance = ComponentPublicInstance<{ clearSelectedKeys: () => void }>;
+
+    const registeredGrids = new Set<ClearableGridInstance>();
+
+    function setGridRef(el: Element | ComponentPublicInstance | null): void {
+        if (el && typeof el === "object" && "clearSelectedKeys" in el) {
+            registeredGrids.add(el as ClearableGridInstance);
+        }
+    }
+
+    function clearSelectedKeys(): void {
+        registeredGrids.forEach(grid => {
+            grid.clearSelectedKeys();
+        });
+    }
+
+    defineExpose({
+        clearSelectedKeys,
+        expandAll,
+        collapseAll
+    });
+
+
+
+    const totalGroupCounts = computed(() => {
+        const map = new Map<string, number>();
+
+        if (!groupingKey.value) {
+            map.set("all", props.rows.length);
+            return map;
+        }
+
+        for (const row of props.rows) {
+            const field = row[groupingKey.value] as GroupingFieldBag;
+            const key = field?.key ?? "";
+
+            map.set(key, (map.get(key) ?? 0) + 1);
+        }
+
+        return map;
+    });
+
+
+    const filteredGroups = computed((): GroupedGrid[] => {
+        if (!groupingKey.value) {
+            return [{
+                key: "all",
+                label: "All",
+                gridData: { rows: props.filteredAndSortedRows }
+            }];
+        }
+
+        const groupedGrids = Enumerable
+            .from(props.filteredAndSortedRows)
+            .groupBy(r => {
+                const field = r[groupingKey.value] as GroupingFieldBag;
+                return field?.key ?? "";
+            })
+            .select(g => {
+                const rows = g.toArray();
+                const groupingField = rows[0][groupingKey.value] as GroupingFieldBag;
+
+                return {
+                    ...groupingField,
+                    gridData: { rows }
+                };
+            })
+            .orderBy(g => g.key === "unassigned" ? 0 : 1)
+            .thenOrderBy(g => g.order)
+            .thenOrderBy(g => g.label)
+            .toArray();
+
+        return groupedGrids;
+    });
+
+    const orderedRequestKeysAfterGrouping = computed(() =>
+        filteredGroups.value
+            .flatMap(g => g.gridData.rows)
+            .map(r => (r.idKey ?? "") as string)
+    );
+
+    const countMessage = computed(() => {
+        const totalCount = props.rows?.length ?? 0;
+        const filteredCount = props.filteredAndSortedRows.length;
+
+        if (filteredCount === totalCount) {
+            return `${asFormattedString(totalCount)} Total ${pluralize("Request", totalCount)}`;
+        }
+        else {
+            return `${asFormattedString(filteredCount)} of ${asFormattedString(totalCount)} Total ${pluralize("Request", totalCount)}`;
+        }
+    });
+
+    function expandAll(): void {
+        sectionContainer.value
+            ?.getSections()
+            .forEach(s => {
+                s.isCollapsed.value = false;
+            });
+    }
+
+    function collapseAll(section: IContentSectionHolder): void {
+        sectionContainer.value
+            ?.getSections()
+            .forEach(s => {
+                if (s !== section) {
+                    s.isCollapsed.value = true;
+                }
+            });
+    }
+
+
+    function getCountMessage(key: string | null | undefined, filteredAndSortedRows: Record<string, unknown>[]): string {
+        if (!key) {
+            return "";
+        }
+
+        const totalGroupCount = totalGroupCounts.value.get(key) ?? 0;
+
+        if (filteredAndSortedRows.length === totalGroupCount) {
+            return `${asFormattedString(filteredAndSortedRows.length)} ${pluralize(props.itemTerm, filteredAndSortedRows.length)}`;
+        }
+        else {
+            return `${asFormattedString(filteredAndSortedRows.length)} of ${asFormattedString(totalGroupCount)} ${pluralize(props.itemTerm, totalGroupCount)}`;
+        }
+    }
+
+    function onGroupTransition(key: string, isCollapsed: boolean): void {
+        // When a section opens and auto-collapse is enabled, collapse all other sections.
+        if (props.isAutoCollapseEnabled && !isCollapsed) {
+            collapsedGroupDictionary = {};
+        }
+
+        collapsedGroupDictionary[key] = isCollapsed;
+    }
+
+    function onSectionHeaderClick(section: IContentSectionHolder): void {
+        if (props.isAutoCollapseEnabled) {
+            collapseAll(section);
+        }
+    }
+
+    function getInitialIsCollapsed(groupKey: string | null | undefined, index: number): boolean {
+        const key = `${groupingKey.value}-${groupKey ?? ""}`;
+
+        // If we've already seen a transition for this section, honor it.
+        if (key in collapsedGroupDictionary) {
+            return collapsedGroupDictionary[key];
+        }
+
+        // Default behavior on first mount:
+        // Expand first group unless it's "unassigned", then expand the second group.
+        const firstExpandedIndex = filteredGroups.value[0]?.key === "unassigned" ? 1 : 0;
+
+        // If auto-collapse is enabled and another section is already open, start this
+        // new section collapsed to maintain the single-open invariant. This handles
+        // sections remounting after a filter is cleared.
+        if (props.isAutoCollapseEnabled && Object.values(collapsedGroupDictionary).some(v => !v)) {
+            return true;
+        }
+
+        const result = index !== firstExpandedIndex;
+        return result; // true means collapsed
+    }
+
+    watch(groupingKey, () => {
+        collapsedGroupDictionary = {};
+    });
+
+    watch(orderedRequestKeysAfterGrouping, (keys) => {
+        emit("update:orderedRequestKeys", keys);
+    }, { immediate: true });
+</script>

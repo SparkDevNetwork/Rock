@@ -223,6 +223,8 @@ export const EntityType = {
     ConnectionRequest: "36B0D0C7-8125-48FA-9DA2-729AAA65F718",
     /** The guid for the Rock.Model.ConnectionRequestActivity entity */
     ConnectionRequestActivity: "3248F40D-7661-42CC-AD9B-EF63322937B7",
+    /** The guid for the Rock.Model.ConnectionRequestStatusHistory entity */
+    ConnectionRequestStatusHistory: "9D73FA0E-5787-4357-BD7C-43AD1800DBB1",
     /** The guid for the Rock.Model.ConnectionRequestWorkflow entity */
     ConnectionRequestWorkflow: "C69D1C9F-5521-4C83-8FE9-5044ECC2CE65",
     /** The guid for the Rock.Model.ConnectionStatus entity */
@@ -231,8 +233,16 @@ export const EntityType = {
     ConnectionStatusAutomation: "ACF794C7-F12D-42DF-85C5-089A28993EE6",
     /** The guid for the Rock.Model.ConnectionType entity */
     ConnectionType: "B1E52EAD-65BD-4C4D-BCCD-73368067621D",
+    /** The guid for the Rock.Model.ConnectionTypeSource entity */
+    ConnectionTypeSource: "06FD04C5-8A18-43D1-AE13-3611344FB40A",
     /** The guid for the Rock.Model.ConnectionWorkflow entity */
     ConnectionWorkflow: "4EB8711F-7301-4699-A223-0505A7CEB20A",
+    /** The guid for the Rock.Model.Contact entity */
+    Contact: "A2FBB846-2511-4760-B912-928775BFC6D6",
+    /** The guid for the Rock.Model.ContactRelationshipChange entity */
+    ContactRelationshipChange: "0397D69F-1E9E-4202-BCB8-9DEEDAA554C9",
+    /** The guid for the Rock.Model.ContactTouchpoint entity */
+    ContactTouchpoint: "1068B648-FEE4-44E7-BF43-607371871367",
     /** The content channel type */
     ContentChannel: "44484685-477E-4668-89A6-84F29739EB68",
     /** The content channel item type */
@@ -595,6 +605,20 @@ export const EntityType = {
     MobileLoginBlockType: "6CE2D3D7-18D8-49FF-8C39-0CA98EB5DEB4",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Prayer.MyPrayerRequests. */
     MobileMyPrayerRequestsBlockType: "E644DE6A-44CA-48AC-BF33-5429DA8052C6",
+    /** The Guid for the entity Rock.Blocks.Types.Mobile.Engagement.AddContact */
+    MobileOutreachAddContactBlockType: "2742790B-031B-4CF3-9489-B84E50EA99BA",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Engagement.ContactProfile */
+    MobileOutreachContactProfileBlockType: "5A8E8F2C-1F1E-4D3A-9C8E-3B6D9F1C4E2B",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Engagement.MyContact. */
+    MobileOutreachMyContactsBlockType: "D1CFF2E3-0E3A-4F2D-8F1D-4C3E3F2B6F2A",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Engagement.OutreachDashboard. */
+    MobileOutreachOutreachDashboardBlockType: "A3D9F1C4-E3C1-4D3A-8C2E-7F4B5B6D9F1C",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Engagement.OutreachOnboarding. */
+    MobileOutreachOutreachOnboardingBlockType: "C1A3F4E2-7F4B-4D3A-8C2E-5B6D9F1C4E3C",
+    /** The GUid for the entity Rock.Blocks.Types.Mobile.Engagement.OutreachRecentActivity */
+    MobileOutreachOutreachRecentActivityBlockType: "73CA6269-28BA-4914-92F8-7493E732DCED",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Engagement.TouchpointDetail */
+    MobileOutreachTouchpointDetailBlockType: "83D3D9F1-901B-4FE6-9F83-898D1BE1BC43",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Prayer.PrayerCardView. */
     MobilePrayerPrayerCardViewBlockType: "0D0F1D7E-2D75-451B-95EE-0610B8F26BBF",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Prayer.PrayerRequestDetails */
@@ -825,7 +849,7 @@ export const EntityType = {
     StreakTypeExclusion: "1F00C782-F8A2-4CFA-B7DF-E5B3B6D36069",
     /** The guid for the system communication entity */
     SystemCommunication: "D0CAD7C0-10FE-41EF-B89D-E6F0D22456C4",
-    /** The EntityType Guid for Rock.Model.SystemEmail  */
+    /** The EntityType Guid for Rock.Model.SystemEmail which is made obsolete by the Rock.Model.SystemCommunication */
     SystemEmail: "B21FD119-893E-46C0-B42D-E4CDD5C8C49D",
     /** The EntityType Guid for Rock.Model.SystemPhoneNumber  */
     SystemPhoneNumber: "66D62A9F-13CD-4160-8653-211B2A4ABF16",

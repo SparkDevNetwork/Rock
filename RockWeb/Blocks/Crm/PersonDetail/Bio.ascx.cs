@@ -64,7 +64,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         Key = AttributeKey.AdditionalCustomActions,
         Description = BlockAttributeDescription.AdditionalCustomActions,
         EditorMode = CodeEditorMode.Html,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         Order = 2 )]
@@ -115,7 +114,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         Key = AttributeKey.CustomContent,
         Description = "Custom Content will be rendered after the person's demographic information <span class='tip tip-lava'></span>.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         Order = 9 )]
@@ -468,9 +466,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         var jsScript = $"javascript: Rock.controls.pbx.originate('{CurrentPerson.Guid}', '{phoneNumber.Number}', '{CurrentPerson.FullName}','{Person.FullName}','{formattedNumber}');";
                         phoneMarkup = $"<a class='originate-call js-originate-call text-link stretched-link' href=\"{jsScript}\">{formattedNumber}</a>";
                     }
-                    else if ( RockPage.IsMobileRequest ) // if the page is being loaded locally then add the tel:// link
+                    else if ( RockPage.IsMobileRequest ) // if the page is being loaded locally then add the tel: link
                     {
-                        phoneMarkup = $@"<a href=""tel://{phoneNumber.Number}"" class=""text-link stretched-link"">{formattedNumber}</a>";
+                        // Build an RFC 3966-compliant tel: URI using the E.164 format (+{countryCode}{number}).
+                        var telUri = phoneNumber.ToSmsNumber();
+                        phoneMarkup = $@"<a href=""tel:{telUri}"" class=""text-link stretched-link"">{formattedNumber}</a>";
                     }
                 }
 

@@ -22,7 +22,9 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Enums.AI;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -49,6 +51,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
         [Previewable]
+        [StringValidation( StringValidationProfile.Name )]
         public string FirstName { get; set; }
 
         /// <summary>
@@ -60,6 +63,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember( IsRequired = false )]
         [Previewable]
+        [StringValidation( StringValidationProfile.Name )]
         public string LastName { get; set; }
 
         /// <summary>
@@ -72,6 +76,7 @@ namespace Rock.Model
         [MaxLength( 254 )]
         [Previewable]
         [EmailAddressValidation]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Email { get; set; }
 
         /// <summary>
@@ -102,6 +107,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Text { get; set; }
 
         /// <summary>
@@ -111,6 +117,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that contains a description of how God answered the prayer request.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Answer { get; set; }
 
         /// <summary>
@@ -220,6 +227,10 @@ namespace Rock.Model
         /// <value>
         /// The campus identifier.
         /// </value>
+        /// <remarks>
+        /// [IgnoreCanDelete] since there is a ON DELETE SET NULL cascade on this
+        /// </remarks>
+        [IgnoreCanDelete]
         [HideFromReporting]
         [DataMember]
         public int? CampusId { get; set; }
@@ -246,6 +257,7 @@ namespace Rock.Model
         /// Gets or sets the Original Text of the PrayerRequest.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string OriginalRequest { get; set; }
 
         /// <summary>
@@ -353,7 +365,7 @@ namespace Rock.Model
             this.HasOptional( p => p.Category ).WithMany().HasForeignKey( p => p.CategoryId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RequestedByPersonAlias ).WithMany().HasForeignKey( p => p.RequestedByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ApprovedByPersonAlias ).WithMany().HasForeignKey( p => p.ApprovedByPersonAliasId ).WillCascadeOnDelete( false );
-            this.HasOptional( a => a.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( true );
+            this.HasOptional( a => a.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.LanguageValue ).WithMany().HasForeignKey( a => a.LanguageValueId ).WillCascadeOnDelete( false );
         }
     }

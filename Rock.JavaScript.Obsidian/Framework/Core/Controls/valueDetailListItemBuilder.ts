@@ -27,7 +27,7 @@ export class ValueDetailListItemBuilder {
     /**
      * Add a new field value with a plain text value. The text value will be
      * escaped so it is safe to use HTML characters.
-     * 
+     *
      * @param title The title of the field to be displayed.
      * @param text The text value to be displayed.
      */
@@ -41,7 +41,7 @@ export class ValueDetailListItemBuilder {
     /**
      * Add a new field value with a formatted HTML value. The HTML content
      * will not be escaped so you must ensure it is valid HTML.
-     * 
+     *
      * @param title The title of the field to be displayed.
      * @param html The text value to be displayed.
      */
@@ -49,6 +49,20 @@ export class ValueDetailListItemBuilder {
         this.values.push({
             title: title,
             htmlValue: html
+        });
+    }
+
+    /**
+     * Add a new field value with an HTML Element as the value. The element
+     * will be displayed as-is.
+     *
+     * @param title The title of the field to be displayed.
+     * @param element The HTMLElement to be displayed.
+     */
+    public addElementValue(title: string, element: HTMLElement): void {
+        this.values.push({
+            title: title,
+            elementValue: element
         });
     }
 

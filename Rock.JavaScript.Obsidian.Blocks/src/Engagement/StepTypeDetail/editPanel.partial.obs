@@ -42,7 +42,7 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection title="General Settings" icon="ti ti-adjustments-cog">
+        <ContentSection title="General Settings" icon="ti ti-settings">
             <ContentStack title="Step Configuration" description="Define the type and purpose of this step, and specify if any other steps must be completed first.">
                 <RadioButtonList label="Engagement Type"
                                  v-model="engagementType"
@@ -97,14 +97,14 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection v-if="hasAttributes" title="Step Type Attributes" icon="ti ti-binary-tree-2">
+        <ContentSection v-if="hasAttributes" title="Type Attributes" icon="ti ti-binary-tree-2">
             <ContentStack title="Step Type Attributes"
                           description="Set the values for the Step Type Attributes configured from the Step Program level.">
                 <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="3" />
             </ContentStack>
         </ContentSection>
 
-        <ContentSection title="Step Attributes" icon="ti ti-database">
+        <ContentSection title="Step Attributes" icon="ti ti-route-2">
             <ContentStack>
                 <Grid :definition="props.modelValue.bag?.stepTypeAttributesGridDefinition ?? undefined"
                       :data="attributesGridDataSource"
@@ -138,10 +138,10 @@
                     <DeleteColumn :onClick="onDeleteAttribute" />
                 </Grid>
             </ContentStack>
-            <Modal v-model="isAttributeModalOpen" title="Step Attributes">
+            <Modal v-model="isAttributeModalOpen" title="Attributes">
 
                 <RockForm v-model:submit="submitEditAttribute" @submit="onSaveAttribute">
-                    <AttributeEditor v-model="stepAttribute" :reservedKeyNames="reservedKeyNames" />
+                    <AttributeEditor v-model="stepAttribute" :reservedKeyNames="reservedKeyNames" :attributeEntityTypeGuid="EntityType.Step" />
                 </RockForm>
 
                 <template #customButtons>
@@ -153,7 +153,7 @@
             </Modal>
         </ContentSection>
 
-        <ContentSection title="Workflows" icon="ti ti-route-alt-right">
+        <ContentSection title="Workflows" icon="ti ti-settings-cog">
             <ContentStack>
                 <Grid :definition="props.modelValue.bag?.workflowTriggerGridDefinition ?? undefined"
                       :data="workflowTriggersGridDataSource"
@@ -232,7 +232,6 @@
                         <CodeEditor v-model="cardLavaTemplate"
                                     :editorHeight="200"
                                     mode="lava"
-                                    theme="rock"
                                     label="Card Content Lava Template"
                                     help="The template to use when formatting the summary card for this step." />
                     </div>
@@ -276,6 +275,7 @@
     import { StepAttributeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepAttributeBag";
     import { StepTypeWorkflowTriggerBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeWorkflowTriggerBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { emptyGuid, newGuid } from "@Obsidian/Utility/guid";
@@ -378,12 +378,12 @@
 
     // #region Functions
     function getTriggerDescription(triggerType: string, primaryQualifier: string | null | undefined, secondaryQualifier: string | null | undefined): string {
-        if (triggerType == "StatusChanged") {
+        if (triggerType === "StatusChanged") {
 
-            let status = stepStatuses.value.find(x => x.value == primaryQualifier);
+            let status = stepStatuses.value.find(x => x.value === primaryQualifier);
             const fromStatus = !status?.text ? "[Any]" : status.text;
 
-            status = stepStatuses.value.find(x => x.value == secondaryQualifier);
+            status = stepStatuses.value.find(x => x.value === secondaryQualifier);
 
             const toStatus = !status?.text ? "[Any]" : status.text;
 
@@ -391,7 +391,7 @@
 
             return description;
         }
-        else if (triggerType == "IsComplete") {
+        else if (triggerType === "IsComplete") {
             return "Step Completed";
         }
         else {
@@ -412,7 +412,7 @@
     };
 
     const onEditWorkflow = (key: string): void => {
-        const workflow = stepWorkflowTriggers.value.find(x => x.idKey == key);
+        const workflow = stepWorkflowTriggers.value.find(x => x.idKey === key);
         if (workflow) {
             stepWorkflowTrigger.value = workflow;
             triggerType.value = workflow.workflowTrigger?.value ?? "";
@@ -439,7 +439,7 @@
 
     const onSaveWorkflow = (): void => {
         isWorkflowModalOpen.value = false;
-        const selectedTriggerType = triggerTypes.value.find(t => t.value == triggerType.value);
+        const selectedTriggerType = triggerTypes.value.find(t => t.value === triggerType.value);
 
         if (triggerType.value && stepWorkflowTrigger.value.workflowType?.value && workflowTriggersGridData.rows && selectedTriggerType?.value) {
             const index = stepWorkflowTriggers.value.findIndex(a => (a.idKey === stepWorkflowTrigger.value.idKey));
@@ -450,8 +450,8 @@
 
             if (index !== -1) {
                 // Get the updated WorkflowTrigger and RowItem.
-                let editedWorkflowTrigger = stepWorkflowTriggers.value.find(a => a.idKey == stepWorkflowTrigger.value.idKey);
-                let rowItem = workflowTriggersGridData.rows.find(x => x["idKey"] == stepWorkflowTrigger.value.idKey);
+                let editedWorkflowTrigger = stepWorkflowTriggers.value.find(a => a.idKey === stepWorkflowTrigger.value.idKey);
+                let rowItem = workflowTriggersGridData.rows.find(x => x["idKey"] === stepWorkflowTrigger.value.idKey);
 
                 if (editedWorkflowTrigger && rowItem) {
                     // Replace old WorkflowTrigger with updated WorkflowTrigger.
@@ -528,7 +528,7 @@
     const onDeleteAttribute = async (key: string): Promise<void> => {
         // Close modal and remove deleted attribute from the current collection of attributes.
         isAttributeModalOpen.value = false;
-        const deletedAttribute = stepAttributes.value.find(a => a.attribute?.guid == key);
+        const deletedAttribute = stepAttributes.value.find(a => a.attribute?.guid === key);
         stepAttributes.value = stepAttributes.value.filter(s => s.attribute?.guid !== key);
         reservedKeyNames.value = reservedKeyNames.value.filter(r => r !== deletedAttribute?.attribute?.key);
 
@@ -549,8 +549,8 @@
 
             if (index !== -1) {
                 // Get the updated attribute and rowItem.
-                let editedAttribute = stepAttributes.value.find(a => a.attribute?.guid == stepAttribute.value?.guid);
-                let rowItem = attributesGridData.rows.find(x => x["idKey"] == stepAttribute.value?.guid);
+                let editedAttribute = stepAttributes.value.find(a => a.attribute?.guid === stepAttribute.value?.guid);
+                let rowItem = attributesGridData.rows.find(x => x["idKey"] === stepAttribute.value?.guid);
 
                 if (editedAttribute && rowItem) {
                     // Replace old attribute with updated attribute.

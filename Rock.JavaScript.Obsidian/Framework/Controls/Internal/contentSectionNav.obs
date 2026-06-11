@@ -1,5 +1,5 @@
 <template>
-    <div class="list-group contentsection-nav">
+    <div class="list-group contentsection-nav" ref="navEl">
         <div class="contentsection-nav-header">
             <h5 class="contentsection-nav-header-title">Sections</h5>
 
@@ -11,15 +11,27 @@
 
                 <ul class="dropdown-menu dropdown-menu-right">
                     <li v-if="autoCollapse">
-                        <a href="#" @click.prevent="autoCollapse = false">
+                        <a href="#" @click.prevent="onToggleAutoCollapse(false)">
                             <i class="ti ti-viewport-short"></i>
                             Turn Off Auto Collapse
                         </a>
                     </li>
                     <li v-else>
-                        <a href="#" @click.prevent="autoCollapse = true">
+                        <a href="#" @click.prevent="onToggleAutoCollapse(true)">
                             <i class="ti ti-viewport-short"></i>
                             Turn On Auto Collapse
+                        </a>
+                    </li>
+                    <li :class="expandCollapseAllClasses">
+                        <a href="#" @click.prevent="onExpandAllClick">
+                            <i class="ti ti-chevrons-down"></i>
+                            Expand All
+                        </a>
+                    </li>
+                    <li :class="expandCollapseAllClasses">
+                        <a href="#" @click.prevent="onCollapseAllClick">
+                            <i class="ti ti-chevrons-up"></i>
+                            Collapse All
                         </a>
                     </li>
                 </ul>
@@ -41,13 +53,18 @@
     import { IContentSectionHolder } from "@Obsidian/Core/Controls/contentSection";
     import { usePersonPreferences } from "@Obsidian/Utility/block";
     import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
-    import { onBeforeMount, onMounted, PropType, ref, watch } from "vue";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
+    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
 
     const props = defineProps({
         sections: {
             type: Array as PropType<IContentSectionHolder[]>,
             required: true
         },
+        waitForTransitions: {
+            type: Function as PropType<() => Promise<void>>,
+            required: false
+        }
     });
 
     const preferences = usePersonPreferences().blockPreferences;
@@ -56,8 +73,103 @@
 
     const autoCollapse = ref(asBooleanOrNull(preferences.getValue("contentsection-auto-collapse")) ?? true);
     const activeSectionId = ref(window.location.hash.replace("#", ""));
+    const navEl = ref<HTMLElement | null>(null);
 
-    // #endregion
+    let pendingMaxHeightUpdateId: number | null = null;
+    let layoutObserver: ResizeObserver | null = null;
+    let scrollContainer: HTMLElement | Window | null = null;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const expandCollapseAllClasses = computed((): string => {
+        return autoCollapse.value
+            ? "disabled"
+            : "";
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Walks up the DOM from the given element and returns the first ancestor
+     * whose computed overflow allows scrolling. Falls back to window if no
+     * scrollable ancestor is found.
+     *
+     * @param el The element to start from.
+     */
+    function findScrollContainer(el: HTMLElement): HTMLElement | Window {
+        let parent = el.parentElement;
+
+        while (parent && parent !== document.documentElement) {
+            const overflowY = getComputedStyle(parent).overflowY;
+
+            if (overflowY === "auto" || overflowY === "scroll") {
+                return parent;
+            }
+
+            parent = parent.parentElement;
+        }
+
+        return window;
+    }
+
+    /**
+     * Updates the nav's max-height so it never overflows the viewport bottom.
+     * Called on scroll and resize so it works correctly whether the nav is in
+     * its natural position or has become sticky.
+     */
+    function updateMaxHeight(): void {
+        if (pendingMaxHeightUpdateId !== null) {
+            return;
+        }
+
+        pendingMaxHeightUpdateId = requestAnimationFrame(() => {
+            pendingMaxHeightUpdateId = null;
+
+            if (!navEl.value) {
+                return;
+            }
+
+            const bottomPadding = parseInt(getCssVariableValue("--spacing-medium", "16px"), 10);
+
+            // The CSS sticky `top` value is the minimum the nav's top can ever
+            // be while visible. Clamping to it prevents two edge cases:
+            //  1. The container scrolls past the top of the viewport, pushing
+            //     getBoundingClientRect().top negative and making max-height
+            //     larger than the viewport (scrollbar disappears).
+            //  2. The nav de-sticks at the bottom of its container and drifts
+            //     to an unexpectedly low top value.
+            const stickyTop = parseFloat(getComputedStyle(navEl.value).top) || 0;
+            const navTop = Math.max(navEl.value.getBoundingClientRect().top, stickyTop);
+
+            const availableHeight = window.innerHeight - navTop - bottomPadding;
+            navEl.value.style.maxHeight = `${Math.max(availableHeight, 100)}px`;
+        });
+    }
+
+    /**
+     * Scrolls the page to the specified section, accounting for any fixed or
+     * sticky headers.
+     * @param sectionId The ID of the section to scroll to.
+     */
+    function scrollToSection(sectionId: string): void {
+        if (!sectionId) {
+            return;
+        }
+
+        const element = document.getElementById(sectionId);
+        if (element) {
+            element.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }
+    }
+
+    // #endregion Functions
 
     // #region Event Handlers
 
@@ -66,7 +178,6 @@
      */
     function onHashChange(): void {
         activeSectionId.value = window.location.hash.replace("#", "");
-
     }
 
     /**
@@ -76,7 +187,13 @@
      *
      * @param section The section that was clicked.
      */
-    function onOpenSectionClick(section: IContentSectionHolder): void {
+    async function onOpenSectionClick(section: IContentSectionHolder): Promise<void> {
+        // Disable animations for all sections to avoid jarring effects when
+        // auto-scrolling to the selected section.
+        props.sections.forEach(s => {
+            s.isAnimationDisabled.value = true;
+        });
+
         if (autoCollapse.value) {
             props.sections
                 .filter(s => !!s.title.value)
@@ -89,11 +206,84 @@
 
         section.isCollapsed.value = false;
 
-        const url = `${window.location.href.split("#")[0]}#${section.anchor.value}`;
+        const id = section.anchor.value ?? "";
+
+        const url = `${window.location.href.split("#")[0]}#${id}`;
         window.history.replaceState(null, "", url);
+
+        activeSectionId.value = id;
+
+        // Wait for Vue to flush DOM updates.
+        await nextTick();
+
+        // Wait for any ongoing transitions to complete.
+        if (props.waitForTransitions) {
+            await props.waitForTransitions();
+        }
+
+        scrollToSection(id);
+
+        // Wait for Vue to flush DOM updates then re-enable animations.
+        await nextTick();
+
+        props.sections.forEach(s => {
+            s.isAnimationDisabled.value = false;
+        });
     }
 
-    // #endregion
+    /**
+     * Toggles the auto-collapse feature on and off.
+     * If turning on auto-collapse and there is an active (previously-selected)
+     * section, all but the active section will be collapsed.
+     *
+     * @param isEnabled Whether the auto-collapse feature is enabled.
+     */
+    function onToggleAutoCollapse(isEnabled: boolean): void {
+        autoCollapse.value = isEnabled;
+
+        if (!isEnabled || !activeSectionId.value) {
+            return;
+        }
+
+        // Try to close all but the active section.
+        const activeSection = props.sections.find(s =>
+            s.anchor.value === activeSectionId.value
+        );
+
+        if (activeSection) {
+            onOpenSectionClick(activeSection);
+        }
+    }
+
+    /**
+     * Handles the "Expand All" menu item click.
+     * This will expand all sections.
+     */
+    function onExpandAllClick(): void {
+        if (autoCollapse.value) {
+            return;
+        }
+
+        props.sections.forEach(s => {
+            s.isCollapsed.value = false;
+        });
+    }
+
+    /**
+     * Handles the "Collapse All" menu item click.
+     * This will collapse all sections.
+     */
+    function onCollapseAllClick(): void {
+        if (autoCollapse.value) {
+            return;
+        }
+
+        props.sections.forEach(s => {
+            s.isCollapsed.value = true;
+        });
+    }
+
+    // #endregion Event Handlers
 
     watch(autoCollapse, () => {
         preferences.setValue("contentsection-auto-collapse", autoCollapse.value ? "true" : "false");
@@ -102,9 +292,39 @@
 
     onMounted((): void => {
         window.addEventListener("hashchange", onHashChange);
+        window.addEventListener("resize", updateMaxHeight, { passive: true });
+
+        // Watch for any document layout changes that could shift the nav's top
+        // position - e.g., dynamic content loading above the nav, sections
+        // expanding or collapsing, or the page header changing height. The
+        // `requestAnimationFrame()` guard inside updateMaxHeight ensures this
+        // stays efficient.
+        layoutObserver = new ResizeObserver(updateMaxHeight);
+        layoutObserver.observe(document.documentElement);
+
+        // Defer the initial height calculation until after Vue has flushed the
+        // current render pass. Sibling sections will be in the DOM by then, so
+        // getBoundingClientRect() returns the nav's true viewport position
+        // rather than its pre-content position near the top of the page.
+        nextTick(() => {
+            // Find the actual scroll container after the DOM has settled so we
+            // listen to the right element.
+            scrollContainer = navEl.value
+                ? findScrollContainer(navEl.value)
+                : window;
+
+            scrollContainer.addEventListener("scroll", updateMaxHeight, { passive: true } as EventListenerOptions);
+
+            updateMaxHeight();
+        });
     });
 
-    onBeforeMount((): void => {
+    onBeforeUnmount((): void => {
         window.removeEventListener("hashchange", onHashChange);
+        window.removeEventListener("resize", updateMaxHeight);
+        scrollContainer?.removeEventListener("scroll", updateMaxHeight);
+        scrollContainer = null;
+        layoutObserver?.disconnect();
+        layoutObserver = null;
     });
 </script>

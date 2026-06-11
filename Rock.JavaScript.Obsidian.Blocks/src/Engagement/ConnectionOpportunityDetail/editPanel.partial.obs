@@ -1,0 +1,393 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSectionContainer sidebar>
+
+        <NotificationBox v-if="showArchivedGroupWarning" :alertType="AlertType.Warning">
+            One or more placement groups on this opportunity have been archived.
+        </NotificationBox>
+
+        <ContentSection light>
+            <div class="basic-fields">
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="name" label="Name" rules="required" />
+                    </div>
+                    <div class="col-md-6">
+                        <CheckBox v-model="isActive" label="Active" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="publicName" label="Public Name" rules="required" />
+                    </div>
+                    <div class="col-md-4">
+                        <IconPicker v-model="iconCssClass" label="Icon" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-spacing-sm">
+                        <ImageUploader v-model="photo" label="Photo" :uploadAsTemporary="false"
+                                       :binaryFileTypeGuid="BinaryFiletype.Default" uploadButtonText="Upload"
+                                       :showDeleteButton="true" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <CampusPicker label="Campuses" v-model="campuses" displayStyle="condensed" multiple />
+                    </div>
+                </div>
+            </div>
+        </ContentSection>
+
+        <ContentSection title="Overview" icon="ti ti-list-details" :order="1">
+            <ContentStack title="Summary"
+                          description="The content shown as a public summary for this opportunity (e.g., in search results).">
+                <HtmlEditor v-model="summary" :editorHeight="234" :mergeFields="editorMergeFields" />
+            </ContentStack>
+
+            <ContentStack title="Details"
+                          description="The full details of this opportunity, displayed on the external website to help individuals learn more about it.">
+                <HtmlEditor v-model="description" :editorHeight="234" :mergeFields="editorMergeFields" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection v-if="showConfigureOpportunitySection" title="Configure Opportunity" icon="ti ti-settings" :order="2">
+
+            <ContentStack v-if="showRequestDueDates"
+                          title="Request Due Dates" description="Define the default due date for requests of this opportunity type and when a request should be considered “Due Soon”.">
+                <NumberBox label="Request Due Duration (In Days)" v-model="requestDueDateOffsetInDays"
+                           inputClasses="input-width-md" :rules="dueDurationRules"
+                           help="Defines how many days a request in this opportunity can remain open before it is considered due." />
+
+                <NumberBox label="Due Soon Window (In Days)" v-model="requestDueSoonOffsetInDays"
+                           inputClasses="input-width-md" :rules="dueSoonWindowRules"
+                           help="Defines the number of days before the due date during which a request in this opportunity is considered due soon." />
+            </ContentStack>
+
+            <ContentStack v-if="hasAttributes" title="Opportunity Attributes"
+                          description="Configure the attributes specifically related to this connection opportunity. These are managed in the Connection Type settings.">
+                <div class="opportunity-attributes-style">
+                    <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode
+                                              :numberOfColumns="1" />
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection v-if="store.state.trailblazerMode" title="Request Attributes" icon="ti ti-binary-tree-2" :order="3">
+            <ConnectionRequestAttributes v-model:connectionRequestAttributes="connectionRequestAttributes"
+                                         :inheritedConnectionRequestAttributes="inheritedConnectionRequestAttributes"
+                                         :options="props.options"
+                                         :connectionTypeName="props.modelValue.bag?.connectionTypeName ?? ''"
+                                         :connectionTypeUrl="props.modelValue.bag?.connectionTypeUrl ?? ''" />
+        </ContentSection>
+
+        <ContentSection v-if="props.options.isGroupPlacementEnabled" title="Placement Groups" icon="ti ti-route-square" :order="4">
+            <PlacementGroups v-model:placementGroupSectionData="placementGroupsSectionData" @hasArchivedGroup="handleArchivedGroup" />
+        </ContentSection>
+
+        <ContentSection title="Connector Groups" icon="ti ti-users-group" :order="5">
+            <ConnectorGroups v-model:connectorGroups="connectorGroups"
+                             v-model:defaultConnectorsForCampus="defaultConnectorsForCampus"
+                             :campuses="campuses" />
+        </ContentSection>
+
+        <ContentSection v-if="store.state.trailblazerMode" title="Workflows" icon="ti ti-settings-cog" :order="6">
+            <Workflows v-model:connectionWorkflows="connectionWorkflows"
+                       :inheritedConnectionWorkflows="inheritedConnectionWorkflows"
+                       :connectionTypeName="props.modelValue.bag?.connectionTypeName ?? ''"
+                       :connectionTypeUrl="props.modelValue.bag?.connectionTypeUrl ?? ''" :options="props.options" />
+        </ContentSection>
+
+        <ContentSection v-if="store.state.trailblazerMode" title="Advanced Settings" icon="ti ti-adjustments-cog" :order="7">
+            <ContentStack title="Configurable Options"
+                          description="Select which options to show on the Connection Request for this opportunity type.">
+                <div class="inline-checkbox-bold">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <InlineCheckBox label="Show Status On Transfer" v-model="showStatusOnTransfer"
+                                            help="When enabled, the status field will be shown. Otherwise, the status will not be changeable and will remain the same after the transfer. This allows for workflow logic to change the status and not allow the individual to change it." />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <InlineCheckBox label="Show Campus On Transfer" v-model="showCampusOnTransfer"
+                                            help="When enabled, the transfer modal will display a campus dropdown when transferring a connection request to a different opportunity." />
+                        </div>
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+    </ContentSectionContainer>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { useStore } from "@Obsidian/PageState";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import { ConnectionOpportunityBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/connectionOpportunityBag";
+    import { ConnectionOpportunityDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/connectionOpportunityDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import ConnectionRequestAttributes from "./connectionRequestAttributes.partial.obs";
+    import PlacementGroups from "./placementGroupSection.partial.obs";
+    import ConnectorGroups from "./connectorGroups.partial.obs";
+    import Workflows from "./workflows.partial.obs";
+    import { PlacementGroupConfigBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/placementGroupConfigBag";
+    import { PlacementGroupSectionData } from "./types.partial";
+    import { PlacementGroupBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/placementGroupBag";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { DueDateCalculationMode } from "@Obsidian/Enums/Connection/dueDateCalculationMode";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<ConnectionOpportunityBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<ConnectionOpportunityDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<ConnectionOpportunityBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const campuses = propertyRef(props.modelValue.bag?.campuses ?? [], "Campuses");
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const publicName = propertyRef(props.modelValue.bag?.publicName ?? "", "PublicName");
+    const iconCssClass = propertyRef(props.modelValue.bag?.iconCssClass ?? "", "IconCssClass");
+    const photo = propertyRef(props.modelValue.bag?.photo ?? null, "Photo");
+    const summary = propertyRef(props.modelValue.bag?.summary ?? "", "Summary");
+    const showStatusOnTransfer = propertyRef(props.modelValue.bag?.showStatusOnTransfer ?? false, "ShowStatusOnTransfer");
+    const showCampusOnTransfer = propertyRef(props.modelValue.bag?.showCampusOnTransfer ?? false, "ShowCampusOnTransfer");
+    const requestDueDateOffsetInDays = propertyRef(props.modelValue.bag?.requestDueDateOffsetInDays ?? 0, "RequestDueDateOffsetInDays");
+    const requestDueSoonOffsetInDays = propertyRef(props.modelValue.bag?.requestDueSoonOffsetInDays ?? 0, "RequestDueSoonOffsetInDays");
+    const store = useStore();
+
+    const connectionRequestAttributes = propertyRef(props.modelValue?.bag?.connectionRequestAttributes ?? [], "ConnectionRequestAttributes");
+    const inheritedConnectionRequestAttributes = ref(props.modelValue?.bag?.inheritedConnectionRequestAttributes ?? []);
+    const placementGroupConfigs = propertyRef(props.modelValue.bag?.placementGroupConfigs ?? [], "PlacementGroupConfigs");
+    const placementGroups = propertyRef(props.modelValue.bag?.placementGroups ?? [], "PlacementGroups");
+    const connectorGroups = propertyRef(props.modelValue.bag?.connectorGroups ?? [], "ConnectorGroups");
+    const defaultConnectorsForCampus = propertyRef(props.modelValue.bag?.defaultConnectors ?? {}, "DefaultConnectors");
+    const connectionWorkflows = propertyRef(props.modelValue.bag?.connectionWorkflows ?? [], "ConnectionWorkflows");
+    const inheritedConnectionWorkflows = ref(props.modelValue.bag?.inheritedConnectionWorkflows ?? []);
+
+    // Merge fields available to the Summary and Details HtmlEditors
+    const editorMergeFields = [
+        "GlobalAttribute",
+        "Rock.Model.Person",
+        "Rock.Model.ConnectionOpportunity|Connection Opportunity",
+        "Rock.Model.ConnectionType|Connection Type",
+        "Rock.Model.Campus|Campus"
+    ];
+
+    const showArchivedGroupWarning = ref<boolean>(false);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [campuses, description, isActive, name, publicName, iconCssClass, photo, summary, showStatusOnTransfer,
+        showCampusOnTransfer, connectionRequestAttributes, placementGroupConfigs, placementGroups, connectorGroups,
+        defaultConnectorsForCampus, connectionWorkflows, requestDueDateOffsetInDays, requestDueSoonOffsetInDays];
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const hasAttributes = computed((): boolean => {
+        return Object.keys(attributes.value).length > 0;
+    });
+
+    // Combined object for PlacementGroups partial (configs + groups)
+    const placementGroupsSectionData = computed<PlacementGroupSectionData>({
+        get: () => ({
+            configs: placementGroupConfigs.value,
+            groups: placementGroups.value
+        }),
+        set: (val: { configs: PlacementGroupConfigBag[]; groups: PlacementGroupBag[] }) => {
+            placementGroupConfigs.value = (val?.configs ?? []);
+            placementGroups.value = (val?.groups ?? []);
+        }
+    });
+
+    /*
+        2/18/2026 - MSE
+
+        The "Due Soon Window" field must also validate against the "Due Duration" field.
+        However, validation only re-runs when that field’s own modelValue changes.
+
+        This computed property exists to force re-validation of the "Due Soon Window"
+        in the case where the "Due Duration" value changes.
+
+        This ensures a validation error appears when:
+        - Due Duration is reduced below the current Due Soon Window value, or
+        - Due Soon Window is increased above the current Due Duration value.
+
+        TL;DR... the error will be shown on the "Due Soon Window" field, no matter
+        which field was changed to cause the validation failure.
+    */
+    const dueSoonWindowRules = computed((): (ValidationRuleFunction | string)[] => {
+        void requestDueDateOffsetInDays.value;
+        return ["required", validateDueSoonWindow];
+    });
+
+    const dueDurationRules = computed((): (ValidationRuleFunction | string)[] => {
+        return ["required", validateDueDuration];
+    });
+
+    const showRequestDueDates = computed((): boolean => {
+        return props.options.dueDateCalculationMode === DueDateCalculationMode.FixedDaysFromStartOpportunityLevel;
+    });
+
+    const showConfigureOpportunitySection = computed((): boolean => {
+        return showRequestDueDates.value || hasAttributes.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Displays a warning message if one or more of the placement groups associated with this opportunity are archived.
+     */
+    function handleArchivedGroup(): void {
+        showArchivedGroupWarning.value = true;
+    }
+
+    /**
+     * Validates the Due Duration field.
+     * The value is required and must be greater than 0.
+     */
+    const validateDueDuration: ValidationRuleFunction = (value): ValidationResult => {
+        if (typeof value !== "number" && typeof value !== "string") {
+            return "Invalid value provided.";
+        }
+
+        const dueDuration = toNumber(value);
+
+        // Required & positive
+        if (dueDuration <= 0) {
+            return "A number greater than 0 must be provided.";
+        }
+
+        return true;
+    };
+
+    /**
+     * Validates the Due Soon Window field.
+     * The value is required, must be greater than 0, and cannot exceed the
+     * Due Duration value.
+     */
+    const validateDueSoonWindow: ValidationRuleFunction = (value): ValidationResult => {
+        if (typeof value !== "number" && typeof value !== "string") {
+            return "Invalid value provided.";
+        }
+
+        const dueSoonWindow = toNumber(value);
+        const dueDuration = toNumber(requestDueDateOffsetInDays.value);
+
+        // Required & positive
+        if (dueSoonWindow <= 0) {
+            return "A number greater than 0 must be provided.";
+        }
+
+        // Must not exceed Due Duration
+        if (dueDuration > 0 && dueSoonWindow > dueDuration) {
+            return "This value must be less than the Request Due Duration.";
+        }
+
+        return true;
+    };
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    // #endregion Event Handlers
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(campuses, props.modelValue.bag?.campuses ?? []);
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? false);
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(publicName, props.modelValue.bag?.publicName ?? "");
+        updateRefValue(iconCssClass, props.modelValue.bag?.iconCssClass ?? "");
+        updateRefValue(photo, props.modelValue.bag?.photo ?? null);
+        updateRefValue(summary, props.modelValue.bag?.summary ?? "");
+        updateRefValue(connectionRequestAttributes, props.modelValue?.bag?.connectionRequestAttributes ?? []);
+        updateRefValue(inheritedConnectionRequestAttributes, props.modelValue?.bag?.inheritedConnectionRequestAttributes ?? []);
+        updateRefValue(placementGroupConfigs, props.modelValue.bag?.placementGroupConfigs ?? []);
+        updateRefValue(placementGroups, props.modelValue.bag?.placementGroups ?? []);
+        updateRefValue(connectorGroups, props.modelValue.bag?.connectorGroups ?? []);
+        updateRefValue(defaultConnectorsForCampus, props.modelValue.bag?.defaultConnectors ?? {});
+        updateRefValue(connectionWorkflows, props.modelValue.bag?.connectionWorkflows ?? []);
+        updateRefValue(inheritedConnectionWorkflows, props.modelValue.bag?.inheritedConnectionWorkflows ?? []);
+        updateRefValue(showStatusOnTransfer, props.modelValue.bag?.showStatusOnTransfer ?? false);
+        updateRefValue(showCampusOnTransfer, props.modelValue.bag?.showCampusOnTransfer ?? false);
+        updateRefValue(requestDueDateOffsetInDays, props.modelValue.bag?.requestDueDateOffsetInDays ?? 0);
+        updateRefValue(requestDueSoonOffsetInDays, props.modelValue.bag?.requestDueSoonOffsetInDays ?? 0);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<ConnectionOpportunityBag> = {
+            bag: { ...props.modelValue.bag } as ConnectionOpportunityBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "campuses", campuses.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "publicName", publicName.value);
+        setPropertiesBoxValue(newValue, "iconCssClass", iconCssClass.value);
+        setPropertiesBoxValue(newValue, "photo", photo.value);
+        setPropertiesBoxValue(newValue, "summary", summary.value);
+        setPropertiesBoxValue(newValue, "connectionRequestAttributes", connectionRequestAttributes.value);
+        setPropertiesBoxValue(newValue, "placementGroupConfigs", placementGroupConfigs.value);
+        setPropertiesBoxValue(newValue, "placementGroups", placementGroups.value);
+        setPropertiesBoxValue(newValue, "connectorGroups", connectorGroups.value);
+        setPropertiesBoxValue(newValue, "defaultConnectors", defaultConnectorsForCampus.value);
+        setPropertiesBoxValue(newValue, "connectionWorkflows", connectionWorkflows.value);
+        setPropertiesBoxValue(newValue, "showStatusOnTransfer", showStatusOnTransfer.value);
+        setPropertiesBoxValue(newValue, "showCampusOnTransfer", showCampusOnTransfer.value);
+        setPropertiesBoxValue(newValue, "requestDueDateOffsetInDays", requestDueDateOffsetInDays.value);
+        setPropertiesBoxValue(newValue, "requestDueSoonOffsetInDays", requestDueSoonOffsetInDays.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

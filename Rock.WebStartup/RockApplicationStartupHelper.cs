@@ -45,7 +45,9 @@ using Rock.Model;
 using Rock.Net;
 using Rock.Net.Geolocation;
 using Rock.Observability;
+using Rock.Utility.CaptchaApi;
 using Rock.Utility.Settings;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.WebFarm;
@@ -127,7 +129,25 @@ namespace Rock.WebStartup
             LogStartupMessage( "Checking for EntityFramework Migrations" );
             var runMigrationFileInfo = new FileInfo( System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data\\Run.Migration" ) );
             bool hasPendingEFMigrations = runMigrationFileInfo.Exists || HasPendingEFMigrations();
+            var (isNewInstallation, installationDateTime) = IsNewInstallation();
+
+            // If we have an install datetime and this is not a new installation,
+            // then we need to set the installation datetime before running
+            // migrations. This way they know it is an upgrade.
+            if ( installationDateTime.HasValue && !isNewInstallation )
+            {
+                SetInstallationDateTime( installationDateTime.Value );
+            }
+
             bool ranEFMigrations = MigrateDatabase( hasPendingEFMigrations );
+
+            // If we have an install datetime and this IS a new installation,
+            // then we set the install datetime after running migrations so
+            // that the migrations know it is a new install.
+            if ( installationDateTime.HasValue && isNewInstallation )
+            {
+                SetInstallationDateTime( installationDateTime.Value );
+            }
 
             if ( ranEFMigrations )
             {
@@ -332,12 +352,17 @@ namespace Rock.WebStartup
             sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
             sc.AddSingleton<IHostingSettings, HostingSettings>();
             sc.AddSingleton<IChatProvider, StreamChatProvider>();
+            sc.AddSingleton<ICaptchaProvider, CaptchaProofOfWorkProvider>();
             sc.AddSingleton<IRockRequestContextAccessor, RockRequestContextAccessor>();
             sc.AddSingleton<IWebHostEnvironment>( provider => new Utility.WebHostEnvironment
             {
                 WebRootPath = AppDomain.CurrentDomain.BaseDirectory
             } );
             sc.AddSingleton<MetadataHelper>();
+            sc.AddSingleton<ObsidianFingerprintManager>();
+            sc.AddSingleton<CssProcessor>();
+            sc.AddSingleton<ILavaEngineFactory, LavaEngineFactory>();
+            sc.AddSingleton<DebugTraceObserver>();
 
             sc.AddScoped<RockContext>();
 
@@ -529,13 +554,84 @@ namespace Rock.WebStartup
                 try
                 {
                     var startupException = new RockStartupException( "Error sending version update notifications", ex );
-                    LogError( startupException, null );
+                    LogError( startupException );
                     ExceptionLogService.LogException( startupException, null );
                 }
                 catch
                 {
                     // ignore
                 }
+            }
+        }
+
+        /// <summary>
+        /// <para>
+        /// Determines whether this startup is for a new installation. This is
+        /// done by checking if the RockInstanceId attribute exists and has a
+        /// CreatedDateTime. If not then we do some additional checks on when the
+        /// Person table was created to determine if this is a new installation.
+        /// </para>
+        /// <para>
+        /// If a DateTime value is returned, it should be used to set the
+        /// installation date time for this instance. In this case, if <c>true</c>
+        /// is returned, then the CreatedDateTime value should be set after all
+        /// the migrations have run. If <c>false</c> is returned, then the value
+        /// should be set before the migrations have run.
+        /// </para>
+        /// </summary>
+        /// <returns><c>true</c> if this is a new installation, along with a DateTime value to use for the installation.</returns>
+        private static (bool, DateTime?) IsNewInstallation()
+        {
+            try
+            {
+                // Check if we already have an install datetime saved in the
+                // database. If so, then this is not a new installation.
+                var installDateTime = DbService.ExecuteScalar(
+                    @"SELECT [CreatedDateTime]
+                    FROM [Attribute]
+                    WHERE [Key] = 'RockInstanceId' AND [EntityTypeQualifierColumn] = 'SystemSetting'" ) as DateTime?;
+
+                if ( installDateTime.HasValue )
+                {
+                    return (false, null);
+                }
+
+                // No existing value. This means we are either a new installation,
+                // or an existing installation that is being started for the
+                // first time with this new logic. To determine which, check when
+                // the Person table was created compared to the current SQL time.
+                installDateTime = DbService.ExecuteScalar(
+                    @"SELECT [create_date]
+                    FROM [sys].[tables]
+                    WHERE [name] = 'Person';" ) as DateTime?;
+                var sqlDateTime = DbService.ExecuteScalar( "SELECT GETDATE();" ) as DateTime?;
+
+                // If the Person table was created within the last 2 hours,
+                // then assume this is a new installation.
+                if ( installDateTime.HasValue && sqlDateTime.HasValue )
+                {
+                    var timeDifference = sqlDateTime.Value - installDateTime.Value;
+
+                    if ( timeDifference.TotalMinutes <= 120 )
+                    {
+                        return (true, installDateTime.Value);
+                    }
+                    else
+                    {
+                        return (false, installDateTime.Value);
+                    }
+                }
+
+                // If the Person table has not been created, then this is for
+                // sure a new installation.
+                return (false, RockDateTime.Now);
+            }
+            catch
+            {
+                // If we run into an error, then assume it is a new installation
+                // since the error probably indicates that the database is not yet
+                // initialized.
+                return (true, RockDateTime.Now);
             }
         }
 
@@ -556,10 +652,10 @@ namespace Rock.WebStartup
              */
 
             // First see if the _MigrationHistory table exists. If it doesn't, then this is probably an empty database.
-            var _migrationHistoryTableExists = false;
+            var migrationHistoryTableExists = false;
             try
             {
-                _migrationHistoryTableExists = DbService.ExecuteScalar(
+                migrationHistoryTableExists = DbService.ExecuteScalar(
                     @"SELECT convert(bit, 1) [Exists] 
                     FROM INFORMATION_SCHEMA.TABLES
                     WHERE TABLE_SCHEMA = 'dbo'
@@ -571,7 +667,7 @@ namespace Rock.WebStartup
                 {
                     // This pretty much means the database does not exist, so we'll need to assume there are pending migrations
                     // (such as the create database migration) that need to run first.
-                    _migrationHistoryTableExists = false;
+                    migrationHistoryTableExists = false;
                 }
                 else
                 {
@@ -579,7 +675,7 @@ namespace Rock.WebStartup
                 }
             }
 
-            if ( !_migrationHistoryTableExists )
+            if ( !migrationHistoryTableExists )
             {
                 // _MigrationHistory table doesn't exist, so we need to run EF Migrations
                 return true;
@@ -597,6 +693,26 @@ namespace Rock.WebStartup
 
             // if they aren't the same, run EF Migrations
             return lastDbMigrationId != lastRockMigrationId;
+        }
+
+        /// <summary>
+        /// Sets the installation date and time for the Rock instance in the system settings database.
+        /// </summary>
+        /// <remarks>This method updates the 'CreatedDateTime' field for the system setting identified by
+        /// 'RockInstanceId'. Use this method to initialize or modify the installation timestamp for the application
+        /// instance.</remarks>
+        /// <param name="installationDateTime">The date and time to record as the installation timestamp. Represents the value to be stored in the
+        /// database.</param>
+        private static void SetInstallationDateTime( DateTime installationDateTime )
+        {
+            DbService.ExecuteCommand( @"UPDATE [Attribute]
+                SET [CreatedDateTime] = @Date
+                WHERE [Key] = 'RockInstanceId' AND [EntityTypeQualifierColumn] = 'SystemSetting'",
+                System.Data.CommandType.Text,
+                new Dictionary<string, object>
+                {
+                    ["@Date"] = installationDateTime
+                } );
         }
 
         /// <summary>
@@ -878,7 +994,7 @@ namespace Rock.WebStartup
                                     sqlTxn.Rollback();
                                 }
 
-                                throw new RockStartupException( $"##Plugin Migration error occurred in {migrationNumber}, {migrationType.Name}##", ex );
+                                throw new RockStartupException( $"## {pluginAssemblyName} Plugin Migration error occurred in {migrationNumber}, {migrationType.Name}##", ex );
                             }
                         }
                     }
@@ -889,14 +1005,14 @@ namespace Rock.WebStartup
                 // if a plugin migration got an error, it gets wrapped with a RockStartupException
                 // If this occurs, we'll log the migration that occurred,  and stop running migrations for this assembly
                 System.Diagnostics.Debug.WriteLine( rockStartupException.Message );
-                LogError( rockStartupException, null );
+                LogError( rockStartupException );
             }
             catch ( Exception ex )
             {
                 // If an exception occurs in an an assembly, log the error, and stop running migrations for this assembly
                 var startupException = new RockStartupException( $"Error running migrations from {pluginAssemblyName}" );
                 System.Diagnostics.Debug.WriteLine( startupException.Message );
-                LogError( ex, null );
+                LogError( ex );
             }
 
             return result;
@@ -1112,7 +1228,7 @@ AS
     CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedTextValue] ELSE [A].[DefaultPersistedCondensedTextValue] END AS [PersistedCondensedTextValue],
     CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedHtmlValue] ELSE [A].[DefaultPersistedCondensedHtmlValue] END AS [PersistedCondensedHtmlValue],
     CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[IsPersistedValueDirty] ELSE [A].[IsDefaultPersistedValueDirty] END AS [IsPersistedValueDirty],
-    CASE WHEN ISNULL([AV].[Value], '') != '' THEN 0 ELSE CHECKSUM(ISNULL([A].[DefaultValue], '')) END AS [ValueChecksum]
+    CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[ValueChecksum] ELSE [A].[DefaultValueChecksum] END AS [ValueChecksum]
 FROM [{entityTableName}] AS [E]
 CROSS JOIN [Attribute] AS [A]
 LEFT OUTER JOIN [AttributeValue] AS [AV] ON [AV].[AttributeId] = [A].[Id] AND [AV].[EntityId] = [E].[Id]{additionalJoins}
@@ -1158,7 +1274,7 @@ FROM
             CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedTextValue] ELSE [A].[DefaultPersistedCondensedTextValue] END AS [PersistedCondensedTextValue],
             CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedHtmlValue] ELSE [A].[DefaultPersistedCondensedHtmlValue] END AS [PersistedCondensedHtmlValue],
             CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[IsPersistedValueDirty] ELSE [A].[IsDefaultPersistedValueDirty] END AS [IsPersistedValueDirty],
-            CASE WHEN ISNULL([AV].[Value], '') != '' THEN 0 ELSE CHECKSUM(ISNULL([A].[DefaultValue], '')) END AS [ValueChecksum]
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[ValueChecksum] ELSE [A].[DefaultValueChecksum] END AS [ValueChecksum]
         FROM [EventItem] AS [E]
         CROSS JOIN [Attribute] AS [A]
         LEFT OUTER JOIN [AttributeValue] AS [AV] ON [AV].[AttributeId] = [A].[Id] AND [AV].[EntityId] = [E].[Id]
@@ -1179,7 +1295,7 @@ FROM
             CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedTextValue] ELSE [A].[DefaultPersistedCondensedTextValue] END AS [PersistedCondensedTextValue],
             CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedHtmlValue] ELSE [A].[DefaultPersistedCondensedHtmlValue] END AS [PersistedCondensedHtmlValue],
             CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[IsPersistedValueDirty] ELSE [A].[IsDefaultPersistedValueDirty] END AS [IsPersistedValueDirty],
-            CASE WHEN ISNULL([AV].[Value], '') != '' THEN 0 ELSE CHECKSUM(ISNULL([A].[DefaultValue], '')) END AS [ValueChecksum]
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[ValueChecksum] ELSE [A].[DefaultValueChecksum] END AS [ValueChecksum]
         FROM [EventItem] AS [E]
         INNER JOIN [EventCalendarItem] AS [ECI] ON [ECI].[EventItemId] = [E].[Id]
         CROSS JOIN [Attribute] AS [A]
@@ -1221,18 +1337,9 @@ WHERE [PQ].[row_number] = 1
         /// </summary>
         private static void InitializeLava()
         {
-            // Get the Lava Engine configuration settings.
-            Type engineType = null;
-
-            // The Fluid Engine is the default engine for Rock v17 and above.
-            engineType = typeof( FluidEngine );
-
             InitializeLavaEngines();
 
-            if ( engineType != null )
-            {
-                InitializeGlobalLavaEngineInstance( engineType );
-            }
+            InitializeGlobalLavaEngineInstance();
         }
 
         private static void InitializeLavaEngines()
@@ -1240,11 +1347,7 @@ WHERE [PQ].[row_number] = 1
             // Register the Fluid Engine factory.
             LavaService.RegisterEngine( ( engineServiceType, options ) =>
             {
-                var fluidEngine = new FluidEngine();
-
-                InitializeLavaEngineInstance( fluidEngine, options as LavaEngineConfigurationOptions );
-
-                return fluidEngine;
+                return RockApp.Current.GetRequiredService<ILavaEngineFactory>().CreateEngine( options as LavaEngineConfigurationOptions );
             } );
         }
 
@@ -1267,187 +1370,22 @@ WHERE [PQ].[row_number] = 1
         /// <summary>
         /// Initialize the global Lava Engine instance.
         /// </summary>
-        /// <param name="engineType"></param>
-        private static void InitializeGlobalLavaEngineInstance( Type engineType )
+        private static void InitializeGlobalLavaEngineInstance()
         {
             // Initialize the Lava engine.
             var options = GetDefaultEngineConfiguration();
 
-            LavaService.SetCurrentEngine( engineType, options );
+            LavaService.SetCurrentEngine( typeof( ILavaEngine ), options );
 
             // Subscribe to exception notifications from the Lava Engine.
             var engine = LavaService.GetCurrentEngine();
 
             engine.ExceptionEncountered += Engine_ExceptionEncountered;
-
-            InitializeLavaEngineInstance( engine, options );
-        }
-
-        /// <summary>
-        /// Initialize a specific Lava Engine instance.
-        /// </summary>
-        /// <param name="engine"></param>
-        /// <param name="options"></param>
-        private static void InitializeLavaEngineInstance( ILavaEngine engine, LavaEngineConfigurationOptions options )
-        {
-            options = options ?? GetDefaultEngineConfiguration();
-
-            InitializeLavaFilters( engine );
-            InitializeLavaTags( engine );
-            InitializeLavaBlocks( engine );
-
-            if ( options.InitializeDynamicShortcodes )
-            {
-                InitializeLavaShortcodes( engine );
-            }
-
-            InitializeLavaSafeTypes( engine );
-
-            engine.Initialize( options );
         }
 
         private static void Engine_ExceptionEncountered( object sender, LavaEngineExceptionEventArgs e )
         {
             ExceptionLogService.LogException( e.Exception, System.Web.HttpContext.Current );
-        }
-
-        private static void InitializeLavaFilters( ILavaEngine engine )
-        {
-            // Register the common Rock.Lava filters first, then overwrite with the engine-specific filters.
-            engine.RegisterFilters( typeof( Rock.Lava.Filters.TemplateFilters ) );
-            engine.RegisterFilters( typeof( Rock.Lava.LavaFilters ) );
-        }
-
-        private static void InitializeLavaShortcodes( ILavaEngine engine )
-        {
-            // Register shortcodes defined in the codebase.
-            try
-            {
-                var shortcodeTypes = Rock.Reflection.FindTypes( typeof( ILavaShortcode ) ).Select( a => a.Value ).ToList();
-
-                foreach ( var shortcodeType in shortcodeTypes )
-                {
-                    // Create an instance of the shortcode to get the registration name.
-                    var instance = Activator.CreateInstance( shortcodeType ) as ILavaShortcode;
-
-                    var name = instance.SourceElementName;
-
-                    if ( string.IsNullOrWhiteSpace( name ) )
-                    {
-                        name = shortcodeType.Name;
-                    }
-
-                    // Register the shortcode with a factory method to create a new instance of the shortcode from the System.Type defined in the codebase.
-                    engine.RegisterShortcode( name, ( shortcodeName ) =>
-                    {
-                        var shortcode = Activator.CreateInstance( shortcodeType ) as ILavaShortcode;
-
-                        return shortcode;
-                    } );
-                }
-            }
-            catch ( Exception ex )
-            {
-                ExceptionLogService.LogException( ex, null );
-            }
-
-            // Register shortcodes defined in the current database.
-            var shortCodes = LavaShortcodeCache.All();
-
-            foreach ( var shortcode in shortCodes )
-            {
-                // Register the shortcode with the current Lava Engine.
-                // The provider is responsible for retrieving the shortcode definition from the data store and managing the web-based shortcode cache.
-                WebsiteLavaShortcodeProvider.RegisterShortcode( engine, shortcode.TagName );
-            }
-        }
-
-        private static void InitializeLavaTags( ILavaEngine engine )
-        {
-            // Get all tags and call OnStartup methods
-            try
-            {
-                var elementTypes = Rock.Reflection.FindTypes( typeof( ILavaTag ) ).Select( a => a.Value ).ToList();
-
-                foreach ( var elementType in elementTypes )
-                {
-                    var instance = Activator.CreateInstance( elementType ) as ILavaTag;
-
-                    var name = instance.SourceElementName;
-
-                    if ( string.IsNullOrWhiteSpace( name ) )
-                    {
-                        name = elementType.Name;
-                    }
-
-                    engine.RegisterTag( name, ( tagName ) =>
-                    {
-                        var tag = Activator.CreateInstance( elementType ) as ILavaTag;
-                        return tag;
-                    } );
-
-                    try
-                    {
-                        instance.OnStartup( engine );
-                    }
-                    catch ( Exception ex )
-                    {
-                        var lavaException = new Exception( string.Format( "Lava component initialization failure. Startup failed for Lava Tag \"{0}\".", elementType.FullName ), ex );
-
-                        ExceptionLogService.LogException( lavaException, null );
-                    }
-                }
-            }
-            catch ( Exception ex )
-            {
-                ExceptionLogService.LogException( ex, null );
-            }
-        }
-
-        private static void InitializeLavaBlocks( ILavaEngine engine )
-        {
-            // Get all blocks and call OnStartup methods
-            try
-            {
-                var blockTypes = Rock.Reflection.FindTypes( typeof( ILavaBlock ) ).Select( a => a.Value ).ToList();
-
-                foreach ( var blockType in blockTypes )
-                {
-                    var blockInstance = Activator.CreateInstance( blockType ) as ILavaBlock;
-
-                    engine.RegisterBlock( blockInstance.SourceElementName, ( blockName ) =>
-                    {
-                        return Activator.CreateInstance( blockType ) as ILavaBlock;
-                    } );
-
-                    try
-                    {
-                        blockInstance.OnStartup( engine );
-                    }
-                    catch ( Exception ex )
-                    {
-                        ExceptionLogService.LogException( ex, null );
-                    }
-
-                }
-            }
-            catch ( Exception ex )
-            {
-                ExceptionLogService.LogException( ex, null );
-            }
-        }
-
-        /// <summary>
-        /// Initializes the lava safe types on the engine. This takes care
-        /// of special types that we don't have direct access to so we can't
-        /// add the proper interfaces to them.
-        /// </summary>
-        /// <param name="engine">The engine.</param>
-        private static void InitializeLavaSafeTypes( ILavaEngine engine )
-        {
-            engine.RegisterSafeType( typeof( Common.Mobile.DeviceData ) );
-            engine.RegisterSafeType( typeof( Utility.RockColor ) );
-            engine.RegisterSafeType( typeof( Utilities.ColorPair ) );
         }
 
         #endregion
@@ -1458,39 +1396,9 @@ WHERE [PQ].[row_number] = 1
         /// Logs the error to database (or filesystem if database isn't available)
         /// </summary>
         /// <param name="ex">The ex.</param>
-        /// <param name="context">The context.</param>
-        private static void LogError( Exception ex, HttpContext context )
+        private static void LogError( Exception ex )
         {
-            int? pageId;
-            int? siteId;
-            PersonAlias personAlias = null;
-
-            if ( context == null )
-            {
-                pageId = null;
-                siteId = null;
-            }
-            else
-            {
-                var pid = context.Items["Rock:PageId"];
-                pageId = pid != null ? int.Parse( pid.ToString() ) : ( int? ) null;
-                var sid = context.Items["Rock:SiteId"];
-                siteId = sid != null ? int.Parse( sid.ToString() ) : ( int? ) null;
-                try
-                {
-                    var user = UserLoginService.GetCurrentUser();
-                    if ( user != null && user.Person != null )
-                    {
-                        personAlias = user.Person.PrimaryAlias;
-                    }
-                }
-                catch
-                {
-                    // Intentionally left blank
-                }
-            }
-
-            ExceptionLogService.LogException( ex, context, pageId, siteId, personAlias );
+            ExceptionLogService.LogException( ex, null );
         }
 
         /// <summary>

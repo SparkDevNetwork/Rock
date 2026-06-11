@@ -8,7 +8,6 @@ using Rock.Core.Automation.Triggers;
 using Rock.Data;
 using Rock.Enums.Core.Automation.Triggers;
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Utility.Enums;
 using Rock.ViewModels.Core.Automation.Triggers;
 
@@ -32,7 +31,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         #endregion
@@ -54,7 +53,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsTrue( result );
+            Assert.IsTrue( result );
         }
 
         [TestMethod]
@@ -72,7 +71,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -90,7 +89,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         #endregion
@@ -110,7 +109,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -134,7 +133,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -158,7 +157,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -182,7 +181,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsTrue( result );
+            Assert.IsTrue( result );
         }
 
         [TestMethod]
@@ -203,7 +202,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         #endregion
@@ -223,7 +222,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -247,7 +246,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -271,7 +270,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -295,7 +294,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsTrue( result );
+            Assert.IsTrue( result );
         }
 
         [TestMethod]
@@ -316,7 +315,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         #endregion
@@ -336,7 +335,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -357,7 +356,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -376,7 +375,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -397,7 +396,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsTrue( result );
+            Assert.IsTrue( result );
         }
 
         #endregion
@@ -417,7 +416,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -444,7 +443,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -471,7 +470,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -498,7 +497,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -522,7 +521,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -549,7 +548,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsTrue( result );
+            Assert.IsTrue( result );
         }
 
         #endregion
@@ -561,7 +560,7 @@ namespace Rock.Tests.Core.Automation.Triggers
         {
             var result = EntityChangeCriteriaRule.ParseValue( typeof( Group ), "UnknownName", "value" );
 
-            Assert.That.IsNull( result );
+            Assert.IsNull( result );
         }
 
         [TestMethod]
@@ -569,7 +568,7 @@ namespace Rock.Tests.Core.Automation.Triggers
         {
             var result = EntityChangeCriteriaRule.ParseValue( typeof( Group ), nameof( Group.Name ), null );
 
-            Assert.That.IsNull( result );
+            Assert.IsNull( result );
         }
 
         [TestMethod]
@@ -577,7 +576,7 @@ namespace Rock.Tests.Core.Automation.Triggers
         {
             var result = EntityChangeCriteriaRule.ParseValue( typeof( Group ), nameof( Group.Name ), "" );
 
-            Assert.That.IsNull( result );
+            Assert.IsNull( result );
         }
 
         [TestMethod]
@@ -585,7 +584,7 @@ namespace Rock.Tests.Core.Automation.Triggers
         {
             var result = EntityChangeCriteriaRule.ParseValue( typeof( Group ), nameof( Group.ElevatedSecurityLevel ), "Invalid" );
 
-            Assert.That.IsNull( result );
+            Assert.IsNull( result );
         }
 
         [TestMethod]
@@ -593,7 +592,7 @@ namespace Rock.Tests.Core.Automation.Triggers
         {
             var result = EntityChangeCriteriaRule.ParseValue( typeof( Group ), nameof( Group.ElevatedSecurityLevel ), "1" );
 
-            Assert.That.AreEqual( typeof( ElevatedSecurityLevel ), result.GetType() );
+            Assert.AreEqual( typeof( ElevatedSecurityLevel ), result.GetType() );
         }
 
         [TestMethod]
@@ -601,7 +600,7 @@ namespace Rock.Tests.Core.Automation.Triggers
         {
             var result = EntityChangeCriteriaRule.ParseValue( typeof( Group ), nameof( Group.ElevatedSecurityLevel ), "1" );
 
-            Assert.That.AreEqual( ElevatedSecurityLevel.High, result );
+            Assert.AreEqual( ElevatedSecurityLevel.High, result );
         }
 
         [TestMethod]
@@ -609,7 +608,7 @@ namespace Rock.Tests.Core.Automation.Triggers
         {
             var result = EntityChangeCriteriaRule.ParseValue( typeof( Group ), nameof( Group.ElevatedSecurityLevel ), "High" );
 
-            Assert.That.AreEqual( ElevatedSecurityLevel.High, result );
+            Assert.AreEqual( ElevatedSecurityLevel.High, result );
         }
 
         [TestMethod]
@@ -617,7 +616,7 @@ namespace Rock.Tests.Core.Automation.Triggers
         {
             var result = EntityChangeCriteriaRule.ParseValue( typeof( Group ), nameof( Group.Id ), "123" );
 
-            Assert.That.AreEqual( 123, result );
+            Assert.AreEqual( 123, result );
         }
 
         [TestMethod]
@@ -625,7 +624,7 @@ namespace Rock.Tests.Core.Automation.Triggers
         {
             var result = EntityChangeCriteriaRule.ParseValue( typeof( Interaction ), nameof( Interaction.InteractionLength ), "1.23" );
 
-            Assert.That.AreEqual( 1.23d, result );
+            Assert.AreEqual( 1.23d, result );
         }
 
         [TestMethod]
@@ -633,7 +632,7 @@ namespace Rock.Tests.Core.Automation.Triggers
         {
             var result = EntityChangeCriteriaRule.ParseValue( typeof( Group ), nameof( Group.LeaderToLeaderRelationshipMultiplierOverride ), "1.23" );
 
-            Assert.That.AreEqual( 1.23M, result );
+            Assert.AreEqual( 1.23M, result );
         }
 
         [TestMethod]
@@ -641,7 +640,7 @@ namespace Rock.Tests.Core.Automation.Triggers
         {
             var result = EntityChangeCriteriaRule.ParseValue( typeof( Group ), nameof( Group.IsSpecialNeeds ), "true" );
 
-            Assert.That.AreEqual( true, result );
+            Assert.IsTrue( ( bool? ) result );
         }
 
         #endregion
@@ -653,7 +652,7 @@ namespace Rock.Tests.Core.Automation.Triggers
         {
             var result = EntityChangeCriteriaRule.DoesValueMatch( null, null );
 
-            Assert.That.IsTrue( result );
+            Assert.IsTrue( result );
         }
 
         [TestMethod]
@@ -661,7 +660,7 @@ namespace Rock.Tests.Core.Automation.Triggers
         {
             var result = EntityChangeCriteriaRule.DoesValueMatch( null, "" );
 
-            Assert.That.IsTrue( result );
+            Assert.IsTrue( result );
         }
 
         [TestMethod]
@@ -669,7 +668,7 @@ namespace Rock.Tests.Core.Automation.Triggers
         {
             var result = EntityChangeCriteriaRule.DoesValueMatch( null, "test" );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -677,7 +676,7 @@ namespace Rock.Tests.Core.Automation.Triggers
         {
             var result = EntityChangeCriteriaRule.DoesValueMatch( "test", "test" );
 
-            Assert.That.IsTrue( result );
+            Assert.IsTrue( result );
         }
 
         [TestMethod]
@@ -685,7 +684,7 @@ namespace Rock.Tests.Core.Automation.Triggers
         {
             var result = EntityChangeCriteriaRule.DoesValueMatch( "test", "fail" );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -693,7 +692,7 @@ namespace Rock.Tests.Core.Automation.Triggers
         {
             var result = EntityChangeCriteriaRule.DoesValueMatch( 123, 123 );
 
-            Assert.That.IsTrue( result );
+            Assert.IsTrue( result );
         }
 
         [TestMethod]
@@ -701,7 +700,7 @@ namespace Rock.Tests.Core.Automation.Triggers
         {
             var result = EntityChangeCriteriaRule.DoesValueMatch( 123, 456 );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         #endregion

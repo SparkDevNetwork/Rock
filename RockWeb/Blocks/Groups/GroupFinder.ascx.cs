@@ -154,7 +154,6 @@ namespace RockWeb.Blocks.Groups
         )]
     [CodeEditorField( "Map Info",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         DefaultValue = AttributeDefaultLava.MapInfo,
@@ -168,7 +167,6 @@ namespace RockWeb.Blocks.Groups
         Key = AttributeKey.ShowLavaOutput )]
     [CodeEditorField( "Lava Output",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         DefaultValue = "",

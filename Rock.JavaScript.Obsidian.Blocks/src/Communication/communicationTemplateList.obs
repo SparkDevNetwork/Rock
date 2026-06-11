@@ -1,0 +1,276 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Communication Template"
+          title="Communication Template List"
+          :entityTypeGuid="EntityType.CommunicationTemplate"
+          tooltipField="description"
+          stickyHeader
+          liveUpdates
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    width="25%"
+                    :filter="textValueFilter" />
+
+        <TextColumn name="subject"
+                    title="Subject"
+                    field="subject"
+                    width="35%"
+                    :filter="textValueFilter" />
+
+        <TextColumn name="category"
+                    title="Category"
+                    field="category"
+                    :filter="pickExistingValueFilter" />
+
+        <Column name="supports"
+                title="Supports"
+                field="supports"
+                width="200px"
+                :filter="pickExistingValueFilter"
+                :filterValue="getSupportsFilterValue"
+                :quickFilterValue="getSupportsFilterValue"
+                :exportValue="getSupportsFilterValue">
+            <template #format="{ row }">
+                <span v-for="label in getSupportsLabels(row.supports)"
+                      :key="label"
+                      :class="getSupportsLabelClass(label)"
+                      class="mr-1">
+                    {{ label }}
+                </span>
+            </template>
+        </Column>
+
+        <PersonColumn v-if="config.options?.isBlockAuthorizedToEdit"
+                      name="createdBy"
+                      title="Created By"
+                      field="createdBy"
+                      width="200px"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getCreatedByFilterValue"
+                      showAsLink
+                      hideAvatar
+                      :detailField="false">
+            <template #condensed="{ row }">
+                {{ getCreatedByFilterValue(row) }}
+            </template>
+        </PersonColumn>
+
+        <TextColumn name="version"
+                    title="Version"
+                    field="version"
+                    width="110px"
+                    :filter="pickExistingValueFilter" />
+
+        <BooleanColumn name="isActive"
+                       title="Active"
+                       field="isActive"
+                       width="110px"
+                       :filter="booleanValueFilter" />
+
+        <SecurityColumn v-if="config.options?.isSecurityColumnVisible" itemTitle="name" />
+
+        <ButtonColumn name="copy"
+                      title="Copy"
+                      iconClass="ti ti-copy"
+                      excludeFromExport
+                      @click="onCopyClick" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled"
+                      disableConfirmation
+                      @click="onDeleteClick" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { reactive, ref } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { BooleanColumn, booleanValueFilter, ButtonColumn, Column, DeleteColumn, PersonColumn, pickExistingValueFilter, SecurityColumn, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { CommunicationTemplateListOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationTemplateList/communicationTemplateListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { NavigationUrlKey } from "./CommunicationTemplateList/types.partial";
+
+    const config = useConfigurationValues<ListBlockBox<CommunicationTemplateListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Gets the filter value text to use for the supports column.
+     *
+     * @param row The row to be filtered.
+     */
+    function getSupportsFilterValue(row: Record<string, unknown>): string {
+        return row.supports as string ?? "";
+    }
+
+    /**
+     * Gets the filter value text to use for the created by column.
+     *
+     * @param row The row to be filtered.
+     */
+    function getCreatedByFilterValue(row: Record<string, unknown>): string {
+        const person = row.createdBy as PersonFieldBag;
+        return !person ? "" : `${person.nickName ?? ""} ${person.lastName ?? ""}`;
+    }
+
+    /**
+     * Splits the comma-separated supports string into individual labels.
+     *
+     * @param supports The comma-separated supports string.
+     */
+    function getSupportsLabels(supports: string | null | undefined): string[] {
+        if (!supports) {
+            return [];
+        }
+
+        return supports.split(", ").filter(s => s.length > 0);
+    }
+
+    /**
+     * Gets the CSS class for a supports label.
+     *
+     * @param label The support label text.
+     */
+    function getSupportsLabelClass(label: string): string {
+        switch (label) {
+            case "Email Wizard":
+                return "label label-success";
+            case "Simple Email Template":
+                return "label label-default";
+            case "SMS":
+                return "label label-success";
+            case "Push":
+                return "label label-info";
+            default:
+                return "label label-default";
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the individual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked. Uses a two-step
+     * confirmation if the template has linked communications.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const firstConfirmed = await confirm("Are you sure you want to delete this template?");
+
+        if (!firstConfirmed) {
+            return;
+        }
+
+        // Check if the template has linked communications.
+        const checkResult = await invokeBlockAction<boolean>("HasLinkedCommunications", { key });
+
+        if (!checkResult.isSuccess) {
+            await alert(checkResult.errorMessage ?? "Unknown error while trying to delete communication template.");
+            return;
+        }
+
+        // If linked communications exist, show a second warning before deleting.
+        if (checkResult.data === true) {
+            const secondConfirmed = await confirm("Deleting this template will unlink it from communications that have used it. If you would like to keep the link consider inactivating the template instead. Are you sure you wish to delete this template?");
+
+            if (!secondConfirmed) {
+                return;
+            }
+        }
+
+        // Perform the delete.
+        const deleteResult = await invokeBlockAction<string>("Delete", { key });
+
+        if (deleteResult.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(deleteResult.errorMessage ?? "Unknown error while trying to delete communication template.");
+        }
+    }
+
+    /**
+     * Called when a row's copy button has been clicked. Clones the template
+     * on the server and reloads the grid.
+     */
+    async function onCopyClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Copy", {
+            key
+        });
+
+        if (result.isSuccess) {
+            gridDataSource.value = loadGridData();
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to copy communication template.");
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

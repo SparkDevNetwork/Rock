@@ -208,11 +208,6 @@ namespace Rock.Blocks.Core
                 NotificationStatus = isNew ? JobNotificationStatus.All.ToString() : entity.NotificationStatus.ToString(),
             };
 
-            if ( entity.CronExpression.IsNotNullOrWhiteSpace() )
-            {
-                serviceJobBag.CronDescription = ServiceJobService.GetCronDescription( entity.CronExpression );
-            }
-
             return serviceJobBag;
         }
 
@@ -560,27 +555,6 @@ namespace Rock.Blocks.Core
 
                 return ActionOk( refreshedBox );
             }
-        }
-
-        /// <summary>
-        /// Gets the cron description.
-        /// </summary>
-        /// <param name="guid">The unique identifier.</param>
-        /// <returns></returns>
-        [BlockAction]
-        public BlockActionResult GetCronDescription( string cronExpression )
-        {
-            string cronDescription = string.Empty;
-
-            if ( cronExpression.IsNotNullOrWhiteSpace() )
-            {
-                cronDescription = ServiceJobService.GetCronDescription( cronExpression );
-            }
-
-            return ActionOk( new
-            {
-                cronDescription = cronDescription
-            } );
         }
 
         #endregion

@@ -1,0 +1,57 @@
+<template>
+    <div class="action-toolbar"
+         :class="{ selected: isSelectedView }">
+        <template v-if="!isSelectedView">
+            <RockLabel>Group By</RockLabel>
+            <ButtonDropDownList v-model="groupingKey"
+                                :items="groupingFields" />
+        </template>
+        <template v-else>
+            <slot name="selectedActionToolbar" />
+        </template>
+    </div>
+</template>
+
+<style scoped>
+.action-toolbar {
+    padding: var(--spacing-xsmall) var(--spacing-large);
+    border-bottom: 1px solid var(--color-interface-soft);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+}
+
+.action-toolbar.selected {
+    background-color: var(--color-info-soft);
+    justify-content: space-between;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import ButtonDropDownList from "../buttonDropDownList.obs";
+    import RockLabel from "../rockLabel.obs";
+
+    const props = defineProps({
+        groupingKey: {
+            type: String,
+            default: ""
+        },
+        groupingFields: {
+            type: Array as PropType<ListItemBag[]>,
+            default: []
+        },
+        isSelectedView: {
+            type: Boolean as PropType<boolean>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits([
+        "update:groupingKey",
+    ]);
+
+    const groupingKey = useVModelPassthrough(props, "groupingKey", emit);
+</script>

@@ -15,6 +15,8 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Utility;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -55,6 +57,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Name { get; set; }
 
         /// <summary>
@@ -65,6 +68,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PublicName { get; set; }
 
         /// <summary>
@@ -74,6 +78,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the user defined description of the FinancialAccount.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Description { get; set; }
 
         /// <summary>
@@ -83,12 +88,14 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the user defined public description of the FinancialAccount.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PublicDescription { get; set; }
 
         /// <summary>
         /// A string representing the IsTaxable flag of the FinancialAccount.  For example, "Taxable" or "Not Taxable"
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string TaxStatus { get; set; }
 
         /// <summary>
@@ -99,6 +106,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string GlCode { get; set; }
 
         /// <summary>
@@ -114,12 +122,14 @@ namespace Rock.Model
         /// A string representing the IsActive flag of FinancialAccount: "Active" or "Inactive"
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ActiveStatus { get; set; }
 
         /// <summary>
         /// A string representing the IsPublic flag of FinancialAccount: "Public" or "Non Public"
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PublicStatus { get; set; }
 
         /// <summary>
@@ -152,6 +162,7 @@ namespace Rock.Model
         /// The type of the account.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AccountType { get; set; }
 
         /// <summary>
@@ -161,6 +172,7 @@ namespace Rock.Model
         /// The image URL.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ImageUrl { get; set; }
 
         /// <summary>
@@ -179,6 +191,7 @@ namespace Rock.Model
         /// The URL.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Url { get; set; }
 
         /// <summary>
@@ -188,6 +201,7 @@ namespace Rock.Model
         /// The campus.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string CampusName { get; set; }
 
         /// <summary>
@@ -197,6 +211,7 @@ namespace Rock.Model
         /// The campus short code.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string CampusShortCode { get; set; }
 
         /// <summary>

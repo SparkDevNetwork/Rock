@@ -115,6 +115,19 @@ namespace Rock.Blocks
             return new List<AttributeCache>();
         }
 
+        /// <summary>
+        /// Gets any additional (non IsGridColumn) attributes that should be available to the grid data.
+        /// </summary>
+        /// <remarks>
+        /// You will typically override this method if you are going to use a => a.GetAttributeValue( "attributeKey" )
+        /// in your GridBuilder definition.
+        /// </remarks>
+        /// <returns>A list of <see cref="AttributeCache"/> objects.</returns>
+        protected virtual List<AttributeCache> GetAdditionalGridAttributes()
+        {
+            return new List<AttributeCache>();
+        }
+
         /// <inheritdoc/>
         protected override GridDataBag GetGridDataBag( RockContext rockContext )
         {
@@ -130,7 +143,9 @@ namespace Rock.Blocks
                 var gridAttributes = GetGridAttributes();
                 var gridAttributeIds = gridAttributes.Select( a => a.Id ).ToList();
 
-                Helper.LoadFilteredAttributes( typeof( T ), items.Cast<IHasAttributes>().ToList(), rockContext, a => gridAttributeIds.Contains( a.Id ) );
+                var gridDataAttributesIds = GetAdditionalGridAttributes().Select( a => a.Id ).ToList();
+
+                Helper.LoadFilteredAttributes( typeof( T ), items.Cast<IHasAttributes>().ToList(), rockContext, a => ( gridAttributeIds.Contains( a.Id ) || gridDataAttributesIds.Contains( a.Id ) ) );
             }
 
             return GetGridBuilder().Build( items );

@@ -1,0 +1,1148 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="px-spacing-md pb-spacing-lg d-flex flex-column gap-md">
+        <div v-if="options?.isAISummaryVisible" class="border border-info-soft rounded p-spacing-sm bg-interface-softer d-flex flex-column gap-xs">
+            <div class="d-flex justify-content-between align-items-center text-info">
+                <div class="d-flex gap-xs align-items-center">
+                    <i class="ti ti-sparkles font-size-h4"></i>
+                    <div class="text-semibold text-small">AI Summary</div>
+                </div>
+                <template v-if="isAISummaryLoading">
+                    <i class="ti ti-reload ti-spin font-size-h4"></i>
+                </template>
+                <template v-else-if="isNullOrWhiteSpace(aiSummary) && isNullOrWhiteSpace(aiSummaryError)">
+                    <i class="ti ti-chevron-down font-size-h4 cursor-pointer" @click="emit('fetchAISummary', false)"></i>
+                </template>
+                <template v-else>
+                    <i class="ti ti-reload font-size-h4 cursor-pointer" @click="emit('fetchAISummary', true)"></i>
+                </template>
+            </div>
+            <transition name="slide">
+                <div v-show="isAISummaryLoading || !isNullOrWhiteSpace(aiSummaryError) || !isNullOrWhiteSpace(aiSummary)">
+                    <template v-if="!isAISummaryLoading">
+                        <NotificationBox v-if="!isNullOrWhiteSpace(aiSummaryError)"
+                                         alertType="danger"
+                                         style="margin-bottom: 0;">
+                            {{ aiSummaryError }}
+                        </NotificationBox>
+                        <div class="text-small text-interface-medium">{{ aiSummary }}</div>
+                    </template>
+                    <div v-else>
+                        <div class="skeleton skeleton-text mt-spacing-xs"></div>
+                        <div class="skeleton skeleton-text"></div>
+                        <div class="skeleton skeleton-text"></div>
+                    </div>
+                </div>
+            </transition>
+        </div>
+
+        <div v-if="!isNullOrWhiteSpace(options?.lavaHeadingTemplate)" v-html="options?.lavaHeadingTemplate"></div>
+
+        <div v-if="props.requestDetails?.additionalRequests && props.requestDetails.additionalRequests.length > 0"
+             class="border rounded p-spacing-sm">
+            <div class="d-flex align-items-center gap-tiny justify-content-between">
+                <div class="d-flex align-items-center gap-tiny text-interface-strong">
+                    <i class="ti ti-plug-connected font-size-h4"></i>
+                    <div class="text-small text-semibold">Additional Requests</div>
+                </div>
+                <div v-if="hiddenAdditionalRequests > 0 || areAdditionalRequestsExpanded"
+                     class="d-flex align-items-center gap-xs">
+                    <div v-if="!areAdditionalRequestsExpanded" class="text-interface-medium">+{{ hiddenAdditionalRequests }}</div>
+                    <RockButton @click="toggleAdditionalRequests">
+                        <i v-if="areAdditionalRequestsExpanded" class="ti ti-chevrons-up"></i>
+                        <i v-else class="ti ti-chevrons-down"></i>
+                    </RockButton>
+                </div>
+            </div>
+            <div>
+                <div class="d-flex flex-column gap-tiny">
+                    <template v-for="(additionalRequest, index) in props.requestDetails.additionalRequests.slice(0, 5)">
+                        <div v-if="additionalRequest.requestIdKey"
+                             :key="additionalRequest.requestIdKey"
+                             :class="{ 'additional-request': dockedPanelWidthNumber < 350 }">
+                            <span class="text-link text-small pr-spacing-sm cursor-pointer"
+                                  @click="emit('navigateToAdditionalRequest', additionalRequest.requestIdKey)">
+                                {{ additionalRequest.connectionOpportunityName }}
+                            </span>
+                            <span class="text-interface-medium text-xs">
+                                {{ getRequestMeta(additionalRequest) }}
+                            </span>
+                        </div>
+                    </template>
+                </div>
+
+                <TransitionVerticalCollapse>
+                    <div v-show="areAdditionalRequestsExpanded">
+                        <div class="d-flex flex-column gap-tiny pt-spacing-tiny">
+                            <template v-for="(additionalRequest, index) in props.requestDetails.additionalRequests.slice(5)">
+                                <div v-if="additionalRequest.requestIdKey"
+                                     :key="additionalRequest.requestIdKey"
+                                     :class="{ 'additional-request': dockedPanelWidthNumber < 350 }">
+                                    <span class="text-link text-small pr-spacing-sm cursor-pointer"
+                                          @click="emit('navigateToAdditionalRequest', additionalRequest.requestIdKey)">
+                                        {{ additionalRequest.connectionOpportunityName }}
+                                    </span>
+                                    <span class="text-interface-medium text-xs">
+                                        {{ getRequestMeta(additionalRequest) }}
+                                    </span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </TransitionVerticalCollapse>
+            </div>
+        </div>
+
+        <ContentSection title="Connection Request"
+                        icon="ti ti-mail"
+                        :disableCollapse="true">
+            <template #headerActions>
+                <div class="d-flex align-items-center gap-md">
+                    <div v-if="requestDetails?.connectionState === ConnectionState.FutureFollowUp" class="text-semibold text-info-strong">
+                        {{ ConnectionStateDescription[ConnectionState.FutureFollowUp] }} - {{ asLocaleString(requestDetails.followUpDate) }}
+                    </div>
+                    <div v-else-if="requestDetails?.connectionState === ConnectionState.Inactive" class="text-semibold text-slate">
+                        {{ ConnectionStateDescription[ConnectionState.Inactive] }}
+                    </div>
+                    <div v-else-if="requestDetails?.connectionState === ConnectionState.Connected" class="text-semibold text-emerald">
+                        {{ ConnectionStateDescription[ConnectionState.Connected] }}
+                    </div>
+                    <template v-if="options?.areCelebrationsEnabled">
+                        <i v-if="isNullOrWhiteSpace(requestDetails?.celebrationText)"
+                           class="ti ti-confetti cursor-pointer"
+                           :ref="(el) => addTooltip(el as Element)"
+                           data-toggle="tooltip"
+                           data-placement="auto"
+                           data-container="body"
+                           data-original-title="Add Celebration"
+                           @click="emit('onCelebrationClick')">
+                        </i>
+                        <i v-else
+                           class="ti ti-confetti-filled cursor-pointer text-info-strong"
+                           :ref="(el) => addTooltip(el as Element)"
+                           data-toggle="tooltip"
+                           data-placement="auto"
+                           data-container="body"
+                           data-original-title="Has Celebration"
+                           @click="emit('onCelebrationClick')">
+                        </i>
+                    </template>
+                    <template v-if="options?.areRemindersEnabled">
+                        <i v-if="requestDetails?.reminderCount && requestDetails.reminderCount > 0"
+                           class="ti ti-bell-filled cursor-pointer text-info-strong"
+                           :ref="(el) => addTooltip(el as Element)"
+                           data-toggle="tooltip"
+                           data-placement="auto"
+                           data-container="body"
+                           :data-original-title="`${requestDetails?.reminderCount} ${pluralize('Reminder', requestDetails?.reminderCount)}`"
+                           @click="emit('onReminderClick')">
+                        </i>
+                        <i v-else
+                           class="ti ti-bell cursor-pointer"
+                           :ref="(el) => addTooltip(el as Element)"
+                           data-toggle="tooltip"
+                           data-placement="auto"
+                           data-container="body"
+                           data-original-title="Add Reminder"
+                           @click="emit('onReminderClick')">
+                        </i>
+                    </template>
+                </div>
+            </template>
+            <template #preBody v-if="!isNullOrWhiteSpace(options?.lavaBadgeBar)">
+                <div class="border-top border-bottom px-spacing-md py-spacing-xs">
+                    <div v-html="options?.lavaBadgeBar"></div>
+                </div>
+            </template>
+            <ContentStack>
+                <div class="d-flex flex-column gap-md">
+                    <div>
+                        <RockLabel class="mb-spacing-xs text-interface-stronger">Request Detail</RockLabel>
+                        <DisplayCard :iconCssClass="requestDetails?.connectionOpportunityIcon"
+                                     iconLabelType="info"
+                                     :title="requestDetails?.connectionOpportunityName"
+                                     :description="requestDetails?.campus">
+                            <template #middleSection>
+                                <div class="d-flex flex-column">
+                                    <RockLabel class="text-interface-medium text-regular">Connector</RockLabel>
+                                    <DropDownContent v-model="isConnectorDropdownOpen"
+                                                     enableFlip>
+                                        <template #anchor>
+                                            <div class="d-flex align-items-center gap-xs"
+                                                 :class="canEditConnectionRequest ? 'cursor-pointer' : 'cursor-not-allowed'"
+                                                 @click.prevent.stop="onConnectorDropdownClick">
+                                                <PersonAvatar :photoUrl="selectedConnectorBag?.photoUrl ?? ''"
+                                                              :photoSize="30"
+                                                              marginRight="0" />
+                                                <div class="d-flex align-items-center gap-tiny">
+                                                    <div class="text-small text-interface-strong text-semibold">{{ selectedConnectorBag?.listItemBag?.text }}</div>
+                                                    <i class="ti ti-chevron-down"></i>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <template #default>
+                                            <div class="d-flex flex-column person-dropdown">
+                                                <template v-for="connectorItem in connectorItems">
+                                                    <div v-if="connectorItem"
+                                                         class="d-flex align-items-center gap-xs dropdown-content-item text-regular py-spacing-sm px-spacing-md bg-interface-softest"
+                                                         :class="{ 'selected': connectorItem.listItemBag?.value === selectedConnector }"
+                                                         @click="updateConnector(connectorItem.listItemBag?.value)">
+                                                        <PersonAvatar :photoUrl="connectorItem.photoUrl ?? ''"
+                                                                      :photoSize="30"
+                                                                      marginRight="0" />
+                                                        <div>{{ connectorItem?.listItemBag?.text }}</div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </DropDownContent>
+                                </div>
+                            </template>
+                            <template #actions>
+                                <div class="d-flex flex-column gap-tiny">
+                                    <div v-if="!isNullOrWhiteSpace(requestDetails?.createdDateTime)" class="text-interface-medium">
+                                        <i class="ti ti-calendar-plus"></i>
+                                        Created {{ createdDateTimeElapsed }}
+                                    </div>
+                                    <div v-if="!isNullOrWhiteSpace(requestDetails?.dueDate) && requestDetails?.connectionState !== ConnectionState.Inactive"
+                                         :class="getDueDateColor(requestDetails?.dueStatus, requestDetails?.connectionState === ConnectionState.Connected)">
+                                        <i class="ti ti-clock"></i>
+                                        {{ elapsedDueDate }}
+                                    </div>
+                                </div>
+                            </template>
+                        </DisplayCard>
+                    </div>
+                    <div v-if="requestDetails?.actionItems && requestDetails.actionItems.length > 0">
+                        <RockLabel class="mb-spacing-xs text-interface-strong">Available Actions</RockLabel>
+                        <ActionItems :actionItems="requestDetails.actionItems ?? []" @onActionClick="onActionItemClick" />
+                    </div>
+                    <div v-if="!isNullOrWhiteSpace(requestDetails?.comments)">
+                        <RockLabel class="mb-spacing-xs text-interface-medium text-regular">Comments</RockLabel>
+                        <div class="text-interface-stronger" v-html="requestDetails?.comments"></div>
+                    </div>
+                    <div v-if="!isNullOrWhiteSpace(requestDetails?.connectionTypeSource)">
+                        <RockLabel class="mb-spacing-xs text-interface-medium text-regular">Request Source</RockLabel>
+                        <div class="text-interface-stronger">{{ requestDetails?.connectionTypeSource }}</div>
+                    </div>
+                </div>
+            </ContentStack>
+            <ContentStack v-if="options?.areGroupPlacementsEnabled">
+                <RockLabel class="text-interface-stronger mb-spacing-xs">Placement Group Details</RockLabel>
+                <div class="d-flex flex-column gap-md">
+                    <div class="d-flex flex-column gap-xs">
+                        <RockLabel class="text-interface-medium text-regular">Group</RockLabel>
+                        <HighlightLabel v-if="requestDetails?.placementGroup?.groupId"
+                                        :iconCssClass="isNullOrWhiteSpace(requestDetails?.placementGroup?.iconCssClass) ? 'ti ti-users' : requestDetails?.placementGroup?.iconCssClass!"
+                                        labelType="custom"
+                                        customClass="label label-info w-fit cursor-pointer"
+                                        @click="emit('navigateToGroup', requestDetails.placementGroup.groupId ?? '')">
+                            {{ placementGroupName }}
+                        </HighlightLabel>
+                        <HighlightLabel v-else
+                                        iconCssClass="ti ti-alert-circle"
+                                        labelType="custom"
+                                        customClass="label bg-interface-medium w-fit">
+                            None Assigned
+                        </HighlightLabel>
+                    </div>
+                    <AttributeValuesContainer v-if="requestDetails?.placementGroup?.groupMemberAttributeValues && Object.values(requestDetails.placementGroup.groupMemberAttributeValues).some(v => !!v)"
+                                              :modelValue="requestDetails.placementGroup.groupMemberAttributeValues"
+                                              :attributes="requestDetails?.placementGroup?.groupMemberAttributes ?? {}"
+                                              :numberOfColumns="2"
+                                              :showCategoryLabel="false" />
+                    <div v-if="automatedGroupMemberRequirements && automatedGroupMemberRequirements.length > 0">
+                        <RockLabel class="text-interface-medium text-regular mb-spacing-xs">Requirements</RockLabel>
+                        <div class="d-flex flex-wrap gap-xs">
+                            <HighlightLabel v-for="groupMemberRequirement in automatedGroupMemberRequirements"
+                                            :iconCssClass="groupMemberRequirement.groupMemberRequirementState === MeetsGroupRequirement.Meets ? 'ti ti-circle-check-filled' : ''"
+                                            :labelType="getRequirementLabelType(groupMemberRequirement)">
+                                {{ groupMemberRequirement.requirementName }}
+                            </HighlightLabel>
+                        </div>
+                    </div>
+                    <div v-if="manualGroupMemberRequirements && manualGroupMemberRequirements.length > 0">
+                        <RockLabel class="text-interface-medium text-regular mb-spacing-xs">Manual Requirements</RockLabel>
+                        <div class="d-flex flex-column gap-xs">
+                            <template v-for="manualRequirement in manualGroupMemberRequirements">
+                                <div v-if="manualRequirement.groupRequirementIdKey" class="d-flex gap-xs align-items-center">
+                                    <CheckBox :modelValue="manualRequirement.groupMemberRequirementState === MeetsGroupRequirement.Meets"
+                                              label=""
+                                              :text="manualRequirement.requirementName ?? ''"
+                                              :disabled="!canEditConnectionRequest"
+                                              @update:modelValue="(isChecked) => updateManualRequirement(manualRequirement, isChecked)" />
+                                    <Loading :isLoading="isManualRequirementLoadingRecord[manualRequirement.groupRequirementIdKey]"
+                                             isSmall />
+                                    <!-- TODO - Style is messed up. Should really be a toast message -->
+                                    <NotificationBox v-if="!isManualRequirementLoadingRecord[manualRequirement.groupRequirementIdKey] && isManualRequirementErrorVisibleRecord[manualRequirement.groupRequirementIdKey]"
+                                                     alertType="danger"
+                                                     dismissible
+                                                     @dismiss="onRequirementErrorDismissed(manualRequirement.groupRequirementIdKey)">
+                                        {{ manualRequirementErrorRecord[manualRequirement.groupRequirementIdKey] }}
+                                    </NotificationBox>
+                                    <div v-else-if="!isManualRequirementLoadingRecord[manualRequirement.groupRequirementIdKey] && isManualRequirementSavedRecord[manualRequirement.groupRequirementIdKey]"
+                                         class="text-success-strong">
+                                        <i class="ti ti-circle-check-filled"></i>
+                                        Saved
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </ContentStack>
+            <ContentStack v-if="hasNonEmptyRequestAttributeValue">
+                <AttributeValuesContainer :modelValue="requestDetails?.attributeValues ?? {}"
+                                          :attributes="requestDetails?.attributes ?? {}"
+                                          :numberOfColumns="2"
+                                          displayAsCategoryDropdown
+                                          globalCategoryNameOverride="General Attributes" />
+            </ContentStack>
+        </ContentSection>
+        <ContentSection title="Activity Feed"
+                        icon="ti ti-activity"
+                        :disableCollapse="true">
+            <template #headerActions>
+                <DropDownContent v-model="isActivityFilterDropdownOpen"
+                                 enableFlip>
+                    <template #anchor>
+                        <div class="d-flex align-items-center gap-tiny text-primary cursor-pointer">
+                            Show {{ selectedActivityFilter.text }}
+                            <i class="ti ti-chevron-down"></i>
+                        </div>
+                    </template>
+                    <template #default>
+                        <div class="bg-interface-softest dropdown-content">
+                            <div v-for="activityFilter in activityFilterOptions"
+                                 class="dropdown-content-item py-spacing-sm px-spacing-md text-small text-semibold"
+                                 @click.stop="updateActivityFilter(activityFilter)">
+                                {{ activityFilter.text }}
+                            </div>
+                        </div>
+                    </template>
+                </DropDownContent>
+            </template>
+            <template #default>
+                <NotificationBox v-if="!isNullOrWhiteSpace(activityErrorMessage)"
+                                 alertType="danger">
+                    {{ activityErrorMessage }}
+                </NotificationBox>
+
+                <template v-if="canEditConnectionRequestNote">
+                    <RockForm @submit="onAddRequestNote">
+                        <div class="d-flex flex-column gap-xs">
+                            <NotificationBox v-if="isAddRequestNoteErrorMessageVisible"
+                                             alertType="danger"
+                                             style="margin-bottom: 0;"
+                                             dismissible
+                                             @dismiss="onAddRequestNoteErrorDismissed">
+                                {{ addRequestNoteErrorMessage }}
+                            </NotificationBox>
+                            <TextBox v-model="connectionRequestNoteText"
+                                     textMode="multiline"
+                                     placeholder="Write a note..."
+                                     validationTitle="Note"
+                                     rules="required" />
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <RockButton :btnType="BtnType.Primary"
+                                                :btnSize="BtnSize.Small"
+                                                type="submit">
+                                        Save Note
+                                    </RockButton>
+                                </div>
+                            </div>
+                        </div>
+                    </RockForm>
+                </template>
+                <template v-for="activityEntry in filteredAndSortedActivityEntries">
+                    <div v-if="activityEntry.entryType === ActivityEntryType.SystemUpdate && activityEntry.systemUpdate" class="d-flex gap-xs text-interface-medium text-small">
+                        <Badge :isCircle="true" class="d-flex justify-content-center bg-interface-softest text-interface-medium h-fit">
+                            <i :class="systemUpdateIconClass(activityEntry.systemUpdate.systemUpdateType)"></i>
+                        </Badge>
+                        <div>
+                            <span v-html="systemUpdateMessage(activityEntry)"></span>
+                            <span> • {{ getElapsedDate(activityEntry.entryDateTime) }}</span>
+                        </div>
+                    </div>
+                    <ActivityCard v-else
+                                  :connectionRequestIdKey="requestDetails?.connectionRequestIdKey ?? ''"
+                                  :activityEntry="activityEntry"
+                                  :ref="(el) => setActivityCardRef(activityEntry.key, el)"
+                                  :canEditActivity="canEditConnectionRequest"
+                                  :canEditNote="canEditConnectionRequestNote"
+                                  @editNote="(bag) => onEditRequestNote(bag, activityEntry.key)"
+                                  @deleteNote="deleteNote"
+                                  @editActivity="(entry) => emit('editActivity', entry)"
+                                  @deleteActivity="deleteActivity" />
+                </template>
+            </template>
+        </ContentSection>
+    </div>
+</template>
+
+<style scoped>
+.person-details {
+    white-space: nowrap;
+}
+
+.header-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.additional-request {
+    display: flex;
+    flex-direction: column;
+}
+
+.person-dropdown {
+    min-width: 200px;
+    max-height: 40vh;
+    overflow-y: auto;
+}
+
+.dropdown-content-item.selected {
+    color: var(--color-interface-strong);
+    font-weight: var(--font-weight-semibold);
+    background-color: var(--color-info-soft);
+}
+
+.text-regular {
+    font-weight: var(--font-weight-regular);
+}
+
+/* text-sm is incorrectly returning xsmall at the moment in develop */
+.text-small {
+    font-size: var(--font-size-small);
+}
+
+.text-slate {
+    color: #64748B;
+}
+
+.text-emerald {
+    color: #10B981;
+}
+
+.border-info-soft {
+    border-color: var(--color-info-soft);
+}
+
+.gap-tiny {
+    gap: var(--spacing-tiny);
+}
+
+.gap-xs {
+    gap: var(--spacing-xsmall);
+}
+
+.gap-sm {
+    gap: var(--spacing-small);
+}
+
+.gap-md {
+    gap: var(--spacing-medium);
+}
+
+.gap-lg {
+    gap: var(--spacing-large);
+}
+
+.w-fit {
+    width: fit-content;
+}
+
+.h-fit {
+    height: fit-content;
+}
+
+/* Skeleton adjustments */
+.skeleton {
+    background: var(--color-interface-soft);
+}
+</style>
+
+<script setup lang="ts">
+    import { ref, PropType, watch, computed, shallowRef } from "vue";
+    import { ConnectionRequestDetailsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestDetailsBag";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { isNullOrWhiteSpace, pluralize } from "@Obsidian/Utility/stringUtils";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { AdditionalRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/additionalRequestBag";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import Loading from "@Obsidian/Controls/loading.obs";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";
+    import { DueStatus } from "@Obsidian/Enums/Connection/dueStatus";
+    import ActionItems from "./actionItems.partial.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+    import { ConnectionState, ConnectionStateDescription } from "@Obsidian/Enums/Connection/connectionState";
+    import ActivityCard from "./activityCard.partial.obs";
+    import { ActivityEntryType, ActivityEntryTypeDescription } from "@Obsidian/Enums/Connection/activityEntryType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import Badge from "@Obsidian/Controls/badge.obs";
+    import { SystemUpdateType } from "@Obsidian/Enums/Connection/systemUpdateType";
+    import { ActivityEntryBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/activityEntryBag";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ConnectionRequestNoteBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestNoteBag";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { MeetsGroupRequirement } from "@Obsidian/Enums/Group/meetsGroupRequirement";
+    import { GroupMemberRequirementBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/groupMemberRequirementBag";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { UpdateGroupMemberRequirementBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/updateGroupMemberRequirementBag";
+    import { ConnectionRequestDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestDetailOptionsBag";
+    import { LaunchWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/launchWorkflowBag";
+    import { ConnectorItemBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectorItemBag";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+
+    const props = defineProps({
+        requestDetails: {
+            type: Object as PropType<ConnectionRequestDetailsBag | undefined>,
+            required: true
+        },
+
+        aiSummary: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        aiSummaryError: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        isAISummaryLoading: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
+        options: {
+            type: Object as PropType<ConnectionRequestDetailOptionsBag | null | undefined>,
+            required: true
+        },
+
+        dockedPanelWidthNumber: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        canEditConnectionRequest: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        canEditConnectionRequestNote: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        activityErrorMessage: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "fetchAISummary", overrideCache: boolean): void;
+        (e: "editActivity", value: ActivityEntryBag): void;
+        (e: "onCelebrationClick"): void;
+        (e: "onReminderClick"): void;
+        (e: "onReassignConnector", value: string): void;
+        (e: "launchWorkflow", value: LaunchWorkflowBag): void;
+        (e: "navigateToAdditionalRequest", value: string): void;
+        (e: "navigateToGroup", value: string): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const activityFilterOptions = <ListItemBag[]>[
+        {
+            text: "All",
+            value: "all"
+        },
+        {
+            text: pluralize(ActivityEntryTypeDescription[ActivityEntryType.Activity]),
+            value: ActivityEntryType.Activity.toString()
+        },
+        {
+            text: pluralize(ActivityEntryTypeDescription[ActivityEntryType.RequestNote]),
+            value: ActivityEntryType.RequestNote.toString()
+        },
+        {
+            text: pluralize(ActivityEntryTypeDescription[ActivityEntryType.SystemUpdate]),
+            value: ActivityEntryType.SystemUpdate.toString()
+        },
+        {
+            text: pluralize(ActivityEntryTypeDescription[ActivityEntryType.Communication]),
+            value: ActivityEntryType.Communication.toString()
+        }
+    ];
+
+    const isConnectorDropdownOpen = ref(false);
+
+    const selectedConnector = ref(props.requestDetails?.connectorPerson ?? "");
+    const connectorItems = ref<ConnectorItemBag[]>(props.options?.connectorItems ?? []);
+    const activityEntries = ref<ActivityEntryBag[]>(props.requestDetails?.activityEntries ?? []);
+    const groupMemberRequirements = ref<GroupMemberRequirementBag[]>(props.requestDetails?.placementGroup?.groupMemberRequirements ?? []);
+
+    const isManualRequirementLoadingRecord = ref<Record<string, boolean>>({});
+    const isManualRequirementSavedRecord = ref<Record<string, boolean>>({});
+    const isManualRequirementErrorVisibleRecord = ref<Record<string, boolean>>({});
+    const manualRequirementErrorRecord = ref<Record<string, string>>({});
+    const isResettingRequirementCheckBox = ref<boolean>(false);
+
+    const isActivityFilterDropdownOpen = ref(false);
+    const selectedActivityFilter = ref<ListItemBag>({ text: "All", value: "all" });
+
+    const activityCardRefs = shallowRef(new Map<string, InstanceType<typeof ActivityCard>>());
+
+    const isAddRequestNoteErrorMessageVisible = ref(false);
+    const addRequestNoteErrorMessage = ref();
+    const connectionRequestNoteText = ref("");
+
+    const areAdditionalRequestsExpanded = ref(false);
+    // const additionalRequests = computed(() => {
+    //     if (props.requestDetails?.additionalRequests && props.requestDetails?.additionalRequests?.length > 5 && !areAdditionalRequestsExpanded.value) {
+    //         return props.requestDetails.additionalRequests.slice(0, 5);
+    //     }
+
+    //     return props.requestDetails?.additionalRequests;
+    // });
+    const hiddenAdditionalRequests = computed(() => Math.max(0, (props.requestDetails?.additionalRequests?.length ?? 0) - 5));
+
+    const createdDateTimeElapsed = computed(() => {
+        if (isNullOrWhiteSpace(props.requestDetails?.createdDateTime)) {
+            return;
+        }
+
+        return RockDateTime.parseISO(props.requestDetails!.createdDateTime!)?.toElapsedString();
+    });
+
+    const elapsedDueDate = computed(() => {
+        if (isNullOrWhiteSpace(props.requestDetails?.dueDate) || props.requestDetails?.connectionState === ConnectionState.Inactive) {
+            return;
+        }
+
+        const due = RockDateTime.parseISO(props.requestDetails!.dueDate!);
+        if (!due) {
+            return "";
+        }
+
+        const isCompleted = props.requestDetails?.connectionState === ConnectionState.Connected;
+
+        // Use the completion date as the reference point if completed, otherwise use today
+        const referenceDate = isCompleted
+            ? RockDateTime.parseISO(props.requestDetails?.completedDateTime ?? "")?.date
+            : RockDateTime.now().date;
+
+        if (!referenceDate) {
+            return "";
+        }
+
+        const dueDay = due.date;
+
+        const msPerDay = 1000 * 60 * 60 * 24;
+
+        // signed whole days: positive => due in future, negative => overdue
+        const diffDays = Math.round((dueDay.toMilliseconds() - referenceDate.toMilliseconds()) / msPerDay);
+
+        if (isCompleted) {
+            if (diffDays > 0) {
+                return `Completed ${diffDays} ${diffDays === 1 ? "Day" : "Days"} Before Due`;
+            }
+            else if (diffDays < 0) {
+                const lateDays = Math.abs(diffDays);
+                return `Completed ${lateDays} ${lateDays === 1 ? "Day" : "Days"} After Due`;
+            }
+            else {
+                return "Completed on Due Date";
+            }
+        }
+
+        if (diffDays > 0) {
+            return `Due in ${diffDays} ${diffDays === 1 ? "Day" : "Days"}`;
+        }
+        else if (diffDays < 0) {
+            const overdueDays = Math.abs(diffDays);
+            return `Overdue by ${overdueDays} ${overdueDays === 1 ? "Day" : "Days"}`;
+        }
+        else {
+            return "Due Today";
+        }
+    });
+
+    const selectedConnectorBag = computed(() => connectorItems.value.find(c => c.listItemBag?.value === selectedConnector.value));
+
+    const hasNonEmptyRequestAttributeValue = computed(() => {
+        if (!props.requestDetails?.attributes || !props.requestDetails?.attributeValues) {
+            return false;
+        }
+
+        for (const [key, attribute] of Object.entries(props.requestDetails?.attributes)) {
+            // Skip if attribute name is empty
+            if (isNullOrWhiteSpace(attribute.name)) {
+                continue;
+            }
+
+            const rawValue = props.requestDetails?.attributeValues[key];
+
+            // Skip if the raw value is empty
+            if (isNullOrWhiteSpace(rawValue)) {
+                continue;
+            }
+
+            const formatted = getAttributeValueText(props.requestDetails?.attributeValues, attribute, key);
+
+            // Skip if formatted value is empty too
+            if (isNullOrWhiteSpace(formatted)) {
+                continue;
+            }
+
+            return true;
+        }
+
+        return false;
+    });
+
+    const placementGroupName = computed(() => props.requestDetails?.placementGroup?.isPendingGroupMember ? `${props.requestDetails.placementGroup?.listItemBag?.text} (Pending Member)` : `${props.requestDetails?.placementGroup?.listItemBag?.text}`);
+
+    const automatedGroupMemberRequirements = computed(() => groupMemberRequirements.value.filter(gmr => !gmr.isManualRequirement));
+    const manualGroupMemberRequirements = computed(() => groupMemberRequirements.value.filter(gmr => gmr.isManualRequirement));
+
+    const filteredAndSortedActivityEntries = computed(() => {
+        const filter = selectedActivityFilter.value.value;
+
+        let result = activityEntries.value;
+
+        if (filter !== "all") {
+            const entryType = toNumber(filter);
+
+            if (!Number.isNaN(entryType)) {
+                result = result.filter(e => e.entryType === entryType);
+            }
+        }
+
+        return result
+            .slice()
+            .sort((a, b) => {
+                const dateA = RockDateTime.parseISO(a.entryDateTime ?? "");
+                const dateB = RockDateTime.parseISO(b.entryDateTime ?? "");
+
+                if (!dateA && !dateB) {
+                    return 0;
+                }
+                if (!dateA) {
+                    return 1;
+                }
+                if (!dateB) {
+                    return -1;
+                }
+
+                return dateB.compareTo(dateA);
+            });
+    });
+
+    const systemUpdateIconClass = (systemUpdateType: SystemUpdateType): string => {
+        switch (systemUpdateType) {
+            case SystemUpdateType.Creation:
+                return "ti ti-plus";
+            case SystemUpdateType.StatusSet:
+            case SystemUpdateType.StatusUpdated:
+            case SystemUpdateType.StatusCleared:
+                return "ti ti-arrows-left-right";
+            case SystemUpdateType.StateChange:
+                return "ti ti-bolt";
+            case SystemUpdateType.Assignment:
+            case SystemUpdateType.Reassignment:
+            case SystemUpdateType.Unassignment:
+                return "ti ti-user-bolt";
+            case SystemUpdateType.Transfer:
+                return "ti ti-arrows-shuffle";
+            case SystemUpdateType.DueDateChange:
+            case SystemUpdateType.DueSoonDateChange:
+                return "ti ti-calendar-due";
+            case SystemUpdateType.Completion:
+                return "ti ti-circle-check-filled text-success";
+            default:
+                return "";
+        }
+    };
+
+    const systemUpdateMessage = (entry: ActivityEntryBag): string => {
+        const isCreatedByPopulated = isNullOrWhiteSpace(entry.createdBy) ? false : true;
+        if (!entry.systemUpdate) {
+            return "";
+        }
+
+        switch (entry.systemUpdate.systemUpdateType) {
+            case SystemUpdateType.Creation:
+                if (isCreatedByPopulated) {
+                    return `<span class="text-semibold">${entry.createdBy}</span> submitted this connection request for ${props.requestDetails?.connectionOpportunityName}.`;
+                }
+                return `This connection request was submitted for ${props.requestDetails?.connectionOpportunityName}.`;
+            case SystemUpdateType.StatusSet:
+                if (isCreatedByPopulated) {
+                    return `<span class="text-semibold">${entry.createdBy}</span> set the connection request status to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                }
+                return `The connection request status was set to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+            case SystemUpdateType.StatusUpdated:
+                if (isCreatedByPopulated) {
+                    return `<span class="text-semibold">${entry.createdBy}</span> changed the connection request status from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                }
+                return `The connection request status changed from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+            case SystemUpdateType.StatusCleared:
+                if (isCreatedByPopulated) {
+                    return `<span class="text-semibold">${entry.createdBy}</span> cleared the connection request status (was <span class="text-semibold">${entry.systemUpdate.previousValue}</span>).`;
+                }
+                return `The connection request status was cleared (was <span class="text-semibold">${entry.systemUpdate.previousValue}</span>).`;
+            case SystemUpdateType.StateChange: {
+                const hasPrevious = !isNullOrWhiteSpace(entry.systemUpdate.previousValue);
+
+                if (isCreatedByPopulated) {
+                    return hasPrevious
+                        ? `<span class="text-semibold">${entry.createdBy}</span> changed the connection request state from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`
+                        : `<span class="text-semibold">${entry.createdBy}</span> set the connection request state to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                }
+                return hasPrevious
+                    ? `The connection request state changed from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`
+                    : `The connection request state was set to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+            }
+            case SystemUpdateType.Assignment:
+                if (isCreatedByPopulated) {
+                    return `<span class="text-semibold">${entry.createdBy}</span> assigned <span class="text-semibold">${entry.systemUpdate.newValue}</span> to the connection request.`;
+                }
+                return `The connection request was assigned to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+            case SystemUpdateType.Unassignment:
+                if (isCreatedByPopulated) {
+                    return `<span class="text-semibold">${entry.createdBy}</span> unassigned <span class="text-semibold">${entry.systemUpdate.previousValue}</span> from the connection request.`;
+                }
+                return `The connection request was unassigned from <span class="text-semibold">${entry.systemUpdate.previousValue}</span>.`;
+            case SystemUpdateType.Reassignment:
+                if (isCreatedByPopulated) {
+                    return `<span class="text-semibold">${entry.createdBy}</span> reassigned the connection request from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                }
+                return `The connection request was reassigned from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+            case SystemUpdateType.Transfer:
+                if (isCreatedByPopulated) {
+                    return `<span class="text-semibold">${entry.createdBy}</span> transferred the connection request from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                }
+                return `The connection request was transferred from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+            case SystemUpdateType.DueDateChange:
+            case SystemUpdateType.DueSoonDateChange: {
+                const dateType = entry.systemUpdate.systemUpdateType === SystemUpdateType.DueDateChange ? "Due Date" : "Due Soon Date";
+                // TODO - humanize the dates
+                return `Status change auto-updated <span class="text-semibold">${dateType}</span> for the request from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+            }
+            case SystemUpdateType.Completion:
+                if (isCreatedByPopulated) {
+                    return `<span class="text-semibold">${entry.createdBy}</span> completed this connection request.`;
+                }
+                return `This connection request was completed.`;
+            default:
+                return "";
+        }
+    };
+
+    function toggleAdditionalRequests(): void {
+        areAdditionalRequestsExpanded.value = !areAdditionalRequestsExpanded.value;
+    }
+
+    function getAttributeValueText(attributeValues: Record<string, string> | null, attribute: PublicAttributeBag, key: string): string {
+        const fieldTypeGuid = toGuidOrNull(attribute.fieldTypeGuid);
+        const fieldType = getFieldType(fieldTypeGuid ?? FieldType.Text);
+
+        const rawValue = attributeValues?.[key] ?? "";
+        const configValues = attribute.configurationValues ?? {};
+
+        return fieldType?.getTextValue?.(rawValue, configValues) ?? rawValue;
+    }
+
+    function getRequestMeta(request: AdditionalRequestBag) {
+        const parts: string[] = [];
+
+        if (request.connectionStatus) {
+            parts.push(request.connectionStatus);
+        }
+
+        if (request.connector) {
+            parts.push(request.connector);
+        }
+
+        if (request.requestCreatedDateTime) {
+            parts.push(`Requested ${getElapsedDate(request.requestCreatedDateTime)}`);
+        }
+
+        if (request.requester) {
+            parts.push(`by ${request.requester}`);
+        }
+
+        return parts.join(" • ");
+    }
+
+    function getElapsedDate(dateTime: string | null | undefined): string | undefined {
+        const rockDateTime = RockDateTime.parseISO(dateTime ?? "");
+        return rockDateTime?.toElapsedString();
+    }
+
+    function getDueDateColor(dueStatus: DueStatus | null | undefined, isCompleted: boolean): string {
+        switch (dueStatus) {
+            case DueStatus.DueLater:
+                return isCompleted ? "text-emerald" : "text-interface-medium";
+            case DueStatus.DueSoon:
+                return "text-warning";
+            case DueStatus.Overdue:
+                return "text-danger";
+            default:
+                return "text-interface-medium";
+        }
+    }
+
+    function onConnectorDropdownClick(): void {
+        if (!props.canEditConnectionRequest) {
+            return;
+        }
+
+        isConnectorDropdownOpen.value = true;
+    }
+
+    // TODO - Determine if this needs to be saved immediately
+    function updateConnector(connectorKey: string | null | undefined): void {
+        if (!connectorKey || isNullOrWhiteSpace(connectorKey)) {
+            return;
+        }
+
+        selectedConnector.value = connectorKey;
+        isConnectorDropdownOpen.value = false;
+
+        emit("onReassignConnector", connectorKey);
+    }
+
+    function updateActivityFilter(activityFilter: ListItemBag): void {
+        selectedActivityFilter.value = activityFilter;
+        isActivityFilterDropdownOpen.value = false;
+    }
+
+    function asLocaleString(dateTime: string | null | undefined): string {
+        let date = RockDateTime.parseISO(dateTime ?? "");
+
+        if (!date) {
+            return "";
+        }
+
+        return date.toLocaleString({ year: "numeric", month: "numeric", day: "numeric" });
+    }
+
+    function getRequirementLabelType(requirement: GroupMemberRequirementBag): "default" | "success" | "warning" | "danger" | "custom" {
+        switch (requirement.groupMemberRequirementState) {
+            case MeetsGroupRequirement.Meets:
+                return "success";
+            case MeetsGroupRequirement.NotMet:
+                return "danger";
+            case MeetsGroupRequirement.MeetsWithWarning:
+                return "warning";
+            default:
+                return "default";
+        }
+    }
+
+    function onRequirementErrorDismissed(idKey: string): void {
+        isManualRequirementErrorVisibleRecord.value[idKey] = false;
+    }
+
+    function onAddRequestNoteErrorDismissed(): void {
+        isAddRequestNoteErrorMessageVisible.value = false;
+    }
+
+    function setActivityCardRef(key: string | null | undefined, el: unknown): void {
+        if (!key || isNullOrWhiteSpace(key)) {
+            return;
+        }
+
+        activityCardRefs.value.set(key, el as InstanceType<typeof ActivityCard>);
+    }
+
+    // TODO - Move to reusable place?
+    /** Adds the tooltip behavior to the element. */
+    function addTooltip(element: Element | null): void {
+        if (element) {
+            tooltip(element);
+        }
+    }
+
+    function onActionItemClick(workflowGuid: string): void {
+        const launchWorkflowBag = <LaunchWorkflowBag>{
+            connectionRequestIdKeys: [props.requestDetails?.connectionRequestIdKey],
+            connectionWorkflowGuid: workflowGuid
+        };
+
+        emit("launchWorkflow", launchWorkflowBag);
+    }
+
+    async function onAddRequestNote(): Promise<void> {
+        const bag: ConnectionRequestNoteBag = {
+            connectionRequestIdKey: props.requestDetails?.connectionRequestIdKey,
+            noteIdKey: null,
+            noteText: connectionRequestNoteText.value
+        };
+
+        const errorMessage = await saveNote(bag);
+
+        if (isNullOrWhiteSpace(errorMessage)) {
+            connectionRequestNoteText.value = "";
+            return;
+        }
+
+        isAddRequestNoteErrorMessageVisible.value = true;
+        addRequestNoteErrorMessage.value = errorMessage;
+    }
+
+    async function onEditRequestNote(bag: ConnectionRequestNoteBag, key: string | null | undefined): Promise<void> {
+        if (!key || isNullOrWhiteSpace(key)) {
+            return;
+        }
+
+        const errorMessage = await saveNote(bag);
+
+        activityCardRefs.value.get(key)?.processSave(errorMessage);
+    }
+
+    async function updateManualRequirement(requirement: GroupMemberRequirementBag, isChecked: boolean): Promise<void> {
+        // Check if we are in "reset" state and return early if we are.
+        if (isResettingRequirementCheckBox.value) {
+            isResettingRequirementCheckBox.value = false;
+            return;
+        }
+
+        if (!requirement.groupRequirementIdKey) {
+            return;
+        }
+
+        const previousState = requirement.groupMemberRequirementState;
+        // Have to keep the requirement state in sync with the checkbox since the checkbox's model value just watches the requirement state.
+        requirement.groupMemberRequirementState = isChecked ? MeetsGroupRequirement.Meets : MeetsGroupRequirement.NotMet;
+
+        // If this is only a pending group member then we can't actually save the group requirement, but we will update its value to be used
+        // if the user attempts to complete the request.
+        if (props.requestDetails?.placementGroup?.isPendingGroupMember) {
+            return;
+        }
+
+        isManualRequirementSavedRecord.value[requirement.groupRequirementIdKey] = false;
+        isManualRequirementErrorVisibleRecord.value[requirement.groupRequirementIdKey] = false;
+        isManualRequirementLoadingRecord.value[requirement.groupRequirementIdKey] = true;
+
+        const bag: UpdateGroupMemberRequirementBag = {
+            groupMemberRequirementIdKey: requirement.groupMemberRequirementIdKey,
+            groupRequirementIdKey: requirement.groupRequirementIdKey,
+            groupMemberIdKey: props.requestDetails?.placementGroup?.groupMemberIdKey,
+            isMet: isChecked
+        };
+
+        const result = await invokeBlockAction<GroupMemberRequirementBag>("UpdateManualRequirement", {
+            bag
+        });
+
+        if (result.isSuccess && result.data) {
+            // Because there can only be one placement group, we can trust that group requirement id key will be unique.
+            // const requirementToUpdate = groupMemberRequirements.value.find(gmr => gmr.groupRequirementIdKey === requirement.groupRequirementIdKey);
+
+            // TODO - the return can be a simple idkey for the group member requirement.
+            requirement.groupMemberRequirementIdKey = result.data.groupMemberRequirementIdKey;
+            isManualRequirementSavedRecord.value[requirement.groupRequirementIdKey] = true;
+        }
+        else {
+            // If an error occurred set the requirement state back to its previous state ... this will cause the checkbox to emit update:modelValue,
+            // so set isResettingRequirementCheckBox equal to true to prevent the block action from being invoked again.
+            isResettingRequirementCheckBox.value = true;
+            requirement.groupMemberRequirementState = previousState;
+
+            isManualRequirementErrorVisibleRecord.value[requirement.groupRequirementIdKey] = true;
+            manualRequirementErrorRecord.value[requirement.groupRequirementIdKey] = result.errorMessage ?? "An error occurred while updating the group member requirement.";
+        }
+
+        isManualRequirementLoadingRecord.value[requirement.groupRequirementIdKey] = false;
+    }
+
+    async function saveNote(bag: ConnectionRequestNoteBag): Promise<string | null> {
+        const result = await invokeBlockAction<ActivityEntryBag>("SaveNote", {
+            bag
+        });
+
+        if (result.isSuccess && result.data) {
+            const index = activityEntries.value.findIndex(a => a.key === result.data?.key);
+            if (index !== -1) {
+                activityEntries.value[index] = result.data;
+            }
+            else {
+                activityEntries.value.push(result.data);
+            }
+
+            return null;
+        }
+        else {
+            return result.errorMessage ?? "An error occurred while saving the connection request note.";
+        }
+    }
+
+    async function deleteNote(noteIdKey: string): Promise<void> {
+        const result = await invokeBlockAction<string>("DeleteNote", {
+            noteIdKey
+        });
+
+        if (result.isSuccess && result.data) {
+            const index = activityEntries.value.findIndex(a => a.key === result.data);
+            if (index !== -1) {
+                activityEntries.value.splice(index, 1);
+            }
+        }
+        else {
+            // TODO: Handle error message from failed delete
+        }
+    }
+
+    async function deleteActivity(activityIdKey: string): Promise<void> {
+        const result = await invokeBlockAction<string>("DeleteActivity", {
+            activityIdKey
+        });
+
+        if (result.isSuccess && result.data) {
+            const index = activityEntries.value.findIndex(a => a.key === result.data);
+            if (index !== -1) {
+                activityEntries.value.splice(index, 1);
+            }
+        }
+        else {
+            // TODO: Handle error message from failed delete
+        }
+    }
+
+    watch(() => props.options, () => {
+        connectorItems.value = props.options?.connectorItems ?? [];
+    });
+
+    watch(() => props.requestDetails, () => {
+        selectedConnector.value = props.requestDetails?.connectorPerson ?? "";
+        groupMemberRequirements.value = props.requestDetails?.placementGroup?.groupMemberRequirements ?? [];
+    }, { immediate: true });
+
+    watch(() => props.requestDetails?.activityEntries, () => {
+        activityEntries.value = props.requestDetails?.activityEntries ?? [];
+    });
+
+    // TODO - I need to reset state on close/navigate
+</script>

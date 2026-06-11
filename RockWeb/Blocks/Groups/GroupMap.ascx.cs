@@ -125,7 +125,6 @@ namespace RockWeb.Blocks.Groups
     [CodeEditorField( "Info Window Contents",
         Description = "Lava template for the info window. To suppress the window provide a blank template.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 600,
         IsRequired = false,
         DefaultValue = DEFAULT_LAVA_TEMPLATE,

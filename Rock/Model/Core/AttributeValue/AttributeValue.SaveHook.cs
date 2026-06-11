@@ -19,6 +19,7 @@ using System;
 using System.Linq;
 using Rock.Cms.StructuredContent;
 using Rock.Data;
+using Rock.Security;
 using Rock.Tasks;
 using Rock.Web.Cache;
 
@@ -47,6 +48,10 @@ namespace Rock.Model
                     Entity.Value = string.Empty;
                 }
 
+                // Check if we are newly added or updated and the Value property modified.
+                var valueWasModified = Entry.State == EntityContextState.Added
+                    || ( Entry.State == EntityContextState.Modified && Entity.Value != ( string ) Entry.OriginalValues[nameof( Entity.Value )] );
+
                 if ( attributeCache != null )
                 {
                     // Check to see if this attribute value if for a File, Image, or BackgroundCheck field type.
@@ -56,6 +61,28 @@ namespace Rock.Model
                     // The Label field type is a list of existing labels so should not be included, but the image field type uploads a new file so we do want it included.
                     // Don't use BinaryFileFieldType as that type of attribute's file can be used by more than one attribute
                     var field = attributeCache.FieldType.Field;
+
+                    if ( valueWasModified && field != null && field.GetType().Assembly.FullName.StartsWith( "Rock" ) )
+                    {
+                        var rules = field.GetValidationRules( attributeCache.ConfigurationValues );
+
+                        try
+                        {
+                            StringValueValidator.Validate( Entity.Value, rules, typeof( AttributeValue ), nameof( AttributeValue.Value ) );
+                        }
+                        catch ( PropertyValidationException ex )
+                        {
+                            if ( DbContext.EnableStringValidation )
+                            {
+                                throw;
+                            }
+                            else
+                            {
+                                ExceptionLogService.LogException( new Exception( "Attribute value validation failed.", ex ) );
+                            }
+                        }
+                    }
+
                     if ( field != null && (
                         field is Field.Types.FileFieldType ||
                         field is Field.Types.ImageFieldType ||
@@ -77,10 +104,6 @@ namespace Rock.Model
                         SaveToHistoryTable( rockContext, attributeCache, true );
                     }
                 }
-
-                // Check if we are newly added or updated and the Value property modified.
-                var valueWasModified = Entry.State == EntityContextState.Added
-                    || ( Entry.State == EntityContextState.Modified && Entity.Value != ( string ) Entry.OriginalValues[nameof( Entity.Value )] );
 
                 if ( valueWasModified )
                 {
@@ -143,6 +166,8 @@ namespace Rock.Model
                     }
                 }
 
+                PostSaveDeleteUnreferencedBinaryFile();
+
                 // Previously we were doing this here:
                 //     UPDATE [AttributeValue] SET ValueAsDateTime = ...
                 // We no longer need to do this via SQL because it is handled in the PreSave call
@@ -152,13 +177,12 @@ namespace Rock.Model
             }
 
             /// <summary>
-            /// Delete the old binary file for UPDATE and DELETE and make sure new binary files are not temporary
+            /// Make sure new binary files are not temporary
             /// </summary>
             /// <param name="rockContext">The rock context.</param>
             private void PreSaveBinaryFile( RockContext rockContext )
             {
                 Guid? newBinaryFileGuid = null;
-                Guid? oldBinaryFileGuid = null;
 
                 if ( State == EntityContextState.Added || State == EntityContextState.Modified )
                 {
@@ -169,7 +193,37 @@ namespace Rock.Model
                     newBinaryFileGuid = Entity.Value.AsGuidOrNull() ?? ( parts.Length > 1 ? parts[1].AsGuidOrNull() : null );
                 }
 
-                if ( State == EntityContextState.Modified || State == EntityContextState.Deleted )
+                if ( newBinaryFileGuid.HasValue )
+                {
+                    BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                    var binaryFile = binaryFileService.Get( newBinaryFileGuid.Value );
+                    if ( binaryFile != null && binaryFile.IsTemporary )
+                    {
+                        binaryFile.IsTemporary = false;
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Deletes the binary file associated with the previous value if it is no longer referenced.
+            /// </summary>
+            /// <remarks>This helps prevent orphaned binary files and ensures that unused files are
+            /// removed from storage.</remarks>
+            private void PostSaveDeleteUnreferencedBinaryFile()
+            {
+                Guid? newBinaryFileGuid = null;
+                Guid? oldBinaryFileGuid = null;
+
+                if ( PreSaveState == EntityContextState.Added || PreSaveState == EntityContextState.Modified )
+                {
+                    // The value is either a Guid or a comma separated string with the first part being the
+                    // BackgroundCheckFieldType's provider component EntityTypeId and the second part
+                    // is the binary file guid.
+                    var parts = ( Entity.Value ?? "" ).Split( ',' );
+                    newBinaryFileGuid = Entity.Value.AsGuidOrNull() ?? ( parts.Length > 1 ? parts[1].AsGuidOrNull() : null );
+                }
+
+                if ( PreSaveState == EntityContextState.Modified || PreSaveState == EntityContextState.Deleted )
                 {
                     var originalValue = Entry.OriginalValues[nameof( Entity.Value )]?.ToString() ?? "";
                     var parts = originalValue.Split( ',' );
@@ -186,16 +240,6 @@ namespace Rock.Model
                         };
 
                         deleteBinaryFileAttributeMsg.Send();
-                    }
-                }
-
-                if ( newBinaryFileGuid.HasValue )
-                {
-                    BinaryFileService binaryFileService = new BinaryFileService( rockContext );
-                    var binaryFile = binaryFileService.Get( newBinaryFileGuid.Value );
-                    if ( binaryFile != null && binaryFile.IsTemporary )
-                    {
-                        binaryFile.IsTemporary = false;
                     }
                 }
             }

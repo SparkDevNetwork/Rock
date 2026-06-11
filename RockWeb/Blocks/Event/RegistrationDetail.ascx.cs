@@ -1725,15 +1725,14 @@ namespace RockWeb.Blocks.Event
                 registration.RegistrationInstance.RegistrationTemplate != null &&
                 registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue )
             {
-                var personIds = RegistrantsState.Select( r => r.PersonId ).ToList();
+                var signatureDocumentIds = RegistrantsState.Select( r => r.SignatureDocumentId ).ToList();
                 var documents = new SignatureDocumentService( rockContext )
                     .Queryable().AsNoTracking()
                     .Where( d =>
+                        signatureDocumentIds.Contains( d.Id ) &&
                         d.SignatureDocumentTemplateId == registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value &&
-                        d.Status == SignatureDocumentStatus.Signed &&
-                        d.BinaryFileId.HasValue &&
-                        d.AppliesToPersonAlias != null && personIds.Contains( d.AppliesToPersonAlias.PersonId ) )
-                    .OrderByDescending( d => d.LastStatusDate )
+                        d.BinaryFileId.HasValue
+                    )
                     .ToList();
 
                 foreach ( var registrantInfo in RegistrantsState )

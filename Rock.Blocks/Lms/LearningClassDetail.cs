@@ -1073,7 +1073,6 @@ namespace Rock.Blocks.Lms
             }
 
             var components = LearningActivityContainer.Instance.Components.Values;
-            var now = DateTime.Now;
             var studentCount = new LearningParticipantService( RockContext ).GetStudents( entity.Id ).Count();
 
             // Return all activities for the course.
@@ -1085,7 +1084,7 @@ namespace Rock.Blocks.Lms
                 .AddField( "dates", a => a.DatesDescription )
                 .AddField( "isPastDue", a => a.IsPastDue )
                 .AddField( "count", a => studentCount )
-                .AddField( "completedCount", a => a.LearningClassActivityCompletions.Count( c => c.IsStudentCompleted || c.IsFacilitatorCompleted ) )
+                .AddField( "completedCount", a => a.LearningClassActivityCompletions.Count( c => c.IsCompleted ) )
                 .AddField( "componentIconCssClass", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.IconCssClass )
                 .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.HighlightColor )
                 .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.Name )

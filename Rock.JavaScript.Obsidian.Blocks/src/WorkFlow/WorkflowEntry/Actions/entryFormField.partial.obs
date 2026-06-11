@@ -22,6 +22,7 @@
 <script setup lang="ts">
     import RockField from "@Obsidian/Controls/rockField.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { getSecurityGrant, provideSecurityGrant } from "@Obsidian/Utility/block";
     import { emptyGuid } from "@Obsidian/Utility/guid";
     import { EntryFormFieldBag } from "@Obsidian/ViewModels/Workflow/entryFormFieldBag";
     import { computed, PropType } from "vue";
@@ -41,6 +42,11 @@
     const emit = defineEmits<{
         (e: "updateFieldValue", attributeGuid: string, value: string): void;
     }>();
+
+    if (props.field.securityGrantToken) {
+        const securityGrant = getSecurityGrant(props.field.securityGrantToken);
+        provideSecurityGrant(securityGrant);
+    }
 
     /** The current value from the field values for this field. */
     const value = computed((): string => {

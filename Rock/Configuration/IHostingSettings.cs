@@ -63,5 +63,11 @@ namespace Rock.Configuration
         /// or the name of the machine when not running in a farm.
         /// </summary>
         string NodeName { get; }
+
+        /// <summary>
+        /// Indicates whether the application is running in a development
+        /// environment (e.g., launched from Visual Studio).
+        /// </summary>
+        bool IsDevelopmentEnvironment { get; }
     }
 }

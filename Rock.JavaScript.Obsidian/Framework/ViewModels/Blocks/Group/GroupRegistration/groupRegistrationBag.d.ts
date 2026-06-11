@@ -36,6 +36,9 @@ export type GroupRegistrationBag = {
     /** Gets or sets the home phone. */
     homePhone?: string | null;
 
+    /** Gets or sets the home phone country code. */
+    homePhoneCountryCode?: string | null;
+
     /** Gets or sets a value indicating whether [enable SMS]. */
     isMessagingEnabled: boolean;
 
@@ -44,6 +47,9 @@ export type GroupRegistrationBag = {
 
     /** Gets or sets the mobile phone. */
     mobilePhone?: string | null;
+
+    /** Gets or sets the mobile phone country code. */
+    mobilePhoneCountryCode?: string | null;
 
     /** Gets or sets the result lava template. */
     resultLavaTemplate?: string | null;
@@ -62,4 +68,7 @@ export type GroupRegistrationBag = {
 
     /** Gets or sets the spouse mobile phone. */
     spouseMobilePhone?: string | null;
+
+    /** Gets or sets the spouse mobile phone country code. */
+    spouseMobilePhoneCountryCode?: string | null;
 };

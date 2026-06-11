@@ -13,21 +13,9 @@
                     </span>
                 </div>
 
-                <div class="grid-quick-filter grid-actions" :class="{ 'active': isSearchExpanded }">
-                    <button type="button" class="btn btn-grid-action" title="Search" @click.stop.prevent="onSearchClick">
-                        <i class="ti ti-search ti-fw"></i>
-                    </button>
-
-                    <div ref="quickFilterContainerElement" class="grid-quick-filter-search" :class="{ 'open': isSearchExpanded }">
-                        <!--
-                            The form is here to prevent iOS from causing the Return key
-                            to become a Go key and triggering a WebForms postback.
-                        -->
-                        <RockForm>
-                            <TextBox v-model="quickFilterValue" placeholder="Search" />
-                        </RockForm>
-                    </div>
-                </div>
+                <QuickFilter v-model="quickFilterValue"
+                             quickFilterClass="grid-actions"
+                             quickFilterButtonClass="btn-grid-action" />
             </div>
             <div class="margin-b-md mt-3">
                 <div class="d-flex flex-row flex-sm-row justify-content-md-start">
@@ -145,7 +133,7 @@
     import { GroupLocationsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/groupLocationsBag";
     import { CloneScheduleBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/CloneScheduleBag";
     import { PreferenceKey, PageParameterKey, NavigationUrlKey } from "./CheckInScheduleBuilder/types.partial";
-    import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+    import { computed, onMounted, ref, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { escapeHtml } from "@Obsidian/Utility/stringUtils";
@@ -153,7 +141,7 @@
     import { Guid } from "@Obsidian/Types";
     import Grid from "@Obsidian/Controls/grid";
     import Modal from "@Obsidian/Controls/modal.obs";
-    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import QuickFilter from "@Obsidian/Controls/Internal/quickFilter.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
@@ -181,8 +169,6 @@
     const schedules = ref<ListItemBag[]>([]);
 
     // Grid Search
-    const isSearchExpanded = ref(false);
-    const quickFilterContainerElement = ref<HTMLElement>();
     const quickFilterValue = ref<string>("");
 
     // Filter Data
@@ -223,103 +209,6 @@
             );
         });
     });
-
-    // #endregion
-
-    // #region Grid Search Functions
-
-    /**
-     * Called when the quick filter search button is clicked. Toggle the
-     * visible state of the search box.
-     */
-    function onSearchClick(): void {
-        // Don't allow hiding the search box if there is content in it.
-        if (isSearchExpanded.value && quickFilterValue.value) {
-            return;
-        }
-
-        isSearchExpanded.value = !isSearchExpanded.value;
-
-        // Focus the search box if it is visible.
-        if (isSearchExpanded.value) {
-            nextTick(() => {
-                const searchBox = quickFilterContainerElement.value?.querySelector(".grid-quick-filter-search input") as HTMLInputElement | null;
-                searchBox?.focus();
-            });
-        }
-    }
-
-    /**
-     * Checks if the element or any ancestor can be focused. This is a rough
-     * guess and not 100% accurate, but should be good enough for our uses.
-     *
-     * @param element The element whose ancestor tree is to be checked for focusability.
-     *
-     * @returns `true` if the element or any ancestor is focusable, otherwise `false`.
-     */
-    function isTreeFocusable(element: HTMLElement | null): boolean {
-        while (element != null) {
-            if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
-                return true;
-            }
-
-            if (element.isContentEditable) {
-                return true;
-            }
-
-            element = element.parentElement;
-        }
-
-        return false;
-    }
-
-    /**
-     * Event handler for when a key down event occurs anywhere in the document.
-     *
-     * @param event The keyboard event.
-     */
-    function onDocumentKeyDown(event: KeyboardEvent): void {
-        // If it's not any kind of HTML Element, then just ignore it.
-        if (!(event.target instanceof HTMLElement)) {
-            return;
-        }
-
-        // If the quick filter has the focus, investigate further.
-        if (quickFilterContainerElement.value?.contains(event.target)) {
-            if (event.key === "Escape") {
-                // If the escape key is pressed then clear the search.
-                if (quickFilterValue.value === "") {
-                    const searchBox = quickFilterContainerElement.value?.querySelector(".grid-quick-filter-search input") as HTMLInputElement | null;
-
-                    searchBox?.blur();
-                    isSearchExpanded.value = false;
-                }
-                else {
-                    quickFilterValue.value = "";
-                }
-            }
-            else if (event.key === "Enter") {
-                // If the enter/return key is pressed, it signifies the individual
-                // is done typing and is ready to "search"; if the event is not
-                // cancelled, this can lead to other grid actions (i.e. row delete)
-                // from trying to handle the event.
-                event.preventDefault();
-            }
-        }
-
-        // If no other input type element has focus and they hit the hotkey
-        // for searching, open the search bar and focus the search box.
-        if (!isTreeFocusable(event.target)) {
-            if (event.key === "F" && event.ctrlKey && event.shiftKey) {
-                isSearchExpanded.value = true;
-
-                nextTick(() => {
-                    const searchBox = quickFilterContainerElement.value?.querySelector(".grid-quick-filter-search input") as HTMLInputElement | null;
-                    searchBox?.focus();
-                });
-            }
-        }
-    }
 
     // #endregion
 
@@ -516,17 +405,12 @@
     onConfigurationValuesChanged(useReloadBlock());
 
     onMounted(() => {
-        document.addEventListener("keydown", onDocumentKeyDown);
         if (!scheduleCategory.value?.value && config.defaultScheduleCategory) {
             scheduleCategory.value = config.defaultScheduleCategory;
             return;
         }
 
         loadScheduleBuilderData();
-    });
-
-    onBeforeUnmount(() => {
-        document.removeEventListener("keydown", onDocumentKeyDown);
     });
 
 </script>

@@ -1,0 +1,377 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentStack headerLocation="top"
+                  description="Set up workflows that run automatically when a member is added, updated, or removed from the group.">
+        <Grid :data="gridData" keyField="guid" itemTerm="Workflow Trigger" liveUpdates light @addItem="onAdd">
+            <TextColumn name="name" field="name" title="Name" />
+            <TextColumn name="workflow" field="workflow" title="Workflow" />
+            <TextColumn name="triggerType" title="When">
+                <template #format="{ row }">
+                    <span v-html="row.triggerType"></span>
+                </template>
+            </TextColumn>
+            <BooleanColumn name="isActive" field="isActive" title="Active" />
+            <EditColumn @click="onEdit" />
+            <DeleteColumn @click="onDelete" />
+        </Grid>
+    </ContentStack>
+
+    <Modal v-model="isModalVisible" :title="`${isEditing ? 'Edit' : 'Add'} Group Member Workflow`" saveText="Save"
+           cancelText="Cancel" :onSave="onSave">
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Danger">
+            {{ errorMessage }}
+        </NotificationBox>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="workflowTriggerName" label="Name" rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox label="Active" v-model="theWorkflowTrigger.isActive" />
+            </div>
+        </div>
+
+        <WorkflowTypePicker label="Start Workflow" v-model="theWorkflowTrigger.workflowType" rules="required" help="Specifies the workflow type to start when the requirement or event is triggered." />
+
+        <DropDownList label="When" v-model="workflowTriggerTypeValue"
+                      :items="enumToListItemBag(GroupMemberWorkflowTriggerTypeDescription)" />
+
+        <ConditionalWell>
+            <div v-if="theWorkflowTrigger.triggerType === GroupMemberWorkflowTriggerType.MemberAddedToGroup
+                || theWorkflowTrigger.triggerType === GroupMemberWorkflowTriggerType.MemberRemovedFromGroup">
+                <DropDownList label="With Status Of" v-model="toStatusValue"
+                              :items="enumToListItemBag(GroupMemberStatusDescription)" />
+
+                <DropDownList label="With Role" v-model="toRoleGuidValue" :items="props.groupRoleOptions" />
+            </div>
+
+            <div v-if="theWorkflowTrigger.triggerType === GroupMemberWorkflowTriggerType.MemberStatusChanged">
+                <DropDownList label="From Status Of" v-model="fromStatusValue"
+                              :items="enumToListItemBag(GroupMemberStatusDescription)" />
+
+                <DropDownList label="To Status Of" v-model="toStatusValue"
+                              :items="enumToListItemBag(GroupMemberStatusDescription)" />
+            </div>
+
+            <div v-if="theWorkflowTrigger.triggerType === GroupMemberWorkflowTriggerType.MemberRoleChanged">
+                <DropDownList label="From Role" v-model="fromRoleGuidValue" :items="props.groupRoleOptions" />
+
+                <DropDownList label="To Role" v-model="toRoleGuidValue" :items="props.groupRoleOptions" />
+            </div>
+
+            <div v-if="theWorkflowTrigger.triggerType === GroupMemberWorkflowTriggerType.MemberAttendedGroup">
+                <div class="form-group">
+                    <InlineCheckBox label="Trigger on First Attendance"
+                                    v-model="theWorkflowTrigger.triggerOnFirstAttendance" help="When enabled, the workflow starts only the first time a person attends a group of this type. When disabled, it starts every time the person attends." />
+                </div>
+            </div>
+
+            <div v-if="theWorkflowTrigger.triggerType === GroupMemberWorkflowTriggerType.MemberPlacedElsewhere">
+                <div class="form-group">
+                    <InlineCheckBox label="Show Note on Placement" v-model="theWorkflowTrigger.showNoteOnPlacement" help="When enabled, the workflow displays a note entry field when the member is placed." />
+                </div>
+
+                <div class="form-group">
+                    <InlineCheckBox label="Require Note on Placement"
+                                    v-model="theWorkflowTrigger.requireNoteOnPlacement" help="When enabled, the workflow requires a note to be entered when the member is placed." />
+                </div>
+            </div>
+        </ConditionalWell>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import Grid, { BooleanColumn, TextColumn, EditColumn, DeleteColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import { GroupTypeGroupMemberWorkflowTriggerBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeDetail/groupTypeGroupMemberWorkflowTriggerBag";
+    import { GroupMemberWorkflowTriggerType, GroupMemberWorkflowTriggerTypeDescription } from "@Obsidian/Enums/Group/groupMemberWorkflowTriggerType";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { CanDeleteRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeDetail/canDeleteRequestBag";
+    import { CanDeleteResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeDetail/canDeleteResponseBag";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import { GroupMemberStatus, GroupMemberStatusDescription } from "@Obsidian/Enums/Group/groupMemberStatus";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { EntityKey } from "./types.partial";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+
+    const props = defineProps({
+        /**
+         * The current workflow triggers configured for this group type.
+         */
+        groupMemberWorkflowTriggers: {
+            type: Array as PropType<GroupTypeGroupMemberWorkflowTriggerBag[] | null>,
+            required: true
+        },
+        /**
+         * Available group roles for qualifier selection (to/from role).
+         */
+        groupRoleOptions: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:groupMemberWorkflowTriggers", value: GroupTypeGroupMemberWorkflowTriggerBag[]): void
+    }>();
+
+    // #region Values
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const theWorkflowTrigger = ref<GroupTypeGroupMemberWorkflowTriggerBag>(createNewWorkflowTrigger());
+
+    const isModalVisible = ref(false);
+    const isEditing = ref(false);
+    const errorMessage = ref<string | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const gridData = computed(() => {
+        const rows = (props.groupMemberWorkflowTriggers ?? []).map(t => ({
+            guid: t.guid,
+            name: t.name,
+            workflow: t.workflowType?.text,
+            triggerType: formatTriggerType(t),
+            isActive: t.isActive
+        }));
+
+        return { rows };
+    });
+
+    const workflowTriggerName = computed({
+        get(): string {
+            return theWorkflowTrigger.value.name ?? "";
+        },
+        set(value: string) {
+            theWorkflowTrigger.value.name = value;
+        }
+    });
+
+    const workflowTriggerTypeValue = computed({
+        get(): string {
+            return theWorkflowTrigger.value.triggerType.toString();
+        },
+        set(value: string) {
+            theWorkflowTrigger.value.triggerType = Number(value) as GroupMemberWorkflowTriggerType;
+        }
+    });
+
+    const toStatusValue = computed({
+        get(): string {
+            return theWorkflowTrigger.value.toStatus?.toString() ?? "";
+        },
+        set(value: string) {
+            theWorkflowTrigger.value.toStatus = value ? Number(value) as GroupMemberStatus : null;
+        }
+    });
+
+    const fromStatusValue = computed({
+        get(): string {
+            return theWorkflowTrigger.value.fromStatus?.toString() ?? "";
+        },
+        set(value: string) {
+            theWorkflowTrigger.value.fromStatus = value ? Number(value) as GroupMemberStatus : null;
+        }
+    });
+
+    const toRoleGuidValue = computed({
+        get(): string {
+            return theWorkflowTrigger.value.toRoleGuid ?? "";
+        },
+        set(value: string) {
+            theWorkflowTrigger.value.toRoleGuid = value || null;
+        }
+    });
+
+    const fromRoleGuidValue = computed({
+        get(): string {
+            return theWorkflowTrigger.value.fromRoleGuid ?? "";
+        },
+        set(value: string) {
+            theWorkflowTrigger.value.fromRoleGuid = value || null;
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Builds the user-facing "When" text for the workflow trigger grid.
+     * This returns HTML markup and is rendered via v-html.
+     *
+     * @param trigger The trigger to format for display.
+     */
+
+    function formatTriggerType(trigger: GroupTypeGroupMemberWorkflowTriggerBag): string {
+        const typeText = GroupMemberWorkflowTriggerTypeDescription[trigger.triggerType];
+        const qualifiers: string[] = [];
+
+        // To/With Status
+        if (trigger.toStatus !== null && trigger.toStatus !== undefined) {
+            const statusText = GroupMemberStatusDescription[trigger.toStatus];
+            if (trigger.triggerType === GroupMemberWorkflowTriggerType.MemberStatusChanged) {
+                qualifiers.push(` to status of <strong>${statusText}</strong>`);
+            }
+            else {
+                qualifiers.push(` with status of <strong>${statusText}</strong>`);
+            }
+        }
+
+        // From Status
+        if (trigger.fromStatus !== null && trigger.fromStatus !== undefined) {
+            const statusText = GroupMemberStatusDescription[trigger.fromStatus];
+            qualifiers.push(` from status of <strong>${statusText}</strong>`);
+        }
+
+        // To/With Role
+        if (trigger.toRoleGuid) {
+            const role = props.groupRoleOptions.find(r => r.value?.toUpperCase() === trigger.toRoleGuid?.toUpperCase());
+            if (role) {
+                if (trigger.triggerType === GroupMemberWorkflowTriggerType.MemberRoleChanged) {
+                    qualifiers.push(` to role of <strong>${role.text}</strong>`);
+                }
+                else {
+                    qualifiers.push(` with role of <strong>${role.text}</strong>`);
+                }
+            }
+        }
+
+        // From Role
+        if (trigger.fromRoleGuid) {
+            const role = props.groupRoleOptions.find(r => r.value?.toUpperCase() === trigger.fromRoleGuid?.toUpperCase());
+            if (role) {
+                qualifiers.push(` from role of <strong>${role.text}</strong>`);
+            }
+        }
+
+        // First Time
+        if (trigger.triggerOnFirstAttendance) {
+            qualifiers.push(" for the first time");
+        }
+
+        if (qualifiers.length > 0) {
+            return typeText + qualifiers.join(" and ");
+        }
+
+        return typeText;
+    }
+
+    /**
+     * Creates a new workflow trigger record for the grid and edit modal.
+     */
+    function createNewWorkflowTrigger(): GroupTypeGroupMemberWorkflowTriggerBag {
+        return {
+            guid: newGuid(),
+            isActive: true,
+            order: 0,
+            requireNoteOnPlacement: false,
+            showNoteOnPlacement: false,
+            triggerOnFirstAttendance: false,
+            triggerType: GroupMemberWorkflowTriggerType.MemberAddedToGroup
+        };
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when the Add Workflow Trigger button is clicked.
+     */
+    function onAdd(): void {
+        isEditing.value = false;
+        errorMessage.value = null;
+
+        theWorkflowTrigger.value = createNewWorkflowTrigger();
+
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Called when the Edit button for a workflow trigger row is clicked.
+     *
+     * @param guid The unique identifier of the workflow trigger to edit.
+     */
+    function onEdit(guid: string): void {
+        const selected = props.groupMemberWorkflowTriggers?.find(t => t.guid === guid);
+        if (!selected) {
+            return;
+        }
+
+        isEditing.value = true;
+        theWorkflowTrigger.value = { ...selected };
+
+        errorMessage.value = null;
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Called when the Delete button for a workflow trigger row is clicked.
+     *
+     * @param guid The unique identifier of the workflow trigger to delete.
+     */
+    async function onDelete(guid: string): Promise<void> {
+        const result = await invokeBlockAction<CanDeleteResponseBag>("CanDeleteEntity", {
+            request: {
+                entityKey: EntityKey.GroupMemberWorkflowTrigger,
+                entityGuid: guid
+            } as CanDeleteRequestBag
+        });
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage || "Unable to delete this group member workflow trigger.";
+            return;
+        }
+
+        if (!result.data.canDelete) {
+            errorMessage.value = result.data.errorMessage || "This group member workflow trigger cannot be deleted.";
+            return;
+        }
+
+        const updatedTriggers = (props.groupMemberWorkflowTriggers ?? []).filter(t => t.guid !== guid);
+        emit("update:groupMemberWorkflowTriggers", updatedTriggers);
+        errorMessage.value = null;
+    }
+
+    /**
+     * Called when the workflow trigger modal Save button is clicked.
+     * Updates an existing trigger or appends a new one.
+     */
+    function onSave(): void {
+        if (!theWorkflowTrigger.value) {
+            return;
+        }
+
+        const current = props.groupMemberWorkflowTriggers ?? [];
+        const index = current.findIndex(t => t.guid === theWorkflowTrigger.value?.guid);
+
+        let updatedTriggers: GroupTypeGroupMemberWorkflowTriggerBag[];
+
+        if (index !== -1) {
+            updatedTriggers = [...current];
+            updatedTriggers.splice(index, 1, theWorkflowTrigger.value);
+        }
+        else {
+            updatedTriggers = [...current, theWorkflowTrigger.value];
+        }
+
+        emit("update:groupMemberWorkflowTriggers", updatedTriggers);
+        isModalVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+</script>

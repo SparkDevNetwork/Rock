@@ -7,6 +7,23 @@
     <RockBuildTasksAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)\libs\build-tasks\net6.0\Rock.Build.Tasks.dll</RockBuildTasksAssemblyFile>
   </PropertyGroup>
 
+  <!-- Versioning information -->
+  <PropertyGroup>
+    <Version>19.1.8</Version>
+    <InformationalVersion>Rock McKinley 19.1</InformationalVersion>
+
+    <FileVersion>$(Version)</FileVersion>
+    <Description>Rock RMS Core Assembly. Rock RMS is a community supported open-source Church Management System that provides innovative features to churches of all sizes.</Description>
+    <Company>Spark Development Network</Company>
+    <Product>Rock</Product>
+    <Copyright>Copyright © Spark Development Network 2011-2026</Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DefineConstants Condition="'$(TargetFramework)' == '' or '$(TargetFramework)' == 'net472'">$(DefineConstants);WEBFORMS</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' == '' or '$(TargetFramework)' == 'net472'">$(DefineConstants);REVIEW_WEBFORMS</DefineConstants>
+  </PropertyGroup>
+
   <!-- CopyToRockWeb task and defaults -->
   <UsingTask
       TaskName="Rock.Build.Tasks.CopyToRockWeb"
@@ -34,7 +51,8 @@
     <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-9pq7-rcxv-47vq" />
   </ItemGroup>
 
-  <PropertyGroup Label="Normalise stack trace file locations">
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" Label="Normalise stack trace file locations">
+    <!-- This interferes with things like Unit Tests, so only map paths on Release builds. The full path in an exception can display during debugging. -->
     <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=\</PathMap>
   </PropertyGroup>
 </Project>

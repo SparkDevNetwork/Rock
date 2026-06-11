@@ -221,7 +221,7 @@ namespace Rock.Tests.Integration.Crm.Groups
 
             requirementStatus = requirementStatusList.FirstOrDefault( r => r.GroupRequirement.GroupRequirementTypeId == requirementType.Id );
 
-            Assert.IsNotNull( requirementStatus, $"Requirement Status not found for Group Member. [Group={ group.Name }, Person={ person.FullName }, RequirementType={requirementType.Name}." );
+            Assert.IsNotNull( requirementStatus, $"Requirement Status not found for Group Member. [Group={group.Name}, Person={person.FullName}, RequirementType={requirementType.Name}." );
             Assert.AreEqual( expectedRequirementStatus, requirementStatus.MeetsGroupRequirement );
         }
 

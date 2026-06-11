@@ -143,36 +143,3 @@ button.list-group-item {
   margin-bottom: 0;
   line-height: 1.3;
 }
-
-// Ensure Whole Item Hovers if Link Present
-
-li.list-group-item > a {
-  display: block;
-  padding: var(--spacing-small) var(--spacing-medium);
-}
-
-li.list-group-item:has(> a) {
-  padding: 0;
-}
-
-li.list-group-item:hover:has(> a) {
-  background-color: var(--color-interface-softer) !important;
-}
-
-// Overrides for Workflow Items
-
-.workflow-entry-panel {
-  & > h1:first-of-type {
-    margin-top: 0;
-  }
-}
-
-// Override list group item styles to add flex and remove table styles
-.panel-workflowitem .list-group-item {
-  display: flex;
-  justify-content: space-between;
-  &::before,
-  &::after {
-    all: unset;
-  }
-}

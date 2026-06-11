@@ -77,6 +77,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<ConnectionType>( Context ).Queryable().Any( a => a.SnippetCategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, ConnectionType.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<ContentChannel>( Context ).Queryable().Any( a => a.ItemTagCategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, ContentChannel.FriendlyTypeName );
@@ -180,14 +186,6 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, SystemCommunication.FriendlyTypeName );
                 return false;
             }
-
-            #pragma warning disable 612, 618 // SystemEmail is obsolete, but we still need this code generated
-            if ( new Service<SystemEmail>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, SystemEmail.FriendlyTypeName );
-                return false;
-            }
-            #pragma warning restore 612, 618
 
             if ( new Service<Tag>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {

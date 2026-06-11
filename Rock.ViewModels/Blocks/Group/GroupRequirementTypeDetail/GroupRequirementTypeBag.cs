@@ -146,14 +146,6 @@ namespace Rock.ViewModels.Blocks.Group.GroupRequirementTypeDetail
         public ListItemBag WarningWorkflowType { get; set; }
 
         /// <summary>
-        /// Gets or sets the SQL help text.
-        /// </summary>
-        /// <value>
-        /// The SQL help text.
-        /// </value>
-        public string SqlHelpHTML { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether the current user can administrate.
         /// </summary>
         /// <value>

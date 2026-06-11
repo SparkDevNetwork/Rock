@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -22,9 +23,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Connection;
+using Rock.Enums.Security;
 using Rock.Lava;
-using Rock.Utility;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -37,7 +41,7 @@ namespace Rock.Model
     [DataContract]
     [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CONNECTION_TYPE )]
-    public partial class ConnectionType : Model<ConnectionType>, IOrdered, ICacheable
+    public partial class ConnectionType : Model<ConnectionType>, IHasAdditionalSettings, IOrdered, ICacheable
     {
         #region Entity Properties
 
@@ -50,6 +54,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -59,6 +64,7 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -69,6 +75,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IconCssClass { get; set; }
 
         /// <summary>
@@ -174,6 +181,7 @@ namespace Rock.Model
         /// The request header lava.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string RequestHeaderLava { get; set; }
 
         /// <summary>
@@ -183,6 +191,7 @@ namespace Rock.Model
         /// The request badge lava.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string RequestBadgeLava { get; set; }
 
         /// <summary>
@@ -194,7 +203,198 @@ namespace Rock.Model
         [DataMember]
         public int Order { get; set; }
 
+        /// <summary>
+        /// The category Id used to organize and filter snippets for this connection type.
+        /// </summary>
+        [DataMember]
+        public int? SnippetCategoryId { get; set; }
+
+        /// <summary>
+        /// Determines how the due date for a request is calculated.
+        /// </summary>
+        [DataMember]
+        public DueDateCalculationMode DueDateCalculationMode { get; set; }
+
+        /// <summary>
+        /// Number of days added to the calculated due date for a request.
+        /// </summary>
+        [DataMember]
+        public int? RequestDueDateOffsetInDays { get; set; }
+
+        /// <summary>
+        /// Number of days before the due date when a request is considered "due soon."
+        /// </summary>
+        [DataMember]
+        public int? RequestDueSoonOffsetInDays { get; set; }
+
+        /// <summary>
+        /// Flags that specify which optional features are enabled for this connection type.
+        /// </summary>
+        [DataMember]
+        public EnabledFeatureFlags EnabledFeatures { get; set; }
+
+        /// <summary>
+        /// Flags that specify which request views are enabled for this connection type.
+        /// </summary>
+        [DataMember]
+        public EnabledViewFlags EnabledViews { get; set; }
+
+        /// <summary>
+        /// Determines whether requests must move through statuses in a defined sequence.
+        /// </summary>
+        [DataMember]
+        public bool IsSequentialStatusEnforced { get; set; }
+
+        /// <summary>
+        /// Additional configuration settings stored as JSON.
+        /// </summary>
+        [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
+        public string AdditionalSettingsJson { get; set; }
+
         #endregion
+
+        #region IHasAdditionalSettings Models
+
+        /// <summary>
+        /// Additional settings stored for a Connection Type.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "19.0" )]
+        public class ConnectionTypeAdditionalSettings
+        {
+            /// <summary>
+            /// Gets or sets the additional request filter rows used to show extra requests on
+            /// the request detail view so the connector can see whether the individual (or their
+            /// family members) has requested to connect in other opportunities or connection types.
+            /// </summary>
+            public List<AdditionalRequestToShowSettings> AdditionalRequestsToShow { get; set; } = new List<AdditionalRequestToShowSettings>();
+
+            /// <summary>
+            /// Gets or sets the communication settings for this connection type.
+            /// </summary>
+            public CommunicationSettingsInfo CommunicationSettings { get; set; } = new CommunicationSettingsInfo();
+
+            /// <summary>
+            /// Gets or sets the AI prompt used to generate communication insights.
+            /// </summary>
+            public string AIInsightsPrompt { get; set; }
+
+            /// <summary>
+            /// Gets or sets the AI summary trigger mode.
+            /// </summary>
+            public AISummaryTriggerMode? AISummaryTrigger { get; set; }
+
+            /// <summary>
+            /// Gets or sets the AI summary cache duration in minutes.
+            /// </summary>
+            public int? AISummaryCacheDurationMinutes { get; set; }
+
+            /// <summary>
+            /// Gets or sets the default value for <see cref="Rock.Model.ConnectionOpportunity.RequestDueDateOffsetInDays">Connection Opportunity Request Due Date Offset In Days</see>.
+            /// </summary>
+            public int? DefaultOpportunityDueDateOffsetInDays { get; set; }
+
+            /// <summary>
+            /// Gets or sets the default value for <see cref="Rock.Model.ConnectionOpportunity.RequestDueSoonOffsetInDays">Connection Opportunity Request Due Soon Offset In Days</see>.
+            /// </summary>
+            public int? DefaultOpportunityDueSoonOffsetInDays { get; set; }
+
+            /// <summary>
+            /// Gets or sets the default value for <see cref="Rock.Model.ConnectionStatus.RequestStatusDueDateOffsetInDays">Request Status Due Date Offset In Days</see>.
+            /// </summary>
+            public int? DefaultStatusDueDateOffsetInDays { get; set; }
+
+            /// <summary>
+            /// Gets or sets the default value for <see cref="Rock.Model.ConnectionStatus.RequestStatusDueSoonOffsetInDays">Request Status Due Soon Offset In Days</see>.
+            /// </summary>
+            public int? DefaultStatusDueSoonOffsetInDays { get; set; }
+
+            /// <summary>
+            /// Defines a single "Additional Requests to Show" filter row.
+            /// </summary>
+            /// <remarks>
+            ///     <para>
+            ///         <strong>This is an internal API</strong> that supports the Rock
+            ///         infrastructure and not subject to the same compatibility standards
+            ///         as public APIs. It may be changed or removed without notice in any
+            ///         release and should therefore not be directly used in any plug-ins.
+            ///     </para>
+            /// </remarks>
+            [RockInternal( "19.0" )]
+            public class AdditionalRequestToShowSettings
+            {
+                /// <summary>
+                /// Gets or sets the unique identifier for this filter row.
+                /// </summary>
+                public Guid Key { get; set; }
+
+                /// <summary>
+                /// Gets or sets the <see cref="ConnectionType"/> Guid to pull additional requests from.
+                /// </summary>
+                public Guid ConnectionTypeGuid { get; set; }
+
+                /// <summary>
+                /// Gets or sets the request states to include for this filter.
+                /// </summary>
+                public List<ConnectionState> StatesToShow { get; set; } = new List<ConnectionState>();
+
+                /// <summary>
+                /// Gets or sets the maximum age of requests, in days, to include for this filter.
+                /// <para>
+                /// If <see langword="null"/>, no age limit is applied.
+                /// </para>
+                /// </summary>
+                public int? LimitToRecentRequestsDays { get; set; }
+
+                /// <summary>
+                /// Gets or sets a value indicating whether family member requests should be included.
+                /// </summary>
+                public bool IncludeFamilyMemberRequests { get; set; }
+            }
+
+            /// <summary>
+            /// Communication-related settings stored in Additional Settings JSON.
+            /// </summary>
+            /// /// <remarks>
+            ///     <para>
+            ///         <strong>This is an internal API</strong> that supports the Rock
+            ///         infrastructure and not subject to the same compatibility standards
+            ///         as public APIs. It may be changed or removed without notice in any
+            ///         release and should therefore not be directly used in any plug-ins.
+            ///     </para>
+            /// </remarks>
+            [RockInternal( "19.0" )]
+            public class CommunicationSettingsInfo
+            {
+                /// <summary>
+                /// Gets or sets the category used to filter communication templates when sending communications
+                /// to connection requestors for this Connection Type.
+                /// <para>
+                /// If <see langword="null"/>, communication templates are not filtered by category.
+                /// </para>
+                /// </summary>
+                public Guid? CommunicationTemplateCategoryGuid { get; set; }
+
+                /// <summary>
+                /// Gets or sets the category used to filter SMS snippets when sending SMS communications
+                /// to connection requestors for this Connection Type.
+                /// <para>
+                /// If <see langword="null"/>, no snippet filtering is applied.
+                /// </para>
+                /// </summary>
+                public Guid? SmsSnippetCategoryGuid { get; set; }
+            }
+        }
+
+        #endregion IHasAdditionalSettings Models
 
         #region Navigation Properties
 
@@ -283,7 +483,28 @@ namespace Rock.Model
             set { _connectionOpportunities = value; }
         }
 
+        /// <summary>
+        /// The category used to organize and filter snippets for this connection type.
+        /// </summary>
+        [LavaVisible]
+        public virtual Category SnippetCategory { get; set; }
+
         private ICollection<ConnectionOpportunity> _connectionOpportunities;
+
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionTypeSource">ConnectionTypeSources</see> that are associated with the ConnectionType.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.ConnectionTypeSource">ConnectionTypeSources</see> that are associated with the ConnectionType.
+        /// </value>
+        [LavaVisible]
+        public virtual ICollection<ConnectionTypeSource> ConnectionTypeSources
+        {
+            get { return _connectionTypeSources ?? ( _connectionTypeSources = new Collection<ConnectionTypeSource>() ); }
+            set { _connectionTypeSources = value; }
+        }
+
+        private ICollection<ConnectionTypeSource> _connectionTypeSources;
 
         #endregion
 
@@ -318,6 +539,7 @@ namespace Rock.Model
             this.HasOptional( p => p.OwnerPersonAlias ).WithMany().HasForeignKey( p => p.OwnerPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ConnectionRequestDetailPage ).WithMany().HasForeignKey( p => p.ConnectionRequestDetailPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ConnectionRequestDetailPageRoute ).WithMany().HasForeignKey( p => p.ConnectionRequestDetailPageRouteId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.SnippetCategory ).WithMany().HasForeignKey( p => p.SnippetCategoryId ).WillCascadeOnDelete( false );
         }
     }
 

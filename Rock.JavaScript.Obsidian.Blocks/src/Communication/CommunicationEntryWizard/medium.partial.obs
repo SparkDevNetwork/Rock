@@ -1,0 +1,38 @@
+<template>
+    <div class="medium" :class="{ 'selected': isSelected }"
+         @click="">
+        <div class="medium-content">
+            <i v-if="iconCssClass" :class="iconCssClass"></i>
+            <h5 v-if="title">{{ title }}</h5>
+            <small v-if="description">{{ description }}</small>
+            <slot />
+            <i :class="isSelected ? 'ti ti-circle-dot' : 'ti ti-circle'"></i>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+
+    defineProps({
+        isSelected: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        iconCssClass: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        title: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        description: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+</script>

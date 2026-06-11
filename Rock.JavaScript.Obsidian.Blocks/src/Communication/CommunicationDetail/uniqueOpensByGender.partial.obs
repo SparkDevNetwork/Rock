@@ -8,12 +8,6 @@
     </div>
 </template>
 
-<style scoped>
-.communication-detail-unique-opens-by-gender {
-    height: 100%;
-}
-</style>
-
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import DoughnutChart from "@Obsidian/Controls/doughnutChart.obs";

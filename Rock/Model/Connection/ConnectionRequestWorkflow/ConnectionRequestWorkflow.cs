@@ -19,8 +19,11 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -83,7 +86,8 @@ namespace Rock.Model
         /// The trigger qualifier.
         /// </value>
         [DataMember]
-        public String TriggerQualifier { get; set; }
+        [StringValidation( StringValidationProfile.PlainText )]
+        public string TriggerQualifier { get; set; }
 
         #endregion
 

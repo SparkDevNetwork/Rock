@@ -187,17 +187,25 @@ namespace Rock.Cms
         /// <inheritdoc/>
         public string Build( string originalThemeCss )
         {
-            var sb = new StringBuilder();
-
-            originalThemeCss = CharsetPattern.Replace( originalThemeCss, string.Empty );
-            originalThemeCss = TopOverridePattern.Replace( originalThemeCss, string.Empty );
-            originalThemeCss = BottomOverridePattern.Replace( originalThemeCss, string.Empty );
-            originalThemeCss = originalThemeCss.Trim();
+            // Strip any legacy injected values from theme files. This shouldn't
+            // happen since it should be stripped out already, but just in case.
+            // This can be removed when the RemoveOverrides() method is removed.
+            var newThemeCss = CharsetPattern.Replace( originalThemeCss, string.Empty );
+            newThemeCss = TopOverridePattern.Replace( newThemeCss, string.Empty );
+            newThemeCss = BottomOverridePattern.Replace( newThemeCss, string.Empty );
+            newThemeCss = newThemeCss.Trim();
 
             var topOverrides = BuildTopOverrides().Trim();
             var bottomOverrides = BuildBottomOverrides().Trim();
 
-            sb.AppendLine( "@charset \"UTF-8\";" );
+            var sb = new StringBuilder();
+
+            // If the original theme CSS started with a @charset declaration then
+            // we need preserve it.
+            if ( originalThemeCss.StartsWith( "@charset" ) )
+            {
+                sb.AppendLine( "@charset \"UTF-8\";" );
+            }
 
             if ( topOverrides.Length > 0 )
             {
@@ -207,9 +215,9 @@ namespace Rock.Cms
                 sb.AppendLine();
             }
 
-            if ( originalThemeCss.Length > 0 )
+            if ( newThemeCss.Length > 0 )
             {
-                sb.AppendLine( originalThemeCss );
+                sb.AppendLine( newThemeCss );
             }
 
             if ( bottomOverrides.Length > 0 )
@@ -221,6 +229,30 @@ namespace Rock.Cms
             }
 
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Removes the override content from the theme file. This is a temporary
+        /// method introduced in Rock v19 to clean up existing theme.css files
+        /// from any custom themes that may have been created. The overrides are
+        /// now applied dynamically at runtime. This method can be removed in a
+        /// future release of Rock, probably around v21 or v22.
+        /// </summary>
+        /// <param name="currentThemeCss">The current CSS content</param>
+        /// <returns></returns>
+        internal static string RemoveOverrides( string currentThemeCss )
+        {
+            var newThemeCss = TopOverridePattern.Replace( currentThemeCss, string.Empty );
+            newThemeCss = BottomOverridePattern.Replace( newThemeCss, string.Empty );
+
+            if ( newThemeCss == currentThemeCss )
+            {
+                return currentThemeCss;
+            }
+
+            newThemeCss = newThemeCss.TrimStart();
+
+            return newThemeCss;
         }
 
         /// <summary>

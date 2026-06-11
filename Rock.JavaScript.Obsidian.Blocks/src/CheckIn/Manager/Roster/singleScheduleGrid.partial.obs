@@ -1,0 +1,244 @@
+<template>
+    <Grid :data="source"
+          keyField="idKey"
+          itemTerm="Attendance"
+          title="Room Roster"
+          :customActions="gridCustomActions"
+          :entityTypeGuid="EntityType.Attendance"
+          disablePaging
+          stickyHeader
+          liveUpdates
+          comfy
+          :manualSort="col => emit('updateGridDataSource', col)"
+          @selectItem="rosterContext.onSelectItem($event)"
+          :expectedRowCount="loadingRowCount"
+          :isCountMessageVisible="false"
+          isFooterHidden
+          :showLaunchWorkflow="false"
+          :rowClass="getGridRowClass"
+          :showExport="false">
+        <template #gridHeaderBadges>
+            <RosterMenu :modelValue="rosterMode"
+                        :attendances="data"
+                        @update:modelValue="emit('rosterModeChanged', $event)" />
+        </template>
+
+        <PresentButtonColumn v-if="rosterMode === RosterViewMode.CheckedIn"
+                             active />
+
+        <CheckoutButtonColumn v-if="rosterMode === RosterViewMode.Present" />
+
+        <AttendeeColumn name="attendee"
+                        title="Name"
+                        field="attendee"
+                        width="40%"
+                        visiblePriority="xs" />
+
+        <LabelColumn name="tag"
+                     title="Tag"
+                     field="code"
+                     width="115px"
+                     visiblePriority="sm" />
+
+        <HighlightDetailColumn name="group"
+                               title="Group"
+                               field="group.text"
+                               detailField="area.text"
+                               :quickFilterValue="getGroupFilterValue"
+                               width="240px"
+                               :visiblePriority="rosterMode === RosterViewMode.All ? 'md' : 'lg'">
+            <template #format="{ row }: { row: RosterSingleAttendanceRecord }">
+                <div>
+                    <div class="highlight-title">{{ row.group.text }}</div>
+                    <div class="highlight-detail">{{ row.area.text }}</div>
+                </div>
+            </template>
+        </HighlightDetailColumn>
+
+        <Column v-if="rosterMode === RosterViewMode.All"
+                name="status"
+                title="Status"
+                field="status"
+                width="130px"
+                visiblePriority="xs"
+                headerClass="grid-column-header-status"
+                itemClass="grid-cell-status">
+            <template #format="{ row }: { row: RosterSingleAttendanceRecord }">
+                <div style="text-align: center;"
+                     v-html="getStatusBadgeHtml(row.status)">
+                </div>
+            </template>
+        </Column>
+
+        <Column v-if="rosterMode === RosterViewMode.CheckedIn"
+                name="duration"
+                title="Checked-in"
+                width="110px"
+                visiblePriority="sm">
+            <template #format="{ row }: { row: RosterSingleAttendanceRecord }">
+                {{ getDurationText(row.checkInDuration) }}
+            </template>
+        </Column>
+
+        <Column v-if="rosterMode === RosterViewMode.Present"
+                name="duration"
+                title="Present"
+                width="100px"
+                visiblePriority="sm">
+            <template #format="{ row }: { row: RosterSingleAttendanceRecord }">
+                {{ getDurationText(row.presentDuration) }}
+            </template>
+        </Column>
+
+        <Column v-if="rosterMode === RosterViewMode.CheckedOut"
+                name="duration"
+                title="Checked-out"
+                width="115px"
+                visiblePriority="sm">
+            <template #format="{ row }: { row: RosterSingleAttendanceRecord }">
+                {{ getDurationText(row.checkoutDuration) }}
+            </template>
+        </Column>
+
+        <ActionButtonColumn v-if="rosterMode === RosterViewMode.CheckedIn && config.isDeleteButtonEnabled" />
+
+        <StayingButtonColumn v-if="rosterMode === RosterViewMode.Present && config.isStayingButtonEnabled" />
+
+        <NotPresentButtonColumn v-if="rosterMode === RosterViewMode.Present && config.isNotPresentButtonEnabled" />
+
+        <ActionButtonColumn v-if="rosterMode === RosterViewMode.Present && config.isDeleteButtonEnabled" />
+
+        <PresentButtonColumn v-if="rosterMode === RosterViewMode.CheckedOut && config.isPresentButtonEnabled" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import ActionButtonColumn from "./Columns/actionButtonColumn.partial";
+    import AttendeeColumn from "./Columns/attendeeColumn.partial";
+    import CheckoutButtonColumn from "./Columns/checkoutButtonColumn.partial";
+    import Grid, { Column, HighlightDetailColumn, LabelColumn } from "@Obsidian/Controls/grid";
+    import NotPresentButtonColumn from "./Columns/notPresentButtonColumn.partial";
+    import PresentButtonColumn from "./Columns/presentButtonColumn.partial";
+    import RosterMenu from "./rosterMenu.partial.obs";
+    import StayingButtonColumn from "./Columns/stayingButtonColumn.partial";
+    import { GridAction } from "@Obsidian/Types/Controls/grid";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { computed, PropType } from "vue";
+    import { getDurationText, getGridRowClass, getSingleAttendanceRecords, getStatusBadgeHtml, useRosterContext } from "./utilities.partial";
+    import { RosterAttendanceRecord, RosterSingleAttendanceRecord, RosterViewMode } from "./types.partial";
+    import { CheckInStatus } from "@Obsidian/Enums/Event/checkInStatus";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { RosterOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/Roster/rosterOptionsBag";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        config: {
+            type: Object as PropType<RosterOptionsBag>,
+            required: true
+        },
+
+        source: {
+            type: Object as PropType<Promise<GridDataBag> | GridDataBag>,
+            required: true
+        },
+
+        data: {
+            type: Array as PropType<RosterSingleAttendanceRecord[]>,
+            required: true,
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "rosterModeChanged", mode: RosterViewMode): void;
+        (e: "updateGridDataSource", col: string | undefined): void;
+        (e: "openRoomSettings"): void;
+    }>();
+
+    const rosterContext = useRosterContext();
+
+    // #region Computed Values
+
+    const rosterMode = computed((): RosterViewMode => {
+        return rosterContext.mode.value;
+    });
+
+    const loadingRowCount = computed((): number | undefined => {
+        return rosterContext.loadingRowCount?.value;
+    });
+
+    const gridCustomActions = computed((): GridAction[] => {
+        const actions: GridAction[] = [];
+
+        if (props.config.isCheckoutAllEnabled && rosterMode.value === RosterViewMode.Present) {
+            const presentCount = Enumerable.from(props.data)
+                .where(a => a.status === CheckInStatus.Present)
+                .count();
+
+            actions.push({
+                title: "Check-out All",
+                iconCssClass: "ti ti-user-minus",
+                isPrimary: true,
+                disabled: presentCount === 0,
+                handler: (grid) => {
+                    const records = Enumerable.from(grid.filteredRows as RosterAttendanceRecord[])
+                        .selectMany(a => getSingleAttendanceRecords(a))
+                        .where(a => a.status === CheckInStatus.Present && !a.isRemoved)
+                        .toArray();
+
+                    rosterContext.onAttendanceCheckoutAllClick(records);
+                },
+            });
+        }
+
+        if (props.config.isMarkAllPresentEnabled && rosterMode.value === RosterViewMode.CheckedIn) {
+            const checkedInCount = Enumerable.from(props.data)
+                .where(a => a.status === CheckInStatus.NotPresent)
+                .count();
+
+            actions.push({
+                title: "Mark All as Present",
+                iconCssClass: "ti ti-user-plus",
+                isPrimary: true,
+                disabled: checkedInCount === 0,
+                handler: async (grid) => {
+                    const records = Enumerable.from(grid.filteredRows as RosterAttendanceRecord[])
+                        .selectMany(a => getSingleAttendanceRecords(a))
+                        .where(a => a.status === CheckInStatus.NotPresent && !a.isRemoved)
+                        .toArray();
+
+                    if (!(await confirm(`Are you sure you want to mark all ${records.length} checked-in attendances as present?`))) {
+                        return;
+                    }
+
+                    await rosterContext.onAttendancePresentClick(records);
+                },
+            });
+        }
+
+        actions.push({
+            title: "Room Settings",
+            iconCssClass: "ti ti-settings",
+            isPrimary: false,
+            handler: () => {
+                emit("openRoomSettings");
+            }
+        });
+
+        return actions;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function getGroupFilterValue(row: Record<string, unknown>): string {
+        const group = row.group as ListItemBag | undefined;
+        const area = row.area as ListItemBag | undefined;
+
+        return `${group?.text} ${area?.text}`;
+    }
+
+    // #endregion
+</script>

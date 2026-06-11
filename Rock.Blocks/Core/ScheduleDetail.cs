@@ -523,7 +523,8 @@ namespace Rock.Blocks.Core
 
                 var box = new DetailBlockBox<ScheduleBag, ScheduleDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = GetEntityBagForEdit( entity ),
+                    Options = GetBoxOptions( true, rockContext, entity )
                 };
 
                 return ActionOk( box );
@@ -567,7 +568,9 @@ namespace Rock.Blocks.Core
                     entity.SaveAttributeValues( rockContext );
                 } );
 
+#if NET472_OR_GREATER
                 Rock.CheckIn.KioskDevice.Clear();
+#endif
 
                 if ( isNew )
                 {
@@ -676,6 +679,21 @@ namespace Rock.Blocks.Core
             }
         }
 
+        /// <summary>
+        /// Generates an HTML preview of a schedule based on the provided iCalendar content.
+        /// </summary>
+        /// <param name="iCalendarContent">The iCalendar-formatted string representing the schedule to preview. Cannot be null.</param>
+        /// <returns>A <see cref="BlockActionResult"/> containing the generated HTML preview of the schedule.</returns>
+        [BlockAction]
+        public BlockActionResult GetPreviewHtml( string iCalendarContent )
+        {
+            Schedule schedule = new Schedule();
+            schedule.iCalendarContent = iCalendarContent;
+
+            var previewHtml = ScheduleService.CreatePreviewHTML( schedule );
+
+            return ActionOk( previewHtml );
+        }
         #endregion
     }
 }

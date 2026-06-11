@@ -15,22 +15,21 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
-using Rock.Enums.Controls;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.BinaryFileTypeDetail;
-using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 
 namespace Rock.Blocks.Core
 {
@@ -171,6 +170,39 @@ namespace Rock.Blocks.Core
             };
             var cacheability = entity.CacheControlHeaderSettings.FromJsonOrNull<RockCacheability>() ?? defaultCacheability;
 
+            /*
+               5/13/2026 - NA
+
+               Append a "(plugin)" suffix when the component is implemented in a non-Rock assembly
+               so administrators can distinguish core components from third-party plugins in the picker.
+               Failures here must never break the list, so any reflection is guarded.
+
+               Reason: Temporary solution for v19
+            */
+            var storageTypeName = entity.StorageEntityType?.ToString();
+
+            try
+            {
+                var componentAssemblyName = entity.StorageEntityType?.AssemblyName;
+                if ( !string.IsNullOrEmpty( componentAssemblyName )
+                     && componentAssemblyName != "Rock"
+                     && !componentAssemblyName.StartsWith( "Rock.", StringComparison.Ordinal ) )
+                {
+                    storageTypeName = $"{storageTypeName} (plugin)";
+                }
+            }
+            catch
+            {
+                // Intentionally ignored: plugin-suffix detection is cosmetic and
+                // must never prevent a component from appearing in the picker.
+            }
+
+            // The BinaryFileType is publicly viewable if the non-logged in person (no person) 
+            // or a generic logged-in (All Authenticated Users) person can view.
+            var isPublicViewable = !entity.RequiresViewSecurity
+                || entity.IsAuthorized( Rock.Security.Authorization.VIEW, null )
+                || entity.IsAuthorized( Rock.Security.Authorization.VIEW, new Person() { Guid = Rock.SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid() } );
+
             return new BinaryFileTypeBag
             {
                 IdKey = entity.IdKey,
@@ -186,7 +218,8 @@ namespace Rock.Blocks.Core
                 Name = entity.Name,
                 PreferredRequired = entity.PreferredRequired,
                 RequiresViewSecurity = entity.RequiresViewSecurity,
-                StorageEntityType = entity.StorageEntityType.ToListItemBag()
+                StorageEntityType = entity.StorageEntityType.ToListItemBag( storageTypeName ),
+                IsPublicViewable = isPublicViewable
             };
         }
 

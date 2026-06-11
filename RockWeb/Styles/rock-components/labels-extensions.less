@@ -1,0 +1,59 @@
+//
+// Labels - additional label defintions that extend
+// Boostrap labels (eg label-campus)
+// --------------------------------------------------
+
+.label {
+  a {
+    color: @label-link-color; // allow for links in labels
+  }
+}
+
+.label-outline {
+  color: var(--color-interface-strong);
+  background-color: transparent;
+  border: 1px solid var(--color-interface-medium);
+}
+
+.label-campus {
+  color: @label-campus-color;
+  background-color: @label-campus-bg;
+}
+
+.label-type {
+  color: @label-type-color;
+  background-color: @label-type-bg;
+}
+
+.label-communicationstatus-approved {
+  background-color: @label-success-bg;
+}
+
+.label-communicationstatus-denied {
+  background-color: @label-danger-bg;
+}
+
+.label-communicationstatus-draft {
+  background-color: @label-default-bg;
+}
+
+.label-communicationstatus-submitted {
+  background-color: @label-warning-bg;
+}
+
+.label-communicationstatus-transient {
+  background-color: @label-type-bg;
+}
+
+// Nested Labels (ex. labels with badges in them)
+.label {
+    .label-value{
+        align-self: center;
+        padding: 2px 0;
+    }
+    .badge{
+        font-size: 12px;
+        padding: 2px 6px;
+    }
+}
+

@@ -796,6 +796,13 @@ icon {
 }
 
 /*** Buttons ***/
+
+/* Softest */
+.btn.btn-softest {
+    background-color: ?color-interface-softest;
+    color: ?color-interface-strongest;
+}
+
 /* Primary */
 .btn.btn-primary {
     background-color: ?color-primary-strong;
@@ -1129,15 +1136,15 @@ icon {
 }
 
 .rounded-sm {
-    border-radius: 4;
+    border-radius: 16;
 }
 
 .rounded {
-    border-radius: 8;
+    border-radius: 24;
 }
 
 .rounded-lg {
-    border-radius: 16;
+    border-radius: 32;
 }
 
 .rounded-full {

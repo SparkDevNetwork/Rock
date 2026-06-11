@@ -71,7 +71,7 @@ END:VCALENDAR";
 
                 Assert.IsNotNull( opportunities );
                 Assert.AreNotEqual( 0, opportunities.Groups.Count );
-                Assert.IsFalse( opportunities.Groups.Any( g => g.Id == nurseryGroup.IdKey ), "Inactive group was included in opportunity collection.");
+                Assert.IsFalse( opportunities.Groups.Any( g => g.Id == nurseryGroup.IdKey ), "Inactive group was included in opportunity collection." );
             }
         }
     }

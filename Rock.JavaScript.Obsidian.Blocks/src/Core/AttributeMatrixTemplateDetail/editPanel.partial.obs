@@ -36,14 +36,13 @@
                 <ReorderColumn @orderChanged="onOrderChanged" />
                 <TextColumn field="name" name="attribute" title="Attribute" />
                 <TextColumn field="type" name="type" title="Type" />
-                <SecurityColumn />
                 <EditColumn @click="onEditAttribute" />
                 <DeleteColumn @click="onDeleteAttribute" />
             </Grid>
         </div>
         <Modal v-model="isAttributeModalOpen" title="Matrix Template Attributes" saveText="Save" @save="onSaveAttribute">
             <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
-            <AttributeEditor v-model="templateAttribute" :reservedKeyNames="reservedKeyNames" />
+            <AttributeEditor v-model="templateAttribute" :reservedKeyNames="reservedKeyNames" :attributeEntityTypeGuid="EntityType.AttributeMatrixItem" />
         </Modal>
 
         <Panel title="Advanced" class="mb-0" :isDrawerOpen="false" :hasCollapse="true">
@@ -65,7 +64,6 @@
             <CodeEditor v-model="formattedLava"
                         label="Formatted Lava"
                         :editorHeight="400"
-                        theme="rock"
                         mode="lava"
                         help="This will determine how the Matrix Attribute Field will display its formatted value."
                         :disabled="!isEditable" />
@@ -88,7 +86,7 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
-    import Grid, { EditColumn, TextColumn, DeleteColumn, SecurityColumn, ReorderColumn } from "@Obsidian/Controls/grid";
+    import Grid, { EditColumn, TextColumn, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { AttributeMatrixTemplateBag } from "@Obsidian/ViewModels/Blocks/Core/AttributeMatrixTemplateDetail/attributeMatrixTemplateBag";
@@ -150,7 +148,7 @@
     });
 
     const showNotification = computed((): boolean => {
-        if (props.modelValue?.bag?.idKey && templateAttributes.value.length == 0) {
+        if (props.modelValue?.bag?.idKey && templateAttributes.value.length === 0) {
             return true;
         }
         else {
@@ -267,8 +265,8 @@
             const index = templateAttributes.value.findIndex(a => a.guid === templateAttribute.value?.guid);
             if (index !== -1) {
                 // Get the updated attribute and rowItem.
-                let editedAttribute = templateAttributes.value.find(a => a.guid == templateAttribute.value?.guid);
-                let rowItem = attributesGridData.rows?.find(x => x.guid == templateAttribute.value?.guid);
+                let editedAttribute = templateAttributes.value.find(a => a.guid === templateAttribute.value?.guid);
+                let rowItem = attributesGridData.rows?.find(x => x.guid === templateAttribute.value?.guid);
 
                 if (editedAttribute) {
                     // Replace old attribute with updated attribute.

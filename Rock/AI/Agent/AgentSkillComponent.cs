@@ -18,10 +18,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.AI.Agent;
 using Rock.Extension;
 using Rock.Field;
 using Rock.Field.Types;
@@ -81,7 +81,26 @@ namespace Rock.AI.Agent
         /// <param name="agentRequestContext">The context for this chat agent request.</param>
         internal void Initialize( IReadOnlyDictionary<string, string> configurationValues, AgentRequestContext agentRequestContext )
         {
-            ConfigurationValues = configurationValues;
+            var writableConfigurationValues = configurationValues.ToDictionary( kvp => kvp.Key, kvp => kvp.Value );
+            var fieldTypeAttributes = GetConfigurationAttributes();
+
+            // Update any missing configuration values with defaults from the
+            // attributes.
+            foreach ( var fieldTypeAttribute in fieldTypeAttributes )
+            {
+                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
+                if ( fieldTypeCache == null || fieldTypeCache.Field == null )
+                {
+                    continue;
+                }
+
+                if ( !writableConfigurationValues.TryGetValue( fieldTypeAttribute.Key, out _ ) )
+                {
+                    writableConfigurationValues[fieldTypeAttribute.Key] = fieldTypeAttribute.DefaultValue ?? string.Empty;
+                }
+            }
+
+            ConfigurationValues = writableConfigurationValues;
             AgentRequestContext = agentRequestContext;
         }
 
@@ -92,6 +111,59 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <returns>A collection of <see cref="AgentTool"/> objects that represent the dynamic tools.</returns>
         public virtual IReadOnlyCollection<AgentTool> GetDymanicTools() => Array.Empty<AgentTool>();
+
+        /// <summary>
+        /// Creates a <see cref="ToolStatus.Success"/> result with no content.
+        /// </summary>
+        /// <returns>A new instance of <see cref="AgentToolResult"/>.</returns>
+        protected AgentToolResult Success()
+        {
+            return AgentToolResult.Success();
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ToolStatus.Success"/> result for the specified
+        /// payload content. The <paramref name="payload"/> may be either a single
+        /// object or an enumeration of objects that make up the payload.
+        /// </summary>
+        /// <param name="payload">The payload to return with the result.</param>
+        /// <returns>A new instance of <see cref="AgentToolResult"/>.</returns>
+        protected AgentToolResult Success( object payload )
+        {
+            return AgentToolResult.Success( payload );
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ToolStatus.NoData"/> result. This should be
+        /// used for lookup type operations that 
+        /// </summary>
+        /// <returns>A new instance of <see cref="AgentToolResult"/>.</returns>
+        protected AgentToolResult NoData()
+        {
+            return AgentToolResult.NoData();
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ToolStatus.Error"/> result with a single error
+        /// message.
+        /// </summary>
+        /// <param name="message">The error message to return.</param>
+        /// <returns>A new instance of <see cref="AgentToolResult"/>.</returns>
+        protected AgentToolResult Error( string message )
+        {
+            return AgentToolResult.Error( message );
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ToolStatus.Error"/> result with one or more error
+        /// messages.
+        /// </summary>
+        /// <param name="messages">The error messages to return.</param>
+        /// <returns>A new instance of <see cref="AgentToolResult"/>.</returns>
+        protected AgentToolResult Error( IEnumerable<string> messages )
+        {
+            return AgentToolResult.Error( messages );
+        }
 
         #endregion
 
@@ -191,7 +263,11 @@ namespace Rock.AI.Agent
 
                 if ( !privateConfiguration.TryGetValue( fieldTypeAttribute.Key, out var privateValue ) )
                 {
-                    privateValue = string.Empty;
+                    privateValue = fieldTypeAttribute.DefaultValue ?? string.Empty;
+                }
+                else if ( privateValue.IsNullOrWhiteSpace() )
+                {
+                    privateValue = fieldTypeAttribute.DefaultValue ?? string.Empty;
                 }
 
                 var configurationValues = fieldTypeAttribute.FieldConfigurationValues

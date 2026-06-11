@@ -13,19 +13,12 @@
           @selectItem="onSelectItem">
         <SelectColumn />
 
-        <Column name="name"
-                title="Name"
-                field="name"
-                :filter="textValueFilter"
-                :quickFilterValue="getEntitySearchQuickFilterValue"
-                visiblePriority="xs">
-            <template #format="{ row }">
-                <div>
-                    <span class="text-semibold">{{ row.name }}</span>
-                    <div class="text-muted">{{ row.description }}</div>
-                </div>
-            </template>
-        </Column>
+        <HighlightDetailColumn name="name"
+                               title="Name"
+                               field="name"
+                               detailField="description"
+                               :filter="textValueFilter"
+                               visiblePriority="xs" />
 
         <TextColumn name="entityType"
                     title="Entity Type"
@@ -62,7 +55,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, ButtonColumn, Column, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, ButtonColumn, HighlightDetailColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, SelectColumn } from "@Obsidian/Controls/grid";
     import Preview from "./EntitySearchDetail/preview.partial.obs";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
@@ -101,10 +94,6 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
-    }
-
-    function getEntitySearchQuickFilterValue(row: Record<string, unknown>): string {
-        return `${row.name} ${row.description}`;
     }
 
     // #endregion

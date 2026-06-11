@@ -40,7 +40,12 @@ namespace RockWeb.Blocks.Finance
     [AccountsField("Accounts", "A selection of accounts to use for checking if transactions for the current user exist. If no accounts are provided then all tax-deductible accounts will be considered.", false, order: 0 )]
     [IntegerField("Max Years To Display", "The maximum number of years to display (including the current year).", true, 3, order:1)]
     [LinkedPage("Detail Page", "The statement detail page.", order: 2)]
-    [CodeEditorField("Lava Template", "The Lava template to use for the contribution statement.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 500, true, DefaultValue = @"{% assign currentYear = 'Now' | Date:'yyyy' %}
+    [CodeEditorField("Lava Template",
+        Description = "The Lava template to use for the contribution statement.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 500,
+        IsRequired = true,
+        DefaultValue = @"{% assign currentYear = 'Now' | Date:'yyyy' %}
 
 <h4>Available Contribution Statements</h4>
 
@@ -52,7 +57,8 @@ namespace RockWeb.Blocks.Finance
         <a href=""{{ DetailPage }}?StatementYear={{ statementyear.Year }}"" class=""btn btn-primary"">{{ statementyear.Year }}</a>
     {% endif %}
 {% endfor %}
-</div>", Order = 3)]
+</div>",
+        Order = 3)]
     [BooleanField("Use Person Context", "Determines if the person context should be used instead of the CurrentPerson.", false, order: 5)]
 
     [ContextAware]

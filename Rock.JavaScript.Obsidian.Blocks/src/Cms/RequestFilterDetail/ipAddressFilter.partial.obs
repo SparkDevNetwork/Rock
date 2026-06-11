@@ -17,34 +17,33 @@
            saveText="Save"
            cancelText="Cancel"
            :onSave="onSave">
-        <div class="row form-row d-flex flex-wrap align-items-center">
-            <div class="col flex-grow-0">
-                <div class="form-group">
-                    <span class="text-nowrap">Where the client IP is</span>
-                </div>
+        <div class="row">
+            <div class="col-sm-6 mb-spacing-sm">
+                <ButtonGroup :modelValue="theFilter.matchType?.toString() ?? '0'"
+                             @update:modelValue="val => theFilter.matchType = Number(val)"
+                             :items="matchTypeOptions"/>
             </div>
-            <div class="col-auto">
-                <div class="form-group">
-                    <ButtonGroup :modelValue="theFilter.matchType?.toString() ?? '0'"
-                                 @update:modelValue="val => theFilter.matchType = Number(val)"
-                                 :items="matchTypeOptions" />
-                </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-6">
+                <TextBox :modelValue="theFilter.beginningIPAddress ?? ''"
+                         @update:modelValue="val => theFilter.beginningIPAddress = val"
+                         label="Beginning IP Address"
+                         help="The first IP address in the range."
+                         rules="required"
+                         validationTitle="Beginning IP Address" />
             </div>
-            <div class="col col-xs-12 col-sm">
-                <div class="form-group">
-                    <TextBox :modelValue="theFilter.beginningIPAddress ?? ''"
-                             @update:modelValue="val => theFilter.beginningIPAddress = val"
-                             rules="required"
-                             validationTitle="Beginning IP Address" />
-                </div>
-            </div>
-            <div class="col col-xs-12 col-sm">
-                <div class="form-group">
-                    <TextBox :modelValue="theFilter.endingIPAddress ?? ''"
-                             @update:modelValue="val => theFilter.endingIPAddress = val"
-                             rules="required"
-                             validationTitle="Ending IP Address" />
-                </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-6">
+                <TextBox :modelValue="theFilter.endingIPAddress ?? ''"
+                         @update:modelValue="val => theFilter.endingIPAddress = val"
+                         label="Ending IP Address"
+                         help="The last IP address in the range."
+                         rules="required"
+                         validationTitle="Ending IP Address" />
             </div>
         </div>
     </Modal>

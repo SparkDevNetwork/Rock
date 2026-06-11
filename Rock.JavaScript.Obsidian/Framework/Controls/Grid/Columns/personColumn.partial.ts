@@ -91,6 +91,14 @@ export default defineComponent({
         },
 
         /**
+         * If `true` then the avatar image will always be shown -- even on small devices.
+         */
+        alwaysShowAvatar: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
          * Normally the column will display the nick name first, such as
          * "Ted Decker". If this is set to `true` then it will show the last
          * name first, such as "Decker, Ted".

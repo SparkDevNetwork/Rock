@@ -133,7 +133,7 @@ namespace Rock.Lms
         public override bool RequiresGrading( LearningClassActivityCompletion completion, Dictionary<string, string> completionData, Dictionary<string, string> componentData, RockContext rockContext, RockRequestContext requestContext )
         {
             // It has already been graded.
-            if ( completion.PointsEarned.HasValue )
+            if ( completion.GradedByPersonAliasId.HasValue )
             {
                 return false;
             }
@@ -141,8 +141,8 @@ namespace Rock.Lms
             var isPastDue = completion.DueDate.HasValue
                 && completion.DueDate.Value.IsPast();
 
-            // If it is past due or completed then it needs to be graded.
-            return isPastDue || completion.CompletedDateTime.HasValue;
+            // If it is past due or completed by the student then it needs to be graded.
+            return isPastDue || completion.IsStudentCompleted;
         }
 
         #endregion

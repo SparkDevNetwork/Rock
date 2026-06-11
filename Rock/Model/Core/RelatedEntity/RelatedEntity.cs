@@ -21,6 +21,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -98,6 +100,7 @@ namespace Rock.Model
         [DataMember]
         [MaxLength( 100 )]
         [Index( "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey", IsUnique = true, Order = 5 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PurposeKey { get; set; }
 
         /// <summary>
@@ -128,6 +131,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string QualifierValue { get; set; }
 
         /// <summary>
@@ -146,6 +150,7 @@ namespace Rock.Model
         /// The note.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
         public string Note { get; set; }
 
         /// <summary>
@@ -155,6 +160,7 @@ namespace Rock.Model
         /// The additional settings json.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         #endregion

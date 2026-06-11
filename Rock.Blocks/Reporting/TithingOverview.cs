@@ -456,7 +456,11 @@ namespace Rock.Blocks.Reporting
                 if ( lastRunDate.HasValue )
                 {
                     lastRunDate = lastRunDate.Value.Date;
+#if REVIEW_WEBFORMS
                     metricValuesQry = metricValuesQry.Where( m => DbFunctions.TruncateTime( m.MetricValueDateTime ) == lastRunDate );
+#else
+                    metricValuesQry = metricValuesQry.Where( m => m.MetricValueDateTime.Value.Date == lastRunDate );
+#endif
                 }
             }
 

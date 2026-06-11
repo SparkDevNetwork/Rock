@@ -30,7 +30,8 @@
                                :is="actionComponent"
                                :configuration="actionConfiguration"
                                :data="actionData"
-                               :submit="onActionDataChanged" />
+                              :submit="onActionDataChanged"
+                               :isCaptchaEnabled="config.isCaptchaEnabled" />
                 </div>
             </div>
         </div>
@@ -48,16 +49,10 @@
                             @saveNote="onSaveNote"
                             @deleteNote="onDeleteNote" />
         </div>
-    </div>
-
-    <div v-if="config.isCaptchaEnabled" v-show="!isCaptchaComplete">
-        <Captcha ref="captchaElement"></Captcha>
-    </div>
-
+   </div>
 </template>
 
 <script setup lang="ts">
-    import Captcha from "@Obsidian/Controls/captcha.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import InteractiveMessage from "./WorkflowEntry/interactiveMessage.partial.obs";
     import NotesContainer from "@Obsidian/Controls/Internal/notesContainer.obs";
@@ -67,11 +62,10 @@
     import { alert } from "@Obsidian/Utility/dialogs";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { useSuspense } from "@Obsidian/Utility/suspense";
-    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
     import { WorkflowEntryOptionsBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowEntry/workflowEntryOptionsBag";
     import { InteractiveActionBag } from "@Obsidian/ViewModels/Workflow/interactiveActionBag";
     import { InteractiveMessageBag } from "@Obsidian/ViewModels/Workflow/interactiveMessageBag";
-    import { Component, computed, ref, onMounted } from "vue";
+    import { Component, computed, ref } from "vue";
     import { NoteEditBag } from "@Obsidian/ViewModels/Controls/noteEditBag";
     import { NoteBag } from "@Obsidian/ViewModels/Controls/noteBag";
     import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Controls/saveNoteRequestBag";
@@ -89,9 +83,6 @@
     const actionComponent = ref<Component>();
     const actionConfiguration = ref<Record<string, string | null | undefined>>({});
     const actionData = ref<Record<string, string | null | undefined>>({});
-
-    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
-    const isCaptchaComplete = ref(false);
 
     // #endregion
 
@@ -160,14 +151,6 @@
                 content: "We ran into something unexpected and can't proceed, please try again or contact an administrator."
             };
         }
-
-        if (config.isCaptchaEnabled) {
-            isCaptchaComplete.value = false;
-            if (captchaElement.value) {
-                captchaElement.value.refreshToken();
-            }
-            waitForCaptcha();
-        }
     }
 
     // #endregion
@@ -179,19 +162,15 @@
      *
      * @param componentData The data from the component that should be sent to the server.
      */
-    async function onActionDataChanged(componentData: Record<string, string | null | undefined>): Promise<void> {
+    async function onActionDataChanged(
+        componentData: Record<string, string | null | undefined>,
+        actionContext?: Record<string, string | null | undefined>
+    ): Promise<void> {
         const data = {
             workflowGuid: currentAction.value?.workflowGuid,
             actionTypeGuid: currentAction.value?.actionTypeGuid,
             componentData: componentData
         };
-
-        const actionContext: BlockActionContextBag = {};
-
-        if (captchaElement.value) {
-            actionContext.captcha = await captchaElement.value.getToken();
-            captchaElement.value.refreshToken();
-        }
 
         const response = await invokeBlockAction<InteractiveActionBag>("GetNextInteractiveAction", data, actionContext);
 
@@ -282,15 +261,6 @@
         }
     }
 
-    async function waitForCaptcha(): Promise<void> {
-        if (!config.isCaptchaEnabled || !captchaElement.value) {
-            isCaptchaComplete.value = true;
-            return;
-        }
-        const token = await captchaElement.value.getToken();
-        isCaptchaComplete.value = !!token;
-    }
-
     // #endregion
 
     if (config.initialAction) {
@@ -301,8 +271,4 @@
             showAction(config.initialAction);
         }
     }
-
-    onMounted(() => {
-        waitForCaptcha();
-    });
 </script>

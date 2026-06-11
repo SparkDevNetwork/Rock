@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 using AspNet.Security.OpenIdConnect.Primitives;
@@ -61,6 +62,51 @@ namespace Rock.Oidc.Authorization
         {
             if ( context.Request.IsAuthorizationCodeGrantType() || context.Request.IsRefreshTokenGrantType() )
             {
+                if ( context.Request.IsAuthorizationCodeGrantType() )
+                {
+                    var props = context.Ticket?.Properties?.Dictionary;
+
+                    // If they did not provide a code challenge during the
+                    // authorization request, then there is no need to validate
+                    // it during the token request.
+                    if ( props == null || !props.TryGetValue( "pkce.code_challenge", out var storedChallenge ) )
+                    {
+                        return Task.CompletedTask;
+                    }
+
+                    // Validate the PKCE code challenge to ensure the token
+                    // request is coming from the same client that made the
+                    // authorization request.
+                    var codeVerifier = context.Request.CodeVerifier;
+
+                    if ( string.IsNullOrEmpty( codeVerifier ) )
+                    {
+                        context.Reject( OpenIdConnectConstants.Errors.InvalidRequest, "code_verifier is required" );
+                        return Task.CompletedTask;
+                    }
+
+#if NET9_0_OR_GREATER
+                    using ( var crypt = SHA256.Create() )
+#else
+                    using ( var crypt = new System.Security.Cryptography.SHA256Managed() )
+#endif
+                    {
+                        var hash = crypt.ComputeHash( Encoding.UTF8.GetBytes( codeVerifier ) );
+
+                        var computedChallenge = Convert.ToBase64String( hash )
+                                .Replace( "+", "-" )
+                                .Replace( "/", "_" )
+                                .TrimEnd( '=' );
+
+                        if ( computedChallenge != storedChallenge )
+                        {
+                            context.Reject( OpenIdConnectConstants.Errors.InvalidGrant, "Invalid code_verifier" );
+
+                            return Task.CompletedTask;
+                        }
+                    }
+                }
+
                 // Let the Microsoft OIDC server implementation handle these requests automatically.
                 //  1. If this is an `authorization_code` request, this means the individual has already authenticated
                 //     using another Rock login approach, and the server can now decided if it's safe to issue an access
@@ -204,17 +250,59 @@ namespace Rock.Oidc.Authorization
                 return;
             }
 
-            if ( !context.RedirectUri.IsNullOrWhiteSpace() &&
-                !string.Equals( context.RedirectUri, authClient.RedirectUri, StringComparison.OrdinalIgnoreCase ) )
+            if ( authClient.ClientSecretHash.IsNullOrWhiteSpace() )
             {
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "The specified 'redirect_uri' is invalid." );
+                var codeChallenge = context.Request.CodeChallenge;
+                var codeChallengeMethod = context.Request.CodeChallengeMethod;
 
-                return;
+                // If there is no ClientSecretHash, then this must be a public
+                // client and PKCE is required.
+                if ( string.IsNullOrEmpty( codeChallenge ) )
+                {
+                    context.Reject(
+                        OpenIdConnectConstants.Errors.InvalidRequest,
+                        "code_challenge is required"
+                    );
+
+                    return;
+                }
+
+                if ( !string.Equals( codeChallengeMethod, "S256", StringComparison.Ordinal ) )
+                {
+                    context.Reject(
+                        OpenIdConnectConstants.Errors.InvalidRequest,
+                        "Only S256 code challenge method is supported"
+                    );
+
+                    return;
+                }
+
+                // Stash for later (used when creating the auth code)
+                context.OwinContext.Set( "pkce.code_challenge", codeChallenge );
+                context.OwinContext.Set( "pkce.code_challenge_method", codeChallengeMethod );
             }
 
-            context.Validate( authClient.RedirectUri );
+            if ( context.RedirectUri.IsNotNullOrWhiteSpace() )
+            {
+                // Verify that the redirect URI is one of the URIs registered for
+                // this client application.
+                var validRedirectUris = authClient.RedirectUri?.SplitDelimitedValues( "," ) ?? new string[0];
+
+                if ( !validRedirectUris.Contains( context.RedirectUri, StringComparer.Ordinal ) )
+                {
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The specified 'redirect_uri' is invalid." );
+
+                    return;
+                }
+
+                context.Validate( context.RedirectUri );
+            }
+            else
+            {
+                context.Validate( authClient.RedirectUri );
+            }
         }
 
         /// <summary>
@@ -242,6 +330,18 @@ namespace Rock.Oidc.Authorization
                 context.Ticket.SetProperty( TicketPropertyKey.ClientIpAddress, clientIpAddress );
             }
 
+            // Store the PKCE challenge information into the ticket for later
+            // validation during the token request.
+            var challenge = context.OwinContext.Get<string>( "pkce.code_challenge" );
+            var method = context.OwinContext.Get<string>( "pkce.code_challenge_method" );
+
+            if ( challenge != null )
+            {
+                context.Ticket.SetProperty( "pkce.code_challenge", challenge );
+                context.Ticket.SetProperty( "pkce.code_challenge_method", method );
+            }
+
+
             return base.SerializeAuthorizationCode( context );
         }
 
@@ -264,18 +364,11 @@ namespace Rock.Oidc.Authorization
                 return;
             }
 
-            // Note: client authentication is not mandatory for non-confidential client applications like mobile apps
-            // (except when using the client credentials grant type) but this authorization server uses a safer policy
-            // that makes client authentication mandatory and returns an error if client_id or client_secret is missing.
-            // You may consider relaxing it to support the resource owner password credentials grant type
-            // with JavaScript or desktop applications, where client credentials cannot be safely stored.
-            // In this case, call context.Skip() to inform the server middleware the client is not trusted.
-            if ( context.ClientId.IsNullOrWhiteSpace() || context.ClientSecret.IsNullOrWhiteSpace() )
+            if ( context.ClientId.IsNullOrWhiteSpace() )
             {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "The mandatory 'client_id'/'client_secret' parameters are missing." );
-
+                    description: "The mandatory 'client_id' parameter is missing." );
                 return;
             }
 

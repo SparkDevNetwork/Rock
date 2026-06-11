@@ -18,15 +18,22 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Linq;
 using System.Web;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
+using Rock.Configuration;
+using Rock.Data;
 using Rock.Logging;
+using Rock.Model;
 using Rock.Net;
 using Rock.Net.Geolocation;
 using Rock.Observability;
+using Rock.Security;
 using Rock.Utility;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace Rock.Web.HttpModules
@@ -64,8 +71,7 @@ namespace Rock.Web.HttpModules
         {
             context.BeginRequest += Application_BeginRequest;
             context.EndRequest += Application_EndRequest;
-
-            // TODO: Handle error like this: https://github.com/open-telemetry/opentelemetry-dotnet-contrib/blob/main/src/OpenTelemetry.Instrumentation.AspNet.TelemetryHttpModule/TelemetryHttpModule.cs#L127
+            context.Error += Application_Error;
         }
 
         /// <summary>
@@ -84,6 +90,84 @@ namespace Rock.Web.HttpModules
             BeginLogRequest( context );
 
             AddGeolocationToRequest( context );
+
+            // Intercept CSS requests and process them
+            if ( context.Request.Url.AbsolutePath.EndsWith( ".css", StringComparison.OrdinalIgnoreCase ) )
+            {
+                HandleCssRequest( context );
+            }
+        }
+
+        /// <summary>
+        /// Handles CSS requests by processing and serving CSS content.
+        /// </summary>
+        /// <param name="context">The current HTTP context.</param>
+        private static void HandleCssRequest( HttpContext context )
+        {
+            // Determine the root directory for CSS files (e.g., the web app root)
+            var relativePath = context.Request.Url.AbsolutePath;
+
+            var cssProcessor = RockApp.Current.GetRequiredService<CssProcessor>();
+            var result = cssProcessor.GetCssContent( relativePath );
+
+            // If the processor couldn't find the file, then let the normal pipeline handle it.
+            if ( result == null )
+            {
+                return;
+            }
+
+            // Set cache, ETag and Last-Modified headers. Cache is set to match
+            // default out of the box values for IIS static file handling.
+            context.Response.Cache.SetCacheability( HttpCacheability.Public );
+            context.Response.Cache.SetMaxAge( TimeSpan.FromDays( 365 ) );
+            context.Response.ContentType = "text/css";
+            context.Response.Headers["ETag"] = result.ETag;
+            context.Response.Headers["Last-Modified"] = result.LastModified.ToUniversalTime().ToString( "R" );
+
+            // Handle conditional GET (If-None-Match, If-Modified-Since)
+            var ifNoneMatch = context.Request.Headers["If-None-Match"];
+            var ifModifiedSince = context.Request.Headers["If-Modified-Since"];
+
+            if ( ShouldReturnNotModified( ifNoneMatch, ifModifiedSince, result.ETag, result.LastModified ) )
+            {
+                context.Response.StatusCode = 304;
+                context.Response.SuppressContent = true;
+                context.Response.End();
+                return;
+            }
+
+            context.Response.Write( result.Content );
+            context.Response.End();
+        }
+
+        /// <summary>
+        /// Determines if the response should be a 304 not modified given the
+        /// header values and content values.
+        /// </summary>
+        /// <param name="ifNoneMatch">The If-None-Match header value from the request.</param>
+        /// <param name="ifModifiedSince">The If-Modified-Since header value from the request.</param>
+        /// <param name="eTag">The ETag value of the content that would be sent.</param>
+        /// <param name="lastModified">The last modified date time of the content that would be sent.</param>
+        /// <returns><c>true</c> if the content has not been modified.</returns>
+        private static bool ShouldReturnNotModified( string ifNoneMatch, string ifModifiedSince, string eTag, DateTime lastModified )
+        {
+            var etagMatches = !string.IsNullOrEmpty( ifNoneMatch ) && ifNoneMatch.Replace( "W/", "" ).Trim() == eTag;
+
+            if ( etagMatches )
+            {
+                return true;
+            }
+
+            if ( !string.IsNullOrEmpty( ifModifiedSince ) )
+            {
+                if ( DateTime.TryParse( ifModifiedSince, out var since ) )
+                {
+                    // HTTP dates are in seconds, so ignore milliseconds
+                    return Math.Abs( ( lastModified - since.ToUniversalTime() ).TotalSeconds ) < 1;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -102,6 +186,20 @@ namespace Rock.Web.HttpModules
             EndLogRequest( context );
 
             EndAddObservabilityToRequest( context );
+        }
+
+        /// <summary>
+        /// Processes any error that happened during execution. This is only
+        /// called for unhandled exceptions.
+        /// </summary>
+        /// <param name="sender">The application that sent the event.</param>
+        /// <param name="e">The event arguments.</param>
+        private void Application_Error( object sender, EventArgs e )
+        {
+            var application = ( HttpApplication ) sender;
+            var context = application.Context;
+
+            AddErrorToObservability( context );
         }
 
         #region Observability
@@ -138,6 +236,9 @@ namespace Rock.Web.HttpModules
                     }
                 }
             }
+
+            var tracingEnabled = EnableDebugTracing( context );
+            var linkedActivity = GetLinkedActivity( context );
 
             Activity activity;
 
@@ -193,6 +294,34 @@ namespace Rock.Web.HttpModules
                                                     ?? context.Request.ServerVariables["REMOTE_ADDR"]
                                                     ?? string.Empty );
 
+                var traceObserver = RockApp.Current.GetRequiredService<DebugTraceObserver>();
+
+                // If we have a linked activity from the request headers then
+                // link it to the current activity.
+                if ( linkedActivity.HasValue )
+                {
+                    activity.AddLink( linkedActivity.Value );
+
+                    // If the linked activity is being traced by the debug
+                    // processor, then start tracing this activity as well.
+                    if ( traceObserver.IsValidTrace( linkedActivity.Value.Context.TraceId.ToString() ) )
+                    {
+                        traceObserver.BeginTracing();
+                        traceObserver.LinkTrace( activity.TraceId.ToString(), linkedActivity.Value.Context.TraceId.ToString() );
+
+                        context.AddOrReplaceItem( "Rock:DebugTraceEnabled", true );
+
+                        activity.SetCustomProperty( "rock.full_trace", true );
+                    }
+                }
+
+                // Begin monitoring for this trace if it was enabled.
+                if ( tracingEnabled )
+                {
+                    traceObserver.MonitorTrace( activity.TraceId.ToString() );
+                    activity.SetCustomProperty( "rock.full_trace", true );
+                }
+
                 context.Items[ObservabilityContextKey] = activity;
             }
         }
@@ -215,8 +344,122 @@ namespace Rock.Web.HttpModules
                     activity.AddTag( "client.country_code", geolocation.CountryCode );
                 }
 
+                if ( activity.Status == ActivityStatusCode.Unset )
+                {
+                    if ( context.Response.StatusCode >= 500 )
+                    {
+                        activity.SetStatus( ActivityStatusCode.Error );
+                    }
+                    else
+                    {
+                        activity.SetStatus( ActivityStatusCode.Ok );
+                    }
+                }
+
                 activity.Dispose();
             }
+
+            try
+            {
+                if ( context.Items.Contains( "Rock:DebugTraceEnabled" ) )
+                {
+                    RockApp.Current.GetRequiredService<DebugTraceObserver>().EndTracing();
+                    context.Items.Remove( "Rock:DebugTraceEnabled" );
+                }
+            }
+            catch
+            {
+                // Ignore exceptions.
+            }
+        }
+
+        /// <summary>
+        /// Enables debug tracing for this request if it has been properly
+        /// configured.
+        /// </summary>
+        /// <param name="context">The context that describes the current request.</param>
+        /// <returns><c>true</c> if tracing was enabled; otherwise <c>false</c>.</returns>
+        private bool EnableDebugTracing( HttpContext context )
+        {
+            var showDebugTimingsKey = context.Request.QueryString["ShowDebugTimings"]?.Split( '_' );
+
+            if ( showDebugTimingsKey == null || showDebugTimingsKey.Length != 3 )
+            {
+                return false;
+            }
+
+            var pageIdKey = showDebugTimingsKey[0];
+            var personIdKey = showDebugTimingsKey[1];
+            var hash = showDebugTimingsKey[2];
+            var verificationValue = $"{pageIdKey}_{personIdKey}";
+            var expectedHash = verificationValue.HmacSha256Hash( Encryption.GetEphemeralHashingKey() + context.Request.UrlProxySafe().AbsolutePath );
+
+            if ( hash != expectedHash )
+            {
+                return false;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var pageCache = PageCache.GetByIdKey( pageIdKey, rockContext );
+                var person = new PersonService( rockContext ).Get( personIdKey, false );
+
+                if ( pageCache.IsAuthorized( Authorization.ADMINISTRATE, person ) )
+                {
+                    RockApp.Current.GetRequiredService<DebugTraceObserver>().BeginTracing();
+
+                    context.AddOrReplaceItem( "Rock:DebugTraceEnabled", pageCache.Id );
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Adds any unhandled exceptions that occurred during the request to
+        /// the observability activity.
+        /// </summary>
+        /// <param name="context">The context that describes the request.</param>
+        private void AddErrorToObservability( HttpContext context )
+        {
+            if ( context.Items[ObservabilityContextKey] is Activity activity )
+            {
+                var exception = context.Server.GetLastError();
+
+                if ( exception != null )
+                {
+                    if ( exception is HttpUnhandledException && exception.InnerException != null )
+                    {
+                        exception = exception.InnerException;
+                    }
+
+                    activity.SetStatus( ActivityStatusCode.Error, exception.Message );
+                    activity.AddException( exception );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the linked activity from the request headers if available.
+        /// </summary>
+        /// <param name="context">The context that describes the current request.</param>
+        /// <returns>An instance of <see cref="ActivityLink"/> if there was a valid traceparent header, otherwise <c>null</c>.</returns>
+        private ActivityLink? GetLinkedActivity( HttpContext context )
+        {
+            var traceParent = context.Request.Headers["traceparent"]?.Split( '-' );
+
+            if ( traceParent != null && traceParent.Length == 4 )
+            {
+                var traceId = traceParent[1];
+                var spanId = traceParent[2];
+                var traceFlags = traceParent[3].ConvertToEnum<ActivityTraceFlags>( ActivityTraceFlags.None );
+
+                return new ActivityLink( new ActivityContext( ActivityTraceId.CreateFromString( traceId.ToArray() ), ActivitySpanId.CreateFromString( spanId.ToArray() ), traceFlags ) );
+            }
+
+            return null;
         }
 
         #endregion Observability

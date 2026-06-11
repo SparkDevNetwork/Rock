@@ -23,7 +23,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -50,6 +52,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -61,6 +64,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string PublicName { get; set; }
 
         /// <summary>
@@ -70,6 +74,7 @@ namespace Rock.Model
         /// The summary.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml )]
         public string Summary { get; set; }
 
         /// <summary>
@@ -79,6 +84,7 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -109,6 +115,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IconCssClass { get; set; }
 
         /// <summary>
@@ -161,7 +168,20 @@ namespace Rock.Model
         /// Gets or sets the additional settings as a JSON document.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
+
+        /// <summary>
+        /// Number of days added to the calculated due date for a request.
+        /// </summary>
+        [DataMember]
+        public int? RequestDueDateOffsetInDays { get; set; }
+
+        /// <summary>
+        /// Number of days before the due date when a request is considered "due soon."
+        /// </summary>
+        [DataMember]
+        public int? RequestDueSoonOffsetInDays { get; set; }
 
         #endregion
 

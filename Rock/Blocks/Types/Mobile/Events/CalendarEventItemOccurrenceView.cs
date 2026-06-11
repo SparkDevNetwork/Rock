@@ -150,10 +150,16 @@ namespace Rock.Blocks.Types.Mobile.Events
                 return "<Rock:NotificationBox NotificationType=\"Warning\" Text=\"We could not find that event.\" />";
             }
 
+            // We create a copied for the merge field without modifying the EF entity, to prevent accidentally calling SaveChange later and persist those changes.
+            var eventItemOccurrenceCopy = eventItemOccurrence.ToJson().FromJsonOrNull<EventItemOccurrence>();
+            eventItemOccurrenceCopy.Linkages = eventItemOccurrence.Linkages
+                .Where( l => l.RegistrationInstanceId != null )
+                .ToList();
+
             var mergeFields = new Dictionary<string, object>
             {
                 { "RegistrationUrl", RegistrationUrl },
-                { "EventItemOccurrence", eventItemOccurrence },
+                { "EventItemOccurrence", eventItemOccurrenceCopy },
                 { "Event", eventItemOccurrence?.EventItem },
                 { "CurrentPerson", RequestContext.CurrentPerson }
             };
@@ -169,6 +175,11 @@ namespace Rock.Blocks.Types.Mobile.Events
             Dictionary<int, string> registrationStatusLabels = new Dictionary<int, string>();
             foreach ( var registrationInstance in eventItemOccurrence.Linkages.Select( a => a.RegistrationInstance ).Distinct().ToList() )
             {
+                if ( registrationInstance == null )
+                {
+                    continue;
+                }
+
                 int? maxRegistrantCount = null;
                 var currentRegistrationCount = 0;
 

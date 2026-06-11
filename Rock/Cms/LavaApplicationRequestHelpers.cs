@@ -17,8 +17,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
 using System.Web;
+using System.Xml;
+
+using Newtonsoft.Json;
 
 using Rock.Model;
 using Rock.Utility;
@@ -78,6 +84,44 @@ namespace Rock.Cms
                 dictionary.Add( "Cookies", cookieDictionary );
             }
             catch { }
+
+            // Add in the raw body content.
+            if ( !request.HttpMethod.Equals( "GET", StringComparison.OrdinalIgnoreCase ) )
+            {
+                using ( StreamReader reader = new StreamReader( request.InputStream, Encoding.UTF8 ) )
+                {
+                    dictionary.Add( "RawBody", reader.ReadToEnd() );
+                }
+
+                // Parse the body content if it is JSON or standard Form data.
+                if ( request.ContentType == "application/json" )
+                {
+                    try
+                    {
+                        dictionary.Add( "Body", JsonConvert.DeserializeObject( ( string ) dictionary["RawBody"] ) );
+                    }
+                    catch { }
+                }
+                else if ( request.ContentType == "application/x-www-form-urlencoded" )
+                {
+                    try
+                    {
+                        dictionary.Add( "Body", request.Form.Cast<string>().ToDictionary( q => q, q => request.Form[q] ) );
+                    }
+                    catch { }
+                }
+                else if ( request.ContentType == "application/xml" )
+                {
+                    try
+                    {
+                        XmlDocument doc = new XmlDocument();
+                        doc.LoadXml( ( string ) dictionary["RawBody"] );
+                        string jsonText = JsonConvert.SerializeXmlNode( doc );
+                        dictionary.Add( "Body", JsonConvert.DeserializeObject( ( jsonText ) ) );
+                    }
+                    catch { }
+                }
+            }
 
             return dictionary;
         }

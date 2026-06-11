@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
-        <div class="d-flex justify-content-between align-items-center mb-sm">
+        <div class="d-flex justify-content-between align-items-center mb-spacing-sm">
             <div class="d-flex align-items-center">
                 <SlidingDateRangePicker v-model="filterDate"
                                         :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]"
@@ -18,7 +18,7 @@
                          :btnType="BtnType.Default"
                          :items="stepProgramViewOptions" />
         </div>
-        <ContentSection v-if="selectedStepProgramViewEnum !== StepProgramView.KPIs" class="mb-sm">
+        <ContentSection v-if="selectedStepProgramViewEnum !== StepProgramView.KPIs" class="mb-spacing-sm">
             <ContentStack>
                 <div v-if="selectedStepProgramViewEnum === StepProgramView.Flow" class="row">
                     <RockForm @submit="handleFlowDataFilterChange" ref="flowForm">
@@ -74,14 +74,14 @@
 
         <div v-if="notificationMessage">
             <NotificationBox alertType="warning"
-                             class="mt-sm">
+                             class="mt-spacing-sm">
                 {{ notificationMessage }}
             </NotificationBox>
         </div>
         <div v-else-if="selectedStepProgramViewEnum === StepProgramView.KPIs" v-html="kpi"></div>
-        <div v-else>
-            <h5 class="chart-title">{{ chartTitle }}</h5>
-            <p class="chart-subtitle">{{ chartSubtitle }}</p>
+        <div v-else class="d-flex flex-column">
+            <h5 class="chart-title mb-spacing-tiny pl-spacing-tiny">{{ chartTitle }}</h5>
+            <p class="chart-subtitle font-size-xs text-interface-medium pl-spacing-tiny">{{ chartSubtitle }}</p>
 
             <SankeyDiagram v-if="selectedStepProgramViewEnum === StepProgramView.Flow"
                            :flowNodes="flowNodes"
@@ -129,24 +129,6 @@
     font-size: 1.5em !important;
 }
 
-.mt-sm {
-    margin-top: var(--spacing-small);
-}
-
-.mb-sm {
-    margin-bottom: var(--spacing-small);
-}
-
-.chart-title {
-    margin: 0;
-    margin-bottom: var(--spacing-tiny);
-}
-
-.chart-subtitle {
-    font-size: var(--font-size-xsmall);
-    color: var(--color-interface-medium);
-}
-
 :deep(.flow-node-diagram-container) {
     margin: 0;
 }
@@ -166,9 +148,6 @@
     font-weight: var(--font-weight-semibold);
 }
 
-.margin-y-xsmall {
-    margin: var(--spacing-xsmall) 0;
-}
 </style>
 
 <script setup lang="ts">

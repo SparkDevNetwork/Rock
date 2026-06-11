@@ -455,6 +455,13 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
                 return;
             }
 
+            var component = ContentIndexContainer.GetActiveComponent();
+
+            if ( component == null )
+            {
+                return;
+            }
+
             // Try to get the old index so we can fill in trending values.
             var query = new SearchQuery
             {
@@ -474,7 +481,7 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
                     MaxResults = 1
                 };
 
-                var results = await ContentIndexContainer.GetActiveComponent()?.SearchAsync( query, options );
+                var results = await component.SearchAsync( query, options );
 
                 if ( results != null && results.Documents.Count > 0 )
                 {

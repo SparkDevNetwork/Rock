@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -22,6 +23,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Core;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Utility.Enums;
 
 namespace Rock.Model
@@ -47,6 +51,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 250 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -246,8 +251,16 @@ namespace Rock.Model
         /// <value>
         /// The run days.
         /// </value>
+        [Obsolete( "Use RunDaysOfWeek instead." )]
+        [RockObsolete( "19.0" )]
         [DataMember]
         public DayOfWeekFlag? RunDays { get; set; }
+
+        /// <summary>
+        /// Gets or sets the run days for this alert type.
+        /// Null means all days of the week are run days.
+        /// </summary>
+        public DaysOfWeekFlags? RunDaysOfWeek { get; set; }
 
         /// <summary>
         /// Gets or sets the alert summary notification group identifier.

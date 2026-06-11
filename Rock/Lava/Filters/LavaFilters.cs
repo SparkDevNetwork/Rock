@@ -19,6 +19,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Data.Entity;
+using System.Data.SqlTypes;
 using System.Dynamic;
 using System.Globalization;
 using System.IO;
@@ -60,6 +61,7 @@ using Rock.Security;
 using Rock.Tasks;
 using Rock.Utilities;
 using Rock.Utility;
+using Rock.Utility.ExtensionMethods;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -2450,7 +2452,26 @@ namespace Rock.Lava
                 }
 
                 dataset.UpdateResultData();
-                rockContext.SaveChanges();
+
+                /*
+                    2/10/2026 - NA
+                    We are calling the SaveChanges( true ) overload that disables pre/post processing hooks
+                    because we only want to change the properties changed in UpdateResultData(). If we don't disable
+                    these hooks, the [ModifiedDateTime] value will also be updated every time a DataView is
+                    run, which is not what we want here.
+
+                    Reason: See Asana task "Persisted Datasets Don't Have CreatedBy/ModifiedBy Values"
+                    https://app.asana.com/1/20866866924293/task/1213144793175484
+                */
+                rockContext.SaveChanges( true );
+
+                // Because the SaveChanges( true ) skipped the UpdateCache hook, the in-memory caches
+                // still holds the previous ResultData. Invalidate it now.
+#if NET472_OR_GREATER
+                PersistedDatasetCache.UpdateCachedEntity( dataset.Id, System.Data.Entity.EntityState.Modified );
+#else
+                PersistedDatasetCache.UpdateCachedEntity( dataset.Id, Microsoft.EntityFrameworkCore.EntityState.Modified );
+#endif
             }
             else
             {
@@ -3398,12 +3419,16 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string AddScriptLink( ILavaRenderContext context, string input, bool fingerprintLink = false )
         {
-            var page = HttpContext.Current?.Handler as RockPage;
-
-            if ( page != null )
+            if ( HttpContext.Current?.Handler is RockPage page )
             {
                 RockPage.AddScriptLink( page, ResolveRockUrl( context, input ), fingerprintLink );
+
+                return string.Empty;
             }
+
+            var requestContext = context.GetRockRequestContext();
+
+            requestContext?.Response.AddScriptLinkToHead( ResolveRockUrl( context, input ), fingerprintLink );
 
             return string.Empty;
         }
@@ -3417,12 +3442,16 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string AddCssLink( ILavaRenderContext context, string input, bool fingerprintLink = false )
         {
-            var page = HttpContext.Current?.Handler as RockPage;
-
-            if ( page != null )
+            if ( HttpContext.Current?.Handler is RockPage page )
             {
                 RockPage.AddCSSLink( page, ResolveRockUrl( context, input ), fingerprintLink );
+
+                return string.Empty;
             }
+
+            var requestContext = context.GetRockRequestContext();
+
+            requestContext?.Response.AddCssLink( ResolveRockUrl( context, input ), fingerprintLink );
 
             return string.Empty;
         }
@@ -4166,8 +4195,9 @@ namespace Rock.Lava
         /// <param name="randomLength">The random length.</param>
         /// <param name="categoryId">The category identifier.</param>
         /// <param name="isPinned">The isPinned indicator.</param>
+        /// <param name="expireInDays">The number of days until the short link expires.</param>
         /// <returns></returns>
-        public static string CreateShortLink( ILavaRenderContext context, object input, string token = "", int? siteId = null, bool overwrite = false, int randomLength = 10, int? categoryId = null, bool isPinned = false )
+        public static string CreateShortLink( ILavaRenderContext context, object input, string token = "", int? siteId = null, bool overwrite = false, int randomLength = 10, int? categoryId = null, bool isPinned = false, int? expireInDays = null )
         {
             // Notes: This filter attempts to return a valid shortlink at all costs
             //        this means that if the configuration passed to it is invalid
@@ -4244,6 +4274,27 @@ namespace Rock.Lava
             shortLink.Url = input.ToString();
             shortLink.CategoryId = categoryId;
             shortLink.IsPinned = isPinned;
+
+            if ( expireInDays.HasValue )
+            {
+                /*
+                    1/29/2026 - JMH
+
+                    Negative values are allowed for the "Link Expiration" setting and indicate that the short link
+                    has already expired. An individual may set a negative expiration value intentionally
+                    to have the short link expire immediately.
+
+                    These expired links are still eligible for automatic cleanup by the Rock Cleanup job.
+
+                    Reason: Preserve the ability to edit expired short links without forcing a reset of the expiration logic.
+                */
+                shortLink.ExpireDate = AddDaysSqlSafe( RockDateTime.Today, expireInDays.Value );
+            }
+            else
+            {
+                shortLink.ExpireDate = null;
+            }
+
             rockContext.SaveChanges();
 
             return shortLink.ShortLinkUrl;
@@ -4656,7 +4707,7 @@ namespace Rock.Lava
             }
 
             comparisonType = ( comparisonType ?? "equal" ).ToLower();
-            comparisonType = ( comparisonType == "equal" || comparisonType == "notequal" ) ? comparisonType : "equal";
+            comparisonType = ( comparisonType == "equal" || comparisonType == "notequal" || comparisonType == "contains" ) ? comparisonType : "equal";
 
             var result = new List<object>();
 
@@ -4677,7 +4728,9 @@ namespace Rock.Lava
                 {
                     if ( lavaObject.ContainsKey( filterKey )
                             && ( ( comparisonType == "equal" && GetLavaCompareResult( lavaObject.GetValue( filterKey ), filterValue ) == 0 )
-                                 || ( comparisonType == "notequal" && GetLavaCompareResult( lavaObject.GetValue( filterKey ), filterValue ) != 0 ) ) )
+                                 || ( comparisonType == "notequal" && GetLavaCompareResult( lavaObject.GetValue( filterKey ), filterValue ) != 0 )
+                                 || ( comparisonType == "contains" && lavaObject.GetValue( filterKey )?.ToString().Contains( filterValue?.ToString() ) == true )
+                               ) )
                     {
                         result.Add( lavaObject );
                     }
@@ -4687,7 +4740,9 @@ namespace Rock.Lava
                     var dictionaryObject = value as IDictionary<string, object>;
                     if ( dictionaryObject.ContainsKey( filterKey )
                              && ( ( dynamic ) dictionaryObject[filterKey] == ( dynamic ) filterValue && comparisonType == "equal"
-                                    || ( ( dynamic ) dictionaryObject[filterKey] != ( dynamic ) filterValue && comparisonType == "notequal" ) ) )
+                                    || ( ( dynamic ) dictionaryObject[filterKey] != ( dynamic ) filterValue && comparisonType == "notequal" )
+                                    || ( dictionaryObject[filterKey]?.ToString().Contains( filterValue?.ToString() ) == true && comparisonType == "contains" )
+                                    ) )
                     {
                         result.Add( dictionaryObject );
                     }
@@ -4706,6 +4761,10 @@ namespace Rock.Lava
 
                     if ( ( compareResult == 0 && comparisonType == "equal" )
                             || ( compareResult != 0 && comparisonType == "notequal" ) )
+                    {
+                        result.Add( value );
+                    }
+                    else if ( comparisonType == "contains" && propertyValue.ToString().Contains( filterValue?.ToString() ) == true )
                     {
                         result.Add( value );
                     }
@@ -5482,16 +5541,17 @@ namespace Rock.Lava
         /// <example><![CDATA[
         /// {{ 'hello' | ToBase64 }}
         /// ]]></example>
+        [Obsolete( "Use ToBase64 instead." )]
+        [RockObsolete( "19.0" )]
         public static string Base64( object input )
         {
-            if ( input is ICollection<byte> )
-            {
-                return Convert.ToBase64String( ( input as ICollection<byte> ).ToArray() );
-            }
-            else
-            {
-                return Convert.ToBase64String( System.Text.Encoding.UTF8.GetBytes( input.ToString() ) );
-            }
+            return ToBase64( input );
+        }
+
+        /// <inheritdoc cref="Rock.Lava.Filters.TemplateFilters.ToBase64(object)"/>
+        public static string ToBase64( object input )
+        {
+            return Rock.Lava.Filters.TemplateFilters.ToBase64( input );
         }
 
         /// <summary>
@@ -6169,6 +6229,51 @@ namespace Rock.Lava
             }
 
             return obj;
+        }
+
+        /// <summary>
+        /// Adds the specified number of days to the given <see cref="DateTime"/>,
+        /// clamping the result to the valid SQL Server <c>datetime</c> range.
+        /// </summary>
+        /// <remarks>
+        /// SQL Server <c>datetime</c> values must be between
+        /// <see cref="SqlDateTime.MinValue"/> (1753-01-01) and
+        /// <see cref="SqlDateTime.MaxValue"/> (9999-12-31 23:59:59.997).
+        ///
+        /// If adding the specified number of days would result in a value greater than
+        /// <see cref="SqlDateTime.MaxValue"/>, this method returns that maximum value.
+        /// If the result would be less than <see cref="SqlDateTime.MinValue"/>,
+        /// it returns that minimum value.
+        ///
+        /// This method prevents exceptions when generating DateTime values that will
+        /// be persisted to SQL Server.
+        /// </remarks>
+        /// <param name="dateTime">The date and time value to which days are added.</param>
+        /// <param name="days">The number of days to add. Can be negative.</param>
+        /// <returns>
+        /// A SQL Server safe <see cref="DateTime"/> value representing the result
+        /// of adding <paramref name="days"/> to <paramref name="dateTime"/>.
+        /// </returns>
+        private static DateTime AddDaysSqlSafe( DateTime dateTime, int days )
+        {
+            var sqlMin = ( DateTime )SqlDateTime.MinValue;
+            var sqlMax = ( DateTime )SqlDateTime.MaxValue;
+
+            var maxDays = ( sqlMax - dateTime ).TotalDays;
+            var minDays = ( sqlMin - dateTime ).TotalDays;
+
+            if ( minDays <= days && days <= maxDays )
+            {
+                return dateTime.AddDays( days );
+            }
+            else if ( days > 0 )
+            {
+                return sqlMax;
+            }
+            else
+            {
+                return sqlMin;
+            }
         }
 
         #endregion Private Methods

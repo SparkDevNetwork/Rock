@@ -8,7 +8,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Utility.Enums;
 using Rock.Web.Cache;
@@ -16,7 +15,7 @@ using Rock.Web.Cache;
 namespace Rock.Tests.Integration.Core.Model
 {
     [TestClass]
-    [TestCategory("Core.Crm.Person")]
+    [TestCategory( "Core.Crm.Person" )]
     public class PersonServiceTests : DatabaseTestsBase
     {
         #region Setup
@@ -232,7 +231,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             bool updatePrimaryEmail = false;
             var foundPerson = personService.FindPerson( personMatchQuery, updatePrimaryEmail );
-            Assert.That.IsNotNull( foundPerson );
+            Assert.IsNotNull( foundPerson );
         }
 
         [TestMethod]
@@ -256,7 +255,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             bool updatePrimaryEmail = false;
             var foundPerson = personService.FindPerson( personMatchQuery, updatePrimaryEmail );
-            Assert.That.IsNotNull( foundPerson );
+            Assert.IsNotNull( foundPerson );
         }
 
         [TestMethod]
@@ -293,7 +292,7 @@ namespace Rock.Tests.Integration.Core.Model
                 };
 
                 var foundPerson = personService.FindPerson( personMatchQuery, false );
-                Assert.That.IsNotNull( foundPerson );
+                Assert.IsNotNull( foundPerson );
             }
 
             securitySettingService.SecuritySettings.AccountProtectionProfilesForDuplicateDetectionToIgnore = new List<AccountProtectionProfile> { ( AccountProtectionProfile ) accountProtectionProfile };
@@ -316,7 +315,7 @@ namespace Rock.Tests.Integration.Core.Model
                 };
 
                 var foundPerson = personService.FindPerson( personMatchQuery, false );
-                Assert.That.IsNull( foundPerson );
+                Assert.IsNull( foundPerson );
             }
         }
 
@@ -340,7 +339,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             bool updatePrimaryEmail = false;
             var foundPerson = personService.FindPerson( personMatchQuery, updatePrimaryEmail );
-            Assert.That.IsNotNull( foundPerson );
+            Assert.IsNotNull( foundPerson );
         }
 
         [TestMethod]
@@ -364,7 +363,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             bool updatePrimaryEmail = false;
             var foundPerson = personService.FindPerson( personMatchQuery, updatePrimaryEmail );
-            Assert.That.IsNotNull( foundPerson );
+            Assert.IsNotNull( foundPerson );
         }
 
         [TestMethod]
@@ -391,7 +390,7 @@ namespace Rock.Tests.Integration.Core.Model
             var foundPersons = personService.FindPersons( personMatchQuery, updatePrimaryEmail );
             bool foundPersonWithNoEmail = foundPersons.Any( a => a.Guid == PersonGuid.PersonWithNoEmailsGuid );
 
-            Assert.That.IsFalse( foundPersonWithNoEmail );
+            Assert.IsFalse( foundPersonWithNoEmail );
         }
 
         [TestMethod]
@@ -415,7 +414,7 @@ namespace Rock.Tests.Integration.Core.Model
             bool updatePrimaryEmail = false;
             var foundPersons = personService.FindPersons( personMatchQuery, updatePrimaryEmail );
             bool foundPersonWithPrimaryEmailButDifferentName = foundPersons.Any( a => a.Guid == PersonGuid.PersonWithPrimaryEmailButDifferentNameGuid );
-            Assert.That.IsFalse( foundPersonWithPrimaryEmailButDifferentName );
+            Assert.IsFalse( foundPersonWithPrimaryEmailButDifferentName );
         }
 
         #endregion Person Match tests

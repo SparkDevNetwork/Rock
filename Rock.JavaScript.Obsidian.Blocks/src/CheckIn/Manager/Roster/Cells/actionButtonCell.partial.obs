@@ -1,0 +1,153 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="btnGroupElement"
+         class="">
+        <button type="button"
+                class="btn btn-default btn-sm"
+                @click.prevent.stop="onGroupClick">
+            <i class="ti ti-dots-vertical"></i>
+        </button>
+
+        <Teleport v-if="isPopupOpen"
+                  :to="popupTarget"
+                  :disabled="!popupTarget">
+            <ul ref="dropDownMenuElement" class="action-button-cell dropdown-menu dropdown-menu-right"
+                :style="popupStyle">
+                <li v-if="showDelete">
+                    <a href="#"
+                       class="text-danger"
+                       @click.prevent.stop="onDeleteClick"><i class="ti ti-user-x"></i> Delete Record</a>
+                </li>
+            </ul>
+        </Teleport>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, onBeforeUnmount, ref, watch } from "vue";
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { useRosterContext } from "../utilities.partial";
+    import { RosterAttendanceRecord } from "../types.partial";
+
+    const props = defineProps(standardCellProps);
+    const rosterContext = useRosterContext();
+
+
+    // #region Values
+
+    const btnGroupElement = ref<HTMLElement>();
+    const dropDownMenuElement = ref<HTMLElement>();
+    const popupTarget = ref<Element>();
+    const isPopupOpen = ref(false);
+    const popupStyle = ref({});
+
+    // #endregion
+
+    // #region Computed Values
+
+    const record = computed((): RosterAttendanceRecord => {
+        return props.row as RosterAttendanceRecord;
+    });
+
+    const showDelete = computed((): boolean => {
+        return rosterContext.config.isDeleteButtonEnabled;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Updates the position of the popup based on the current scroll position
+     * of the sticky header.
+     */
+    function updatePopupPosition(): void {
+        if (btnGroupElement.value) {
+            const btnGroupRect = btnGroupElement.value.getBoundingClientRect();
+
+            popupStyle.value = {
+                right: `${(document.documentElement.clientWidth - btnGroupRect.right - 1)}px`,
+                top: `${btnGroupRect.bottom}px`,
+                display: "block",
+            };
+        }
+
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the ellipsis button is clicked. Open or close the popup.
+     */
+    function onGroupClick(): void {
+        // If we are already open, close the popup.
+        if (isPopupOpen.value) {
+            isPopupOpen.value = false;
+            return;
+        }
+
+        updatePopupPosition();
+
+        popupTarget.value = document.fullscreenElement || document.body;
+        isPopupOpen.value = true;
+    }
+
+    /**
+     * Called when the delete menu item is clicked.
+     */
+    async function onDeleteClick(): Promise<void> {
+        isPopupOpen.value = false;
+        await rosterContext.onAttendanceDeleteClick(record.value);
+    }
+
+    /**
+     * Called whenever the mouse is clicked down anywhere on the page. This is
+     * used to automatically close the popup if the click wasn't inside the
+     * popup somewhere.
+     *
+     * @param ev The mouse event that triggered this call.
+     */
+    function onDocumentMouseDown(ev: MouseEvent): void {
+        if (ev.target && ev.target instanceof HTMLElement) {
+            if (btnGroupElement.value && btnGroupElement.value.contains(ev.target)) {
+                return;
+            }
+
+            if (dropDownMenuElement.value && dropDownMenuElement.value.contains(ev.target)) {
+                return;
+            }
+        }
+
+        isPopupOpen.value = false;
+    }
+
+    /**
+     * Called when the document has scrolled, update the position of the popup.
+     */
+    function onDocumentScroll(): void {
+        updatePopupPosition();
+    }
+
+    // #endregion
+
+    // Whenever the popup is open, register our event listeners on the
+    // whole document. When the popup closes, remove the listeners.
+    watch(isPopupOpen, () => {
+        if (isPopupOpen.value) {
+            document.addEventListener("mousedown", onDocumentMouseDown);
+            document.addEventListener("scroll", onDocumentScroll);
+        }
+        else {
+            document.removeEventListener("scroll", onDocumentScroll);
+            document.removeEventListener("mousedown", onDocumentMouseDown);
+        }
+    });
+
+    // Remove the event listeners if we get removed from the page.
+    onBeforeUnmount(() => {
+        document.removeEventListener("scroll", onDocumentScroll);
+        document.removeEventListener("mousedown", onDocumentMouseDown);
+    });
+</script>

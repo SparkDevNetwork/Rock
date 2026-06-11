@@ -22,5 +22,17 @@ namespace Rock.ViewModels.Blocks.Prayer.PrayerRequestList
     /// </summary>
     public class PrayerRequestListOptionsBag
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether the current person is authorized
+        /// to approve prayer requests (via the block's "Approve" security action).
+        /// </summary>
+        public bool ShowIsApprovedColumn { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Campus column should be
+        /// visible. This is typically only true when the organization has more
+        /// than one active campus.
+        /// </summary>
+        public bool IsCampusColumnVisible { get; set; }
     }
 }

@@ -33,6 +33,7 @@
 
                 <ComponentPicker v-model="storageEntityType"
                                  containerType="Rock.Storage.ProviderContainer, Rock"
+                                 :includeInactive=true
                                  label="Storage Type"
                                  rules="required" />
                 <div class="attributes">
@@ -55,7 +56,7 @@
                     <Modal v-model="isAttributeModalOpen" title="Binary File Type Attributes">
 
                         <RockForm v-model:submit="saveAttribute" @submit="onSaveAttribute">
-                            <AttributeEditor v-model="binaryFileTypeAttribute" :reservedKeyNames="reservedKeyNames" />
+                            <AttributeEditor v-model="binaryFileTypeAttribute" :reservedKeyNames="reservedKeyNames" :attributeEntityTypeGuid="EntityType.BinaryFile" />
                         </RockForm>
 
                         <template #customButtons>
@@ -107,7 +108,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, reactive, ref, watch } from "vue";
+    import { onMounted, PropType, reactive, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
@@ -130,6 +131,7 @@
     import { BinaryFileTypeBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileTypeDetail/binaryFileTypeBag";
     import { BinaryFileTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileTypeDetail/binaryFileTypeDetailOptionsBag";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
@@ -158,7 +160,13 @@
     const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
     const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
     const iconCssClass = propertyRef(props.modelValue?.bag?.iconCssClass ?? "", "IconCssClass");
-    const requiresViewSecurity = propertyRef(props.modelValue?.bag?.requiresViewSecurity ?? false, "RequiresViewSecurity");
+    // Default to true for NEW binary file types so we lean on the side of a more
+    // secure file type.
+    const isNewBinaryFileType = !props.modelValue?.bag?.idKey;
+    const requiresViewSecurity = propertyRef(
+        isNewBinaryFileType ? true : (props.modelValue?.bag?.requiresViewSecurity ?? false),
+        "RequiresViewSecurity"
+    );
     const allowAnonymous = propertyRef(props.modelValue?.bag?.allowAnonymous ?? false, "AllowAnonymous");
     const storageEntityType = propertyRef(props.modelValue?.bag?.storageEntityType ?? {}, "StorageEntityTypeId");
     const maxFileSizeBytes = propertyRef(props.modelValue?.bag?.maxFileSizeBytes, "MaxFileSizeBytes");
@@ -252,8 +260,8 @@
             const index = binaryFileTypeAttributes.value.findIndex(a => a.guid === binaryFileTypeAttribute.value?.guid);
             if (index !== -1) {
                 // Get the updated attribute and rowItem.
-                let editedAttribute = binaryFileTypeAttributes.value.find(a => a.guid == binaryFileTypeAttribute.value?.guid);
-                let rowItem = attributesGridData.rows?.find(x => x.key == binaryFileTypeAttribute.value?.guid);
+                let editedAttribute = binaryFileTypeAttributes.value.find(a => a.guid === binaryFileTypeAttribute.value?.guid);
+                let rowItem = attributesGridData.rows?.find(x => x.key === binaryFileTypeAttribute.value?.guid);
 
                 if (editedAttribute) {
                     // Replace old attribute with updated attribute.
@@ -345,4 +353,19 @@
     // Watch for any changes to props that represent properties and then
     // automatically emit which property changed.
     watchPropertyChanges(propRefs, emit);
+
+    // For NEW binary file types, sync the parent's bag with the secure-by-default
+    // initial value. The UI already shows the checkbox as checked via the
+    // propertyRef initializer above, but the parent's bag still holds the
+    // server-side default (false) until something emits an update. Without this,
+    // the wrong value would be persisted on save unless the admin clicks the box.
+    onMounted(() => {
+        if (isNewBinaryFileType && props.modelValue?.bag?.requiresViewSecurity !== true) {
+            const newValue: ValidPropertiesBox<BinaryFileTypeBag> = {
+                bag: { ...props.modelValue.bag } as BinaryFileTypeBag
+            };
+            setPropertiesBoxValue(newValue, "requiresViewSecurity", true);
+            emit("update:modelValue", newValue);
+        }
+    });
 </script>

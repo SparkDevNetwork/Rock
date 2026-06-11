@@ -23,6 +23,7 @@ using System.Runtime.Serialization;
 
 using Rock.Bus.Message;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Net.Geolocation;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -42,6 +43,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AbbreviatedName
         {
             get

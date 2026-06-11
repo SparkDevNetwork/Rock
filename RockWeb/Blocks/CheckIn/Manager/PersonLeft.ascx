@@ -28,14 +28,14 @@
             <div class="profile-photo-container">
                 <asp:Literal ID="lPhoto" runat="server" />
             </div>
-            <div class="d-flex flex-column align-items-center p-2 pb-3 py-lg-3 px-lg-4">
-                <h1 class="h3 title name js-checkin-person-name mt-0 text-center">
+            <div class="d-flex flex-column align-items-center p-spacing-md">
+                <h3 class="title name js-checkin-person-name mt-spacing-none text-center">
                     <asp:Literal ID="lName" runat="server" />
-                    <a id="btnShare" runat="server" class="btn btn-lg btn-link text-muted p-0 js-share-editperson" style="display:none;"><i class="ti ti-share hand"></i></a></h1>
+                    <a id="btnShare" runat="server" class="btn btn-lg btn-link text-muted p-spacing-none js-share-editperson" style="display:none;"><i class="ti ti-share hand"></i></a></h1>
                 <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
             </div>
 
-            <asp:Panel ID="pnlContact" runat="server" CssClass="border-top border-gray-400 p-2 p-lg-3">
+            <asp:Panel ID="pnlContact" runat="server" CssClass="person-contact-info">
                 <div class="pnlSms">
                     <!-- Shows the results of the message send -->
                     <Rock:NotificationBox ID="nbSmsSendResult" runat="server" Visible="false" NotificationBoxType="Success" Dismissable="true" />
@@ -43,7 +43,7 @@
 
                 <asp:Repeater ID="rptrPhones" runat="server" OnItemDataBound="rptrPhones_ItemDataBound">
                     <ItemTemplate>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-spacing-sm">
                             <div>
                                 <%# Eval("NumberFormatted") %>
                                 <span class="d-block text-sm text-muted leading-snug">
@@ -51,8 +51,8 @@
                                 </span>
                             </div>
                             <div class="text-right">
-                                <asp:LinkButton ID="btnSms" runat="server" Visible="false" OnClick="btnSms_Click" CssClass="btn btn-sm btn-square btn-default my-1" Text="<i class='ti ti-device-mobile-message'></i>" />
-                                <a class="btn btn-sm btn-square btn-default my-1" href="tel:<%# Eval("Number") %>"><i class="ti ti-phone"></i></a>
+                                <asp:LinkButton ID="btnSms" runat="server" Visible="false" OnClick="btnSms_Click" CssClass="btn btn-sm btn-square btn-default my-spacing-tiny" Text="<i class='ti ti-device-mobile-message'></i>" />
+                                <a class="btn btn-sm btn-square btn-default my-spacing-tiny" href="tel:<%# Eval("Number") %>"><i class="ti ti-phone"></i></a>
                             </div>
                         </div>
                     </ItemTemplate>
@@ -61,20 +61,20 @@
                 <asp:Literal ID="lEmail" runat="server" />
             </asp:Panel>
 
-            <div id="pnlAdultFields" runat="server" class="adult-attributes border-top border-gray-400 p-2">
+            <div id="pnlAdultFields" runat="server" class="adult-attributes">
                 <Rock:AttributeValuesContainer ID="avcAdultAttributes" runat="server" ShowCategoryLabel="false" />
             </div>
-            <div id="pnlChildFields" runat="server" class="child-attributes border-top border-gray-400 p-2">
+            <div id="pnlChildFields" runat="server" class="child-attributes">
                 <Rock:AttributeValuesContainer ID="avcChildAttributes" runat="server" ShowCategoryLabel="false" />
             </div>
 
         </div>
 
         <!-- Family -->
-        <asp:Panel ID="pnlFamily" runat="server" CssClass="panel panel-block flex-row flex-wrap justify-content-around p-1">
+        <asp:Panel ID="pnlFamily" runat="server" CssClass="panel panel-block flex-row flex-wrap justify-content-around p-spacing-tiny">
             <asp:Repeater ID="rptrFamily" runat="server" OnItemDataBound="rptrFamily_ItemDataBound">
                 <ItemTemplate>
-                    <a class="group-member text-sm text-center text-color rounded p-2" href='<%# Eval("Url") %>'>
+                    <a class="group-member text-sm text-center text-color rounded p-spacing-xs" href='<%# Eval("Url") %>'>
                         <asp:Literal ID="lFamilyPhoto" runat="server" />
                         <span><%# Eval("NickName") %></span>
                     </a>
@@ -83,10 +83,10 @@
         </asp:Panel>
 
         <!-- Relationships -->
-        <asp:Panel ID="pnlRelationships" runat="server" CssClass="panel panel-block flex-row flex-wrap justify-content-around p-1">
+        <asp:Panel ID="pnlRelationships" runat="server" CssClass="panel panel-block flex-row flex-wrap justify-content-around p-spacing-tiny">
             <asp:Repeater ID="rptrRelationships" runat="server" OnItemDataBound="rptrRelationships_ItemDataBound">
                 <ItemTemplate>
-                    <a class="group-member text-sm text-center text-color rounded p-2" href='<%# Eval("Url") %>'>
+                    <a class="group-member text-sm text-center text-color rounded p-spacing-xs" href='<%# Eval("Url") %>'>
                         <asp:Literal ID="lRelationshipPhoto" runat="server" />
                         <span><%# Eval("NickName") %></span>
                         <small><asp:Literal ID="lRelationshipName" runat="server" /></small>
@@ -134,7 +134,7 @@
                             <div class="row form-row">
                         </HeaderTemplate>
                         <ItemTemplate>
-                            <div class="col-xs-6 col-sm-4 mt-2">
+                            <div class="col-xs-6 col-sm-4 mt-spacing-xs">
                                 <asp:LinkButton ID="btnSmsSnippet" runat="server" CssClass="btn btn-default btn-block text-truncate" OnCommand="btnSmsSnippet_Command" CommandName="InputSnippet" CommandArgument='<%#Eval("Id") %>' Text='<%#Eval("Name") %>' />
                             </div>
                         </ItemTemplate>

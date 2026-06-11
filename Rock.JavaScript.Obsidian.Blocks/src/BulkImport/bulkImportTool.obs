@@ -38,7 +38,6 @@
 
         <FileUploader v-model="slingshotFile"
                       label="Select Slingshot File"
-                      displayMode="DropZone"
                       :isBinaryFile="false"
                       :rootFolder="config.rootFolder ?? ''"
                       :uploadAsTemporary="false"

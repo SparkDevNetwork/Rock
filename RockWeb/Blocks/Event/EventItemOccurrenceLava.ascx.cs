@@ -37,9 +37,18 @@ namespace RockWeb.Blocks.Event
     [DisplayName( "Calendar Event Item Occurrence Lava" )]
     [Category( "Event" )]
     [Description( "Renders a particular calendar event item occurrence using Lava." )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the list of events.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/CalendarItem.lava' %}", "", 2 )]
+
+    [CodeEditorField( "Lava Template",
+        Description = "Lava template to use to display the list of events.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = @"{% include '~~/Assets/Lava/CalendarItem.lava' %}",
+        Order = 2 )]
+
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar item name.", false )]
     [LinkedPage( "Registration Page", "Registration page for events" )]
+
     [Rock.SystemGuid.BlockTypeGuid( "18EFAE90-3AB1-40FE-9EC6-A5CF42F2A7D9" )]
     public partial class EventItemOccurrenceLava : Rock.Web.UI.RockBlock
     {

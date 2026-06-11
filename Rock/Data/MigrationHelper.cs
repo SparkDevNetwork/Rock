@@ -1763,18 +1763,150 @@ END" );
 
         #endregion
 
-        #region Category Methods
+        #region BinaryFile Methods
 
         /// <summary>
-        /// Updates the category or adds if it doesn't already exist (based on Guid) and marks it as IsSystem
+        /// Adds a new binary file or updates an existing one for database storage using the specified parameters.
+        /// NOTE: If performing an update, only the fileName, mimeType, description and image data will be updated.
         /// </summary>
-        /// <param name="entityTypeGuid">The entity type unique identifier.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="iconCssClass">The icon CSS class.</param>
-        /// <param name="description">The description.</param>
-        /// <param name="guid">The unique identifier.</param>
-        /// <param name="order">The order.</param>
-        /// <param name="parentCategoryGuid">The parent category unique identifier.</param>
+        /// <param name="binaryFileTypeGuid">The guid of the binary file type.</param>
+        /// <param name="base64ImageData">The base64-encoded string representing the file's binary content.</param>
+        /// <param name="fileName">The name of the file to be stored. Will be sanitized to ensure it is a valid file name.</param>
+        /// <param name="mimeType">The MIME type of the file, such as 'image/png',  'application/pdf', 'image/svg+xml', etc.</param>
+        /// <param name="description">An optional description for the binary file.</param>
+        /// <param name="guid">The assigned well-known guid for the binary file. If a file with this GUID exists, it will be updated; otherwise, a
+        /// new file will be created.</param>
+        /// <exception cref="ArgumentNullException">Thrown if binaryFileTypeGuid, base64ImageData, or guid is null or whitespace.</exception>
+        public void AddOrUpdateBinaryFileForDatabaseStorage( string binaryFileTypeGuid, string base64ImageData, string fileName, string mimeType, string description, string guid )
+        {
+            if ( string.IsNullOrWhiteSpace( binaryFileTypeGuid ) )
+            {
+                throw new ArgumentNullException( nameof( binaryFileTypeGuid ) );
+            }
+
+            if ( string.IsNullOrWhiteSpace( base64ImageData ) )
+            {
+                throw new ArgumentNullException( nameof( base64ImageData ) );
+            }
+
+            if ( string.IsNullOrWhiteSpace( guid ) )
+            {
+                throw new ArgumentNullException( nameof( guid ) );
+            }
+
+            description = description.Replace( "'", "''" );
+
+            fileName = fileName.MakeValidFileName().Replace( "'", "''" );
+
+            Migration.Sql( $@"
+DECLARE
+    @BinaryFileTypeId [int] = (SELECT [Id] FROM [BinaryFileType] WHERE ([Guid] = '{binaryFileTypeGuid}'))
+    , @DatabaseStorageEntityTypeId [int] = (SELECT [Id] FROM [EntityType] WHERE ([Guid] = '{SystemGuid.EntityType.STORAGE_PROVIDER_DATABASE}'))
+    , @Now [datetime] = (SELECT GETDATE())
+    , @Base64ImageData [nvarchar] (max) = '{base64ImageData}'
+    , @BinaryImageData varbinary (max)
+    , @BinaryFileId [int]
+    ;
+
+IF @BinaryFileTypeId IS NULL OR @DatabaseStorageEntityTypeId IS NULL
+    RETURN;  -- or THROW/RAISERROR
+
+IF (LEN(@Base64ImageData) > 0)
+    SET @BinaryImageData = (SELECT CAST(N'' as xml).value('xs:base64Binary(sql:variable(""@Base64ImageData""))', 'varbinary(max)'));
+
+IF NOT EXISTS (SELECT * FROM [BinaryFile] WHERE [Guid] = '{guid}' )
+BEGIN
+
+    INSERT INTO [BinaryFile]
+        (
+            [IsTemporary]
+            , [IsSystem]
+            , [BinaryFileTypeId]
+            , [FileName]
+            , [MimeType]
+            , [Description]
+            , [StorageEntityTypeId]
+            , [Guid]
+            , [CreatedDateTime]
+            , [ModifiedDateTime]
+            , [ContentLastModified]
+            , [StorageEntitySettings]
+            , [Path]
+        )
+        VALUES
+        (
+            0
+            , 1
+            , @BinaryFileTypeId
+            , '{fileName}'
+            , '{mimeType}'
+            , '{description}'
+            , @DatabaseStorageEntityTypeId
+            , '{guid}'
+            , @Now
+            , @Now
+            , @Now
+            , '{{}}'
+            , '~/GetImage.ashx?guid=' + (SELECT CONVERT([nvarchar] (50), '{guid}'))
+        );
+	SET @BinaryFileId = SCOPE_IDENTITY()
+
+    INSERT INTO [BinaryFileData] 
+    (
+        [Id]
+        , [Content]
+        , [Guid]
+        , [CreatedDateTime]
+        , [ModifiedDateTime]
+    )
+    VALUES
+    (
+        @BinaryFileId
+        , @BinaryImageData
+        , NEWID()
+        , @Now
+        , @Now
+    );
+END
+ELSE
+BEGIN
+    -- Get the existing BinaryFile Id
+    SELECT @BinaryFileId = bf.[Id]
+    FROM [BinaryFile] bf
+    WHERE bf.[Guid] = '{guid}';
+
+    -- Update only the allowed columns in BinaryFile
+    UPDATE [BinaryFile]
+    SET [FileName] = '{fileName}',
+        [MimeType] = '{mimeType}',
+        [Description] = '{description}',
+        [ModifiedDateTime] = @Now,
+        [ContentLastModified] = @Now
+    WHERE [Id] = @BinaryFileId;
+
+    -- Update only the allowed column in BinaryFileData
+    UPDATE dbo.[BinaryFileData]
+    SET [Content] = @BinaryImageData,
+        [ModifiedDateTime] = @Now
+    WHERE [Id] = @BinaryFileId;
+END
+" );
+        }
+
+        #endregion BinaryFile Methods
+
+            #region Category Methods
+
+            /// <summary>
+            /// Updates the category or adds if it doesn't already exist (based on Guid) and marks it as IsSystem
+            /// </summary>
+            /// <param name="entityTypeGuid">The entity type unique identifier.</param>
+            /// <param name="name">The name.</param>
+            /// <param name="iconCssClass">The icon CSS class.</param>
+            /// <param name="description">The description.</param>
+            /// <param name="guid">The unique identifier.</param>
+            /// <param name="order">The order.</param>
+            /// <param name="parentCategoryGuid">The parent category unique identifier.</param>
         public void UpdateCategory( string entityTypeGuid, string name, string iconCssClass, string description, string guid, int order = 0, string parentCategoryGuid = "" )
         {
             StringBuilder sql = new StringBuilder();
@@ -5479,7 +5611,10 @@ IF NOT EXISTS (
     AND [EntityId] = 0
     AND [Action] = '{3}'
     AND [SpecialRole] = {5}
-    AND [GroupId] = @groupId
+    AND (
+        ([GroupId] = @groupId)
+        OR ([GroupId] IS NULL AND @groupId IS NULL)
+    )
 )
 BEGIN
     INSERT INTO [dbo].[Auth]
@@ -7771,7 +7906,6 @@ END
         {
             Migration.Sql( string.Format( @"
 
-                DECLARE @SystemEmailId int = (SELECT [Id] FROM [SystemEmail] WHERE [Guid] = '{3}')
                 DECLARE @SystemCommunicationId int = (SELECT [Id] FROM [SystemCommunication] WHERE [Guid] = '{3}')
 
                 IF EXISTS ( SELECT [Id] FROM [WorkflowActionForm] WHERE [Guid] =  '{6}' )
@@ -7780,7 +7914,6 @@ END
                         [Header] = '{0}',
                         [Footer] = '{1}',
                         [Actions] = '{2}',
-                        [NotificationSystemEmailId] = @SystemEmailId,
                         [NotificationSystemCommunicationId] = @SystemCommunicationId,
                         [IncludeActionsInNotification] = {4},
                         [ActionAttributeGuid] = {5}
@@ -7789,8 +7922,8 @@ END
                 ELSE
                 BEGIN
                     INSERT INTO [WorkflowActionForm] (
-                        [Header], [Footer], [Actions], [NotificationSystemEmailId], [NotificationSystemCommunicationId], [IncludeActionsInNotification], [ActionAttributeGuid], [Guid] )
-                    VALUES( '{0}', '{1}', '{2}', @SystemEmailId, @SystemCommunicationId, {4}, {5}, '{6}' )
+                        [Header], [Footer], [Actions], [NotificationSystemCommunicationId], [IncludeActionsInNotification], [ActionAttributeGuid], [Guid] )
+                    VALUES( '{0}', '{1}', '{2}', @SystemCommunicationId, {4}, {5}, '{6}' )
                 END
 ",
                     header.Replace( "'", "''" ),
@@ -8972,13 +9105,13 @@ END
         /// <param name="blockAttributeKeysToIgnore">An optional dictionary of attribute keys to be ignored for the blocktypes being Chopped or Swapped.</param>
         internal void ReplaceWebformsWithObsidianBlockMigration( string name, Dictionary<string, string> blockTypeReplacements, string migrationStrategy, string jobGuid, Dictionary<string, string> blockAttributeKeysToIgnore = null )
         {
-            if ( name.Length > 31 )
+            if ( name.Length > 38 )
             {
-                throw new ArgumentException( $"Service job name '{name}' exceeds the max limit of 31 characters.", "name" );
+                throw new ArgumentException( $"Service job name '{name}' exceeds the max limit of 38 characters.", "name" );
             }
 
             // note: the cronExpression was chosen at random. It is provided as it is mandatory in the Service Job. Feel free to change it if needed.
-            AddPostUpdateServiceJob( name: $"Rock Update Helper - Replace WebForms Blocks with Obsidian Blocks - {name}",
+            AddPostUpdateServiceJob( name: $"Rock Update Helper - Replace WebForms Blocks with Obsidian - {name}",
                 description: "This job will replace the  WebForms blocks with their Obsidian blocks on all sites, pages, and layouts.",
                 jobType: "Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks", cronExpression: "0 0 21 1/1 * ? *", guid: jobGuid );
 
@@ -9155,7 +9288,7 @@ END
         /// <param name="isDatasetSystem">Indicates if the persisted dataset is a system dataset.</param>
         /// <param name="isDatasetActive">Indicates if the persisted dataset is active.</param>
         /// <param name="enabledLavaCommands">The enabled Lava commands for the persisted dataset.</param>
-        /// <param name="refreshIntervalMinutes">The refresh interval in minutes for the persisted dataset.</param>
+        /// <param name="persistedScheduleIntervalMinutes">The persisted schedule refresh interval in minutes for the persisted dataset.</param>
         public void AddOrUpdatePersistedDatasetWithRefreshInterval(
             string datasetGuid,
             string datasetAccessKey,
@@ -9168,7 +9301,7 @@ END
             bool isDatasetSystem,
             bool isDatasetActive,
             string enabledLavaCommands,
-            int refreshIntervalMinutes )
+            int persistedScheduleIntervalMinutes )
         {
             Migration.Sql( $@"
     IF NOT EXISTS(SELECT 1 FROM [PersistedDataset] WHERE [Guid] = '{datasetGuid}')
@@ -9184,7 +9317,7 @@ END
             [IsSystem],
             [IsActive],
             [EnabledLavaCommands],
-            [RefreshIntervalMinutes],
+            [PersistedScheduleIntervalMinutes],
             [Guid]
         )
         VALUES (
@@ -9198,7 +9331,7 @@ END
             {(isDatasetSystem ? 1 : 0)},
             {(isDatasetActive ? 1 : 0)},
             '{enabledLavaCommands}',
-            {refreshIntervalMinutes},
+            {persistedScheduleIntervalMinutes},
             '{datasetGuid}'
         );
     END
@@ -9215,7 +9348,7 @@ END
             [IsSystem] = {(isDatasetSystem ? 1 : 0)},
             [IsActive] = {(isDatasetActive ? 1 : 0)},
             [EnabledLavaCommands] = '{enabledLavaCommands}',
-            [RefreshIntervalMinutes] = {refreshIntervalMinutes}
+            [PersistedScheduleIntervalMinutes] = {persistedScheduleIntervalMinutes}
         WHERE [Guid] = '{datasetGuid}';
     END" );
         }

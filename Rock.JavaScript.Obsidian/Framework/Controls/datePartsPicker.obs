@@ -138,7 +138,7 @@
     });
 
     const internalDateKey = computed((): string => {
-        if ((!props.modelValue?.year ?? 0) && !computedRequireYear.value) {
+        if ((!props.modelValue?.year) && !computedRequireYear.value) {
             const dateKey = DateKey.toNoYearDateKey(props.modelValue?.month ?? 0, props.modelValue?.day ?? 0);
 
             return dateKey;
@@ -162,7 +162,7 @@
         const years: string[] = [];
         let year = RockDateTime.now().year;
 
-        if (props.futureYearCount > 0 && props.allowFutureDates) {
+        if (props.futureYearCount !== null && props.allowFutureDates) {
             year += props.futureYearCount;
         }
 

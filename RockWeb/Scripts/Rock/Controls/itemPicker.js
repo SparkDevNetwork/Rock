@@ -86,7 +86,7 @@
                                 iconCssClass: item.iconCssClass,
                                 hasChildren: item.hasChildren,
                                 isCategory: false,
-                                isSelectionDisabled: item.isSelectionDisabled,
+                                isSelectionDisabled: item.isFolder,
                                 childrenUrl: item.childrenUrl
                             };
 

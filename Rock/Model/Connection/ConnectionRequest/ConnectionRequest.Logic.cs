@@ -15,17 +15,122 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Runtime.Serialization;
+using System.ComponentModel.DataAnnotations.Schema;
 
-using Rock.Web.Cache;
+using Rock.Attribute;
+using Rock.Lava;
 
 namespace Rock.Model
 {
     public partial class ConnectionRequest
     {
+        #region Properties
+
+        /// <summary>
+        /// Gets whether this request is overdue.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [NotMapped]
+        [LavaVisible]
+        [RockInternal( "19.0" )]
+        public bool IsOverdue
+        {
+            get
+            {
+                return ConnectionState == ConnectionState.Active
+                    && DueDate.HasValue
+                    && DueDate.Value.Date < RockDateTime.Today;
+            }
+        }
+
+        /// <summary>
+        /// Gets the count of days by which this request is overdue.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [NotMapped]
+        [LavaVisible]
+        [RockInternal( "19.0" )]
+        public int? OverdueDays
+        {
+            get
+            {
+                if ( !IsOverdue )
+                {
+                    return null;
+                }
+
+                return ( RockDateTime.Today - DueDate.Value.Date ).Days;
+            }
+        }
+
+        /// <summary>
+        /// Gets the count of days within which this request is due.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [NotMapped]
+        [LavaVisible]
+        [RockInternal( "19.0" )]
+        public int? DueInDays
+        {
+            get
+            {
+                if ( !DueDate.HasValue || IsOverdue )
+                {
+                    return null;
+                }
+
+                return ( DueDate.Value.Date - RockDateTime.Today ).Days;
+            }
+        }
+
+        /// <summary>
+        /// Gets whether this request is considered due soon.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [NotMapped]
+        [LavaVisible]
+        [RockInternal( "19.0" )]
+        public bool IsDueSoon
+        {
+            get
+            {
+                return !IsOverdue
+                    && ConnectionState == ConnectionState.Active
+                    && DueSoonDate.HasValue
+                    && DueSoonDate.Value.Date <= RockDateTime.Today;
+            }
+        }
+
+        #endregion Properties
+
         #region Methods
 
         /// <summary>
@@ -99,6 +204,6 @@ namespace Rock.Model
             return true;
         }
 
-        #endregion
+        #endregion Methods
     }
 }

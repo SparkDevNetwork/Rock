@@ -9,9 +9,6 @@
           :entityTypeGuid="EntityType.EventItemOccurrence"
           stickyHeader
           liveUpdates
-          gridSettings
-          :gridSettingsActive="hasSettingsFilters"
-          @gridSettingsClick="onGridSettingsClick"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
@@ -23,7 +20,7 @@
                     width="5%" />
 
         <DateColumn name="date"
-                    :title="nextDateColumnTitle"
+                    title="Next Start Date"
                     field="date"
                     :filter="dateValueFilter"
                     visiblePriority="xs"
@@ -40,8 +37,8 @@
                     title="Location"
                     field="location"
                     :filter="textValueFilter"
-                    visiblePriority="md"
-                    width="7%" />
+                    visiblePriority="xs"
+                    width="8%" />
 
         <Column name="registration"
                 title="Registration"
@@ -49,8 +46,8 @@
                 :filter="pickExistingValueFilter"
                 :filterValue="getRegistrationColumnFilterValue"
                 :quickFilterValue="getRegistrationColumnFilterValue"
-                visiblePriority="md"
-                width="10%">
+                visiblePriority="xs"
+                width="12%">
             <template #format="{ row }">
                 <a v-if="row.registration" :href="`${config.options?.registrationInstancePageUrl}?RegistrationInstanceId=${row.registrationInstanceId}`">{{ row.registration }}</a>
             </template>
@@ -66,7 +63,7 @@
                 :filter="pickExistingValueFilter"
                 :filterValue="getGroupColumnFilterValue"
                 :quickFilterValue="getGroupColumnFilterValue"
-                visiblePriority="md"
+                visiblePriority="xs"
                 width="5%">
             <template #format="{ row }">
                 <a v-if="row.group" :href="`${config.options?.groupDetailPageUrl}?GroupId=${row.groupId}`">{{ row.group }}</a>
@@ -102,7 +99,7 @@
                       field="contact"
                       :filterValue="getContactColumnFilterValue"
                       :filter="pickExistingValueFilter"
-                      visiblePriority="md"
+                      visiblePriority="xs"
                       :hideAvatar="true"
                       width="8%" />
 
@@ -117,7 +114,7 @@
                     title="Email"
                     field="contactEmail"
                     :filter="textValueFilter"
-                    width="5%"
+                    width="12%"
                     itemClass="break-word"
                     visiblePriority="md" />
 
@@ -133,10 +130,6 @@
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
-
-    <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible"
-                       :campusItems="config.options?.campusItems ?? []" />
 </template>
 
 <style>
@@ -150,48 +143,29 @@
 </style>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { reactive, ref } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { PersonColumn, pickExistingValueFilter, dateValueFilter, TextColumn, DateColumn, textValueFilter, DeleteColumn, ButtonColumn, AttributeColumns, Column } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { EventItemOccurrenceListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/EventItemOccurrenceList/eventItemOccurrenceListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey, GridSettingsOptions, PreferenceKey } from "./EventItemOccurrenceList/types.partial";
-    import { computed, reactive, ref, watch } from "vue";
-    import GridSettingsModal from "./EventItemOccurrenceList/gridSettingsModal.partial.obs";
+    import { NavigationUrlKey } from "./EventItemOccurrenceList/types.partial";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const config = useConfigurationValues<ListBlockBox<EventItemOccurrenceListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
-    const isGridSettingsVisible = ref(false);
-    const gridSettings = ref<GridSettingsOptions>({
-        startDate: preferences.getValue(PreferenceKey.FilterStartDate),
-        endDate: preferences.getValue(PreferenceKey.FilterEndDate),
-    });
-
     // #endregion
 
     // #region Computed Values
-
-    const nextDateColumnTitle = computed((): string => {
-        return !!gridSettings.value.startDate || !!gridSettings.value.endDate ? "Next Date In Range" : "Next Start Date";
-    });
-
-    /** `true` if the grid settings is performing any filtering. */
-    const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.startDate
-            || !!gridSettings.value.endDate;
-    });
-
 
     // #endregion
 
@@ -348,25 +322,6 @@
             await alert(result.errorMessage ?? "Unknown error while trying to copy Event Item Occurrence.");
         }
     }
-
-    /**
-    * Called when the grid setting icon is clicked, displays the block filters.
-    *
-    */
-    function onGridSettingsClick(): void {
-        isGridSettingsVisible.value = true;
-    }
-
-    // #endregion
-
-    watch(gridSettings, async () => {
-        preferences.setValue(PreferenceKey.FilterStartDate, gridSettings.value.startDate ?? "");
-        preferences.setValue(PreferenceKey.FilterEndDate, gridSettings.value.endDate ?? "");
-
-        await preferences.save();
-
-        gridDataSource.value = loadGridData();
-    });
 
     gridDataSource.value = loadGridData();
 </script>

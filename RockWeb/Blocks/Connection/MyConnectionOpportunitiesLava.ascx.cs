@@ -63,7 +63,6 @@ namespace RockWeb.Blocks.Connection
         "Contents",
         Description = @"The Lava template to use for displaying connection opportunities assigned to current user.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = false,
         DefaultValue = @"{% include '~~/Assets/Lava/MyConnectionOpportunitiesSortable.lava' %}",

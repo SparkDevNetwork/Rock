@@ -31,7 +31,18 @@ namespace Rock.Attribute
         private const string EDITOR_HEIGHT = "editorHeight";
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DateRangeFieldAttribute" /> class.
+        /// Initializes a new instance of the <see cref="CodeEditorFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public CodeEditorFieldAttribute( string name )
+            : base( name, fieldTypeClass: typeof( Rock.Field.Types.CodeEditorFieldType ).FullName )
+        {
+            EditorMode = CodeEditorMode.Text;
+            EditorHeight = 200;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CodeEditorFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
@@ -43,6 +54,8 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [RockObsolete( "18.1" )]
+        [Obsolete( "Use the constructor that only takes name as a parameter." )]
         public CodeEditorFieldAttribute( string name, string description = "", CodeEditorMode mode = CodeEditorMode.Text, CodeEditorTheme theme = CodeEditorTheme.Rock, int height = 200, bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.CodeEditorFieldType ).FullName )
         {
@@ -76,6 +89,8 @@ namespace Rock.Attribute
         /// <value>
         /// The editor theme.
         /// </value>
+        [RockObsolete( "18.1" )]
+        [Obsolete( "The editor theme is now set by Rock and cannot be changed." )]
         public virtual CodeEditorTheme EditorTheme
         {
             get

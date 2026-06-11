@@ -22,6 +22,7 @@ using System.Linq;
 using Newtonsoft.Json;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Utility.ExtensionMethods;
 
 namespace Rock.Web.Cache
@@ -464,7 +465,7 @@ namespace Rock.Web.Cache
 
             // Track the keys associated with defined cache tags, and ignore undefined tags.
             var cacheTagDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
-            var definedValueService = new Rock.Model.DefinedValueService( new Rock.Data.RockContext() );
+            var definedValueService = new Rock.Model.DefinedValueService( RockApp.Current.CreateRockContext() );
             var validCacheTags = definedValueService.Queryable().Where( v => v.DefinedTypeId == cacheTagDefinedTypeId && cacheTagList.Contains( v.Value ) ).ToList();
 
             foreach ( var cacheTag in validCacheTags )

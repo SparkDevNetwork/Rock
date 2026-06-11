@@ -146,6 +146,28 @@
                 }
             });
         });
+
+        var $thisBlock = $('#<%= upnlRoot.ClientID %>');
+
+        function addDisabledStatusTooltips() {
+            var $addEditModeStatus = $thisBlock.find('.js-request-modal-add-edit-mode-status');
+            if (!$addEditModeStatus) {
+                return;
+            }
+
+            $addEditModeStatus
+                .find('input[disabled]')
+                .closest('label')
+                .each(function () {
+                    $(this).css('cursor', 'not-allowed');
+                    $(this).attr('title', 'Sequential status mode is enabled for this connection type, so you can only change this request to the next status.');
+                    $(this).tooltip({
+                        container: 'body'
+                    });
+                });
+        }
+
+        addDisabledStatusTooltips();
     });
 
     const toggleFilterDrawer = function () {
@@ -512,7 +534,10 @@
                                 <asp:LinkButton ID="btnRequestModalViewModeEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnRequestModalViewModeEdit_Click" CausesValidation="false" />
                                 <asp:LinkButton ID="btnRequestModalViewModeTransfer" runat="server" Text="Transfer" CssClass="btn btn-link" CausesValidation="false" OnClick="btnRequestModalViewModeTransfer_Click" />
                                 <asp:LinkButton ID="btnRequestViewModeViewHistory" runat="server" Text="View History" CssClass="btn btn-link" CausesValidation="false" OnClick="btnRequestViewModeViewHistory_Click" />
-                                <asp:LinkButton ID="btnRequestModalViewModeConnect" runat="server" Text="Connect" CssClass="btn btn-primary ml-auto" CausesValidation="false" OnClick="btnRequestModalViewModeConnect_Click" />
+                                <asp:LinkButton ID="btnRequestModalViewModeConnect" runat="server" CssClass="btn btn-primary ml-auto" CausesValidation="false" OnClick="btnRequestModalViewModeConnect_Click">
+                                    <i class="ti ti-circle-check"></i>
+                                    Complete
+                                </asp:LinkButton>
                             </div>
 
                             <div runat="server" id="divRequestModalViewModeActivityGridMode" class="mb-4">
@@ -642,7 +667,13 @@
 
                             <Rock:RockTextBox ID="tbRequestModalAddEditModeComments" Label="Comments" runat="server" TextMode="MultiLine" Rows="4" ValidateRequestMode="Disabled" />
 
-                            <Rock:RockRadioButtonList ID="rblRequestModalAddEditModeStatus" runat="server" Label="Status" RepeatDirection="Horizontal" />
+                            <Rock:RockRadioButtonList ID="rblRequestModalAddEditModeStatus" runat="server" Label="Status" RepeatDirection="Horizontal" CssClass="js-request-modal-add-edit-mode-status" />
+
+                            <asp:Panel ID="pnlRequestModalAddModeSequentialStatus" runat="server" Visible="false">
+                                <Rock:RockControlWrapper ID="rcwRequestModalAddModeSequentialStatus" runat="server" Label="Status">
+                                    <asp:Literal ID="lRequestModalAddModeSequentialStatus" runat="server" />
+                                </Rock:RockControlWrapper>
+                            </asp:Panel>
 
                             <div class="row">
                                 <div class="col-md-6">
@@ -788,7 +819,7 @@
                                 <a href="javascript:void(0);" class="js-view">View Details</a>
                             </li>
                             <li class="can-connect-{{CanConnect}}">
-                                <a href="javascript:void(0);" class="js-connect">Connect</a>
+                                <a href="javascript:void(0);" class="js-connect">Complete</a>
                             </li>
                             <% if ( ShowSecurityButton ) { %>
                             <li>

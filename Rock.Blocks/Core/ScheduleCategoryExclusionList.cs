@@ -185,30 +185,32 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-                            var entityService = new ScheduleCategoryExclusionService( RockContext );
-                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+            var entityService = new ScheduleCategoryExclusionService( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-                if ( entity == null )
-                {
-                    return ActionBadRequest( $"{ScheduleCategoryExclusion.FriendlyTypeName} not found." );
-                }
+            if ( entity == null )
+            {
+                return ActionBadRequest( $"{ScheduleCategoryExclusion.FriendlyTypeName} not found." );
+            }
 
-                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete ${ScheduleCategoryExclusion.FriendlyTypeName}." );
-                }
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete ${ScheduleCategoryExclusion.FriendlyTypeName}." );
+            }
 
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
 
-                entityService.Delete( entity );
-                RockContext.SaveChanges();
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
 
-                Rock.CheckIn.KioskDevice.Clear();
+#if NET472_OR_GREATER
+            Rock.CheckIn.KioskDevice.Clear();
+#endif
 
-                return ActionOk();
+            return ActionOk();
         }
 
         /// <summary>
@@ -251,7 +253,10 @@ namespace Rock.Blocks.Core
             }
 
             RockContext.SaveChanges();
+
+#if NET472_OR_GREATER
             Rock.CheckIn.KioskDevice.Clear();
+#endif
 
             return ActionOk();
         }

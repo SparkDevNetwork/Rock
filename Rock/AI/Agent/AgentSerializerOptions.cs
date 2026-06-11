@@ -66,7 +66,8 @@ namespace Rock.AI.Agent
             {
                 TypeInfoResolver = new DefaultJsonTypeInfoResolver()
                     .WithAddedModifier( t => ExcludeAgentTypeProperties( t, agentType ) )
-                    .WithAddedModifier( t => ExcludeAudienceTypeProperties( t, audienceType ) )
+                    .WithAddedModifier( t => ExcludeAudienceTypeProperties( t, audienceType ) ),
+                WriteIndented = false,
             };
 
             serializerOptions.MakeReadOnly();

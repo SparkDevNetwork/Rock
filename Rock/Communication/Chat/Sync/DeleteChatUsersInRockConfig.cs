@@ -31,12 +31,11 @@ namespace Rock.Communication.Chat.Sync
         public bool ShouldUnban { get; set; }
 
         /// <summary>
-        /// Gets or sets whether to clear the foreign key values of chat-specific <see cref="PersonAlias"/>es whose
-        /// <see cref="ChatUser"/>s were deleted.
+        /// Gets or sets whether to delete the chat-specific <see cref="PersonAlias"/>es.
         /// </summary>
         /// <remarks>
         /// Default is <see langword="true"/>. Set to <see langword="false"/> if a follow-up process will handle this.
         /// </remarks>
-        public bool ShouldClearChatPersonAliasForeignKey { get; set; } = true;
+        public bool ShouldDeleteChatPersonAlias { get; set; } = true;
     }
 }

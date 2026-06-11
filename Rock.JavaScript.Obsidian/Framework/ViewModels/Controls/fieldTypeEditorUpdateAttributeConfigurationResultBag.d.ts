@@ -49,4 +49,10 @@ export type FieldTypeEditorUpdateAttributeConfigurationResultBag = {
      * when it is in edit mode (such as the default control).
      */
     editConfigurationValues?: Record<string, string> | null;
+
+    /**
+     * A string that describes the format of the raw value stored in the
+     * database.
+     */
+    valueFormat?: string | null;
 };

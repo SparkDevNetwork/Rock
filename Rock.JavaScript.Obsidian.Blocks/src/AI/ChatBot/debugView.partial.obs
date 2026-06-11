@@ -1,0 +1,97 @@
+<template>
+    <Modal v-model="isModelVisible"
+           title="Message Debug Information"
+           cancelText="Close">
+        <TabbedBar v-model="messageDebugTab"
+                   :tabs="['Tool Calls', 'Logs']" />
+
+        <div v-if="messageDebugTab === 'Tool Calls'" class="message-debug-tool-calls">
+            <div v-if="getDebugToolCalls(debugMessage).length === 0" class="text-muted">
+                No tool calls for this request.
+            </div>
+
+            <Panel v-for="func in getDebugToolCalls(debugMessage)"
+                   :title="func.name"
+                   :key="func.name"
+                   hasCollapse>
+                <template #headerActions>
+                    <div class="tool-labels">
+                        <span v-if="!func.error" class="label label-success">Success</span>
+                        <span v-else class="label label-danger">Failed</span>
+                        <span class="label label-info">{{ func.duration }}</span>
+                    </div>
+                </template>
+
+                <div class="tool-args">
+                    <h4>Arguments</h4>
+                    <pre v-html="highlightJavaScript(func.args)"></pre>
+                </div>
+
+                <div v-if="!func.error" class="tool-result">
+                    <h4>Result</h4>
+                    <pre v-html="highlightJavaScript(func.result)"></pre>
+                </div>
+
+                <div v-if="func.error" class="tool-error">
+                    <h4>Error</h4>
+                    <div>{{ func.error }}</div>
+                </div>
+            </Panel>
+        </div>
+
+        <div v-if="messageDebugTab === 'Logs'" class="message-debug-log">
+            <pre v-html="getDebugLogText(debugMessage)"></pre>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import HighlightJs from "@Obsidian/Libs/highlightJs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
+    import { getDebugLogText, getDebugToolCalls } from "./tools.partial";
+    import { ExtendedChatMessageBag } from "./types";
+    import { PropType, ref, watch } from "vue";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        debugMessage: {
+            type: Object as PropType<ExtendedChatMessageBag | null>,
+            required: true
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    const isModelVisible = useVModelPassthrough(props, "modelValue", emit);
+
+    const messageDebugTab = ref<"Tool Calls" | "Logs">("Tool Calls");
+
+    function highlightJavaScript(code: string): string {
+        try {
+            var jsonObject = JSON.parse(code);
+
+            return HighlightJs.highlight(JSON.stringify(jsonObject, null, 2), {
+                language: "json"
+            })?.value ?? escapeHtml(code);
+        }
+        catch {
+            return escapeHtml(code);
+        }
+    }
+
+    watch(isModelVisible, () => {
+        if (isModelVisible.value) {
+            messageDebugTab.value = "Tool Calls";
+        }
+    });
+</script>

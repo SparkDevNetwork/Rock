@@ -17,15 +17,89 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
+
+using Rock.Attribute;
+using Rock.Data;
+using Rock.Lava;
+using Rock.Model.Connection.ConnectionType.DTO;
 using Rock.Web.Cache;
 
 namespace Rock.Model
 {
     public partial class ConnectionType
     {
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets a value indicating whether all <see cref="ConnectionRequest"/> due dates
+        /// and due soon dates under this connection type should be recalculated during post save.
+        /// This property is not persisted to the database and is only used during the save process.
+        /// </summary>
+        [NotMapped]
+        [HideFromReporting]
+        [LavaHidden]
+        [RockInternal( "19.0" )]
+        internal bool ShouldRecalculateRequestDueAndDueSoonDates { get; set; }
+
+        #endregion
+
         #region Methods
+
+        /// <summary>
+        /// Gets the additional settings for this Connection Type.
+        /// </summary>
+        internal ConnectionTypeAdditionalSettings GetConnectionTypeAdditionalSettings()
+        {
+            return this.GetAdditionalSettingsOrNull<ConnectionTypeAdditionalSettings>();
+        }
+
+        /// <summary>
+        /// Sets the additional settings for this Connection Type.
+        /// </summary>
+        internal void SetConnectionTypeAdditionalSettings( ConnectionTypeAdditionalSettings settings )
+        {
+            this.SetAdditionalSettings( settings );
+        }
+
+        /// <summary>
+        /// Gets whether <paramref name="targetStatusId"/> is the next sequential, active <see cref="ConnectionStatus"/>
+        /// after <paramref name="currentStatusId"/>.
+        /// </summary>
+        /// <param name="connectionTypeId">The identifier of the <see cref="ConnectionType"/>.</param>
+        /// <param name="currentStatusId">The identifier of the current <see cref="ConnectionStatus"/>.</param>
+        /// <param name="targetStatusId">The identifier of the target <see cref="ConnectionStatus"/>.</param>
+        /// <returns>
+        /// Whether <paramref name="targetStatusId"/> is the next sequential, active <see cref="ConnectionStatus"/>.
+        /// </returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "19.0" )]
+        public static bool IsNextSequentialActiveStatus( int connectionTypeId, int currentStatusId, int targetStatusId )
+        {
+            if ( connectionTypeId <= 0
+                || currentStatusId <= 0
+                || targetStatusId <= 0 )
+            {
+                return false;
+            }
+
+            var connectionTypeCache = ConnectionTypeCache.Get( connectionTypeId );
+            if ( connectionTypeCache == null )
+            {
+                return false;
+            }
+
+            return connectionTypeCache.IsNextSequentialActiveStatus( currentStatusId, targetStatusId );
+        }
 
         #region ICacheable
 

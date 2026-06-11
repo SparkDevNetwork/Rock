@@ -19,8 +19,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Common;
+#if REVIEW_WEBFORMS
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure.Interception;
+#endif
 using System.Data.SqlClient;
 using System.Data;
 using System.Linq;
@@ -28,14 +30,13 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Media;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.MediaElementDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
-using Rock.Utility.ExtensionMethods;
-using Rock.Web.UI;
 using Rock.Web;
 
 namespace Rock.Blocks.Cms
@@ -163,7 +164,12 @@ namespace Rock.Blocks.Cms
             }
 
             var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+
+            // The legacy Web Forms block forced read-only when the media account component does not allow
+            // manual entry ( e.g. externally synced providers ), so editing requires both block-level Edit
+            // rights and a component that allows manual entry.
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                && IsManualEntryAllowed( entity );
 
             if ( entity.Id != 0 )
             {
@@ -385,7 +391,7 @@ namespace Rock.Blocks.Cms
 
             if ( folderId == 0 )
             {
-                folderId = PageParameter( PageParameterKey.MediaFolderId ).AsIntegerOrNull() ?? 0;
+                folderId = GetMediaFolderIdFromPageParameter();
             }
 
             return new Dictionary<string, string>
@@ -415,7 +421,7 @@ namespace Rock.Blocks.Cms
             else
             {
                 entity = new MediaElement();
-                entity.MediaFolderId = PageParameter( PageParameterKey.MediaFolderId ).AsIntegerOrNull() ?? 0;
+                entity.MediaFolderId = GetMediaFolderIdFromPageParameter();
                 entityService.Add( entity );
             }
 
@@ -427,11 +433,62 @@ namespace Rock.Blocks.Cms
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${MediaElement.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {MediaElement.FriendlyTypeName}." );
+                return false;
+            }
+
+            // The legacy Web Forms block did not allow adding or editing elements when the media account
+            // component disallows manual entry ( e.g. externally synced providers ).
+            if ( !IsManualEntryAllowed( entity ) )
+            {
+                error = ActionBadRequest( $"Manual entry is not allowed for this {MediaElement.FriendlyTypeName}." );
                 return false;
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Determines whether the media account component that owns this element allows manual entry.
+        /// Mirrors the legacy Web Forms behavior, which forced the detail form to read-only when the
+        /// component disallowed manual entry. When no component can be resolved, manual entry is allowed.
+        /// </summary>
+        /// <param name="entity">The media element being added or edited.</param>
+        /// <returns><c>true</c> if manual entry is allowed; otherwise <c>false</c>.</returns>
+        private bool IsManualEntryAllowed( MediaElement entity )
+        {
+            // For a new element the entity's MediaFolderId is not yet populated from the page parameter,
+            // so fall back to the parameter to resolve the folder ( supporting Id, IdKey, or Guid ).
+            var mediaFolderId = entity.MediaFolderId != 0
+                ? entity.MediaFolderId
+                : GetMediaFolderIdFromPageParameter();
+
+            var mediaFolder = new MediaFolderService( RockContext )
+                .Queryable( "MediaAccount" )
+                .FirstOrDefault( f => f.Id == mediaFolderId );
+
+            var componentEntityTypeId = mediaFolder?.MediaAccount?.ComponentEntityTypeId;
+            if ( !componentEntityTypeId.HasValue )
+            {
+                return true;
+            }
+
+            var componentEntityType = EntityTypeCache.Get( componentEntityTypeId.Value );
+            var component = componentEntityType == null ? null : MediaAccountContainer.GetComponent( componentEntityType.Name );
+
+            // The legacy block only blocked editing when a component explicitly disallowed manual entry.
+            return component == null || component.AllowsManualEntry;
+        }
+
+        /// <summary>
+        /// Resolves the media folder id from the page parameter, supporting an integer Id, an IdKey, or a
+        /// Guid ( honoring the site's predictable-id setting ). Returns 0 when no folder can be resolved.
+        /// </summary>
+        /// <returns>The media folder id, or 0 if it could not be resolved.</returns>
+        private int GetMediaFolderIdFromPageParameter()
+        {
+            return new MediaFolderService( RockContext )
+                .Get( PageParameter( PageParameterKey.MediaFolderId ), !PageCache.Layout.Site.DisablePredictableIds )?.Id ?? 0;
         }
 
         /// <summary>
@@ -576,8 +633,7 @@ namespace Rock.Blocks.Cms
         public BlockActionResult GetPlayCount( int duration )
         {
             var rockContext = new RockContext();
-            var mediaElementId = PageParameter( PageParameterKey.MediaElementId ).AsInteger();
-            var mediaElement = new MediaElementService( rockContext ).Get( mediaElementId );
+            var mediaElement = new MediaElementService( rockContext ).Get( PageParameter( PageParameterKey.MediaElementId ), !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( mediaElement == null )
             {
@@ -746,6 +802,7 @@ namespace Rock.Blocks.Cms
             List<Interaction> interactions = null;
 
             // Load the next 25 results.
+#if REVIEW_WEBFORMS
             DateTimeParameterInterceptor.UseWith( rockContext, () =>
             {
                 interactions = filteredQuery
@@ -754,6 +811,13 @@ namespace Rock.Blocks.Cms
                     .Take( 25 )
                     .ToList();
             });
+#else
+                interactions = filteredQuery
+                    .OrderByDescending( i => i.InteractionDateTime )
+                    .ThenByDescending( i => i.Id )
+                    .Take( 25 )
+                    .ToList();
+#endif
 
             // If we got any results then figure out the next page context.
             if ( interactions.Count > 0 )
@@ -1089,6 +1153,7 @@ namespace Rock.Blocks.Cms
             public int LastId { get; set; }
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// DateTimeParameterInterceptor fixes the incorrect behavior of
         /// Entity Framework library when for datetime columns it's generating
@@ -1144,7 +1209,8 @@ namespace Rock.Blocks.Cms
                     .ForEach( p => p.SqlDbType = SqlDbType.DateTime );
             }
         }
-        #endregion
+#endif
 
+        #endregion
     }
 }

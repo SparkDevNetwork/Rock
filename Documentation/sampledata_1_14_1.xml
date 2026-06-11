@@ -161,7 +161,11 @@
           email="jim.simmons@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/simmons_jim.jpg"
-          homePhone="" mobilePhone="6238881212" workPhone=""/>
+          homePhone="" mobilePhone="6238881212" workPhone="">
+          <logins>
+            <login userName="jsimmons"/>
+          </logins>
+        </person>
 
         <person guid="FC6B9819-EF2E-44C9-93DB-05571B39E58F"
           firstName="Sarah" nickName="Sarah" lastName="Simmons" birthDate="5/3/1989" age="34" gender="female"
@@ -280,7 +284,11 @@
          email="bill.marble@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
          recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
          photoUrl="http://storage.rockrms.com/sampledata/person-images/marble_bill.jpg"
-         homePhone="" mobilePhone="" workPhone=""/>
+         homePhone="" mobilePhone="" workPhone="">
+          <logins>
+            <login userName="bmarble"/>
+          </logins>
+        </person>
 
       </members>
 
@@ -739,6 +747,9 @@
             <attribute SecondVisit="4/1/2014" />
           </attributes>
           <notes />
+          <logins>
+            <login userName="asong"/>
+          </logins>
         </person>
       </members>
     </family>

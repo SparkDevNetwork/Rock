@@ -21,7 +21,6 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
 
 namespace Rock.Tests.Integration.Core.Lava.Commands
@@ -221,7 +220,7 @@ Main Campus;Stepping Stone;
             {
                 var result = ExecuteSqlBlock( engine, lavaScript );
 
-                Assert.That.Contains( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
+                Assert.Contains( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
             } );
         }
 
@@ -249,7 +248,7 @@ Main Campus;Stepping Stone;
             {
                 var result = ExecuteSqlBlock( engine, lavaScript );
 
-                Assert.That.DoesNotContain( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
+                Assert.DoesNotContain( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
             } );
         }
 
@@ -275,7 +274,7 @@ Main Campus;Stepping Stone;
             {
                 var result = ExecuteSqlBlock( engine, lavaScript );
 
-                Assert.That.DoesNotContain( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
+                Assert.DoesNotContain( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
             } );
         }
 
@@ -303,7 +302,7 @@ Main Campus;Stepping Stone;
             {
                 var result = ExecuteSqlBlock( engine, lavaScript );
 
-                Assert.That.Contains( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
+                Assert.Contains( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
             } );
         }
 
@@ -323,7 +322,7 @@ Main Campus;Stepping Stone;
             {
                 var result = ExecuteSqlBlock( engine, lavaScript );
 
-                Assert.That.Contains( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
+                Assert.Contains( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
             } );
         }
 
@@ -342,7 +341,7 @@ Main Campus;Stepping Stone;
             {
                 var result = ExecuteSqlBlock( engine, lavaScript );
 
-                Assert.That.DoesNotContain( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
+                Assert.DoesNotContain( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
             } );
         }
 
@@ -359,7 +358,7 @@ Main Campus;Stepping Stone;
             {
                 var result = ExecuteSqlBlock( engine, lavaScript );
 
-                Assert.That.DoesNotContain( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
+                Assert.DoesNotContain( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
             } );
         }
 
@@ -383,7 +382,7 @@ Main Campus;Stepping Stone;
 
                 var errorMessages = result.Error.Messages().JoinStrings( "//" );
 
-                Assert.That.Contains( errorMessages, "Execution Timeout Expired." );
+                Assert.Contains( errorMessages, "Execution Timeout Expired." );
             } );
         }
 

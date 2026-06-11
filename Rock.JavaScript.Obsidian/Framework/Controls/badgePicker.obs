@@ -8,7 +8,7 @@
 <script setup lang="ts">
     import { Guid } from "@Obsidian/Types";
     import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { post } from "@Obsidian/Utility/http";
+    import { useHttp } from "@Obsidian/Utility/http";
     import { BadgePickerGetBadgesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/badgePickerGetBadgesOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { computed, PropType, ref, watch } from "vue";
@@ -32,6 +32,8 @@
     const emit = defineEmits<{
         (e: "update:modelValue", value: ListItemBag | ListItemBag[] | null): void;
     }>();
+
+    const http = useHttp();
 
     // #region Values
 
@@ -63,7 +65,7 @@
         const options: BadgePickerGetBadgesOptionsBag = {
             securityGrantToken: securityGrantToken.value
         };
-        const result = await post<ListItemBag[]>("/api/v2/Controls/BadgePickerGetBadges", undefined, options);
+        const result = await http.post<ListItemBag[]>("/api/v2/Controls/BadgePickerGetBadges", undefined, options);
 
         if (result.isSuccess && result.data) {
             loadedItems.value = result.data;

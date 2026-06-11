@@ -127,7 +127,7 @@ namespace Rock.Tests.Integration.TestData.Communications
             {
                 mediumEntityTypeGuid = SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid();
             }
-            else if (communicationType == CommunicationType.SMS )
+            else if ( communicationType == CommunicationType.SMS )
             {
                 mediumEntityTypeGuid = SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid();
             }

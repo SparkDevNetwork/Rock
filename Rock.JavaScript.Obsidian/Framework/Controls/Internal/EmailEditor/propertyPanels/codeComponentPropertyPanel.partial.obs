@@ -39,8 +39,7 @@
     import { onMounted, onUnmounted, PropType, ref, watch } from "vue";
     import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
     import ShorthandPixelBox from "../shorthandPixelBox.partial.obs";
-    import { UsageType } from "../types";
-    import { ShorthandModel } from "../types.partial";
+    import { ShorthandModel, UsageType } from "../types.partial";
     import {
         addRockContentEditableEventListener,
         codeComponentAdapter,

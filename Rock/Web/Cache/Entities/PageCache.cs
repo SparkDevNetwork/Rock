@@ -27,6 +27,7 @@ using System.Xml.Linq;
 
 using Rock.Attribute;
 using Rock.Cms;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -467,7 +468,7 @@ namespace Rock.Web.Cache
             {
                 if ( _childPagesCache == null )
                 {
-                    _childPagesCache = GetPages( new RockContext() );
+                    _childPagesCache = GetPages( RockApp.Current.CreateRockContext() );
                 }
                 return _childPagesCache;
             }
@@ -531,7 +532,7 @@ namespace Rock.Web.Cache
                     {
                         if ( _blockIds == null )
                         {
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 BlockService blockService = new BlockService( rockContext );
 

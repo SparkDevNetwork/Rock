@@ -23,6 +23,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -63,7 +64,7 @@ namespace Rock.Model
             if ( createIfNotFound )
             {
                 // Create a new context so type can be saved independing of current context
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var entityTypeService = new EntityTypeService( rockContext );
                     entityType = CreateFromType( type );
@@ -139,7 +140,7 @@ namespace Rock.Model
             if ( createIfNotFound )
             {
                 // Create a new context so type can be saved independing of current context
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var entityTypeService = new EntityTypeService( rockContext );
                 entityType = new EntityType();
                 entityType.Name = name;
@@ -491,12 +492,26 @@ namespace Rock.Model
                 );
                 combinedNewAndExistingEntityTypes.AddRange( reflectedEntityTypesThatStillExist );
                 combinedNewAndExistingEntityTypes.AddRange( entityTypesFromReflection.Values );
-                CheckAndStageObsidianBlockConversion( reflectedTypeLookupByName, combinedNewAndExistingEntityTypes, rockContext );
+                var stagedBlockTypeIds = CheckAndStageObsidianBlockConversion( reflectedTypeLookupByName, combinedNewAndExistingEntityTypes, rockContext );
 
                 // Lastly, save all the modified entitytypes and the potential block type changes (from Obsidian conversion).
                 try
                 {
                     rockContext.SaveChanges();
+                    if ( stagedBlockTypeIds.Any() )
+                    {
+                        var blockTypeService = new BlockTypeService( rockContext );
+
+                        // if we staged any block types for conversion, we'll need to clear the cache for those block types so they can be reloaded with the new Obsidian-based EntityType
+                        foreach ( var blockTypeId in stagedBlockTypeIds )
+                        {
+                            var blockTypeToBeDeleted = blockTypeService.Get( blockTypeId );
+                            blockTypeService.Delete( blockTypeToBeDeleted );
+                            BlockTypeCache.Remove( blockTypeId );
+                            AttributeCache.FlushAttributesForBlockType( blockTypeId );
+                        }
+                        rockContext.SaveChanges( disablePrePostProcessing: true );
+                    }
                 }
                 catch ( Exception thrownException )
                 {
@@ -530,10 +545,11 @@ namespace Rock.Model
         /// <param name="reflectedTypeLookupByName">Lookup of entity type name to reflected <see cref="Type"/> used to inspect attributes.</param>
         /// <param name="entityTypes">The entity types to inspect for <see cref="Rock.SystemGuid.BlockTypeGuidAttribute"/> values.</param>
         /// <param name="rockContext">The database context used during staging. The caller is responsible for invoking <c>SaveChanges()</c> to persist changes.</param>
+        /// <returns>A list of block type ids that were staged for conversion to Obsidian blocks.</returns>
         /// <remarks>
         /// This method only stages conversions; it does not persist changes to the database.
         /// </remarks>
-        private static void CheckAndStageObsidianBlockConversion( Dictionary<string, Type> reflectedTypeLookupByName, List<EntityType> entityTypes, RockContext rockContext )
+        private static List<int> CheckAndStageObsidianBlockConversion( Dictionary<string, Type> reflectedTypeLookupByName, List<EntityType> entityTypes, RockContext rockContext )
         {
             // Pseudo-code:
             //    1. Get all the EntityType's BlockTypeAttribute Guids
@@ -551,7 +567,11 @@ namespace Rock.Model
 
             if ( blockTypeDictionary.Any() )
             {
-                BlockTypeService.StagePossibleMigrateWebFormsToObsidianBlock( blockTypeDictionary, rockContext );
+                return BlockTypeService.StagePossibleMigrateWebFormsToObsidianBlock( blockTypeDictionary, rockContext );
+            }
+            else
+            {
+                return new List<int>();
             }
         }
 

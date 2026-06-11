@@ -2,8 +2,8 @@
     <GalleryAndResult :value="value"
                       :importCode="importCode"
                       :exampleCode="exampleCode"
+                      :scriptSetupCode="scriptSetupCode"
                       enableReflection>
-
         <EventItemPicker label="Event Item"
                          v-model="value"
                          :multiple="multiple"
@@ -11,57 +11,159 @@
                          :enhanceForLongLists="enhanceForLongLists"
                          :displayStyle="displayStyle"
                          :showBlankItem="showBlankItem"
-                         :includeInactive="includeInactive" />
-
+                         :includeInactive="includeInactive"
+                         :rootCalendar="rootCalendar?.value ?? undefined" />
         <template #settings>
-            <div class="row">
-                <div class="col-md-4">
-                    <CheckBox label="Multiple" v-model="multiple" />
-                </div>
+            <div class="d-flex flex-row gap-3" style="max-height: 5vw;">
+                <ContentSection title="Demonstratable Settings"
+                                icon="ti ti-settings"
+                                disableCollapse>
+                    <p class="text-semibold font-italic">The settings apply across many use-cases, so their usage and demonstration will show and occur if enabled or changed from defaults.</p>
+                    <ContentStack title="Toggle Properties"
+                                  description="Properties that typically are either true or false.">
+                        <div class="d-flex flex-row gap-3">
+                            <div class="col-md-4">
+                                <CheckBox label="Multiple" v-model="multiple" />
+                            </div>
 
-                <div class="col-md-4">
-                    <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-                </div>
+                            <div class="col-md-4">
+                                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+                            </div>
 
-                <div class="col-md-4">
-                    <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-                </div>
-            </div>
+                            <div class="col-md-4">
+                                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+                            </div>
+                            <div class="col-md-4">
+                                <CheckBox label="Include Inactive Items" v-model="includeInactive" />
+                            </div>
+                        </div>
+                    </ContentStack>
+                    <ContentStack title="Value Properties"
+                                  description="Properties that typically require a value to be set.">
+                        <div class="d-flex flex-row gap-1">
+                            <div class="col-md-6">
+                                <p class="text-semibold">Display Style/Filtering</p>
+                                <TextBox v-model="label"
+                                         label="Title" />
+                                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+                                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+                                <EventCalendarPicker label="Event Calendar" v-model="rootCalendar" showBlankItem />
+                            </div>
+                        </div>
 
-            <div class="row">
-                <div class="col-md-4">
-                    <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-                </div>
-
-                <div class="col-md-4">
-                    <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-                </div>
-
-                <div class="col-md-4">
-                    <CheckBox label="Include Inactive Items" v-model="includeInactive" />
-                </div>
+                        <div class="d-flex flex-row gap-1">
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+                    </ContentStack>
+                </ContentSection>
             </div>
         </template>
     </GalleryAndResult>
 </template>
 
 <script setup lang="ts">
-    import { ref } from "vue";
+    import { computed, ref } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import EventItemPicker from "@Obsidian/Controls/eventItemPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
-    import { getSfcControlImportPath, displayStyleItems } from "./common/utils.partial";
+    import EventCalendarPicker from "@Obsidian/Controls/eventCalendarPicker.obs";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { getSfcControlImportPath, ComponentUsage, displayStyleItems } from "./common/utils.partial";
 
+    const label = ref("Event Item");
     const columnCount = ref(0);
     const displayStyle = ref(PickerDisplayStyle.Auto);
     const enhanceForLongLists = ref(false);
     const multiple = ref(false);
     const showBlankItem = ref(false);
     const includeInactive = ref(false);
+    const rootCalendar = ref<ListItemBag | null>(null);
     const value = ref({});
     const importCode = getSfcControlImportPath("eventItemPicker");
-    const exampleCode = `<EventItemPicker label="Event Item" v-model="value" :multiple="false" />`;
+
+    const exampleCode = computed(() => {
+        const usage = new ComponentUsage("EventItemPicker");
+
+        usage.addAttribute(`v-model="value"`, true, false);
+        usage.addAttribute(`label="label"`, label.value !== "", false);
+        usage.addAttribute(`:multiple="multiple"`, multiple.value, false);
+        usage.addAttribute(`:rootCalendar="rootCalendar?.value"`, rootCalendar.value !== null, false);
+        usage.addAttribute(`:showBlankItem="showBlankItem"`, showBlankItem.value, false);
+        usage.addAttribute(`:includeInactive="includeInactive"`, includeInactive.value, false);
+        usage.addAttribute(`:columnCount="columnCount"`, columnCount.value !== 0, false);
+        usage.addAttribute(`:enhanceForLongLists="enhanceForLongLists"`, enhanceForLongLists.value, false);
+        usage.addAttribute(`:displayStyle="displayStyle"`, displayStyle.value !== PickerDisplayStyle.Auto, false);
+        return usage.toString();
+    });
+    const scriptSetupCode = computed(() => {
+        const usage = new ComponentUsage("EventItemPicker");
+
+        usage.addScriptBody("const value = ref<ListItemBag | ListItemBag[] | null>(null);");
+
+        if (label.value !== "") {
+            usage.addScriptBodyWithComment(
+                "Define the label for the EventItemPicker.",
+                `const label = ref<string>("${label.value}");`
+            );
+        }
+
+        if (multiple.value) {
+            usage.addScriptBodyWithComment(
+                "Define whether multiple items can be selected.",
+                `const multiple = ref<boolean>(true);`
+            );
+        }
+
+        if (rootCalendar.value?.value) {
+            usage.addScriptBodyWithComment(
+                "Define the root event calendar to limit the event items to.",
+                `const rootCalendar = ref<ListItemBag | null>("${JSON.stringify(rootCalendar.value)}");`
+            );
+        }
+
+        if (showBlankItem.value) {
+            usage.addScriptBodyWithComment(
+                "Define whether to show a blank item.",
+                `const showBlankItem = ref<boolean>(true);`
+            );
+        }
+
+        if (includeInactive.value) {
+            usage.addScriptBodyWithComment(
+                "Define whether to include inactive items.",
+                `const includeInactive = ref<boolean>(true);`
+            );
+        }
+
+        if (columnCount.value !== 0) {
+            usage.addScriptBodyWithComment(
+                "Define the number of columns to use when displaying items.",
+                `const columnCount = ref<number>(${columnCount.value});`
+            );
+        }
+
+        if (enhanceForLongLists.value) {
+            usage.addScriptBodyWithComment(
+                "Define whether to enhance the picker for long lists.",
+                `const enhanceForLongLists = ref<boolean>(true);`
+            );
+        }
+
+        if (displayStyle.value !== PickerDisplayStyle.Auto) {
+            usage.addScriptImport('import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";');
+            usage.addScriptBodyWithComment(
+                "Define the display style for the picker.",
+                `const displayStyle = ref<PickerDisplayStyle>(PickerDisplayStyle.${Object.keys(PickerDisplayStyle).find(key => PickerDisplayStyle[key as keyof typeof PickerDisplayStyle] === displayStyle.value)});`
+            );
+        }
+
+        return usage.toScriptSetupString();
+    });
 </script>

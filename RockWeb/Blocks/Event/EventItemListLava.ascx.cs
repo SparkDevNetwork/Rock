@@ -47,7 +47,12 @@ namespace RockWeb.Blocks.Event
     [SlidingDateRangeField( "Date Range", "Optional date range to filter the items on. (defaults to next 1000 days)", false, order: 4 )]
     [IntegerField( "Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 5 )]
 
-    [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue: "{% include '~~/Assets/Lava/EventItemList.lava' %}", order: 6 )]
+    [CodeEditorField( "Lava Template",
+        Description = "The lava template to use for the results",
+        EditorMode = CodeEditorMode.Lava,
+        DefaultValue = "{% include '~~/Assets/Lava/EventItemList.lava' %}",
+        Order = 6 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "6DF11547-8757-4305-BC9A-122B9D929342" )]
     public partial class EventItemListLava : RockBlock
     {

@@ -12,17 +12,19 @@
           @selectItem="onSelectItem">
         <SelectColumn />
 
-        <ReorderColumn @orderChanged="onOrderChanged" />
+        <ReorderColumn v-if="config.options?.isReOrderColumnVisible" @orderChanged="onOrderChanged" />
 
         <TextColumn name="name"
                     title="Name"
                     field="name"
                     :filter="textValueFilter"
-                    visiblePriority="lg" />
+                    width="20%"
+                    visiblePriority="xs" />
 
         <TextColumn name="description"
                     title="Description"
                     field="description"
+                    width="50%"
                     :filter="textValueFilter"
                     visiblePriority="lg" />
 
@@ -30,11 +32,13 @@
                       title="Opportunity Count"
                       field="opportunityCount"
                       :filter="numberValueFilter"
+                      width="20%"
                       visiblePriority="xs" />
 
         <BooleanColumn name="isActive"
-                       title="Is Active"
+                       title="Active"
                        field="isActive"
+                       width="10%"
                        visiblePriority="xs" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
@@ -72,7 +76,7 @@
         return [
             {
                 title: "Connection Campaigns",
-                iconCssClass: "",
+                iconCssClass: "ti ti-chart-line",
                 handler: onConnectionCampaignsClick
             },
         ];

@@ -1,0 +1,270 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Flyout v-model="isVisible"
+            :anchorEl="anchorEl"
+            :onSave="onFlyoutSubmit">
+        <template #default>
+
+            <div>
+                <NotificationBox v-if="errorMessage"
+                                 alertType="danger"
+                                 dismissible
+                                 @dismiss="onErrorMessageDismissed">
+                    {{ errorMessage }}
+                </NotificationBox>
+            </div>
+
+            <template v-if="isLastStatus">
+                <p class="text-interface-stronger mb-spacing-none">This request has reached its final status. Would you like to mark it as Complete?</p>
+            </template>
+            <template v-else>
+                <template v-if="isSequentialMode">
+                    <p class="text-interface-stronger mb-spacing-sm">Are you sure you want to advance to the next status for this request?</p>
+                    <div class="row mb-spacing-sm">
+                        <div class="col-md-6">
+                            <RockLabel>
+                                <div class="text-interface-medium font-size-sm font-weight-regular">
+                                    Current Status
+                                </div>
+                            </RockLabel>
+                            <div class="text-interface-stronger">
+                                {{ currentStatus?.text }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <RockLabel>
+                                <div class="text-interface-medium font-size-sm font-weight-regular">
+                                    Next Status
+                                </div>
+                            </RockLabel>
+                            <div class="text-interface-stronger">
+                                {{ nextStatus?.text }}
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <template v-else>
+                    <DropDownList v-model="status"
+                                  :items="connectionStatusItems"
+                                  label="Status"
+                                  :showBlankItem="false" />
+                </template>
+                <TextBox v-model="note"
+                         label="Note"
+                         textMode="multiline"
+                         :rules="isNoteRequired ? 'required' : ''" />
+            </template>
+        </template>
+        <template #footer>
+            <div v-if="isLastStatus"
+                 class="d-flex justify-content-end align-items-center">
+                <RockButton @click="completeRequest"
+                            :btnSize="BtnSize.Small"
+                            :btnType="BtnType.Primary"
+                            :disabled="!connectionRequestUpdateBag.canCompleteRequest || isSaving"
+                            :isLoading="isCompletionButtonLoading"
+                            :title="completeButtonTooltip">
+                    Mark Complete
+                </RockButton>
+                <RockButton @click="closeFlyout"
+                            :btnSize="BtnSize.Small"
+                            :btnType="BtnType.Link">
+                    Cancel
+                </RockButton>
+            </div>
+            <div v-else
+                 class="d-flex justify-content-between align-items-center">
+                <RockButton @click="completeRequest"
+                            :btnSize="BtnSize.Small"
+                            :disabled="!connectionRequestUpdateBag.canCompleteRequest || isSaving"
+                            :isLoading="isCompletionButtonLoading"
+                            :title="completeButtonTooltip">
+                    Mark Complete
+                </RockButton>
+                <div>
+                    <RockButton type="submit"
+                                :btnSize="BtnSize.Small"
+                                :btnType="BtnType.Primary"
+                                :disabled="isSaving">
+                        {{ isSequentialMode ? "Confirm" : "Save" }}
+                    </RockButton>
+                    <RockButton @click="closeFlyout"
+                                :btnSize="BtnSize.Small"
+                                :btnType="BtnType.Link">
+                        Cancel
+                    </RockButton>
+                </div>
+            </div>
+        </template>
+    </Flyout>
+</template>
+
+<style scoped>
+.font-weight-regular {
+    font-weight: var(--font-weight-regular);
+}
+</style>
+
+<script setup lang="ts">
+    import Flyout from "@Obsidian/Controls/flyout.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { ref, PropType, watch, computed } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ConnectionRequestUpdateBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestUpdateBag";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { ConnectionState } from "@Obsidian/Enums/Connection/connectionState";
+    import { UpdateConnectionRequestStatesBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/updateConnectionRequestStatesBag";
+
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        errorMessage: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        isCompletionButtonLoading: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        connectionRequestUpdateBag: {
+            type: Object as PropType<ConnectionRequestUpdateBag>,
+            required: true
+        },
+
+        isSequentialMode: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isNoteRequired: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        anchorEl: {
+            type: Object as PropType<HTMLElement | null>,
+            required: true
+        },
+
+        connectionStatusItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        isSaving: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "updateStatus", value: ConnectionRequestUpdateBag): void;
+        (e: "updateState", value: UpdateConnectionRequestStatesBag): void;
+        (e: "dismissErrorMessage"): void;
+        (e: "close"): void;
+    }>();
+
+    const errorMessage = computed(() => props.errorMessage);
+
+    const isVisible = useVModelPassthrough(props, "modelValue", emit);
+
+    const status = ref("");
+    const note = ref("");
+
+    const currentStatusIndex = computed(() => {
+        if (!status.value || !props.isSequentialMode) {
+            return -1;
+        }
+
+        return props.connectionStatusItems.findIndex(
+            s => s.value === status.value
+        );
+    });
+
+    const isLastStatus = computed(() => {
+        return (
+            currentStatusIndex.value !== -1 &&
+            currentStatusIndex.value === props.connectionStatusItems.length - 1
+        );
+    });
+
+    const currentStatus = computed(() => {
+        if (currentStatusIndex.value === -1) {
+            return null;
+        }
+
+        return props.connectionStatusItems[currentStatusIndex.value];
+    });
+
+    const nextStatus = computed(() => {
+        if (isLastStatus.value || currentStatusIndex.value === -1) {
+            return null;
+        }
+
+        return props.connectionStatusItems[currentStatusIndex.value + 1];
+    });
+
+    const completeButtonTooltip = computed(() => {
+        if (!props.connectionRequestUpdateBag.canCompleteRequest) {
+            return "Missing Placement Group Requirements.";
+        }
+        return "";
+    });
+
+    function resetFields(): void {
+        status.value = "";
+        note.value = "";
+        onErrorMessageDismissed();
+    }
+
+    function closeFlyout(): void {
+        isVisible.value = false;
+    }
+
+    function completeRequest(): void {
+        const updateBag: UpdateConnectionRequestStatesBag = {
+            connectionRequestIdKeys: [props.connectionRequestUpdateBag.connectionRequestIdKey ?? ""],
+            connectionState: ConnectionState.Connected
+        };
+        emit("updateState", updateBag);
+    }
+
+    function onFlyoutSubmit(): void {
+        const newStatus = props.isSequentialMode ? nextStatus.value?.value : status.value;
+        const updateBag: ConnectionRequestUpdateBag = {
+            ...props.connectionRequestUpdateBag,
+            connectionStatusGuid: newStatus,
+            note: note.value
+        };
+
+        emit("updateStatus", updateBag);
+    }
+
+    function onErrorMessageDismissed(): void {
+        emit("dismissErrorMessage");
+    }
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+            resetFields();
+        }
+    });
+
+    watch(() => props.connectionRequestUpdateBag, bag => {
+        status.value = bag.connectionStatusGuid ?? "";
+    }, { immediate: true });
+</script>

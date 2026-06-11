@@ -69,7 +69,7 @@ namespace Rock.Rest.v2.Models.Actions
         [HttpPost]
         [Route( "launch/{workflowTypeId}" )]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_WRITE )]
+        [Secured( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( LaunchWorkflowResponseBag ), Description = "Returned when the request specifies that the workflow should be awaited." )]
         [ProducesResponse( HttpStatusCode.NoContent, Description = "Returned when the workflow is launched in the background." )]

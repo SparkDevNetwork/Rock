@@ -15,6 +15,9 @@
 // </copyright>
 //
 
+using System.ComponentModel;
+using Rock.Enums;
+
 namespace Rock.Model
 {
     /// <summary>
@@ -26,52 +29,104 @@ namespace Rock.Model
         /// <summary>
         /// Request Started
         /// </summary>
+        [EnumOrder( 1 )]
         RequestStarted = 0,
 
         /// <summary>
         /// Request Connected
         /// </summary>
+        [EnumOrder( 4 )]
         RequestConnected = 1,
 
         /// <summary>
         /// Status Changed
         /// </summary>
+        [EnumOrder( 9 )]
         StatusChanged = 2,
 
         /// <summary>
         /// State Changed
         /// </summary>
+        [EnumOrder( 5 )]
         StateChanged = 3,
 
         /// <summary>
         /// Activity Added
         /// </summary>
+        [EnumOrder( 13 )]
         ActivityAdded = 4,
 
         /// <summary>
         /// Placed in a group
         /// </summary>
+        [EnumOrder( 14 )]
         PlacementGroupAssigned = 5,
 
         /// <summary>
         /// Manual
         /// </summary>
+        [EnumOrder( 17 )]
         Manual = 6,
 
         /// <summary>
         /// Request Transferred
         /// </summary>
+        [EnumOrder( 3 )]
         RequestTransferred = 7,
 
         /// <summary>
         /// Request Assigned
         /// </summary>
+        [EnumOrder( 2 )]
         RequestAssigned = 8,
 
         /// <summary>
-        /// Future Follow-up Date Reached
+        /// Future Follow-Up Date Reached
         /// </summary>
-        FutureFollowupDateReached = 9
+        [Description( "Future Follow-Up Date Reached" )]
+        [EnumOrder( 15 )]
+        FutureFollowupDateReached = 9,
+        /// <summary>
+        /// Request Becomes Due
+        /// </summary>
+        [EnumOrder( 6 )]
+        RequestBecomesDue = 10,
+
+        /// <summary>
+        /// Request Becomes Due Soon
+        /// </summary>
+        [EnumOrder( 7 )]
+        RequestBecomesDueSoon = 11,
+
+        /// <summary>
+        /// Request Becomes Overdue
+        /// </summary>
+        [EnumOrder( 8 )]
+        RequestBecomesOverdue = 12,
+
+        /// <summary>
+        /// Status Becomes Due
+        /// </summary>
+        [EnumOrder( 10 )]
+        StatusBecomesDue = 13,
+
+        /// <summary>
+        /// Status Becomes Due Soon
+        /// </summary>
+        [EnumOrder( 11 )]
+        StatusBecomesDueSoon = 14,
+
+        /// <summary>
+        /// Status Becomes Overdue
+        /// </summary>
+        [EnumOrder( 12 )]
+        StatusBecomesOverdue = 15,
+
+        /// <summary>
+        /// Connection Celebration Added
+        /// </summary>
+        [EnumOrder( 16 )]
+        ConnectionCelebrationAdded = 16
 
     }
 

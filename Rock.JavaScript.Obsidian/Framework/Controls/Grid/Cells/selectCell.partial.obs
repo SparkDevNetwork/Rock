@@ -11,12 +11,13 @@
 <script setup lang="ts">
     import { standardCellProps } from "@Obsidian/Core/Controls/grid";
     import { computed, onBeforeUnmount, ref } from "vue";
+    import { IGridState } from "@Obsidian/Types/Controls/grid";
 
     const props = defineProps(standardCellProps);
 
     const showCheckbox = ref(false);
-    if (props.column.props.enableRowExclusions) {
-        showCheckbox.value = (props.column.props.excludeRow as ((row: unknown) => boolean))(props.row);
+    if (typeof props.column.props.rowDisabled === "function") {
+        showCheckbox.value = (props.column.props.rowDisabled as ((row: Record<string, unknown>, grid: IGridState) => boolean))(props.row, props.grid);
     }
     else {
         showCheckbox.value = true;

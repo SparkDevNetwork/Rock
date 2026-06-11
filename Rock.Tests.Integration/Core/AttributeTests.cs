@@ -48,13 +48,13 @@ namespace Rock.Tests.Integration.Core
             // but they should also appear as inherited attributes of the EventItem.
             var eventA = eventItemService.Get( EventAGuid.AsGuid() );
             eventA.LoadAttributes();
-            Assert.IsTrue( eventA.AttributeValues[InternalCalendarAttribute1Key].Value == "Event A Internal" );
-            Assert.IsTrue( eventA.AttributeValues[PublicCalendarAttribute1Key].Value == "Event A Public" );
+            Assert.AreEqual( "Event A Internal", eventA.AttributeValues[InternalCalendarAttribute1Key].Value );
+            Assert.AreEqual( "Event A Public", eventA.AttributeValues[PublicCalendarAttribute1Key].Value );
 
             var eventB = eventItemService.Get( EventBGuid.AsGuid() );
             eventB.LoadAttributes();
-            Assert.IsTrue( eventB.AttributeValues[PublicCalendarAttribute1Key].Value == "Event B Public" );
-            Assert.IsTrue( eventB.AttributeValues[InternalCalendarAttribute1Key].Value == null, $"Unexpected Attribute Value: {InternalCalendarAttribute1Key}." );
+            Assert.AreEqual( "Event B Public", eventB.AttributeValues[PublicCalendarAttribute1Key].Value );
+            Assert.IsNull( eventB.AttributeValues[InternalCalendarAttribute1Key].Value, $"Unexpected Attribute Value: {InternalCalendarAttribute1Key}." );
         }
 
         [TestMethod]
@@ -78,9 +78,9 @@ namespace Rock.Tests.Integration.Core
             var calendarItemPublic = eventCalendarService.Get( EventACalendarPublicGuid.AsGuid() );
 
             calendarItemInternal.LoadAttributes();
-            Assert.IsTrue( calendarItemInternal.AttributeValues[InternalCalendarAttribute1Key].Value == "xyzzy" );
+            Assert.AreEqual( "xyzzy", calendarItemInternal.AttributeValues[InternalCalendarAttribute1Key].Value );
             calendarItemPublic.LoadAttributes();
-            Assert.IsTrue( calendarItemPublic.AttributeValues[InternalCalendarAttribute1Key].Value == "xyzzy" );
+            Assert.AreEqual( "xyzzy", calendarItemPublic.AttributeValues[InternalCalendarAttribute1Key].Value );
         }
 
 
@@ -109,8 +109,8 @@ namespace Rock.Tests.Integration.Core
         {
             var rockContext = new RockContext();
 
-            var EventCalendarPublicId = EventCalendarCache.All().First( x => x.Name == "Public" ).Id;
-            var EventCalendarInternalId = EventCalendarCache.All().First( x => x.Name == "Internal" ).Id;
+            var eventCalendarPublicId = EventCalendarCache.All().First( x => x.Name == "Public" ).Id;
+            var eventCalendarInternalId = EventCalendarCache.All().First( x => x.Name == "Internal" ).Id;
 
             // Add Attributes for Calendars.
             // EventItem Attributes are defined per Calendar, so they are directly associated with the EventCalendarItem entity.
@@ -128,7 +128,7 @@ namespace Rock.Tests.Integration.Core
             attributeAInternal = new Rock.Model.Attribute();
             attributeAInternal.EntityTypeId = EntityTypeCache.GetId( typeof( EventCalendarItem ) );
             attributeAInternal.EntityTypeQualifierColumn = "EventCalendarId";
-            attributeAInternal.EntityTypeQualifierValue = EventCalendarInternalId.ToString();
+            attributeAInternal.EntityTypeQualifierValue = eventCalendarInternalId.ToString();
             attributeAInternal.Name = InternalCalendarAttribute1Key;
             attributeAInternal.Key = InternalCalendarAttribute1Key;
             attributeAInternal.Guid = InternalCalendarAttribute1Guid.AsGuid();
@@ -147,7 +147,7 @@ namespace Rock.Tests.Integration.Core
             attributeAPublic = new Rock.Model.Attribute();
             attributeAPublic.EntityTypeId = EntityTypeCache.GetId( typeof( EventCalendarItem ) );
             attributeAPublic.EntityTypeQualifierColumn = "EventCalendarId";
-            attributeAPublic.EntityTypeQualifierValue = EventCalendarPublicId.ToString();
+            attributeAPublic.EntityTypeQualifierValue = eventCalendarPublicId.ToString();
             attributeAPublic.Name = PublicCalendarAttribute1Key;
             attributeAPublic.Key = PublicCalendarAttribute1Key;
             attributeAPublic.Guid = PublicCalendarAttribute1Guid.AsGuid();
@@ -169,8 +169,8 @@ namespace Rock.Tests.Integration.Core
             eventA = new EventItem();
             eventA.Name = "Event A";
             eventA.Guid = EventAGuid.AsGuid();
-            var eventACalendarInternal = new EventCalendarItem { EventCalendarId = EventCalendarInternalId, Guid = EventACalendarInternalGuid.AsGuid() };
-            var eventACalendarPublic = new EventCalendarItem { EventCalendarId = EventCalendarPublicId, Guid = EventACalendarPublicGuid.AsGuid() };
+            var eventACalendarInternal = new EventCalendarItem { EventCalendarId = eventCalendarInternalId, Guid = EventACalendarInternalGuid.AsGuid() };
+            var eventACalendarPublic = new EventCalendarItem { EventCalendarId = eventCalendarPublicId, Guid = EventACalendarPublicGuid.AsGuid() };
             eventA.EventCalendarItems.Add( eventACalendarInternal );
             eventA.EventCalendarItems.Add( eventACalendarPublic );
 
@@ -205,8 +205,8 @@ SET IDENTITY_INSERT [EventItem] OFF
             rockContext.Database.ExecuteSqlCommand( sql, matchedID, "Event B", EventBGuid.AsGuid() );
 
             eventB = eventItemService.Get( EventBGuid.AsGuid() );
-            var eventBCalendarInternal = new EventCalendarItem { EventCalendarId = EventCalendarInternalId, Guid = EventBCalendarInternalGuid.AsGuid() };
-            var eventBCalendarPublic = new EventCalendarItem { EventCalendarId = EventCalendarPublicId, Guid = EventBCalendarPublicGuid.AsGuid() };
+            var eventBCalendarInternal = new EventCalendarItem { EventCalendarId = eventCalendarInternalId, Guid = EventBCalendarInternalGuid.AsGuid() };
+            var eventBCalendarPublic = new EventCalendarItem { EventCalendarId = eventCalendarPublicId, Guid = EventBCalendarPublicGuid.AsGuid() };
             eventB.EventCalendarItems.Add( eventBCalendarInternal );
             eventB.EventCalendarItems.Add( eventBCalendarPublic );
 

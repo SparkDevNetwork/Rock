@@ -46,6 +46,11 @@ namespace Rock.ViewModels.Rest.Controls
         public bool IncludeInactiveGroups { get; set; } = false;
 
         /// <summary>
+        /// When true, show no groups unless IncludedGroupTypeGuids has values.
+        /// </summary>
+        public bool ExcludeAllByDefault { get; set; } = false;
+
+        /// <summary>
         /// Whether to limit to only groups that have scheduling enabled.
         /// </summary>
         public bool LimitToSchedulingEnabled { get; set; } = false;
@@ -61,5 +66,15 @@ namespace Rock.ViewModels.Rest.Controls
         /// </summary>
         /// <value>The security grant token.</value>
         public string SecurityGrantToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the values that need to be expanded to. This is used
+        /// when opening the tree view with an already selected value. Each
+        /// selected value is included in this property. When getting the list
+        /// of root items, you should automatically expand your results until
+        /// each of these values is reached.
+        /// </summary>
+
+        public List<string> ExpandToValues { get; set; }
     }
 }

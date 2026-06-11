@@ -33,7 +33,7 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <summary>
         /// Indicates whether the campus is currently active.
         /// </summary>
-        public bool IsActive { get; set; }
+        public bool? IsActive { get; set; }
 
         /// <summary>
         /// Short campus code or abbreviation used for display.

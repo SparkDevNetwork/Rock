@@ -23,7 +23,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -68,6 +70,7 @@ namespace Rock.Model
         /// The comments.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Comments { get; set; }
 
         /// <summary>
@@ -154,6 +157,7 @@ namespace Rock.Model
         /// in the AttributeValue table. But in this case we must also consider that the AttributeMatrix
         /// could be referenced in this string. This is slow and makes it difficult 'know all the places'. 
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AssignedGroupMemberAttributeValues { get; set; }
 
         /// <summary>
@@ -200,6 +204,38 @@ namespace Rock.Model
                         CreatedDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
             private set { }
         }
+
+        /// <summary>
+        /// The source ConnectionType identifier.
+        /// </summary>
+        [DataMember]
+        public int? ConnectionTypeSourceId { get; set; }
+
+        /// <summary>
+        /// The due date for this request.
+        /// </summary>
+        [DataMember]
+        [Column( TypeName = "Date" )]
+        public DateTime? DueDate { get; set; }
+
+        /// <summary>
+        /// The date when this request becomes considered due soon.
+        /// </summary>
+        [DataMember]
+        [Column( TypeName = "Date" )]
+        public DateTime? DueSoonDate { get; set; }
+
+        /// <summary>
+        /// The date and time when this request was marked as connected.
+        /// </summary>
+        [DataMember]
+        public DateTime? ConnectedDateTime { get; set; }
+
+        /// <summary>
+        /// Indicates whether the request was completed within the expected timeframe.
+        /// </summary>
+        [DataMember]
+        public bool WasCompletedOnTime { get; set; }
 
         #endregion
 
@@ -289,6 +325,22 @@ namespace Rock.Model
         private ICollection<ConnectionRequestActivity> _connectionRequestActivities;
 
         /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionRequestStatusHistory">ConnectionRequestStatusHistory</see> records associated with the ConnectionRequest.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.ConnectionRequestStatusHistory"> ConnectionRequestStatusHistory</see> records associated with the ConnectionRequest.
+        /// </value>
+        [LavaVisible]
+        public virtual ICollection<ConnectionRequestStatusHistory> ConnectionRequestStatusHistories
+        {
+            get { return _connectionRequestStatusHistories; }
+            set { _connectionRequestStatusHistories = value; }
+        }
+
+        private ICollection<ConnectionRequestStatusHistory> _connectionRequestStatusHistories;
+
+
+        /// <summary>
         /// Gets or sets the created source date.
         /// </summary>
         /// <value>
@@ -296,6 +348,30 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual AnalyticsSourceDate CreatedSourceDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.ConnectionTypeSource"/>.
+        /// </summary>
+        /// <value>
+        /// The connection type source.
+        /// </value>
+        [LavaVisible]
+        public virtual ConnectionTypeSource ConnectionTypeSource { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets a transient note used when recording a <see cref="ConnectionRequestStatusHistory"/> entry during a <see cref="ConnectionRequest"/> status change.
+        /// </summary>
+        /// <remarks>
+        /// This property is not persisted to the database and exists solely to pass client-provided context into the ConnectionRequest save hook.
+        /// When a ConnectionRequest status is changed, the save hook will read this value and use it to populate the Note field on the corresponding
+        /// ConnectionRequestStatusHistory record.
+        ///
+        /// This property must be populated before the entity is saved for the save hook to have access to the value. Because this is a transient,
+        /// write-through value, it will not be available on subsequent loads of the entity.
+        /// </remarks>
+        [NotMapped]
+        public string ConnectionStatusHistoryNote { get; set; }
 
         #endregion
 
@@ -341,6 +417,7 @@ namespace Rock.Model
             this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.AssignedGroup ).WithMany().HasForeignKey( p => p.AssignedGroupId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.ConnectionStatus ).WithMany().HasForeignKey( p => p.ConnectionStatusId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ConnectionTypeSource ).WithMany().HasForeignKey( p => p.ConnectionTypeSourceId ).WillCascadeOnDelete( false );
 
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
             // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed

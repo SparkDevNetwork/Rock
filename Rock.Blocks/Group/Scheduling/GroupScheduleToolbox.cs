@@ -68,7 +68,6 @@ namespace Rock.Blocks.Group.Scheduling
         Key = AttributeKey.AdditionalTimeSignUpHeader,
         Description = "Header content to show above the Additional Time Sign-Up panel. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         Category = AttributeCategory.AdditionalTimeSignUp,
         Order = 2,
@@ -155,7 +154,6 @@ namespace Rock.Blocks.Group.Scheduling
         Key = AttributeKey.CurrentScheduleHeader,
         Description = "Header content to show above the Current Schedule panel. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         Category = AttributeCategory.CurrentSchedule,
         Order = 1,
@@ -226,7 +224,6 @@ namespace Rock.Blocks.Group.Scheduling
         Key = AttributeKey.UpdateSchedulePreferencesHeader,
         Description = "Header content to show above the Update Schedule Preferences panel. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         Category = AttributeCategory.SchedulePreferences,
         Order = 2,
@@ -256,7 +253,6 @@ namespace Rock.Blocks.Group.Scheduling
         Key = AttributeKey.ScheduleUnavailabilityHeader,
         Description = "Header content to show above the Schedule Unavailability panel. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         Category = AttributeCategory.ScheduleUnavailability,
         Order = 2,
@@ -270,7 +266,6 @@ namespace Rock.Blocks.Group.Scheduling
         Key = AttributeKey.ActionHeaderLavaTemplate,
         Description = "Header content to show above the action buttons. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         DefaultValue = AttributeDefault.ActionHeaderLavaTemplate,
         Category = AttributeCategory.SharedSettings,
@@ -955,8 +950,13 @@ namespace Rock.Blocks.Group.Scheduling
                     Location = ( Location ) null,
                     Schedule = ( Schedule ) null,
                     e.PersonAlias,
+#if NET472_OR_GREATER
                     OccurrenceStartDate = DbFunctions.TruncateTime( e.StartDate ).Value,
                     OccurrenceEndDate = DbFunctions.TruncateTime( e.EndDate ).Value,
+#else
+                    OccurrenceStartDate = e.StartDate.Date,
+                    OccurrenceEndDate = e.EndDate.Date,
+#endif
                     ConfirmationStatus = ToolboxScheduleRowConfirmationStatus.Unavailable
                 } )
                 .ToList();
@@ -2503,6 +2503,28 @@ namespace Rock.Blocks.Group.Scheduling
         /// <returns>An object containing information about the outcome of the request.</returns>
         private SaveSignUpResponseBag SaveSignUp( RockContext rockContext, SaveSignUpRequestBag bag )
         {
+            /*
+                5/4/2026 - JPH
+
+                The legacy version of this block would immediately save an individual's "additional time sign-up" as
+                soon as they placed a check in the box for a given occurrence; it would then delete/re-save attendance
+                records if they chose a different location from the drop-down list or simply delete the attendance
+                record altogether if they changed their mind and un-checked the box.
+
+                This Obsidian version of this block - however - requires a save button to be clicked before any saving
+                takes place. Once the save button is clicked and the attendance record is created, the occurrence will
+                then be removed altogether from their list of available sign-ups. This is because we introduced a
+                "schedule coordinator" feature, where the coordinator receives a communication whenever someone signs
+                up or modifies an existing scheduled occurrence. Without this save button gate, the coordinator would
+                receive back-to-back communications whenever someone changes their mind and un-checks the box or
+                chooses a different sign-up location.
+
+                Individuals CAN still delete an existing scheduled occurrence: they'll just need to do so on the
+                "Current Schedule" section of their toolbox.
+
+                Reason: Explain legacy vs Obsidian "Additional Time Sign-Up" behavior difference.
+            */
+
             var friendlyErrorMessage = "Unable to save sign-up.";
 
             var response = new SaveSignUpResponseBag();

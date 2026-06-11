@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.WorkFlow
             if ( _workflowType != null )
             {
                 _canEdit = UserCanEdit || _workflowType.IsAuthorized( Authorization.EDIT, CurrentPerson );
-                _canView = _canEdit || ( _workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) && _workflowType.IsAuthorized( "ViewList", CurrentPerson ) );
+                _canView = _canEdit || ( _workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) && _workflowType.IsAuthorized( Authorization.VIEW_LIST, CurrentPerson ) );
 
                 gfWorkflows.ApplyFilterClick += gfWorkflows_ApplyFilterClick;
                 gfWorkflows.DisplayFilterValue += gfWorkflows_DisplayFilterValue;
@@ -643,7 +643,7 @@ namespace RockWeb.Blocks.WorkFlow
                 var manageField = new LinkButtonField();
                 gWorkflows.Columns.Add( manageField );
                 manageField.CssClass = "btn btn-default btn-sm";
-                manageField.Text = "<i class='ti ti-file-type-txt'></i>";
+                manageField.Text = "<i class='ti ti-list-details'></i>";
                 manageField.Click += gWorkflows_Manage;
             }
 

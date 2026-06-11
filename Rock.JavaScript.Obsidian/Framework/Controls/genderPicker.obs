@@ -41,7 +41,7 @@
                 return null;
             }
 
-            if (props.modelValue == "0") {
+            if (props.modelValue === "0") {
                 return {
                     text: unknownLabel.value,
                     value: props.modelValue

@@ -21,15 +21,13 @@ import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { FieldTypeBase } from "./fieldType";
 import { stringComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     EditorMode = "editorMode",
-    EditorTheme = "editorTheme",
     EditorHeight = "editorHeight",
 }
 
 export const enum ConfigurationPropertyKey {
     EditorModeOptions = "editorModeOptions",
-    EditorThemeOptions = "editorThemeOptions",
 }
 
 // The edit component can be quite large, so load it only as needed.

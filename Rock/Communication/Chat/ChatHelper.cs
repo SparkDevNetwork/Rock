@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -141,6 +142,28 @@ namespace Rock.Communication.Chat
         } );
 
         /// <summary>
+        /// A lazy-loaded <see cref="Regex"/> to use when searching for mentioned <see cref="ChatUser"/>s within a chat message.
+        /// </summary>
+        private static readonly Lazy<Regex> _personMentionsRegex = new Lazy<Regex>( () =>
+        {
+            return new Regex( @"(?<!\w)@(\d+)\b", RegexOptions.Compiled | RegexOptions.CultureInvariant );
+        } );
+
+        /// <summary>
+        /// A lazy-loaded dictionary of <see cref="ChatAttachmentType"/>s by <see cref="FieldType"/> unique identifiers.
+        /// </summary>
+        private static readonly Lazy<Dictionary<Guid, ChatAttachmentType>> _chatAttachmentTypesByFieldTypeGuid = new Lazy<Dictionary<Guid, ChatAttachmentType>>( () =>
+        {
+            return new Dictionary<Guid, ChatAttachmentType>
+            {
+                { SystemGuid.FieldType.FILE.AsGuid(), ChatAttachmentType.File },
+                { SystemGuid.FieldType.IMAGE.AsGuid(), ChatAttachmentType.Image },
+                { SystemGuid.FieldType.AUDIO_FILE.AsGuid(), ChatAttachmentType.Audio },
+                { SystemGuid.FieldType.VIDEO_FILE.AsGuid(), ChatAttachmentType.Video }
+            };
+        } );
+
+        /// <summary>
         /// The prefix to use for cache keys specific to the Rock chat system.
         /// </summary>
         private const string CacheKeyPrefix = "core-chat:";
@@ -164,6 +187,12 @@ namespace Rock.Communication.Chat
         /// The value to use for a chat-specific <see cref="PersonAlias.Name"/>.
         /// </summary>
         internal const string ChatPersonAliasName = "core-chat";
+
+        /// <summary>
+        /// The value to use for a chat-specific <see cref="PersonAlias.Name"/> whose corresponding record has been
+        /// deleted in the external chat system.
+        /// </summary>
+        internal const string ChatPersonAliasDeletedName = "core-chat_deleted";
 
         /// <summary>
         /// A semaphore for thread-safe deletion of deceased individuals.
@@ -234,7 +263,17 @@ namespace Rock.Communication.Chat
         internal static int ChatSharedChannelsGroupId => _systemGroupIdsByGuid.Value[SystemGuid.Group.GROUP_CHAT_SHARED_CHANNELS];
 
         /// <summary>
-        /// Gets the value to use for <see cref="Group.Name"/>, for groups that are children of the parent direct messages group.
+        /// Gets the <see cref="Regex"/> to use when searching for mentioned <see cref="ChatUser"/>s within a chat message.
+        /// </summary>
+        internal static Regex PersonMentionsRegex => _personMentionsRegex.Value;
+
+        /// <summary>
+        /// Gets the mappings from <see cref="FieldType"/> unique identifier to <see cref="ChatAttachmentType"/>.
+        /// </summary>
+        internal static Dictionary<Guid, ChatAttachmentType> ChatAttachmentTypesByFieldTypeGuid => _chatAttachmentTypesByFieldTypeGuid.Value;
+
+        /// <summary>
+        /// Gets the value to use for <see cref="Group"/> name, for groups that are children of the parent direct messages group.
         /// </summary>
         internal static string ChatDirectMessageGroupName => "Chat Direct Message";
 
@@ -449,6 +488,8 @@ namespace Rock.Communication.Chat
             return null;
         }
 
+
+#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
         /// <summary>
         /// Gets the <see cref="ChatChannel.Key"/> for the provided <paramref name="groupId"/> and <paramref name="chatChannelKey"/>.
         /// </summary>
@@ -456,6 +497,7 @@ namespace Rock.Communication.Chat
         /// <param name="chatChannelKey">The <see cref="Group.ChatChannelKey"/> for which to get the <see cref="ChatChannel.Key"/>.</param>
         /// <returns>The <see cref="ChatChannel.Key"/>.</returns>
         internal static string GetChatChannelKey( int groupId, string chatChannelKey )
+#pragma warning restore CS1574 // XML comment has cref attribute that could not be resolved
         {
             if ( chatChannelKey.IsNotNullOrWhiteSpace() )
             {
@@ -650,7 +692,7 @@ namespace Rock.Communication.Chat
                 var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( new List<SyncPersonToChatCommand> { syncCommand } );
                 if ( createOrUpdateChatUsersResult == null || createOrUpdateChatUsersResult.HasException )
                 {
-                    Logger.LogError( createOrUpdateChatUsersResult?.Exception, $"{logMessagePrefix} at step '{nameof( CreateOrUpdateChatUsersAsync ).SplitCase()}'.", personId, shouldCreate );
+                    Logger.LogError( createOrUpdateChatUsersResult?.Exception, $"{logMessagePrefix} on step '{nameof( CreateOrUpdateChatUsersAsync ).SplitCase()}'.", personId, shouldCreate );
                     return auth;
                 }
 
@@ -664,7 +706,7 @@ namespace Rock.Communication.Chat
                     {
                         // If the caller specified that a chat-specific person alias should be created if missing, yet
                         // we didn't get one back, log it.
-                        Logger.LogError( $"{logMessagePrefix} at step '{nameof( CreateOrUpdateChatUsersAsync ).SplitCase()}'; no chat-specific Person Alias record was returned.", personId, shouldCreate );
+                        Logger.LogError( $"{logMessagePrefix} on step '{nameof( CreateOrUpdateChatUsersAsync ).SplitCase()}'; no chat-specific Person Alias record was returned.", personId, shouldCreate );
                     }
 
                     return auth;
@@ -673,7 +715,7 @@ namespace Rock.Communication.Chat
                 var tokenResult = await ChatProvider.GetChatUserTokenAsync( chatUserResult.ChatUserKey );
                 if ( tokenResult?.Value.IsNotNullOrWhiteSpace() != true || tokenResult.HasException )
                 {
-                    Logger.LogError( tokenResult?.Exception, $"{logMessagePrefix} at step '{nameof( ChatProvider.GetChatUserTokenAsync ).SplitCase()}'; no token was returned from the Chat provider.", personId, shouldCreate );
+                    Logger.LogError( tokenResult?.Exception, $"{logMessagePrefix} on step '{nameof( ChatProvider.GetChatUserTokenAsync ).SplitCase()}'; no token was returned from the Chat provider.", personId, shouldCreate );
                     return auth;
                 }
 
@@ -1111,6 +1153,8 @@ namespace Rock.Communication.Chat
             }
         }
 
+
+#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
         /// <summary>
         /// Synchronizes <see cref="Group"/>s from Rock to <see cref="ChatChannel"/>s in the external chat system.
         /// </summary>
@@ -1131,6 +1175,7 @@ namespace Rock.Communication.Chat
         /// </para>
         /// </remarks>
         internal async Task<ChatSyncCrudResult> SyncGroupsToChatProviderAsync( List<SyncGroupToChatCommand> syncCommands, RockToChatGroupSyncConfig syncConfig = null )
+#pragma warning restore CS1574 // XML comment has cref attribute that could not be resolved
         {
             var result = new ChatSyncCrudResult();
 
@@ -1653,8 +1698,8 @@ namespace Rock.Communication.Chat
                                 .ToList();
 
                             // The next method call does the following:
-                            //  1) Ensures this person has a chat-specific person alias in Rock;
-                            //  2) Ensures this person has a chat user in the external chat system.
+                            //  1) Ensures each person has a chat-specific person alias in Rock;
+                            //  2) Ensures each person has a chat user in the external chat system.
                             var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( syncPersonToChatCommands );
 
                             // If `createOrUpdateChatUsersResult` failed, a detailed error will have already been logged.
@@ -1767,8 +1812,8 @@ namespace Rock.Communication.Chat
                                 .ToList();
 
                             // The next method call does the following:
-                            //  1) Ensures this person has a chat-specific person alias in Rock;
-                            //  2) Ensures this person has a chat user in the external chat system.
+                            //  1) Ensures each person has a chat-specific person alias in Rock;
+                            //  2) Ensures each person has a chat user in the external chat system.
                             var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( syncPersonToChatCommands );
 
                             // If `createOrUpdateChatUsersResult` failed, a detailed error will have already been logged.
@@ -1904,13 +1949,13 @@ namespace Rock.Communication.Chat
                                 var config = new DeleteChatUsersInRockConfig
                                 {
                                     ShouldUnban = true,
-                                    ShouldClearChatPersonAliasForeignKey = false
+                                    ShouldDeleteChatPersonAlias = false
                                 };
 
                                 DeleteChatUsersInRock( deleteCommands, config );
 
-                                // This second call will delete the person's chat user(s) from the external chat system and
-                                // clear the corresponding chat person alias names and foreign keys.
+                                // This second call will delete the person's chat user(s) from the external chat system
+                                // and the corresponding chat person alias record(s) in Rock.
                                 var deleteResult = await DeleteChatUsersAsync( personAliasService, keysToDelete );
 
                                 // If `DeleteChatUsersAsync` failed, a detailed error will have already been logged.
@@ -2040,8 +2085,8 @@ namespace Rock.Communication.Chat
                             .ToList();
 
                         // The next method call does the following:
-                        //  1) Ensures this person has a chat-specific person alias in Rock;
-                        //  2) Ensures this person has a chat user in the external chat system.
+                        //  1) Ensures each person has a chat-specific person alias in Rock;
+                        //  2) Ensures each person has a chat user in the external chat system.
                         var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( syncPersonToChatCommands );
 
                         // If `createOrUpdateChatUsersResult` failed, a detailed error will have already been logged.
@@ -2394,6 +2439,8 @@ namespace Rock.Communication.Chat
                             {
                                 ChatUserKey = chatUserKey,
                                 PersonId = chatUserPerson.PersonId,
+                                NickName = chatUserPerson.NickName,
+                                LastName = chatUserPerson.LastName,
                                 SyncTypePerformed = chatSyncType
                             }
                         );
@@ -2516,6 +2563,124 @@ namespace Rock.Communication.Chat
         }
 
         /// <summary>
+        /// Attempts to clean up any "marked as deleted" chat-specific <see cref="PersonAlias"/> records in Rock by
+        /// ensuring each corresponding <see cref="ChatUser"/> record is deleted in the external chat system and then
+        /// finishing the deletion process within Rock.
+        /// </summary>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
+        /// </returns>
+        /// <remarks>
+        /// "Marked as deleted" records are identified as those whose <see cref="PersonAlias.Name"/> value equals
+        /// "core-chat_deleted".
+        /// </remarks>
+        internal async Task<ChatSyncCrudResult> CleanUpMarkedAsDeletedChatPersonAliasesAsync()
+        {
+            var result = new ChatSyncCrudResult();
+
+            if ( !IsChatEnabled )
+            {
+                return result;
+            }
+
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Clean Up 'Marked As Deleted' Chat Person Aliases" ) )
+            {
+                var keysToCleanUp = new PersonAliasService( RockContext )
+                    .GetMarkedAsDeletedChatPersonAliasesQuery()
+                    .Where( pa => !string.IsNullOrEmpty( pa.ForeignKey ) )
+                    .Select( pa => pa.ForeignKey )
+                    .ToList();
+
+                if ( !keysToCleanUp.Any() )
+                {
+                    return result;
+                }
+
+                List<string> keysToDelete = null;
+                var structuredLog = "KeysToCleanUp: {@KeysToCleanUp}, KeysToDelete: {@KeysToDelete}";
+                var logMessagePrefix = $"{LogMessagePrefix} {nameof( CleanUpMarkedAsDeletedChatPersonAliasesAsync ).SplitCase()} failed";
+
+                try
+                {
+                    // First, check to see which of these "marked as deleted" chat user keys still exist in the external
+                    // chat system. If they no longer exist there, we'll proceed to clean them up in Rock. If they do
+                    // still exist there, we'll issue another delete API call but NOT clean them up in Rock now; instead,
+                    // we'll count on the next run of the Chat Sync job to clean them up after they've been deleted from
+                    // the external chat system. This way, we'll be able to identify any chat user keys that are having
+                    // trouble being deleted from the external chat system, as those will be the ones that persist in
+                    // Rock with a "marked as deleted" person alias.
+                    var getChatUsersResult = await ChatProvider.GetChatUsersAsync( keysToCleanUp );
+                    if ( getChatUsersResult == null || getChatUsersResult.HasException )
+                    {
+                        result.Exception = getChatUsersResult?.Exception;
+                        Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( ChatProvider.GetChatUsersAsync ).SplitCase()}'. {structuredLog}", keysToCleanUp, keysToDelete );
+
+                        return result;
+                    }
+
+                    // Separate the keys into those that still exist in the external chat system (and thus need another
+                    // delete attempt) vs. those that no longer exist (and thus can be cleaned up immediately in Rock).
+                    var chatUsersResultKeys = getChatUsersResult.ChatUsers.Select( u => u.Key ).ToHashSet();
+
+                    for ( var i = keysToCleanUp.Count - 1; i >= 0; i-- )
+                    {
+                        var chatUserKey = keysToCleanUp[i];
+                        if ( !chatUsersResultKeys.Contains( chatUserKey ) )
+                        {
+                            // This user no longer exists in the external chat system; they can be cleaned up now.
+                            continue;
+                        }
+
+                        if ( keysToDelete == null )
+                        {
+                            keysToDelete = new List<string>();
+                        }
+
+                        // This user still exists in the external chat system; try to delete them again.
+                        keysToDelete.Add( chatUserKey );
+                        keysToCleanUp.RemoveAt( i );
+                    }
+
+                    // Issue a sync command for those we can immediately clean up.
+                    if ( keysToCleanUp.Any() )
+                    {
+                        var syncCommands = keysToCleanUp
+                            .Select( key => new DeleteChatPersonInRockCommand { ChatPersonKey = key } )
+                            .ToList();
+
+                        var deleteResult = DeleteChatUsersInRock( syncCommands );
+                        result.Deleted.UnionWith( deleteResult.Deleted );
+                    }
+
+                    // Issue another delete API call for those that still exist in the external chat system.
+                    if ( keysToDelete?.Any() == true )
+                    {
+                        var deleteResult = await ChatProvider.DeleteChatUsersAsync( keysToDelete );
+                        if ( deleteResult == null || deleteResult.HasException )
+                        {
+                            result.Exception = deleteResult?.Exception;
+                            Logger.LogError( result.Exception, $"{logMessagePrefix} at step '{nameof( ChatProvider.DeleteChatUsersAsync ).SplitCase()}'. {structuredLog}", keysToCleanUp, keysToDelete );
+                        }
+                        else
+                        {
+                            // We'll report them all as "skipped" for this run, and only report them as "deleted" once
+                            // we don't find them in the external chat system on a subsequent run.
+                            result.Skipped.UnionWith( deleteResult.Skipped );
+                            result.Skipped.UnionWith( deleteResult.Deleted );
+                        }
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    result.Exception = ex;
+                    Logger.LogError( ex, $"{logMessagePrefix}. {structuredLog}", keysToCleanUp, keysToDelete );
+                }
+
+                return result;
+            }
+        }
+
+        /// <summary>
         /// Deletes non-prevailing, merged <see cref="ChatUser"/>s from the external chat system.
         /// </summary>
         /// <param name="personId">
@@ -2530,8 +2695,7 @@ namespace Rock.Communication.Chat
         /// for merged <see cref="ChatUser"/>s to delete.
         /// </para>
         /// <para>
-        /// For <see cref="ChatUser"/>s who are successfully deleted in the external chat system, their corresponding,
-        /// chat-specific <see cref="PersonAlias"/> records will also be cleared.
+        /// Each <see cref="ChatUser"/>'s corresponding chat-specific <see cref="PersonAlias"/> record will also be deleted.
         /// </para>
         /// </remarks>
         internal async Task<ChatSyncCrudResult> DeleteMergedChatUsersAsync( int? personId = null )
@@ -2561,7 +2725,7 @@ namespace Rock.Communication.Chat
                     // Don't let individual exceptions cause all to fail.
                     var perPersonExceptions = new List<Exception>();
 
-                    // This will be used to clear out the chat user[foreign] keys for the chat users who are deleted.
+                    // This will be used to delete chat person alias records.
                     var personAliasService = new PersonAliasService( RockContext );
 
                     foreach ( var personKvp in peopleWithMultipleChatUserKeys )
@@ -2627,14 +2791,13 @@ namespace Rock.Communication.Chat
         /// </summary>
         /// <param name="personId">The <see cref="Person"/> identifier for whom to delete all <see cref="ChatUser"/>s.</param>
         /// <param name="personAliasService">
-        /// The optional <see cref="PersonAliasService"/> to use for clearing name and foreign key values.
+        /// The optional <see cref="PersonAliasService"/> to use for deleting chat person alias records.
         /// </param>
         /// <returns>
         /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
         /// <remarks>
-        /// For <see cref="ChatUser"/>s who are successfully deleted in the external chat system, their corresponding,
-        /// chat-specific <see cref="PersonAlias"/> records will also be cleared.
+        /// Each <see cref="ChatUser"/>'s corresponding chat-specific <see cref="PersonAlias"/> record will also be deleted.
         /// </remarks>
         internal async Task<ChatSyncCrudResult> DeleteChatUsersAsync( int personId, PersonAliasService personAliasService = null )
         {
@@ -3048,6 +3211,309 @@ namespace Rock.Communication.Chat
 
         #endregion Synchronization: From Chat Provider To Rock
 
+        #region Message Sending
+
+        /// <summary>
+        /// Gets the <see cref="ChatAttachmentType"/> for the provided <see cref="FieldTypeCache"/>.
+        /// </summary>
+        /// <param name="fieldType">The <see cref="FieldTypeCache"/> for which to get the <see cref="ChatAttachmentType"/>.</param>
+        /// <returns>
+        /// The <see cref="ChatAttachmentType"/> or <see langword="null"/> if there is no corresponding
+        /// <see cref="ChatAttachmentType"/> for the provided <see cref="FieldTypeCache"/>.
+        /// </returns>
+        internal static ChatAttachmentType? GetChatAttachmentType( FieldTypeCache fieldType )
+        {
+            if ( fieldType == null || !ChatAttachmentTypesByFieldTypeGuid.TryGetValue( fieldType.Guid, out var chatAttachmentType ) )
+            {
+                return null;
+            }
+
+            return chatAttachmentType;
+        }
+
+        /// <summary>
+        /// Sends a chat direct message to <see cref="ChatUser"/>s in the external chat system.
+        /// </summary>
+        /// <param name="command">The command for the message to send.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="SendChatMessageResult"/>.
+        /// </returns>
+        internal async Task<SendChatMessageResult> SendChatDirectMessageAsync( SendChatDirectMessageCommand command )
+        {
+            var result = new SendChatMessageResult();
+
+            if ( !IsChatEnabled )
+            {
+                return result;
+            }
+
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Send Chat Direct Message" ) )
+            {
+                var structuredLog = "Command: {@Command}";
+                var logMessagePrefix = $"{LogMessagePrefix} {nameof( SendChatDirectMessageAsync ).SplitCase()} failed";
+
+                try
+                {
+                    if ( ( command?.MessageText ).IsNullOrWhiteSpace() )
+                    {
+                        throw new ChatSendMessageException( "Message text cannot be empty." );
+                    }
+
+                    if ( command.RecipientPersonIds?.Any() != true )
+                    {
+                        throw new ChatSendMessageException( "At least one recipient Person ID must be provided." );
+                    }
+
+                    // Do the sender and recipients already have chat users in the external chat system?
+                    var personIds = new HashSet<int>
+                    {
+                        command.SenderPersonId
+                    };
+
+                    personIds.UnionWith( command.RecipientPersonIds );
+
+                    var personService = new PersonService( RockContext );
+                    var rockChatUserKeys = personService
+                        .GetActiveRockChatUserKeys( personIds.ToList() )
+                        .GroupBy( k => k.PersonId )
+                        .ToDictionary(
+                            g => g.Key,
+                            g => g.First()
+                        );
+
+                    // Determine if we need to create any chat users.
+                    var personIdsToSync = personIds
+                        .Where( personId => !rockChatUserKeys.ContainsKey( personId ) )
+                        .ToList();
+
+                    if ( personIdsToSync.Any() )
+                    {
+                        var syncPersonToChatCommands = personIdsToSync
+                            .Select( personId =>
+                                new SyncPersonToChatCommand
+                                {
+                                    PersonId = personId,
+                                    ShouldEnsureChatAliasExists = true
+                                }
+                            )
+                            .ToList();
+
+                        // The next method call does the following:
+                        //  1) Ensures each person has a chat-specific person alias in Rock;
+                        //  2) Ensures each person has a chat user in the external chat system.
+                        var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( syncPersonToChatCommands );
+                        if ( createOrUpdateChatUsersResult == null || createOrUpdateChatUsersResult.HasException )
+                        {
+                            result.Exception = createOrUpdateChatUsersResult?.Exception;
+                            Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( CreateOrUpdateChatUsersAsync ).SplitCase()}'. {structuredLog}", command );
+
+                            return result;
+                        }
+
+                        // Append the newly-synced chat users to the outer collection.
+                        createOrUpdateChatUsersResult.UserResults
+                            .ForEach( r =>
+                            {
+                                rockChatUserKeys.AddOrReplace( r.PersonId, new RockChatUserKey
+                                {
+                                    PersonId = r.PersonId,
+                                    NickName = r.NickName,
+                                    LastName = r.LastName,
+                                    ChatUserKey = r.ChatUserKey
+                                } );
+                            } );
+                    }
+
+                    // Does a direct message chat channel already exist for these chat users?
+                    var getOrCreateChatChannelResult = await ChatProvider.GetOrCreateDirectMessageChatChannelAsync(
+                        rockChatUserKeys.Values.Select( k => k.ChatUserKey ).ToList()
+                    );
+
+                    var chatChannel = getOrCreateChatChannelResult?.ChatChannels?.FirstOrDefault();
+                    if ( chatChannel == null || getOrCreateChatChannelResult?.HasException == true )
+                    {
+                        result.Exception = getOrCreateChatChannelResult?.Exception;
+                        Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( ChatProvider.GetOrCreateDirectMessageChatChannelAsync ).SplitCase()}'. {structuredLog}", command );
+
+                        return result;
+                    }
+
+                    // Get the sender's chat user key (since we already know it) to prevent the SendChatChannelMessageAsync
+                    // method from having to re-lookup this key based on the sender's person ID.
+                    if ( !rockChatUserKeys.TryGetValue( command.SenderPersonId, out var senderRockChatUserKey ) )
+                    {
+                        throw new ChatSendMessageException( $"An unknown error occurred while retrieving the chat individual key for sender Person ID {command.SenderPersonId}." );
+                    }
+
+                    // Send the message to the direct message chat channel.
+                    var sendChatChannelMessageResult = await SendChatChannelMessageAsync(
+                        new SendChatChannelMessageCommand
+                        {
+                            ChatChannelTypeKey = chatChannel.ChatChannelTypeKey,
+                            ChatChannelKey = chatChannel.Key,
+                            SenderChatUserKey = senderRockChatUserKey.ChatUserKey,
+                            MessageText = command.MessageText,
+                            Attachments = command.Attachments
+                        }
+                    );
+
+                    if ( sendChatChannelMessageResult?.WasMessageSent != true || sendChatChannelMessageResult.HasException )
+                    {
+                        result.Exception = sendChatChannelMessageResult?.Exception;
+                        Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( SendChatChannelMessageAsync ).SplitCase()}'. {structuredLog}", command );
+
+                        return result;
+                    }
+
+                    // If we made it this far, send was successful.
+                    result.WasMessageSent = true;
+                }
+                catch ( Exception ex )
+                {
+                    result.Exception = ex;
+                    Logger.LogError( ex, $"{logMessagePrefix}. {structuredLog}", command );
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Sends a chat message to a <see cref="ChatChannel"/> in the external chat system.
+        /// </summary>
+        /// <param name="command">The command for the message to send.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="SendChatMessageResult"/>.
+        /// </returns>
+        internal async Task<SendChatMessageResult> SendChatChannelMessageAsync( SendChatChannelMessageCommand command )
+        {
+            var result = new SendChatMessageResult();
+
+            if ( !IsChatEnabled )
+            {
+                return result;
+            }
+
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Send Chat Channel Message" ) )
+            {
+                var structuredLog = "Command: {@Command}";
+                var logMessagePrefix = $"{LogMessagePrefix} {nameof( SendChatChannelMessageAsync ).SplitCase()} failed";
+
+                try
+                {
+                    if ( ( command?.MessageText ).IsNullOrWhiteSpace() )
+                    {
+                        throw new ChatSendMessageException( "Message text cannot be empty." );
+                    }
+
+                    // If the caller provided these values, go ahead and use them.
+                    var chatChannelTypeKey = command.ChatChannelTypeKey;
+                    var chatChannelKey = command.ChatChannelKey;
+
+                    if ( chatChannelTypeKey.IsNullOrWhiteSpace() || chatChannelKey.IsNullOrWhiteSpace() )
+                    {
+                        // Otherwise, we need to look them up based on the provided Group ID.
+                        var groupCache = GroupCache.Get( command.GroupId );
+                        if ( groupCache == null )
+                        {
+                            throw new ChatSendMessageException( $"Rock group with ID {command.GroupId} could not be found." );
+                        }
+
+                        if ( !groupCache.GetIsChatChannelActive() )
+                        {
+                            throw new ChatSendMessageException( $"Rock group with ID {command.GroupId} is not chat-enabled." );
+                        }
+
+                        chatChannelTypeKey = GetChatChannelTypeKey( groupCache.GroupTypeId );
+                        chatChannelKey = GetChatChannelKey( groupCache.Id, groupCache.ChatChannelKey );
+                    }
+
+                    // The caller might have provided the sender's chat user key.
+                    var senderChatUserKey = command.SenderChatUserKey;
+
+                    var personService = new PersonService( RockContext );
+
+                    if ( senderChatUserKey.IsNullOrWhiteSpace() )
+                    {
+                        // Otherwise, we need to verify that the sender has a chat user in the external chat system.
+                        senderChatUserKey = personService
+                            .GetActiveRockChatUserKeys( new List<int> { command.SenderPersonId } )
+                            .FirstOrDefault()
+                            ?.ChatUserKey;
+
+                        if ( senderChatUserKey.IsNullOrWhiteSpace() )
+                        {
+                            var syncCommand = new SyncPersonToChatCommand
+                            {
+                                PersonId = command.SenderPersonId,
+                                ShouldEnsureChatAliasExists = true
+                            };
+
+                            // The next method call does the following:
+                            //  1) Ensures the sender has a chat-specific person alias in Rock;
+                            //  2) Ensures the sender has a chat user in the external chat system.
+                            var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( new List<SyncPersonToChatCommand> { syncCommand } );
+                            if ( createOrUpdateChatUsersResult == null || createOrUpdateChatUsersResult.HasException )
+                            {
+                                result.Exception = createOrUpdateChatUsersResult?.Exception;
+                                Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( CreateOrUpdateChatUsersAsync ).SplitCase()}'. {structuredLog}", command );
+
+                                return result;
+                            }
+
+                            senderChatUserKey = createOrUpdateChatUsersResult
+                                .UserResults
+                                .FirstOrDefault()
+                                ?.ChatUserKey;
+
+                            if ( senderChatUserKey.IsNullOrWhiteSpace() )
+                            {
+                                throw new ChatSendMessageException( $"An unknown error occurred while creating the chat individual for sender Person ID {command.SenderPersonId}." );
+                            }
+                        }
+                    }
+
+                    var rockChatMessage = await TryConvertToRockChatMessageAsync(
+                        command.MessageText,
+                        command.Attachments,
+                        personService
+                    );
+
+                    if ( rockChatMessage == null )
+                    {
+                        throw new ChatSendMessageException( "An unknown error occurred while sending the chat message." );
+                    }
+
+                    var sendMessageResult = await ChatProvider.SendChatChannelMessageAsync(
+                        chatChannelTypeKey,
+                        chatChannelKey,
+                        senderChatUserKey,
+                        rockChatMessage
+                    );
+
+                    if ( sendMessageResult?.WasMessageSent != true || sendMessageResult.HasException )
+                    {
+                        result.Exception = sendMessageResult?.Exception;
+                        Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( ChatProvider.SendChatChannelMessageAsync ).SplitCase()}'. {structuredLog}", command );
+
+                        return result;
+                    }
+
+                    // If we made it this far, send was successful.
+                    result.WasMessageSent = true;
+                }
+                catch ( Exception ex )
+                {
+                    result.Exception = ex;
+                    Logger.LogError( ex, $"{logMessagePrefix}. {structuredLog}", command );
+                }
+            }
+
+            return result;
+        }
+
+        #endregion Message Sending
+
         #region Interactions
 
         /// <summary>
@@ -3360,7 +3826,7 @@ namespace Rock.Communication.Chat
         /// <returns>
         /// A list of <see cref="RockChatGroup"/>s with one entry for each <see cref="Group"/>.
         /// </returns>
-        internal List<RockChatGroup> GetRockChatGroups( IQueryable<Group> groupQry )
+        internal List<RockChatGroup> GetRockChatGroups( IQueryable<Model.Group> groupQry )
         {
             if ( groupQry == null )
             {
@@ -3490,7 +3956,7 @@ namespace Rock.Communication.Chat
         /// <remarks>
         /// The most performant query approach will be chosen, based on the count of <see cref="Group"/> identifiers provided.
         /// </remarks>
-        private IQueryable<Group> GetGroupQuery( List<int> groupIds )
+        private IQueryable<Model.Group> GetGroupQuery( List<int> groupIds )
         {
             // We always want to include archived groups, as they'll be considered inactive chat channels.
             var groupQry = new GroupService( RockContext ).AsNoFilter();
@@ -3512,7 +3978,7 @@ namespace Rock.Communication.Chat
                 var entitySetOptions = new AddEntitySetActionOptions
                 {
                     Name = $"{nameof( ChatHelper )}_{nameof( GetGroupQuery )}",
-                    EntityTypeId = EntityTypeCache.Get<Group>().Id,
+                    EntityTypeId = EntityTypeCache.Get<Model.Group>().Id,
                     EntityIdList = groupIds,
                     ExpiryInMinutes = 20
                 };
@@ -3648,7 +4114,7 @@ namespace Rock.Communication.Chat
                     var entitySetOptions = new AddEntitySetActionOptions
                     {
                         Name = $"{nameof( ChatHelper )}_{nameof( GetRockChatGroupMembers )}_Groups",
-                        EntityTypeId = EntityTypeCache.Get<Group>().Id,
+                        EntityTypeId = EntityTypeCache.Get<Model.Group>().Id,
                         EntityIdList = groupIds,
                         ExpiryInMinutes = 20
                     };
@@ -4185,6 +4651,36 @@ namespace Rock.Communication.Chat
             };
         }
 
+        /// <summary>
+        /// Tries to convert message text and attachments to a <see cref="RockChatMessage"/>.
+        /// </summary>
+        /// <param name="messageText">The message text to send. Mentions should be in the format of @{personId} (e.g. @123).</param>
+        /// <param name="attachments">The list of <see cref="RockChatMessageAttachment"/>s to include with the message.</param>
+        /// <param name="personService">
+        /// The <see cref="PersonService"/> to use for checking for the existence of mentioned chat rock users.
+        /// </param>
+        /// <returns>A <see cref="RockChatMessage"/> or <see langword="null"/> if unable to convert.</returns>
+        private async Task<RockChatMessage> TryConvertToRockChatMessageAsync( string messageText, List<RockChatMessageAttachment> attachments, PersonService personService )
+        {
+            if ( messageText.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var rockChatMessage = new RockChatMessage
+            {
+                MessageText = messageText,
+                Attachments = attachments
+            };
+
+            if ( !await TryResolveMentionedChatUsersAsync( rockChatMessage, personService ?? new PersonService( RockContext ) ) )
+            {
+                return null;
+            }
+
+            return rockChatMessage;
+        }
+
         #endregion Converters: From Rock Models To Rock Chat DTOs
 
         #region Synchronization: From Rock To Chat Provider
@@ -4194,7 +4690,7 @@ namespace Rock.Communication.Chat
         /// resources to a new <see cref="ChatUser"/>.
         /// </summary>
         /// <param name="personAliasService">
-        /// The <see cref="PersonAliasService"/> to use for clearing name and foreign key values.
+        /// The <see cref="PersonAliasService"/> to use for deleting chat person alias records.
         /// </param>
         /// <param name="keysToDelete">The list of <see cref="RockChatUserKey"/>s to delete.</param>
         /// <param name="newKey">The new <see cref="ChatUser.Key"/> to whom ownership of resources should be transferred.</param>
@@ -4202,8 +4698,7 @@ namespace Rock.Communication.Chat
         /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
         /// <remarks>
-        /// For <see cref="ChatUser"/>s who are successfully deleted in the external chat system, their corresponding,
-        /// chat-specific <see cref="PersonAlias"/> records will also be cleared.
+        /// Each <see cref="ChatUser"/>'s corresponding chat-specific <see cref="PersonAlias"/> record will also be deleted.
         /// </remarks>
         private async Task<ChatSyncCrudResult> DeleteChatUsersAsync( PersonAliasService personAliasService, List<RockChatUserKey> keysToDelete, RockChatUserKey newKey = null )
         {
@@ -4216,6 +4711,55 @@ namespace Rock.Communication.Chat
 
                 try
                 {
+                    /*
+                        2/23/2026 - JPH
+
+                        Scenario:
+
+                        1. A person merge has resulted in non-prevailing Rock chat user and external chat user records
+                           needing to be deleted. This means we need to:
+
+                            a. Set the chat person alias record's [Name] to "core-chat_deleted", as this will mark the
+                               record as being in the process of deletion and prevent it from being considered an active
+                               chat person alias moving forward.
+                            b. Delete the chat user record in the external chat system, so they don't become re-synced
+                               on the next run of the chat sync job.
+
+                        2. The chat provider is SUPPOSED to send a known value back to Rock within any webhooks that are
+                           triggered by operations such as this one. This is how Rock knows to ignore such webhooks, to
+                           prevent a circular call path beteween rock-to-chat syncs and chat-to-rock webhooks.
+
+                        3. The problem is that our chat provider (currently Stream) is failing to send this known value
+                           for these particular webhooks, which is resulting in all chat-synced group member records
+                           belonging to the merged person becoming inactivated in Rock (because Rock didn't know to
+                           ignore the resulting `user.deleted` webhook).
+
+                        To get in front of the issue presented in item #3, we'll go ahead and mark the chat person alias
+                        record(s) as deleted here, before calling out to the chat provider's API to delete the chat user
+                        records there. This way, if the provider continues to send us incorrect webhooks, Rock can know
+                        to avoid the group member inactivation portion of the resulting DeleteChatPersonInRockCommand.
+
+                        The Chat Sync job has also been improved to contain a step that attempts to fully clean up any
+                        chat person alias records that are in the process of being deleted (those records with a name
+                        value of "core-chat_deleted").
+
+                        Reason: Avoid inactiving group members when chat-synced person records are merged.
+                    */
+
+                    var aliasIdsToDelete = keysToDelete
+                        .Select( k => k.ChatPersonAliasId.Value )
+                        .Distinct();
+
+                    // This will always be a short list of records (usually just one), so a  SQL `WHERE...IN` clause will
+                    // never be problematic here.
+                    var aliasesToDeleteQry = personAliasService
+                        .GetChatPersonAliasesQuery()
+                        .Where( a => aliasIdsToDelete.Contains( a.Id ) );
+
+                    RockContext.BulkUpdate( aliasesToDeleteQry, a => new PersonAlias { Name = ChatPersonAliasDeletedName } );
+
+                    // Now that we've marked the chat person alias records as deleted, go ahead and try to delete the
+                    // chat user records in the external chat system.
                     var chatUserKeys = keysToDelete
                         .Select( k => k.ChatUserKey )
                         .ToList();
@@ -4224,7 +4768,7 @@ namespace Rock.Communication.Chat
                     if ( deleteResult == null || deleteResult.HasException )
                     {
                         result.Exception = deleteResult?.Exception;
-                        Logger.LogError( result.Exception, $"{logMessagePrefix} at step '{nameof( ChatProvider.DeleteChatUsersAsync ).SplitCase()}'. {structuredLog}", keysToDelete, newKey );
+                        Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( ChatProvider.DeleteChatUsersAsync ).SplitCase()}'. {structuredLog}", keysToDelete, newKey );
                     }
                     else
                     {
@@ -4236,27 +4780,6 @@ namespace Rock.Communication.Chat
                 {
                     result.Exception = ex;
                     Logger.LogError( ex, $"{logMessagePrefix}. {structuredLog}", keysToDelete, newKey );
-                }
-
-                // Even if an exception occurred, if any users were actually deleted in the external chat system (or skipped),
-                // let's take this opportunity to ensure their chat person alias name and foreign key values are cleared.
-                if ( result.Deleted.Any() || result.Skipped.Any() )
-                {
-                    var keysToClear = keysToDelete
-                        .Where( k =>
-                            result.Deleted.Contains( k.ChatUserKey )
-                            || result.Skipped.Contains( k.ChatUserKey )
-                        )
-                        .ToList();
-
-                    // This will always be a short list of records (usually just one), so a  SQL `WHERE...IN` clause will
-                    // never be problematic here.
-                    var deletedAliasIds = keysToClear.Select( k => k.ChatPersonAliasId.Value ).ToList();
-                    var aliasesToUpdateQry = personAliasService
-                        .Queryable()
-                        .Where( a => deletedAliasIds.Contains( a.Id ) );
-
-                    RockContext.BulkUpdate( aliasesToUpdateQry, a => new PersonAlias { Name = null, ForeignKey = null } );
                 }
 
                 return result;
@@ -4325,49 +4848,85 @@ namespace Rock.Communication.Chat
                         syncCommand.PersonAliasId = chatPersonAlias.Id;
                         syncCommand.PersonId = chatPersonAlias.PersonId;
 
-                        // Inactivate this person's chat-related group member records.
-                        var groupMembers = new GroupMemberService( rockContext )
-                            // In this case, we DO want to get deceased individuals, so we can inactivate them.
-                            // Their group member records SHOULD already be inactive, but we'll just make sure.
-                            .Queryable( includeDeceased: true )
-                            .Where( gm =>
-                                gm.PersonId == chatPersonAlias.PersonId
-                                && (
-                                    gm.GroupId == ChatAdministratorsGroupId
-                                    || (
-                                        config.ShouldUnban
-                                        && gm.GroupId == ChatBanListGroupId
-                                    )
-                                    || (
-                                        gm.Group.GroupType.IsChatAllowed
-                                        && (
-                                            gm.Group.GroupType.IsChatEnabledForAllGroups
-                                            || gm.Group.IsChatEnabledOverride == true
+                        /*
+                            2/23/2026 - JPH
+
+                            If this chat [PersonAlias].[Name] value is "core-chat_deleted" or NULL, the record has
+                            already been marked as deleted. This means Rock initiated the delete (as part of a person
+                            merge or person inactivation process) and then one of the following has occurred:
+
+                                1. The chat provider is now calling back to Rock by way of an improperly-formed webhook
+                                   that failed to contain the expected "ignore this webhook" known value.
+                                2. The chat provider either did NOT call back to Rock -OR- called back to Rock with a
+                                   proper webhook, so the chat person alias was left in a "marked for deletion" state;
+                                   this delete command is being processed as part of a cleanup step in the Chat Sync job.
+
+                            In either case, we'll go ahead and finalize the chat person alias "deletion" by fully clearing
+                            out the [Name] and [ForeignKey] values, but we won't perform any group member inactivation,
+                            since that would improperly inactivate chat-enabled group member records for merged people.
+
+                            ------
+
+                            If - however - this chat person alias has NOT already been marked as deleted, this means the
+                            delete process was initiated within the external chat system, and we should proceed with the
+                            full deletion process, including inactivating chat-enabled group members. This will ensure the
+                            person doesn't get re-synced back to the external chat system on the next Chat Sync job run.
+
+                            Reason: Avoid inactiving group members when chat-synced person records are merged.
+                        */
+                        var shouldSaveChanges = false;
+
+                        // Only inactivate group members if the name value represents an active chat person alias.
+                        if ( chatPersonAlias.Name == ChatPersonAliasName )
+                        {
+                            // Inactivate this person's chat-related group member records.
+                            var groupMembers = new GroupMemberService( rockContext )
+                                // In this case, we DO want to get deceased individuals, so we can inactivate them.
+                                // Their group member records SHOULD already be inactive, but we'll just make sure.
+                                .Queryable( includeDeceased: true )
+                                .Where( gm =>
+                                    gm.PersonId == chatPersonAlias.PersonId
+                                    && (
+                                        gm.GroupId == ChatAdministratorsGroupId
+                                        || (
+                                            config.ShouldUnban
+                                            && gm.GroupId == ChatBanListGroupId
+                                        )
+                                        || (
+                                            gm.Group.GroupType.IsChatAllowed
+                                            && (
+                                                gm.Group.GroupType.IsChatEnabledForAllGroups
+                                                || gm.Group.IsChatEnabledOverride == true
+                                            )
                                         )
                                     )
                                 )
-                            )
-                            .ToList();
+                                .ToList();
 
-                        var shouldSaveChanges = false;
-
-                        foreach ( var groupMember in groupMembers )
-                        {
-                            groupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
-
-                            if ( !groupMember.InactiveDateTime.HasValue )
+                            foreach ( var groupMember in groupMembers )
                             {
-                                groupMember.InactiveDateTime = RockDateTime.Now;
-                            }
+                                groupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
 
-                            shouldSaveChanges = true;
+                                if ( !groupMember.InactiveDateTime.HasValue )
+                                {
+                                    groupMember.InactiveDateTime = RockDateTime.Now;
+                                }
+
+                                shouldSaveChanges = true;
+                            }
                         }
 
-                        if ( config.ShouldClearChatPersonAliasForeignKey )
+                        var shouldDeleteChatPersonAlias = config.ShouldDeleteChatPersonAlias
+                            && (
+                                chatPersonAlias.Name != null
+                                || chatPersonAlias.ForeignKey != null
+                            );
+
+                        if ( shouldDeleteChatPersonAlias )
                         {
-                            // We can't DELETE this chat person alias (because there are probably already interactions tied
-                            // to it), so we should - instead - clear out the name and foreign key field that designates it
-                            // as a chat-specific record.
+                            // We can't DELETE this chat person alias (because there are probably already interactions
+                            // tied to it), so we should - instead - clear the [Name] and [ForeignKey] property values
+                            // so it won't be considered an active "chat person alias" moving forward.
                             chatPersonAlias.Name = null;
                             chatPersonAlias.ForeignKey = null;
 
@@ -4430,7 +4989,7 @@ namespace Rock.Communication.Chat
                         var groupService = new GroupService( rockContext );
 
                         // Try to get the targeted group.
-                        Group group;
+                        Model.Group group;
 
                         if ( groupId.HasValue )
                         {
@@ -4494,7 +5053,7 @@ namespace Rock.Communication.Chat
                                 continue;
                             }
 
-                            var newGroup = new Group
+                            var newGroup = new Model.Group
                             {
                                 ParentGroupId = ChatDirectMessagesGroupId,
                                 Name = groupName,
@@ -4644,6 +5203,13 @@ namespace Rock.Communication.Chat
 
                         // We now have the targeted person.
                         var chatPersonAlias = personIdentifier.PersonAlias;
+
+                        // If this person alias is marked as deleted, do not [re]create a group member record for them.
+                        if ( chatPersonAlias.Name != ChatPersonAliasName )
+                        {
+                            syncCommand.MarkAsUnrecoverable( $"Chat person alias with ID {chatPersonAlias.Id} is marked as deleted. A Rock group member record will not be created." );
+                            continue;
+                        }
 
                         // Supplement the command and update the member ID.
                         syncCommand.PersonAliasId = chatPersonAlias.Id;
@@ -5372,6 +5938,107 @@ namespace Rock.Communication.Chat
         }
 
         #endregion Synchronization: From Chat Provider To Rock
+
+        #region Message Sending
+
+        /// <summary>
+        /// Looks for any mentioned <see cref="Person"/> identifiers within the <see cref="RockChatMessage.MessageText"/>
+        /// and tries to resolve these identifiers to the format expected by the external chat provider, while also
+        /// adding each mentioned <see cref="ChatUser.Key"/> to the <see cref="RockChatMessage.MentionedChatUserKeys"/>
+        /// collection.
+        /// </summary>
+        /// <param name="rockChatMessage">The message that might contain mentions.</param>
+        /// <param name="personService">
+        /// The <see cref="PersonService"/> to use for checking for the existence of mentioned chat rock users.
+        /// </param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see langword="bool"/> indicating whether the
+        /// operation was successful. Any errors encountered will be error-logged.
+        /// </returns>
+        private async Task<bool> TryResolveMentionedChatUsersAsync( RockChatMessage rockChatMessage, PersonService personService )
+        {
+            var mentionedPersonIds = PersonMentionsRegex.Matches( rockChatMessage.MessageText )
+                .Cast<Match>()
+                .Select( m => m.Groups[1].Value.AsInteger() )
+                .Distinct()
+                .ToList();
+
+            if ( !mentionedPersonIds.Any() )
+            {
+                // No work to do.
+                return true;
+            }
+
+            // Get the mentioned people who already have a chat user record in the external chat system.
+            var rockChatUserKeys = personService
+                .GetActiveRockChatUserKeys( mentionedPersonIds )
+                .GroupBy( k => k.PersonId )
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.First()
+                );
+
+            // Determine which mentioned people don't already have a chat user record.
+            var personIdsToSync = mentionedPersonIds
+                .Where( personId => !rockChatUserKeys.ContainsKey( personId ) )
+                .ToList();
+
+            if ( personIdsToSync.Any() )
+            {
+                var syncPersonToChatCommands = personIdsToSync
+                    .Select( personId =>
+                        new SyncPersonToChatCommand
+                        {
+                            PersonId = personId,
+                            ShouldEnsureChatAliasExists = true
+                        }
+                    )
+                    .ToList();
+
+                // The next method call does the following:
+                //  1) Ensures each person has a chat-specific person alias in Rock;
+                //  2) Ensures each person has a chat user in the external chat system.
+                var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( syncPersonToChatCommands );
+                if ( createOrUpdateChatUsersResult == null || createOrUpdateChatUsersResult.HasException )
+                {
+                    var structuredLog = "Message Text: {@MessageText}";
+
+                    Logger.LogError( createOrUpdateChatUsersResult?.Exception, $"{LogMessagePrefix} {nameof( TryResolveMentionedChatUsersAsync ).SplitCase()} failed on step '{nameof( CreateOrUpdateChatUsersAsync ).SplitCase()}'. {structuredLog}", rockChatMessage.MessageText );
+
+                    return false;
+                }
+
+                // Append the newly-synced chat users to the outer collection.
+                createOrUpdateChatUsersResult.UserResults
+                    .ForEach( r =>
+                    {
+                        /*
+                            10/28/2025 - JPH
+
+                            Stream only requires the following limited fields to be set on the RockChatUserKey object
+                            (as we'll be replacing "@123" with "@Ted Decker" in the outgoing message text). This might
+                            not be the case with other providers; we might need to add more info to this object if we
+                            ever switch providers.
+
+                            Reason: Call out risk of switching to a different external chat provider.
+                         */
+                        rockChatUserKeys.AddOrReplace( r.PersonId, new RockChatUserKey
+                        {
+                            PersonId = r.PersonId,
+                            NickName = r.NickName,
+                            LastName = r.LastName,
+                            ChatUserKey = r.ChatUserKey
+                        } );
+                    } );
+            }
+
+            // Each provider will have its own way of resolving these mentions.
+            ChatProvider.ResolveMentionedChatUsers( rockChatMessage, rockChatUserKeys );
+
+            return true;
+        }
+
+        #endregion Message Sending
 
         #endregion Private Methods
 

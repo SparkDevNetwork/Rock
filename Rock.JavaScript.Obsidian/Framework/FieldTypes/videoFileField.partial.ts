@@ -20,7 +20,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     FileName = "fileName",
     MimeType = "mimeType",
     FilePath = "filePath",
@@ -48,9 +48,9 @@ export class VideoFileFieldType extends FieldTypeBase {
     }
 
     public override getHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
-        const filePath = configurationValues[ConfigurationValueKey.FilePath];
-        const mimeType = configurationValues[ConfigurationValueKey.MimeType];
-        const fileGuid = configurationValues[ConfigurationValueKey.FileGuid];
+        const filePath = configurationValues[ConfigurationKey.FilePath];
+        const mimeType = configurationValues[ConfigurationKey.MimeType];
+        const fileGuid = configurationValues[ConfigurationKey.FileGuid];
 
         const html = `<video
         src='${filePath}?guid=${fileGuid}'
@@ -76,7 +76,7 @@ export class VideoFileFieldType extends FieldTypeBase {
     }
 
     public override getCondensedHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
-        const fileGuid = configurationValues[ConfigurationValueKey.FileGuid];
+        const fileGuid = configurationValues[ConfigurationKey.FileGuid];
         const html = `<a href="/GetFile.ashx?guid=${fileGuid}">${value}</a>`;
 
         if (isEscaped) {

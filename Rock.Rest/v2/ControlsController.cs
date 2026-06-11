@@ -27,6 +27,9 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+using Microsoft.Extensions.DependencyInjection;
 
 using Rock.Attribute;
 using Rock.Badge;
@@ -36,6 +39,7 @@ using Rock.Communication;
 using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Cms;
 using Rock.Enums.Communication;
 using Rock.Enums.Controls;
 using Rock.Extension;
@@ -51,8 +55,10 @@ using Rock.Security;
 using Rock.Security.SecurityGrantRules;
 using Rock.Storage;
 using Rock.Storage.AssetStorage;
+using Rock.SystemKey;
 using Rock.Utility;
 using Rock.Utility.CaptchaApi;
+using Rock.ViewModels.Blocks.Core.SmartSearch;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Crm;
 using Rock.ViewModels.Rest.Controls;
@@ -380,6 +386,71 @@ namespace Rock.Rest.v2
 
                 return Ok( items );
             }
+        }
+
+        #endregion
+
+        #region Adaptive Message Picker
+
+        /// <summary>
+        /// Gets the adaptive messages and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which data views to load.</param>
+        /// <returns>A collection of <see cref="TreeItemBag"/> objects that represent a tree of adaptive messages.</returns>
+        [HttpPost]
+        [Route( "AdaptiveMessagePickerGetAdaptiveMessages" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<TreeItemBag> ) )]
+        [Rock.SystemGuid.RestActionGuid( "3484A62B-8A52-423A-8154-909D9176E4B6" )]
+        public IActionResult AdaptiveMessagePickerGetAdaptiveMessages( [FromBody] UniversalItemTreePickerOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                var parentGuid = options.ParentValue.AsGuidOrNull();
+
+                var queryOptions = new CategoryItemTreeOptions
+                {
+                    ParentGuid = parentGuid,
+                    GetCategorizedItems = parentGuid.HasValue,
+                    EntityTypeGuid = EntityTypeCache.Get<Rock.Model.AdaptiveMessageCategory>().Guid,
+                    IncludeUnnamedEntityItems = true,
+                    IncludeCategoriesWithoutChildren = false,
+                    DefaultIconCssClass = "ti ti-list-numbers",
+                    LazyLoad = true,
+                    SecurityGrant = grant,
+                    ExpandToCategoryGuids = AdaptiveMessagePickerGetExpandToCategoryGuids( options.ExpandToValues )
+                };
+
+                var items = clientService.GetCategorizedTreeItems( queryOptions );
+
+                return Ok( items );
+            }
+        }
+
+        /// <summary>
+        /// Gets the unique category identifiers that need to be expanded to in order to display the selected adaptive
+        /// message values.
+        /// </summary>
+        /// <param name="selectedValues">The currently selected values in the picker.</param>
+        /// <returns>A list of unique identifiers that represent the categories that need to be expanded to.</returns>
+        private List<Guid> AdaptiveMessagePickerGetExpandToCategoryGuids( List<string> selectedValues )
+        {
+            if ( selectedValues == null )
+            {
+                return new List<Guid>();
+            }
+
+            var selectedCategories = selectedValues
+                .Select( v => AdaptiveMessageCache.Get( v.AsGuid() ) )
+                .Where( am => am != null )
+                .SelectMany( am => am.Categories );
+
+            return GetExpandToCategoryGuids( selectedCategories );
         }
 
         #endregion
@@ -733,7 +804,11 @@ namespace Rock.Rest.v2
                 foreach ( var folder in options.ExpandedFolders )
                 {
                     var parsedAsset = ParseAssetKey( folder );
-                    expandedFolders.Add( $"{parsedAsset.ProviderId},{parsedAsset.FullPath}" );
+                    // Only try to add the folder if it parsed OK
+                    if ( parsedAsset != null )
+                    {
+                        expandedFolders.Add( $"{parsedAsset.ProviderId},{parsedAsset.FullPath}" );
+                    }
                 }
             }
 
@@ -804,7 +879,7 @@ namespace Rock.Rest.v2
 
             var parsedAsset = ParseAssetKey( options.AssetFolderId );
 
-            if ( parsedAsset.ProviderId == null || parsedAsset.FullPath == null )
+            if ( parsedAsset == null || parsedAsset.ProviderId == null || parsedAsset.FullPath == null )
             {
                 return Ok( new List<AssetManagerTreeItemBag>() );
             }
@@ -847,7 +922,7 @@ namespace Rock.Rest.v2
 
             var asset = ParseAssetKey( options.AssetFolderId );
 
-            if ( asset.ProviderId == null || asset.FullPath == null )
+            if ( asset == null || asset.ProviderId == null || asset.FullPath == null )
             {
                 return BadRequest();
             }
@@ -906,7 +981,7 @@ namespace Rock.Rest.v2
 
             var asset = ParseAssetKey( options.AssetFolderId );
 
-            if ( asset.ProviderId == null || asset.FullPath == null )
+            if ( asset == null || asset.ProviderId == null || asset.FullPath == null )
             {
                 return BadRequest();
             }
@@ -1504,7 +1579,7 @@ namespace Rock.Rest.v2
             var rootAssetKey = $"0,{encryptedRootFolder},,True";
             var parsedAsset = ParseAssetKey( rootAssetKey );
 
-            if ( parsedAsset.Root.IsNullOrWhiteSpace() )
+            if ( parsedAsset == null || parsedAsset.Root.IsNullOrWhiteSpace() )
             {
                 return (null, null);
             }
@@ -1646,7 +1721,7 @@ namespace Rock.Rest.v2
                         UnencryptedRoot = asset.Root
                     };
 
-                    if ( hasChildren && expandedFolders.Contains( $"0,{subDirAsset.FullDirectoryPath}" ) )
+                    if ( hasChildren && subDirAsset != null && expandedFolders.Contains( $"0,{subDirAsset.FullDirectoryPath}" ) )
                     {
                         updatedExpandedFolders.Add( subDirKey );
 
@@ -2592,16 +2667,87 @@ namespace Rock.Rest.v2
         /// Gets the configuration data to use when rendering the Captcha control.
         /// </summary>
         [HttpPost]
-        [Route( "CaptchaControlGetConfiguration" )]
+        [Route( "CaptchaGetConfiguration" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Authorization.EXECUTE_READ, Authorization.EXECUTE_WRITE, Authorization.EXECUTE_UNRESTRICTED_READ, Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( CaptchaConfigurationBag ) )]
+        [Rock.SystemGuid.RestActionGuid( "A3DC31DC-F568-417A-8E52-F48151D9F2DB" )]
+        public IActionResult CaptchaGetConfiguration()
+        {
+            var mode = SystemSettings.GetValue( SystemSetting.CAPTCHA_MODE )
+                .ConvertToEnum<CaptchaMode>( CaptchaMode.Visible );
+
+            var bag = new CaptchaConfigurationBag()
+            {
+                CaptchaMode = mode
+            };
+
+            return Ok( bag );
+        }
+
+        /// <summary>
+        /// Initializes a new CAPTCHA.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="IActionResult"/> containing a <see cref="CaptchaInitializeResultBag"/> with the CAPTCHA details.
+        /// </returns>
+        [HttpPost]
+        [Route( "CaptchaInitialize" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Authorization.EXECUTE_READ, Authorization.EXECUTE_WRITE, Authorization.EXECUTE_UNRESTRICTED_READ, Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( CaptchaInitializeResultBag ) )]
+        [Rock.SystemGuid.RestActionGuid( "93A2FD36-AEB1-4D95-95C6-668415754238" )]
+        public async Task<IActionResult> CaptchaInitialize()
+        {
+            var result = await RockApp.Current.GetRequiredService<ICaptchaProvider>().InitializeAsync();
+
+            var bag = new CaptchaInitializeResultBag
+            {
+                Pow = result.Pow == null ? null :
+                    new CaptchaInitializeProofOfWorkBag
+                    {
+                        ChallengeToken = result.Pow.ChallengeToken,
+                        ChallengeCount = result.Pow.ChallengeCount,
+                        ChallengeDifficulty = result.Pow.ChallengeDifficulty,
+                        ChallengeSize = result.Pow.ChallengeSize
+                    }
+            };
+
+            return Ok( bag );
+        }
+
+        /// <summary>
+        /// Verifies the CAPTCHA using the provided options and returns the verification result.
+        /// </summary>
+        /// <param name="options">The options containing the CAPTCHA details to be verified.</param>
+        /// <returns>
+        /// An <see cref="IActionResult"/> containing a <see cref="CaptchaVerifyResultBag"/> with the verification
+        /// status, any error messages, expiration time, and a token if verification is successful.
+        /// </returns>
+        [HttpPost]
+        [Route( "CaptchaVerify" )]
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponse( HttpStatusCode.OK, Type = typeof( CaptchaControlConfigurationBag ) )]
-        [Rock.SystemGuid.RestActionGuid( "9e066058-13d9-4b4d-8457-07ba8e2cacd3" )]
-        public IActionResult CaptchaControlGetConfiguration()
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( CaptchaVerifyResultBag ) )]
+        [Rock.SystemGuid.RestActionGuid( "5B81F7C9-461C-4F70-AD04-F2DE203F5763" )]
+        public async Task<IActionResult> CaptchaVerify( [FromBody] CaptchaVerifyOptionsBag options )
         {
-            var bag = new CaptchaControlConfigurationBag()
+            var result = await RockApp.Current.GetRequiredService<ICaptchaProvider>().VerifyAsync( new CaptchaVerifyOptions
             {
-                SiteKey = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.CAPTCHA_SITE_KEY )
+                PowOptions = options?.PowOptions == null ? null :
+                    new CaptchaVerifyProofOfWorkOptions
+                    {
+                        ChallengeToken = options.PowOptions.ChallengeToken,
+                        ChallengeSolutions = options.PowOptions.ChallengeSolutions
+                    }
+            } );
+
+            var bag = new CaptchaVerifyResultBag
+            {
+                IsVerified = result.IsVerified,
+                Error = result.Error,
+                Expires = result.Expires,
+                Token = result.Token
             };
 
             return Ok( bag );
@@ -2612,18 +2758,16 @@ namespace Rock.Rest.v2
         /// </summary>
         /// <param name="options">The options that contain the information to be validated.</param>
         [HttpPost]
-        [Route( "CaptchaControlValidateToken" )]
+        [Route( "CaptchaValidateToken" )]
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponse( HttpStatusCode.OK, Type = typeof( CaptchaControlTokenValidateTokenResultBag ) )]
-        [Rock.SystemGuid.RestActionGuid( "8f373592-d745-4d69-944a-729e15c3f941" )]
-        public IActionResult CaptchaControlValidateToken( [FromBody] CaptchaControlValidateTokenOptionsBag options )
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( CaptchaValidateTokenResultBag ) )]
+        [Rock.SystemGuid.RestActionGuid( "3D1EF07D-169A-4394-8871-BCB139818EB5" )]
+        public async Task<IActionResult> CaptchaValidateToken( [FromBody] CaptchaValidateTokenOptionsBag options )
         {
-            var api = new CloudflareApi();
+            var isTokenValid = await RockApp.Current.GetRequiredService<ICaptchaProvider>().IsTokenValidAsync( options.Token );
 
-            var isTokenValid = api.IsTurnstileTokenValid( options.Token );
-
-            var result = new CaptchaControlTokenValidateTokenResultBag()
+            var result = new CaptchaValidateTokenResultBag()
             {
                 IsTokenValid = isTokenValid
             };
@@ -2900,6 +3044,64 @@ namespace Rock.Rest.v2
         }
 
         #endregion
+
+        #region Color Picker
+
+        /// <summary>
+        /// Retrieves the list of available color swatches for the color picker, filtered by authorization and activity status.
+        /// </summary>
+        /// <remarks>
+        /// Only swatches that are active and for which the current user has view authorization
+        /// are included in the result. The response includes display location information for each swatch, which may be
+        /// "Custom" if not specified.
+        /// </remarks>
+        /// <param name="options">An object containing options for retrieving color picker swatches, including security grant information. Cannot be null.</param>
+        /// <returns>An HTTP response containing a collection of color picker swatch items if found; otherwise, a NotFound
+        /// response.</returns>
+        [HttpPost]
+        [Route( "ColorPickerGetColorPickerSwatches" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ColorPickerSwatchBag> ) )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [Rock.SystemGuid.RestActionGuid( "22F2083E-CB15-4D19-893C-4218C6E06323" )]
+        public IActionResult ColorPickerGetColorPickerSwatches( ColorPickerGetColorPickerSwatchesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COLOR_PICKER_SWATCHES.AsGuid() );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                if ( definedType == null || !definedType.IsAuthorized( Rock.Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                {
+                    return NotFound();
+                }
+
+                var definedValues = definedType.DefinedValues
+                    .Where( v => ( v.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( v, Security.Authorization.VIEW ) == true )
+                        && ( v.IsActive ) )
+                    .OrderBy( v => v.Order )
+                    .ThenBy( v => v.Value )
+                    .ToList();
+
+                definedValues.LoadAttributes();
+
+                var displayLocationAttributeKey = AttributeCache.Get( SystemGuid.Attribute.DEFINED_TYPE_COLOR_PICKER_SWATCHES_DISPLAY_LOCATION )?.Key;
+
+                var result = definedValues
+                    .Select( dv => new ColorPickerSwatchBag
+                    {
+                        Value = dv.Value,
+                        Description = dv.Description,
+                        DisplayLocation = displayLocationAttributeKey.IsNotNullOrWhiteSpace() ? dv.GetAttributeValue( displayLocationAttributeKey ) : "Custom"
+                    } )
+                    .ToList();
+
+                return Ok( result );
+            }
+        }
+
+        #endregion Color Picker
 
         #region Communication Recipient Activity
 
@@ -3226,124 +3428,322 @@ namespace Rock.Rest.v2
 
             using ( var rockContext = new RockContext() )
             {
-                string service = null;
+                var connectionTypeService = new ConnectionTypeService( rockContext );
+                var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
+                var connectionRequestService = new ConnectionRequestService( rockContext );
 
-                /*
-                 * Determine what type of resource the GUID we received is so we know what types of
-                 * children to query for.
-                 */
-                if ( options.ParentGuid == null )
-                {
-                    // Get the root Connection Types
-                    service = "type";
-                }
-                else
-                {
-                    var conOpp = new ConnectionOpportunityService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( op => op.Guid == options.ParentGuid )
-                        .ToList()
-                        .Where( op => op.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( op, Security.Authorization.VIEW ) == true );
+                var expandToConnectionGuids = ConnectionRequestPickerGetAutoExpandGuids(
+                    options.ExpandToValues,
+                    connectionTypeService,
+                    connectionOpportunityService,
+                    connectionRequestService );
 
-                    if ( conOpp.Any() )
-                    {
-                        // Get the Connection Requests
-                        service = "request";
-                    }
-                    else
-                    {
-                        var conType = new ConnectionTypeService( rockContext )
-                            .Queryable().AsNoTracking()
-                            .Where( t => t.Guid == options.ParentGuid )
-                            .ToList()
-                            .Where( t => t.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( t, Security.Authorization.VIEW ) == true );
+                var connectionTreeItems = ConnectionRequestPickerGetChildrenInternal(
+                    options.ParentGuid,
+                    connectionTypeService,
+                    connectionOpportunityService,
+                    connectionRequestService,
+                    expandToConnectionGuids,
+                    grant,
+                    0 );
 
-                        if ( conType.Any() )
-                        {
-                            // Get the Connection Opportunities
-                            service = "opportunity";
-                        }
-                    }
-                }
-
-                /*
-                 * Fetch the children
-                 */
-                var list = new List<TreeItemBag>();
-
-                if ( service == "type" )
-                {
-                    // Get the Connection Types
-                    var connectionTypes = new ConnectionTypeService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .OrderBy( ct => ct.Name )
-                        .ToList()
-                        .Where( ct => ct.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( ct, Security.Authorization.VIEW ) == true );
-
-                    foreach ( var connectionType in connectionTypes )
-                    {
-                        var item = new TreeItemBag();
-                        item.Value = connectionType.Guid.ToString();
-                        item.Text = connectionType.Name;
-                        item.HasChildren = connectionType.ConnectionOpportunities.Any();
-                        item.IconCssClass = connectionType.IconCssClass;
-                        list.Add( item );
-                    }
-                }
-                else if ( service == "opportunity" )
-                {
-                    // Get the Connection Opportunities
-                    var opportunities = new ConnectionOpportunityService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( op => op.ConnectionType.Guid == options.ParentGuid )
-                        .OrderBy( op => op.Name )
-                        .ToList()
-                        .Where( op => op.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( op, Security.Authorization.VIEW ) == true );
-
-                    foreach ( var opportunity in opportunities )
-                    {
-                        var item = new TreeItemBag();
-                        item.Value = opportunity.Guid.ToString();
-                        item.Text = opportunity.Name;
-                        item.HasChildren = opportunity.ConnectionRequests
-                            .Any( r =>
-                                r.ConnectionState == ConnectionState.Active ||
-                                r.ConnectionState == ConnectionState.FutureFollowUp );
-                        item.IconCssClass = opportunity.IconCssClass;
-                        list.Add( item );
-                    }
-                }
-                else if ( service == "request" )
-                {
-                    var requests = new ConnectionRequestService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( r =>
-                            r.ConnectionOpportunity.Guid == options.ParentGuid &&
-                            r.PersonAlias != null &&
-                            r.PersonAlias.Person != null )
-                        .OrderBy( r => r.PersonAlias.Person.LastName )
-                        .ThenBy( r => r.PersonAlias.Person.NickName )
-                        .ToList()
-                        .Where( op => op.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( op, Security.Authorization.VIEW ) == true );
-
-                    foreach ( var request in requests )
-                    {
-                        var item = new TreeItemBag();
-                        item.Value = request.Guid.ToString();
-                        item.Text = request.PersonAlias.Person.FullName;
-                        item.HasChildren = false;
-                        item.IconCssClass = "ti ti-user";
-                        list.Add( item );
-                    }
-                }
-                else
-                {
-                    // service type wasn't set, so we don't know where to look
-                    return NotFound();
-                }
-
-                return Ok( list );
+                return Ok( connectionTreeItems );
             }
+        }
+
+        /// <summary>
+        /// A POCO to represent the connection type and opportunity GUIDs to expand to within a tree picker control.
+        /// </summary>
+        private class ExpandToConnectionGuids
+        {
+            /// <summary>
+            /// The unique identifiers of the connection types to expand to.
+            /// </summary>
+            public HashSet<Guid> ConnectionTypeGuids { get; } = new HashSet<Guid>();
+
+            /// <summary>
+            /// The unique identifiers of the connection opportunities to expand to.
+            /// </summary>
+            public HashSet<Guid> ConnectionOpportunityGuids { get; } = new HashSet<Guid>();
+        }
+
+        /// <summary>
+        /// Gets the connection type and opportunity GUIDs to expand to based on the selected values.
+        /// </summary>
+        /// <param name="selectedValues">The currently selected values in the picker.</param>
+        /// <param name="connectionTypeService">The service to use when loading connection types.</param>
+        /// <param name="connectionOpportunityService">The service to use when loading connection opportunities.</param>
+        /// <param name="connectionRequestService">The service to use when loading connection requests.</param>
+        /// <returns>The connection type and opportunity GUIDs to expand to.</returns>
+        private ExpandToConnectionGuids ConnectionRequestPickerGetAutoExpandGuids(
+            List<string> selectedValues,
+            ConnectionTypeService connectionTypeService,
+            ConnectionOpportunityService connectionOpportunityService,
+            ConnectionRequestService connectionRequestService )
+        {
+            var expandToConnectionGuids = new ExpandToConnectionGuids();
+
+            var selectedGuids = selectedValues?.AsGuidList();
+            if ( selectedGuids?.Any() != true )
+            {
+                return expandToConnectionGuids;
+            }
+
+            var selectedConnectionTypes = connectionTypeService
+                .Queryable()
+                .AsNoTracking()
+                .Where( ct => selectedGuids.Contains( ct.Guid ) )
+                .ToList();
+
+            var selectedConnectionOpportunities = connectionOpportunityService
+                .Queryable()
+                .AsNoTracking()
+                .Include( co => co.ConnectionType )
+                .Where( co => selectedGuids.Contains( co.Guid ) )
+                .ToList();
+
+            var selectedConnectionRequests = connectionRequestService
+                .Queryable()
+                .AsNoTracking()
+                .Include( cr => cr.ConnectionOpportunity.ConnectionType )
+                .Where( cr => selectedGuids.Contains( cr.Guid ) )
+                .ToList();
+
+            foreach ( var selectedGuid in selectedGuids )
+            {
+                // Try to find a matching connection type.
+                var selectedConnectionType = selectedConnectionTypes
+                    .FirstOrDefault( ct => ct.Guid.Equals( selectedGuid ) );
+
+                if ( selectedConnectionType != null )
+                {
+                    expandToConnectionGuids.ConnectionTypeGuids.Add( selectedConnectionType.Guid );
+
+                    continue;
+                }
+
+                // Try to find a matching connection opportunity.
+                var selectedConnectionOpportunity = selectedConnectionOpportunities
+                    .FirstOrDefault( co => co.Guid.Equals( selectedGuid ) );
+
+                if ( selectedConnectionOpportunity != null )
+                {
+                    expandToConnectionGuids.ConnectionOpportunityGuids.Add( selectedConnectionOpportunity.Guid );
+
+                    selectedConnectionType = selectedConnectionOpportunity.ConnectionType;
+                    expandToConnectionGuids.ConnectionTypeGuids.Add( selectedConnectionType.Guid );
+
+                    continue;
+                }
+
+                // Try to find a matching connection request.
+                var selectedConnectionRequest = selectedConnectionRequests
+                    .FirstOrDefault( cr => cr.Guid.Equals( selectedGuid ) );
+
+                if ( selectedConnectionRequest != null )
+                {
+                    selectedConnectionOpportunity = selectedConnectionRequest.ConnectionOpportunity;
+                    expandToConnectionGuids.ConnectionOpportunityGuids.Add( selectedConnectionOpportunity.Guid );
+
+                    selectedConnectionType = selectedConnectionOpportunity.ConnectionType;
+                    expandToConnectionGuids.ConnectionTypeGuids.Add( selectedConnectionType.Guid );
+                }
+            }
+
+            return expandToConnectionGuids;
+        }
+
+        /// <summary>
+        /// Gets the recursive child items for the connection request picker.
+        /// </summary>
+        /// <param name="parentGuid">The unique identifier of the parent (connection type or opportunity).</param>
+        /// <param name="connectionTypeService">The service to use when loading connection types.</param>
+        /// <param name="connectionOpportunityService">The service to use when loading connection opportunities.</param>
+        /// <param name="connectionRequestService">The service to use when loading connection requests.</param>
+        /// <param name="expandToConnectionGuids">The unique identifiers of the connection types and opportunities to expand to.</param>
+        /// <param name="grant">The security grant to use when checking authorization.</param>
+        /// <param name="depth">The current depth for recursion safety.</param>
+        /// <returns>A list of tree items.</returns>
+        private List<TreeItemBag> ConnectionRequestPickerGetChildrenInternal(
+            Guid? parentGuid,
+            ConnectionTypeService connectionTypeService,
+            ConnectionOpportunityService connectionOpportunityService,
+            ConnectionRequestService connectionRequestService,
+            ExpandToConnectionGuids expandToConnectionGuids,
+            SecurityGrant grant,
+            int depth )
+        {
+            if ( depth > 50 )
+            {
+                // Null will cause a lazy load to be attempted later.
+                return null;
+            }
+
+            string level = null;
+
+            // Determine the type of resource for the GUID we received so we know what type of children to query for.
+            if ( parentGuid == null )
+            {
+                // Get the root connection types.
+                level = "type";
+            }
+            else
+            {
+                var opportunities = connectionOpportunityService
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( co => co.Guid == parentGuid )
+                    .ToList()
+                    .Where( co =>
+                        co.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                        || grant?.IsAccessGranted( co, Authorization.VIEW ) == true
+                    );
+
+                if ( opportunities.Any() )
+                {
+                    // Get the connection requests.
+                    level = "request";
+                }
+                else
+                {
+                    var connectionTypes = connectionTypeService
+                        .Queryable()
+                        .AsNoTracking()
+                        .Where( ct => ct.Guid == parentGuid )
+                        .ToList()
+                        .Where( ct =>
+                            ct.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                            || grant?.IsAccessGranted( ct, Authorization.VIEW ) == true
+                        );
+
+                    if ( connectionTypes.Any() )
+                    {
+                        // Get the connection opportunities.
+                        level = "opportunity";
+                    }
+                }
+            }
+
+            // Fetch the children.
+            var connectionTreeItems = new List<TreeItemBag>();
+
+            if ( level == "type" )
+            {
+                // Get the connection types.
+                var connectionTypes = connectionTypeService
+                    .Queryable()
+                    .AsNoTracking()
+                    .Include( ct => ct.ConnectionOpportunities )
+                    .OrderBy( ct => ct.Name )
+                    .ToList()
+                    .Where( ct =>
+                        ct.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                        || grant?.IsAccessGranted( ct, Authorization.VIEW ) == true
+                    );
+
+                foreach ( var connectionType in connectionTypes )
+                {
+                    var connectionTypeTreeItem = new TreeItemBag
+                    {
+                        Value = connectionType.Guid.ToString(),
+                        Text = connectionType.Name,
+                        HasChildren = connectionType.ConnectionOpportunities.Any(),
+                        IconCssClass = connectionType.IconCssClass
+                    };
+
+                    connectionTreeItems.Add( connectionTypeTreeItem );
+
+                    if ( expandToConnectionGuids.ConnectionTypeGuids.Contains( connectionType.Guid ) )
+                    {
+                        connectionTypeTreeItem.Children = ConnectionRequestPickerGetChildrenInternal(
+                            connectionType.Guid,
+                            connectionTypeService,
+                            connectionOpportunityService,
+                            connectionRequestService,
+                            expandToConnectionGuids,
+                            grant,
+                            depth + 1 );
+                    }
+                }
+            }
+            else if ( level == "opportunity" )
+            {
+                // Get the connection opportunities.
+                var opportunities = connectionOpportunityService
+                    .Queryable()
+                    .AsNoTracking()
+                    .Include( co => co.ConnectionRequests )
+                    .Where( co => co.ConnectionType.Guid == parentGuid )
+                    .OrderBy( co => co.Name )
+                    .ToList()
+                    .Where( co =>
+                        co.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                        || grant?.IsAccessGranted( co, Authorization.VIEW ) == true
+                    );
+
+                foreach ( var opportunity in opportunities )
+                {
+                    var connectionOpportunityTreeItem = new TreeItemBag
+                    {
+                        Value = opportunity.Guid.ToString(),
+                        Text = opportunity.Name,
+                        HasChildren = opportunity.ConnectionRequests
+                            .Any( cr =>
+                                cr.ConnectionState == ConnectionState.Active
+                                || cr.ConnectionState == ConnectionState.FutureFollowUp
+                            ),
+                        IconCssClass = opportunity.IconCssClass
+                    };
+
+                    connectionTreeItems.Add( connectionOpportunityTreeItem );
+
+                    if ( expandToConnectionGuids.ConnectionOpportunityGuids.Contains( opportunity.Guid ) )
+                    {
+                        connectionOpportunityTreeItem.Children = ConnectionRequestPickerGetChildrenInternal(
+                            opportunity.Guid,
+                            connectionTypeService,
+                            connectionOpportunityService,
+                            connectionRequestService,
+                            expandToConnectionGuids,
+                            grant,
+                            depth + 1 );
+                    }
+                }
+            }
+            else if ( level == "request" )
+            {
+                // Get the connection requests.
+                var requests = connectionRequestService
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( cr =>
+                        cr.ConnectionOpportunity.Guid == parentGuid
+                        && cr.PersonAlias != null
+                        && cr.PersonAlias.Person != null
+                    )
+                    .OrderBy( r => r.PersonAlias.Person.LastName )
+                    .ThenBy( r => r.PersonAlias.Person.NickName )
+                    .ToList()
+                    .Where( co =>
+                        co.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                        || grant?.IsAccessGranted( co, Authorization.VIEW ) == true
+                    );
+
+                foreach ( var request in requests )
+                {
+                    var connectionRequestTreeItem = new TreeItemBag
+                    {
+                        Value = request.Guid.ToString(),
+                        Text = request.PersonAlias.Person.FullName,
+                        HasChildren = false,
+                        IconCssClass = "ti ti-user"
+                    };
+
+                    connectionTreeItems.Add( connectionRequestTreeItem );
+                }
+            }
+
+            return connectionTreeItems;
         }
 
         #endregion
@@ -3634,14 +4034,10 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "E2601583-94D5-4C21-96FA-309B9FB7E11F" )]
         public IActionResult DefinedValueEditorGetAttributes( DefinedValueEditorGetAttributesOptionsBag options )
         {
-            if ( RockRequestContext.CurrentPerson == null )
-            {
-                return Unauthorized();
-            }
-
             var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
+            var securityGrant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( definedType == null || !definedType.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+            if ( definedType == null )
             {
                 return Unauthorized();
             }
@@ -3651,6 +4047,11 @@ namespace Rock.Rest.v2
                 Id = 0,
                 DefinedTypeId = definedType.Id
             };
+
+            if ( securityGrant?.IsAccessGranted( definedValue, Authorization.EDIT ) != true )
+            {
+                return Unauthorized();
+            }
 
             definedValue.LoadAttributes();
 
@@ -3687,11 +4088,6 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "E1AB17E0-CF28-4032-97A8-2A4279C5815A" )]
         public IActionResult DefinedValueEditorSaveNewValue( DefinedValueEditorSaveNewValueOptionsBag options )
         {
-            if ( RockRequestContext.CurrentPerson == null )
-            {
-                return Unauthorized();
-            }
-
             var securityGrant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
             using ( var rockContext = new RockContext() )
@@ -3891,6 +4287,14 @@ namespace Rock.Rest.v2
                 System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", RockRequestContext.CurrentPerson );
                 rockContext.SaveChanges();
 
+                // Read the inserted email section before converting to a bag
+                // to get its final field values that might have been updated from hooks.
+                var query = emailSectionService.Queryable().AsNoTracking()
+                    .Where( es => es.Id == emailSection.Id );
+                query = SetIncludesForEmailEditorEmailSectionBag( query );
+
+                emailSection = query.FirstOrDefault();
+
                 return Content( HttpStatusCode.Created, GetEmailSectionBagFromEmailSection( emailSection ) );
             }
         }
@@ -3922,22 +4326,21 @@ namespace Rock.Rest.v2
             using ( var rockContext = new RockContext() )
             {
                 var emailSectionService = new EmailSectionService( rockContext );
-                var emailSection = emailSectionService.Queryable().AsNoTracking()
-                    .Include( es => es.Category )
-                    .Include( es => es.ThumbnailBinaryFile )
-                    .Where( es => es.Guid == options.EmailSectionGuid )
-                    .ToList()
-                    .Where( es => es.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
-                    .Select( es => GetEmailSectionBagFromEmailSection( es ) )
-                    .FirstOrDefault();
 
-                if ( emailSection == null )
+                var query = emailSectionService.Queryable().AsNoTracking()
+                    .Where( es => es.Guid == options.EmailSectionGuid );
+                query = SetIncludesForEmailEditorEmailSectionBag( query );
+
+                var emailSection = query.FirstOrDefault();
+
+                if ( emailSection == null
+                     || !emailSection.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
                 {
                     return NotFound();
                 }
                 else
                 {
-                    return Ok( emailSection );
+                    return Ok( GetEmailSectionBagFromEmailSection( emailSection ) );
                 }
             }
         }
@@ -3967,15 +4370,17 @@ namespace Rock.Rest.v2
             using ( var rockContext = new RockContext() )
             {
                 var emailSectionService = new EmailSectionService( rockContext );
-                var emailSection = emailSectionService.Queryable().AsNoTracking()
-                    .Include( es => es.Category )
-                    .Include( es => es.ThumbnailBinaryFile )
+
+                var query = emailSectionService.Queryable().AsNoTracking();
+                query = SetIncludesForEmailEditorEmailSectionBag( query );
+
+                var emailSections = query
                     .ToList()
                     .Where( es => es.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
                     .Select( es => GetEmailSectionBagFromEmailSection( es ) )
                     .ToList();
 
-                return Ok( emailSection );
+                return Ok( emailSections );
             }
         }
 
@@ -4095,6 +4500,14 @@ namespace Rock.Rest.v2
 
                 System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", RockRequestContext.CurrentPerson );
                 rockContext.SaveChanges();
+
+                // Read the updated email section before converting to a bag
+                // to get its final field values that might have been updated from hooks.
+                var query = emailSectionService.Queryable().AsNoTracking()
+                    .Where( es => es.Id == emailSection.Id );
+                query = SetIncludesForEmailEditorEmailSectionBag( query );
+
+                emailSection = query.FirstOrDefault();
 
                 return Ok( GetEmailSectionBagFromEmailSection( emailSection ) );
             }
@@ -4286,10 +4699,24 @@ namespace Rock.Rest.v2
             }
         }
 
-        private static EmailEditorEmailSectionBag GetEmailSectionBagFromEmailSection( EmailSection emailSection )
+        private IQueryable<EmailSection> SetIncludesForEmailEditorEmailSectionBag( IQueryable<EmailSection> query )
         {
+            return query.Include( es => es.Category )
+                .Include( es => es.ThumbnailBinaryFile )
+                .Include( es => es.CreatedByPersonAlias );
+        }
+
+        private EmailEditorEmailSectionBag GetEmailSectionBagFromEmailSection( EmailSection emailSection )
+        {
+            var currentPerson = RockRequestContext.CurrentPerson;
+            var canEdit = emailSection != null
+                && !emailSection.IsSystem
+                && emailSection.IsAuthorized( Authorization.EDIT, currentPerson );
+
             return emailSection == null ? null : new EmailEditorEmailSectionBag
             {
+                CanDelete = canEdit,
+                CanEdit = canEdit,
                 Category = emailSection.Category.ToListItemBag(),
                 Guid = emailSection.Guid,
                 IsSystem = emailSection.IsSystem,
@@ -4840,6 +5267,11 @@ namespace Rock.Rest.v2
                     itemQuery = itemQuery.Where( t => options.EntityTypeGuids.Contains( t.Guid ) );
                 }
 
+                if ( options.ExcludedEntityTypeGuids != null && options.ExcludedEntityTypeGuids.Any() )
+                {
+                    itemQuery = itemQuery.Where( t => !options.ExcludedEntityTypeGuids.Contains( t.Guid ) );
+                }
+
                 var items = itemQuery
                     .OrderByDescending( t => t.IsCommon )
                     .ThenBy( t => t.FriendlyName )
@@ -4936,22 +5368,95 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
+                var lowerValue = options.DateRangeStart.AsDateTime();
+                var upperValue = options.DateRangeEnd.AsDateTime();
+
+                // Swap the values if they are backwards
+                if ( lowerValue > upperValue )
+                {
+                    var temp = lowerValue;
+                    lowerValue = upperValue;
+                    upperValue = temp;
+                }
+
                 var eventItems = new EventCalendarItemService( rockContext ).Queryable()
                     .Include( eci => eci.EventCalendar )
-                    .Where( i => options.IncludeInactive ? true : i.EventItem.IsActive )
+                    .Where( eci => options.RootCalendar == Guid.Empty || eci.EventCalendar.Guid == options.RootCalendar )
+                    .Where( eci => options.IncludeInactive || eci.EventItem.IsActive )
                     .ToList()
                     .Where( eci => eci.EventCalendar.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
-                    .Select( i => new ListItemBag
+                    .Where( eci => (!lowerValue.HasValue && !upperValue.HasValue) || eci.EventItem.GetStartTimes( lowerValue.Value, upperValue.Value ).Any() )
+                    .Select( eci => new ListItemBag
                     {
-                        Category = i.EventCalendar.Name,
-                        Value = i.EventItem.Guid.ToString(),
-                        Text = i.EventItem.Name
+                        Category = eci.EventCalendar.Name,
+                        Value = eci.EventItem.Guid.ToString(),
+                        Text = eci.EventItem.Name
                     } )
                     .OrderBy( i => i.Category )
                     .ThenBy( i => i.Text )
                     .ToList();
 
                 return Ok( eventItems );
+            }
+        }
+
+        #endregion
+
+        #region Event Item Occurrence Picker
+
+        /// <summary>
+        /// Gets the event items that can be displayed in the event item picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the event items.</returns>
+        [HttpPost]
+        [Route( "EventItemOccurrencePickerGetEventItemOccurrences" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [Rock.SystemGuid.RestActionGuid( "1E837165-A003-4CC7-B870-15D7640826EE" )]
+        public IActionResult EventItemOccurrencePickerGetEventItemOccurrences( [FromBody] EventItemOccurrencePickerGetEventItemOccurrencesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var lowerValue = options.DateRangeStart.AsDateTime() ?? RockDateTime.Today.AddYears( -1 ).AddDays( 1 );
+                var upperValue = options.DateRangeEnd.AsDateTime() ?? RockDateTime.Today.AddYears( 1 ).AddDays( -1 );
+
+                // Swap the values if they are backwards
+                if ( lowerValue > upperValue )
+                {
+                    var temp = lowerValue;
+                    lowerValue = upperValue;
+                    upperValue = temp;
+                }
+
+                var eventItemOccurences = new EventItemOccurrenceService( rockContext )
+                    .Queryable()
+                    .Where( eio => eio.EventItem.Guid == options.EventItem )
+                    .Where( eio => options.IncludeInactive || eio.EventItem.IsActive )
+                    .ToList()
+                    .Where( eio => eio.EventItem.GetStartTimes( lowerValue, upperValue ).Any() )
+                    .Select( eio => new
+                    {
+                        eio.Guid,
+                        eio.NextStartDateTime,
+                        CampusName = eio.Campus != null ? eio.Campus.Name : "All Campuses",
+                        Order = eio.CampusId.HasValue ? 1 : 0
+                    } )
+                    .OrderBy( eio => eio.Order )
+                    .ThenBy( eio => eio.CampusName )
+                    .ThenBy( eio => eio.NextStartDateTime ?? DateTime.MinValue )
+                    .Select( eio => new ListItemBag
+                    {
+                        Text = eio.NextStartDateTime.HasValue ?
+                                string.Format( "{0} - {1}", eio.CampusName, eio.NextStartDateTime.Value.ToShortDateTimeString() ) :
+                                eio.CampusName,
+                        Value = eio.Guid.ToString()
+                    }
+                    )
+                    .ToList();
+
+                return Ok( eventItemOccurences );
             }
         }
 
@@ -5033,11 +5538,19 @@ namespace Rock.Rest.v2
             // Get the public configuration options from the internal options (values).
             var publicEditConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Edit, options.DefaultValue );
 
+            string valueFormat = null;
+
+            if ( fieldType is Field.FieldType hintFieldType )
+            {
+                valueFormat = hintFieldType.GetFieldHints( configurationValues )?.ValueFormat;
+            }
+
             return Ok( new FieldTypeEditorUpdateAttributeConfigurationResultBag
             {
                 ConfigurationProperties = configurationProperties,
                 AdminConfigurationValues = publicAdminConfigurationValues,
                 EditConfigurationValues = publicEditConfigurationValues,
+                ValueFormat = valueFormat,
                 DefaultValue = fieldType.GetPublicEditValue( privateDefaultValue, configurationValues )
             } );
         }
@@ -6218,6 +6731,11 @@ namespace Rock.Rest.v2
                 }
             }
 
+            if ( options.ExcludeGroupTypes != null && options.ExcludeGroupTypes.Any() )
+            {
+                groupTypes = groupTypes.Where( gt => !options.ExcludeGroupTypes.Contains( gt.Guid ) ).ToList();
+            }
+
             if ( options.OnlyGroupListItems )
             {
                 // get all group types that have the ShowInGroupList flag set
@@ -6276,154 +6794,262 @@ namespace Rock.Rest.v2
                     } )
                     .ToList();
 
-                // if specific group types are specified, show the groups regardless of ShowInNavigation
-                bool limitToShowInNavigation = !includedGroupTypeIds.Any();
-
-                Rock.Model.Group parentGroup = groupService.GetByGuid( options.Guid ?? Guid.Empty );
-                int id = parentGroup == null ? 0 : parentGroup.Id;
-
-                Rock.Model.Group rootGroup = groupService.GetByGuid( options.RootGroupGuid ?? Guid.Empty );
-                int rootGroupId = rootGroup == null ? 0 : rootGroup.Id;
-
-                var qry = groupService
-                    .GetChildren( id, rootGroupId, false, includedGroupTypeIds, new List<int>(), options.IncludeInactiveGroups, limitToShowInNavigation, 0, false, false )
-                    .AsNoTracking();
-
-                List<Rock.Model.Group> groupList = new List<Rock.Model.Group>();
-                List<TreeItemBag> groupNameList = new List<TreeItemBag>();
-
-                var person = GetPerson();
-
-                if ( parentGroup == null )
+                if ( options.ExcludeAllByDefault && !includedGroupTypeIds.Any() )
                 {
-                    parentGroup = rootGroup;
+                    return Ok( new List<TreeItemBag>() );
                 }
 
-                List<int> groupIdsWithSchedulingEnabledWithAncestors = null;
-                List<int> groupIdsWithRSVPEnabledWithAncestors = null;
-
-                var listOfChildGroups = qry.ToList().OrderBy( g => g.Order ).ThenBy( g => g.Name ).ToList();
-                if ( listOfChildGroups.Any() )
-                {
-                    if ( options.LimitToSchedulingEnabled )
-                    {
-                        groupIdsWithSchedulingEnabledWithAncestors = groupService.GetGroupIdsWithSchedulingEnabledWithAncestors();
-                    }
-
-                    if ( options.LimitToRSVPEnabled )
-                    {
-                        groupIdsWithRSVPEnabledWithAncestors = groupService.GetGroupIdsWithRSVPEnabledWithAncestors();
-                    }
-                }
-
-                foreach ( var group in listOfChildGroups )
-                {
-                    // we already have the ParentGroup record, so lets set it for each group to avoid a database round-trip during Auth
-                    group.ParentGroup = parentGroup;
-
-                    var groupType = GroupTypeCache.Get( group.GroupTypeId );
-
-                    //// Before checking Auth, filter based on the limitToSchedulingEnabled and limitToRSVPEnabled option.
-                    //// Auth takes longer to check, so if we can rule the group out sooner, that will save a bunch of time
-
-                    if ( options.LimitToSchedulingEnabled )
-                    {
-                        var includeGroup = false;
-                        if ( groupType?.IsSchedulingEnabled == true )
-                        {
-                            // if this group's group type has scheduling enabled, we will include this group
-                            includeGroup = true;
-                        }
-                        else
-                        {
-                            // if this group's group type does not have scheduling enabled, we will need to include it if any of its children
-                            // have scheduling enabled
-
-                            if ( groupIdsWithSchedulingEnabledWithAncestors != null )
-                            {
-                                bool hasChildScheduledEnabledGroups = groupIdsWithSchedulingEnabledWithAncestors.Contains( group.Id );
-                                if ( hasChildScheduledEnabledGroups )
-                                {
-                                    includeGroup = true;
-                                }
-                            }
-                        }
-
-                        if ( !includeGroup )
-                        {
-                            continue;
-                        }
-                    }
-
-                    if ( options.LimitToRSVPEnabled )
-                    {
-                        var includeGroup = false;
-                        if ( groupType?.EnableRSVP == true )
-                        {
-                            // if this group's group type has RSVP enabled, we will include this group
-                            includeGroup = true;
-                        }
-                        else
-                        {
-                            if ( groupIdsWithRSVPEnabledWithAncestors != null )
-                            {
-                                bool hasChildRSVPEnabledGroups = groupIdsWithRSVPEnabledWithAncestors.Contains( group.Id );
-                                if ( hasChildRSVPEnabledGroups )
-                                {
-                                    includeGroup = true;
-                                }
-                            }
-                        }
-
-                        if ( !includeGroup )
-                        {
-                            continue;
-                        }
-                    }
-
-                    bool groupIsAuthorized = group.IsAuthorized( Rock.Security.Authorization.VIEW, person );
-                    if ( !groupIsAuthorized )
-                    {
-                        continue;
-                    }
-
-                    groupList.Add( group );
-                    var treeViewItem = new TreeItemBag();
-                    treeViewItem.Value = group.Guid.ToString();
-                    treeViewItem.Text = group.Name;
-                    treeViewItem.IsActive = group.IsActive;
-
-                    // if there a IconCssClass is assigned, use that as the Icon.
-                    treeViewItem.IconCssClass = groupType?.IconCssClass;
-
-                    groupNameList.Add( treeViewItem );
-                }
-
-                // try to quickly figure out which items have Children
-                List<int> resultIds = groupList.Select( a => a.Id ).ToList();
-                var qryHasChildren = groupService.Queryable().AsNoTracking()
-                    .Where( g =>
-                        g.ParentGroupId.HasValue &&
-                        resultIds.Contains( g.ParentGroupId.Value ) );
-
-                if ( includedGroupTypeIds.Any() )
-                {
-                    qryHasChildren = qryHasChildren.Where( a => includedGroupTypeIds.Contains( a.GroupTypeId ) );
-                }
-
-                var qryHasChildrenList = qryHasChildren
-                    .Select( g => g.ParentGroup.Guid )
-                    .Distinct()
-                    .ToList();
-
-                foreach ( var g in groupNameList )
-                {
-                    Guid groupGuid = g.Value.AsGuid();
-                    g.HasChildren = qryHasChildrenList.Any( a => a == groupGuid );
-                }
+                var groupNameList = GroupPickerGetChildrenInternal(
+                    options.Guid,
+                    options.RootGroupGuid,
+                    includedGroupTypeIds,
+                    options.IncludeInactiveGroups,
+                    options.LimitToSchedulingEnabled,
+                    options.LimitToRSVPEnabled,
+                    groupService,
+                    GroupPickerGetAutoExpandGuids( options.ExpandToValues ),
+                    0 );
 
                 return Ok( groupNameList );
             }
+        }
+
+        /// <summary>
+        /// Gets the items that should be automatically expanded based on the selected values.
+        /// </summary>
+        /// <param name="selectedValues">The currently selected values in the picker.</param>
+        /// <returns>A list of unique identifiers for the items that should be eager loaded.</returns>
+        private List<Guid> GroupPickerGetAutoExpandGuids( List<string> selectedValues )
+        {
+            var autoExpandGuids = new List<Guid>();
+
+            if ( selectedValues == null )
+            {
+                return autoExpandGuids;
+            }
+
+            var autoExpandGroups = selectedValues
+                .Select( v => GroupCache.Get( v.AsGuid() ) )
+                .Where( g => g != null );
+
+            foreach ( var selectedGroup in autoExpandGroups )
+            {
+                var depth = 0;
+
+                for ( var group = selectedGroup.ParentGroup; group != null; group = group.ParentGroup )
+                {
+                    autoExpandGuids.Add( group.Guid );
+
+                    if ( depth++ > 50 )
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return autoExpandGuids;
+        }
+
+        /// <summary>
+        /// Loads the child groups recursively.
+        /// </summary>
+        /// <param name="parentGroupGuid">The unique identifier of the parent group.</param>
+        /// <param name="rootGroupGuid">The unique identifier of the root group if no parent group was specified.</param>
+        /// <param name="includedGroupTypeIds">The list of group types IDs to limit to groups of those types.</param>
+        /// <param name="includeInactiveGroups">Whether to include inactive groups or not.</param>
+        /// <param name="limitToSchedulingEnabled">Whether to limit to only groups that have scheduling enabled.</param>
+        /// <param name="limitToRSVPEnabled">Whether to limit to only groups that have RSVPs enabled.</param>
+        /// <param name="groupService">The service to use when accessing the database.</param>
+        /// <param name="autoExpandGuids">The unique identifiers of the items to automatically expand.</param>
+        /// <param name="depth">The current depth for recursion safety.</param>
+        /// <returns>A list of tree items.</returns>
+        private List<TreeItemBag> GroupPickerGetChildrenInternal(
+            Guid? parentGroupGuid,
+            Guid? rootGroupGuid,
+            List<int> includedGroupTypeIds,
+            bool includeInactiveGroups,
+            bool limitToSchedulingEnabled,
+            bool limitToRSVPEnabled,
+            GroupService groupService,
+            List<Guid> autoExpandGuids,
+            int depth )
+        {
+            if ( depth > 50 )
+            {
+                // Null will cause a lazy load to be attempted later.
+                return null;
+            }
+
+            // If specific group types are specified, show the groups regardless of ShowInNavigation.
+            var limitToShowInNavigation = !includedGroupTypeIds.Any();
+
+            var parentGroup = groupService.GetByGuid( parentGroupGuid ?? Guid.Empty );
+            var rootGroup = groupService.GetByGuid( rootGroupGuid ?? Guid.Empty );
+
+            var qry = groupService
+                .GetChildren(
+                    id: parentGroup?.Id ?? 0,
+                    rootGroupId: rootGroup?.Id ?? 0,
+                    limitToSecurityRoleGroups: false,
+                    groupTypeIncludedIds: includedGroupTypeIds,
+                    groupTypeExcludedIds: null,
+                    includeInactiveGroups,
+                    limitToShowInNavigation,
+                    campusId: 0,
+                    includeNoCampus: false,
+                    limitToPublic: false
+                )
+                .AsNoTracking();
+
+            var groupTreeItems = new List<TreeItemBag>();
+            var groupIds = new HashSet<int>();
+
+            var person = GetPerson();
+
+            if ( parentGroup == null )
+            {
+                parentGroup = rootGroup;
+            }
+
+            List<int> groupIdsWithSchedulingEnabledWithAncestors = null;
+            List<int> groupIdsWithRSVPEnabledWithAncestors = null;
+
+            var childGroups = qry.ToList().OrderBy( g => g.Order ).ThenBy( g => g.Name ).ToList();
+            if ( childGroups.Any() )
+            {
+                if ( limitToSchedulingEnabled )
+                {
+                    groupIdsWithSchedulingEnabledWithAncestors = groupService.GetGroupIdsWithSchedulingEnabledWithAncestors();
+                }
+
+                if ( limitToRSVPEnabled )
+                {
+                    groupIdsWithRSVPEnabledWithAncestors = groupService.GetGroupIdsWithRSVPEnabledWithAncestors();
+                }
+            }
+
+            foreach ( var group in childGroups )
+            {
+                // We already have the ParentGroup record, so lets set it for each group to avoid a database round-trip during Auth.
+                group.ParentGroup = parentGroup;
+
+                var groupType = GroupTypeCache.Get( group.GroupTypeId );
+
+                // Before checking Auth, filter based on the limitToSchedulingEnabled and limitToRSVPEnabled option.
+                // Auth takes longer to check, so if we can rule the group out sooner, that will save a bunch of time
+
+                if ( limitToSchedulingEnabled )
+                {
+                    var includeGroup = false;
+                    if ( groupType?.IsSchedulingEnabled == true )
+                    {
+                        // If this group's group type has scheduling enabled, we will include this group.
+                        includeGroup = true;
+                    }
+                    else
+                    {
+                        // If this group's group type does not have scheduling enabled, we will need to include it if
+                        // any of its children have scheduling enabled.
+                        if ( groupIdsWithSchedulingEnabledWithAncestors != null )
+                        {
+                            bool hasChildScheduledEnabledGroups = groupIdsWithSchedulingEnabledWithAncestors.Contains( group.Id );
+                            if ( hasChildScheduledEnabledGroups )
+                            {
+                                includeGroup = true;
+                            }
+                        }
+                    }
+
+                    if ( !includeGroup )
+                    {
+                        continue;
+                    }
+                }
+
+                if ( limitToRSVPEnabled )
+                {
+                    var includeGroup = false;
+                    if ( groupType?.EnableRSVP == true )
+                    {
+                        // If this group's group type has RSVP enabled, we will include this group.
+                        includeGroup = true;
+                    }
+                    else
+                    {
+                        if ( groupIdsWithRSVPEnabledWithAncestors != null )
+                        {
+                            bool hasChildRSVPEnabledGroups = groupIdsWithRSVPEnabledWithAncestors.Contains( group.Id );
+                            if ( hasChildRSVPEnabledGroups )
+                            {
+                                includeGroup = true;
+                            }
+                        }
+                    }
+
+                    if ( !includeGroup )
+                    {
+                        continue;
+                    }
+                }
+
+                bool groupIsAuthorized = group.IsAuthorized( Rock.Security.Authorization.VIEW, person );
+                if ( !groupIsAuthorized )
+                {
+                    continue;
+                }
+
+                var groupTreeItem = new TreeItemBag
+                {
+                    Value = group.Guid.ToString(),
+                    Text = group.Name,
+                    IsActive = group.IsActive,
+                    IconCssClass = groupType?.IconCssClass
+                };
+
+                groupTreeItems.Add( groupTreeItem );
+
+                if ( autoExpandGuids.Contains( group.Guid ) )
+                {
+                    groupTreeItem.Children = GroupPickerGetChildrenInternal(
+                        group.Guid,
+                        Guid.Empty,
+                        includedGroupTypeIds,
+                        includeInactiveGroups,
+                        limitToSchedulingEnabled,
+                        limitToRSVPEnabled,
+                        groupService,
+                        autoExpandGuids,
+                        depth + 1 );
+                }
+
+                groupIds.Add( group.Id );
+            }
+
+            // Try to quickly figure out which items have Children.
+            var hasChildrenQry = groupService
+                .Queryable()
+                .AsNoTracking()
+                .Where( g =>
+                    g.ParentGroupId.HasValue &&
+                    groupIds.Contains( g.ParentGroupId.Value )
+                );
+
+            if ( includedGroupTypeIds.Any() )
+            {
+                hasChildrenQry = hasChildrenQry.Where( a => includedGroupTypeIds.Contains( a.GroupTypeId ) );
+            }
+
+            var groupIdentifiersWithChildren = hasChildrenQry
+                .Select( g => g.ParentGroup.Guid )
+                .Distinct()
+                .ToList();
+
+            foreach ( var item in groupTreeItems )
+            {
+                item.HasChildren = groupIdentifiersWithChildren.Contains( item.Value.AsGuid() );
+            }
+
+            return groupTreeItems;
         }
 
         #endregion
@@ -6842,16 +7468,25 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "LocationItemPickerGetActiveChildren" )]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<TreeItemBag> ) )]
         [Rock.SystemGuid.RestActionGuid( "E57312EC-92A7-464C-AA7E-5320DDFAEF3D" )]
         public IActionResult LocationItemPickerGetActiveChildren( [FromBody] LocationItemPickerGetActiveChildrenOptionsBag options )
         {
+            var isReadAllowed = IsCurrentPersonAuthorized( Authorization.EXECUTE_READ );
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            // If they were granted access to the API endpoint or if they were
+            // granted access via the security grant, then allow them to get a
+            // list of named locations.
+            if ( !isReadAllowed && grant?.IsAccessGranted( LocationItemPickerSecurityGrantRule.AccessInstance, Authorization.VIEW ) != true )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var locationService = new LocationService( rockContext );
-                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
                 var locationNameList = LocationItemPickerGetChildrenInternal(
                     options.Guid,
@@ -6859,7 +7494,8 @@ namespace Rock.Rest.v2
                     grant,
                     locationService,
                     LocationItemPickerGetAutoExpandGuids( options.ExpandToValues ),
-                    0 );
+                    0,
+                    options.IncludeInactive );
 
                 return Ok( locationNameList );
             }
@@ -6882,7 +7518,7 @@ namespace Rock.Rest.v2
 
             var autoExpandLocations = selectedValues
                 .Select( v => NamedLocationCache.Get( v.AsGuid() ) )
-                .Where( v => v != null );
+                .Where( l => l != null );
 
             foreach ( var selectedLocation in autoExpandLocations )
             {
@@ -6911,8 +7547,9 @@ namespace Rock.Rest.v2
         /// <param name="locationService">The service to use when accessing the database.</param>
         /// <param name="autoExpandGuids">The unique identifiers of the items to automatically expand.</param>
         /// <param name="depth">The current depth for recursion safety.</param>
+        /// <param name="includeInactive">Whether to include inactive locations.</param>
         /// <returns>A list of tree items.</returns>
-        private List<TreeItemBag> LocationItemPickerGetChildrenInternal( Guid parentLocationGuid, Guid rootLocationGuid, SecurityGrant grant, LocationService locationService, List<Guid> autoExpandGuids, int depth )
+        private List<TreeItemBag> LocationItemPickerGetChildrenInternal( Guid parentLocationGuid, Guid rootLocationGuid, SecurityGrant grant, LocationService locationService, List<Guid> autoExpandGuids, int depth, bool includeInactive )
         {
             if ( depth > 50 )
             {
@@ -6936,7 +7573,10 @@ namespace Rock.Rest.v2
             }
 
             // limit to only active locations.
-            qry = qry.Where( a => a.IsActive );
+            if ( !includeInactive )
+            {
+                qry = qry.Where( a => a.IsActive );
+            }
 
             // limit to only Named Locations (don't show home addresses, etc)
             qry = qry.Where( a => a.Name != null && a.Name != string.Empty );
@@ -6958,7 +7598,7 @@ namespace Rock.Rest.v2
 
                     if ( autoExpandGuids.Contains( location.Guid ) )
                     {
-                        treeViewItem.Children = LocationItemPickerGetChildrenInternal( location.Guid, Guid.Empty, grant, locationService, autoExpandGuids, depth + 1 );
+                        treeViewItem.Children = LocationItemPickerGetChildrenInternal( location.Guid, Guid.Empty, grant, locationService, autoExpandGuids, depth + 1, includeInactive );
                     }
                 }
             }
@@ -7599,8 +8239,8 @@ namespace Rock.Rest.v2
     Url: {{ campus.Url }}<br/>
     Phone Number: {{ campus.PhoneNumber }}<br/>
     Service Times:
-    {% for serviceTime in campus.ServiceTimes %}
-        {{ serviceTime.Day }} {{ serviceTime.Time }},
+    {% for campusSchedule in campus.CampusSchedules %}
+        {{ campusSchedule.Schedule.FriendlyScheduleText }},
     {% endfor %}
     <br/>
 {% endfor %}
@@ -8222,6 +8862,18 @@ namespace Rock.Rest.v2
 
             using ( var rockContext = new RockContext() )
             {
+                var selectedMergeTemplateGuids = options.ExpandToValues?.AsGuidList();
+                var expandToCategoryGuids = selectedMergeTemplateGuids?.Any() == true
+                    ? GetExpandToCategoryGuids(
+                        new MergeTemplateService( rockContext )
+                            .Queryable()
+                            .AsNoTracking()
+                            .Where( mt => selectedMergeTemplateGuids.Contains( mt.Guid ) )
+                            .ToList()
+                            .Select( mt => mt as ICategorized )
+                    )
+                    : null;
+
                 var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
                 var queryOptions = new CategoryItemTreeOptions
@@ -8237,7 +8889,8 @@ namespace Rock.Rest.v2
                     ItemFilterPropertyName = null,
                     ItemFilterPropertyValue = "",
                     LazyLoad = true,
-                    SecurityGrant = grant
+                    SecurityGrant = grant,
+                    ExpandToCategoryGuids = expandToCategoryGuids
                 };
 
                 var items = clientService.GetCategorizedTreeItems( queryOptions );
@@ -8268,6 +8921,18 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
+                var selectedMetricCategoryGuids = options.ExpandToValues?.AsGuidList();
+                var expandToCategoryGuids = selectedMetricCategoryGuids?.Any() == true
+                    ? GetExpandToCategoryGuids(
+                        new MetricCategoryService( rockContext )
+                            .Queryable()
+                            .AsNoTracking()
+                            .Where( mt => selectedMetricCategoryGuids.Contains( mt.Guid ) )
+                            .ToList()
+                            .Select( mt => mt as ICategorized )
+                    )
+                    : null;
+
                 var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
                 var queryOptions = new CategoryItemTreeOptions
@@ -8281,7 +8946,8 @@ namespace Rock.Rest.v2
                     ItemFilterPropertyName = null,
                     ItemFilterPropertyValue = "",
                     LazyLoad = true,
-                    SecurityGrant = grant
+                    SecurityGrant = grant,
+                    ExpandToCategoryGuids = expandToCategoryGuids
                 };
 
                 var items = clientService.GetCategorizedTreeItems( queryOptions );
@@ -8511,63 +9177,171 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "EE9AB2EA-EE01-4D0F-B626-02D1C8D1ABF4" )]
         public IActionResult PagePickerGetChildren( [FromBody] PagePickerGetChildrenOptionsBag options )
         {
-            var service = new Service<Page>( new RockContext() ).Queryable().AsNoTracking();
-            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
-            IQueryable<Page> qry;
-
-            if ( options.Guid.IsEmpty() )
+            using ( var rockContext = new RockContext() )
             {
-                qry = service.Where( a => a.ParentPage.Guid == options.RootPageGuid );
+                var siteType = options.SiteType;
+                var hidePageGuids = options.HidePageGuids ?? new List<Guid>();
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                var pageService = new PageService( rockContext );
+
+                var pageTreeItems = PagePickerGetChildrenInternal(
+                    options.Guid,
+                    options.RootPageGuid,
+                    siteType,
+                    hidePageGuids,
+                    grant,
+                    pageService,
+                    PagePickerGetAutoExpandGuids( options.ExpandToValues ),
+                    0 );
+
+                return Ok( pageTreeItems );
+            }
+        }
+
+        /// <summary>
+        /// Gets the items that should be automatically expanded based on the selected values.
+        /// </summary>
+        /// <param name="selectedValues">The currently selected values in the picker.</param>
+        /// <returns>A list of unique identifiers for the items that should be eager loaded.</returns>
+        private List<Guid> PagePickerGetAutoExpandGuids( List<string> selectedValues )
+        {
+            var autoExpandGuids = new List<Guid>();
+
+            if ( selectedValues == null )
+            {
+                return autoExpandGuids;
+            }
+
+            var autoExpandPages = selectedValues
+                .Select( v => PageCache.Get( v.AsGuid() ) )
+                .Where( p => p != null );
+
+            foreach ( var selectedPage in autoExpandPages )
+            {
+                var depth = 0;
+
+                for ( var page = selectedPage.ParentPage; page != null; page = page.ParentPage )
+                {
+                    autoExpandGuids.Add( page.Guid );
+
+                    if ( depth++ > 50 )
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return autoExpandGuids;
+        }
+
+        /// <summary>
+        /// Loads the child pages recursively.
+        /// </summary>
+        /// <param name="parentPageGuid">The unique identifier of the parent page.</param>
+        /// <param name="rootPageGuid">The unique identifier of the root page.</param>
+        /// <param name="siteType">The site type.</param>
+        /// <param name="hidePageGuids">The unique identifiers of the pages to hide.</param>
+        /// <param name="grant">The security grant to use for additional authorization checks.</param>
+        /// <param name="pageService">The service to use when accessing the database.</param>
+        /// <param name="autoExpandGuids">The unique identifiers of the items to automatically expand.</param>
+        /// <param name="depth">The current depth for recursion safety.</param>
+        /// <returns>A list of tree items.</returns>
+        private List<TreeItemBag> PagePickerGetChildrenInternal(
+            Guid parentPageGuid,
+            Guid? rootPageGuid,
+            int? siteType,
+            List<Guid> hidePageGuids,
+            SecurityGrant grant,
+            PageService pageService,
+            List<Guid> autoExpandGuids,
+            int depth )
+        {
+            if ( depth > 50 )
+            {
+                // Null will cause a lazy load to be attempted later.
+                return null;
+            }
+
+            var pageQry = pageService.Queryable().AsNoTracking();
+
+            if ( parentPageGuid.IsEmpty() )
+            {
+                pageQry = pageQry.Where( p => p.ParentPage.Guid == rootPageGuid );
             }
             else
             {
-                qry = service.Where( a => a.ParentPage.Guid == options.Guid );
+                pageQry = pageQry.Where( p => p.ParentPage.Guid == parentPageGuid );
             }
 
-            if ( options.SiteType != null )
+            if ( siteType.HasValue )
             {
-                qry = qry.Where( p => ( int ) p.Layout.Site.SiteType == options.SiteType.Value );
+                pageQry = pageQry.Where( p => ( int ) p.Layout.Site.SiteType == siteType.Value );
             }
 
-            var hidePageGuids = options.HidePageGuids ?? new List<Guid>();
-
-            List<Page> pageList = qry
+            var pages = pageQry
                 .Where( p => !hidePageGuids.Contains( p.Guid ) )
                 .OrderBy( p => p.Order )
                 .ThenBy( p => p.InternalName )
                 .ToList()
-                .Where( p => p.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( p, Security.Authorization.VIEW ) == true )
+                .Where( p =>
+                    p.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson )
+                    || grant?.IsAccessGranted( p, Security.Authorization.VIEW ) == true
+                )
                 .ToList();
-            List<TreeItemBag> pageItemList = new List<TreeItemBag>();
-            Func<Page, string> getTreeItemValue = new Func<Page, string>( p => p.Guid.ToString() );
-            foreach ( var page in pageList )
-            {
-                var pageItem = new TreeItemBag();
-                pageItem.Value = getTreeItemValue( page );
-                pageItem.Text = page.InternalName;
 
-                pageItemList.Add( pageItem );
+            var pageTreeItems = new List<TreeItemBag>();
+            var pageIds = new HashSet<int>();
+
+            foreach ( var page in pages )
+            {
+                var pageTreeItem = new TreeItemBag
+                {
+                    Value = page.Guid.ToString(),
+                    Text = page.InternalName
+                };
+
+                pageTreeItems.Add( pageTreeItem );
+
+                if ( autoExpandGuids.Contains( page.Guid ) )
+                {
+                    pageTreeItem.Children = PagePickerGetChildrenInternal(
+                        page.Guid,
+                        Guid.Empty,
+                        siteType,
+                        hidePageGuids,
+                        grant,
+                        pageService,
+                        autoExpandGuids,
+                        depth + 1 );
+                }
+
+                pageIds.Add( page.Id );
             }
 
-            // try to quickly figure out which items have Children
-            List<int> resultIds = pageList.Select( a => a.Id ).ToList();
-
-            var qryHasChildren = service
+            // Try to quickly figure out which items have Children.
+            var hasChildrenQry = pageService
+                .Queryable()
+                .AsNoTracking()
                 .Where( p =>
                     p.ParentPageId.HasValue &&
-                    resultIds.Contains( p.ParentPageId.Value ) );
+                    pageIds.Contains( p.ParentPageId.Value )
+                );
 
-            var pageIdentifiersWithChildren = qryHasChildren.Select( p => p.ParentPage.Guid.ToString() ).Distinct().ToList();
+            var pageIdentifiersWithChildren = hasChildrenQry
+                .Select( p => p.ParentPage.Guid.ToString() )
+                .Distinct()
+                .ToList();
 
-            foreach ( var g in pageItemList )
+            foreach ( var item in pageTreeItems )
             {
-                var hasChildren = pageIdentifiersWithChildren.Any( a => a == g.Value );
-                g.HasChildren = hasChildren;
-                g.IsFolder = hasChildren;
-                g.IconCssClass = "ti ti-file";
+                var hasChildren = pageIdentifiersWithChildren.Any( a => a == item.Value );
+                item.HasChildren = hasChildren;
+                item.IsFolder = hasChildren;
+                item.IconCssClass = "ti ti-file";
             }
 
-            return Ok( pageItemList.AsQueryable() );
+            return pageTreeItems;
         }
 
         /// <summary>
@@ -8934,7 +9708,7 @@ namespace Rock.Rest.v2
             {
                 var definedValues = definedType.DefinedValues;
 
-                foreach ( var countryCode in definedValues.OrderBy( v => v.Order ).Select( v => v.Value ).Distinct() )
+                foreach ( var countryCode in definedValues.Where( v => v.IsActive ).OrderBy( v => v.Order ).Select( v => v.Value ).Distinct() )
                 {
                     var rules = new List<PhoneNumberCountryCodeRulesConfigurationBag>();
 
@@ -9080,6 +9854,18 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
+                var selectedRegistrationTemplateGuids = options.ExpandToValues?.AsGuidList();
+                var expandToCategoryGuids = selectedRegistrationTemplateGuids?.Any() == true
+                    ? GetExpandToCategoryGuids(
+                        new RegistrationTemplateService( rockContext )
+                            .Queryable()
+                            .AsNoTracking()
+                            .Where( mt => selectedRegistrationTemplateGuids.Contains( mt.Guid ) )
+                            .ToList()
+                            .Select( mt => mt as ICategorized )
+                    )
+                    : null;
+
                 var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
                 var queryOptions = new CategoryItemTreeOptions
@@ -9091,7 +9877,8 @@ namespace Rock.Rest.v2
                     IncludeCategoriesWithoutChildren = false,
                     DefaultIconCssClass = "ti ti-list-numbers",
                     LazyLoad = true,
-                    SecurityGrant = grant
+                    SecurityGrant = grant,
+                    ExpandToCategoryGuids = expandToCategoryGuids
                 };
 
                 var items = clientService.GetCategorizedTreeItems( queryOptions );
@@ -9523,6 +10310,18 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
+                var selectedReportGuids = options.ExpandToValues?.AsGuidList();
+                var expandToCategoryGuids = selectedReportGuids?.Any() == true
+                    ? GetExpandToCategoryGuids(
+                        new ReportService( rockContext )
+                            .Queryable()
+                            .AsNoTracking()
+                            .Where( mt => selectedReportGuids.Contains( mt.Guid ) )
+                            .ToList()
+                            .Select( mt => mt as ICategorized )
+                    )
+                    : null;
+
                 var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
                 var queryOptions = new CategoryItemTreeOptions
@@ -9537,7 +10336,8 @@ namespace Rock.Rest.v2
                     ItemFilterPropertyValue = options.EntityTypeGuid.HasValue ? EntityTypeCache.Get( options.EntityTypeGuid.Value ).Id.ToString() : "",
                     DefaultIconCssClass = "ti ti-list-numbers",
                     LazyLoad = true,
-                    SecurityGrant = grant
+                    SecurityGrant = grant,
+                    ExpandToCategoryGuids = expandToCategoryGuids
                 };
 
                 var items = clientService.GetCategorizedTreeItems( queryOptions );
@@ -9736,6 +10536,18 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
+                var selectedScheduleGuids = options.ExpandToValues?.AsGuidList();
+                var expandToCategoryGuids = selectedScheduleGuids?.Any() == true
+                    ? GetExpandToCategoryGuids(
+                        new ScheduleService( rockContext )
+                            .Queryable()
+                            .AsNoTracking()
+                            .Where( mt => selectedScheduleGuids.Contains( mt.Guid ) )
+                            .ToList()
+                            .Select( mt => mt as ICategorized )
+                    )
+                    : null;
+
                 var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
                 var queryOptions = new CategoryItemTreeOptions
@@ -9748,7 +10560,9 @@ namespace Rock.Rest.v2
                     IncludeInactiveItems = options.IncludeInactiveItems,
                     DefaultIconCssClass = "ti ti-list-numbers",
                     LazyLoad = true,
-                    SecurityGrant = grant
+                    SecurityGrant = grant,
+                    IncludeCategoryGuids = options.IncludeCategoryGuids,
+                    ExpandToCategoryGuids = expandToCategoryGuids
                 };
 
                 if ( options.includePublicItemsOnly )
@@ -9768,42 +10582,38 @@ namespace Rock.Rest.v2
         #region Search Field
 
         /// <summary>
-        /// Gets the search filters available for the Search Field control
+        /// Gets the search filters available for the Search Field control.
         /// </summary>
-        /// <returns>A Dictionary of <see cref="ListItemBag"/> objects that represent all of the availabe filters.</returns>
+        /// <returns>A list of <see cref="SearchFilterBag"/> objects that represent all of the available filters.</returns>
         [HttpPost]
         [Route( "SearchFieldGetSearchFilters" )]
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponse( HttpStatusCode.OK, Type = typeof( Dictionary<string, ListItemBag> ) )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<SearchFilterBag> ) )]
         [Rock.SystemGuid.RestActionGuid( "6FF52C9E-985B-46C3-B5A5-E69312D189CB" )]
         public IActionResult SearchFieldGetSearchFilters()
         {
-            var searchExtensions = new Dictionary<string, ListItemBag>();
+            var searchFilters = new List<SearchFilterBag>();
 
             var currentPerson = RockRequestContext.CurrentPerson;
-            if ( currentPerson != null )
+            foreach ( KeyValuePair<int, Lazy<Rock.Search.SearchComponent, Rock.Extension.IComponentData>> service in Rock.Search.SearchContainer.Instance.Components )
             {
-                foreach ( KeyValuePair<int, Lazy<Rock.Search.SearchComponent, Rock.Extension.IComponentData>> service in Rock.Search.SearchContainer.Instance.Components )
+                var searchComponent = service.Value.Value;
+                if ( searchComponent.IsAuthorized( Security.Authorization.VIEW, currentPerson ) )
                 {
-                    var searchComponent = service.Value.Value;
-                    if ( searchComponent.IsAuthorized( Security.Authorization.VIEW, currentPerson ) )
+                    if ( !searchComponent.AttributeValues.ContainsKey( "Active" ) || bool.Parse( searchComponent.AttributeValues["Active"].Value ) )
                     {
-                        if ( !searchComponent.AttributeValues.ContainsKey( "Active" ) || bool.Parse( searchComponent.AttributeValues["Active"].Value ) )
+                        searchFilters.Add( new SearchFilterBag
                         {
-                            var item = new ListItemBag
-                            {
-                                Value = searchComponent.ResultUrl,
-                                Text = searchComponent.SearchLabel,
-
-                            };
-                            searchExtensions.Add( service.Key.ToString(), item );
-                        }
+                            Key = service.Key.ToString(),
+                            Label = searchComponent.SearchLabel,
+                            ResultUrl = searchComponent.ResultUrl,
+                        } );
                     }
                 }
             }
 
-            return Ok( searchExtensions );
+            return Ok( searchFilters );
         }
 
         #endregion
@@ -10121,42 +10931,77 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "4275ae7f-16ab-4720-a79f-bf7b5ca979e8" )]
         public IActionResult WorkflowActionTypePickerGetChildren( [FromBody] WorkflowActionTypePickerGetChildrenOptionsBag options )
         {
-            var list = new List<TreeItemBag>();
+            var categorizedActions = GetCategorizedWorkflowActions();
 
-            // Folders
+            // A local function to get action type tree items by category name.
+            List<TreeItemBag> GetActionTypeTreeItems( string categoryName )
+            {
+                var actionTypeTreeItems = new List<TreeItemBag>();
+
+                if ( !categorizedActions.ContainsKey( categoryName ) )
+                {
+                    return actionTypeTreeItems;
+                }
+
+                foreach ( var actionEntityType in categorizedActions[categoryName] )
+                {
+                    var item = new TreeItemBag
+                    {
+                        Value = actionEntityType.Guid.ToString(),
+                        Text = ActionContainer.GetComponentName( actionEntityType.Name ),
+                        HasChildren = false,
+                        IconCssClass = "ti ti-cube"
+                    };
+
+                    actionTypeTreeItems.Add( item );
+                }
+
+                return actionTypeTreeItems
+                    .OrderBy( i => i.Text )
+                    .ToList();
+            }
+
+            var treeItems = new List<TreeItemBag>();
+
+            // Initial picker load.
             if ( options.ParentId == 0 )
             {
-                // Root
+                var categoryNameByWorkflowActionGuids = GetCategoryNameByWorkflowActionGuids( categorizedActions );
+                var autoExpandCategoryNames = WorkflowActionTypePickerGetAutoExpandCategoryNames( options.ExpandToValues, categoryNameByWorkflowActionGuids );
+                var categoryTreeItems = new List<TreeItemBag>();
+
                 foreach ( var category in ActionContainer.Instance.Categories )
                 {
-                    var item = new TreeItemBag();
-                    item.Value = category.Key.ToString();
-                    item.Text = category.Value;
-                    item.HasChildren = true;
-                    item.IconCssClass = "ti ti-folder";
-                    list.Add( item );
-                }
-            }
-            // Action Types
-            else if ( options.ParentId < 0 && ActionContainer.Instance.Categories.ContainsKey( options.ParentId ) )
-            {
-                string categoryName = ActionContainer.Instance.Categories[options.ParentId];
-                var categorizedActions = GetCategorizedWorkflowActions();
-                if ( categorizedActions.ContainsKey( categoryName ) )
-                {
-                    foreach ( var entityType in categorizedActions[categoryName].OrderBy( e => e.FriendlyName ) )
+                    var item = new TreeItemBag
                     {
-                        var item = new TreeItemBag();
-                        item.Value = entityType.Guid.ToString();
-                        item.Text = ActionContainer.GetComponentName( entityType.Name );
-                        item.HasChildren = false;
-                        item.IconCssClass = "ti ti-cube";
-                        list.Add( item );
+                        Value = category.Key.ToString(),
+                        Text = category.Value,
+                        HasChildren = true,
+                        IconCssClass = "ti ti-folder"
+                    };
+
+                    categoryTreeItems.Add( item );
+                }
+
+                // Sort the category tree items by name and add any children for the selected item(s).
+                foreach ( var categoryTreeItem in categoryTreeItems.OrderBy( i => i.Text ) )
+                {
+                    treeItems.Add( categoryTreeItem );
+
+                    if ( autoExpandCategoryNames.Contains( categoryTreeItem.Text ) )
+                    {
+                        // Auto-expand this category as at least one of its children has been selected.
+                        treeItems.AddRange( GetActionTypeTreeItems( categoryTreeItem.Text ) );
                     }
                 }
             }
+            // Category selected (lazy load).
+            else if ( options.ParentId < 0 && ActionContainer.Instance.Categories.ContainsKey( options.ParentId ) )
+            {
+                treeItems.AddRange( GetActionTypeTreeItems( ActionContainer.Instance.Categories[options.ParentId] ) );
+            }
 
-            return Ok( list.OrderBy( i => i.Text ) );
+            return Ok( treeItems );
         }
 
         /// <summary>
@@ -10192,6 +11037,54 @@ namespace Rock.Rest.v2
             }
 
             return categorizedActions;
+        }
+
+        /// <summary>
+        /// Gets the mappings between workflow action GUIDs and their respective category names.
+        /// </summary>
+        /// <param name="categorizedActions">The categorized workflow actions.</param>
+        /// <returns>A dictionary where the key is the workflow action GUID and the value is the category name.</returns>
+        private Dictionary<Guid, string> GetCategoryNameByWorkflowActionGuids( Dictionary<string, List<EntityTypeCache>> categorizedActions )
+        {
+            var categoryNameByWorkflowActionGuids = new Dictionary<Guid, string>();
+
+            foreach ( var kvp in categorizedActions )
+            {
+                var categoryName = kvp.Key;
+                foreach ( var workflowAction in kvp.Value )
+                {
+                    categoryNameByWorkflowActionGuids.TryAdd( workflowAction.Guid, categoryName );
+                }
+            }
+
+            return categoryNameByWorkflowActionGuids;
+        }
+
+        /// <summary>
+        /// Gets the items that should be automatically expanded based on the selected values.
+        /// </summary>
+        /// <param name="selectedValues">The currently selected values in the picker.</param>
+        /// <param name="categoryNameByWorkflowActionGuids">The mappings between selected values and their respective category names.</param>
+        /// <returns>A list of category names that should be automatically expanded.</returns>
+        private HashSet<string> WorkflowActionTypePickerGetAutoExpandCategoryNames( List<string> selectedValues, Dictionary<Guid, string> categoryNameByWorkflowActionGuids )
+        {
+            var autoExpandCategoryNames = new HashSet<string>();
+
+            var selectedValueGuids = selectedValues?.AsGuidList();
+            if ( selectedValueGuids?.Any() != true )
+            {
+                return autoExpandCategoryNames;
+            }
+
+            foreach ( var selectedValueGuid in selectedValueGuids )
+            {
+                if ( categoryNameByWorkflowActionGuids.TryGetValue( selectedValueGuid, out var categoryName ) )
+                {
+                    autoExpandCategoryNames.Add( categoryName );
+                }
+            }
+
+            return autoExpandCategoryNames;
         }
 
         #endregion
@@ -10403,6 +11296,31 @@ namespace Rock.Rest.v2
 
                 var itemText = componentValue.IsActive ? componentName : $"{componentName} (inactive)";
 
+                /*
+                     5/13/2026 - NA
+
+                     Append a "(plugin)" suffix when the component is implemented in a non-Rock assembly
+                     so administrators can distinguish core components from third-party plugins in the picker.
+                     Failures here must never break the list, so any reflection is guarded.
+
+                     Reason: Temporary solution for v19
+                */
+                try
+                {
+                    var componentAssemblyName = componentValue?.GetType()?.Assembly?.GetName()?.Name;
+                    if ( !string.IsNullOrEmpty( componentAssemblyName )
+                         && componentAssemblyName != "Rock"
+                         && !componentAssemblyName.StartsWith( "Rock.", StringComparison.Ordinal ) )
+                    {
+                        itemText = $"{itemText} (plugin)";
+                    }
+                }
+                catch
+                {
+                    // Intentionally ignored: plugin-suffix detection is cosmetic and
+                    // must never prevent a component from appearing in the picker.
+                }
+
                 items.Add( new ListItemBag
                 {
                     Text = itemText,
@@ -10517,6 +11435,71 @@ namespace Rock.Rest.v2
                 IsActive = item.IsActive,
                 Children = item.Children?.Select( convertTreeViewItemToTreeItemBag ).ToList()
             };
+        }
+
+        /// <summary>
+        /// Gets the unique identifiers of the <see cref="Category"/> items that should be automatically expanded to
+        /// within the tree, based on the <see cref="ICategorized"/> selections.
+        /// </summary>
+        /// <param name="categorizedSelections">The currently selected values in the picker.</param>
+        /// <returns>A list of unique identifiers for the categories that should be eager loaded.</returns>
+        private List<Guid> GetExpandToCategoryGuids( IEnumerable<ICategorized> categorizedSelections )
+        {
+            var autoExpandedGuids = new List<Guid>();
+
+            categorizedSelections = categorizedSelections
+                ?.Where( c => c.CategoryId.HasValue )
+                .ToList();
+
+            if ( categorizedSelections?.Any() != true )
+            {
+                return autoExpandedGuids;
+            }
+
+            foreach ( var categorized in categorizedSelections )
+            {
+                var depth = 0;
+
+                for ( var category = CategoryCache.Get( categorized.CategoryId.Value ); category != null; category = category.ParentCategory )
+                {
+                    autoExpandedGuids.Add( category.Guid );
+
+                    if ( depth++ > 50 )
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return autoExpandedGuids;
+        }
+
+        /// <summary>
+        /// Gets the unique identifiers of the <see cref="Category"/> items that should be automatically expanded to
+        /// within the tree, based on the given <see cref="CategoryCache"/> items.
+        /// </summary>
+        /// <param name="categoryCaches">The currently selected categories in the picker.</param>
+        /// <returns>A list of unique identifiers for the categories that should be eager loaded.</returns>
+        private List<Guid> GetExpandToCategoryGuids( IEnumerable<CategoryCache> categoryCaches )
+        {
+            var autoExpandedGuids = new List<Guid>();
+
+            foreach ( var categoryCache in categoryCaches )
+            {
+                var depth = 0;
+
+                for ( var category = categoryCache; category != null; category = category.ParentCategory )
+                {
+                    autoExpandedGuids.Add( category.Guid );
+
+                    if ( depth++ > 50 )
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return autoExpandedGuids;
         }
 
         #endregion

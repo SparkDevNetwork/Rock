@@ -306,7 +306,7 @@ namespace Rock.Tests.Integration.TestData
                     groupRoleIdentifier = "(any)";
                 }
 
-                TestHelper.Log( $"Added Group Requirement. [RequirementId={requirement.Id}, Group={groupIdentifier}, Role={ groupRoleIdentifier}]" );
+                TestHelper.Log( $"Added Group Requirement. [RequirementId={requirement.Id}, Group={groupIdentifier}, Role={groupRoleIdentifier}]" );
             }
 
             #endregion

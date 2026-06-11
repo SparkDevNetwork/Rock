@@ -37,6 +37,19 @@ namespace Rock.Web.Cache
     {
         #region Fields
 
+        /// <summary>
+        /// The canonical UTM query string keys that are merged into a shortlink's destination URL when resolving a redirect.
+        /// Scoped to the five Google-defined keys that Rock's <see cref="Rock.Model.Interaction"/> schema tracks.
+        /// </summary>
+        private static readonly string[] UtmQueryStringKeys = new[]
+        {
+            "utm_source",
+            "utm_medium",
+            "utm_campaign",
+            "utm_term",
+            "utm_content"
+        };
+
         private UtmSettings _utmSettings;
 
         private List<PageShortLinkScheduleCache> _linkSchedules;
@@ -151,15 +164,35 @@ namespace Rock.Web.Cache
         /// <returns>A tuple that contains the Url and the purpose key.</returns>
         internal (string Url, string UrlWithUtm, string PurposeKey) GetCurrentUrlData( RockContext rockContext = null )
         {
+            return GetCurrentUrlData( rockContext, null );
+        }
+
+        /// <summary>
+        /// Gets the currently active URL and appends any UTM values to the query string along with the active purpose key,
+        /// if any. When <paramref name="inboundRequestUrl"/> is provided, UTM values present on that URL fill in any UTM
+        /// keys not configured on the shortlink (or active scheduled redirect). Configured values still win on a per-key
+        /// basis; this overload only adds a fallback, it does not change the existing contract that configured values are
+        /// authoritative.
+        /// </summary>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <param name="inboundRequestUrl">
+        /// The full URL the visitor used to reach the shortlink (typically <c>HttpRequest.Url.OriginalString</c>). Used to
+        /// recover UTM values appended to the shortlink URL by the marketer or sharer. May be <see langword="null"/> when
+        /// called from contexts that do not have an inbound request, in which case behavior is identical to
+        /// <see cref="GetCurrentUrlData(RockContext)"/>.
+        /// </param>
+        /// <returns>A tuple that contains the Url, the Url with UTM values merged, and the purpose key.</returns>
+        internal (string Url, string UrlWithUtm, string PurposeKey) GetCurrentUrlData( RockContext rockContext, string inboundRequestUrl )
+        {
             foreach ( var linkSchedule in _linkSchedules )
             {
                 if ( IsLinkScheduleActive( linkSchedule, rockContext ) )
                 {
-                    return (linkSchedule.Url, GetUrlWithUtm( linkSchedule.Url, linkSchedule.UtmSettings ), linkSchedule.PurposeKey);
+                    return ( linkSchedule.Url, GetUrlWithUtm( linkSchedule.Url, linkSchedule.UtmSettings, inboundRequestUrl ), linkSchedule.PurposeKey );
                 }
             }
 
-            return (Url, GetUrlWithUtm( Url, _utmSettings ), string.Empty);
+            return ( Url, GetUrlWithUtm( Url, _utmSettings, inboundRequestUrl ), string.Empty );
         }
 
         /// <summary>
@@ -170,12 +203,34 @@ namespace Rock.Web.Cache
         /// <returns>A new string that represents the URL with UTM data.</returns>
         internal static string GetUrlWithUtm( string url, UtmSettings utmSettings )
         {
+            return GetUrlWithUtm( url, utmSettings, null );
+        }
+
+        /// <summary>
+        /// Gets the URL with UTM values applied, merging values from the inbound request URL when present.
+        /// </summary>
+        /// <param name="url">The destination URL to be updated.</param>
+        /// <param name="utmSettings">The UTM settings configured on the shortlink (or active scheduled redirect).</param>
+        /// <param name="inboundRequestUrl">
+        /// The URL the visitor used to reach the shortlink. UTM values from this URL fill in any UTM keys not configured
+        /// in <paramref name="utmSettings"/>. May be <see langword="null"/> to skip the inbound merge.
+        /// </param>
+        /// <returns>A new string that represents the URL with UTM data.</returns>
+        /// <remarks>
+        /// Per-key precedence is: configured value (wins), then inbound value, then any value already baked into
+        /// <paramref name="url"/>. The contract that configured shortlink values are authoritative is preserved; the
+        /// inbound overlay only fills gaps the shortlink did not specify.
+        /// </remarks>
+        internal static string GetUrlWithUtm( string url, UtmSettings utmSettings, string inboundRequestUrl )
+        {
             if ( url.IsNullOrWhiteSpace() )
             {
                 return string.Empty;
             }
 
-            if ( utmSettings == null )
+            var hasInboundUtm = inboundRequestUrl.IsNotNullOrWhiteSpace();
+
+            if ( utmSettings == null && !hasInboundUtm )
             {
                 return url;
             }
@@ -185,33 +240,58 @@ namespace Rock.Web.Cache
                 out var queryParameters,
                 out var fragment );
 
-            // Add UTM Parameters as lowercase values with URL Encoding.
             var hasUtmValues = false;
 
-            hasUtmValues |= AddUtmValueToQueryString( queryParameters, "utm_source", SystemGuid.DefinedType.UTM_SOURCE.AsGuid(), utmSettings.UtmSourceValueId );
-            hasUtmValues |= AddUtmValueToQueryString( queryParameters, "utm_medium", SystemGuid.DefinedType.UTM_MEDIUM.AsGuid(), utmSettings.UtmMediumValueId );
-            hasUtmValues |= AddUtmValueToQueryString( queryParameters, "utm_campaign", SystemGuid.DefinedType.UTM_CAMPAIGN.AsGuid(), utmSettings.UtmCampaignValueId );
-
-            if ( utmSettings.UtmTerm.IsNotNullOrWhiteSpace() )
+            // Overlay UTM values from the inbound request URL. These replace any values already baked into the
+            // destination URL but lose to configured shortlink values applied below, giving per-key fallback behavior.
+            if ( hasInboundUtm )
             {
-                queryParameters.Add( "utm_term", utmSettings.UtmTerm.Trim().ToLower() );
-                hasUtmValues = true;
+                ParseUrl( inboundRequestUrl.RemoveCrLf().Trim(),
+                    out _,
+                    out var inboundQueryParameters,
+                    out _ );
+
+                foreach ( var key in UtmQueryStringKeys )
+                {
+                    var inboundValue = inboundQueryParameters[key];
+
+                    if ( inboundValue.IsNotNullOrWhiteSpace() )
+                    {
+                        queryParameters.Set( key, inboundValue.Trim().ToLower() );
+                        hasUtmValues = true;
+                    }
+                }
             }
 
-            if ( utmSettings.UtmContent.IsNotNullOrWhiteSpace() )
+            // Apply UTM values configured on the shortlink (or active scheduled redirect). These take precedence over
+            // both destination-baked and inbound values.
+            if ( utmSettings != null )
             {
-                queryParameters.Add( "utm_content", utmSettings.UtmContent.Trim().ToLower() );
-                hasUtmValues = true;
+                hasUtmValues |= AddUtmValueToQueryString( queryParameters, "utm_source", SystemGuid.DefinedType.UTM_SOURCE.AsGuid(), utmSettings.UtmSourceValueId );
+                hasUtmValues |= AddUtmValueToQueryString( queryParameters, "utm_medium", SystemGuid.DefinedType.UTM_MEDIUM.AsGuid(), utmSettings.UtmMediumValueId );
+                hasUtmValues |= AddUtmValueToQueryString( queryParameters, "utm_campaign", SystemGuid.DefinedType.UTM_CAMPAIGN.AsGuid(), utmSettings.UtmCampaignValueId );
+
+                if ( utmSettings.UtmTerm.IsNotNullOrWhiteSpace() )
+                {
+                    // Set, not Add: Add would append the configured value alongside any destination-baked utm_term,
+                    // producing a duplicate query parameter the parser then loses entirely.
+                    queryParameters.Set( "utm_term", utmSettings.UtmTerm.Trim().ToLower() );
+                    hasUtmValues = true;
+                }
+
+                if ( utmSettings.UtmContent.IsNotNullOrWhiteSpace() )
+                {
+                    // Set, not Add: same rationale as utm_term above.
+                    queryParameters.Set( "utm_content", utmSettings.UtmContent.Trim().ToLower() );
+                    hasUtmValues = true;
+                }
             }
 
-            // If no UTM values, return the base URL.
             if ( !hasUtmValues )
             {
                 return url;
             }
 
-            // Construct a new URL that includes the UTM query string parameters.
-            // The query parameters are stored in a HttpValueCollection, so the ToString() implementation returns a URL-encoded query string.
             var urlWithUtm = protocolDomainAndPath + "?" + queryParameters.ToQueryStringEscaped();
 
             if ( fragment.IsNotNullOrWhiteSpace() )

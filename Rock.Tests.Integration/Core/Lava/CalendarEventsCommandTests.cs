@@ -24,7 +24,6 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
 
 namespace Rock.Tests.Integration.Core.Lava
@@ -440,14 +439,14 @@ Name=Rock Solid Finances Class<br>Date=2021-01-03<br>Time=12:00 PM<br>DateTime=2
 
                 foreach ( var validDate in validDateList )
                 {
-                    Assert.That.Contains( output, $"<<{meetingName}|{validDate:yyyy-MM-dd}|{meetingTime}|" );
+                    Assert.Contains( $"<<{meetingName}|{validDate:yyyy-MM-dd}|{meetingTime}|", output );
                 }
 
                 if ( invalidDateList != null )
                 {
                     foreach ( var invalidDate in invalidDateList )
                     {
-                        Assert.That.DoesNotContain( output, $"<<{meetingName}|{invalidDate:yyyy-MM-dd}|{meetingTime}|" );
+                        Assert.DoesNotContain( output, $"<<{meetingName}|{invalidDate:yyyy-MM-dd}|{meetingTime}|" );
                     }
                 }
             } );

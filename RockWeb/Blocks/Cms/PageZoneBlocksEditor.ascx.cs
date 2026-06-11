@@ -748,15 +748,6 @@ namespace RockWeb.Blocks.Cms
             // Load the block types
             using ( var rockContext = new RockContext() )
             {
-                try
-                {
-                    BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ) );
-                }
-                catch
-                {
-                    // ignore
-                }
-
                 // Show all the Web blocks and even ones with SiteTypeFlags set to None.
                 var blockTypes = BlockTypeService.BlockTypesToDisplay( siteType, true )
                     .Select( b => new

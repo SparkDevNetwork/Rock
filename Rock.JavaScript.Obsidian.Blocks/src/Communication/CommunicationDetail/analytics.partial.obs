@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div v-if="communicationDetail" class="communication-detail-analytics">
+    <div v-if="communicationDetail" class="communication-detail-analytics pt-spacing-md contentsection-list">
         <ContentSection title="Delivery Breakdown" light disableCollapse>
             <template v-if="mediumRecipientCountLabel" #headerActions>
                 <HighlightLabel labelType="primary">
@@ -13,23 +13,23 @@
             </template>
         </ContentSection>
 
-        <LoadingIndicator v-if="showLoadingIndicator" :delay="1000" class="communication-detail-margin-top" />
+        <LoadingIndicator v-if="showLoadingIndicator" :delay="1000" />
 
         <template v-if="showMetrics">
-            <NotificationBox v-if="getAnalyticsDataErrorMessage" :alertType="AlertType.Warning" class="communication-detail-margin-top">
+            <NotificationBox v-if="getAnalyticsDataErrorMessage" :alertType="AlertType.Warning" >
                 {{ getAnalyticsDataErrorMessage }}
             </NotificationBox>
 
-            <NotificationBox v-else-if="showNoActivityMessage" :alertType="AlertType.Info" class="communication-detail-margin-top">
+            <NotificationBox v-else-if="showNoActivityMessage" :alertType="AlertType.Info" >
                 No activity found for this communication.
             </NotificationBox>
 
             <template v-else>
-                <ContentSection title="Performance KPIs" light disableCollapse class="communication-detail-margin-top">
+                <ContentSection title="Performance KPIs" light disableCollapse>
                     <Kpis :kpis="analytics?.kpis" :showEmailMetrics="showEmailMetrics" />
                 </ContentSection>
 
-                <ContentSection title="Performance Chart" light disableCollapse class="communication-detail-margin-top">
+                <ContentSection title="Performance Chart" light disableCollapse>
                     <template #headerActions>
                         <Toggle v-model="isActivityFlowVisible"
                                 trueText="Flow"
@@ -51,8 +51,7 @@
                                 title="Top Performing Links"
                                 overflowText="See All Links"
                                 light
-                                disableCollapse
-                                class="communication-detail-margin-top">
+                                disableCollapse>
                     <template v-if="totalLinksCountLabel" #headerActions>
                         <HighlightLabel>
                             {{ totalLinksCountLabel }}
@@ -68,9 +67,9 @@
                     </template>
                 </ContentSection>
 
-                <div class="communication-detail-gender-and-age-chart-sections row d-flex flex-wrap align-items-stretch">
+                <div class="communication-detail-gender-and-age-chart-sections row">
 
-                    <div class="communication-detail-gender-chart-section col-xs-12 col-md-6 communication-detail-margin-top">
+                    <div class="communication-detail-gender-chart-section col-xs-12 col-lg-6">
                         <ContentSection title="Unique Opens By Gender" light disableCollapse>
                             <div class="communication-detail-gender-chart">
                                 <UniqueOpensByGender :chartDataPoints="analytics?.uniqueOpensByGender" />
@@ -78,7 +77,7 @@
                         </ContentSection>
                     </div>
 
-                    <div class="communication-detail-age-chart-section col-xs-12 col-md-6 communication-detail-margin-top">
+                    <div class="communication-detail-age-chart-section col-xs-12 col-lg-6">
                         <ContentSection title="Unique Opens By Age Range" light disableCollapse>
                             <div class="communication-detail-age-chart">
                                 <UniqueOpensByAgeRange :chartDataPoints="analytics?.uniqueOpensByAgeRange" />
@@ -92,8 +91,7 @@
                                 title="Top Clients"
                                 overflowText="See All Clients"
                                 light
-                                disableCollapse
-                                class="communication-detail-margin-top">
+                                disableCollapse>
                     <template v-if="totalClientsCountLabel" #headerActions>
                         <HighlightLabel>
                             {{ totalClientsCountLabel }}
@@ -107,9 +105,9 @@
                     </template>
 
                     <template v-if="overflowClients.length" #overflow>
-                        <div class="communication-detail-top-clients-overflow-items">
+                        <div class="communication-detail-top-clients-overflow-list">
                             <div v-for="dataPoint in overflowClients" :key="dataPoint.label!"
-                                 class="communication-detail-top-clients-overflow-item">
+                                 class="communication-detail-top-clients-overflow-list-item">
                                 <span>{{ dataPoint.label }}</span>
                                 <span>{{ `${asFormattedString(dataPoint.value, 1)}%` }}</span>
                             </div>
@@ -119,7 +117,7 @@
             </template>
         </template>
 
-        <ContentSection v-else title="Message Performance" light disableCollapse class="communication-detail-margin-top">
+        <ContentSection v-else title="Message Performance" light disableCollapse>
             <div class="communication-detail-no-metrics">
                 <i class="ti ti-alert-triangle ti-4x"></i>
                 <div class="no-metrics-to-show-message">
@@ -132,57 +130,6 @@
         </ContentSection>
     </div>
 </template>
-
-<style scoped>
-.communication-detail-analytics {
-    padding-top: var(--spacing-medium);
-}
-
-.communication-detail-margin-top {
-    margin-top: var(--spacing-large);
-}
-
-.communication-detail-performance-chart {
-    height: 450px;
-}
-
-.communication-detail-gender-chart,
-.communication-detail-age-chart {
-    height: 350px;
-}
-
-.communication-detail-top-clients-chart {
-    height: 500px;
-}
-
-.communication-detail-top-clients-overflow-items {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--spacing-xsmall);
-}
-
-.communication-detail-top-clients-overflow-item {
-    width: 100%;
-    max-width: 690px;
-    display: flex;
-    justify-content: space-between;
-}
-
-.communication-detail-no-metrics {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: var(--color-interface-medium);
-}
-
-.communication-detail-no-metrics-message {
-    font-size: var(--font-size-xsmall);
-    margin-top: var(--spacing-tiny);
-    text-align: center;
-}
-</style>
 
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";

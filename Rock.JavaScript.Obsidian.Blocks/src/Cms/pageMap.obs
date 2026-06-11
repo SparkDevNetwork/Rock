@@ -1,0 +1,369 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="danger" v-html="blockError"></NotificationBox>
+    <Panel :title="panelName"
+           type="block"
+           :isCollapsible="false"
+           :isInitiallyCollapsed="false">
+        <template #headerActions>
+            <DropDownMenu title="Add Page"
+                          :items="dropDownMenuItems"
+                          :align="'left'">
+                <i class="ti ti-plus"></i>
+            </DropDownMenu>
+        </template>
+        <TreeList v-if="isTreeListDataInitialized"
+                  v-model="treeListSelectedItems"
+                  :items="treeListItems"
+                  :initiallyExpanded="treeListInitiallyExpandedGuids"
+                  @update:modelValue="onSelect"
+                  @update:items="onUpdateItems"
+                  @treeitem-expanded="onTreeItemExpanded"
+                  @treeitem-collapsed="onTreeItemCollapsed"
+                  autoExpand />
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { ref, computed, onBeforeMount } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
+    import TreeList from "@Obsidian/Controls/treeList.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { SiteType } from "@Obsidian/Enums/Cms/siteType";
+    import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { PageMapBag } from "@Obsidian/ViewModels/Blocks/Cms/PageMap/pageMapBag";
+    import { PageMapOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageMap/pageMapOptionsBag";
+    import { PageMapTreeListBag } from "@Obsidian/ViewModels/Blocks/Cms/PageMap/pageMapTreeListBag";
+    import { PageTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const box = useConfigurationValues<CustomBlockBox<PageMapBag, PageMapOptionsBag>>();
+    const bag = box.bag ?? {};
+    const options = box.options ?? getEmptyOptionsBag();
+
+    // #region Values
+
+    const panelName = "Pages";
+
+    const itemProvider = new PageTreeItemProvider();
+    itemProvider.rootPageGuid = toGuidOrNull(options.blockProperties?.rootPage) ?? undefined;
+    itemProvider.siteType = options.blockProperties?.siteType !== null ? options.blockProperties?.siteType : undefined;
+    itemProvider.selectedPageGuids = [];
+
+    const blockError = ref("");
+
+    const isTreeListDataInitialized = ref<boolean>(false);
+
+    const treeList = ref<PageMapTreeListBag>(bag.treeList ?? getEmptyTreeListBag());
+    const treeListSelectedItems = ref<Guid[]>(treeList.value.selectedItems ?? []);
+    const treeListItems = ref<TreeItemBag[]>(treeList.value.items ?? []);
+    const treeListExpandedItems = ref<Guid[]>(treeList.value.expandedItems ?? []);
+    const treeListInitiallyExpandedGuids = ref<Guid[]>(treeList.value.initiallyExpandedItems ?? []);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const dropDownMenuItems = computed<MenuAction[]>(() => [
+        {
+            title: "Add Top-Level",
+            type: "default",
+            handler: onAddRootPage
+        },
+        {
+            title: "Add Child To Selected",
+            type: "default",
+            handler: onAddChildPage,
+            disabled: !treeListSelectedItems || treeListSelectedItems.value.length !== 1
+        }
+    ]);
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Creates and returns an empty PageMapTreeListBag.
+     *
+     * @returns An empty PageMapTreeListBag.
+     */
+    function getEmptyTreeListBag(): PageMapTreeListBag {
+        return {
+            selectedItems: [],
+            items: [],
+            expandedItems: [],
+            initiallyExpandedItems: [],
+        };
+    }
+
+    /**
+     * Creates and returns an empty PageMapOptionsBag.
+     */
+    function getEmptyOptionsBag(): PageMapOptionsBag {
+        return {
+            blockProperties: {
+                rootPage: null,
+                siteType: SiteType.Web,
+            }
+        };
+    }
+
+    /**
+     * Sets the tree list items by retrieving and formatting them.
+     */
+    async function setTreeListItems(): Promise<void> {
+        treeListItems.value = await getFormattedTreeListItems();
+    }
+
+    /**
+     * Recursively retrieves and formats tree list items, setting default icons and loading children for expanded/selected items.
+     *
+     * @param items Optional array of TreeItemBag to format; if not provided, root items will be fetched.
+     * @returns A Promise that resolves to an array of formatted TreeItemBag.
+     */
+    async function getFormattedTreeListItems(items: TreeItemBag[] | null = null): Promise<TreeItemBag[]> {
+        /** Recursively sets default icons for items that don't have one and populates children for expanded/selected items */
+        async function processTreeItems(items: TreeItemBag[]): Promise<void> {
+            for (const item of items) {
+                if (!item.value) {
+                    continue;
+                }
+
+                if (!item.iconCssClass || item.iconCssClass === "") {
+                    item.iconCssClass = "ti ti-file";
+                }
+
+                // Load children for expanded or selected items
+                const isItemSelected = treeListSelectedItems.value.includes(item.value);
+                const isItemExpanded = treeListExpandedItems.value.includes(item.value);
+                const isItemExpandedOrSelected = isItemExpanded || isItemSelected;
+
+                if (item.hasChildren && isItemExpandedOrSelected) {
+                    if (!item.children || item.children.length === 0) {
+                        item.children = await itemProvider.getChildItems(item);
+                    }
+                    if (item.children && item.children.length > 0) {
+                        await processTreeItems(item.children);
+                        item.childCount = item.children.length;
+                        item.isFolder = true;
+                    }
+                }
+            }
+        }
+
+        // Ensure selected items are considered expanded
+        treeListSelectedItems.value.forEach(selectedItem => {
+            if (!treeListExpandedItems.value.includes(selectedItem)) {
+                treeListExpandedItems.value = [...treeListExpandedItems.value, selectedItem];
+            }
+            if (!treeListInitiallyExpandedGuids.value.includes(selectedItem)) {
+                treeListInitiallyExpandedGuids.value = [...treeListInitiallyExpandedGuids.value, selectedItem];
+            }
+        });
+
+        let formattedItems = items !== null ? JSON.parse(JSON.stringify(items)) as TreeItemBag[] : await itemProvider.getRootItems(treeListInitiallyExpandedGuids.value);
+
+        // Recursively process all items
+        await processTreeItems(formattedItems);
+
+        return formattedItems;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Handles the expanding of a tree item by tracking its value and loading children if necessary.
+     *
+     * @param item The tree item that was expanded.
+     */
+    async function onTreeItemExpanded(item: TreeItemBag): Promise<void> {
+        if (item.value) {
+            // Load child items if they haven't been loaded yet
+            if (!item.children || item.children.length === 0) {
+                const itemChildren = await itemProvider.getChildItems(item);
+
+                if (itemChildren && itemChildren.length > 0) {
+                    // Set default icons for newly loaded children
+                    const setDefaultIconsRecursively = (items: TreeItemBag[]): void => {
+                        items.forEach(childItem => {
+                            if (!childItem.iconCssClass || childItem.iconCssClass === "") {
+                                childItem.iconCssClass = "ti ti-file";
+                            }
+                            if (childItem.children && childItem.children.length > 0) {
+                                setDefaultIconsRecursively(childItem.children);
+                            }
+                        });
+                    };
+                    setDefaultIconsRecursively(itemChildren);
+                    item.children = itemChildren;
+                    item.hasChildren = true;
+                    item.childCount = itemChildren.length;
+                    item.isFolder = true;
+                }
+            }
+
+            treeListExpandedItems.value = [...treeListExpandedItems.value, item.value];
+        }
+    }
+
+    /**
+     * Handles the collapsing of a tree item by removing its value from the tracked expanded items.
+     *
+     * @param item The tree item that was collapsed.
+     */
+    function onTreeItemCollapsed(item: TreeItemBag): void {
+        if (item.value) {
+            treeListExpandedItems.value = treeListExpandedItems.value.filter(id => id !== item.value);
+        }
+    }
+
+    /**
+     * Handles the selection of a page and navigates to the corresponding URL.
+     *
+     * @param value The array of selected page values.
+     */
+    async function onSelect(value: string[]): Promise<void> {
+        if (isTreeListDataInitialized.value === false) {
+            return;
+        }
+
+        if (value.length > 1 || value.length < 0) {
+            treeListSelectedItems.value = [];
+            return;
+        }
+
+        if (treeListItems.value) {
+            // Recursively search for the matching item in treeListItems and their children
+            const findMatchingTreeListItem = (items: TreeItemBag[], targetValue: string): TreeItemBag | undefined => {
+                for (const item of items) {
+                    if (item.value === targetValue) {
+                        return item;
+                    }
+                    if (item.children && item.children.length > 0) {
+                        const found = findMatchingTreeListItem(item.children, targetValue);
+                        if (found) {
+                            return found;
+                        }
+                    }
+                }
+                return undefined;
+            };
+
+            const matchingTreeListItem = findMatchingTreeListItem(treeListItems.value, value[0]);
+
+            if (matchingTreeListItem && matchingTreeListItem.value) {
+
+                window.location.href = await getNavigationUrl(matchingTreeListItem.value, emptyGuid, treeListExpandedItems.value);
+            }
+        }
+    }
+
+    /**
+     * Event handler for when the list of items in the tree list has been
+     * updated outside of this component.
+     *
+     * @param newItems The new root items being used by the tree list.
+     */
+    async function onUpdateItems(newItems: TreeItemBag[]): Promise<void> {
+        treeListItems.value = await getFormattedTreeListItems(newItems);
+    }
+
+    /**
+     * Handles adding a new root page by navigating to the appropriate URL.
+     */
+    async function onAddRootPage(): Promise<void> {
+        const rootPageGuid = toGuidOrNull(options.blockProperties?.rootPage);
+
+        if (rootPageGuid && !areEqual(rootPageGuid, emptyGuid)) {
+            window.location.href = await getNavigationUrl(
+                emptyGuid,
+                rootPageGuid,
+                treeListExpandedItems.value,
+            );
+        }
+        else {
+            window.location.href = await getNavigationUrl(
+                emptyGuid,
+                emptyGuid,
+                treeListExpandedItems.value,
+            );
+        }
+    }
+
+    /**
+     * Handles adding a new child page to the selected page by navigating to the appropriate URL.
+     */
+    async function onAddChildPage(): Promise<void> {
+        window.location.href = await getNavigationUrl(
+            emptyGuid,
+            treeListSelectedItems.value[0],
+            treeListExpandedItems.value,
+        );
+    }
+
+    // #endregion Event Handlers
+
+    // #region Block Actions
+
+    /**
+     * Invokes the GetNavigationUrl block action to retrieve the navigation URL for a page.
+     *
+     * @param pageGuid The GUID of the page for the Page ID.
+     * @param parentGuid The GUID of the parent page.
+     * @param expandedGuids An array of GUIDs representing the currently expanded pages.
+     *
+     * @returns A Promise that resolves to the navigation URL as a string.
+     */
+    async function getNavigationUrl(pageGuid: Guid | null, parentGuid: Guid | null, expandedGuids: Guid[] | null): Promise<string> {
+        if (!options.blockProperties) {
+            return "";
+        }
+
+        if (pageGuid === null) {
+            pageGuid = emptyGuid;
+        }
+        if (parentGuid === null) {
+            parentGuid = emptyGuid;
+        }
+        if (!expandedGuids) {
+            expandedGuids = [];
+        }
+
+        const result = await invokeBlockAction<string>("GetNavigationUrl", {
+            entityGuid: pageGuid,
+            parentGuid: parentGuid,
+            expandedGuids: expandedGuids,
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else if (result.errorMessage) {
+            blockError.value = result.errorMessage;
+        }
+
+        return "";
+    }
+
+    // #endregion Block Actions
+
+    if (box.errorMessage) {
+        blockError.value = box.errorMessage;
+    }
+
+    onBeforeMount(async () => {
+        await setTreeListItems();
+        isTreeListDataInitialized.value = true;
+    });
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

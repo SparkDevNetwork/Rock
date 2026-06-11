@@ -4,6 +4,7 @@
                     formGroupClasses="category-picker"
                     iconCssClass="ti ti-folder-open"
                     :provider="itemProvider"
+                    :selectFirstByDefault="selectFirstByDefault"
                     autoExpand
                     :multiple="multiple" />
 </template>
@@ -46,6 +47,15 @@
         multiple: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /**
+         * When true, the first item in the list will be automatically selected
+         * if no other item is currently selected.
+         */
+        selectFirstByDefault: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -83,6 +93,8 @@
 
         // Set the provider to the new one
         itemProvider.value = newProvider;
+
+        internalValue.value = null;
     });
 
     watch(internalValue, () => {

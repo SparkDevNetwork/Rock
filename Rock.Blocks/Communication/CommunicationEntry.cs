@@ -469,8 +469,9 @@ namespace Rock.Blocks.Communication
                 }
                 else
                 {
-                    // Only allow the CommunicationId to contain an ID, but return it as a string so it can be used as an entity key.
-                    return PageParameter( PageParameterKey.CommunicationId ).AsIntegerOrNull()?.ToString();
+                    // CommunicationId can support Id, Guid, or IdKey values in order to maintain backward compatibility
+                    // with existing links, but return it as a string so it can be used as an entity key.
+                    return PageParameter( PageParameterKey.CommunicationId );
                 }
             }
         }
@@ -723,6 +724,7 @@ namespace Rock.Blocks.Communication
                         CommunicationGuid = communication.Guid,
                         CommunicationStatus = communication.Status,
                         CommunicationId = communication.Id,
+                        CommunicationIdKey = communication.IdKey,
                         HasDetailBlockOnCurrentPage = this.PageCache.Blocks.Any( a => a.BlockType.Guid == Rock.SystemGuid.BlockType.COMMUNICATION_DETAIL.AsGuid() ),
                         Message = "The communication has been saved",
                         RedirectToViewMode = false,
@@ -948,6 +950,7 @@ namespace Rock.Blocks.Communication
                     Message = responseMessage,
                     RedirectToViewMode = false,
                     CommunicationId = communication.Id,
+                    CommunicationIdKey = communication.IdKey,
                     CommunicationGuid = communication.Guid,
                     HasDetailBlockOnCurrentPage = this.PageCache.Blocks.Any( a => a.BlockType.Guid == Rock.SystemGuid.BlockType.COMMUNICATION_DETAIL.AsGuid() ),
                 } );

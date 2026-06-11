@@ -3,6 +3,7 @@
 // --------------------------------------------------
 
 .loginstatus {
+
   .dropdown-toggle.navbar-link {
     display: flex;
     align-items: center;
@@ -18,7 +19,31 @@
       text-align: left;
     }
   }
+
+  // Minimal version that only shows the profile photo and hides the name and dropdown caret.
+  &.loginstatus-minimal {
+    margin-left: var(--spacing-small);
+    margin-right: var(--spacing-medium);
+
+    a.dropdown-toggle.navbar-link {
+      padding: 0;
+
+      .loginstatus-wrapper {
+        margin-left: 0;
+        padding: 0;
+
+        .profile-photo {
+          margin-right: 0;
+        }
+
+      }
+
+    }
+
+  }
+
 }
+
 
 
 .splash-form-btn {
@@ -26,3 +51,4 @@
   flex-direction: column;
   justify-content: center;
 }
+

@@ -14,9 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Data;
+using System.Linq;
+
 using Rock.Data;
 using Rock.Model;
-using System.Linq;
+using Rock.Web.Cache;
 
 namespace Rock.Tasks
 {
@@ -43,7 +46,26 @@ namespace Rock.Tasks
                 }
 
                 persistedDataset.UpdateResultData();
-                rockContext.SaveChanges();
+
+                /*
+                    2/10/2026 - NA
+                    We are calling the SaveChanges( true ) overload that disables pre/post processing hooks
+                    because we only want to change the properties changed in UpdateResultData(). If we don't disable
+                    these hooks, the [ModifiedDateTime] value will also be updated every time a DataView is
+                    run, which is not what we want here.
+
+                    Reason: See Asana task "Persisted Datasets Don't Have CreatedBy/ModifiedBy Values"
+                    https://app.asana.com/1/20866866924293/task/1213144793175484
+                */
+                rockContext.SaveChanges( true );
+
+                // Because the SaveChanges( true ) skipped the UpdateCache hook, the in-memory caches
+                // still holds the previous ResultData. Invalidate it now.
+#if NET472_OR_GREATER
+                PersistedDatasetCache.UpdateCachedEntity( persistedDataset.Id, System.Data.Entity.EntityState.Modified );
+#else
+                PersistedDatasetCache.UpdateCachedEntity( persistedDataset.Id, Microsoft.EntityFrameworkCore.EntityState.Modified );
+#endif
             }
         }
 

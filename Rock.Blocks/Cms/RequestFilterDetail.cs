@@ -44,7 +44,8 @@ namespace Rock.Blocks.Cms
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "0E340E27-D6D9-4870-9835-401545C44801" )]
-    [Rock.SystemGuid.BlockTypeGuid( "59E6D50E-70A8-4695-97A4-2DE33DD09ECF" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "59E6D50E-70A8-4695-97A4-2DE33DD09ECF" )]
+    [Rock.SystemGuid.BlockTypeGuid( "0CE221F6-EECE-46F9-A703-FCD09DEBC653" )]
     public class RequestFilterDetail : RockEntityDetailBlockType<RequestFilter, RequestFilterBag>
     {
         #region Keys
@@ -133,8 +134,11 @@ namespace Rock.Blocks.Cms
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+
+            // The legacy Web Forms block applied no edit authorization: any user who could see the
+            // block could add, edit, and save request filters. Mirror that by gating edit on View.
+            box.IsEditable = isViewable;
 
             if ( entity.Id != 0 )
             {
@@ -208,7 +212,7 @@ namespace Rock.Blocks.Cms
             return bag;
         }
 
-        //// <inheritdoc/>
+        /// <inheritdoc/>
         protected override RequestFilterBag GetEntityBagForEdit( RequestFilter entity )
         {
             if ( entity == null )
@@ -309,9 +313,11 @@ namespace Rock.Blocks.Cms
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            // The legacy Web Forms block applied no edit authorization ( any user who could view the
+            // block could add, edit, and save ). Delete is gated separately in the Delete action.
+            if ( !BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${RequestFilter.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {RequestFilter.FriendlyTypeName}." );
                 return false;
             }
 
@@ -617,6 +623,11 @@ namespace Rock.Blocks.Cms
             if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
                 return actionError;
+            }
+
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete {RequestFilter.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

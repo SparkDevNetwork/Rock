@@ -377,7 +377,16 @@ namespace RockWeb.Blocks.Event
                 var lDiscount = e.Row.FindControl( "lDiscount" ) as Literal;
                 if ( lDiscount != null )
                 {
-                    lDiscount.Visible = _instanceHasCost && !string.IsNullOrEmpty( discountCode );
+                    /*
+                        5/12/2026 - MSE
+
+                        Don't gate this cell on _instanceHasCost like the sibling cost cells above.
+                        A template with Cost = 0 can still have fees and an applied discount code,
+                        so the code should show whenever it exists on the registration.
+
+                        Reason: https://github.com/SparkDevNetwork/Rock/issues/6826
+                    */
+                    lDiscount.Visible = !string.IsNullOrEmpty( discountCode );
                     lDiscount.Text = string.Format( "<span class='label label-default'>{0}</span>", discountCode );
                 }
 

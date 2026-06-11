@@ -4,6 +4,7 @@
         <template v-for="value in values">
             <dt>{{ value.title }}</dt>
             <dd v-if="value.htmlValue" v-html="value.htmlValue"></dd>
+            <dd v-else-if="value.elementValue" v-content="value.elementValue"></dd>
             <dd v-else>{{ value.textValue }}</dd>
         </template>
     </dl>

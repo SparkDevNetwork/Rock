@@ -125,7 +125,7 @@ namespace RockWeb.Blocks.WorkFlow
                         workflowNavigationCategory.WorkflowTypes.Add( 
                             new WorkflowNavigationWorkflowType( workflowType, 
                                 workflowType.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ),
-                                workflowType.IsAuthorized( "ViewList", CurrentPerson ) ) );
+                                workflowType.IsAuthorized( Rock.Security.Authorization.VIEW_LIST, CurrentPerson ) ) );
                     }
                 }
 

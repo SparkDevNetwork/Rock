@@ -75,28 +75,55 @@ namespace RockWeb.Blocks.Finance
     [TextField( "Add Account Text", "The button text to display for adding an additional account", false, "Add Another Account", "Text Options", 6 )]
     [TextField( "Payment Info Title", "The text to display as heading of section for entering credit card or bank account information.", false, "Payment Information", "Text Options", 7 )]
     [TextField( "Confirmation Title", "The text to display as heading of section for confirming information entered.", false, "Confirm Information", "Text Options", 8 )]
-    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.",
-        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
+
+    [CodeEditorField( "Confirmation Header",
+        Description = "The text (HTML) to display at the top of the confirmation section.",
+        EditorMode = CodeEditorMode.Html,
+        EditorHeight = 200,
+        IsRequired = true,
+        DefaultValue = @"
 <p>
 Please confirm the information below. Once you have confirmed that the information is accurate click the 'Finish' button to complete your transaction.
 </p>
-", "Text Options", 9 )]
-    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.",
-        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
+",
+        Category = "Text Options",
+        Order = 9 )]
+
+    [CodeEditorField( "Confirmation Footer",
+        Description = "The text (HTML) to display at the bottom of the confirmation section.",
+        EditorMode = CodeEditorMode.Html,
+        EditorHeight = 200,
+        IsRequired = true,
+        DefaultValue = @"
 <div class='alert alert-info'>
 By clicking the 'finish' button below I agree to allow {{ OrganizationName }} to debit the amount above from my account. I acknowledge that I may
 update the transaction information at any time by returning to this website. Please call the Finance Office if you have any additional questions.
 </div>
-", "Text Options", 10 )]
-    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section.",
-        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
+",
+        Category = "Text Options",
+        Order = 10 )]
+
+    [CodeEditorField( "Success Header",
+        Description = "The text (HTML) to display at the top of the success section.",
+        EditorMode = CodeEditorMode.Html,
+        EditorHeight = 200,
+        IsRequired = true,
+        DefaultValue = @"
 <p>
 Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively
 achieve our mission.  We are so grateful for your commitment.
 </p>
-", "Text Options", 11 )]
-    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section.",
-        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, @"", "Text Options", 12 )]
+",
+        Category = "Text Options",
+        Order = 11 )]
+
+    [CodeEditorField( "Success Footer",
+        Description = "The text (HTML) to display at the bottom of the success section.",
+        EditorMode = CodeEditorMode.Html,
+        EditorHeight = 200,
+        IsRequired = false,
+        Category = "Text Options",
+        Order = 12 )]
 
     [WorkflowTypeField(
         name: "Workflow Trigger",

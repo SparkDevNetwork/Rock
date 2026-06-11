@@ -1,0 +1,195 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+        <LinearGaugeChart :series="series"
+                          :height="height || 'auto'"
+                          :hideLegend="isLegendHidden"
+                          :legendAlign="legendAlign"
+                          :legendPosition="legendPosition"
+                          :sectionStyle="sectionStyle"
+                          :title="title"
+                          :titleAlign="titleAlign"
+                          :width="width" />
+
+        <template #settings>
+            <div class="settings">
+                <ContentSection title="Settings">
+                    <ContentStack title="General">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <TextBox :modelValue="title ?? ''"
+                                         label="Title"
+                                         @update:modelValue="title = $event" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <DropDownList :modelValue="titleAlign ?? ''"
+                                              :items="titleAlignItems"
+                                              label="Title Alignment"
+                                              @update:modelValue="titleAlign = <TitleAlign>$event" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <TextBox :modelValue="height ?? ''"
+                                         label="Height"
+                                         help="CSS size value (e.g., '300px' or '50%')."
+                                         @update:modelValue="height = $event" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <TextBox :modelValue="width ?? ''"
+                                         label="Width"
+                                         help="CSS size value (e.g., '300px' or '50%')."
+                                         @update:modelValue="width = $event" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <DropDownList v-model="sectionStyle"
+                                              :items="sectionStyleItems"
+                                              label="Section Style"
+                                              :showBlankItem="false" />
+                            </div>
+                        </div>
+
+                    </ContentStack>
+
+                    <ContentStack title="Legend">
+                        <div class="autolayout">
+                            <DropDownList :modelValue="legendPosition ?? ''"
+                                          :items="legendPositionItems"
+                                          label="Position"
+                                          @update:modelValue="legendPosition = <LegendPosition>$event" />
+
+                            <DropDownList :modelValue="legendAlign ?? ''"
+                                          :items="legendAlignItems"
+                                          label="Alignment"
+                                          @update:modelValue="legendAlign = <LegendAlign>$event" />
+
+                            <Switch :modelValue="isLegendHidden ?? false"
+                                    label="Hide"
+                                    @update:modelValue="isLegendHidden = $event" />
+                        </div>
+                    </ContentStack>
+                </ContentSection>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<style scoped>
+.settings {
+    max-height: 350px;
+    overflow: auto;
+}
+
+.autolayout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    column-gap: var(--spacing-small);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import LinearGaugeChart from "@Obsidian/Controls/linearGaugeChart.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import {
+        LegendAlign,
+        LegendAlignDescription,
+        LegendPosition,
+        LegendPositionDescription,
+        LinearGaugeSectionStyle,
+        LinearGaugeSectionStyleDescription,
+        LinearGaugeSeries,
+        TitleAlign,
+        TitleAlignDescription
+    } from "@Obsidian/Core/Controls/chart";
+    import { isNullish } from "@Obsidian/Utility/util";
+
+    const importCode = getSfcControlImportPath("linearGaugeChart");
+
+    const legendAlignItems = [
+        { text: LegendAlignDescription[LegendAlign.Start], value: LegendAlign.Start },
+        { text: LegendAlignDescription[LegendAlign.Center], value: LegendAlign.Center },
+        { text: LegendAlignDescription[LegendAlign.End], value: LegendAlign.End }
+    ];
+    const legendPositionItems = [
+        { text: LegendPositionDescription[LegendPosition.Top], value: LegendPosition.Top },
+        { text: LegendPositionDescription[LegendPosition.Bottom], value: LegendPosition.Bottom },
+        { text: LegendPositionDescription[LegendPosition.Left], value: LegendPosition.Left },
+        { text: LegendPositionDescription[LegendPosition.Right], value: LegendPosition.Right }
+    ];
+    const sectionStyleItems = [
+        { text: LinearGaugeSectionStyleDescription[LinearGaugeSectionStyle.Segmented], value: LinearGaugeSectionStyle.Segmented },
+        { text: LinearGaugeSectionStyleDescription[LinearGaugeSectionStyle.Continuous], value: LinearGaugeSectionStyle.Continuous }
+    ];
+    const titleAlignItems = [
+        { text: TitleAlignDescription[TitleAlign.Start], value: TitleAlign.Start },
+        { text: TitleAlignDescription[TitleAlign.Center], value: TitleAlign.Center },
+        { text: TitleAlignDescription[TitleAlign.End], value: TitleAlign.End }
+    ];
+
+    // #region Values
+
+    const height = ref<string | undefined>();
+    const isLegendHidden = ref<boolean | undefined>();
+    const legendAlign = ref<LegendAlign | undefined>();
+    const legendPosition = ref<LegendPosition | undefined>();
+    const sectionStyle = ref<LinearGaugeSectionStyle>(LinearGaugeSectionStyle.Segmented);
+    const series: LinearGaugeSeries[] = [
+        { label: "Completed", data: [70], color: "var(--color-success-strong)" },
+        { label: "In Progress", data: [20], color: "#F59E0B" },
+        { label: "Not Started", data: [10], color: "#EF4444" }
+    ];
+    const title = ref<string>("Connection Requests");
+    const titleAlign = ref<TitleAlign | undefined>();
+    const width = ref<string | undefined>();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const exampleCode = computed<string>(() => {
+        let linearGaugeChartProps: string[] = [
+            `:labels="labels"`,
+            `:series="series"`
+        ];
+
+        if (!isNullish(height.value)) {
+            linearGaugeChartProps.push(`height="${height.value}"`);
+        }
+        if (!isNullish(isLegendHidden.value)) {
+            linearGaugeChartProps.push(`:hideLegend="${isLegendHidden.value}"`);
+        }
+        if (!isNullish(legendAlign.value)) {
+            linearGaugeChartProps.push(`legendAlign="${legendAlign.value}"`);
+        }
+        if (!isNullish(legendPosition.value)) {
+            linearGaugeChartProps.push(`legendPosition="${legendPosition.value}"`);
+        }
+        if (title.value) {
+            linearGaugeChartProps.push(`title="${title.value}"`);
+        }
+        if (!isNullish(titleAlign.value)) {
+            linearGaugeChartProps.push(`titleAlign="${titleAlign.value}"`);
+        }
+        if (!isNullish(width.value)) {
+            linearGaugeChartProps.push(`width="${width.value}"`);
+        }
+
+        const prefix = "<LinearGaugeChart ";
+        const spaces = " ".repeat(prefix.length);
+        return `${prefix}${linearGaugeChartProps.join(`\n${spaces}`)} />`;
+    });
+
+    // #endregion Computed Values
+</script>

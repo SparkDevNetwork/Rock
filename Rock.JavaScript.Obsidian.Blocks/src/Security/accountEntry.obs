@@ -217,7 +217,6 @@
 
             if (captchaElement.value) {
                 actionContext.captcha = await captchaElement.value.getToken();
-                captchaElement.value.refreshToken();
             }
 
             const result = await invokeBlockAction<void>("ForgotUsername", { bag }, actionContext);
@@ -343,9 +342,6 @@
         }
         isCaptchaComplete.value = false;
         nextTick(() => {
-            if (captchaElement.value) {
-                captchaElement.value.refreshToken();
-            }
             waitForCaptcha();
         });
     }
@@ -360,7 +356,6 @@
 
             if (captchaElement.value) {
                 actionContext.captcha = await captchaElement.value.getToken();
-                captchaElement.value.refreshToken();
             }
 
             const response = await invokeBlockAction<AccountEntryRegisterResponseBox>("Register", { box: registrationInfo.value }, actionContext);

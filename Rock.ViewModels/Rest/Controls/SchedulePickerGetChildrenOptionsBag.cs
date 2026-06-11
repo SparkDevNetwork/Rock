@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 
 namespace Rock.ViewModels.Rest.Controls
 {
@@ -39,13 +40,29 @@ namespace Rock.ViewModels.Rest.Controls
         /// <summary>
         /// Whether to include schedules marked as private in the results.
         /// </summary>
-        public bool includePublicItemsOnly { get; set; } = false;
+       public bool includePublicItemsOnly { get; set; } = false;
+
+        /// <summary>
+        /// The category unique identifier to filter schedules by.
+        /// If null then schedules from all categories are included.
+        /// </summary>
+        public List<Guid> IncludeCategoryGuids { get; set; }
 
         /// <summary>
         /// Gets or sets the security grant token to use when performing
         /// authorization checks.
         /// </summary>
         public string SecurityGrantToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the values that need to be expanded to. This is used
+        /// when opening the tree view with an already selected value. Each
+        /// selected value is included in this property. When getting the list
+        /// of root items, you should automatically expand your results until
+        /// each of these values is reached.
+        /// </summary>
+
+        public List<string> ExpandToValues { get; set; }
     }
 }
 

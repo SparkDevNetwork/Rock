@@ -539,7 +539,7 @@
         const r = <Row>row;
 
         if (r.variance) {
-            if (r.variance.count != 0) {
+            if (r.variance.count !== 0) {
                 return 2;
             }
             else {

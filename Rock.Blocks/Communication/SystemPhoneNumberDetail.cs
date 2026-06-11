@@ -141,8 +141,8 @@ namespace Rock.Blocks.Communication
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             entity.LoadAttributes( rockContext );
 
@@ -389,9 +389,9 @@ namespace Rock.Blocks.Communication
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${SystemPhoneNumber.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {SystemPhoneNumber.FriendlyTypeName}." );
                 return false;
             }
 
@@ -466,16 +466,6 @@ namespace Rock.Blocks.Communication
                     entity.SaveAttributeValues( rockContext );
                 } );
 
-                try
-                {
-                    SystemPhoneNumberService.UpdateLegacyPhoneNumber( entity.Id );
-                }
-                catch ( Exception ex )
-                {
-                    // Log the exception, but don't return an error.
-                    ExceptionLogService.LogException( ex );
-                }
-
                 if ( isNew )
                 {
                     return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
@@ -517,8 +507,6 @@ namespace Rock.Blocks.Communication
                 entityService.Delete( entity );
 
                 rockContext.SaveChanges();
-
-                SystemPhoneNumberService.DeleteLegacyPhoneNumber( entity );
 
                 return ActionOk( this.GetParentPageUrl() );
             }

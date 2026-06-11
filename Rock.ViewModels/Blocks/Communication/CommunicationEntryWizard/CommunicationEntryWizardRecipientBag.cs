@@ -24,12 +24,12 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
     public class CommunicationEntryWizardRecipientBag
     {
         /// <summary>
-        /// Gets or sets the unique identifier of the person associated with this recipient.
+        /// Gets or sets the identifier key of the person associated with this recipient.
         /// </summary>
         /// <value>
-        /// The unique identifier of the person associated with this recipient.
+        /// The identifier key of the person associated with this recipient.
         /// </value>
-        public Guid PersonAliasGuid { get; set; }
+        public string PersonAliasIdKey { get; set; }
 
         /// <summary>
         /// Gets or sets the name of this recipient.

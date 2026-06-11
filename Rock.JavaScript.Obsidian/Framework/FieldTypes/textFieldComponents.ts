@@ -23,10 +23,10 @@ import { asBoolean, asBooleanOrNull, asTrueFalseOrNull } from "@Obsidian/Utility
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
 
-// We can't import the ConfigurationValueKey from textField.partial.ts
+// We can't import the ConfigurationKey from textField.partial.ts
 // because it causes a recursive import back to this file by way of
 // the fieldType.ts import in textField.partial.ts.
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     /** Contains "True" if the text field is designed for password entry. */
     IsPassword = "ispassword",
 
@@ -38,6 +38,9 @@ export const enum ConfigurationValueKey {
 
     /** Contains "True" if the text field is designed for first name entry. */
     IsFirstName = "isfirstname",
+
+    /** Contains "True" if the text field should allow HTML content. */
+    AllowHtml = "allowhtml",
 }
 
 export const EditComponent = defineComponent({
@@ -58,7 +61,7 @@ export const EditComponent = defineComponent({
         const configAttributes = computed((): Record<string, number | boolean> => {
             const attributes: Record<string, number | boolean> = {};
 
-            const maxCharsConfig = props.configurationValues[ConfigurationValueKey.MaxCharacters];
+            const maxCharsConfig = props.configurationValues[ConfigurationKey.MaxCharacters];
             if (maxCharsConfig) {
                 const maxCharsValue = Number(maxCharsConfig);
 
@@ -67,7 +70,7 @@ export const EditComponent = defineComponent({
                 }
             }
 
-            const showCountDownConfig = props.configurationValues[ConfigurationValueKey.ShowCountdown];
+            const showCountDownConfig = props.configurationValues[ConfigurationKey.ShowCountdown];
             if (showCountDownConfig && showCountDownConfig) {
                 const showCountDownValue = asBooleanOrNull(showCountDownConfig) || false;
 
@@ -76,12 +79,21 @@ export const EditComponent = defineComponent({
                 }
             }
 
+            const allowHtmlConfig = props.configurationValues[ConfigurationKey.AllowHtml];
+            if (allowHtmlConfig) {
+                const allowHtmlValue = asBooleanOrNull(allowHtmlConfig) || false;
+
+                if (allowHtmlValue) {
+                    attributes.allowHtml = allowHtmlValue;
+                }
+            }
+
             return attributes;
         });
 
         // The type of text input field to use on the text editor.
         const textType = computed((): string => {
-            const isPasswordConfig = props.configurationValues[ConfigurationValueKey.IsPassword];
+            const isPasswordConfig = props.configurationValues[ConfigurationKey.IsPassword];
             const isPassword = asBooleanOrNull(isPasswordConfig) ?? false;
 
             return isPassword ? "password" : "";
@@ -89,7 +101,7 @@ export const EditComponent = defineComponent({
         });
 
         const isFirstName = computed((): boolean => {
-            const isFirstNameConfig = props.configurationValues[ConfigurationValueKey.IsFirstName];
+            const isFirstNameConfig = props.configurationValues[ConfigurationKey.IsFirstName];
             return asBooleanOrNull(isFirstNameConfig) ?? false;
         });
 
@@ -137,6 +149,7 @@ export const ConfigurationComponent = defineComponent({
         const maxCharacters = ref<number | null>(null);
         const showCountdown = ref(false);
         const firstNameField = ref(false);
+        const allowHtml = ref(false);
 
         /**
          * Update the modelValue property if any value of the dictionary has
@@ -151,16 +164,18 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.IsPassword] = asTrueFalseOrNull(passwordField.value) ?? "False";
-            newValue[ConfigurationValueKey.MaxCharacters] = maxCharacters.value?.toString() ?? "";
-            newValue[ConfigurationValueKey.ShowCountdown] = asTrueFalseOrNull(showCountdown.value) ?? "False";
-            newValue[ConfigurationValueKey.IsFirstName] = asTrueFalseOrNull(firstNameField.value) ?? "False";
+            newValue[ConfigurationKey.IsPassword] = asTrueFalseOrNull(passwordField.value) ?? "False";
+            newValue[ConfigurationKey.MaxCharacters] = maxCharacters.value?.toString() ?? "";
+            newValue[ConfigurationKey.ShowCountdown] = asTrueFalseOrNull(showCountdown.value) ?? "False";
+            newValue[ConfigurationKey.IsFirstName] = asTrueFalseOrNull(firstNameField.value) ?? "False";
+            newValue[ConfigurationKey.AllowHtml] = asTrueFalseOrNull(allowHtml.value) ?? "False";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.IsPassword] !== (props.modelValue[ConfigurationValueKey.IsPassword] ?? "False")
-                || newValue[ConfigurationValueKey.MaxCharacters] !== (props.modelValue[ConfigurationValueKey.MaxCharacters] ?? "")
-                || newValue[ConfigurationValueKey.ShowCountdown] !== (props.modelValue[ConfigurationValueKey.ShowCountdown] ?? "False")
-                || newValue[ConfigurationValueKey.IsFirstName] !== (props.modelValue[ConfigurationValueKey.IsFirstName] ?? "False");
+            const anyValueChanged = newValue[ConfigurationKey.IsPassword] !== (props.modelValue[ConfigurationKey.IsPassword] ?? "False")
+                || newValue[ConfigurationKey.MaxCharacters] !== (props.modelValue[ConfigurationKey.MaxCharacters] ?? "")
+                || newValue[ConfigurationKey.ShowCountdown] !== (props.modelValue[ConfigurationKey.ShowCountdown] ?? "False")
+                || newValue[ConfigurationKey.IsFirstName] !== (props.modelValue[ConfigurationKey.IsFirstName] ?? "False")
+                || newValue[ConfigurationKey.AllowHtml] !== (props.modelValue[ConfigurationKey.AllowHtml] ?? "False");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -187,10 +202,11 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            passwordField.value = asBoolean(props.modelValue[ConfigurationValueKey.IsPassword]);
-            maxCharacters.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.MaxCharacters]);
-            showCountdown.value = asBoolean(props.modelValue[ConfigurationValueKey.ShowCountdown]);
-            firstNameField.value = asBoolean(props.modelValue[ConfigurationValueKey.IsFirstName]);
+            passwordField.value = asBoolean(props.modelValue[ConfigurationKey.IsPassword]);
+            maxCharacters.value = toNumberOrNull(props.modelValue[ConfigurationKey.MaxCharacters]);
+            showCountdown.value = asBoolean(props.modelValue[ConfigurationKey.ShowCountdown]);
+            firstNameField.value = asBoolean(props.modelValue[ConfigurationKey.IsFirstName]);
+            allowHtml.value = asBoolean(props.modelValue[ConfigurationKey.AllowHtml]);
         }, {
             immediate: true
         });
@@ -206,16 +222,18 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(passwordField, () => maybeUpdateConfiguration(ConfigurationValueKey.IsPassword, asTrueFalseOrNull(passwordField.value) ?? "False"));
-        watch(maxCharacters, () => maybeUpdateConfiguration(ConfigurationValueKey.MaxCharacters, maxCharacters.value?.toString() ?? ""));
-        watch(showCountdown, () => maybeUpdateConfiguration(ConfigurationValueKey.ShowCountdown, asTrueFalseOrNull(showCountdown.value) ?? "False"));
-        watch(firstNameField, () => maybeUpdateConfiguration(ConfigurationValueKey.IsFirstName, asTrueFalseOrNull(firstNameField.value) ?? "False"));
+        watch(passwordField, () => maybeUpdateConfiguration(ConfigurationKey.IsPassword, asTrueFalseOrNull(passwordField.value) ?? "False"));
+        watch(maxCharacters, () => maybeUpdateConfiguration(ConfigurationKey.MaxCharacters, maxCharacters.value?.toString() ?? ""));
+        watch(showCountdown, () => maybeUpdateConfiguration(ConfigurationKey.ShowCountdown, asTrueFalseOrNull(showCountdown.value) ?? "False"));
+        watch(firstNameField, () => maybeUpdateConfiguration(ConfigurationKey.IsFirstName, asTrueFalseOrNull(firstNameField.value) ?? "False"));
+        watch(allowHtml, () => maybeUpdateConfiguration(ConfigurationKey.AllowHtml, asTrueFalseOrNull(allowHtml.value) ?? "False"));
 
         return {
             maxCharacters,
             passwordField,
             showCountdown,
-            firstNameField
+            firstNameField,
+            allowHtml,
         };
     },
 
@@ -225,6 +243,7 @@ export const ConfigurationComponent = defineComponent({
     <NumberBox v-model="maxCharacters" label="Max Characters" help="The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text." />
     <CheckBox v-model="showCountdown" label="Show Character Limit Countdown" help="When set, displays a countdown showing how many characters remain (for the Max Characters setting)." />
     <CheckBox v-model="firstNameField" label="FirstName Field" help="When set, edit field will be validated as a first name." />
+    <CheckBox v-model="allowHtml" label="Allow HTML" help="Controls whether server should prevent HTML from being entered in this field or not" />
 </div>
 `
 });

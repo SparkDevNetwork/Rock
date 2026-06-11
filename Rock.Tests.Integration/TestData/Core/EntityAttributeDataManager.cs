@@ -22,7 +22,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.TestData.Core
@@ -69,10 +68,10 @@ namespace Rock.Tests.Integration.TestData.Core
             foreach ( var attributeArgs in args )
             {
                 var fieldType = FieldTypeCache.Get( attributeArgs.FieldTypeIdentifier, allowIntegerIdentifier: true );
-                Assert.That.IsNotNull( fieldType, "Field Type is invalid." );
+                Assert.IsNotNull( fieldType, "Field Type is invalid." );
 
                 var entityType = EntityTypeCache.Get( attributeArgs.EntityTypeIdentifier, allowIntegerIdentifier: true );
-                Assert.That.IsNotNull( entityType, "Entity Type is invalid." );
+                Assert.IsNotNull( entityType, "Entity Type is invalid." );
 
                 var name = attributeArgs.Name;
                 if ( string.IsNullOrWhiteSpace( name ) )

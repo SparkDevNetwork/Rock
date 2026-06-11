@@ -75,7 +75,7 @@ namespace Rock.Blocks.Group.Scheduling
 
     [BooleanField( "Disallow Group Selection If Specified",
         Key = AttributeKey.DisallowGroupSelectionIfSpecified,
-        Description = "When enabled, will hide the group picker if there is a GroupId in the query string.",
+        Description = "When enabled, hides the group picker if one or more Group IDs are passed in the query string using the GroupId or GroupIds parameters.",
         DefaultBooleanValue = false,
         Order = 4,
         IsRequired = false )]
@@ -281,21 +281,25 @@ namespace Rock.Blocks.Group.Scheduling
                 var groupId = this.PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
                 groupIds = ( this.PageParameter( PageParameterKey.GroupIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
 
-                if ( groupId.HasValue )
+                if ( groupId.HasValue && !groupIds.Contains( groupId.Value ) )
                 {
-                    // This is to maintain consistency with the Web Forms version of this block; we only disable the group picker if:
-                    //  1) A single group ID is provided via the "GroupId" page parameter;
-                    //  2) Additional group IDs are not provided via the "GroupIds" page parameter;
-                    //  3) The "DisallowGroupSelectionIfSpecified" block attribute is set to true.
-                    if ( !groupIds.Any() && GetAttributeValue( AttributeKey.DisallowGroupSelectionIfSpecified ).AsBoolean() )
-                    {
-                        disallowGroupSelection = true;
-                    }
+                    groupIds.Add( groupId.Value );
+                }
 
-                    if ( !groupIds.Contains( groupId.Value ) )
-                    {
-                        groupIds.Add( groupId.Value );
-                    }
+                /*
+                    2/9/2026 - JPH
+
+                    While the legacy version of this block would hide/disable the group picker only if a single group
+                    ID was provided via the "GroupId" page parameter, this new version of the block will look at both
+                    "GroupId" and "GroupIds" page parameters to determine whether to disable the group picker.
+
+                    Reason: To provide a more consistent and predictable experience when working with group scheduling,
+                    regardless of how the group IDs are specified in the query string.
+                    https://github.com/SparkDevNetwork/Rock/issues/6670
+                */
+                if ( groupIds.Any() && GetAttributeValue( AttributeKey.DisallowGroupSelectionIfSpecified ).AsBoolean() )
+                {
+                    disallowGroupSelection = true;
                 }
             }
             else
@@ -883,8 +887,8 @@ namespace Rock.Blocks.Group.Scheduling
                         GroupOrder = gls.Group.Order,
                         GroupId = gls.Group.Id,
                         GroupName = gls.Group.Name,
-                        ParentGroupId = gls.Group.ParentGroupId,
-                        ParentGroupName = gls.Group.ParentGroup?.Name,
+                        ParentGroupId = gls.ParentGroup.Id,
+                        ParentGroupName = gls.ParentGroup?.Name,
                         GroupLocationOrder = gls.GroupLocation.Order,
                         LocationId = gls.Location.Id,
                         LocationName = gls.Location.ToString( true ),

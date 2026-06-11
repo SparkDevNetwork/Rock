@@ -1,4 +1,21 @@
-﻿using System.Collections.Generic;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+using System.Collections.Generic;
 using System.ComponentModel;
 using Rock.Attribute;
 using Rock.Bus;
@@ -11,6 +28,7 @@ namespace Rock.Blocks.Bus
     [DisplayName( "Bus Status" )]
     [Category( "Bus" )]
     [Description( "Gives insight into the message bus." )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -22,9 +40,10 @@ namespace Rock.Blocks.Bus
         Order = 1 )]
 
     #endregion Block Attributes
-
-    [Rock.SystemGuid.BlockTypeGuid( "C472300C-781F-4D73-B530-8C9F8A9927D4" )]
+    
     [Rock.SystemGuid.EntityTypeGuid( "9DFA8FD4-C3AA-440A-B1D6-1F8695C4AD5A" )]
+    [Rock.SystemGuid.BlockTypeGuid( "A9BB6B68-44CD-4EC2-9B26-CD6C941877EB" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "C472300C-781F-4D73-B530-8C9F8A9927D4" )]
     public class BusStatus : RockBlockType
     {
         #region Attribute Keys
@@ -73,7 +92,7 @@ namespace Rock.Blocks.Bus
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.TransportSelectPage] = this.GetLinkedPageUrl( AttributeKey.TransportSelectPage, "TransportSelectPage", "((Key))" )
+                [NavigationUrlKey.TransportSelectPage] = this.GetLinkedPageUrl( AttributeKey.TransportSelectPage )
             };
         }
 

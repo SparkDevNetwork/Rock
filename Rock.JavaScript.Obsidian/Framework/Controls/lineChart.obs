@@ -1,5 +1,5 @@
 <template>
-    <div class="chart-container" :style="`height: ${height}; width: ${width};`">
+    <div class="chart-container" :style="`height: ${height || '100%'}; width: ${width || '100%'};`">
         <Chart :data="chartData" :options="chartOptions" type="line" />
     </div>
 </template>
@@ -7,7 +7,7 @@
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import Chart from "./chart.obs";
-    import { LabelDateFormat, LegendAlign, LegendPosition, LineSeries, LineStyle, TooltipCallback } from "@Obsidian/Core/Controls/chart";
+    import { LabelDateFormat, LegendAlign, LegendPosition, LineSeries, LineStyle, TitleAlign, TooltipCallback } from "@Obsidian/Core/Controls/chart";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { Chart as ChartJs, ChartData, ChartOptions, Color, LegendItem, ScriptableContext, TooltipItem, TooltipLabelStyle } from "@Obsidian/Libs/chart";
     import { Enumerable } from "@Obsidian/Utility/linq";
@@ -127,6 +127,13 @@
          */
         title: {
             type: String as PropType<string | undefined>
+        },
+
+        /**
+         * The alignment of the chart title.
+         */
+        titleAlign: {
+            type: String as PropType<TitleAlign | undefined>
         },
 
         /**
@@ -429,7 +436,7 @@
         };
     });
 
-    const chartOptions = computed<ChartOptions<"line">>(() => {
+    const chartOptions = computed<ChartOptions<"line">>((): ChartOptions<"line"> => {
         return {
             // Allow the chart to change size with the parent container.
             responsive: true,
@@ -454,7 +461,7 @@
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                             size: parseInt(getCssVar("--font-size-small")) || undefined,
-                            weight: getCssVar("--font-weight-semibold")
+                            weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                         },
 
                         generateLabels: (chart) => {
@@ -491,14 +498,21 @@
                 },
 
                 title: {
+                    align: props.titleAlign ?? undefined,
                     color: getCssVar("--color-interface-strong"),
                     display: !!props.title,
 
                     font: {
                         family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                         size: parseInt(getCssVar("--font-size-small")) || undefined,
-                        weight: getCssVar("--font-weight-semibold")
+                        weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                     },
+
+                    // When the title alignment is centered,
+                    // it should be centered according to the full width of the canvas.
+                    // When it is right or left aligned, it should be left or right aligned
+                    // with the chart data area.
+                    fullSize: !props.titleAlign || props.titleAlign === "center",
 
                     text: props.title ?? undefined
                 },
@@ -511,7 +525,7 @@
                     bodyFont: {
                         family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                         size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
-                        weight: getCssVar("--font-weight-regular")
+                        weight: getCssVar("--font-weight-regular") as "bold" | "normal" | "bolder" | "lighter"
                     },
 
                     borderColor: getCssVar("--color-interface-soft"),
@@ -538,7 +552,7 @@
                                             label: rawLabel,
                                             formattedLabel: getFormattedLabel(tooltipItem.chart, tooltipItem.chart.data, tooltipItem.dataIndex) ?? rawLabel,
                                             value: tooltipItem.raw as number | null,
-                                            formattedValue: getFormattedValue(tooltipItem.chart, tooltipItem.parsed.y, tooltipItem.dataIndex) ?? (tooltipItem.formattedValue || tooltipItem.parsed.y.toString()),
+                                            formattedValue: getFormattedValue(tooltipItem.chart, tooltipItem.parsed.y!, tooltipItem.dataIndex) ?? (tooltipItem.formattedValue || tooltipItem.parsed.y!.toString()),
                                             seriesLabel: tooltipItem.dataset.label ?? ""
                                         });
                                     })
@@ -574,7 +588,7 @@
                                     label: rawLabel,
                                     formattedLabel: getFormattedLabel(context.chart, context.chart.data, context.dataIndex) ?? rawLabel,
                                     value: context.raw as number | null,
-                                    formattedValue: getFormattedValue(context.chart, context.parsed.y, context.dataIndex) ?? (context.formattedValue || context.parsed.y.toString()),
+                                    formattedValue: getFormattedValue(context.chart, context.parsed.y!, context.dataIndex) ?? (context.formattedValue || context.parsed.y!.toString()),
                                     seriesLabel: context.dataset.label ?? ""
                                 }) ?? "";
                             }
@@ -649,7 +663,7 @@
                     titleFont: {
                         family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                         size: parseInt(getCssVar("--font-size-small")) || undefined,
-                        weight: getCssVar("--font-weight-semibold")
+                        weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                     },
                 }
             },
@@ -674,7 +688,7 @@
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                             size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
-                            weight: getCssVar("--font-weight-regular")
+                            weight: getCssVar("--font-weight-regular") as "bold" | "normal" | "bolder" | "lighter"
                         },
 
                         maxRotation: 45,
@@ -702,7 +716,7 @@
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                             size: parseInt(getCssVar("--font-size-small")) || undefined,
-                            weight: getCssVar("--font-weight-semibold")
+                            weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                         },
 
                         text: props.categoryLabel ?? undefined
@@ -781,7 +795,7 @@
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                             size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
-                            weight: getCssVar("--font-weight-regular")
+                            weight: getCssVar("--font-weight-regular") as "bold" | "normal" | "bolder" | "lighter"
                         },
 
                         maxTicksLimit: clamp(props.valueMaxTickCount, 0),
@@ -796,7 +810,7 @@
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                             size: parseInt(getCssVar("--font-size-small")) || undefined,
-                            weight: getCssVar("--font-weight-semibold")
+                            weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                         },
 
                         text: props.valueLabel ?? undefined

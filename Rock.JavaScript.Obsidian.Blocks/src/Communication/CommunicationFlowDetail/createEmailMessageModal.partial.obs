@@ -5,10 +5,11 @@
            panelBodyCssClass="email-builder-panel-body"
            title="Create Email">
         <template #headerActions>
-            <span class="action panel-action-preview clickable"
-                  @click="onPreviewClicked">
+            <button class="btn btn-panel-action clickable"
+                    type="button"
+                    @click="onPreviewClicked">
                 <i class="ti ti-eye" />
-            </span>
+        </button>
         </template>
 
         <template #default>

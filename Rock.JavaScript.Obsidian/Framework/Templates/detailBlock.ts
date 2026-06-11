@@ -27,6 +27,7 @@ import { FollowingSetFollowingOptionsBag } from "@Obsidian/ViewModels/Rest/Contr
 import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
 import BadgeList from "@Obsidian/Controls/badgeList.obs";
 import EntityTagList from "@Obsidian/Controls/tagList.obs";
+import ExperienceModePicker from "@Obsidian/Controls/experienceModePicker.obs";
 import RockButton from "@Obsidian/Controls/rockButton.obs";
 import RockForm from "@Obsidian/Controls/rockForm.obs";
 import RockSuspense from "@Obsidian/Controls/rockSuspense.obs";
@@ -47,6 +48,7 @@ export default defineComponent({
     components: {
         AuditDetail,
         EntityTagList,
+        ExperienceModePicker,
         Modal,
         Panel,
         RockButton,
@@ -180,6 +182,16 @@ export default defineComponent({
         },
 
         /**
+         * When true, the `labels` render inside the panel header (next to the
+         * title) rather than in the default sub-header row. Opt-in so existing
+         * blocks keep their current placement.
+         */
+        showLabelsInHeader: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
          * Additional actions to display in the footer of the panel. These are
          * currently displayed as full buttons on the left of the footer.
          */
@@ -264,10 +276,18 @@ export default defineComponent({
             default: false
         },
 
+        /**
+         * Shows the experience mode picker for this block.
+         */
+        showExperienceMode: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
     },
 
     emits: {
-        "update:mode": (_value: DetailPanelMode) => true
+        "update:mode": (_value: DetailPanelMode) => true,
+        "update:isFullscreen": (_value: boolean) => true
     },
 
     setup(props, { emit }) {
@@ -465,7 +485,7 @@ export default defineComponent({
          * @returns A string that contains the CSS classes to apply to the DOM element.
          */
         const getClassForIconAction = (action: PanelAction): string => {
-            let cssClass = action.handler ? "action clickable" : "action";
+            let cssClass = action.handler ? "btn btn-panel-action" : "btn btn-panel-action not-clickable";
 
             if (action.type !== "default" && action.type !== "link") {
                 cssClass += ` text-${action.type}`;
@@ -819,7 +839,7 @@ export default defineComponent({
             // If the edit mode state changed then we need to either hide or
             // show the secondary blocks. This is rare but can happen if the
             // parent component decides to manually change the mode.
-            if (wasEditMode != newEditMode) {
+            if (wasEditMode !== newEditMode) {
                 if (newEditMode) {
                     hideBlockRole(BlockRole.Secondary);
                 }
@@ -904,30 +924,44 @@ export default defineComponent({
     :titleIconCssClass="panelTitleIconCssClass"
     :hasFullscreen="isFullScreenVisible"
     :worksurfaceMode="worksurfaceMode"
-    :headerSecondaryActions="internalHeaderSecondaryActions">
+    :headerSecondaryActions="internalHeaderSecondaryActions"
+    @update:isFullscreen="$emit('update:isFullscreen', $event)">
 
     <template v-if="$slots.sidebar" #sidebar>
         <slot name="sidebar" />
     </template>
 
     <template #headerActions>
+        <div v-if="showExperienceMode" class="panel-experience-mode">
+            <ExperienceModePicker />
+        </div>
+
         <span v-for="action in headerActions" :class="getClassForIconAction(action)" :title="action.title" @click="onActionClick(action, $event)">
             <i :class="getActionIconCssClass(action)"></i>
         </span>
     </template>
 
-    <template v-if="showLabels || showTags" #subheaderLeft>
+    <template v-if="showLabels && showLabelsInHeader" #panelLabels>
+        <div class="label-group">
+            <span v-for="action in labels" :class="getClassForLabelAction(action)" @click="onActionClick(action, $event)">
+                <template v-if="action.title">{{ action.title }}</template>
+                <i v-else :class="action.iconCssClass"></i>
+            </span>
+        </div>
+    </template>
+
+    <template v-if="(showLabels && !showLabelsInHeader) || showTags" #subheaderLeft>
         <div class="d-flex">
-            <div v-if="showLabels" class="label-group">
+            <div v-if="showLabels && !showLabelsInHeader" class="label-group">
                 <span v-for="action in labels" :class="getClassForLabelAction(action)" @click="onActionClick(action, $event)">
                     <template v-if="action.title">{{ action.title }}</template>
                     <i v-else :class="action.iconCssClass"></i>
                 </span>
             </div>
 
-            <div v-if="showTags && showLabels" style="width: 2px; background-color: #eaedf0; margin: 0px 12px;"></div>
+            <div v-if="showTags && showLabels && !showLabelsInHeader" style="width: 2px; background-color: #eaedf0; margin: 0px 12px;"></div>
 
-            <div v-if="showTags" class="flex-grow-1">
+            <div v-if="showTags" class="flex-grow-1 d-flex">
                 <EntityTagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
             </div>
         </div>
@@ -969,6 +1003,9 @@ export default defineComponent({
         <v-style>
             .panel-flex .label-group > .label + * {
                 margin-left: 8px;
+            }
+            .panel-flex > .panel-header > .panel-labels {
+                margin-right: 8px;
             }
         </v-style>
 

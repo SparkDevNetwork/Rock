@@ -28,6 +28,28 @@ namespace Rock.Model
     /// </summary>
     public partial class WorkflowType
     {
+        #region ISecured
+        /// <summary>
+        /// Gets the parent security authority for the DataView which is its Category
+        /// </summary>
+        /// <value>
+        /// The parent authority of the DataView.
+        /// </value>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.Category != null )
+                {
+                    return this.Category;
+                }
+
+                return base.ParentAuthority;
+            }
+        }
+
+        #endregion ISecured
+
         #region Properties
 
         /// <summary>

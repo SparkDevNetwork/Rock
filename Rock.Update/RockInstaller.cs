@@ -314,6 +314,12 @@ namespace Rock.Update
                     FileManagementHelper.RenameActiveFile( fullpath );
 
                     entry.ExtractToFile( fullpath, true );
+
+                    // Update the last write time on the file to now. This is required
+                    // by other parts of Rock to properly detect file updates. Otherwise
+                    // the file might have an old (or newer) timestamp. Intentionally
+                    // using DateTime.Now as we need the local system time.
+                    File.SetLastWriteTime( fullpath, DateTime.Now );
                 }
             }
         }

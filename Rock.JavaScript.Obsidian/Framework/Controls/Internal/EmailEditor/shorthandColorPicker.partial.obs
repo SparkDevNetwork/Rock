@@ -55,25 +55,6 @@
     </TransitionVerticalCollapse>
 </template>
 
-<style scoped>
-.shorthand-property-header {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--color-interface-soft);
-    margin-bottom: var(--spacing-small);
-}
-
-.shorthand-property-label {
-    font-size: var(--font-size-regular);
-}
-
-.more-switch {
-    font-size: var(--font-size-small);
-}
-</style>
-
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import { ShorthandModel } from "./types.partial";

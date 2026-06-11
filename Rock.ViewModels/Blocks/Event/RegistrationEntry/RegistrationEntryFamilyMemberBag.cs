@@ -56,5 +56,15 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// The field values.
         /// </value>
         public Dictionary<Guid, object> FieldValues { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this family member is already a registrant in another registration for this registration instance.
+        /// </summary>
+        public bool IsRegistrantInAnotherRegistration { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the registrant does not meet eligibility requirements.
+        /// </summary>
+        public bool IsIneligible { get; set; }
     }
 }

@@ -167,29 +167,33 @@ namespace Rock.CheckIn.v2
         /// <returns>An instance of <see cref="ValidPropertiesBox{TPropertyBag}"/> that wraps the <see cref="RegistrationFamilyBag"/>.</returns>
         public ValidPropertiesBox<RegistrationFamilyBag> GetFamilyBag( Group group )
         {
-            var homeLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid(), _rockContext ).Id;
             var attributeGuids = _template.RequiredAttributeGuidsForFamilies
                 .Union( _template.OptionalAttributeGuidsForFamilies )
                 .ToList();
             AddressControlBag address = null;
 
-            if ( group.GroupLocations != null )
+            if ( _template.DisplayAddressOnFamilies != Enums.Controls.RequirementLevel.Unavailable )
             {
-                var location = group.GroupLocations
-                    .Where( l => l.GroupLocationTypeValueId == homeLocationTypeId )
-                    .Select( l => l.Location )
-                    .FirstOrDefault();
+                var homeLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid(), _rockContext ).Id;
 
-                address = new AddressControlBag
+                if ( group.GroupLocations != null )
                 {
-                    City = location?.City,
-                    Country = location?.Country,
-                    State = location?.State,
-                    Locality = location?.County,
-                    PostalCode = location?.PostalCode,
-                    Street1 = location?.Street1,
-                    Street2 = location?.Street2,
-                };
+                    var location = group.GroupLocations
+                        .Where( l => l.GroupLocationTypeValueId == homeLocationTypeId )
+                        .Select( l => l.Location )
+                        .FirstOrDefault();
+
+                    address = new AddressControlBag
+                    {
+                        City = location?.City,
+                        Country = location?.Country,
+                        State = location?.State,
+                        Locality = location?.County,
+                        PostalCode = location?.PostalCode,
+                        Street1 = location?.Street1,
+                        Street2 = location?.Street2,
+                    };
+                }
             }
 
             if ( group.Attributes == null )
@@ -750,10 +754,13 @@ namespace Rock.CheckIn.v2
             saveResult.NewFamilyList.Add( family );
             _rockContext.SaveChanges();
 
-            registrationFamily.IfValidProperty( nameof( registrationFamily.Bag.Address ), () =>
+            if ( _template.DisplayAddressOnFamilies != Enums.Controls.RequirementLevel.Unavailable )
             {
-                UpdateFamilyAddress( family, registrationFamily.Bag.Address );
-            } );
+                registrationFamily.IfValidProperty( nameof( registrationFamily.Bag.Address ), () =>
+                {
+                    UpdateFamilyAddress( family, registrationFamily.Bag.Address );
+                } );
+            }
 
             return family;
         }
@@ -774,10 +781,13 @@ namespace Rock.CheckIn.v2
                 _rockContext.SaveChanges();
             }
 
-            registrationFamily.IfValidProperty( nameof( registrationFamily.Bag.Address ), () =>
+            if ( _template.DisplayAddressOnFamilies != Enums.Controls.RequirementLevel.Unavailable )
             {
-                UpdateFamilyAddress( family, registrationFamily.Bag.Address );
-            } );
+                registrationFamily.IfValidProperty( nameof( registrationFamily.Bag.Address ), () =>
+                {
+                    UpdateFamilyAddress( family, registrationFamily.Bag.Address );
+                } );
+            }
         }
 
         /// <summary>

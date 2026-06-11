@@ -1,5 +1,5 @@
 <template>
-    <div class="chart-container" :style="`height: ${height}; width: ${width};`">
+    <div class="chart-container" :style="`height: ${height || '100%'}; width: ${width || '100%'};`">
         <Chart :data="chartData" :options="chartOptions" type="pie" />
     </div>
 </template>
@@ -7,8 +7,16 @@
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import Chart from "./chart.obs";
-    import { LabelDateFormat, LegendAlign, LegendPosition, LineStyle, PieSeries, TooltipCallback } from "@Obsidian/Core/Controls/chart";
-    import { Chart as ChartJS, ChartData, ChartOptions, Color, TooltipItem, TooltipLabelStyle, ChartDataset, LegendItem, BubbleDataPoint, Point } from "@Obsidian/Libs/chart";
+    import {
+        LabelDateFormat,
+        LegendAlign,
+        LegendPosition,
+        LineStyle,
+        PieSeries,
+        TitleAlign,
+        TooltipCallback
+    } from "@Obsidian/Core/Controls/chart";
+    import { ChartData, ChartOptions, TooltipItem, TooltipLabelStyle, ChartDataset, LegendItem } from "@Obsidian/Libs/chart";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { isNullish } from "@Obsidian/Utility/util";
     import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
@@ -126,6 +134,13 @@
          */
         title: {
             type: String as PropType<string | undefined>
+        },
+
+        /**
+         * The alignment of the chart title.
+         */
+        titleAlign: {
+            type: String as PropType<TitleAlign | undefined>
         },
 
         /**
@@ -256,7 +271,7 @@
         };
     });
 
-    const chartOptions = computed<ChartOptions<"pie">>(() => {
+    const chartOptions = computed<ChartOptions<"pie">>((): ChartOptions<"pie"> => {
         return {
             // Allow the chart to change size with the parent container.
             responsive: true,
@@ -271,7 +286,7 @@
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                             size: parseInt(getCssVar("--font-size-small")) || undefined,
-                            weight: getCssVar("--font-weight-semibold")
+                            weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                         },
 
                         generateLabels: (chart) => {
@@ -316,14 +331,21 @@
                 },
 
                 title: {
+                    align: props.titleAlign ?? undefined,
                     color: getCssVar("--color-interface-strong"),
                     display: !!props.title,
 
                     font: {
                         family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                         size: parseInt(getCssVar("--font-size-small")) || undefined,
-                        weight: getCssVar("--font-weight-semibold")
+                        weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                     },
+
+                    // When the title alignment is centered,
+                    // it should be centered according to the full width of the canvas.
+                    // When it is right or left aligned, it should be left or right aligned
+                    // with the chart data area.
+                    fullSize: !props.titleAlign || props.titleAlign === "center",
 
                     text: props.title ?? undefined
                 },
@@ -336,7 +358,7 @@
                     bodyFont: {
                         family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                         size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
-                        weight: getCssVar("--font-weight-regular")
+                        weight: getCssVar("--font-weight-regular") as "bold" | "normal" | "bolder" | "lighter"
                     },
 
                     borderColor: getCssVar("--color-interface-soft"),
@@ -433,7 +455,7 @@
                     titleFont: {
                         family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                         size: parseInt(getCssVar("--font-size-small")) || undefined,
-                        weight: getCssVar("--font-weight-semibold")
+                        weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                     },
                 }
             },

@@ -45,17 +45,17 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <summary>
         /// Gets or sets a value indicating whether this note is an alert.
         /// </summary>
-        public bool IsAlert { get; set; }
+        public bool? IsAlert { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this note is private.
         /// </summary>
-        public bool IsPrivate { get; set; }
+        public bool? IsPrivate { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this note is pinned.
         /// </summary>
-        public bool IsPinned { get; set; }
+        public bool? IsPinned { get; set; }
 
         /// <summary>
         /// Gets or sets the author of the note.

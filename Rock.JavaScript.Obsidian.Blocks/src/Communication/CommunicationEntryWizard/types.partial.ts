@@ -28,6 +28,7 @@ import { CommunicationEntryWizardSaveResponseBag } from "@Obsidian/ViewModels/Bl
 import { CommunicationEntryWizardSendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardSendResponseBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { CommunicationEntryWizardCheckShortLinkTokenBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCheckShortLinkTokenBag";
+import { CommunicationEntryWizardCustomTextBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCustomTextBag";
 
 
 export const enum NavigationUrlKey {
@@ -115,3 +116,9 @@ export enum PreviewAsType {
     Person = "Preview As Person",
     Segment = "Preview As Segment"
 }
+
+type RequiredAndNotNull<T> = {
+    [P in keyof T]-?: NonNullable<T[P]>;
+};
+
+export type CustomText = RequiredAndNotNull<CommunicationEntryWizardCustomTextBag>;

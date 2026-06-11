@@ -30,5 +30,10 @@ namespace Rock.ViewModels.Rest.Controls
         /// List of GUIDs of Entity Types that you wish to include in the list. If blank, it will load all.
         /// </summary>
         public List<Guid> EntityTypeGuids { get; set; }
+
+        /// <summary>
+        /// List of GUIDs of Entity Types that you wish to exclude from the list.
+        /// </summary>
+        public List<Guid> ExcludedEntityTypeGuids { get; set; }
     }
 }

@@ -25,7 +25,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:CodeEditor ID="ceLabel" runat="server" Label="Label Contents" EditorMode="Text" EditorTheme="Rock" EditorHeight="500" />
+                        <Rock:CodeEditor ID="ceLabel" runat="server" Label="Label Contents" EditorMode="Text" EditorHeight="500" />
                         <div class="p-t-md">
                             <Rock:RockCheckBox ID="cbForceUTF8" runat="server" Checked="true" Label="Force Expanded Character set (UTF-8)"
                                 Help="By default Rock will force uploaded and saved ZPL templates to use UTF-8 encoding. This allows characters from any language to print on label for ZPL printers version .14 and up. Changes ^CI0 to ^CI28. Uncheck this box to save the label as-is." />

@@ -204,14 +204,39 @@ namespace Rock.SystemGuid
         public const string CONNECTION_STATUS = "F3840C8B-63BF-4F98-AC4A-9336896E589B";
 
         /// <summary>
+        /// The guid for the Rock.Model.ConnectionRequestStatusHistory entity
+        /// </summary>
+        public const string CONNECTION_REQUEST_STATUS_HISTORY = "9D73FA0E-5787-4357-BD7C-43AD1800DBB1";
+
+        /// <summary>
         /// The guid for the Rock.Model.ConnectionType entity
         /// </summary>
         public const string CONNECTION_TYPE = "B1E52EAD-65BD-4C4D-BCCD-73368067621D";
 
         /// <summary>
+        /// The guid for the Rock.Model.ConnectionTypeSource entity
+        /// </summary>
+        public const string CONNECTION_TYPE_SOURCE = "06FD04C5-8A18-43D1-AE13-3611344FB40A";
+
+        /// <summary>
         /// The guid for the Rock.Model.ConnectionWorkflow entity
         /// </summary>
         public const string CONNECTION_WORKFLOW = "4EB8711F-7301-4699-A223-0505A7CEB20A";
+
+        /// <summary>
+        /// The guid for the Rock.Model.Contact entity
+        /// </summary>
+        public const string CONTACT = "A2FBB846-2511-4760-B912-928775BFC6D6";
+
+        /// <summary>
+        /// The guid for the Rock.Model.ContactTouchpoint entity
+        /// </summary>
+        public const string CONTACT_TOUCHPOINT = "1068B648-FEE4-44E7-BF43-607371871367";
+
+        /// <summary>
+        /// The guid for the Rock.Model.ContactRelationshipChange entity
+        /// </summary>
+        public const string CONTACT_RELATIONSHIP_CHANGE = "0397D69F-1E9E-4202-BCB8-9DEEDAA554C9";
 
         /// <summary>
         /// The guid for the Rock.Model.ContentCollection entity
@@ -516,6 +541,41 @@ namespace Rock.SystemGuid
         /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Connection.AddConnectionRequest"/>.
         /// </summary>
         public const string MOBILE_CONNECTION_ADD_CONNECTION_REQUEST = "F41E7BE3-2854-40FF-82C8-1FDEA12B8B2F";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Engagement.ContactProfile"/>
+        /// </summary>
+        public const string MOBILE_OUTREACH_CONTACT_PROFILE_BLOCK_TYPE = "5A8E8F2C-1F1E-4D3A-9C8E-3B6D9F1C4E2B";
+
+        /// <summary>
+        /// The Guid for the entity <see cref="Blocks.Types.Mobile.Engagement.AddContact"/>
+        /// </summary>
+        public const string MOBILE_OUTREACH_ADD_CONTACT_BLOCK_TYPE = "2742790B-031B-4CF3-9489-B84E50EA99BA";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Engagement.OutreachOnboarding"/>.
+        /// </summary>
+        public const string MOBILE_OUTREACH_OUTREACH_ONBOARDING_BLOCK_TYPE = "C1A3F4E2-7F4B-4D3A-8C2E-5B6D9F1C4E3C";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Engagement.OutreachDashboard"/>.
+        /// </summary>
+        public const string MOBILE_OUTREACH_OUTREACH_DASHBOARD_BLOCK_TYPE = "A3D9F1C4-E3C1-4D3A-8C2E-7F4B5B6D9F1C";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Engagement.TouchpointDetail"/>
+        /// </summary>
+        public const string MOBILE_OUTREACH_TOUCHPOINT_DETAIL_BLOCK_TYPE = "83D3D9F1-901B-4FE6-9F83-898D1BE1BC43";
+
+        /// <summary>
+        /// The GUid for the entity <see cref="Rock.Blocks.Types.Mobile.Engagement.OutreachRecentActivity"/>
+        /// </summary>
+        public const string MOBILE_OUTREACH_OUTREACH_RECENT_ACTIVITY_BLOCK_TYPE = "73CA6269-28BA-4914-92F8-7493E732DCED";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Engagement.MyContact"/>.
+        /// </summary>
+        public const string MOBILE_OUTREACH_MY_CONTACTS_BLOCK_TYPE = "D1CFF2E3-0E3A-4F2D-8F1D-4C3E3F2B6F2A";
 
         /// <summary>
         /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Prayer.MyPrayerRequests"/>.
@@ -1940,8 +2000,10 @@ namespace Rock.SystemGuid
         public const string STREAK_TYPE_EXCLUSION = "1F00C782-F8A2-4CFA-B7DF-E5B3B6D36069";
 
         /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Model.SystemEmail"/> 
+        /// The EntityType Guid for <c>Rock.Model.SystemEmail</c> which is made obsolete by the <see cref="Rock.Model.SystemCommunication"/>
         /// </summary>
+        [Obsolete( "This entity was replaced in Rock v10 by Rock.Model.SystemCommunication", true )]
+        [RockObsolete( "1.10" )]
         public const string SYSTEM_EMAIL = "B21FD119-893E-46C0-B42D-E4CDD5C8C49D";
 
         /// <summary>

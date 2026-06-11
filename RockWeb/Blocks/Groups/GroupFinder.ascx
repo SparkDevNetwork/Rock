@@ -314,7 +314,7 @@
                                         </rock:rockdropdownlist>
                                     </div>
                                     <div class="col-md-12">
-                                        <rock:codeeditor id="ceMapInfo" runat="server" label="Group Window Contents" editormode="Lava" editortheme="Rock" height="300"
+                                        <rock:codeeditor id="ceMapInfo" runat="server" label="Group Window Contents" editormode="Lava" height="300"
                                             help="The Lava template to use for formatting the group information that is displayed when user clicks the group marker on the map."
                                             validationgroup="GroupFinderSettings" />
                                     </div>
@@ -352,7 +352,7 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <rock:codeeditor id="ceLavaOutput" runat="server" label="Lava Template" editormode="Lava" editortheme="Rock" height="300"
+                                        <rock:codeeditor id="ceLavaOutput" runat="server" label="Lava Template" editormode="Lava" height="300"
                                             help="The Lava template to use for formatting the matching groups."
                                             validationgroup="GroupFinderSettings" />
                                     </div>

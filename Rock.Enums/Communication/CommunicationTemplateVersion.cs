@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.ComponentModel;
+
 namespace Rock.Model
 {
     /// <summary>
@@ -31,6 +33,7 @@ namespace Rock.Model
         /// <summary>
         /// Beta Communication Template
         /// </summary>
+        [Description( "NextGen" )]
         Beta = 1,
     }
 }

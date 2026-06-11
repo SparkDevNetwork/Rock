@@ -55,11 +55,11 @@
                                      horizontal
                                      :items="[
                                         {
-                                            text: 'Legacy',
+                                            text: CommunicationTemplateVersionDescription[CommunicationTemplateVersion.Legacy],
                                             value: `${CommunicationTemplateVersion.Legacy}`
                                         },
                                         {
-                                            text: 'Beta',
+                                            text: CommunicationTemplateVersionDescription[CommunicationTemplateVersion.Beta],
                                             value: `${CommunicationTemplateVersion.Beta}`
                                         }
                                     ]"
@@ -112,13 +112,9 @@
                                  label="Email Subject"
                                  :maxLength="1000"
                                  :rules="[createMaxLengthValidator(1000)]" />
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-12">
                         <RockButton btnSize="xs"
                                     btnType="link"
+                                    class="mb-spacing-xs"
                                     @click="areAdditionalFieldsShown = !areAdditionalFieldsShown">{{ areAdditionalFieldsShown ? 'Hide' : 'Show' }} Additional Fields</RockButton>
                     </div>
                 </div>
@@ -438,79 +434,6 @@
     </Panel>
 </template>
 
-<style scoped>
-:deep(.email-builder-panel-body) {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-:deep(.email-builder-panel-body .actions) {
-    margin: 0;
-}
-
-.panel-body-contents {
-    flex: 1;
-    overflow: hidden;
-}
-
-:deep(.panel-widget .panel-title) {
-    font-size: var(--font-size-regular);
-    font-weight: var(--font-weight-regular);
-}
-
-.email-design-header {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid var(--panel-border);
-    padding: var(--spacing-small) var(--spacing-medium);
-    /* Make header stretch to the parent panel width. */
-    margin: 0 calc(0px - var(--panel-body-padding));
-}
-
-:deep(.email-design-subheader) {
-    margin: 0 calc(0px - var(--panel-body-padding));
-}
-
-.alert-inline,
-:deep(.alert-inline) {
-    margin-bottom: 0;
-}
-
-:deep(.email-design-body) {
-    margin: 0 calc(0px - var(--panel-body-padding));
-}
-
-:deep(.email-design-body .form-group.rock-check-box) {
-    min-height: unset;
-}
-
-:deep(.email-design-body) .side-panel {
-    padding: var(--spacing-medium) 0 var(--spacing-medium) var(--spacing-medium);
-}
-
-.email-preview-buttons button,
-.email-actions button:not(.btn-square) {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: var(--spacing-tiny);
-}
-
-.email-preview-selected {
-    background-color: var(--color-interface-medium);
-    color: var(--base-interface-softest);
-}
-
-.email-actions {
-    display: flex;
-    flex-direction: row;
-    gap: var(--spacing-xsmall);
-}
-</style>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";

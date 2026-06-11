@@ -44,11 +44,69 @@ namespace Rock.Model
         /// <param name="includePledges">if set to <c>true</c> [include pledges].</param>
         /// <param name="includeGifts">if set to <c>true</c> [include gifts].</param>
         /// <returns></returns>
-        public DataSet GetPledgeAnalyticsDataSet( int[] accountIds, DateTime? start, DateTime? end,
-            decimal? minAmountPledged, decimal? maxAmountPledged, decimal? minComplete, decimal? maxComplete, decimal? minAmountGiven, decimal? maxAmountGiven,
-            bool includePledges, bool includeGifts )
+        public DataSet GetPledgeAnalyticsDataSet(
+            int[] accountIds,
+            DateTime? start,
+            DateTime? end,
+            decimal? minAmountPledged,
+            decimal? maxAmountPledged,
+            decimal? minComplete,
+            decimal? maxComplete,
+            decimal? minAmountGiven,
+            decimal? maxAmountGiven,
+            bool includePledges,
+            bool includeGifts )
         {
-            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            return GetPledgeAnalyticsDataSet(
+                accountIds,
+                start,
+                end,
+                givingStartDate: null,
+                givingEndDate: null,
+                minAmountPledged,
+                maxAmountPledged,
+                minComplete,
+                maxComplete,
+                minAmountGiven,
+                maxAmountGiven,
+                includePledges,
+                includeGifts );
+        }
+
+        /// <summary>
+        /// Gets the pledge analytics with options to limit the giving data based on the
+        /// given givingStartDate and givingEndDate dates.
+        /// </summary>
+        /// <param name="accountIds">The account identifier array.</param>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="givingStartDate">The giving date start.</param>
+        /// <param name="givingEndDate">The giving date end.</param>
+        /// <param name="minAmountPledged">The minimum amount pledged.</param>
+        /// <param name="maxAmountPledged">The maximum amount pledged.</param>
+        /// <param name="minComplete">The minimum complete.</param>
+        /// <param name="maxComplete">The maximum complete.</param>
+        /// <param name="minAmountGiven">The minimum amount given.</param>
+        /// <param name="maxAmountGiven">The maximum amount given.</param>
+        /// <param name="includePledges">if set to <c>true</c> [include pledges].</param>
+        /// <param name="includeGifts">if set to <c>true</c> [include gifts].</param>
+        /// <returns></returns>
+        public DataSet GetPledgeAnalyticsDataSet(
+            int[] accountIds,
+            DateTime? start,
+            DateTime? end,
+            DateTime? givingStartDate,
+            DateTime? givingEndDate,
+            decimal? minAmountPledged,
+            decimal? maxAmountPledged,
+            decimal? minComplete,
+            decimal? maxComplete,
+            decimal? minAmountGiven,
+            decimal? maxAmountGiven,
+            bool includePledges,
+            bool includeGifts )
+        {
+            var parameters = new Dictionary<string, object>();
 
             string accountIdsString = string.Join( ",", accountIds );
             parameters.Add( "AccountIds", accountIdsString );
@@ -61,6 +119,16 @@ namespace Rock.Model
             if ( end.HasValue )
             {
                 parameters.Add( "EndDate", end.Value );
+            }
+
+            if ( givingStartDate.HasValue )
+            {
+                parameters.Add( "GivingStartDate", givingStartDate.Value );
+            }
+
+            if ( givingEndDate.HasValue )
+            {
+                parameters.Add( "GivingEndDate", givingEndDate.Value );
             }
 
             if ( minAmountPledged.HasValue )

@@ -25,7 +25,7 @@ import { asBoolean, asBooleanOrNull, asTrueFalseOrNull } from "@Obsidian/Utility
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { updateRefValue } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationValueKey } from "./multiSelectField.partial";
+import { ConfigurationKey } from "./multiSelectField.partial";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 
 export const EditComponent = defineComponent({
@@ -54,7 +54,7 @@ export const EditComponent = defineComponent({
         /** The options to choose from */
         options(): ListItemBag[] {
             try {
-                const valuesConfig = JSON.parse(this.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+                const valuesConfig = JSON.parse(this.configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
 
                 return valuesConfig.map(v => {
                     return {
@@ -71,7 +71,7 @@ export const EditComponent = defineComponent({
         /** Any additional attributes that will be assigned to the list box control */
         listBoxConfigAttributes(): Record<string, number | boolean> {
             const attributes: Record<string, number | boolean> = {};
-            const enhancedSelection = this.configurationValues[ConfigurationValueKey.EnhancedSelection];
+            const enhancedSelection = this.configurationValues[ConfigurationKey.EnhancedSelection];
 
             if (asBoolean(enhancedSelection)) {
                 attributes.enhanceForLongLists = true;
@@ -83,8 +83,8 @@ export const EditComponent = defineComponent({
         /** Any additional attributes that will be assigned to the check box list control */
         checkBoxListConfigAttributes(): Record<string, number | boolean> {
             const attributes: Record<string, number | boolean> = {};
-            const repeatColumnsConfig = this.configurationValues[ConfigurationValueKey.RepeatColumns];
-            const repeatDirection = this.configurationValues[ConfigurationValueKey.RepeatDirection];
+            const repeatColumnsConfig = this.configurationValues[ConfigurationKey.RepeatColumns];
+            const repeatDirection = this.configurationValues[ConfigurationKey.RepeatDirection];
 
             if (repeatColumnsConfig) {
                 attributes["repeatColumns"] = toNumberOrNull(repeatColumnsConfig) || 0;
@@ -99,7 +99,7 @@ export const EditComponent = defineComponent({
 
         /** Is the control going to be list box? */
         isListBox(): boolean {
-            const enhancedSelection = this.configurationValues[ConfigurationValueKey.EnhancedSelection];
+            const enhancedSelection = this.configurationValues[ConfigurationKey.EnhancedSelection];
 
             return asBoolean(enhancedSelection);
         }
@@ -140,7 +140,7 @@ export const FilterComponent = defineComponent({
 
         const options = computed((): ListItemBag[] => {
             try {
-                const providedOptions = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+                const providedOptions = JSON.parse(props.configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
 
                 return providedOptions;
             }
@@ -222,16 +222,16 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.CustomValues] = internalRawValues.value ?? "";
-            newValue[ConfigurationValueKey.EnhancedSelection] = asTrueFalseOrNull(enhanceForLongLists.value) ?? "False";
-            newValue[ConfigurationValueKey.RepeatColumns] = repeatColumns.value?.toString() ?? "";
-            newValue[ConfigurationValueKey.RepeatDirection] = repeatDirection.value ?? "0";
+            newValue[ConfigurationKey.CustomValues] = internalRawValues.value ?? "";
+            newValue[ConfigurationKey.EnhancedSelection] = asTrueFalseOrNull(enhanceForLongLists.value) ?? "False";
+            newValue[ConfigurationKey.RepeatColumns] = repeatColumns.value?.toString() ?? "";
+            newValue[ConfigurationKey.RepeatDirection] = repeatDirection.value ?? "0";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.CustomValues] !== (props.modelValue[ConfigurationValueKey.CustomValues] ?? "")
-                || newValue[ConfigurationValueKey.EnhancedSelection] !== (props.modelValue[ConfigurationValueKey.EnhancedSelection] ?? "False")
-                || newValue[ConfigurationValueKey.RepeatColumns] !== (props.modelValue[ConfigurationValueKey.RepeatColumns] ?? "")
-                || newValue[ConfigurationValueKey.RepeatDirection] !== (props.modelValue[ConfigurationValueKey.RepeatDirection] ?? "0");
+            const anyValueChanged = newValue[ConfigurationKey.CustomValues] !== (props.modelValue[ConfigurationKey.CustomValues] ?? "")
+                || newValue[ConfigurationKey.EnhancedSelection] !== (props.modelValue[ConfigurationKey.EnhancedSelection] ?? "False")
+                || newValue[ConfigurationKey.RepeatColumns] !== (props.modelValue[ConfigurationKey.RepeatColumns] ?? "")
+                || newValue[ConfigurationKey.RepeatDirection] !== (props.modelValue[ConfigurationKey.RepeatDirection] ?? "0");
 
 
             // If any value changed then emit the new model value.
@@ -259,11 +259,11 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            rawValues.value = props.modelValue[ConfigurationValueKey.CustomValues] ?? "";
+            rawValues.value = props.modelValue[ConfigurationKey.CustomValues] ?? "";
             internalRawValues.value = rawValues.value;
-            enhanceForLongLists.value = asBooleanOrNull(props.modelValue[ConfigurationValueKey.EnhancedSelection]) ?? false;
-            repeatColumns.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.RepeatColumns]);
-            repeatDirection.value = props.modelValue[ConfigurationValueKey.RepeatDirection] ?? "0";
+            enhanceForLongLists.value = asBooleanOrNull(props.modelValue[ConfigurationKey.EnhancedSelection]) ?? false;
+            repeatColumns.value = toNumberOrNull(props.modelValue[ConfigurationKey.RepeatColumns]);
+            repeatDirection.value = props.modelValue[ConfigurationKey.RepeatDirection] ?? "0";
         }, {
             immediate: true
         });
@@ -277,9 +277,9 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(enhanceForLongLists, () => maybeUpdateConfiguration(ConfigurationValueKey.EnhancedSelection, asTrueFalseOrNull(enhanceForLongLists.value) ?? "False"));
-        watch(repeatColumns, () => maybeUpdateConfiguration(ConfigurationValueKey.RepeatColumns, repeatColumns.value?.toString() ?? ""));
-        watch(repeatDirection, () => maybeUpdateConfiguration(ConfigurationValueKey.RepeatDirection, repeatDirection.value ?? "0"));
+        watch(enhanceForLongLists, () => maybeUpdateConfiguration(ConfigurationKey.EnhancedSelection, asTrueFalseOrNull(enhanceForLongLists.value) ?? "False"));
+        watch(repeatColumns, () => maybeUpdateConfiguration(ConfigurationKey.RepeatColumns, repeatColumns.value?.toString() ?? ""));
+        watch(repeatDirection, () => maybeUpdateConfiguration(ConfigurationKey.RepeatDirection, repeatDirection.value ?? "0"));
 
         return {
             enhanceForLongLists,

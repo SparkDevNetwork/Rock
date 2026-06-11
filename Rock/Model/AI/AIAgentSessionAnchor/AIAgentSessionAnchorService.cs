@@ -77,6 +77,22 @@ namespace Rock.Model
             anchor.LastRefreshedDateTime = RockDateTime.Now;
         }
 
+        internal static string GetEntityContextName( IEntity entity )
+        {
+            if ( entity is Person person )
+            {
+                return person.FullName;
+            }
+            else if ( entity is Group group )
+            {
+                return group.Name;
+            }
+            else
+            {
+                return entity.ToString();
+            }
+        }
+
         private class GroupContextAnchor : ContextAnchor
         {
             public int GroupTypeId { get; set; }

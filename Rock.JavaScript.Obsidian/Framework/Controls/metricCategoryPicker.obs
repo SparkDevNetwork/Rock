@@ -5,7 +5,8 @@
                     iconCssClass="ti ti-chart-bar"
                     :provider="itemProvider"
                     :multiple="multiple"
-                    disableFolderSelection />
+                    disableFolderSelection
+                    autoExpand />
 </template>
 
 <script setup lang="ts">

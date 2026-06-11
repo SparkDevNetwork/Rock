@@ -47,7 +47,6 @@ namespace Rock.Blocks.Security
     [CodeEditorField( "Heading Caption",
         Key = AttributeKey.HeadingCaption,
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Html,
-        EditorTheme = Rock.Web.UI.Controls.CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         DefaultValue = "<h5 class='text-center'>Can't log in?</h5>",
@@ -57,7 +56,6 @@ namespace Rock.Blocks.Security
     [CodeEditorField( "Invalid Email Caption",
         Key = AttributeKey.InvalidEmailCaption,
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Html,
-        EditorTheme = Rock.Web.UI.Controls.CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         DefaultValue = "Sorry, we didn't recognize that email address. Want to try another?",
@@ -67,7 +65,6 @@ namespace Rock.Blocks.Security
     [CodeEditorField( "Success Caption",
         Key = AttributeKey.SuccessCaption,
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Html,
-        EditorTheme = Rock.Web.UI.Controls.CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         DefaultValue = "We've emailed you instructions for logging in.",
@@ -97,7 +94,7 @@ namespace Rock.Blocks.Security
     [BooleanField(
         "Disable Captcha Support",
         Key = AttributeKey.DisableCaptchaSupport,
-        Description = "If set to 'Yes' the CAPTCHA verification will be skipped. \n\nNote: If the CAPTCHA site key and/or secret key are not configured in the system settings, this option will be forced as 'Yes', even if 'No' is visually selected.",
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
         DefaultBooleanValue = false,
         Order = 6 )]
 

@@ -48,7 +48,7 @@ namespace Rock.Tests.Integration.TestData
 
             public static DataView CreateDataView( CreateDataViewArgs args )
             {
-                TestHelper.Log( $"Adding Data View \"{ args.Name }\"..." );
+                TestHelper.Log( $"Adding Data View \"{args.Name}\"..." );
 
                 DataView newDataView = null;
 
@@ -339,7 +339,7 @@ namespace Rock.Tests.Integration.TestData
                     addNode.EntityTypeId = EntityTypeCache.GetId( args.FilterTypeIdentifier );
                     if ( addNode.EntityTypeId == null )
                     {
-                        throw new Exception( $"Invalid Filter Component. [Name=\"{ args.FilterTypeIdentifier }\"]" );
+                        throw new Exception( $"Invalid Filter Component. [Name=\"{args.FilterTypeIdentifier}\"]" );
                     }
                 }
 
@@ -367,7 +367,7 @@ namespace Rock.Tests.Integration.TestData
                 // Add Data View Category "Groups".
                 const string categoryDataViewName = "Groups";
 
-                TestHelper.Log( $"Adding Data View Category \"{ categoryDataViewName }\"..." );
+                TestHelper.Log( $"Adding Data View Category \"{categoryDataViewName}\"..." );
 
                 var entityTypeId = EntityTypeCache.Get( typeof( global::Rock.Model.DataView ) ).Id;
 
@@ -387,7 +387,7 @@ namespace Rock.Tests.Integration.TestData
                 // Create Data View: Locations Inside Arizona
                 const string dataViewLocationsInsideArizona = "Locations in the state of Arizona";
 
-                TestHelper.Log( $"Adding Data View \"{ dataViewLocationsInsideArizona }\"..." );
+                TestHelper.Log( $"Adding Data View \"{dataViewLocationsInsideArizona}\"..." );
 
                 var service = new DataViewService( dataContext );
 
@@ -418,7 +418,7 @@ namespace Rock.Tests.Integration.TestData
                 // Create Data View: Locations Outside Arizona
                 const string dataViewLocationsOutsideArizona = "Locations outside Arizona";
 
-                TestHelper.Log( $"Adding Data View \"{ dataViewLocationsOutsideArizona }\"..." );
+                TestHelper.Log( $"Adding Data View \"{dataViewLocationsOutsideArizona}\"..." );
 
                 var dataViewOutside = new DataView();
                 dataViewOutside.IsSystem = false;

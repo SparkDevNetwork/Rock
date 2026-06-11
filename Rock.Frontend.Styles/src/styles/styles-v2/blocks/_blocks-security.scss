@@ -1,0 +1,50 @@
+
+
+//  BLOCK SECURITY STYLE
+
+
+// =============================================================
+// Table of Content
+//  + User Registration
+//  + Security Popup
+// =============================================================
+
+
+// ======================== USER REGISTRATION ========================
+.not-me {
+  margin-left:    var(--spacing-large);
+}
+// ====================== END USER REGISTRATION ======================
+
+// ====================== ACCOUNT ENTRY ======================
+
+// Phone Number Details
+
+.account-entry {
+
+  .phonegroup.form-group {
+    margin-bottom: 0;
+  }
+
+  .phonegroup-types {
+    display: flex;
+    gap: var(--spacing-large);
+    align-items: center;
+    height: 35px; /* Align with input height */
+
+    .checkbox,
+    .checkbox + .checkbox {
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+
+  }
+
+}
+
+// ======================== SECURITY POPUP ========================
+.security-inherited {
+  margin-top:     var(--spacing-medium);
+}
+// ====================== END SECURITY POPUP ======================
+

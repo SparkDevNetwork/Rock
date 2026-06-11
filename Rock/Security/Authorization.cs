@@ -24,6 +24,7 @@ using System.Web;
 using System.Web.Security;
 
 using Rock.Bus.Message;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -96,6 +97,11 @@ namespace Rock.Security
         /// Authorization to view object
         /// </summary>
         public const string VIEW = "View";
+
+        /// <summary>
+        /// Authorization to view all objects (e.g., overruling entity security)
+        /// </summary>
+        public const string VIEW_ALL = "ViewAll";
 
         /// <summary>
         /// Authorization to edit object ( add, set properties, delete, etc )
@@ -192,6 +198,11 @@ namespace Rock.Security
         /// </summary>
         public const string EXECUTE = "Execute";
 
+        /// <summary>
+        /// Authorization to view the lists of the entity type.
+        /// </summary>
+        public const string VIEW_LIST = "ViewList";
+
         #region API Security Actions
 
         /// <summary>
@@ -246,7 +257,7 @@ namespace Rock.Security
 
             // query the database for all of the entity auth rules
             var authEntityRules = new List<AuthEntityRule>();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach ( var auth in new AuthService( rockContext )
                     .Queryable().AsNoTracking()
@@ -344,7 +355,7 @@ namespace Rock.Security
             }
             else
             {
-                using ( rockContext = new RockContext() )
+                using ( rockContext = RockApp.Current.CreateRockContext() )
                 {
                     auths = LoadAuths( entityTypeId, entityId, rockContext );
                 }
@@ -397,7 +408,7 @@ namespace Rock.Security
             var newAuthRules = new List<AuthRule>();
 
             // Query database for the authorizations related to this entitytype, entity, and action
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var securityGroupType = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid(), rockContext );
                 int securityGroupTypeId = securityGroupType?.Id ?? 0;
@@ -534,7 +545,7 @@ namespace Rock.Security
             }
             else
             {
-                using ( var myRockContext = new RockContext() )
+                using ( var myRockContext = RockApp.Current.CreateRockContext() )
                 {
                     MyAllowAllUsers( entity, action, myRockContext );
                 }
@@ -557,7 +568,7 @@ namespace Rock.Security
             }
             else
             {
-                using ( var myRockContext = new RockContext() )
+                using ( var myRockContext = RockApp.Current.CreateRockContext() )
                 {
                     MyMakePrivate( entity, action, person, myRockContext );
                 }
@@ -579,7 +590,7 @@ namespace Rock.Security
             }
             else
             {
-                using ( var myRockContext = new RockContext() )
+                using ( var myRockContext = RockApp.Current.CreateRockContext() )
                 {
                     MyMakeUnPrivate( entity, action, person, myRockContext );
                 }
@@ -601,7 +612,7 @@ namespace Rock.Security
             }
             else
             {
-                using ( var myRockContext = new RockContext() )
+                using ( var myRockContext = RockApp.Current.CreateRockContext() )
                 {
                     MyAllow( entity, action, person, null, SpecialRole.None, myRockContext );
                 }
@@ -623,7 +634,7 @@ namespace Rock.Security
             }
             else
             {
-                using ( var myRockContext = new RockContext() )
+                using ( var myRockContext = RockApp.Current.CreateRockContext() )
                 {
                     MyAllow( entity, action, null, group, SpecialRole.None, myRockContext );
                 }
@@ -669,7 +680,7 @@ namespace Rock.Security
         /// <param name="targetEntity">The target entity.</param>
         public static void CopyAuthorization( ISecured sourceEntity, ISecured targetEntity )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 CopyAuthorization( sourceEntity, targetEntity, rockContext );
             }
@@ -1453,7 +1464,7 @@ namespace Rock.Security
             Person person = null, Group group = null, SpecialRole specialRole = SpecialRole.None,
             RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             PersonAlias personAlias = null;
             if ( person != null )
@@ -1729,7 +1740,7 @@ namespace Rock.Security
                         {
                             try
                             {
-                                var personService = new PersonService( new RockContext() );
+                                var personService = new PersonService( RockApp.Current.CreateRockContext() );
                                 var person = personService.Get( PersonId.Value );
                                 if ( person != null )
                                 {
@@ -1756,7 +1767,7 @@ namespace Rock.Security
                                        role.Name + " <small>(Role)</small>";
                             }
 
-                            var groupService = new GroupService( new RockContext() );
+                            var groupService = new GroupService( RockApp.Current.CreateRockContext() );
                             var group = groupService.Get( GroupId.Value );
                             if ( group != null )
                             {

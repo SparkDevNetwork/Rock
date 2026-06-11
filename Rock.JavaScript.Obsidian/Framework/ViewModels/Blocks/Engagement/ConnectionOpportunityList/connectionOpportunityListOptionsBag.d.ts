@@ -23,4 +23,6 @@
 
 /** The additional configuration options for the Connection Opportunity List block. */
 export type ConnectionOpportunityListOptionsBag = {
+    /** Gets or sets a value indicating whether the reorder column should be visible. */
+    isReOrderColumnVisible: boolean;
 };

@@ -20,7 +20,7 @@ import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import { ConfigurationValueKey } from "./lavaCommandsField.partial";
+import { ConfigurationKey } from "./lavaCommandsField.partial";
 
 export const EditComponent = defineComponent({
     name: "LavaCommandsField.Edit",
@@ -48,7 +48,7 @@ export const EditComponent = defineComponent({
         });
 
         const repeatColumns = computed((): string => {
-            return props.configurationValues[ConfigurationValueKey.RepeatColumns];
+            return props.configurationValues[ConfigurationKey.RepeatColumns];
         });
 
         return {
@@ -94,10 +94,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.RepeatColumns] = repeatColumns.value?.toString() ?? "";
+            newValue[ConfigurationKey.RepeatColumns] = repeatColumns.value?.toString() ?? "";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.RepeatColumns] !== (props.modelValue[ConfigurationValueKey.RepeatColumns] ?? "");
+            const anyValueChanged = newValue[ConfigurationKey.RepeatColumns] !== (props.modelValue[ConfigurationKey.RepeatColumns] ?? "");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -124,13 +124,13 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            repeatColumns.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.RepeatColumns]) ?? 3;
+            repeatColumns.value = toNumberOrNull(props.modelValue[ConfigurationKey.RepeatColumns]) ?? 3;
         }, {
             immediate: true
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(repeatColumns, () => maybeUpdateConfiguration(ConfigurationValueKey.RepeatColumns, repeatColumns.value?.toString() ?? ""));
+        watch(repeatColumns, () => maybeUpdateConfiguration(ConfigurationKey.RepeatColumns, repeatColumns.value?.toString() ?? ""));
 
         return {
             repeatColumns

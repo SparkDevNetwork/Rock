@@ -17,7 +17,7 @@
 import { defineComponent, ref, computed, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import { asTrueFalseOrNull, asBoolean } from "@Obsidian/Utility/booleanUtils";
-import { ConfigurationValueKey } from "./booleanField.partial";
+import { ConfigurationKey } from "./booleanField.partial";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import Toggle from "@Obsidian/Controls/toggle.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
@@ -49,12 +49,19 @@ export const EditComponent = defineComponent({
 
         // Which control type should be used for value selection
         const booleanControlType = computed((): BooleanControlType => {
-            const controlType = props.configurationValues[ConfigurationValueKey.BooleanControlType];
+            const controlType = props.configurationValues[ConfigurationKey.BooleanControlType];
 
+            // Hello future developer, this is yourself form the past. When
+            // configuring the control type via the UI, the value is stored as
+            // a number. However, when the control type is configured via a
+            // C# attribute on a field type, the value is stored as the name of
+            // the enum value. So we need to handle both.
             switch (controlType) {
                 case "1":
+                case "Checkbox":
                     return BooleanControlType.Checkbox;
                 case "2":
+                case "Toggle":
                     return BooleanControlType.Toggle;
                 default:
                     return BooleanControlType.DropDown;
@@ -68,7 +75,7 @@ export const EditComponent = defineComponent({
         // What labels does the user see for the true/false values
         const trueText = computed((): string => {
             let trueText = "Yes";
-            const trueConfig = props.configurationValues[ConfigurationValueKey.TrueText];
+            const trueConfig = props.configurationValues[ConfigurationKey.TrueText];
 
             if (trueConfig) {
                 trueText = trueConfig;
@@ -79,7 +86,7 @@ export const EditComponent = defineComponent({
 
         const falseText = computed((): string => {
             let falseText = "No";
-            const falseConfig = props.configurationValues[ConfigurationValueKey.FalseText];
+            const falseConfig = props.configurationValues[ConfigurationKey.FalseText];
 
             if (falseConfig) {
                 falseText = falseConfig;
@@ -90,8 +97,8 @@ export const EditComponent = defineComponent({
 
         // configuration for a toggle button
         const toggleOptions = computed((): Record<string, unknown> => ({
-                trueText: trueText.value,
-                falseText: falseText.value
+            trueText: trueText.value,
+            falseText: falseText.value
         }));
 
         // configuration for a dropdown control
@@ -166,13 +173,13 @@ export const FilterComponent = defineComponent({
 
         // What labels does the user see for the true/false values
         const trueText = computed((): string => {
-            const trueConfig = props.configurationValues[ConfigurationValueKey.TrueText];
+            const trueConfig = props.configurationValues[ConfigurationKey.TrueText];
 
             return trueConfig || "Yes";
         });
 
         const falseText = computed((): string => {
-            const falseConfig = props.configurationValues[ConfigurationValueKey.FalseText];
+            const falseConfig = props.configurationValues[ConfigurationKey.FalseText];
 
             return falseConfig || "No";
         });
@@ -225,14 +232,14 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.TrueText] = trueText.value ?? "Yes";
-            newValue[ConfigurationValueKey.FalseText] = falseText.value ?? "No";
-            newValue[ConfigurationValueKey.BooleanControlType] = controlType.value?.toString() ?? BooleanControlType.DropDown.toString();
+            newValue[ConfigurationKey.TrueText] = trueText.value ?? "Yes";
+            newValue[ConfigurationKey.FalseText] = falseText.value ?? "No";
+            newValue[ConfigurationKey.BooleanControlType] = controlType.value?.toString() ?? BooleanControlType.DropDown.toString();
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.TrueText] !== (props.modelValue[ConfigurationValueKey.TrueText] ?? "Yes")
-                || newValue[ConfigurationValueKey.FalseText] !== (props.modelValue[ConfigurationValueKey.FalseText] ?? "No")
-                || newValue[ConfigurationValueKey.BooleanControlType] !== (props.modelValue[ConfigurationValueKey.BooleanControlType] ?? BooleanControlType.DropDown);
+            const anyValueChanged = newValue[ConfigurationKey.TrueText] !== (props.modelValue[ConfigurationKey.TrueText] ?? "Yes")
+                || newValue[ConfigurationKey.FalseText] !== (props.modelValue[ConfigurationKey.FalseText] ?? "No")
+                || newValue[ConfigurationKey.BooleanControlType] !== (props.modelValue[ConfigurationKey.BooleanControlType] ?? BooleanControlType.DropDown);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -259,9 +266,9 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            trueText.value = props.modelValue[ConfigurationValueKey.TrueText] ?? "Yes";
-            falseText.value = props.modelValue[ConfigurationValueKey.FalseText] ?? "No";
-            controlType.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.BooleanControlType]) ?? 0;
+            trueText.value = props.modelValue[ConfigurationKey.TrueText] ?? "Yes";
+            falseText.value = props.modelValue[ConfigurationKey.FalseText] ?? "No";
+            controlType.value = toNumberOrNull(props.modelValue[ConfigurationKey.BooleanControlType]) ?? 0;
         }, {
             immediate: true
         });
@@ -275,9 +282,9 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(trueText, () => maybeUpdateConfiguration(ConfigurationValueKey.TrueText, trueText.value ?? "Yes"));
-        watch(falseText, () => maybeUpdateConfiguration(ConfigurationValueKey.FalseText, falseText.value ?? "No"));
-        watch(controlType, () => maybeUpdateConfiguration(ConfigurationValueKey.BooleanControlType, controlType.value?.toString() ?? "0"));
+        watch(trueText, () => maybeUpdateConfiguration(ConfigurationKey.TrueText, trueText.value ?? "Yes"));
+        watch(falseText, () => maybeUpdateConfiguration(ConfigurationKey.FalseText, falseText.value ?? "No"));
+        watch(controlType, () => maybeUpdateConfiguration(ConfigurationKey.BooleanControlType, controlType.value?.toString() ?? "0"));
 
         const controlTypeOptions = [
             { text: "Drop Down", value: BooleanControlType.DropDown },

@@ -21,7 +21,7 @@ import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
 import { asBooleanOrNull, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationPropertyKey, ConfigurationValueKey } from "./valueListField.partial";
+import { ConfigurationPropertyKey, ConfigurationKey } from "./valueListField.partial";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 
 
@@ -39,7 +39,7 @@ export const EditComponent = defineComponent({
 
         const valueOptions = computed((): ListItemBag[] => {
             try {
-                return JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+                return JSON.parse(props.configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
             }
             catch {
                 return [];
@@ -59,10 +59,10 @@ export const EditComponent = defineComponent({
         });
 
         const hasValues = computed((): boolean => valueOptions.value !== null && valueOptions.value.length > 0);
-        const allowHtml = computed((): boolean => asBooleanOrNull(props.configurationValues[ConfigurationValueKey.AllowHtml]) ?? false);
+        const allowHtml = computed((): boolean => asBooleanOrNull(props.configurationValues[ConfigurationKey.AllowHtml]) ?? false);
 
         const valuePlaceholder = computed((): string => {
-            return props.configurationValues[ConfigurationValueKey.ValuePrompt] ?? "";
+            return props.configurationValues[ConfigurationKey.ValuePrompt] ?? "";
         });
 
         watch(() => props.modelValue, () => {
@@ -147,16 +147,16 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.ValuePrompt] = labelPrompt.value ?? "";
-            newValue[ConfigurationValueKey.DefinedType] = definedType.value ?? "";
-            newValue[ConfigurationValueKey.CustomValues] = internalCustomValues.value ?? "";
-            newValue[ConfigurationValueKey.AllowHtml] = asTrueFalseOrNull(allowHtml.value) ?? "False";
+            newValue[ConfigurationKey.ValuePrompt] = labelPrompt.value ?? "";
+            newValue[ConfigurationKey.DefinedType] = definedType.value ?? "";
+            newValue[ConfigurationKey.CustomValues] = internalCustomValues.value ?? "";
+            newValue[ConfigurationKey.AllowHtml] = asTrueFalseOrNull(allowHtml.value) ?? "False";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.ValuePrompt] !== (props.modelValue[ConfigurationValueKey.ValuePrompt] ?? "")
-                || newValue[ConfigurationValueKey.DefinedType] !== (props.modelValue[ConfigurationValueKey.DefinedType] ?? "")
-                || newValue[ConfigurationValueKey.CustomValues] !== (props.modelValue[ConfigurationValueKey.CustomValues] ?? "")
-                || newValue[ConfigurationValueKey.AllowHtml] !== (props.modelValue[ConfigurationValueKey.AllowHtml] ?? "False");
+            const anyValueChanged = newValue[ConfigurationKey.ValuePrompt] !== (props.modelValue[ConfigurationKey.ValuePrompt] ?? "")
+                || newValue[ConfigurationKey.DefinedType] !== (props.modelValue[ConfigurationKey.DefinedType] ?? "")
+                || newValue[ConfigurationKey.CustomValues] !== (props.modelValue[ConfigurationKey.CustomValues] ?? "")
+                || newValue[ConfigurationKey.AllowHtml] !== (props.modelValue[ConfigurationKey.AllowHtml] ?? "False");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -183,11 +183,11 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            labelPrompt.value = props.modelValue[ConfigurationValueKey.ValuePrompt] ?? "";
-            definedType.value = props.modelValue[ConfigurationValueKey.DefinedType] ?? "";
-            customValues.value = props.modelValue[ConfigurationValueKey.CustomValues] ?? "";
+            labelPrompt.value = props.modelValue[ConfigurationKey.ValuePrompt] ?? "";
+            definedType.value = props.modelValue[ConfigurationKey.DefinedType] ?? "";
+            customValues.value = props.modelValue[ConfigurationKey.CustomValues] ?? "";
             internalCustomValues.value = customValues.value;
-            allowHtml.value = asBooleanOrNull(props.modelValue[ConfigurationValueKey.AllowHtml]) ?? false;
+            allowHtml.value = asBooleanOrNull(props.modelValue[ConfigurationKey.AllowHtml]) ?? false;
         }, {
             immediate: true
         });
@@ -201,8 +201,8 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(labelPrompt, () => maybeUpdateConfiguration(ConfigurationValueKey.ValuePrompt, labelPrompt.value ?? ""));
-        watch(allowHtml, () => maybeUpdateConfiguration(ConfigurationValueKey.AllowHtml, asTrueFalseOrNull(allowHtml.value) ?? "False"));
+        watch(labelPrompt, () => maybeUpdateConfiguration(ConfigurationKey.ValuePrompt, labelPrompt.value ?? ""));
+        watch(allowHtml, () => maybeUpdateConfiguration(ConfigurationKey.AllowHtml, asTrueFalseOrNull(allowHtml.value) ?? "False"));
 
         return {
             allowHtml,

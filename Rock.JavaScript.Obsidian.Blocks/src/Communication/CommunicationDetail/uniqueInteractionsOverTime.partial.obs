@@ -22,22 +22,6 @@
     </div>
 </template>
 
-<style scoped>
-.communication-detail-unique-interactions-over-time {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-.communication-detail-unique-interactions-over-time-actions {
-    flex: 0 0 auto;
-}
-
-.communication-detail-unique-interactions-over-time-chart {
-    flex: 1 0 auto;
-}
-</style>
-
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
     import { useCommunicationDetail } from "./utils.partial";

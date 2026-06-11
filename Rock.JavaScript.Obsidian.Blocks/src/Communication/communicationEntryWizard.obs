@@ -11,13 +11,14 @@
                              v-model:communicationType="communicationType"
                              v-model:excludeDuplicateRecipientAddress="excludeDuplicateRecipientAddress"
                              v-model:futureSendDateTime="futureSendDateTime"
-                             v-model:individualRecipientPersonAliasGuids="individualRecipientPersonAliasGuids"
+                             v-model:individualRecipientPersonAliasIdKeys="individualRecipientPersonAliasIdKeys"
                              v-model:isBulkCommunication="isBulkCommunication"
                              v-model:personalizationSegments="personalizationSegments"
                              v-model:recipients="recipients"
                              v-model:segmentCriteria="segmentCriteria"
                              :allowedMediums="allowedMediums"
                              :areNavigationShortcutsDisabled="config.areNavigationShortcutsDisabled"
+                             :customText="customText"
                              :communicationId="communicationId"
                              :communicationListGroups="config.communicationListGroups ?? []"
                              :communicationTopicValues="config.communicationTopicValues ?? []"
@@ -166,6 +167,7 @@
                               :communicationName="communicationName"
                               :communicationTopicValueName="communicationTopicValue?.text"
                               :communicationType="communicationType"
+                              :customText="customText"
                               :emailAttachmentNames="emailAttachmentNames"
                               :emailTo="emailTo"
                               :fromAddress="fromEmail"
@@ -239,7 +241,7 @@
     import SendingStep from "./CommunicationEntryWizard/sendingStep.partial.obs";
     import SentStep from "./CommunicationEntryWizard/sentStep.partial.obs";
     import SmsEditorStep from "./CommunicationEntryWizard/smsEditorStep.partial.obs";
-    import { BinaryFileAttachment, BlockActionCallbacks, NavigationUrlKey, PreviewAsType } from "./CommunicationEntryWizard/types.partial";
+    import { BinaryFileAttachment, BlockActionCallbacks, CustomText, NavigationUrlKey, PreviewAsType } from "./CommunicationEntryWizard/types.partial";
     import { useCache, useInvokeBlockActionHelper, usePersonPreferencesHelper } from "./CommunicationEntryWizard/utils.partial";
     import WizardStartStep from "./CommunicationEntryWizard/wizardStartStep.partial.obs";
     import { EmailEditorApi, GetHtmlResponse } from "@Obsidian/Controls/emailEditor";
@@ -270,6 +272,7 @@
     import { CancellationTokenNone, CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { CommunicationEntryWizardGetPreviewBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardGetPreviewBag";
+    import { CommunicationEntryWizardCustomTextBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCustomTextBag";
 
     const config = useConfigurationValues<CommunicationEntryWizardInitializationBox>();
     const securityGrant = getSecurityGrant(config.securityGrantToken);
@@ -384,6 +387,8 @@
     const bccEmails = ref<string>(config.communication?.bccEmails ?? "");
     const ccEmails = ref<string>(config.communication?.ccEmails ?? "");
     const communicationId = ref<number | null | undefined>(config.communication?.communicationId);
+    const communicationIdKey = ref<string | null | undefined>(config.communication?.communicationIdKey);
+    const communicationDetailUrl = ref<string | null | undefined>(config.communication?.communicationDetailUrl);
     const communicationGuid = ref<Guid>(config.communication?.communicationGuid ?? newGuid());
     const communicationListGroupGuid = ref<Guid | null | undefined>(config.communication?.communicationListGroupGuid);
     const communicationName = ref<string>(config.communication?.communicationName ?? "");
@@ -396,7 +401,7 @@
     const fromEmail = ref<string>(config.communication?.fromEmail ?? "");
     const fromName = ref<string>(config.communication?.fromName ?? "");
     const futureSendDateTime = ref<string | null | undefined>(config.communication?.futureSendDateTime);
-    const individualRecipientPersonAliasGuids = ref<Guid[] | null | undefined>(config.communication?.individualRecipientPersonAliasGuids);
+    const individualRecipientPersonAliasIdKeys = ref<string[] | null | undefined>(config.communication?.individualRecipientPersonAliasIdKeys);
     const isBulkCommunication = ref<boolean>(config.communication?.isBulkCommunication ?? false);
     const message = ref<string>(config.communication?.message ?? "");
     const personalizationSegments = ref<ListItemBag[] | null | undefined>(config.communication?.personalizationSegments);
@@ -480,6 +485,19 @@
                 value: t.guid
             }));
         }
+    });
+
+    const customText = computed<CustomText>(() => {
+        return {
+            isBulkOptionDescription: config.customText?.isBulkOptionDescription
+                ?? "Marking this communication as bulk will exclude it from being sent to individuals who have opted out of receiving bulk communications. This is typically used for communications such as newsletters that are sent to a large audience on a regular basis.",
+            isBulkOptionTitle: config.customText?.isBulkOptionTitle
+                ?? "Is Bulk Communication",
+            isNotBulkOptionDescription: config.customText?.isNotBulkOptionDescription
+                ?? "Marking this communication as not bulk will allow it to be sent to individuals regardless of their bulk communication preferences. This is typically used for communications such as event reminders or account notifications that are important for individuals to receive.",
+            isNotBulkOptionTitle: config.customText?.isNotBulkOptionTitle
+                ?? "Is Not Bulk Communication"
+        };
     });
 
     const nextStep = computed<Step | null>(() => {
@@ -666,7 +684,7 @@
 
     const simpleCommunicationPageUrl = computed<string | null>(() => {
         if (config.navigationUrls?.[NavigationUrlKey.SimpleCommunicationPage]) {
-            return config.navigationUrls[NavigationUrlKey.SimpleCommunicationPage].replace("((Key))", (communicationId.value ?? 0).toString());
+            return config.navigationUrls[NavigationUrlKey.SimpleCommunicationPage].replace("((Key))", communicationIdKey.value ?? "");
         }
 
         return null;
@@ -707,19 +725,6 @@
         return result;
     }
 
-    function replaceQueryParam(key: string, value: string): void {
-        // Ensure URL and URLSearchParams are supported
-        if (typeof window !== "undefined" && window.location) {
-            const url = new URL(window.location.href);
-
-            // Add or update the query parameter.
-            url.searchParams.set(key, value);
-
-            // Update the URL without reloading.
-            history.replaceState(null, "", url.toString());
-        }
-    }
-
     function scrollToTopOfBlock(): void {
         if (communicationEntryWizardElement.value) {
             scrollElementStartToTop(communicationEntryWizardElement.value);
@@ -747,7 +752,7 @@
             enabledLavaCommands: enabledLavaCommands.value,
             excludeDuplicateRecipientAddress: excludeDuplicateRecipientAddress.value,
             futureSendDateTime: futureSendDateTime.value,
-            individualRecipientPersonAliasGuids: individualRecipientPersonAliasGuids.value,
+            individualRecipientPersonAliasIdKeys: individualRecipientPersonAliasIdKeys.value,
             isBulkCommunication: isBulkCommunication.value,
             personalizationSegments: personalizationSegments.value,
             segmentCriteria: segmentCriteria.value,
@@ -791,6 +796,8 @@
         // Shared medium fields.
         communicationGuid.value = bag.communicationGuid;
         communicationId.value = bag.communicationId;
+        communicationIdKey.value = bag.communicationIdKey;
+        communicationDetailUrl.value = bag.communicationDetailUrl;
         communicationListGroupGuid.value = bag.communicationListGroupGuid;
         communicationName.value = bag.communicationName ?? "";
         communicationTemplateGuid.value = bag.communicationTemplateGuid;
@@ -799,7 +806,7 @@
         enabledLavaCommands.value = bag.enabledLavaCommands;
         excludeDuplicateRecipientAddress.value = bag.excludeDuplicateRecipientAddress ?? false;
         futureSendDateTime.value = bag.futureSendDateTime;
-        individualRecipientPersonAliasGuids.value = bag.individualRecipientPersonAliasGuids;
+        individualRecipientPersonAliasIdKeys.value = bag.individualRecipientPersonAliasIdKeys;
         isBulkCommunication.value = bag.isBulkCommunication ?? false;
         personalizationSegments.value = bag.personalizationSegments ?? [];
         segmentCriteria.value = bag.segmentCriteria ?? SegmentCriteria.All;
@@ -1324,6 +1331,14 @@
             communicationId.value = bag.data["communicationId"];
         }
 
+        if (bag.data?.["communicationIdKey"]) {
+            communicationIdKey.value = bag.data["communicationIdKey"];
+        }
+
+        if (bag.data?.["communicationDetailUrl"]) {
+            communicationDetailUrl.value = bag.data["communicationDetailUrl"];
+        }
+
         finalMessage.value = bag.message ?? "Communication has been queued for sending.";
 
         if (bag.errors?.length) {
@@ -1367,19 +1382,15 @@
     }
 
     function onViewCommunication(): void {
-        const url = new URL(window.location.href);
-
-        url.searchParams.set("CommunicationId", (communicationId.value ?? 0).toString());
-
-        window.location.href = url.toString();
+        if (communicationDetailUrl.value) {
+            window.location.href = communicationDetailUrl.value;
+        }
     }
 
     function onNewCommunication(): void {
-        const url = new URL(window.location.href);
-
-        url.search = "";
-
-        window.location.href = url.toString();
+        if (config.createNewCommunicationUrl) {
+            window.location.href = config.createNewCommunicationUrl;
+        }
     }
 
     // #endregion Event Handlers
@@ -1392,9 +1403,12 @@
         }
     });
 
-    watch(communicationId, (newValue, _oldValue) => {
-        if (newValue) {
-            replaceQueryParam("CommunicationId", newValue.toString());
+    watch(communicationDetailUrl, (newValue, _oldValue) => {
+        if (newValue && typeof window !== "undefined" && window.history) {
+            // Rewrite the address bar in place with the canonical IdKey URL so
+            // a refresh doesn't try to resolve an integer-based ID that the
+            // detail block no longer allows.
+            history.replaceState(null, "", newValue);
         }
     });
 

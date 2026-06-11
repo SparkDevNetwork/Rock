@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -30,16 +31,32 @@ using Rock.Web.Cache;
 namespace Rock.Rest.Filters
 {
     /// <summary>
-    /// Checks to see if the Logged-In person has authorization View (HttpMethod: GET) or Edit (all other HttpMethods) for the RestController and Controller's associated EntityType
+    /// <para>
+    /// Checks to see if the logged-in person has authorization to access the
+    /// API endpoint. If no security action is specified, then it will be
+    /// determined by the HTTP verb (GET = VIEW, all others = EDIT).
+    /// </para>
+    /// <para>
+    /// If multipile security actions are specified, then the person only needs
+    /// to have authorization for one of the actions to access the endpoint.
+    /// </para>
     /// </summary>
     public class SecuredAttribute : ActionFilterAttribute
     {
+        /// <summary>
+        /// The security actions that will be checked when authorizing the request.
+        /// If this is empty then it will be automatically determined by the HTTP verb.
+        /// </summary>
+        public IReadOnlyCollection<string> SecurityActions { get; }
+
         /// <summary>
         /// The security action that will be checked when authorizing the request.
         /// If this is null or an empty string then it will be automatically
         /// determined by the HTTP verb.
         /// </summary>
-        public string SecurityAction { get; }
+        [Obsolete( "Use SecurityActions instead." )]
+        [RockObsolete( "19.0" )]
+        public string SecurityAction => SecurityActions.FirstOrDefault();
 
         /// <summary>
         /// Creates a new instance of <see cref="SecuredAttribute"/> that
@@ -48,6 +65,7 @@ namespace Rock.Rest.Filters
         /// </summary>
         public SecuredAttribute()
         {
+            SecurityActions = Array.Empty<string>();
         }
 
         /// <summary>
@@ -57,7 +75,18 @@ namespace Rock.Rest.Filters
         /// <param name="securityAction">The security action such as VIEW or EDIT.</param>
         public SecuredAttribute( string securityAction )
         {
-            SecurityAction = securityAction;
+            SecurityActions = new[] { securityAction };
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="SecuredAttribute"/> that
+        /// uses the specified security actions when authorizing the request.
+        /// If any one of the actions is authorized then the request will proceed.
+        /// </summary>
+        /// <param name="securityActions">The security actions such as VIEW or EDIT.</param>
+        public SecuredAttribute( params string[] securityActions )
+        {
+            SecurityActions = securityActions ?? Array.Empty<string>();
         }
 
         /// <summary>
@@ -158,17 +187,19 @@ namespace Rock.Rest.Filters
                 System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", person );
             }
 
-            string action = SecurityAction;
+            var actions = SecurityActions;
 
-            if ( action.IsNullOrWhiteSpace() )
+            if ( actions.Count == 0 )
             {
-                action = actionMethod.Equals( "GET", StringComparison.OrdinalIgnoreCase ) ?
+                var action = actionMethod.Equals( "GET", StringComparison.OrdinalIgnoreCase ) ?
                     Security.Authorization.VIEW : Security.Authorization.EDIT;
+
+                actions = new[] { action };
             }
 
             bool authorized = false;
 
-            if ( item.IsAuthorized( action, person ) )
+            if ( actions.Any( action => item.IsAuthorized( action, person ) ) )
             {
                 authorized = true;
             }
@@ -185,7 +216,7 @@ namespace Rock.Rest.Filters
                     {
                         var appUser = Mobile.MobileHelper.GetMobileApplicationUser( appId.Value, mobileApiKey, rockContext );
 
-                        if ( appUser != null && item.IsAuthorized( action, appUser.Person ) )
+                        if ( appUser != null && actions.Any( action => item.IsAuthorized( action, appUser.Person ) ) )
                         {
                             authorized = true;
                         }

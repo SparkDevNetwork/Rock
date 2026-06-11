@@ -4,7 +4,7 @@
 
     <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
-    <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
+    <RockForm v-model:submit="submitForm" @submit="onSave">
         <Panel :title="panelTitle" :headerSecondaryActions="secondaryActions">
 
             <EditPanel v-model="metricValueEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" :isEditable="isEditable" :validationError="validationError" />
@@ -68,7 +68,6 @@
     const blockError = ref("");
     const errorMessage = ref("");
     const submitForm = ref(false);
-    const resetKey = ref("");
     const showAuditDetailsModal = ref(false);
     const isSaving = ref(false);
     const validationError = ref<string | null>();
@@ -163,7 +162,7 @@
                 window.location.href = makeUrlRedirectSafe(result.data);
             }
         }
-        else if (result.statusCode == 400 && typeof result.errorMessage === "string") {
+        else if (result.statusCode === 400 && typeof result.errorMessage === "string") {
             validationError.value = result.errorMessage;
         }
         else {

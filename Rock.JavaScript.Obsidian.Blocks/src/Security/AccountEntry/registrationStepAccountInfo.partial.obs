@@ -1,37 +1,39 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <fieldset>
-        <legend>New Account</legend>
-        <TextBox
-                 v-if="!isEmailRequiredForUsername"
-                 v-model="internalUsername"
-                 :disabled="disabled"
-                 :label="usernameFieldLabel"
-                 :rules="usernameValidators"
-                 @change="onUsernameChanged"></TextBox>
+    <div>
+        <fieldset>
+            <legend>New Account</legend>
+            <TextBox
+                    v-if="!isEmailRequiredForUsername"
+                    v-model="internalUsername"
+                    :disabled="disabled"
+                    :label="usernameFieldLabel"
+                    :rules="usernameValidators"
+                    @change="onUsernameChanged"></TextBox>
 
-        <EmailBox
-                  v-else
-                  v-model="internalUsername"
-                  :disabled="disabled"
-                  label="Email"
-                  rules="required"></EmailBox>
+            <EmailBox
+                    v-else
+                    v-model="internalUsername"
+                    :disabled="disabled"
+                    label="Email"
+                    rules="required"></EmailBox>
 
-        <NotificationBox v-if="usernameValidationCaption" :alertType="!isUsernameAvailable || isUsernameError ? 'warning' : 'success'">{{ usernameValidationCaption }}</NotificationBox>
+            <NotificationBox v-if="usernameValidationCaption" :alertType="!isUsernameAvailable || isUsernameError ? 'warning' : 'success'">{{ usernameValidationCaption }}</NotificationBox>
 
-        <TextBox
-                 v-model="internalPassword"
-                 :disabled="disabled"
-                 label="Password"
-                 rules="required"
-                 type="password"></TextBox>
-        <TextBox
-                 v-model="internalConfirmPassword"
-                 :disabled="disabled"
-                 label="Confirm Password"
-                 :rules="confirmPasswordRules"
-                 type="password"></TextBox>
-    </fieldset>
+            <TextBox
+                    v-model="internalPassword"
+                    :disabled="disabled"
+                    label="Password"
+                    rules="required"
+                    type="password"></TextBox>
+            <TextBox
+                    v-model="internalConfirmPassword"
+                    :disabled="disabled"
+                    label="Confirm Password"
+                    :rules="confirmPasswordRules"
+                    type="password"></TextBox>
+        </fieldset>
+    </div>
 </template>
 
 <script setup lang="ts">

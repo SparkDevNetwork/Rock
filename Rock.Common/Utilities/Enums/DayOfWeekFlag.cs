@@ -22,6 +22,8 @@ namespace Rock.Utility.Enums
     /// Represents and indicates days of the week as bits that can be combined into a single byte
     /// </summary>
     [Flags]
+    [Obsolete( "This enum is obsolete, use the one in the Rock.Enums.Core namespace instead." )]
+    [RockObsolete( "19.0" )]
     public enum DayOfWeekFlag
     {
         /// <summary>

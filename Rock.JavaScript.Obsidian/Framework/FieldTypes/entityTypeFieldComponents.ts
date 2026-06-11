@@ -18,7 +18,7 @@ import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
-import { ConfigurationValueKey } from "./entityTypeField.partial";
+import { ConfigurationKey } from "./entityTypeField.partial";
 import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
 import { updateRefValue } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -38,7 +38,7 @@ export const EditComponent = defineComponent({
 
         // Include Global configuration value, includes the 'Global Attributes' option when set to true.
         const includeGlobalOption = computed((): boolean => {
-            const includeGlobal = asBoolean(props.configurationValues[ConfigurationValueKey.IncludeGlobal]);
+            const includeGlobal = asBoolean(props.configurationValues[ConfigurationKey.IncludeGlobal]);
             return includeGlobal;
         });
 
@@ -93,10 +93,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.IncludeGlobal] = asTrueOrFalseString(includeGlobalOption.value);
+            newValue[ConfigurationKey.IncludeGlobal] = asTrueOrFalseString(includeGlobalOption.value);
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.IncludeGlobal] !== props.modelValue[ConfigurationValueKey.IncludeGlobal];
+            const anyValueChanged = newValue[ConfigurationKey.IncludeGlobal] !== props.modelValue[ConfigurationKey.IncludeGlobal];
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -123,13 +123,13 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            includeGlobalOption.value = asBoolean(props.modelValue[ConfigurationValueKey.IncludeGlobal]);
+            includeGlobalOption.value = asBoolean(props.modelValue[ConfigurationKey.IncludeGlobal]);
         }, {
             immediate: true
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(includeGlobalOption, () => maybeUpdateConfiguration(ConfigurationValueKey.IncludeGlobal, asTrueOrFalseString(includeGlobalOption.value)));
+        watch(includeGlobalOption, () => maybeUpdateConfiguration(ConfigurationKey.IncludeGlobal, asTrueOrFalseString(includeGlobalOption.value)));
 
         return {
             includeGlobalOption

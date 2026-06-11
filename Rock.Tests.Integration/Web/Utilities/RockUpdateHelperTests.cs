@@ -5,7 +5,6 @@ using System.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Configuration;
-using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Web.Utilities
 {
@@ -19,10 +18,10 @@ namespace Rock.Tests.Integration.Web.Utilities
             var data = Rock.Web.Utilities.RockUpdateHelper.GetEnvDataAsJson( request, "test" );
 
             var actualResult = data.FromJsonOrNull<Dictionary<string, string>>();
-            Assert.That.AreEqual( "test", actualResult["AppRoot"] );
-            Assert.That.AreEqual( ( IntPtr.Size == 4 ) ? "32bit" : "64bit", actualResult["Architecture"] );
-            Assert.That.AreEqual( RockApp.Current.HostingSettings.DotNetVersion, actualResult["AspNetVersion"] );
-            Assert.That.AreEqual( Environment.OSVersion.ToString(), actualResult["ServerOs"] );
+            Assert.AreEqual( "test", actualResult["AppRoot"] );
+            Assert.AreEqual( ( IntPtr.Size == 4 ) ? "32bit" : "64bit", actualResult["Architecture"] );
+            Assert.AreEqual( RockApp.Current.HostingSettings.DotNetVersion, actualResult["AspNetVersion"] );
+            Assert.AreEqual( Environment.OSVersion.ToString(), actualResult["ServerOs"] );
         }
 
         [TestMethod]
@@ -38,10 +37,10 @@ namespace Rock.Tests.Integration.Web.Utilities
         [DataRow( 378675, ".NET Framework 4.5.1" )]
         [DataRow( 378389, ".NET Framework 4.5" )]
         [DataRow( 378388, "Unknown" )]
-        public void GetDotNetVersionShouldReturnCorrectString(int releaseNumber, string expectedResult )
+        public void GetDotNetVersionShouldReturnCorrectString( int releaseNumber, string expectedResult )
         {
             var actualResult = Configuration.HostingSettings.GetDotNetVersion( releaseNumber );
-            Assert.That.AreEqual( expectedResult, actualResult );
+            Assert.AreEqual( expectedResult, actualResult );
         }
     }
 }

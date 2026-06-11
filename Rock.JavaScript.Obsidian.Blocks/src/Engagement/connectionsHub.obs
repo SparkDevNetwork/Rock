@@ -1,0 +1,3097 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContextSlicer title="Filters"
+                   class="mb-spacing-lg"
+                   showCampus>
+        <template #default>
+            <DropDownList v-model="areOnlyMyRequestsVisible"
+                          :items="requestToggleItems"
+                          :showBlankItem="false" />
+            <DropDownList v-model="selectedOpportunity"
+                          :items="box.options?.connectionOpportunities ?? []"
+                          blankValue="All Opportunities" />
+        </template>
+    </ContextSlicer>
+
+    <GroupedGridPanel v-model:quickFilterValue="rawQuickFilter"
+                      v-model:groupingKey="selectedGrouping"
+                      v-model:orderedRequestKeys="orderedRequestKeys"
+                      ref="groupedGridPanel"
+                      :title="box.options?.title ?? ''"
+                      :titleIconCssClass="`${box.options?.iconCssClass ?? ''} panel-icon`"
+                      :isSelectedView="hasAnySelectedKeys"
+                      :rows="gridData?.rows ?? []"
+                      :filteredAndSortedRows="visibleRows"
+                      :panelSettingsActive="hasSettingsFilters"
+                      :groupingFields="groupingFields"
+                      itemTerm="Request"
+                      hasFullscreen
+                      :onAddItem="canEditConnectionRequests ? onAddItem : undefined"
+                      :onPanelSettingsClick="onPanelSettingsClick"
+                      :isAutoCollapseEnabled="isAutoCollapseEnabled"
+                      :headerSecondaryActions="secondaryActions">
+        <template #selectedActionToolbar>
+            <div class="left-actions d-flex align-items-center gap-spacing-md">
+                <div class="d-flex align-items-center gap-spacing-tiny">
+                    <RockLabel class="text-info-strong mb-0">Selected</RockLabel>
+                    <Badge class="font-weight-semibold bg-info-strong">{{ allSelectedKeys.length }}</Badge>
+                </div>
+                <div class="d-flex align-items-center gap-spacing-xs">
+                    <RockButton class="activity-btn" @click="showAssignRequestModal" :disabled="!canEditConnectionRequests">
+                        <i class="ti ti-user-circle"></i>
+                        <span class="activity-btn-label">Assign</span>
+                    </RockButton>
+                    <RockButton @click="showChangeStatusModal" class="activity-btn" :disabled="!canEditConnectionRequests">
+                        <template v-if="box.options?.isSequentialStatusMode">
+                            <i class="ti ti-arrow-right"></i>
+                            <span class="activity-btn-label">Advance to Next Status</span>
+                        </template>
+                        <template v-else>
+                            <i class="ti ti-select"></i>
+                            <span class="activity-btn-label">Change Status</span>
+                        </template>
+                    </RockButton>
+                    <RockButton @click="showLaunchWorkflowModal()" class="activity-btn">
+                        <i class="ti ti-settings-cog"></i>
+                        <span class="activity-btn-label">Launch Workflow</span>
+                    </RockButton>
+                    <RockButton class="activity-btn" @click="showChangeStateModal(ConnectionState.Connected)" :disabled="!canEditConnectionRequests">
+                        <i class="ti ti-circle-check"></i>
+                        <span class="activity-btn-label">Complete</span>
+                    </RockButton>
+                    <div v-if="canEditConnectionRequests" class="dropdown">
+                        <i class="ti ti-dots-vertical cursor-pointer" data-toggle="dropdown"></i>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <button type="button"
+                                        @click="showChangeStateModal(ConnectionState.Active)"
+                                        class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
+                                    <i class="ti ti-user pr-spacing-sm text-interface-medium"></i>Set as Active
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button"
+                                        @click="showChangeStateModal(ConnectionState.Inactive)"
+                                        class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
+                                    <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
+                                </button>
+                            </li>
+                            <li v-if="box.options?.isFutureFollowUpEnabled">
+                                <button type="button"
+                                        @click="showChangeStateModal(ConnectionState.FutureFollowUp)"
+                                        class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
+                                    <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button"
+                                        @click="showDeleteRequestModal()"
+                                        class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold text-danger">
+                                    <i class="ti ti-trash pr-spacing-sm text-danger"></i>Delete
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="right-actions d-flex align-items-center gap-spacing-md">
+                <div class="pl-spacing-md d-flex align-items-center gap-spacing-xs">
+                    <RockButton @click="showSMSModal()" class="activity-btn">
+                        <i class="ti ti-message-circle-plus"></i>
+                        <span class="activity-btn-label">SMS</span>
+                    </RockButton>
+                    <RockButton @click="showEmailModal()" class="activity-btn">
+                        <i class="ti ti-mail-plus"></i>
+                        <span class="activity-btn-label">Email</span>
+                    </RockButton>
+                </div>
+                <div class="border-left-divider pl-spacing-md d-flex align-items-center gap-spacing-md">
+                    <RockButton class="activity-btn" @click="showAddActivityModal()" :disabled="!canEditConnectionRequests">
+                        <i class="ti ti-activity"></i>
+                        <span class="activity-btn-label">Add Activity</span>
+                    </RockButton>
+                    <RockButton class="activity-btn" @click="showBulkTransferModal()" :disabled="!canEditConnectionRequests">
+                        <i class="ti ti-switch-3"></i>
+                        <span class="activity-btn-label">Transfer</span>
+                    </RockButton>
+                    <div class="d-flex align-items-center gap-spacing-sm">
+                        <i class="ti ti-x cursor-pointer" @click="clearAllSelections"></i>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <template #headerActions="{ groupRows }" v-if="selectedGrouping !== 'dueStatusGrouping'">
+            <HighlightLabel labelType="warning">
+                {{ getDueSoonCount(groupRows) }} Due Soon
+            </HighlightLabel>
+            <HighlightLabel labelType="danger">
+                {{ getOverdueCount(groupRows) }} Overdue
+            </HighlightLabel>
+        </template>
+        <template #grid="{ group, setGridRef }">
+            <Grid :definition="box.gridDefinition ?? undefined"
+                  :ref="setGridRef"
+                  :data="group.gridData"
+                  keyField="idKey"
+                  :isTitleHidden="true"
+                  :isSearchVisible="false"
+                  :isFooterHidden="true"
+                  :showExport="false"
+                  :showMergeTemplate="false"
+                  :isCountMessageVisible="false"
+                  :hideFilterHeaderRow="true"
+                  light
+                  :forceVirtualRowsOnLight="true"
+                  class="grid-hover"
+                  @selectedKeysChanged="state => onSelectedKeysChanged(group.key, state)"
+                  @selectItem="onSelectItem"
+                  @onLoad="state => onGridLoad(group.key, state)"
+                  @onUnload="state => onGridUnload(group.key, state)">
+                <SelectColumn />
+
+                <PersonColumn name="requestDetails"
+                              title="Request Details"
+                              field="requestDetails" />
+
+                <Column v-if="viewOptions.gridDataToShow?.includes('connectionOpportunity') && selectedGrouping !== 'opportunityGrouping'"
+                        name="connectionOpportunity"
+                        field="connectionOpportunity">
+                    <template #format="{ row }">
+                        <div class="d-flex flex-column align-items-start gap-spacing-tiny">
+                            <HighlightLabel labelType="custom"
+                                            customClass="label-default text-xs text-semibold text-interface-strong">
+                                {{ row.connectionOpportunity }}
+                            </HighlightLabel>
+                            <span v-if="!isNullOrWhiteSpace(row.connectionTypeSource) && viewOptions.isRequestSourceShown"
+                                  class="text-small text-interface-medium">
+                                {{ row.connectionTypeSource }}
+                            </span>
+                        </div>
+                    </template>
+                </Column>
+
+                <Column v-if="selectedGrouping !== 'connectorGrouping'"
+                        title="Connector"
+                        name="connectorDetails"
+                        field="connectorDetails">
+                    <template #format="{ row }">
+                        {{ row.connectorDetails?.text }}
+                    </template>
+                </Column>
+
+                <Column v-if="selectedGrouping !== 'campusGrouping'"
+                        name="campus"
+                        title="Campus"
+                        field="campus">
+                    <template #format="{ row }">
+                        <div v-if="!!row.campus">
+                            {{ row.campus }}
+                        </div>
+                        <div v-else>
+                            <i class="ti ti-minus"></i>
+                        </div>
+                    </template>
+                </Column>
+
+                <Column v-if="box.options?.areGroupPlacementsEnabled"
+                        name="group"
+                        title="Group"
+                        field="group">
+                    <template #format="{ row }">
+                        <div v-if="!!row.group" :class="{ 'text-muted': !!row.isPlacementGroupInactiveOrArchived }">
+                            {{ row.group }}
+                        </div>
+                        <div v-else>
+                            <i class="ti ti-minus"></i>
+                        </div>
+                    </template>
+                </Column>
+
+                <Column v-if="viewOptions.gridDataToShow?.includes('activity')"
+                        name="activity"
+                        title="Activity"
+                        field="activity">
+                    <template #format="{ row }">
+                        <div v-if="!!row.lastActivityDateTime && !!row.activityCount"
+                             class="d-flex align-items-center gap-spacing-tiny">
+                            <div class="activity-metric activity-date">
+                                <i class="ti ti-calendar-month"></i>
+                                <span>
+                                    {{ getElapsedShortTime(row.lastActivityDateTime) }}
+                                </span>
+                            </div>
+                            <div class="activity-metric activity-count">
+                                <i class="ti ti-bolt"></i>
+                                <span>
+                                    {{ row.activityCount }}
+                                </span>
+                            </div>
+                        </div>
+                        <div v-else>
+                            <i class="ti ti-minus"></i>
+                        </div>
+                    </template>
+                </Column>
+
+                <Column v-if="viewOptions.gridDataToShow?.includes('dueDate')"
+                        name="dueDate"
+                        title="Due"
+                        field="dueDate"
+                        width="2%">
+                    <template #format="{ row }">
+                        <div v-if="!!row.dueDate && row.connectionState !== ConnectionState.Inactive" :class="getDueDateColor(row.dueStatus, row.connectionState === ConnectionState.Connected)">
+                            {{ formatDueDateShortLabel(row.dueDate, row.connectionState === ConnectionState.Connected, row.completedDateTime) }}
+                        </div>
+                        <div v-else>
+                            <i class="ti ti-minus"></i>
+                        </div>
+                    </template>
+                </Column>
+
+                <AttributeColumns :attributes="attributesToShow" />
+
+                <Column v-if="box.options?.areCelebrationsEnabled"
+                        name="celebration"
+                        field="celebration"
+                        width="52">
+                    <template #format="{ row }">
+                        <i v-if="isNullOrWhiteSpace(row.celebrationText)"
+                           class="ti ti-confetti cursor-pointer"
+                           :ref="(el) => addTooltip(el as Element)"
+                           data-toggle="tooltip"
+                           data-placement="auto"
+                           data-container="body"
+                           data-original-title="Add Celebration"
+                           @click.stop="showCelebrationModal(row)">
+                        </i>
+                        <i v-else
+                           class="ti ti-confetti-filled cursor-pointer text-info-strong"
+                           :ref="(el) => addTooltip(el as Element)"
+                           data-toggle="tooltip"
+                           data-placement="auto"
+                           data-container="body"
+                           data-original-title="Has Celebration"
+                           @click.stop="showCelebrationModal(row)">
+                        </i>
+                    </template>
+                </Column>
+
+                <Column v-if="box.options?.areRemindersEnabled"
+                        name="reminder"
+                        field="reminder"
+                        width="52">
+                    <template #format="{ row }">
+                        <i v-if="row.reminderCount > 0"
+                           class="ti ti-bell-filled cursor-pointer text-info-strong"
+                           :ref="(el) => addTooltip(el as Element)"
+                           data-toggle="tooltip"
+                           data-placement="auto"
+                           data-container="body"
+                           :data-original-title="`${row.reminderCount} ${pluralize('Reminder', row.reminderCount)}`"
+                           @click.stop="showReminderModal(row)">
+                        </i>
+                        <i v-else
+                           class="ti ti-bell cursor-pointer"
+                           :ref="(el) => addTooltip(el as Element)"
+                           data-toggle="tooltip"
+                           data-placement="auto"
+                           data-container="body"
+                           data-original-title="Add Reminder"
+                           @click.stop="showReminderModal(row)">
+                        </i>
+                    </template>
+                </Column>
+
+                <Column name="connectionStatus"
+                        field="connectionStatus">
+                    <template #format="{ row }">
+                        <div class="w-100">
+                            <template v-if="row.connectionState === ConnectionState.Active">
+                                <ConnectionStatusButton :isSequentialStatusMode="box.options?.isSequentialStatusMode"
+                                                        :highlightColor="row.connectionStatus.highlightColor"
+                                                        :currentStatusName="row.connectionStatus.name"
+                                                        :disabled="!canEditConnectionRequests"
+                                                        @click.stop="(e) => onStatusClick(row, e)" />
+                            </template>
+                            <div v-else-if="row.connectionState === ConnectionState.Inactive"
+                                 class=" font-size-sm text-center text-semibold text-slate">
+                                {{ ConnectionStateDescription[ConnectionState.Inactive] }}
+                            </div>
+                            <div v-else-if="row.connectionState === ConnectionState.FutureFollowUp"
+                                 class="font-size-sm text-center text-semibold text-info-strong">
+                                {{ ConnectionStateDescription[ConnectionState.FutureFollowUp] }} - {{ asLocaleString(row.followUpDate) }}
+                            </div>
+                            <div v-else-if="row.connectionState === ConnectionState.Connected"
+                                 class="font-size-sm text-center text-semibold text-emerald">
+                                {{ ConnectionStateDescription[ConnectionState.Connected] }}
+                            </div>
+                        </div>
+                    </template>
+                </Column>
+
+                <Column name="options"
+                        field="options"
+                        width="52"
+                        itemClass="grid-cell-overflow">
+                    <template #format="{ row }">
+                        <div :class="['dropdown', 'dropdown-right', { 'open': openDropdownIndex === row.idKey }]">
+                            <i class="ti ti-dots-vertical cursor-pointer" data-toggle="dropdown" @click.stop="toggleGridRowDropdown(row.idKey)"></i>
+                            <ul class="dropdown-menu">
+                                <template v-if="canEditConnectionRequests">
+                                    <li>
+                                        <button type="button"
+                                                @click.stop="showChangeStateModal(ConnectionState.Active, row)"
+                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
+                                            <i class="ti ti-user pr-spacing-sm text-interface-medium"></i>Set as Active
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button type="button"
+                                                @click.stop="showChangeStateModal(ConnectionState.Inactive, row)"
+                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
+                                            <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
+                                        </button>
+                                    </li>
+                                    <li v-if="box.options?.isFutureFollowUpEnabled">
+                                        <button type="button"
+                                                @click.stop="showChangeStateModal(ConnectionState.FutureFollowUp, row)"
+                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
+                                            <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button type="button"
+                                                @click.stop="showChangeStateModal(ConnectionState.Connected, row)"
+                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
+                                            <i class="ti ti-circle-check pr-spacing-sm text-interface-medium"></i>Mark Complete
+                                        </button>
+                                    </li>
+                                </template>
+                                <li>
+                                    <button type="button"
+                                            @click.stop="showLaunchWorkflowModal(row)"
+                                            class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
+                                        <i class="ti ti-settings-cog pr-spacing-sm text-interface-medium"></i>Launch Workflow
+                                    </button>
+                                </li>
+                                <template v-if="canEditConnectionRequests">
+                                    <li v-if="box.options?.isRequestSecurityEnabled">
+                                        <button type="button"
+                                                @click.stop="showSecurityModal(row.idKey)"
+                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
+                                            <i class="ti ti-lock pr-spacing-sm text-interface-medium"></i>Security
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button type="button"
+                                                @click.stop="showDeleteRequestModal(row)"
+                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold text-danger">
+                                            <i class="ti ti-trash pr-spacing-sm text-danger"></i>Delete
+                                        </button>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
+                    </template>
+                </Column>
+            </Grid>
+        </template>
+        <template #emptyView>
+            <template v-if="areRequestsLoading">
+                <div class="skeleton-list">
+                    <div v-for="index in skeletonCount" :key="index" class="skeleton rounded" style="height: 300px"></div>
+                </div>
+            </template>
+            <template v-else>
+                <NotificationBox v-if="!isNullOrWhiteSpace(requestListErrorMessage)"
+                                 alertType="danger">
+                    {{ requestListErrorMessage }}
+                </NotificationBox>
+                <div class="empty-list">
+                    <i class="ti ti-id-off text-interface-medium" style="font-size: 20px;"></i>
+                    <div class="text-interface-medium text-semibold text-lg">
+                        No Connection Requests Available
+                    </div>
+                    <div v-if="canEditConnectionRequests"
+                         class="text-link cursor-pointer"
+                         @click="onAddItem">
+                        Add a Request to Get Started
+                    </div>
+                </div>
+            </template>
+        </template>
+    </GroupedGridPanel>
+
+    <ChangeStatusFlyout v-model="isFlyoutOpen"
+                        :errorMessage="flyoutErrorMessage"
+                        :isCompletionButtonLoading="isFlyoutCompletionButtonLoading"
+                        :isSaving="isFlyoutSaving"
+                        :anchorEl="flyoutAnchorEl"
+                        :connectionRequestUpdateBag="connectionRequestUpdateBag"
+                        :isNoteRequired="isNoteRequired"
+                        :isSequentialMode="isSequentialStatus"
+                        :connectionStatusItems="connectionStatusItems"
+                        @updateStatus="changeRequestStatus"
+                        @updateState="updateStateFromFlyout"
+                        @dismissErrorMessage="flyoutErrorMessage = ''"
+                        @close="onFlyoutClose" />
+
+    <AddConnectionRequestModal :modelValue="newConnectionRequest"
+                               v-model:visible="isAddConnectionRequestModalVisible"
+                               :options="box.options"
+                               :connectionOpportunityDetails="connectionOpportunityDetails"
+                               :placementGroupDetails="placementGroupDetails"
+                               :isConnectionOpportunityFilterSelected="hasSelectedOpportunity"
+                               :isExistingActiveRequesterOnConnectionType="isExistingActiveRequesterOnConnectionType"
+                               :isSaving="isModalSaving"
+                               :errorMessage="modalErrorMessage"
+                               @dismissErrorMessage="onModalErrorMessageDismissed"
+                               @checkForActiveRequester="checkForActiveRequester"
+                               @save="onAddRequest"
+                               @close="resetNewConnectionRequest"
+                               @fetchConnectionOpportunityDetails="fetchConnectionOpportunityDetails"
+                               @fetchConnectorOptions="fetchConnectorOptionsForAdd"
+                               @fetchPlacementGroupItems="fetchPlacementGroupItems"
+                               @fetchPlacementGroupDetails="fetchPlacementGroupDetails" />
+
+    <AddFromCampaignModal v-model:visible="isAddFromCampaignModalVisible"
+                          :selectedOpportunityGuid="selectedOpportunity"
+                          :allConnectionOpportunityItems="box.options?.connectionOpportunities ?? []"
+                          :isLoading="areCampaignsLoading"
+                          :isSaving="isModalSaving"
+                          :campaignRecordBags="campaignRecordBags"
+                          :errorMessage="modalErrorMessage"
+                          @dismissErrorMessage="onModalErrorMessageDismissed"
+                          @close="onModalErrorMessageDismissed"
+                          @assignRequests="assignRequestsFromCampaign" />
+
+    <CelebrationModal v-model:visible="isCelebrationModalVisible"
+                      :requestDetails="requestDetailsForModal"
+                      :viewOptions="viewOptions"
+                      :isSaving="isModalSaving"
+                      :canEditCelebration="canEditConnectionRequests"
+                      :errorMessage="modalErrorMessage"
+                      @dismissErrorMessage="onModalErrorMessageDismissed"
+                      @close="onModalErrorMessageDismissed"
+                      @upsertCelebration="upsertCelebration" />
+
+    <ReminderModal v-model="isReminderModalVisible"
+                   :contextEntityGuid="reminderEntityGuid"
+                   :contextEntityTypeGuid="EntityType.PersonAlias"
+                   :areDetailsRequired="true"
+                   :isAdditionalOptionsLinkVisible="false"
+                   @reminderClosed="decreaseReminderCount"
+                   @addSuccess="increaseReminderCount">
+        <template #postBody>
+            <RequestTable :requestDetails="requestDetailsForModal"
+                          :viewOptions="viewOptions"
+                          :isConnectorVisible="true" />
+        </template>
+    </ReminderModal>
+
+    <AssignRequestModal v-model:visible="isAssignRequestModalVisible"
+                        :connectorItems="allPossibleConnectors"
+                        :requestDetails="requestDetailsForModal"
+                        :viewOptions="viewOptions"
+                        :isSaving="isModalSaving"
+                        :errorMessage="modalErrorMessage"
+                        @dismissErrorMessage="onModalErrorMessageDismissed"
+                        @close="onModalErrorMessageDismissed"
+                        @updateConnector="updateConnectorFromModal" />
+    <ChangeStateModal v-model:visible="isChangeStateModalVisible"
+                      :isLoading="areRequestDetailsForModalLoading"
+                      :isSaving="isModalSaving"
+                      :connectionState="changeStateTo"
+                      :requestDetails="requestDetailsForModal"
+                      :failingRequestDetails="failingRequestDetailsForModal"
+                      :viewOptions="viewOptions"
+                      :errorMessage="modalErrorMessage"
+                      @dismissErrorMessage="onModalErrorMessageDismissed"
+                      @close="onModalErrorMessageDismissed"
+                      @updateState="updateStateFromModal" />
+    <DeleteRequestModal v-model:visible="isDeleteRequestModalVisible"
+                        :requestDetails="requestDetailsForModal"
+                        :viewOptions="viewOptions"
+                        :isSaving="isModalSaving"
+                        :errorMessage="modalErrorMessage"
+                        @dismissErrorMessage="onModalErrorMessageDismissed"
+                        @close="onModalErrorMessageDismissed"
+                        @deleteRequests="deleteRequestsFromModal" />
+    <ActivityModal v-model:visible="isActivityModalVisible"
+                   :connectorItems="allPossibleConnectors"
+                   :requestDetails="requestDetailsForModal"
+                   :connectionActivities="connectionActivityItems ?? []"
+                   :viewOptions="viewOptions"
+                   :currentPerson="currentPerson"
+                   :activityToEdit="activityToEdit"
+                   :isSaving="isModalSaving"
+                   :errorMessage="modalErrorMessage"
+                   @dismissErrorMessage="onModalErrorMessageDismissed"
+                   @close="onModalErrorMessageDismissed"
+                   @upsertActivity="upsertActivity" />
+    <ChangeStatusModal v-model:visible="isChangeStatusModalVisible"
+                       :connectionStatusItems="connectionStatusItems"
+                       :isSequentialMode="box.options?.isSequentialStatusMode ?? false"
+                       :isSaving="isModalSaving"
+                       :requestDetails="requestDetailsForModal"
+                       :viewOptions="viewOptions"
+                       :errorMessage="modalErrorMessage"
+                       @dismissErrorMessage="onModalErrorMessageDismissed"
+                       @close="onModalErrorMessageDismissed"
+                       @updateStatus="updateStatusFromModal" />
+    <LaunchWorkflowModal v-model:visible="isLaunchWorkflowModalVisible"
+                         :workflowItems="box.options?.workflowItems ?? []"
+                         :requestDetails="requestDetailsForModal"
+                         :viewOptions="viewOptions"
+                         :isSaving="isModalSaving"
+                         :errorMessage="modalErrorMessage"
+                         @dismissErrorMessage="onModalErrorMessageDismissed"
+                         @close="onModalErrorMessageDismissed"
+                         @launchWorkflows="launchWorkflowForRequests" />
+    <SendSMSModal v-model:visible="isSendSMSModalVisible"
+                  :communicationRecipients="communicationRecipients"
+                  :smsFromSystemPhoneNumbers="smsFromSystemPhoneNumbers"
+                  :smsSnippets="smsSnippets"
+                  @onSuccessfulSend="refreshActivityEntries(dockedPanelDetailsBox?.entity?.connectionRequestIdKey)" />
+    <SendEmailModal v-model:visible="isSendEmailModalVisible"
+                    :communicationRecipients="communicationRecipients"
+                    :communicationTemplates="communicationTemplates"
+                    @onSuccessfulSend="refreshActivityEntries(dockedPanelDetailsBox?.entity?.connectionRequestIdKey)" />
+    <ViewOptionsModal :modelValue="viewOptionsForModal"
+                      @update:modelValue="onViewOptionsUpdate"
+                      v-model:visible="isViewOptionsModalVisible"
+                      :gridDataToShowItems="filteredGridDataToShowItems"
+                      :connectionStates="box.options?.connectionStates ?? []"
+                      :connectionStatuses="box.options?.connectionStatuses ?? []" />
+
+    <ModalAlert v-model="isModalAlertVisible">
+        <p>{{ modalAlertText }}</p>
+    </ModalAlert>
+
+    <ConnectionRequestDockedPanel v-model="isDockedPanelVisible"
+                                  ref="connectionRequestDockedPanelRef"
+                                  :currentKey="selectedRequestKeyForDockedPanel"
+                                  :connectionRequestBreadcrumbs="connectionRequestBreadcrumbs"
+                                  :orderedKeys="orderedRequestKeys ?? []"
+                                  :detailsBox="dockedPanelDetailsBox"
+                                  :dockedPanelCloseOnOutsideClick="dockedPanelCloseOnOutsideClick"
+                                  :navigationUrls="box.navigationUrls ?? {}"
+                                  @navigate="updateSelectedRequestKey"
+                                  @navigateToBreadcrumb="navigateToBreadcrumb"
+                                  @navigateToAdditionalRequest="navigateToAdditionalRequest"
+                                  @editActivity="onEditActivity"
+                                  :isSaving="isDockedPanelSaving"
+                                  @editRequest="onEditRequest"
+                                  @transferRequest="onTransferClick"
+                                  @addActivity="showAddActivityModal(dockedPanelDetailsBox)"
+                                  @onCelebrationClick="box => showCelebrationModal(null, box)"
+                                  @onReminderClick="box => showReminderModal(null, box)"
+                                  @onSMSClick="showSMSModal(true)"
+                                  @onEmailClick="showEmailModal(true)"
+                                  @onReassignConnector="(connector) => reassignConnector([dockedPanelDetailsBox?.entity?.connectionRequestIdKey ?? ''], connector, true)"
+                                  @onRequestStateChanged="updateRequestStates"
+                                  @onStatusButtonClick="onStatusClickFromDockedPanel"
+                                  @launchWorkflow="launchWorkflowForRequests"
+                                  @deleteRequest="showDeleteRequestModal(null, dockedPanelDetailsBox)" />
+
+    <TransferConnectionRequestModal v-model="isTransferModalVisible"
+                                    :isLoading="areTransferDetailsLoading"
+                                    :transferDetails="transferRequestDetails"
+                                    :isSaving="isModalSaving"
+                                    :errorMessage="modalErrorMessage"
+                                    :isBulkTransfer="isBulkTransfer"
+                                    :requestDetails="requestDetailsForModal"
+                                    :viewOptions="viewOptions"
+                                    @fetchConnectorOptions="fetchConnectorOptionsForTransfer"
+                                    @dismissErrorMessage="onModalErrorMessageDismissed"
+                                    @close="onTransferModalClose"
+                                    @transfer="selectTransferProcess" />
+</template>
+
+<style>
+/* Temporary fix. See https://app.asana.com/1/20866866924293/project/1208321217019996/task/1212533216082714?focus=true */
+.panel-icon {
+    color: var(--color-interface-stronger) !important;
+}
+</style>
+
+<style scoped>
+.connection-source {
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-regular);
+    color: var(--color-interface-medium);
+}
+
+/* The .grid-cell class sets overflow: hidden. This prevens the dropdown menu from working within the cell. This class will set overflow: visible for any grid column with the itemClass "grid-cell-overflow" */
+:deep(.grid-cell.grid-cell-overflow) {
+    overflow: visible;
+}
+
+:deep(.grid-body) {
+    border-bottom-left-radius: var(--rounded-medium);
+    border-bottom-right-radius: var(--rounded-medium);
+}
+
+:deep(.grid-body > .grid-row:has(+ div) .grid-cell) {
+    border-bottom: none;
+}
+
+.activity-metric {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.skeleton-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-medium);
+}
+
+.empty-list {
+    min-height: calc(70vh - 200px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xsmall);
+}
+
+.ddl-min-width {
+    min-width: 150px;
+}
+
+.activity-date {
+    color: var(--color-interface-strong);
+}
+
+.activity-count {
+    color: var(--color-interface-medium);
+}
+
+.border-left-divider {
+    border-left: 1px solid var(--color-interface-softer);
+}
+
+.text-slate {
+    color: #64748B;
+}
+
+.text-emerald {
+    color: #10B981;
+}
+
+.dropdown-menu {
+    width: 230px;
+}
+
+:deep(.dropdown-min-width) {
+    min-width: var(--vs-dropdown-min-width);
+}
+
+.activity-btn i {
+    padding-right: var(--spacing-tiny);
+}
+
+@media (max-width: 1418px) {
+    .right-actions .activity-btn-label {
+        display: none;
+    }
+
+    .right-actions .activity-btn i {
+        padding: 0;
+    }
+}
+
+@media (max-width: 1125px) {
+    .left-actions .activity-btn-label {
+        display: none;
+    }
+
+    .left-actions .activity-btn i {
+        padding: 0;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { computed, reactive, ref, watch } from "vue";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
+    import { GridDataToShowItemBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/gridDataToShowItemBag";
+    import Grid, { Column, PersonColumn, SelectColumn, AttributeColumns } from "@Obsidian/Controls/grid";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import GroupedGridPanel from "@Obsidian/Controls/Internal/groupedGridPanel.obs";
+    import { isNullOrWhiteSpace, pluralize, safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { DueStatus } from "@Obsidian/Enums/Connection/dueStatus";
+    import AddConnectionRequestModal from "./ConnectionsHub/addConnectionRequestModal.partial.obs";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import ContextSlicer from "@Obsidian/Controls/contextSlicer.obs";
+    import { ContextEntityChangedData, Message } from "@Obsidian/Types/Utility/browserBus";
+    import { useContextEntities } from "@Obsidian/Core/Utilities/contextEntity";
+    import { PageMessages } from "@Obsidian/Utility/browserBus";
+    import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { CommunicationRecipientBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/communicationRecipientBag";
+    import { CommunicationTemplateBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/communicationTemplateBag";
+    import { ConnectionRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestBag";
+    import { ConnectionOpportunityDetailBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionOpportunityDetailBag";
+    import { GetEmailConfigurationRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/getEmailConfigurationRequestBag";
+    import { GetEmailConfigurationResponseBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/getEmailConfigurationResponseBag";
+    import { GetSmsConfigurationRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/getSmsConfigurationRequestBag";
+    import { GetSmsConfigurationResponseBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/getSmsConfigurationResponseBag";
+    import { PlacementGroupDetailsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/placementGroupDetailsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { PreferenceKey, ViewOptions } from "./ConnectionsHub/types.partial";
+    import { IGridState } from "@Obsidian/Types/Controls/grid";
+    import { HttpResult } from "@Obsidian/Types/Utility/http";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import Badge from "@Obsidian/Controls/badge.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import SendEmailModal from "./ConnectionsHub/sendEmailModal.partial.obs";
+    import SendSMSModal from "./ConnectionsHub/sendSMSModal.partial.obs";
+    import ViewOptionsModal from "./ConnectionsHub/viewOptionsModal.partial.obs";
+    import { ConnectionState, ConnectionStateDescription } from "@Obsidian/Enums/Connection/connectionState";
+    import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
+    import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
+    import { useStore } from "@Obsidian/PageState";
+    import AssignRequestModal from "./ConnectionsHub/assignRequestModal.partial.obs";
+    import { BulkRequestViewBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/bulkRequestViewBag";
+    import DeleteRequestModal from "./ConnectionsHub/deleteRequestModal.partial.obs";
+    import ActivityModal from "./ConnectionsHub/activityModal.partial.obs";
+    import ChangeStatusModal from "./ConnectionsHub/changeStatusModal.partial.obs";
+    import LaunchWorkflowModal from "./ConnectionsHub/launchWorkflowModal.partial.obs";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { ConnectionListGridUpdateBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionListGridUpdateBag";
+    import ChangeStatusFlyout from "./ConnectionsHub/changeStatusFlyout.partial.obs";
+    import { ConnectionRequestUpdateBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestUpdateBag";
+    import { ConnectionCampaignBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionCampaignBag";
+    import AddFromCampaignModal from "./ConnectionsHub/addFromCampaignModal.partial.obs";
+    import { AssignFromCampaignBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/assignFromCampaignBag";
+    import ChangeStateModal from "./ConnectionsHub/changeStateModal.partial.obs";
+    import { UpdateConnectionRequestStatesBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/updateConnectionRequestStatesBag";
+    import { ActivityBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/activityBag";
+    import { ActivityEntryBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/activityEntryBag";
+    import { LaunchWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/launchWorkflowBag";
+    import { LaunchWorkflowResultBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/launchWorkflowResultBag";
+    import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
+    import { showSecurity } from "@Obsidian/Utility/dialogs";
+    import CelebrationModal from "./ConnectionsHub/celebrationModal.partial.obs";
+    import { UpsertCelebrationBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/UpsertCelebrationBag";
+    import ReminderModal from "@Obsidian/Controls/Internal/reminderModal.obs";
+    import RequestTable from "./ConnectionsHub/requestTable.partial.obs";
+    import ConnectionRequestDockedPanel from "./ConnectionsHub/connectionRequestDockedPanel.partial.obs";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { removeCurrentUrlQueryParams } from "@Obsidian/Utility/url";
+    import { ConnectionRequestDetailBox } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestDetailBox";
+    import { ConnectionListUpdateBox } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionListUpdateBox";
+    import { TransferConnectionRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/transferConnectionRequestBag";
+    import TransferConnectionRequestModal from "./ConnectionsHub/transferConnectionRequestModal.partial.obs";
+    import { TransferConnectionRequestDetailsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/transferConnectionRequestDetailsBag";
+    import ConnectionStatusButton from "./ConnectionsHub/connectionStatusButton.partial.obs";
+    import { ConnectionActivityTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionActivityTypeBag";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { ConnectorOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectorOptionsBag";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    const box = useConfigurationValues<ListBlockBox<ConnectionsHubOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+    const browserBus = useBlockBrowserBus();
+    const contextEntities = useContextEntities();
+    const store = useStore();
+
+    browserBus.subscribe(PageMessages.ContextEntityChanged, async (message: Message<ContextEntityChangedData>) => {
+        if (areEqual(message.data.entityTypeGuid, EntityType.Campus)) {
+            const campusBag = await contextEntities.get(EntityType.Campus);
+            updateRefValue(selectedCampus, campusBag ?? null);
+
+            loadGridData();
+        }
+    });
+
+    const allGroupingFields = <ListItemBag[]>[
+        {
+            text: "Connector",
+            value: "connectorGrouping"
+        },
+        {
+            text: "State",
+            value: "stateGrouping"
+        },
+        {
+            text: "Status",
+            value: "statusGrouping"
+        },
+        {
+            text: "Opportunity",
+            value: "opportunityGrouping"
+        },
+        {
+            text: "Campus",
+            value: "campusGrouping"
+        },
+        {
+            text: "Due Status",
+            value: "dueStatusGrouping"
+        },
+    ];
+
+    // Soft security check to see if the user can edit the list of connection requests.
+    const canEditGlobalConnectionRequests = ref<boolean>(box.options?.canEditConnectionRequests ?? false);
+
+    // Context Slicer configuration
+    const selectedGrouping = ref<string>(isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedGroupByMode)) ? "connectorGrouping" : preferences.getValue(PreferenceKey.SelectedGroupByMode));
+    const selectedCampus = ref<ListItemBag | null>(null);
+    const areOnlyMyRequestsVisible = ref<string>(isNullOrWhiteSpace(preferences.getValue(PreferenceKey.AreOnlyMyRequestsVisible)) ? "true" : preferences.getValue(PreferenceKey.AreOnlyMyRequestsVisible));
+    const internalSelectedOpportunity = ref(box.options?.connectionOpportunityGuidFromPageParameter ?? preferences.getValue(getConnectionFilterKey(PreferenceKey.ConnectionmOpportunityFilterConnectionTypeIdKey)));
+    const internalSelectedConnector = ref<ListItemBag | null | undefined>(box.options?.selectedConnector);
+    const requestToggleItems = ref<ListItemBag[]>([
+        {
+            text: "My Requests",
+            value: "true"
+        },
+        {
+            text: "All Requests",
+            value: "false"
+        }
+    ]);
+    if (internalSelectedConnector.value?.value && !isNullOrWhiteSpace(internalSelectedConnector.value.value)) {
+        requestToggleItems.value.push(internalSelectedConnector.value);
+        areOnlyMyRequestsVisible.value = internalSelectedConnector.value.value;
+    }
+
+    // Add Connection Request Configuration
+    const newConnectionRequest = ref<ValidPropertiesBox<ConnectionRequestBag>>({ bag: { connectionOpportunityGuid: internalSelectedOpportunity.value, campusGuid: selectedCampus.value?.value } as ConnectionRequestBag });
+    const isExistingActiveRequesterOnConnectionType = ref<boolean>(false);
+    const isAddConnectionRequestModalVisible = ref(false);
+    const connectionOpportunityDetails = ref<ConnectionOpportunityDetailBag>(box.options?.connectionOpportunityDetailsFromFilter ?? {});
+    const placementGroupDetails = ref<PlacementGroupDetailsBag>();
+
+    // Grouped Grid Configuration
+    const selectedKeys = ref<Record<string, string[]>>({});
+    const selectedKeysOnUnmount = ref<Record<string, string[]>>({});
+    const groupedGridPanel = ref();
+    const rawQuickFilter = ref("");
+    const debouncedQuickFilter = ref(rawQuickFilter.value);
+    const isAutoCollapseEnabled = ref<boolean>(asBoolean(preferences.getValue(PreferenceKey.IsAutoCollapseEnabled)));
+    const openDropdownIndex = ref<string | null | undefined>();
+    // Holds the raw grid data returned from the server
+    const gridData = ref<GridDataBag>();
+    const requestListErrorMessage = ref<string>("");
+    const areRequestsLoading = ref<boolean>(true);
+
+    // Modal Configuration
+    const modalErrorMessage = ref<string>("");
+    const isSendSMSModalVisible = ref(false);
+    const isSendEmailModalVisible = ref(false);
+    const isCelebrationModalVisible = ref(false);
+    const isAssignRequestModalVisible = ref(false);
+    const isDeleteRequestModalVisible = ref(false);
+    const isActivityModalVisible = ref(false);
+    const isChangeStatusModalVisible = ref(false);
+    const isReminderModalVisible = ref(false);
+    const isLaunchWorkflowModalVisible = ref(false);
+    const isChangeStateModalVisible = ref(false);
+    const isAddFromCampaignModalVisible = ref(false);
+    const isTransferModalVisible = ref<boolean>(false);
+    const isModalAlertVisible = ref(false);
+    const isViewOptionsModalVisible = ref(false);
+    const modalAlertText = ref();
+    const isModalSaving = ref(false);
+    const requestDetailsForModal = ref<BulkRequestViewBag[]>([]);
+    // Refs for specific modals
+    const reminderEntityGuid = ref<string>("");
+    const changeStateTo = ref<ConnectionState>(ConnectionState.Active);
+    const areCampaignsLoading = ref(false);
+    const campaignRecordBags = ref();
+    const areRequestDetailsForModalLoading = ref<boolean>(false);
+    const areTransferDetailsLoading = ref<boolean>(false);
+    const failingRequestDetailsForModal = ref<BulkRequestViewBag[]>([]);
+    const activityToEdit = ref<ActivityEntryBag | null>(null);
+    const transferRequestDetails = ref<TransferConnectionRequestDetailsBag>();
+    const viewOptions = ref<ViewOptions>({
+        sortBy: preferences.getValue(getConnectionFilterKey(PreferenceKey.FilterSortByConnectionTypIdKey)),
+        gridDataToShow: safeParseJson(preferences.getValue(getConnectionFilterKey(PreferenceKey.FilterGridDataToShowConnectionTypIdKey))),
+        isRequestSourceShown: asBoolean(preferences.getValue(getConnectionFilterKey(PreferenceKey.FilterIsRequestSourceShownConnectionTypIdKey))),
+        stateFilter: safeParseJson(preferences.getValue(getConnectionFilterKey(PreferenceKey.FilterStateConnectionTypIdKey))),
+        statusFilter: safeParseJson(preferences.getValue(getConnectionFilterKey(PreferenceKey.FilterStatusConnectionTypIdKey))),
+        dueFilter: safeParseJson(preferences.getValue(getConnectionFilterKey(PreferenceKey.FilterDueConnectionTypIdKey))),
+    });
+    const allPossibleConnectors = ref(box.options?.allPossibleConnectors ?? []);
+    const isBulkTransfer = ref<boolean>(false);
+    // SMS and Email modal state
+    const communicationRecipients = ref<CommunicationRecipientBag[] | null | undefined>();
+    const smsFromSystemPhoneNumbers = ref<ListItemBag[]>([]);
+    const smsSnippets = ref<ListItemBag[]>([]);
+    const communicationTemplates = ref<CommunicationTemplateBag[]>([]);
+
+    // Flyout Configuration
+    const isFlyoutOpen = ref(false);
+    const flyoutErrorMessage = ref<string>("");
+    const isFlyoutSaving = ref<boolean>(false);
+    const isFlyoutCompletionButtonLoading = ref<boolean>(false);
+    const flyoutAnchorEl = ref<HTMLElement | null>(null);
+    const isNoteRequired = ref(false);
+
+    // Docked Panel Configuration
+    const isDockedPanelSaving = ref<boolean>(false);
+    const connectionRequestUpdateBag = ref<ConnectionRequestUpdateBag>({} as ConnectionRequestUpdateBag);
+    const orderedRequestKeys = ref<string[]>([]);
+    const isDockedPanelVisible = ref(false);
+    const selectedRequestKeyForDockedPanel = ref();
+    const dockedPanelDetailsBox = ref<ConnectionRequestDetailBox>();
+    const connectionRequestDockedPanelRef = ref<InstanceType<typeof ConnectionRequestDockedPanel>>();
+    const dockedPanelCloseOnOutsideClick = ref<boolean>(true);
+    // Breadcrumbs are used when a user navigates to an "additional request"
+    const connectionRequestBreadcrumbs = ref<ListItemBag[]>([]);
+
+    // #region Computed Values
+
+    const canEditConnectionRequests = computed<boolean>(() => {
+        // If the Docked Panel is currently open and the box has data then use the security derived from the specific request.
+        if (isDockedPanelVisible.value && dockedPanelDetailsBox.value?.options) {
+            return dockedPanelDetailsBox.value.options.canEditConnectionRequest;
+        }
+
+        return canEditGlobalConnectionRequests.value;
+    });
+
+    const currentPerson = computed((): CurrentPersonBag | null => {
+        return store.state.currentPerson;
+    });
+
+    /**
+     * Gets the list of secondary action items to be included in the panel.
+     * This is computed because the auto-collapse toggle title depends on reactive state.
+     */
+    const secondaryActions = computed((): PanelAction[] => [
+        {
+            type: "default",
+            iconCssClass: "ti ti-plus",
+            title: "Add From Campaign",
+            handler: showAddFromCampaignModal
+        },
+        {
+            type: "default",
+            iconCssClass: "ti ti-viewport-short",
+            title: isAutoCollapseEnabled.value ? "Turn Off Auto-Collapse" : "Turn On Auto-Collapse",
+            handler: toggleAutoCollapse
+        },
+        {
+            type: "default",
+            iconCssClass: "ti ti-chevrons-up",
+            title: "Collapse All",
+            handler: collapseAll
+        }
+    ]);
+
+    // Computed setter normalizes v-model updates so the dropdown’s blank "All Opportunities" value is never stored in component state.
+    const selectedOpportunity = computed({
+        get: () => internalSelectedOpportunity.value,
+        set: value => {
+            internalSelectedOpportunity.value = toGuidOrNull(value) ?? "";
+        }
+    });
+
+    const groupingFields = computed(() => {
+        let filteredGroupingFields = allGroupingFields;
+
+        if (!isNullOrWhiteSpace(selectedOpportunity.value)) {
+            filteredGroupingFields = filteredGroupingFields.filter(g => g.value !== "opportunityGrouping");
+        }
+        if (!isNullOrWhiteSpace(selectedCampus.value?.value)) {
+            filteredGroupingFields = filteredGroupingFields.filter(g => g.value !== "campusGrouping");
+        }
+
+        return filteredGroupingFields;
+    });
+
+    const hasSelectedOpportunity = computed(() => !isNullOrWhiteSpace(selectedOpportunity.value));
+
+    /**
+     * Column choices shown in the View Options modal. Items scoped to one or more
+     * Connection Opportunities are hidden when an unrelated opportunity is the
+     * active filter, so the user does not see columns that would be empty for
+     * every visible row.
+     */
+    const filteredGridDataToShowItems = computed<ListItemBag[]>(() => {
+        const items: GridDataToShowItemBag[] = box.options?.gridDataToShowItems ?? [];
+        const activeOpportunityGuid = selectedOpportunity.value;
+        const hasActiveFilter = !isNullOrWhiteSpace(activeOpportunityGuid);
+
+        return items
+            .filter(item => {
+                const scopeGuids = item.connectionOpportunityGuids;
+                if (!scopeGuids || scopeGuids.length === 0) {
+                    return true;
+                }
+                if (!hasActiveFilter) {
+                    return true;
+                }
+                return scopeGuids.some(g => areEqual(g, activeOpportunityGuid));
+            })
+            .map(item => item.listItemBag as ListItemBag);
+    });
+
+    /** Set of grid item values currently visible to the user under the active opportunity filter. */
+    const inScopeGridDataToShowValues = computed<Set<string>>(() => {
+        return new Set(
+            filteredGridDataToShowItems.value
+                .map(i => i.value)
+                .filter((v): v is string => !!v)
+        );
+    });
+
+    /**
+     * View Options to present to the modal: identical to the saved view options except
+     * gridDataToShow is narrowed to values that exist in the modal's items list. Out-of-scope
+     * saved selections are intentionally excluded from the dropdown's v-model so the multi-select
+     * does not carry phantom values, and are re-merged in onViewOptionsUpdate on save.
+     */
+    const viewOptionsForModal = computed<ViewOptions>(() => ({
+        ...viewOptions.value,
+        gridDataToShow: (viewOptions.value.gridDataToShow ?? [])
+            .filter(v => inScopeGridDataToShowValues.value.has(v)),
+    }));
+
+    const skeletonCount = computed<number>(() => selectedGrouping.value === "connectorGrouping" && asBoolean(areOnlyMyRequestsVisible.value) ? 1 : 3);
+
+    const allSelectedKeys = computed(() => Object.values(selectedKeys.value).flat());
+    const hasAnySelectedKeys = computed(() => allSelectedKeys.value.length > 0);
+
+    const selectedRequestDetails = computed((): BulkRequestViewBag[] => {
+        if (!gridData.value?.rows?.length) {
+            return [];
+        }
+
+        const selectedKeySet = new Set(allSelectedKeys.value);
+
+        return gridData.value.rows.map(row => {
+            const idKey = row["idKey"] as string | null | undefined;
+
+            if (!idKey || !selectedKeySet.has(idKey)) {
+                return null;
+            }
+
+            return getBulkRequestViewBagFromRow(row, idKey);
+        }).filter((r): r is BulkRequestViewBag => r !== null);
+    });
+
+    const attributesToShow = computed(() => {
+        return box.gridDefinition?.attributeFields?.filter(a => {
+            if (!a.name) {
+                return false;
+            }
+
+            // The saved gridDataToShow preference can carry selections from other
+            // opportunities. Only render a column when the attribute is both selected
+            // to show AND currently in scope of the active opportunity filter, so
+            // out-of-scope selections stay preserved in the preference but do not
+            // surface as empty columns.
+            if (!inScopeGridDataToShowValues.value.has(a.name)) {
+                return false;
+            }
+
+            return viewOptions.value.gridDataToShow?.includes(a.name) ?? false;
+        });
+    });
+
+    /** `true` if the panel settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!viewOptions.value.stateFilter?.length
+            || !!viewOptions.value.statusFilter?.length
+            || !!viewOptions.value.dueFilter?.length;
+    });
+
+    const normalizedQuickFilter = computed(() => debouncedQuickFilter.value.toLowerCase());
+
+    const isSequentialStatus = computed<boolean>(() => {
+        if (isDockedPanelVisible.value) {
+            return dockedPanelDetailsBox.value?.options?.isSequentialStatusMode ?? false;
+        }
+        return box.options?.isSequentialStatusMode ?? false;
+    });
+
+    const connectionStatusItems = computed<ListItemBag[]>(() => {
+        let statuses: ConnectionStatusBag[] | null | undefined;
+
+        if (isDockedPanelVisible.value && dockedPanelDetailsBox.value?.options?.connectionStatuses) {
+            statuses = dockedPanelDetailsBox.value.options.connectionStatuses;
+        }
+        else {
+            statuses = box.options?.connectionStatuses;
+        }
+
+        return (
+            statuses?.slice() // avoid mutating source
+                .sort((a, b) => a.order - b.order)
+                .map(s => ({
+                    value: s.guid,
+                    text: s.name
+                })) ?? []
+        );
+    });
+
+    const connectionActivityItems = computed<ConnectionActivityTypeBag[] | null | undefined>(() => {
+        const activities = dockedPanelDetailsBox.value?.options?.connectionActivities
+            ?? box.options?.connectionActivities;
+
+        return activities;
+    });
+
+    const visibleRows = computed(() => {
+        if (!gridData.value?.rows) {
+            return [];
+        }
+
+        let rows = gridData.value.rows;
+
+        rows = filterRows(rows);
+        rows = sortRows(rows);
+
+        return rows;
+    });
+
+    // #endregion Computed Values
+
+    // #region Grid Functions
+
+    function filterRows(rows: Record<string, unknown>[]): Record<string, unknown>[] {
+        return rows.filter(row => {
+            const requestDetailsValue = row["requestDetails"] as PersonFieldBag | undefined;
+
+            if (!requestDetailsValue || typeof requestDetailsValue !== "object") {
+                return false;
+            }
+
+            // Status Filter
+            if (viewOptions.value.statusFilter && viewOptions.value.statusFilter.length > 0) {
+                const statusValue = row["connectionStatus"] as ConnectionStatusBag | undefined;
+
+                if (!statusValue || typeof statusValue !== "object") {
+                    return false;
+                }
+
+                if (!viewOptions.value.statusFilter.includes(statusValue.guid)) {
+                    return false;
+                }
+            }
+
+            // Due Filter
+            if (viewOptions.value.dueFilter && viewOptions.value.dueFilter.length > 0) {
+                const dueStatusValue = row["dueStatus"] as DueStatus | null | undefined;
+
+                if (dueStatusValue === null || typeof dueStatusValue !== "number") {
+                    return false;
+                }
+
+                if (!viewOptions.value.dueFilter.includes(dueStatusValue.toString())) {
+                    return false;
+                }
+            }
+
+            // Quick filter
+            const filter = normalizedQuickFilter.value;
+
+            return !filter || (`${requestDetailsValue.nickName} ${requestDetailsValue.lastName}`).toLowerCase().includes(filter);
+        });
+    }
+
+    function sortRows(rows: Record<string, unknown>[]): Record<string, unknown>[] {
+        const sortBy = viewOptions.value.sortBy;
+
+        if (isNullOrWhiteSpace(sortBy)) {
+            return rows;
+        }
+
+        return rows.sort((a, b) => {
+            switch (sortBy) {
+                case "DateAddedAsc": {
+                    const aDate = a["createdDateTime"] as string | null | undefined;
+                    const bDate = b["createdDateTime"] as string | null | undefined;
+
+                    return compareIsoDates(aDate, bDate, "asc");
+                }
+
+                case "DateAddedDesc": {
+                    const aDate = a["createdDateTime"] as string | null | undefined;
+                    const bDate = b["createdDateTime"] as string | null | undefined;
+
+                    return compareIsoDates(aDate, bDate, "desc");
+                }
+
+                case "DueDateAsc": {
+                    const aDate = a["dueDate"] as string | null | undefined;
+                    const bDate = b["dueDate"] as string | null | undefined;
+
+                    return compareIsoDates(aDate, bDate, "asc");
+                }
+
+                case "DueDateDesc": {
+                    const aDate = a["dueDate"] as string | null | undefined;
+                    const bDate = b["dueDate"] as string | null | undefined;
+
+                    return compareIsoDates(aDate, bDate, "desc");
+                }
+
+                case "RequesterAsc": {
+                    const aDetails = a["requestDetails"] as PersonFieldBag | null | undefined;
+                    const bDetails = b["requestDetails"] as PersonFieldBag | null | undefined;
+
+                    const aLast = (aDetails?.lastName ?? "").toLowerCase();
+                    const bLast = (bDetails?.lastName ?? "").toLowerCase();
+
+                    const lastNameResult = aLast.localeCompare(bLast);
+                    if (lastNameResult !== 0) {
+                        return lastNameResult;
+                    }
+
+                    const aNick = (aDetails?.nickName ?? "").toLowerCase();
+                    const bNick = (bDetails?.nickName ?? "").toLowerCase();
+
+                    return aNick.localeCompare(bNick);
+                }
+
+                case "RequesterDesc": {
+                    const aDetails = a["requestDetails"] as PersonFieldBag | null | undefined;
+                    const bDetails = b["requestDetails"] as PersonFieldBag | null | undefined;
+
+                    const aLast = (aDetails?.lastName ?? "").toLowerCase();
+                    const bLast = (bDetails?.lastName ?? "").toLowerCase();
+
+                    const lastNameResult = bLast.localeCompare(aLast);
+                    if (lastNameResult !== 0) {
+                        return lastNameResult;
+                    }
+
+                    const aNick = (aDetails?.nickName ?? "").toLowerCase();
+                    const bNick = (bDetails?.nickName ?? "").toLowerCase();
+
+                    return bNick.localeCompare(aNick);
+                }
+
+                case "LastActivityAsc": {
+                    const aDate = a["lastActivityDateTime"] as string | null | undefined;
+                    const bDate = b["lastActivityDateTime"] as string | null | undefined;
+
+                    return compareIsoDates(aDate, bDate, "asc");
+                }
+
+                case "LastActivityDesc": {
+                    const aDate = a["lastActivityDateTime"] as string | null | undefined;
+                    const bDate = b["lastActivityDateTime"] as string | null | undefined;
+
+                    return compareIsoDates(aDate, bDate, "desc");
+                }
+
+                default:
+                    return 0;
+            }
+        });
+    }
+
+    function applyServerFilters(): void {
+        if (!gridData.value?.rows) {
+            return;
+        }
+
+        gridData.value.rows = gridData.value.rows.filter(row => {
+            return isRowVisibleWithServerFilters(row);
+        });
+    }
+
+    function isRowVisibleWithServerFilters(row: Record<string, unknown>): boolean {
+        // State Filter
+        if (viewOptions.value.stateFilter && viewOptions.value.stateFilter.length > 0) {
+            const stateValue = row["connectionState"] as ConnectionState | undefined;
+
+            if (stateValue === null || stateValue === undefined || typeof stateValue !== "number") {
+                return false;
+            }
+
+            if (!viewOptions.value.stateFilter.includes(stateValue.toString())) {
+                return false;
+            }
+        }
+
+        // Requests Assigned to Me
+        if (areOnlyMyRequestsVisible.value === "true") {
+            const connectorValue = row["connectorDetails"] as ListItemBag | undefined;
+
+            if (!connectorValue || typeof connectorValue !== "object") {
+                return false;
+            }
+
+            if (currentPerson.value?.idKey !== connectorValue.value) {
+                return false;
+            }
+        }
+
+        // Campus Filter
+        if (!isNullOrWhiteSpace(selectedCampus.value?.value)) {
+            const campusGuid = row["campusGuid"] as string | null | undefined;
+            if (!areEqual(selectedCampus.value?.value, campusGuid)) {
+                return false;
+            }
+        }
+
+        // Connection Opportunity Filter
+        if (!isNullOrWhiteSpace(selectedOpportunity.value)) {
+            const connectionOpportunityGuid = row["connectionOpportunityGuid"] as string | null | undefined;
+            if (!areEqual(selectedOpportunity.value, connectionOpportunityGuid)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    function getOverdueCount(rows: Record<string, unknown>[]): number {
+        return rows.filter(r => r["dueStatus"] === DueStatus.Overdue).length;
+    }
+
+    function getDueSoonCount(rows: Record<string, unknown>[]): number {
+        return rows.filter(r => r["dueStatus"] === DueStatus.DueSoon).length;
+    }
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        // When a new request is selected from the list we need to clear breadcrumbs.
+        connectionRequestBreadcrumbs.value = [];
+
+        selectedRequestKeyForDockedPanel.value = key;
+        isFlyoutOpen.value = false;
+        isDockedPanelVisible.value = true;
+    }
+
+    function onAddItem(): void {
+        isAddConnectionRequestModalVisible.value = true;
+    }
+
+    // #endregion Grid Functions
+
+    // #region Docked Panel Functions
+
+    function updateSelectedRequestKey(key: string | null): void {
+        dockedPanelDetailsBox.value = undefined;
+        if (!isNullOrWhiteSpace(key)) {
+            selectedRequestKeyForDockedPanel.value = key;
+        }
+    }
+
+    // #endregion Docked Panel Functions
+
+    // #region Modal Functions
+
+    function resetNewConnectionRequest(): void {
+        newConnectionRequest.value = { bag: { connectionOpportunityGuid: internalSelectedOpportunity.value, campusGuid: selectedCampus.value?.value } as ConnectionRequestBag };
+        isExistingActiveRequesterOnConnectionType.value = false;
+        onModalErrorMessageDismissed();
+    }
+
+    function onModalErrorMessageDismissed(): void {
+        modalErrorMessage.value = "";
+    }
+
+    function onTransferModalClose(): void {
+        isBulkTransfer.value = false;
+        onModalErrorMessageDismissed();
+    }
+
+    // #endregioin Modal Functions
+
+    // #region Helper Functions
+
+    /** The time elapsed since the specified date in a human-readable format. */
+    function getElapsedShortTime(date: string | null | undefined): string {
+        return RockDateTime.parseISO(date ?? "")?.localDateTime.toElapsedShortString() ?? "";
+    }
+
+    function compareIsoDates(isoA?: string | null, isoB?: string | null, direction: string = "asc"): number {
+        const dateA = RockDateTime.parseISO(isoA ?? "");
+        const dateB = RockDateTime.parseISO(isoB ?? "");
+
+        if (dateA && dateB) {
+            const result = dateA.compareTo(dateB);
+            return direction === "asc" ? result : -result;
+        }
+
+        if (dateA && !dateB) {
+            return -1;
+        }
+
+        if (!dateA && dateB) {
+            return 1;
+        }
+
+        return 0;
+    }
+
+
+    function formatDueDateShortLabel(dueDate: string | null | undefined, isCompleted: boolean, completedDateTime: string | null | undefined): string {
+        // Use the completion date as the reference point if completed, otherwise use today
+        const referenceDate = isCompleted ? RockDateTime.parseISO(completedDateTime ?? "")?.date : RockDateTime.now().date;
+        const due = RockDateTime.parseISO(dueDate ?? "")?.date;
+
+        // If either date is missing/invalid, return empty string
+        if (!due || !referenceDate) {
+            return "";
+        }
+
+        // Calculate the difference in days between the due date and the reference date
+        const msPerDay = 1000 * 60 * 60 * 24;
+        const dayDiff = Math.round(
+            (due.toMilliseconds() - referenceDate.toMilliseconds()) / msPerDay
+        );
+
+        // Show "Today" label only for active (non-completed) tasks due today
+        if (dayDiff === 0 && !isCompleted) {
+            return "Today";
+        }
+
+        return `${dayDiff}d`;
+    }
+
+    function getDueDateColor(dueStatus: DueStatus | null | undefined, isCompleted: boolean): string {
+        switch (dueStatus) {
+            case DueStatus.DueLater:
+                return isCompleted ? "text-emerald text-semibold" : "text-interface-strong";
+            case DueStatus.DueSoon:
+                return "text-warning text-semibold";
+            case DueStatus.Overdue:
+                return "text-danger text-semibold";
+            default:
+                return "text-interface-strong";
+        }
+    }
+
+    function asLocaleString(dateTime: string | null | undefined): string {
+        let date = RockDateTime.parseISO(dateTime ?? "");
+
+        if (!date) {
+            return "";
+        }
+
+        return date.toLocaleString({ year: "numeric", month: "numeric", day: "numeric" });
+    }
+
+    /**
+     * Gets a preference key with the current connection type id applied.
+     *
+     * Replaces the `{0}` token in the provided preference key with the
+     * configured `connectionTypeIdKey`, if available.
+     *
+     * @param preferenceKey The preference key template containing a `{0}` token.
+     * @returns The resolved preference key, or an empty string if unavailable.
+     */
+    function getConnectionFilterKey(preferenceKey: string): string {
+        if (!box.options?.connectionTypeIdKey) {
+            return "";
+        }
+
+        return preferenceKey.replace("{0}", box.options.connectionTypeIdKey);
+    }
+
+    /** Adds the tooltip behavior to the element. */
+    function addTooltip(element: Element | null): void {
+        if (element) {
+            tooltip(element);
+        }
+    }
+
+    // #endregion Helper Functions
+
+    function onPanelSettingsClick(): void {
+        isViewOptionsModalVisible.value = true;
+    }
+
+    /**
+     * Selections that were saved but are currently out of scope (because the active
+     * opportunity filter excludes them) are not shown in the modal and therefore could
+     * not have been intentionally toggled off there. Preserve them so the corresponding
+     * column reappears when the user navigates back to that opportunity or clears the
+     * filter. Persistence to person preferences is handled by the deep watcher on
+     * viewOptions.
+     */
+    function onViewOptionsUpdate(updatedViewOptions: ViewOptions): void {
+        const previousSelections = viewOptions.value.gridDataToShow ?? [];
+        const hiddenSavedSelections = previousSelections.filter(
+            v => !inScopeGridDataToShowValues.value.has(v)
+        );
+        const newInScopeSelections = updatedViewOptions.gridDataToShow ?? [];
+        const mergedGridDataToShow = [...newInScopeSelections, ...hiddenSavedSelections];
+
+        viewOptions.value = {
+            ...updatedViewOptions,
+            gridDataToShow: mergedGridDataToShow,
+        };
+    }
+
+    function decreaseReminderCount(requesterPersonAliasGuid: string): void {
+        const row = gridData.value?.rows?.find(r => r.requesterPersonAliasGuid === requesterPersonAliasGuid);
+
+        if (row && typeof row.reminderCount === "number") {
+            row.reminderCount--;
+        }
+
+        if (dockedPanelDetailsBox.value?.entity) {
+            dockedPanelDetailsBox.value.entity.reminderCount--;
+        }
+    }
+
+    function increaseReminderCount(requesterPersonAliasGuid: string): void {
+        const row = gridData.value?.rows?.find(r => r.requesterPersonAliasGuid === requesterPersonAliasGuid);
+
+        if (row && typeof row.reminderCount === "number") {
+            row.reminderCount++;
+        }
+
+        if (dockedPanelDetailsBox.value?.entity) {
+            dockedPanelDetailsBox.value.entity.reminderCount++;
+        }
+    }
+
+    function toggleGridRowDropdown(key: string | null | undefined): void {
+        openDropdownIndex.value = openDropdownIndex.value === key ? null : key;
+    }
+
+    /**
+     * Called when the individual changes which rows are selected.
+     *
+     * @param state The state object that describes the grid.
+     */
+    function onSelectedKeysChanged(key: string | null | undefined, state: IGridState): void {
+        if (!key) {
+            return;
+        }
+        selectedKeys.value[key] = [...state.selectedKeys];
+    }
+
+    /**
+     * Updates the grid state's selected keys to equal the selected keys before the grid unmounted.
+     * @param key the grid's grouping key
+     * @param state the grid state
+     */
+    function onGridLoad(key: string | null | undefined, state: IGridState): void {
+        if (!key || !selectedKeysOnUnmount.value[key]) {
+            return;
+        }
+        state.selectedKeys = [...state.selectedKeys, ...selectedKeysOnUnmount.value[key]];
+    }
+
+    /**
+     * Saves the grid's selected keys before the grid unmounts.
+     * @param key the grid's grouping key
+     * @param state the grid state
+     */
+    function onGridUnload(key: string | null | undefined, state: IGridState): void {
+        if (!key) {
+            return;
+        }
+        selectedKeysOnUnmount.value[key] = [...state.selectedKeys];
+    }
+
+    function setSingleRequestDetail(row: Record<string, unknown> | null, dockedPanelBox: ConnectionRequestDetailBox | null): void {
+        let requestDetailsBag;
+
+        if (!row && !dockedPanelBox) {
+            return;
+        }
+
+        if (row) {
+            requestDetailsBag = getBulkRequestViewBagFromRow(row);
+        }
+        else if (dockedPanelBox) {
+            requestDetailsBag = getBulkRequestViewBagFromDockedPanelDetails(dockedPanelBox);
+        }
+
+        requestDetailsForModal.value = [requestDetailsBag];
+    }
+
+    function getBulkRequestViewBagFromRow(row: Record<string, unknown>, idKey: string | null | undefined = null): BulkRequestViewBag {
+        if (isNullOrWhiteSpace(idKey)) {
+            idKey = row["idKey"] as string | null | undefined;
+        }
+
+        const connectionOpportunity = row["connectionOpportunity"] as string | null | undefined;
+        const connectionOpportunityGuid = row["connectionOpportunityGuid"] as string | null | undefined;
+        const connectionStatus = row["connectionStatus"] as ConnectionStatusBag | null | undefined;
+        const connectionTypeSource = row["connectionTypeSource"] as string | null | undefined;
+        const connector = row["connectorDetails"] as ListItemBag | null | undefined;
+        const dueDate = row["dueDate"] as string | null | undefined;
+        const requester = row["requestDetails"] as PersonFieldBag | null | undefined;
+        const celebrationText = row["celebrationText"] as string | null | undefined;
+        const hasPlacementGroup = row["hasPlacementGroup"] as boolean | null | undefined;
+
+        return {
+            idKey,
+            connectionOpportunity,
+            connectionOpportunityGuid,
+            connectionStatus,
+            connectionTypeSource,
+            connector,
+            dueDate,
+            requester,
+            celebrationText,
+            hasPlacementGroup
+        } as BulkRequestViewBag;
+    }
+
+    function getBulkRequestViewBagFromDockedPanelDetails(box: ConnectionRequestDetailBox): BulkRequestViewBag {
+        if (!box.options || !box.entity) {
+            return {};
+        }
+
+        const connector = box.options.connectorItems?.find(c => c.listItemBag?.value === box.entity?.connectorPerson)?.listItemBag;
+        const hasPlacementGroup = !!box.entity?.placementGroup;
+
+        const bag = <BulkRequestViewBag>{
+            idKey: box.entity.connectionRequestIdKey,
+            connectionOpportunity: box.entity.connectionOpportunityName,
+            connectionOpportunityGuid: box.entity.connectionOpportunityGuid,
+            connectionStatus: box.entity.connectionStatus,
+            connectionTypeSource: box.entity.connectionTypeSource,
+            connector: connector,
+            dueDate: box.entity.dueDate,
+            requester: box.entity.requesterPerson,
+            celebrationText: box.entity.celebrationText,
+            hasPlacementGroup
+        };
+
+        return bag;
+    }
+
+    function prepareRequestDetailsForModal(row: Record<string, unknown> | null = null, dockedPanelBox: ConnectionRequestDetailBox | null = null): void {
+        // If row is null then we are in bulk action mode.
+        if (row === null && dockedPanelBox === null) {
+            requestDetailsForModal.value = selectedRequestDetails.value;
+        }
+        else {
+            setSingleRequestDetail(row, dockedPanelBox);
+        }
+    }
+
+    function collapseAll(): void {
+        groupedGridPanel.value.collapseAll();
+    }
+
+    function toggleAutoCollapse(): void {
+        isAutoCollapseEnabled.value = !isAutoCollapseEnabled.value;
+    }
+
+    function showCelebrationModal(row: Record<string, unknown> | null = null, detailsBox: ConnectionRequestDetailBox | null = null): void {
+        prepareRequestDetailsForModal(row, detailsBox);
+        isCelebrationModalVisible.value = true;
+    }
+
+    function showReminderModal(row: Record<string, unknown> | null = null, detailBox: ConnectionRequestDetailBox | null = null): void {
+        if (!row && !detailBox) {
+            return;
+        }
+
+        let requesterPersonAliasGuid;
+
+        if (row) {
+            requesterPersonAliasGuid = row["requesterPersonAliasGuid"] as string | null | undefined;
+
+        }
+        else {
+            requesterPersonAliasGuid = detailBox?.entity?.requesterPersonAliasGuid;
+        }
+
+        if (!requesterPersonAliasGuid || typeof requesterPersonAliasGuid !== "string") {
+            return;
+        }
+
+        reminderEntityGuid.value = requesterPersonAliasGuid;
+        prepareRequestDetailsForModal(row, detailBox);
+        isReminderModalVisible.value = true;
+    }
+
+    function showAssignRequestModal(): void {
+        prepareRequestDetailsForModal();
+        isAssignRequestModalVisible.value = true;
+    }
+
+    function showSecurityModal(key: string | null | undefined): void {
+        openDropdownIndex.value = null;
+        if (!key) {
+            return;
+        }
+        showSecurity(EntityType.ConnectionRequest, key);
+    }
+
+    function showDeleteRequestModal(row: Record<string, unknown> | null = null, detailBox: ConnectionRequestDetailBox | null = null): void {
+        openDropdownIndex.value = null;
+        prepareRequestDetailsForModal(row, detailBox);
+        isDeleteRequestModalVisible.value = true;
+    }
+
+    function showChangeStateModal(state: ConnectionState, row: Record<string, unknown> | null = null): void {
+        openDropdownIndex.value = null;
+        prepareRequestDetailsForModal(row);
+        changeStateTo.value = state;
+
+        if (state === ConnectionState.Connected) {
+            checkIfRequestsMeetRequirements();
+        }
+        else {
+            failingRequestDetailsForModal.value = [];
+        }
+
+        isChangeStateModalVisible.value = true;
+    }
+
+    function showAddActivityModal(detailBox: ConnectionRequestDetailBox | null = null): void {
+        prepareRequestDetailsForModal(null, detailBox);
+        isActivityModalVisible.value = true;
+    }
+
+    function showChangeStatusModal(): void {
+        prepareRequestDetailsForModal();
+        isChangeStatusModalVisible.value = true;
+    }
+
+    function showLaunchWorkflowModal(row: Record<string, unknown> | null = null): void {
+        openDropdownIndex.value = null;
+        prepareRequestDetailsForModal(row);
+        isLaunchWorkflowModalVisible.value = true;
+    }
+
+    /**
+     * If the docked panel is currently open and we open a modal, we need to disable the "click outside" outside logic on the docked panel.
+     * Once the modal is closed we need to enable "click outside" logic again.
+     */
+    function handleClickOutsideSettingForDockedPanel(value: boolean): void {
+        if (isDockedPanelVisible.value) {
+            dockedPanelCloseOnOutsideClick.value = value;
+        }
+    }
+
+    async function updateStatusFromModal(bag: ConnectionRequestUpdateBag): Promise<void> {
+        const statusUpdateBags: ConnectionRequestUpdateBag[] = [];
+        const completedRequests: string[] = [];
+
+        if (box.options?.isSequentialStatusMode) {
+            const statusIndexByGuid = new Map(
+                connectionStatusItems.value.map((s, i) => [s.value, i])
+            );
+
+            const lastStatusIndex = connectionStatusItems.value.length - 1;
+
+
+            for (const request of selectedRequestDetails.value) {
+                const currentIndex = statusIndexByGuid.get(request.connectionStatus?.guid);
+                if (currentIndex === undefined || isNullOrWhiteSpace(request.idKey)) {
+                    continue;
+                }
+
+                // Last sequential status then update state to Connected
+                if (currentIndex === lastStatusIndex) {
+                    completedRequests.push(request.idKey!);
+                    continue;
+                }
+
+                // Otherwise next sequential status
+                const nextStatus = connectionStatusItems.value[currentIndex + 1];
+
+                statusUpdateBags.push({
+                    connectionRequestIdKey: request.idKey,
+                    connectionStatusGuid: nextStatus.value,
+                    note: bag.note
+                });
+            }
+        }
+        else {
+            for (const key of allSelectedKeys.value) {
+                statusUpdateBags.push({
+                    connectionRequestIdKey: key,
+                    connectionStatusGuid: bag.connectionStatusGuid,
+                    note: bag.note
+                });
+            }
+        }
+
+        try {
+            isModalSaving.value = true;
+            const errorMessage = await updateRequestStatuses(statusUpdateBags, completedRequests);
+            if (errorMessage) {
+                modalErrorMessage.value = errorMessage;
+            }
+        }
+        finally {
+            isModalSaving.value = false;
+        }
+    }
+
+    function navigateToBreadcrumb(index: number): void {
+        const breadcrumb = connectionRequestBreadcrumbs.value[index];
+        if (!breadcrumb.value) {
+            return;
+        }
+
+        connectionRequestBreadcrumbs.value = connectionRequestBreadcrumbs.value.slice(0, index);
+        getConnectionRequestDetails(breadcrumb.value);
+    }
+
+    function navigateToAdditionalRequest(connectionRequestIdKey: string): void {
+        var currentRequest = dockedPanelDetailsBox.value?.entity;
+        if (!currentRequest) {
+            return;
+        }
+
+        connectionRequestBreadcrumbs.value.push(<ListItemBag>{
+            text: `${currentRequest.connectionOpportunityName} (${currentRequest.requesterPerson?.nickName} ${currentRequest.requesterPerson?.lastName})`,
+            value: currentRequest.connectionRequestIdKey
+        });
+
+        getConnectionRequestDetails(connectionRequestIdKey);
+    }
+
+    /**
+     * Loads the context entity values for the current session.
+     */
+    async function loadContextValues(): Promise<void> {
+        const item = await contextEntities.get(EntityType.Campus);
+
+        if (item) {
+            selectedCampus.value = item;
+        }
+    }
+
+    async function fetchConnectorOptionsForAdd(connectionOpportunityGuid: string, campusGuid: string): Promise<void> {
+        const connectorOptions = await fetchConnectorOptions(connectionOpportunityGuid, campusGuid);
+        connectionOpportunityDetails.value.connectorOptions = connectorOptions;
+    }
+
+    async function fetchConnectorOptionsForTransfer(connectionOpportunityGuid: string, campusGuid: string): Promise<void> {
+        if (!transferRequestDetails.value) {
+            return;
+        }
+
+        const connectorOptions = await fetchConnectorOptions(connectionOpportunityGuid, campusGuid);
+        transferRequestDetails.value.connectorItems = connectorOptions?.connectors;
+    }
+
+    // #region Block Actions
+
+    async function loadGridData(): Promise<void> {
+        gridData.value = undefined;
+        areRequestsLoading.value = true;
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData.value = reactive(result.data);
+        }
+        else {
+            requestListErrorMessage.value = result.errorMessage ?? "Error loading grid data.";
+        }
+        areRequestsLoading.value = false;
+    }
+
+    async function refreshUserEditPermissions(): Promise<void> {
+        const result = await invokeBlockAction<boolean>("RefreshUserEditPermissions", {
+            connectionTypeIdKey: box.options?.connectionTypeIdKey
+        });
+
+        if (result.isSuccess) {
+            canEditGlobalConnectionRequests.value = result.data ?? false;
+        }
+    }
+
+    async function updateStateFromModal(bag: UpdateConnectionRequestStatesBag): Promise<void> {
+        try {
+            isModalSaving.value = true;
+            const errorMessage = await updateRequestStates(bag);
+
+            if (!errorMessage) {
+                isChangeStateModalVisible.value = false;
+                clearAllSelections();
+            }
+            else {
+                modalErrorMessage.value = errorMessage;
+            }
+        }
+        finally {
+            isModalSaving.value = false;
+        }
+    }
+
+    async function updateStateFromFlyout(bag: UpdateConnectionRequestStatesBag): Promise<void> {
+        try {
+            isFlyoutSaving.value = true;
+            const errorMessage = await updateRequestStates(bag);
+
+            if (!errorMessage) {
+                isFlyoutOpen.value = false;
+            }
+            else {
+                flyoutErrorMessage.value = errorMessage;
+            }
+        }
+        finally {
+            isFlyoutSaving.value = false;
+        }
+    }
+
+    async function deleteRequestsFromModal(keys: string[]): Promise<void> {
+        try {
+            isModalSaving.value = true;
+            const errorMessage = await deleteRequests(keys);
+
+            if (!errorMessage) {
+                isDeleteRequestModalVisible.value = false;
+                return;
+            }
+
+            modalErrorMessage.value = errorMessage;
+        }
+        finally {
+            isModalSaving.value = false;
+        }
+    }
+
+    async function showAddFromCampaignModal(): Promise<void> {
+        isAddFromCampaignModalVisible.value = true;
+
+        if (!campaignRecordBags.value) {
+            areCampaignsLoading.value = true;
+            await fetchConnectionCampaigns();
+            areCampaignsLoading.value = false;
+        }
+    }
+
+    function onStatusClick(row: Record<string, unknown>, event: MouseEvent): void {
+        if (!canEditConnectionRequests.value) {
+            return;
+        }
+
+        const key = row["idKey"] as string | null | undefined;
+        const state = row["connectionState"] as ConnectionState | undefined;
+        const status = row["connectionStatus"] as ConnectionStatusBag | undefined;
+        const hasPlacementGroup = row["hasPlacementGroup"] as boolean | undefined;
+        const hasRequiredGroupRequirements = row["hasRequiredGroupRequirements"] as boolean | undefined;
+
+        if (!status
+            || !key
+            || state === null
+            || state === undefined
+            || hasPlacementGroup === undefined
+            || hasRequiredGroupRequirements === undefined
+            || typeof status !== "object"
+            || typeof key !== "string"
+            || typeof state !== "number"
+            || typeof hasPlacementGroup !== "boolean"
+            || typeof hasRequiredGroupRequirements !== "boolean") {
+            return;
+        }
+
+        if (isFlyoutOpen.value && connectionRequestUpdateBag.value.connectionRequestIdKey === key) {
+            isFlyoutOpen.value = false;
+            return;
+        }
+
+        connectionRequestUpdateBag.value = {
+            connectionRequestIdKey: key,
+            connectionStatusGuid: status.guid,
+            connectionState: state
+        };
+
+        if (box?.options?.requiresPlacementGroupToComplete && !hasPlacementGroup) {
+            connectionRequestUpdateBag.value.canCompleteRequest = false;
+        }
+        else if (hasRequiredGroupRequirements) {
+            fetchGroupRequirementDetailsForFlyout();
+        }
+        else {
+            connectionRequestUpdateBag.value.canCompleteRequest = true;
+        }
+
+        isNoteRequired.value = status.isNoteRequiredOnCompletion;
+        flyoutAnchorEl.value = event.currentTarget as HTMLElement;
+        isFlyoutOpen.value = true;
+    }
+
+    function onStatusClickFromDockedPanel(event: MouseEvent, canCompleteRequest: boolean): void {
+        if (isFlyoutOpen.value) {
+            isFlyoutOpen.value = false;
+            return;
+        }
+
+        connectionRequestUpdateBag.value = {
+            connectionRequestIdKey: dockedPanelDetailsBox.value?.entity?.connectionRequestIdKey,
+            connectionStatusGuid: dockedPanelDetailsBox.value?.entity?.connectionStatus?.guid,
+            connectionState: dockedPanelDetailsBox.value?.entity?.connectionState,
+            canCompleteRequest
+        };
+
+        isNoteRequired.value = dockedPanelDetailsBox.value?.entity?.connectionStatus?.isNoteRequiredOnCompletion ?? false;
+        flyoutAnchorEl.value = event.currentTarget as HTMLElement;
+        isFlyoutOpen.value = true;
+    }
+
+    async function fetchGroupRequirementDetailsForFlyout(): Promise<void> {
+        isFlyoutCompletionButtonLoading.value = true;
+
+        connectionRequestUpdateBag.value.canCompleteRequest = await checkIfRequestMeetsRequirements(connectionRequestUpdateBag.value.connectionRequestIdKey ?? "");
+
+        isFlyoutCompletionButtonLoading.value = false;
+    }
+
+    function onFlyoutClose(): void {
+        connectionRequestUpdateBag.value = {} as ConnectionRequestUpdateBag;
+        isNoteRequired.value = false;
+        flyoutAnchorEl.value = null;
+    }
+
+    function syncGridData(gridRow: Record<string, unknown>): void {
+        if (!gridRow) {
+            return;
+        }
+
+        if (!gridData.value) {
+            // Check if this row meets server side filters
+            if (isRowVisibleWithServerFilters(gridRow)) {
+                gridData.value = { rows: [gridRow] };
+            }
+            return;
+        }
+
+        if (!gridData.value.rows) {
+            // Check if this row meets server side filters
+            if (isRowVisibleWithServerFilters(gridRow)) {
+                gridData.value.rows = [gridRow];
+            }
+            return;
+        }
+
+        const index = gridData.value.rows.findIndex(r => r.idKey === gridRow.idKey);
+
+        if (index !== -1) {
+            // Check if this row meets server side filters
+            if (!isRowVisibleWithServerFilters(gridRow)) {
+                gridData.value.rows.splice(index, 1);
+                return;
+            }
+
+            gridData.value.rows[index] = gridRow;
+        }
+        else if (isRowVisibleWithServerFilters(gridRow)) {
+            gridData.value.rows.push(gridRow);
+        }
+    }
+
+    async function showSMSModal(fromDockedPanel: boolean = false): Promise<void> {
+        let selectedKeys: string[];
+        let connectionTypeIdKey: string | null | undefined;
+        if (fromDockedPanel) {
+            selectedKeys = [dockedPanelDetailsBox.value?.entity?.connectionRequestIdKey ?? ""];
+            connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+        }
+        else {
+            selectedKeys = allSelectedKeys.value;
+            connectionTypeIdKey = box.options?.connectionTypeIdKey;
+        }
+
+        const result = await getSmsConfiguration(selectedKeys, connectionTypeIdKey);
+
+        if (result.isSuccess && result.data?.communicationRecipients?.length) {
+            communicationRecipients.value = result.data.communicationRecipients;
+            smsFromSystemPhoneNumbers.value = result.data.smsFromSystemPhoneNumbers ?? [];
+            smsSnippets.value = result.data.smsSnippets ?? [];
+            isSendSMSModalVisible.value = true;
+        }
+        else {
+            console.error(result.errorMessage);
+            // TODO - Show error message to user
+            communicationRecipients.value = null;
+            smsFromSystemPhoneNumbers.value = [];
+            smsSnippets.value = [];
+            isSendSMSModalVisible.value = false;
+        }
+    }
+
+    async function showEmailModal(fromDockedPanel: boolean = false): Promise<void> {
+        let selectedKeys: string[];
+        let connectionTypeIdKey: string | null | undefined;
+        if (fromDockedPanel) {
+            selectedKeys = [dockedPanelDetailsBox.value?.entity?.connectionRequestIdKey ?? ""];
+            connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+        }
+        else {
+            selectedKeys = allSelectedKeys.value;
+            connectionTypeIdKey = box.options?.connectionTypeIdKey;
+        }
+
+        const result = await getEmailConfiguration(selectedKeys, connectionTypeIdKey);
+
+        if (result.isSuccess && result.data?.communicationRecipients?.length) {
+            communicationRecipients.value = result.data.communicationRecipients;
+            communicationTemplates.value = result.data.communicationTemplates ?? [];
+            isSendEmailModalVisible.value = true;
+        }
+        else {
+            console.error(result.errorMessage);
+            // TODO - Show error message to user
+            communicationRecipients.value = null;
+            communicationTemplates.value = [];
+            isSendEmailModalVisible.value = true;
+        }
+    }
+
+    function clearAllSelections(): void {
+        groupedGridPanel.value.clearSelectedKeys();
+        selectedKeys.value = {};
+        selectedKeysOnUnmount.value = {};
+    }
+
+    async function getSmsConfiguration(selectedKeys: string[], connectionTypeIdKey: string | null | undefined): Promise<HttpResult<GetSmsConfigurationResponseBag>> {
+        const bag: GetSmsConfigurationRequestBag = {
+            connectionRequestIdKeys: selectedKeys,
+            connectionTypeIdKey: connectionTypeIdKey
+        };
+
+        const result = await invokeBlockAction<GetSmsConfigurationResponseBag>("GetSmsConfiguration", {
+            bag
+        });
+
+        return result;
+    }
+
+    async function getEmailConfiguration(selectedKeys: string[], connectionTypeIdKey: string | null | undefined): Promise<HttpResult<GetEmailConfigurationResponseBag>> {
+        const bag: GetEmailConfigurationRequestBag = {
+            connectionRequestIdKeys: selectedKeys,
+            connectionTypeIdKey: connectionTypeIdKey
+        };
+
+        const result = await invokeBlockAction<GetEmailConfigurationResponseBag>("GetEmailConfiguration", {
+            bag
+        });
+
+        return result;
+    }
+
+    async function updateRequestStatuses(statusUpdateBags: ConnectionRequestUpdateBag[], completedRequestIdKeys: string[]): Promise<string | null> {
+        const result = await invokeBlockAction<ConnectionListGridUpdateBag[]>("UpdateRequestStatuses", {
+            statusUpdateBags: statusUpdateBags,
+            completedRequestIdKeys: completedRequestIdKeys,
+        });
+
+        if (result.isSuccess && result.data) {
+            const rowsByIdKey = new Map(
+                gridData.value?.rows?.map(r => [r.idKey, r])
+            );
+
+            for (const updateBag of result.data) {
+                const row = rowsByIdKey.get(updateBag.idKey);
+                if (!row) {
+                    continue;
+                }
+
+                row.stateGrouping = updateBag.stateGrouping;
+                row.statusGrouping = updateBag.statusGrouping;
+                row.connectionStatus = updateBag.connectionStatusBag;
+                row.connectionState = updateBag.connectionState;
+                row.dueStatusGrouping = updateBag.dueStatusGrouping;
+                row.dueStatus = updateBag.dueStatus;
+                row.dueDate = updateBag.dueDate;
+                row.dueSoonDate = updateBag.dueSoonDate;
+                row.followUpDate = updateBag.followUpDate;
+                row.completedDateTime = updateBag.completedDateTime;
+            }
+
+            // Need to validate the updated rows still meet server filter requirements.
+            applyServerFilters();
+
+            // clear selected keys
+            clearAllSelections();
+
+            isChangeStatusModalVisible.value = false;
+            return null;
+        }
+
+        return result.errorMessage ?? "An error occurred while updating the status of a Connection Request.";
+    }
+
+    async function changeRequestStatus(bag: ConnectionRequestUpdateBag): Promise<void> {
+        try {
+            isFlyoutSaving.value = true;
+
+            // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
+            let connectionTypeIdKey: string | null | undefined;
+            if (isDockedPanelVisible.value) {
+                connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            }
+
+            const result = await invokeBlockAction<ConnectionListGridUpdateBag>("ChangeRequestStatus", {
+                bag,
+                connectionTypeIdKey
+            });
+
+            if (result.isSuccess && result.data) {
+                const rowIndex = gridData.value?.rows?.findIndex(r => r.idKey === bag.connectionRequestIdKey) ?? -1;
+
+                if (rowIndex !== -1 && gridData.value?.rows) {
+                    const row = gridData.value.rows[rowIndex];
+
+                    row.stateGrouping = result.data.stateGrouping;
+                    row.statusGrouping = result.data.statusGrouping;
+                    row.connectionState = result.data.connectionState;
+                    row.connectionStatus = result.data.connectionStatusBag;
+                    row.dueStatusGrouping = result.data.dueStatusGrouping;
+                    row.dueStatus = result.data.dueStatus;
+                    row.dueDate = result.data.dueDate;
+                    row.dueSoonDate = result.data.dueSoonDate;
+                    row.followUpDate = result.data.followUpDate;
+                    row.completedDateTime = result.data.completedDateTime;
+
+                    // If this row stopped meeting server filters then splice it.
+                    if (!isRowVisibleWithServerFilters(row)) {
+                        gridData.value.rows.splice(rowIndex, 1);
+                    }
+                }
+
+                if (!!dockedPanelDetailsBox.value?.entity && dockedPanelDetailsBox.value.entity.connectionRequestIdKey === bag.connectionRequestIdKey) {
+                    dockedPanelDetailsBox.value.entity.connectionStatus = result.data.connectionStatusBag;
+                    dockedPanelDetailsBox.value.entity.dueStatus = result.data.dueStatus;
+                    dockedPanelDetailsBox.value.entity.dueDate = result.data.dueDate;
+                    dockedPanelDetailsBox.value.entity.completedDateTime = result.data.completedDateTime;
+                    dockedPanelDetailsBox.value.entity.connectionState = result.data.connectionState;
+                    dockedPanelDetailsBox.value.entity.followUpDate = result.data.followUpDate;
+                    refreshActivityEntries(dockedPanelDetailsBox.value.entity.connectionRequestIdKey);
+                }
+
+                isFlyoutOpen.value = false;
+            }
+
+            flyoutErrorMessage.value = result.errorMessage ?? "An error occurred while updating the Connection Request Status.";
+        }
+        finally {
+            isFlyoutSaving.value = false;
+        }
+    }
+
+    async function checkIfRequestsMeetRequirements(): Promise<void> {
+        areRequestDetailsForModalLoading.value = true;
+        const connectionRequestIdKeys = requestDetailsForModal.value.map(r => r.idKey ?? "");
+
+        const result = await invokeBlockAction<string[]>("CheckIfRequestsMeetRequirements", {
+            connectionRequestIdKeys
+        });
+
+        if (result.isSuccess && result.data) {
+            const notMeetingIdKeys = result.data;
+
+            const isPlacementGroupRequired = box.options?.requiresPlacementGroupToComplete;
+
+            const { meeting, notMeeting } = requestDetailsForModal.value.reduce(
+                (acc, request) => {
+                    const failsPlacementGroup = isPlacementGroupRequired && !request.hasPlacementGroup;
+                    const failsRequirements = notMeetingIdKeys.includes(request.idKey ?? "");
+
+                    if (failsPlacementGroup || failsRequirements) {
+                        acc.notMeeting.push(request);
+                    }
+                    else {
+                        acc.meeting.push(request);
+                    }
+                    return acc;
+                },
+                { meeting: [], notMeeting: [] } as { meeting: BulkRequestViewBag[], notMeeting: BulkRequestViewBag[] });
+
+            requestDetailsForModal.value = meeting;
+            failingRequestDetailsForModal.value = notMeeting;
+        }
+        else {
+            modalErrorMessage.value = result.errorMessage ?? "An error occurred while checking group requirements for requests.";
+        }
+
+        areRequestDetailsForModalLoading.value = false;
+    }
+
+    async function checkIfRequestMeetsRequirements(connectionRequestIdKey: string): Promise<boolean> {
+        const result = await invokeBlockAction<boolean>("CheckIfRequestMeetsRequirements", {
+            connectionRequestIdKey
+        });
+
+        if (result.isSuccess) {
+            return result.data ?? false;
+        }
+        else {
+            console.error("An error occurred while checking group requirements for requests");
+        }
+
+        return false;
+    }
+
+    async function updateRequestStates(bag: UpdateConnectionRequestStatesBag): Promise<string | null> {
+        // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
+        let connectionTypeIdKey: string | null | undefined;
+        if (isDockedPanelVisible.value) {
+            connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+        }
+
+        const result = await invokeBlockAction<ConnectionListGridUpdateBag[]>("UpdateRequestStates", {
+            bag: bag,
+            connectionTypeIdKey
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.data.length === 1) {
+                const resultBag = result.data[0];
+
+                const rowIndex = gridData.value?.rows?.findIndex(r => r.idKey === resultBag.idKey) ?? -1;
+
+                if (rowIndex !== -1 && gridData.value?.rows) {
+                    const row = gridData.value.rows[rowIndex];
+
+                    row.stateGrouping = resultBag.stateGrouping;
+                    row.connectionState = resultBag.connectionState;
+                    row.followUpDate = resultBag.followUpDate;
+
+                    // If this row stopped meeting server filters then splice it.
+                    if (!isRowVisibleWithServerFilters(row)) {
+                        gridData.value.rows.splice(rowIndex, 1);
+                    }
+                }
+
+                if (!!dockedPanelDetailsBox.value?.entity && dockedPanelDetailsBox.value.entity.connectionRequestIdKey === resultBag.idKey) {
+                    dockedPanelDetailsBox.value.entity.connectionState = resultBag.connectionState;
+                    dockedPanelDetailsBox.value.entity.followUpDate = resultBag.followUpDate;
+                    dockedPanelDetailsBox.value.entity.completedDateTime = resultBag.completedDateTime;
+                    refreshActivityEntries(dockedPanelDetailsBox.value.entity.connectionRequestIdKey);
+                }
+            }
+            else {
+                const rowsByIdKey = new Map(
+                    gridData.value?.rows?.map(r => [r.idKey, r])
+                );
+
+                for (const updateBag of result.data) {
+                    const row = rowsByIdKey.get(updateBag.idKey);
+                    if (!row) {
+                        continue;
+                    }
+
+                    row.stateGrouping = updateBag.stateGrouping;
+                    row.connectionState = updateBag.connectionState;
+                    row.followUpDate = updateBag.followUpDate;
+                    row.completedDateTime = updateBag.completedDateTime;
+                }
+
+                // Need to validate the updated rows still meet server filter requirements.
+                applyServerFilters();
+            }
+
+            return null;
+        }
+
+        return result.errorMessage ?? "An error occurred while updating the connection request state.";
+    }
+
+    async function launchWorkflowForRequests(bag: LaunchWorkflowBag): Promise<void> {
+        try {
+            isModalSaving.value = true;
+
+            // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
+            let connectionTypeIdKey: string | null | undefined;
+            if (isDockedPanelVisible.value) {
+                connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            }
+
+            const result = await invokeBlockAction<LaunchWorkflowResultBag>("LaunchWorkflowForRequests", {
+                bag: bag,
+                connectionTypeIdKey
+            });
+
+            if (result.isSuccess && result.data) {
+                isModalAlertVisible.value = true;
+                modalAlertText.value = result.data.statusMessage;
+
+                if (!isNullOrWhiteSpace(result.data.workflowEntryPageUrl) && typeof result.data.workflowEntryPageUrl === "string") {
+                    const url = result.data.workflowEntryPageUrl;
+                    const stop = watch(isModalAlertVisible, (isVisible) => {
+                        if (!isVisible) {
+                            window.open(url, "_blank");
+                            stop(); // tear down watcher
+                        }
+                    });
+                }
+
+                isLaunchWorkflowModalVisible.value = false;
+
+                return;
+            }
+
+            modalErrorMessage.value = result.errorMessage ?? "An error occurred while launching the selected Workflow.";
+        }
+        finally {
+            isModalSaving.value = false;
+        }
+    }
+
+    async function deleteRequests(connectionRequestIdKeys: string[]): Promise<string | null> {
+        // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
+        let connectionTypeIdKey: string | null | undefined;
+        if (isDockedPanelVisible.value) {
+            connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+        }
+
+        const result = await invokeBlockAction("DeleteRequests", {
+            connectionRequestIdKeys: connectionRequestIdKeys,
+            connectionTypeIdKey
+        });
+
+        if (result.isSuccess) {
+            const idKeySet = new Set(connectionRequestIdKeys);
+
+            gridData.value!.rows = gridData.value?.rows?.filter(r => !idKeySet.has(r.idKey as string));
+
+            if (isDockedPanelVisible.value && connectionRequestIdKeys.length === 1 && dockedPanelDetailsBox.value?.entity?.connectionRequestIdKey === connectionRequestIdKeys[0]) {
+                selectedRequestKeyForDockedPanel.value = null;
+                isDockedPanelVisible.value = false;
+                dockedPanelDetailsBox.value = undefined;
+            }
+
+            return null;
+        }
+        return result.errorMessage ?? "An error occurred while deleting a Connection Request.";
+    }
+
+    function onEditActivity(entry: ActivityEntryBag): void {
+        prepareRequestDetailsForModal(null, dockedPanelDetailsBox.value);
+        activityToEdit.value = entry;
+        isActivityModalVisible.value = true;
+    }
+
+    async function upsertActivity(bag: ActivityBag): Promise<void> {
+        try {
+            isModalSaving.value = true;
+
+            // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
+            let connectionTypeIdKey: string | null | undefined;
+            if (isDockedPanelVisible.value) {
+                connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            }
+
+            // If we have an activity Id Key then we are in update mode.
+            if (bag.activityIdKey) {
+                const errorMessage = await updateActivity(bag, connectionTypeIdKey);
+                if (errorMessage) {
+                    modalErrorMessage.value = errorMessage;
+                }
+                return;
+            }
+
+            const result = await invokeBlockAction<ConnectionListGridUpdateBag[]>("AddActivityForRequests", {
+                bag: bag,
+                connectionTypeIdKey
+            });
+
+            if (result.isSuccess && result.data) {
+                if (result.data.length === 1) {
+                    const resultBag = result.data[0];
+
+                    const row = gridData.value?.rows?.find(r => r.idKey === resultBag.idKey);
+
+                    if (row) {
+                        row.activityCount = resultBag.activityCount;
+                        row.lastActivityDateTime = resultBag.lastActivityDateTime;
+                    }
+
+                    if (!!dockedPanelDetailsBox.value?.entity && dockedPanelDetailsBox.value.entity.connectionRequestIdKey === resultBag.idKey) {
+                        refreshActivityEntries(dockedPanelDetailsBox.value.entity.connectionRequestIdKey);
+                    }
+                }
+                else {
+                    const rowsByIdKey = new Map(
+                        gridData.value?.rows?.map(r => [r.idKey, r])
+                    );
+
+                    for (const updateBag of result.data) {
+                        const row = rowsByIdKey.get(updateBag.idKey);
+                        if (!row) {
+                            continue;
+                        }
+
+                        row.activityCount = updateBag.activityCount;
+                        row.lastActivityDateTime = updateBag.lastActivityDateTime;
+                    }
+                }
+
+                isActivityModalVisible.value = false;
+                // activityToEdit.value = null;
+                return;
+            }
+
+            modalErrorMessage.value = result.errorMessage ?? "An error occurred while adding the Activity.";
+        }
+        finally {
+            isModalSaving.value = false;
+        }
+    }
+
+    async function updateActivity(bag: ActivityBag, connectionTypeIdKey: string | null | undefined): Promise<string | null> {
+        const result = await invokeBlockAction<ActivityEntryBag>("UpdateActivity", {
+            bag,
+            connectionTypeIdKey
+        });
+
+        if (result.isSuccess && result.data) {
+            if (dockedPanelDetailsBox.value?.entity?.activityEntries) {
+                const index = dockedPanelDetailsBox.value.entity.activityEntries.findIndex(a => a.key === result.data?.key);
+
+                if (index !== -1) {
+                    dockedPanelDetailsBox.value.entity.activityEntries[index] = result.data;
+                }
+            }
+            isActivityModalVisible.value = false;
+            activityToEdit.value = null;
+            return null;
+        }
+
+        return result.errorMessage ?? "An error occurred while updating the Activity.";
+    }
+
+    async function fetchConnectionOpportunityDetails(connectionOpportunityGuid: string, campusGuid: string | null = null): Promise<void> {
+        const result = await invokeBlockAction<ConnectionOpportunityDetailBag>("FetchConnectionOpportunityDetails", {
+            connectionOpportunityGuid: connectionOpportunityGuid,
+            campus: campusGuid
+        });
+
+        if (result.isSuccess && result.data) {
+            connectionOpportunityDetails.value = result.data;
+        }
+        else {
+            connectionOpportunityDetails.value = {};
+        }
+    }
+
+    async function fetchConnectorOptions(connectionOpportunityGuid: string, campusGuid: string): Promise<ConnectorOptionsBag | undefined> {
+        const result = await invokeBlockAction<ConnectorOptionsBag>("FetchConnectorOptions", {
+            connectionOpportunityGuid: connectionOpportunityGuid,
+            campus: campusGuid
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        return;
+    }
+
+    async function fetchPlacementGroupItems(connectionOpportunityGuid: string, campusGuid: string): Promise<void> {
+        const result = await invokeBlockAction<ListItemBag[]>("FetchPlacementGroupItems", {
+            connectionOpportunityGuid: connectionOpportunityGuid,
+            campus: campusGuid
+        });
+
+        if (result.isSuccess && result.data) {
+            connectionOpportunityDetails.value.placementGroups = result.data;
+        }
+    }
+
+    async function fetchPlacementGroupDetails(connectionOpportunityGuid: string, placementGroupGuid: string): Promise<void> {
+        const result = await invokeBlockAction<PlacementGroupDetailsBag>("FetchPlacementGroupDetails", {
+            connectionOpportunityGuid: connectionOpportunityGuid,
+            placementGroupGuid: placementGroupGuid
+        });
+
+        if (result.isSuccess && result.data) {
+            placementGroupDetails.value = result.data;
+        }
+    }
+
+    async function onEditRequest(box: ValidPropertiesBox<ConnectionRequestBag>): Promise<void> {
+        try {
+            isDockedPanelSaving.value = true;
+            const result = await saveConnectionRequest(box);
+
+            if (result.isSuccess && result.data && result.data.detailBox) {
+                if (result.data.gridRow) {
+                    syncGridData(result.data.gridRow);
+                }
+
+                dockedPanelDetailsBox.value = result.data.detailBox;
+
+                connectionRequestDockedPanelRef.value?.setEditMode(false);
+            }
+            else {
+                connectionRequestDockedPanelRef.value?.setErrorMessage("edit", result.errorMessage ?? "An unknown error occurred while editing the request.");
+            }
+        }
+        finally {
+            isDockedPanelSaving.value = false;
+        }
+    }
+
+    async function showBulkTransferModal(): Promise<void> {
+        prepareRequestDetailsForModal();
+        isBulkTransfer.value = true;
+        isTransferModalVisible.value = true;
+
+        areTransferDetailsLoading.value = true;
+
+        const result = await invokeBlockAction<TransferConnectionRequestDetailsBag>("GetBulkTransferDetails");
+
+        if (result.isSuccess && result.data) {
+            transferRequestDetails.value = result.data;
+        }
+        else {
+            modalErrorMessage.value = result.errorMessage ?? "An error occurred while getting transfer details.";
+        }
+
+        areTransferDetailsLoading.value = false;
+    }
+
+    function selectTransferProcess(bag: TransferConnectionRequestBag): void {
+        if (isBulkTransfer.value) {
+            bulkTransferRequests(bag);
+        }
+        else {
+            transferSingleRequest(bag);
+        }
+    }
+
+    async function bulkTransferRequests(bag: TransferConnectionRequestBag): Promise<void> {
+        try {
+            isModalSaving.value = true;
+
+            const result = await invokeBlockAction<ConnectionListGridUpdateBag[]>("BulkTransferConnectionRequests", {
+                connectionRequestIdKeys: allSelectedKeys.value,
+                bag
+            });
+
+            if (result.isSuccess && result.data) {
+                const rowsByIdKey = new Map(
+                    gridData.value?.rows?.map(r => [r.idKey, r])
+                );
+
+                for (const updateBag of result.data) {
+                    const row = rowsByIdKey.get(updateBag.idKey);
+                    if (!row) {
+                        continue;
+                    }
+
+                    row.opportunityGrouping = updateBag.opportunityGrouping;
+                    row.campusGrouping = updateBag.campusGrouping;
+                    row.stateGrouping = updateBag.stateGrouping;
+                    row.statusGrouping = updateBag.statusGrouping;
+                    row.stateGrouping = updateBag.stateGrouping;
+                    row.dueStatusGrouping = updateBag.dueStatusGrouping;
+                    row.statusGrouping = updateBag.statusGrouping;
+                    row.connectionStatus = updateBag.connectionStatusBag;
+                    row.connectionState = updateBag.connectionState;
+                    row.dueStatus = updateBag.dueStatus;
+                    row.dueDate = updateBag.dueDate;
+                    row.dueSoonDate = updateBag.dueSoonDate;
+                    row.followUpDate = updateBag.followUpDate;
+                    row.completedDateTime = updateBag.completedDateTime;
+                    row.connectionOpportunity = updateBag.connectionOpportunity;
+                    row.connectionOpportunityGuid = updateBag.connectionOpportunityGuid;
+                    row.campus = updateBag.campus;
+                    row.campusGuid = updateBag.campusGuid;
+                    row.lastActivityDateTime = updateBag.lastActivityDateTime;
+                    row.activityCount = updateBag.activityCount;
+
+                    // If the request's current connector was not preserved, then update the row data.
+                    if (bag.connectorOption !== "current") {
+                        row.connectorGrouping = updateBag.connectorGrouping;
+                        row.connectorDetails = updateBag.connectorDetails;
+                    }
+                }
+
+                // Need to validate the updated rows still meet server filter requirements.
+                applyServerFilters();
+
+                clearAllSelections();
+                isTransferModalVisible.value = false;
+            }
+            else {
+                modalErrorMessage.value = result.errorMessage ?? "An unknown error occurred while transferring the connection request.";
+            }
+        }
+        finally {
+            isModalSaving.value = false;
+        }
+    }
+
+    async function onTransferClick(): Promise<void> {
+        isTransferModalVisible.value = true;
+        areTransferDetailsLoading.value = true;
+
+        const result = await invokeBlockAction<TransferConnectionRequestDetailsBag>("GetTransferDetails", {
+            key: dockedPanelDetailsBox.value?.entity?.connectionRequestIdKey
+        });
+
+        if (result.isSuccess && result.data) {
+            transferRequestDetails.value = result.data;
+        }
+        else {
+            modalErrorMessage.value = result.errorMessage ?? "An error occurred while getting transfer details.";
+        }
+
+        areTransferDetailsLoading.value = false;
+    }
+
+    async function transferSingleRequest(bag: TransferConnectionRequestBag): Promise<void> {
+        try {
+            isModalSaving.value = true;
+
+            const result = await invokeBlockAction<ConnectionListUpdateBox>("TransferConnectionRequest", {
+                bag
+            });
+
+            if (result.isSuccess && result.data && result.data.detailBox) {
+                if (result.data.gridRow) {
+                    syncGridData(result.data.gridRow);
+                }
+
+                dockedPanelDetailsBox.value = result.data.detailBox;
+
+                isTransferModalVisible.value = false;
+            }
+            else {
+                modalErrorMessage.value = result.errorMessage ?? "An unknown error occurred while transferring the connection request.";
+            }
+        }
+        finally {
+            isModalSaving.value = false;
+        }
+    }
+
+    async function checkForActiveRequester(requesterPersonAliasGuid: string): Promise<void> {
+        const result = await invokeBlockAction<boolean>("CheckForActiveRequest", {
+            requesterPersonAliasGuid,
+        });
+
+        if (result.isSuccess && result.data !== null) {
+            isExistingActiveRequesterOnConnectionType.value = result.data;
+        }
+        else {
+            modalErrorMessage.value = "An error occurred while checking if the selected requester had any active requests.";
+        }
+    }
+
+    async function onAddRequest(box: ValidPropertiesBox<ConnectionRequestBag>): Promise<void> {
+        try {
+            isModalSaving.value = true;
+
+            const result = await saveConnectionRequest(box);
+
+            if (result.isSuccess && result.data) {
+                if (result.data.gridRow) {
+                    syncGridData(result.data.gridRow);
+                }
+
+                isAddConnectionRequestModalVisible.value = false;
+                return;
+            }
+            else {
+                modalErrorMessage.value = result.errorMessage ?? "An unknown error occurred while adding the request.";
+            }
+        }
+        finally {
+            isModalSaving.value = false;
+        }
+    }
+
+    async function saveConnectionRequest(box: ValidPropertiesBox<ConnectionRequestBag>): Promise<HttpResult<ConnectionListUpdateBox>> {
+        const result = await invokeBlockAction<ConnectionListUpdateBox>("SaveConnectionRequest", {
+            box
+        });
+
+        return result;
+    }
+
+    async function updateConnectorFromModal(connector: string): Promise<void> {
+        try {
+            isModalSaving.value = true;
+            await reassignConnector(allSelectedKeys.value, connector);
+        }
+        finally {
+            isModalSaving.value = false;
+        }
+    }
+
+    async function reassignConnector(connectionRequestIdKeys: string[], connector: string, fromDockedPanel: boolean = false): Promise<void> {
+        // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
+        let connectionTypeIdKey: string | null | undefined;
+        if (isDockedPanelVisible.value) {
+            connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+        }
+
+        const result = await invokeBlockAction<ConnectionListGridUpdateBag[]>("ReassignConnector", {
+            connectionRequestIdKeys: connectionRequestIdKeys,
+            connectorPersonAliasGuid: connector,
+            connectionTypeIdKey
+        });
+
+        if (result.isSuccess && result.data) {
+            const rowsByIdKey = new Map(
+                gridData.value?.rows?.map(r => [r.idKey, r])
+            );
+
+            for (const updateBag of result.data) {
+                const row = rowsByIdKey.get(updateBag.idKey);
+                if (!row) {
+                    continue;
+                }
+
+                row.connectorGrouping = updateBag.connectorGrouping;
+                row.connectorDetails = updateBag.connectorDetails;
+            }
+
+            // Need to validate the updated rows still meet server filter requirements.
+            applyServerFilters();
+
+            if (fromDockedPanel) {
+                dockedPanelDetailsBox.value?.entity?.connectorPerson === result.data[0].connectorDetails?.value;
+                refreshActivityEntries(connectionRequestIdKeys[0]);
+            }
+
+            clearAllSelections();
+            isAssignRequestModalVisible.value = false;
+            return;
+        }
+
+        modalErrorMessage.value = result.errorMessage ?? "An error occurred while assigning the Connector.";
+    }
+
+    async function fetchConnectionCampaigns(): Promise<void> {
+        const result = await invokeBlockAction<Record<string, ConnectionCampaignBag[]>>("FetchConnectionCampaigns");
+
+        if (result.isSuccess && result.data) {
+            campaignRecordBags.value = result.data;
+            return;
+        }
+        console.error(result.errorMessage);
+    }
+
+    async function assignRequestsFromCampaign(bag: AssignFromCampaignBag): Promise<void> {
+        try {
+            isModalSaving.value = true;
+
+            const result = await invokeBlockAction("AssignConnectionRequestsFromCampaign", { bag });
+
+            if (result.isSuccess) {
+                loadGridData();
+                isAddFromCampaignModalVisible.value = false;
+                return;
+            }
+
+            modalErrorMessage.value = result.errorMessage ?? "An error occurred while assigning Connection Requests from the selected Campaign.";
+        }
+        finally {
+            isModalSaving.value = false;
+        }
+    }
+
+    async function upsertCelebration(bag: UpsertCelebrationBag): Promise<void> {
+        try {
+            isModalSaving.value = true;
+
+            // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
+            let connectionTypeIdKey: string | null | undefined;
+            if (isDockedPanelVisible.value) {
+                connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            }
+
+            const result = await invokeBlockAction<ConnectionListGridUpdateBag>("UpsertCelebrationText", { bag, connectionTypeIdKey });
+
+            if (result.isSuccess && result.data) {
+                const row = gridData.value?.rows?.find(r => r.idKey === result.data?.idKey);
+
+                if (row) {
+                    row.celebrationText = result.data.celebrationText;
+                }
+                if (dockedPanelDetailsBox.value?.entity) {
+                    dockedPanelDetailsBox.value.entity.celebrationText = result.data.celebrationText;
+                }
+
+                isCelebrationModalVisible.value = false;
+                return;
+            }
+
+            modalErrorMessage.value = result.errorMessage ?? "An error occurred while updating the celebration.";
+        }
+        finally {
+            isModalSaving.value = false;
+        }
+    }
+
+    async function getConnectionRequestDetails(requestIdKey: string): Promise<void> {
+        dockedPanelDetailsBox.value = undefined;
+
+        const result = await invokeBlockAction<ConnectionRequestDetailBox>("GetConnectionRequestDetails", { connectionRequestIdKey: requestIdKey });
+
+        if (result.isSuccess && result.data) {
+            dockedPanelDetailsBox.value = result.data;
+            return;
+        }
+
+        connectionRequestDockedPanelRef.value?.setIsLoading(false);
+        connectionRequestDockedPanelRef.value?.setErrorMessage("view", result.errorMessage ?? "An error occurred while getting the Connection Request details.");
+    }
+
+    async function refreshActivityEntries(requestIdKey: string | null | undefined): Promise<void> {
+        // We only need to refresh activity entries if the docked panel is open and has data.
+        if (!isDockedPanelVisible.value || !dockedPanelDetailsBox.value?.entity || !requestIdKey) {
+            return;
+        }
+
+        const result = await invokeBlockAction<ActivityEntryBag[]>("GetActivityEntries", {
+            connectionRequestIdKey: requestIdKey
+        });
+
+        if (result.isSuccess && result.data) {
+            dockedPanelDetailsBox.value.entity.activityEntries = result.data;
+        }
+        else {
+            connectionRequestDockedPanelRef.value?.setErrorMessage("activity", result.errorMessage ?? "An error occurred while getting the Connection Request activity entries.");
+        }
+    }
+
+    // #endregion Block Actions
+
+    // When any modal is open, disable close-on-outside-click for the docked panel so that
+    // clicking inside a modal doesn't accidentally close the panel behind it.
+    watch([isTransferModalVisible, isCelebrationModalVisible, isActivityModalVisible, isReminderModalVisible, isSendSMSModalVisible, isSendEmailModalVisible, isFlyoutOpen, isModalAlertVisible, isDeleteRequestModalVisible], (values) => {
+        handleClickOutsideSettingForDockedPanel(!values.some(Boolean));
+    });
+
+    watch(areOnlyMyRequestsVisible, async () => {
+        // This prevents saving a "Selected Connector" as this person prefernce
+        if (areOnlyMyRequestsVisible.value !== "true" && areOnlyMyRequestsVisible.value !== "false") {
+            return;
+        }
+
+        preferences.setValue(PreferenceKey.AreOnlyMyRequestsVisible, areOnlyMyRequestsVisible.value);
+
+        const connectorIndex = requestToggleItems.value.findIndex(i => i.value !== "true" && i.value !== "false");
+        if (connectorIndex !== -1) {
+            // Clears the selected connector person preference, removes their item from the dropdown, and clears the query param.
+            preferences.setValue(PreferenceKey.SelectedConnector, "");
+            requestToggleItems.value.splice(connectorIndex, 1);
+            removeCurrentUrlQueryParams("Connector");
+        }
+
+        await preferences.save();
+
+        loadGridData();
+    });
+
+    watch(selectedCampus, () => {
+        newConnectionRequest.value.bag = {
+            ...newConnectionRequest.value.bag,
+            campusGuid: selectedCampus.value?.value ?? null
+        };
+    });
+
+    watch(selectedOpportunity, async () => {
+        preferences.setValue(getConnectionFilterKey(PreferenceKey.ConnectionmOpportunityFilterConnectionTypeIdKey), selectedOpportunity.value);
+
+        await preferences.save();
+
+        newConnectionRequest.value.bag = {
+            connectionOpportunityGuid: selectedOpportunity.value
+        };
+        if (!isNullOrWhiteSpace(selectedOpportunity.value)) {
+            await fetchConnectionOpportunityDetails(selectedOpportunity.value);
+        }
+        else {
+            connectionOpportunityDetails.value = {};
+        }
+
+        // Remove the Connection Opportunity query param and ensure ConnectionType is present.
+        removeCurrentUrlQueryParams("ConnectionOpportunity");
+
+        // If there is no connection type query string parameter present, we need to add it
+        // because we've just removed the Connection Opportunity query string parameter.
+        if (box.options?.connectionTypeIdKey) {
+            const url = new URL(window.location.href);
+            if (!url.searchParams.has("ConnectionType")) {
+                url.searchParams.set("ConnectionType", box.options.connectionTypeIdKey);
+                history.replaceState(null, "", url.toString());
+            }
+        }
+
+        await refreshUserEditPermissions();
+        loadGridData();
+    });
+
+    // Ensure the selected grouping remains valid when the available grouping options
+    // change (e.g., when filtering out opportunity grouping after selecting an opportunity).
+    watch(groupingFields, (newFields) => {
+        const selected = selectedGrouping.value;
+
+        const isStillValid = newFields.some(f => f.value === selected);
+
+        if (!isStillValid) {
+            selectedGrouping.value = newFields[0]?.value ?? "";
+        }
+    });
+
+    watch(viewOptions, async () => {
+        preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterSortByConnectionTypIdKey), viewOptions.value.sortBy ?? "");
+        preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterGridDataToShowConnectionTypIdKey), JSON.stringify(viewOptions.value.gridDataToShow));
+        preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterIsRequestSourceShownConnectionTypIdKey), viewOptions.value.isRequestSourceShown.toString());
+        preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterStatusConnectionTypIdKey), JSON.stringify(viewOptions.value.statusFilter));
+        preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterDueConnectionTypIdKey), JSON.stringify(viewOptions.value.dueFilter));
+
+        await preferences.save();
+    });
+
+    watch(() => viewOptions.value.stateFilter, async () => {
+        preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterStateConnectionTypIdKey), JSON.stringify(viewOptions.value.stateFilter));
+        await preferences.save();
+        loadGridData();
+    });
+
+    // watch(newConnectionRequest, () => {
+    //     onAddRequest(newConnectionRequest.value);
+    // });
+
+    watch([selectedGrouping, isAutoCollapseEnabled], async () => {
+        preferences.setValue(PreferenceKey.SelectedGroupByMode, selectedGrouping.value);
+        preferences.setValue(PreferenceKey.IsAutoCollapseEnabled, isAutoCollapseEnabled.value.toString());
+
+        await preferences.save();
+    });
+
+    watch(selectedRequestKeyForDockedPanel, async () => {
+        if (!isNullOrWhiteSpace(selectedRequestKeyForDockedPanel.value)) {
+            await getConnectionRequestDetails(selectedRequestKeyForDockedPanel.value);
+        }
+    });
+
+    watch(isActivityModalVisible, (isVisible) => {
+        if (!isVisible) {
+            activityToEdit.value = null;
+        }
+    });
+
+    watch(rawQuickFilter, debounce(() => {
+        debouncedQuickFilter.value = rawQuickFilter.value;
+    }, 150));
+
+    loadContextValues();
+    loadGridData();
+
+    if (!isNullOrWhiteSpace(box.options?.connectionRequestIdKey)) {
+        onSelectItem(box.options!.connectionRequestIdKey!);
+    }
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

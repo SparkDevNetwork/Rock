@@ -695,7 +695,7 @@ Block 2.
         }
 
         [TestMethod]
-          public void AddSegmentFilter_NoHttpContextWithValidSegment_AddsPersonSegmentToDataStore()
+        public void AddSegmentFilter_NoHttpContextWithValidSegment_AddsPersonSegmentToDataStore()
         {
             var template1 = @"
 {% personalize segment:'IN_SMALL_GROUP' matchtype:'any' %}
@@ -822,7 +822,7 @@ Block 2.
 
         private void AssertOutputForPersonAndRequest( string inputTemplate, string expectedOutput, string personGuid = "", string inputUrl = "", LavaTestRenderOptions options = null )
         {
-            TestHelper.ExecuteForActiveEngines( (engine) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 AssertOutputForPersonAndRequest( engine, inputTemplate, expectedOutput, personGuid, inputUrl, options );
             } );

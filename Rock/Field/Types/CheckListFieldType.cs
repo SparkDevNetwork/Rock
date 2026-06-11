@@ -121,9 +121,10 @@ namespace Rock.Field.Types
                     string formattedValue = string.Empty;
                     foreach ( var keyValuePair in keyValuePairs )
                     {
+                        var iconClass = values.Any( a => a == keyValuePair.Key ) ? "ti ti-square-check" : "ti ti-square";
                         formattedValue += string.Format( @"<div>
-                                <i class='far fa{1}-square'></i> {0}
-                               </div>", keyValuePair.Value, values.Any( a => a == keyValuePair.Key ) ? "-check" : "" );
+                                <i class='{1}'></i> {0}
+                               </div>", keyValuePair.Value, iconClass );
                     }
                     return formattedValue;
                 }

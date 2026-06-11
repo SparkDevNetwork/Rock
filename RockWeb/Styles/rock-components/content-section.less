@@ -17,7 +17,6 @@
     background-color: var(--color-interface-softer);
     padding-left: 0;
     padding-right: 0;
-    overflow: hidden;
 }
 
 /* HEADER */
@@ -56,12 +55,25 @@
     pointer-events: auto;
 }
 
+.contentsection-header-title-and-description {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
 .contentsection-header-title {
     display: flex;
     align-items: center;
     gap: var(--spacing-tiny);
     color: var(--color-interface-strong);
     margin: 0;
+}
+
+.contentsection-header-description {
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-xsmall);
+    line-height: var(--line-height-tight);
+    margin-top: var(--spacing-tiny);
 }
 
 .contentsection .contentsection-header-actions .ti-chevron-up {
@@ -81,6 +93,14 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-large);
+
+    /* Body Collapse - This is needed in order to make the spacing of the ContentStacks work correctly when conditionally rendering stacks... wrapped within a TransitionVerticalCollapse */
+    .contentsection-body-collapse {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-large);
+    }
+
 }
 
 .contentsection-header + div > .contentsection-body {
@@ -325,10 +345,10 @@
 }
 
 .contentsection-container > .contentsection-nav {
-    height: 100%;
     flex: 0 0 20%;
     position: sticky;
     top: 0;
+    overflow-y: auto;
 }
 
 .contentsection-list {
@@ -337,8 +357,8 @@
     flex: 1 1 80%;
     gap: var(--spacing-xlarge);
     height: auto;
-    overflow-y: auto;
     scroll-behavior: smooth;
+    width: 100%;
 }
 
 .contentsection-container.contentsection-nav-left {

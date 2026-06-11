@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Cms;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -225,7 +227,7 @@ namespace Rock.Web.Cache
                     {
                         if ( ChildContentChannelIds == null )
                         {
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 ChildContentChannelIds = new ContentChannelService( rockContext )
                                     .GetChildContentChannels( Id )
@@ -278,7 +280,7 @@ namespace Rock.Web.Cache
                     {
                         if ( ParentContentChannelIds == null )
                         {
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 ParentContentChannelIds = new ContentChannelService( rockContext )
                                     .GetParentContentChannels( Id )
@@ -303,25 +305,6 @@ namespace Rock.Web.Cache
                 return parentContentChannels;
             }
 
-        }
-
-        /// <summary>
-        /// Gets the parent authority.
-        /// </summary>
-        /// <value>
-        /// The parent authority.
-        /// </value>
-        public override ISecured ParentAuthority
-        {
-            get
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var contentChannelType = new ContentChannelTypeService( rockContext ).Get( ContentChannelTypeId );
-                    return contentChannelType ?? base.ParentAuthority;
-                }
-
-            }
         }
 
         /// <summary>
@@ -406,6 +389,24 @@ namespace Rock.Web.Cache
         }
 
         #endregion
+
+        #region ISecured
+
+        /*
+             3/12/2026 - NA
+
+             ⚠ SECURITY NOTICE ⚠
+
+             If the model implements custom ISecured behavior, the corresponding
+             {Entity}Cache class MUST implement the same security logic.
+
+             Reason: Prevent security mismatches between model entities and cache objects.
+        */
+
+        /// <inheritdoc />
+        public override ISecured ParentAuthority => ContentChannelType ?? base.ParentAuthority;
+
+        #endregion ISecured
 
     }
 }

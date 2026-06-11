@@ -474,7 +474,9 @@ namespace Rock.Blocks.Cms
                     PageCache.FlushPage( pageCache.Id );
                 }
 
+#if REVIEW_WEBFORMS
                 Rock.Web.RockRouteHandler.ReregisterRoutes();
+#endif
 
                 return ActionOk( this.GetParentPageUrl() );
             }

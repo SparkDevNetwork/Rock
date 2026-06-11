@@ -20,6 +20,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -298,7 +299,7 @@ namespace Rock.Web.Cache
                 }
 
                 var rockContext = options.DbContext
-                    ?? ( DisableUseOfReadOnlyContext ? new RockContext() : new RockContextReadOnly() );
+                    ?? ( DisableUseOfReadOnlyContext ? RockApp.Current.CreateRockContext() : new RockContextReadOnly() );
 
                 var entityIdQry = rockContext.Set<DataViewPersistedValue>()
                     .Where( pv => pv.DataViewId == Id )
@@ -393,7 +394,7 @@ namespace Rock.Web.Cache
                 }
 
                 bool ownsContext = options.DbContext == null;
-                var rockContext = options.DbContext ?? new RockContext();
+                var rockContext = options.DbContext ?? RockApp.Current.CreateRockContext();
 
                 var idQry = rockContext.Set<DataViewPersistedValue>()
                     .Where( pv => pv.DataViewId == Id )
@@ -575,5 +576,39 @@ namespace Rock.Web.Cache
         }
 
         #endregion
+
+        #region ISecured
+
+        /*
+             3/12/2026 - NA
+
+             ⚠ SECURITY NOTICE ⚠
+
+             If the model implements custom ISecured behavior, the corresponding
+             {Entity}Cache class MUST implement the same security logic.
+
+             Reason: Prevent security mismatches between model entities and cache objects.
+        */
+
+        /// <summary>
+        /// Gets the parent security authority for the DataView which is its Category
+        /// </summary>
+        /// <value>
+        /// The parent authority of the DataView.
+        /// </value>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.Category != null )
+                {
+                    return this.Category;
+                }
+
+                return base.ParentAuthority;
+            }
+        }
+
+        #endregion ISecured
     }
 }

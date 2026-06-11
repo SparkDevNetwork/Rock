@@ -178,7 +178,7 @@
 
     // #region Values
 
-    const internalValue = ref(props.modelValue ? props.modelValue : null);
+    const internalValue = ref(props.modelValue ? props.modelValue : undefined);
     const controlWrapper = ref<HTMLElement | null>(null);
     const standardFieldProps = useStandardRockFormFieldProps(props);
     const searchText = ref("");
@@ -358,9 +358,9 @@
      *
      * @returns true if the option should be included in the list, otherwise false.
      */
-    const filterItem = (input: string, option: SelectOption): boolean => {
+    const filterItem = (input: string, option?: Record<string, unknown>): boolean => {
         searchText.value = input;
-        return (option.label || "").toLocaleLowerCase().indexOf(input.toLocaleLowerCase()) >= 0;
+        return (option?.label || "").toString().toLocaleLowerCase().indexOf(input.toLocaleLowerCase()) >= 0;
     };
 
     /**
@@ -401,18 +401,18 @@
             // We are in multiple select mode, but if we have a non-array
             // value then convert it to an array.
             if (!Array.isArray(newValue)) {
-                newValue = newValue === null ? [] : [newValue];
+                newValue = newValue === undefined ? [] : [newValue];
             }
         }
         else {
             // We are in single select mode, but if we have an array
             // value then convert it to a single item.
             if (Array.isArray(newValue)) {
-                newValue = newValue.length === 0 ? null : newValue[0];
+                newValue = newValue.length === 0 ? undefined : newValue[0];
             }
 
             // Ensure that single item is valid.
-            if (newValue === null) {
+            if (newValue === undefined) {
                 newValue = computedShowBlankItem.value
                     ? props.blankValue
                     : (props.items[0]?.value || props.blankValue);

@@ -19,6 +19,8 @@
     16. Duplicate Pages
     17. DISC & Assessments
     19. Edit Person
+    20. Giving Configuration
+    21. Personal Devices
 */
 
 // 1. Page Styles
@@ -182,8 +184,14 @@
   border-radius: .1em;
 
   .badge-icon {
-    font-size: .65em;
-    color: #fff;
+    color:          var(--color-interface-softest);
+    &.fa,
+    &.fas,
+    &.far,
+    &.fal,
+    &.fab {
+      font-size: .65em;
+    }
   }
 
   &.rockbadge-circle {
@@ -352,12 +360,17 @@
   height: 1em;
 
   .badge-icon {
-    top: 0;
-    right: 0;
-    left: 0;
-    font-size: 1.25em;
+    font-size: 45px;
     line-height: 1.15em;
     text-align: center;
+
+    &.fa,
+    &.fas,
+    &.far,
+    &.fal,
+    &.fab {
+      font-size: 36px;
+    }
   }
 
   &-invert {
@@ -409,8 +422,7 @@
 }
 
 .rockbadge-signal .metric-value {
-  top:      .35em;
-  bottom:   .65em;
+  top:      .20em;
 }
 
 .rockbadge-personaldevice,
@@ -933,4 +945,101 @@ tr.inactive {
   @media @sm {
     padding-top: 4px;
   }
+}
+
+// 20. Giving Configuration
+
+
+.giving-configuration {
+
+  .rollover-container-nested {
+      transition: background-color 0.3s;
+  }
+
+  .rollover-container-nested:hover {
+      background-color: var(--color-interface-lightest);
+  }
+
+  .btn-link:hover {
+      text-decoration: underline;
+  }
+
+  .showinactive {
+      background-color: var(--color-interface-lightest);
+      border: none;
+      color: var(--color-link);
+  }
+
+  .separator {
+      margin-top: 2px;
+      margin-bottom: var(--spacing-large);
+      border: 0;
+      border-top: 1px solid var(--color-interface-soft) !important;
+      width: ~"calc(100% + 36px)";
+      margin-left: -18px;
+  }
+
+  .content-section {
+      margin-top: var(--spacing-medium);
+      margin-bottom: var(--spacing-medium);
+  }
+}
+
+
+// 21. Personal Devices
+// --------------------------
+
+.personal-devices {
+
+  .displaycard {
+
+    .right-middle-container {
+      display: flex;
+      justify-content: start;
+      flex-direction: column;
+    }
+
+    .dateInfo {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-tiny);
+      color: var(--color-interface-medium);
+    }
+
+    .btn-interactions {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-xsmall);
+    }
+
+    .displaycard-aside + .displaycard-actions {
+      margin-left: ~"calc(var(--spacing-tiny) - var(--spacing-large))";
+    }
+
+    @media (max-width: 767px) {
+      .displaycard-aside + .displaycard-actions {
+          margin-left: 0;
+      }
+
+      .right-middle-container {
+          flex-direction: column;
+          gap: var(--spacing-tiny);
+      }
+
+      .displaycard-content:has(.icon-list:empty) {
+          display: none;
+      }
+    }
+
+    .icon-list {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-medium);
+      flex-wrap: wrap;
+
+    }
+
+  }
+
 }

@@ -16,7 +16,6 @@
 //
 
 using System;
-using System.Collections.Generic;
 
 namespace Rock.ViewModels.Rest.Controls
 {
@@ -31,5 +30,20 @@ namespace Rock.ViewModels.Rest.Controls
         /// </summary>
         /// <value>The option to include inactive event items</value>
         public bool IncludeInactive { get; set; } = false;
+
+        /// <summary>
+        /// The root calendar to limit the event items to.
+        /// </summary>
+        public Guid RootCalendar { get; set; }
+
+        /// <summary>
+        /// The start of the date range to limit event items to.
+        /// </summary>
+        public string DateRangeStart { get; set; }
+
+        /// <summary>
+        /// The end of the date range to limit event items to.
+        /// </summary>
+        public string DateRangeEnd { get; set; }
     }
 }

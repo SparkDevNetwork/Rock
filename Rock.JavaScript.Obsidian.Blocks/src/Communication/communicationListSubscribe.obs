@@ -1,0 +1,121 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.errorMessage" :alertType="AlertType.Danger">
+        {{ config.errorMessage }}
+    </NotificationBox>
+
+    <Block v-else title="Email Preferences">
+        <NotificationBox v-if="!communicationLists.length" :alertType="AlertType.Info">
+            You are not subscribed to any communication lists.
+        </NotificationBox>
+
+        <div v-else>
+            <NotificationBox v-if="actionErrorMessage" :alertType="AlertType.Danger">
+                {{ actionErrorMessage }}
+            </NotificationBox>
+
+            <table class="table table-striped mb-0">
+                <tbody>
+                    <tr v-for="item in communicationLists" :key="item.communicationListGuid">
+                        <td class="align-middle">
+                            <CheckBox :modelValue="item.isSubscribed"
+                                      label=""
+                                      formGroupClasses="rock-check-box mb-0 mt-1"
+                                      @update:modelValue="onSubscriptionChanged(item, $event)">
+                                <template #textAppend>
+                                    <strong>{{ item.displayName }}</strong><span v-if="item.description"> - {{ item.description }}</span>
+                                </template>
+                            </CheckBox>
+                        </td>
+                        <td v-if="showMediumPreference" class="align-middle text-right" style="width: 150px;">
+                            <div :class="{ 'toggle-disabled': !item.isSubscribed }">
+                                <Toggle :modelValue="item.communicationPreference === CommunicationType.Email"
+                                        trueText="Email"
+                                        formGroupClasses="toggle mb-0"
+                                        falseText="SMS"
+                                        btnSize="xs"
+                                        :disabled="!item.isSubscribed"
+                                        @update:modelValue="onPreferenceChanged(item, $event)" />
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </Block>
+</template>
+
+<style scoped>
+.toggle-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+</style>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import Block from "@Obsidian/Templates/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { CommunicationListSubscribeBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationListSubscribe/communicationListSubscribeBag";
+    import { CommunicationListSubscribeOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationListSubscribe/communicationListSubscribeOptionsBag";
+    import { CommunicationListItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationListSubscribe/communicationListItemBag";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
+    import { CommunicationListSubscribeRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationListSubscribe/communicationListSubscribeRequestBag";
+    import { CommunicationListPreferenceRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationListSubscribe/communicationListPreferenceRequestBag";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+
+    const config = useConfigurationValues<CustomBlockBox<CommunicationListSubscribeBag, CommunicationListSubscribeOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const communicationLists = ref<CommunicationListItemBag[]>(config.bag?.communicationLists ?? []);
+    const showMediumPreference = config.options?.isShowMediumPreferenceEnabled ?? false;
+    const actionErrorMessage = ref("");
+
+    /**
+     * Handles toggling the subscription checkbox for a communication list.
+     */
+    async function onSubscriptionChanged(item: CommunicationListItemBag, isSubscribed: boolean): Promise<void> {
+        actionErrorMessage.value = "";
+
+        const request: CommunicationListSubscribeRequestBag = {
+            communicationListGuid: item.communicationListGuid,
+            isSubscribed
+        };
+
+        const result = await invokeBlockAction("UpdateSubscription", { bag: request });
+
+        if (result.isSuccess) {
+            item.isSubscribed = isSubscribed;
+        }
+        else {
+            actionErrorMessage.value = result.errorMessage ?? "An error occurred while updating the subscription.";
+        }
+    }
+
+    /**
+     * Handles toggling the Email/SMS preference for a communication list.
+     */
+    async function onPreferenceChanged(item: CommunicationListItemBag, isEmail: boolean): Promise<void> {
+        actionErrorMessage.value = "";
+
+        const communicationType = isEmail ? CommunicationType.Email : CommunicationType.SMS;
+
+        const request: CommunicationListPreferenceRequestBag = {
+            communicationListGuid: item.communicationListGuid,
+            communicationType
+        };
+
+        const result = await invokeBlockAction("UpdateCommunicationPreference", { bag: request });
+
+        if (result.isSuccess) {
+            item.communicationPreference = communicationType;
+        }
+        else {
+            actionErrorMessage.value = result.errorMessage ?? "An error occurred while updating the communication preference.";
+        }
+    }
+</script>

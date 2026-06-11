@@ -90,7 +90,7 @@ namespace Rock.Field.Types
 
             if ( privateConfigurationValues.ContainsKey( BINARY_FILE_TYPE ) )
             {
-                var binaryFileTypeValue = publicConfigurationValues[BINARY_FILE_TYPE].FromJsonOrNull<ListItemBag>();
+                var binaryFileTypeValue = privateConfigurationValues[BINARY_FILE_TYPE].FromJsonOrNull<ListItemBag>();
 
                 if ( binaryFileTypeValue != null )
                 {
@@ -353,6 +353,33 @@ namespace Rock.Field.Types
             }
 
             return internalValue;
+        }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return PersistedValues.Empty();
+            }
+
+            // This is not perfect, as it is still 2 queries. However, it is
+            // better than the original 4. Deeper work would be required to
+            // fully bring this down to 1 query.
+            var textValue = GetTextValue( privateValue, privateConfigurationValues );
+            var htmlValue = GetHtmlValue( privateValue, privateConfigurationValues );
+
+            return new PersistedValues
+            {
+                TextValue = textValue,
+                HtmlValue = htmlValue,
+                CondensedTextValue = textValue.Truncate( CondensedTruncateLength ),
+                CondensedHtmlValue = htmlValue,
+            };
         }
 
         #endregion

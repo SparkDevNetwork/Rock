@@ -20,7 +20,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -56,6 +58,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 128 )]
         [HideFromReporting]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AccountNumberSecured { get; set; }
 
         /// <summary>
@@ -65,6 +68,7 @@ namespace Rock.Model
         /// The account number masked.
         /// </value>
         [Required]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AccountNumberMasked { get; set; }
 
         #endregion Entity Properties

@@ -1,0 +1,23 @@
+// imported by _core.scss
+
+// MOTION / ANIMATION STYLES
+
+// =============================================================
+// Table of Contents
+//  + Rockslide
+// =============================================================
+
+
+
+// ======================== ROCKSLIDE STYLE ========================
+.rockslide-enter-active,
+.rockslide-leave-active {
+  transition:     all .6s ease;
+}
+
+.rockslide-enter,
+.rockslide-leave-to {
+  opacity:        0;
+  transform:      translateY(-100%);
+}
+// ====================== END ROCKSLIDE STYLE ======================

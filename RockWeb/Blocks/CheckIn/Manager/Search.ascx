@@ -6,7 +6,7 @@
         <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" Dismissable="true" />
 
         <asp:Panel ID="pnlContent" runat="server" CssClass="checkin-manager">
-            <div class="input-group mb-4 w-100">
+            <div class="input-group mb-spacing-lg w-100">
                 <Rock:RockTextBox ID="tbSearch" runat="server" CssClass="js-search" PrependText="<i class='ti ti-search'></i>" spellcheck="false" onkeydown="javascript:return handleSearchBoxKeyPress(this, event.keyCode);"/>
             </div>
 
@@ -22,7 +22,7 @@
                                 <Rock:RockBoundField DataField="Tag" HeaderText="Tag" HeaderStyle-CssClass="d-none d-sm-table-cell" ItemStyle-CssClass="tag d-none d-sm-table-cell align-middle" />
                                 <Rock:RockBoundField DataField="ServiceTimes" HeaderText="Service Times" HeaderStyle-CssClass="d-none d-sm-table-cell" ItemStyle-CssClass="service-times d-none d-sm-table-cell align-middle" />
                                 <Rock:RockLiteralField ID="lMobileTagAndSchedules" HeaderText="Tag" HeaderStyle-CssClass="d-sm-none" ItemStyle-CssClass="tags-and-schedules d-table-cell d-sm-none" />
-                                <Rock:RockLiteralField ID="lStatusTag" ItemStyle-CssClass="status-tag d-none d-sm-table-cell align-middle" ItemStyle-HorizontalAlign="Right" ColumnPriority="TabletSmall" />
+                                <Rock:RockLiteralField ID="lStatusTag" ItemStyle-CssClass="status-tag d-none d-sm-table-cell align-middle" ItemStyle-HorizontalAlign="Center" ColumnPriority="TabletSmall" />
                             </Columns>
                         </Rock:Grid>
                     </div>

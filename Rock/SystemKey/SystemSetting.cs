@@ -319,12 +319,21 @@ namespace Rock.SystemKey
         /// <summary>
         /// The Captcha site key.
         /// </summary>
+        [Obsolete( "Cloudflare Turnstile is no longer supported in Rock. It has been replaced by a built-in CAPTCHA system in v19." )]
+        [RockObsolete( "19.0" )]
         public const string CAPTCHA_SITE_KEY = "core_CaptchaSiteKey";
 
         /// <summary>
         /// The Captcha secret key.
         /// </summary>
+        [Obsolete( "Cloudflare Turnstile is no longer supported in Rock. It has been replaced by a built-in CAPTCHA system in v19." )]
+        [RockObsolete( "19.0" )]
         public const string CAPTCHA_SECRET_KEY = "core_CaptchaSecretKey";
+
+        /// <summary>
+        /// The Captcha mode.
+        /// </summary>
+        public const string CAPTCHA_MODE = "core_CaptchaMode";
 
         /// <summary>
         /// The protocol to use for sending telemetry for observability.
@@ -455,5 +464,11 @@ namespace Rock.SystemKey
         /// The system settings for AI Agent features.
         /// </summary>
         public const string AI_AGENT_SYSTEM_SETTINGS = "core_AIAgentSystemSettings";
+
+        /// <summary>
+        /// When trailblazer mode is enabled the system will show more advanced
+        /// configuration options in the UI.
+        /// </summary>
+        public const string TRAILBLAZER_MODE = "core_TrailblazerMode";
     }
 }

@@ -195,6 +195,20 @@ export const ServiceJob = {
     DataMigrations181AddFinancialbatchIndex: "EA5D69D8-8ABB-42CD-A664-48F6BC5E2C7F",
     /** The job to run Post v18.1 Data Migrations to add indexes to improve communication prep performance. */
     DataMigrations181AddIndexesForCommunicationPrep: "88C42A48-6713-4CB1-BF6B-A12AB2E292E7",
+    /** The job to run Post v18.3 Data Migrations to fix any possible broken achievement types. */
+    DataMigrations183FixBrokenAchievementTypes: "2463AB43-8CB2-400E-BAAF-F96FC3E1A43D",
+    /** The job to run Post v19.0 Data Migrations to add an index to ensure the Communication Unsubscribe Report performs efficiently. */
+    DataMigrations190AddCommunicationUnsubscribeReportIndex: "ECBC94C0-7646-491E-A804-1CA228F0FFAD",
+    /** The job to run Post v19.0 Data Migrations to backfill the newly-added [ConnectionRequest].[ConnectedDateTime] and [WasCompletedOnTime] fields from the History table for requests that were already in the Connected state prior to v19. */
+    DataMigrations190BackfillConnectionRequestConnectedDatetime: "3B6F52DF-E6AB-47F2-9719-1365718410A3",
+    /** The Job to run Post v19.0 Data Migrations to perform the final chop of the File and Asset Manager (webforms) Blocks. */
+    DataMigrations190ChopFileAndAssetManagerFinal: "1EB6ED41-60F6-452E-A688-EB9C5444ECBC",
+    /** The Job to run Post v19.0 Data Migrations to perform the final chop of the Registration Entry (webforms) Block. */
+    DataMigrations190ChopRegistrationEntryFinal: "37E3EC22-513D-4F13-A929-38BBA2BDAC68",
+    /** The Job to run Post v19.0 Data Migrations to perform the final chop of the Service Metric Entry (webforms) Block. */
+    DataMigrations190ChopServiceMetricEntryFinal: "DD75B103-88B3-4551-B38F-E688422E2DC5",
+    /** The Job to run Post v19.0 Data Migrations to swap Block. */
+    DataMigrations190SwapObsidianBlocks: "C05C0C81-12B2-4C35-9405-C3CE09E3CE75",
     /**
      * The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
      * Following Event Type Detail, Financial Batch Detail
@@ -241,6 +255,8 @@ export const ServiceJob = {
     UpdateAnalyticsSourcePostalCode: "29731D97-699D-4D34-A9F4-50C7C33D5C48",
     /** The Rock.Jobs.UpdateEntityUsage job configured to update Media Element usage. */
     UpdateMediaElementUsage: "32d0cb70-d4ef-4ac2-8693-bfdfe9e5233e",
+    /** The Rock.Jobs.UpdateOutreachToolboxTouchpoints job. */
+    UpdateOutreachToolboxTouchpoints: "06320140-a5ff-46fa-9ee5-41f747bbc542",
     /** The Update Persisted Attribute Values job. */
     UpdatePersistedAttributeValue: "A7DDA4B0-BA1D-49F1-8749-5E7A9876AE70",
     /** The Rock.Jobs.UpdatePersistedDatasets job. */

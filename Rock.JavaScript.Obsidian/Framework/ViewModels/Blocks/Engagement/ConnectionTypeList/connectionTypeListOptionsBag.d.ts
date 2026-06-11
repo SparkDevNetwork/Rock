@@ -23,4 +23,9 @@
 
 /** The additional configuration options for the Connection Type List block. */
 export type ConnectionTypeListOptionsBag = {
+    /**
+     * Gets or sets a value indicating whether the reorder column should be shown.
+     * Reordering requires block-level Administrate rights.
+     */
+    isReOrderColumnVisible: boolean;
 };

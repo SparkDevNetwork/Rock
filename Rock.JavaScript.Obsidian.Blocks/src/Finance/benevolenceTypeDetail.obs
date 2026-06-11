@@ -4,7 +4,7 @@
 
     <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
-    <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
+    <RockForm v-model:submit="submitForm" @submit="onSave">
         <Panel :title="panelTitle" :headerSecondaryActions="secondaryActions">
 
             <EditPanel v-model="benevolenceTypeEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
@@ -70,7 +70,6 @@
     const isSaving = ref(false);
     const isNavigating = ref(false);
     const submitForm = ref(false);
-    const resetKey = ref("");
     const showAuditDetailsModal = ref(false);
     const entityTypeGuid = EntityType.BenevolenceType;
 

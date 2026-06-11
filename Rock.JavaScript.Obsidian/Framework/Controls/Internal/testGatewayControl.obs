@@ -19,8 +19,7 @@
     import { GatewayEmitStrings } from "@Obsidian/Enums/Controls/gatewayEmitStrings";
     import { FormError } from "@Obsidian/Utility/form";
 
-    type Settings = {
-    };
+    type Settings = Record<string, never>;
 
     const _props = defineProps({
         settings: {

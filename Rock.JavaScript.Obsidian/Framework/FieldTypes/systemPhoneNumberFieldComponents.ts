@@ -20,7 +20,7 @@ import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import { ConfigurationValueKey } from "./systemPhoneNumberField.partial";
+import { ConfigurationKey } from "./systemPhoneNumberField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
@@ -42,19 +42,19 @@ export const EditComponent = defineComponent({
 
         // The options to choose from.
         const options = computed((): ListItemBag[] => {
-            const selectedPhoneNumbers = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] || "[]") as ListItemBag[];
+            const selectedPhoneNumbers = JSON.parse(props.configurationValues[ConfigurationKey.Values] || "[]") as ListItemBag[];
             return selectedPhoneNumbers;
         });
 
         // Allow Multiple configuration value, sets control to a multi select check box list when true.
         const allowMultiple = computed((): boolean => {
-            const allowMultiple = asBoolean(props.configurationValues[ConfigurationValueKey.AllowMultiple]);
+            const allowMultiple = asBoolean(props.configurationValues[ConfigurationKey.AllowMultiple]);
             return allowMultiple;
         });
 
         // Number of columns to use when in checkboxlist mode.
         const numberOfColumns = computed((): number => {
-            const numberOfColumns = toNumberOrNull(props.configurationValues[ConfigurationValueKey.RepeatColumns]) ?? 4;
+            const numberOfColumns = toNumberOrNull(props.configurationValues[ConfigurationKey.RepeatColumns]) ?? 4;
             return numberOfColumns;
         });
 
@@ -125,15 +125,15 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.AllowMultiple] = asTrueOrFalseString(allowMultiple.value);
-            newValue[ConfigurationValueKey.IncludeInactive] = asTrueOrFalseString(includeInactive.value);
-            newValue[ConfigurationValueKey.RepeatColumns] = numberOfColumns.value?.toString() ?? "";
-            newValue[ConfigurationValueKey.Values] = props.modelValue[ConfigurationValueKey.Values];
+            newValue[ConfigurationKey.AllowMultiple] = asTrueOrFalseString(allowMultiple.value);
+            newValue[ConfigurationKey.IncludeInactive] = asTrueOrFalseString(includeInactive.value);
+            newValue[ConfigurationKey.RepeatColumns] = numberOfColumns.value?.toString() ?? "";
+            newValue[ConfigurationKey.Values] = props.modelValue[ConfigurationKey.Values];
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.AllowMultiple] !== (props.modelValue[ConfigurationValueKey.AllowMultiple])
-                || newValue[ConfigurationValueKey.IncludeInactive] !== (props.modelValue[ConfigurationValueKey.IncludeInactive])
-                || newValue[ConfigurationValueKey.RepeatColumns] !== (props.modelValue[ConfigurationValueKey.RepeatColumns]);
+            const anyValueChanged = newValue[ConfigurationKey.AllowMultiple] !== (props.modelValue[ConfigurationKey.AllowMultiple])
+                || newValue[ConfigurationKey.IncludeInactive] !== (props.modelValue[ConfigurationKey.IncludeInactive])
+                || newValue[ConfigurationKey.RepeatColumns] !== (props.modelValue[ConfigurationKey.RepeatColumns]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -160,9 +160,9 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            allowMultiple.value = asBoolean(props.modelValue[ConfigurationValueKey.AllowMultiple]);
-            includeInactive.value = asBoolean(props.modelValue[ConfigurationValueKey.IncludeInactive]);
-            numberOfColumns.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.RepeatColumns]);
+            allowMultiple.value = asBoolean(props.modelValue[ConfigurationKey.AllowMultiple]);
+            includeInactive.value = asBoolean(props.modelValue[ConfigurationKey.IncludeInactive]);
+            numberOfColumns.value = toNumberOrNull(props.modelValue[ConfigurationKey.RepeatColumns]);
         }, {
             immediate: true
         });
@@ -176,9 +176,9 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(allowMultiple, () => maybeUpdateConfiguration(ConfigurationValueKey.AllowMultiple, asTrueOrFalseString(allowMultiple.value)));
-        watch(includeInactive, () => maybeUpdateConfiguration(ConfigurationValueKey.IncludeInactive, asTrueOrFalseString(includeInactive.value)));
-        watch(numberOfColumns, () => maybeUpdateConfiguration(ConfigurationValueKey.RepeatColumns, numberOfColumns.value?.toString() ?? ""));
+        watch(allowMultiple, () => maybeUpdateConfiguration(ConfigurationKey.AllowMultiple, asTrueOrFalseString(allowMultiple.value)));
+        watch(includeInactive, () => maybeUpdateConfiguration(ConfigurationKey.IncludeInactive, asTrueOrFalseString(includeInactive.value)));
+        watch(numberOfColumns, () => maybeUpdateConfiguration(ConfigurationKey.RepeatColumns, numberOfColumns.value?.toString() ?? ""));
 
         return {
             allowMultiple,

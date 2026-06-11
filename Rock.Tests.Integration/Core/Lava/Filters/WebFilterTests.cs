@@ -65,7 +65,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
 
                 var header = simulator.Context.Response.Headers.Get( "cache-control" );
 
-                Assert.That.AreEqual( "public, max-age=120", header );
+                Assert.AreEqual( "public, max-age=120", header );
             }
         }
 
@@ -73,7 +73,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
 
         #region TitleCase
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( @"{{ ""men's gathering/get-together"" | TitleCase }}", "Men's Gathering/get-together" )]
         [DataRow( @"{{ 'mATTHEw 24:29-41 - KJV' | TitleCase }}", "Matthew 24:29-41 - KJV" )]
         public void TitleCase_TextWithPunctuation_PreservesPunctuation( string inputTemplate, string expectedOutput )
@@ -187,6 +187,26 @@ Employer:
 ";
 
             TestHelper.AssertTemplateOutput( excludedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields, OutputMatchType = LavaTestOutputMatchTypeSpecifier.DoesNotContain } );
+        }
+
+        /// <summary>
+        /// Test the Where filter using a 'contains' comparison on a collection of phone numbers for a test person.
+        /// The filter should return only the phone number that contains the specified value.
+        /// </summary>
+        [TestMethod]
+        public void Where_WithSingleContainsCondition_ReturnsContainedValues()
+        {
+            var mergeFields = new Dictionary<string, object> { { "CurrentPerson", GetWhereFilterTestPersonSarahSimmons() } };
+
+            var templateInput = @"
+{{ CurrentPerson.PhoneNumbers | Where:'Number', 555, 'contains' | Select:'NumberFormatted' | Join:', ' }}
+";
+
+            var expectedOutput = @"
+(623) 555-8888
+";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields } );
         }
 
         /// <summary>
@@ -392,9 +412,22 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
 
             var phones = personTedDecker.PhoneNumbers;
 
-            Assert.That.IsNotNull( personTedDecker, "Test person not found in current database." );
+            Assert.IsNotNull( personTedDecker, "Test person not found in current database." );
 
             return personTedDecker;
+        }
+        private Person GetWhereFilterTestPersonSarahSimmons()
+        {
+            var rockContext = new RockContext();
+
+            var personSarahSimmons = new PersonService( rockContext ).Queryable()
+                .FirstOrDefault( x => x.LastName == "Simmons" && x.NickName == "Sarah" );
+
+            var phones = personSarahSimmons.PhoneNumbers;
+
+            Assert.IsNotNull( personSarahSimmons, "Test person not found in current database." );
+
+            return personSarahSimmons;
         }
 
         private class TestWhereFilterCollectionItem : RockDynamic
@@ -424,7 +457,7 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
 
                     var cookie = GetExistingCookie( simulator, "cookie1" );
 
-                    Assert.That.AreEqual( "oatmeal", cookie.Value );
+                    Assert.AreEqual( "oatmeal", cookie.Value );
                 }
             } );
         }
@@ -532,7 +565,7 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
         private HttpCookie GetExistingCookie( Http.TestLibrary.HttpSimulator simulator, string key )
         {
             // Check if the cookie exists. If not, reading the cookie simply returns an empty cookie of the same name.
-            Assert.That.IsTrue( simulator.Context.Response.Cookies.AllKeys.Contains( key ), "Cookie not found." );
+            Assert.IsTrue( simulator.Context.Response.Cookies.AllKeys.Contains( key ), "Cookie not found." );
 
             return simulator.Context.Response.Cookies[key];
         }
@@ -542,7 +575,7 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
         #region PageRoute
 
         [TestMethod]
-        [Ignore("The current documentation example is incorrect. It references a system setting that is undefined.")]
+        [Ignore( "The current documentation example is incorrect. It references a system setting that is undefined." )]
         public void PageRoute_DocumentationExample_EmitsExpectedOutput()
         {
             TestHelper.AssertTemplateOutput( "/WorkflowEntry/10/324",
@@ -571,7 +604,7 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
         public void PageRoute_ForPageNumberWithAssociatedRoute_EmitsUrlWithRoute()
         {
             var pageId = GetPageIdFromRouteName( "Admin" );
-            var simulator = new Http.TestLibrary.HttpSimulator("");
+            var simulator = new Http.TestLibrary.HttpSimulator( "" );
 
             using ( simulator.SimulateRequest() )
             {
@@ -629,7 +662,7 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
                 $"Test Communication ({_systemCommunicationTestGuid})",
                 CategoryCache.GetId( SystemGuid.Category.SYSTEM_COMMUNICATION_WORKFLOW.AsGuid() ).GetValueOrDefault() );
 
-            communication.Body = lavaTemplate; 
+            communication.Body = lavaTemplate;
 
             CommunicationsDataManager.Instance.SaveSystemCommunication( communication );
 

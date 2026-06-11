@@ -11,12 +11,6 @@
     </div>
 </template>
 
-<style scoped>
-.communication-detail-top-clients {
-    height: 100%;
-}
-</style>
-
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import BarChart from "@Obsidian/Controls/barChart.obs";

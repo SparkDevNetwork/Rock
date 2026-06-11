@@ -53,7 +53,7 @@ namespace Rock.Tests.Integration.Security
             // Add an Authorization for this Role to view the Decker Group.
             // This will create a corresponding entry in the AuthAuditLog table.
             var groupDecker = groupService.GetByIdentifierOrThrow( TestGuids.Groups.SmallGroupDeckerGuid );
-            
+
             Authorization.AllowSecurityRole( groupDecker, "VIEW", groupTestRole, rockContext );
 
             // Save the changes.

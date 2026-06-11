@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -134,7 +135,7 @@ namespace Rock.Web.Cache
         /// <returns>An instance of <see cref="PersonOrVisitorCache"/> that will be added to the cache.</returns>
         private static PersonOrVisitorCache QueryDbForPerson( int personId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personPreferenceService = new PersonPreferenceService( rockContext );
 
@@ -155,7 +156,7 @@ namespace Rock.Web.Cache
         /// <returns>An instance of <see cref="PersonOrVisitorCache"/> that will be added to the cache.</returns>
         private static PersonOrVisitorCache QueryDbForVisitor( int personAliasId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personPreferenceService = new PersonPreferenceService( rockContext );
 

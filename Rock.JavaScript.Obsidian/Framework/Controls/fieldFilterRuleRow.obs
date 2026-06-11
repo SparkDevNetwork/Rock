@@ -25,7 +25,7 @@
             </div>
         </div>
         <div class="filter-rule-remove" v-if="!disableRemoval">
-            <button class="btn btn-danger btn-square" @click.prevent="onRemoveRuleClick">
+            <button class="btn btn-danger btn-square" type="button" @click.prevent="onRemoveRuleClick">
                 <i class="ti ti-x"></i>
             </button>
         </div>
@@ -245,7 +245,7 @@
             sourceType: isAttribute ? FieldFilterSourceType.Attribute : FieldFilterSourceType.Property,
             path: path,
             comparisonType: compareType,
-            value: compareType == ComparisonType.IsBlank || compareType == ComparisonType.IsNotBlank ? "" : comparisonValue.value.value
+            value: compareType === ComparisonType.IsBlank || compareType === ComparisonType.IsNotBlank ? "" : comparisonValue.value.value
         };
 
         emit("update:modelValue", newValue);

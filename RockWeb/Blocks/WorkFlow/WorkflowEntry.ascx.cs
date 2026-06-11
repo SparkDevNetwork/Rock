@@ -65,7 +65,6 @@ namespace RockWeb.Blocks.WorkFlow
         Description = "Lava template for determining the title of the block. If not specified, the name of the Workflow Type will be shown.",
         Key = AttributeKey.BlockTitleTemplate,
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
         IsRequired = false,
         Order = 2 )]
@@ -109,7 +108,7 @@ namespace RockWeb.Blocks.WorkFlow
 
     [BooleanField(
         "Disable Captcha Support",
-        Description = "If set to 'Yes' the CAPTCHA verification will be skipped. \n\nNote: If the CAPTCHA site key and/or secret key are not configured in the system settings, this option will be forced as 'Yes', even if 'No' is visually selected.",
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
         Key = AttributeKey.DisableCaptchaSupport,
         DefaultBooleanValue = false,
         Order = 8
@@ -695,7 +694,7 @@ namespace RockWeb.Blocks.WorkFlow
                     /* if user isn't authorized to edit, limit to ones that are any of the following conditions
                     // - Not assigned
                     // - Assigned to current person
-                    // - Assigned to a group that the current user is a member of
+                    // - Assigned to a group that the current user is member (non-inactive) of
                     */
 
                     activeWorkflowActivitiesList = activeWorkflowActivitiesList.Where( a =>
@@ -712,7 +711,7 @@ namespace RockWeb.Blocks.WorkFlow
                             return true;
                         }
 
-                        if ( a.AssignedGroup != null && a.AssignedGroup.Members.Any( m => m.PersonId == personId ) )
+                        if ( a.AssignedGroup != null && a.AssignedGroup.Members.Any( m => m.PersonId == personId && m.GroupMemberStatus != GroupMemberStatus.Inactive ) )
                         {
                             // Assigned to a group that the current user is a member of
                             return true;

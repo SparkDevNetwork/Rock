@@ -23,62 +23,55 @@
         </template>
 
         <template #headerActions>
-            <div class="d-flex gap-1">
-                <DropDownList v-model="fallbackRegistrationTemplatePlacement"
-                              v-if="box.registrationTemplatePlacements"
-                              :items="box.registrationTemplatePlacements"
-                              :showBlankItem="false"
-                              inputClasses="placements-dropdown" />
-                <div class="dropdown">
-                    <RockButton :btnType="BtnType.Default"
-                                :btnSize="BtnSize.Small"
-                                :isSquare="true"
-                                title="Sort Items"
-                                data-toggle="dropdown">
-                        <i class="ti ti-caret-up-down"></i>
-                    </RockButton>
-                    <ul class="dropdown-menu dropdown-menu-right">
-                        <li>
-                            <span class="dropdown-header">
-                                Sort Person Order
-                            </span>
-                        </li>
-                        <li v-for="[key, label] in sortOptions"
-                            :key="key"
-                            :class="{ 'selected': currentSortOrder === key }">
-                            <a href="#" @click.prevent="changeSort(key)">
-                                {{ label }}
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                <RockButton :btnType="BtnType.Default"
-                            :btnSize="BtnSize.Small"
-                            :isSquare="true"
-                            title="Toggle Gender Highlight View"
-                            @click="toggleHighlightGender">
-                    <i class="ti ti-gender-male"></i>
-                </RockButton>
-                <RockButton :btnType="BtnType.Default"
-                            :btnSize="BtnSize.Small"
-                            :isSquare="true"
-                            title="Toggle Details"
-                            @click="toggleCardExpansion">
-                    <i class="ti ti-info-circle"></i>
-                </RockButton>
-                <RockButton :btnType="BtnType.Default"
-                            :btnSize="BtnSize.Small"
-                            :isSquare="true"
-                            @click="openPlacementConfigSettings">
-                    <i class="ti ti-settings"></i>
-                </RockButton>
-                <RockButton :btnType="BtnType.Default"
-                            :btnSize="BtnSize.Small"
-                            :isSquare="true"
-                            @click="toggleFullScreen">
-                    <i class="ti ti-maximize"></i>
-                </RockButton>
+            <DropDownList v-model="fallbackRegistrationTemplatePlacement"
+                            v-if="box.registrationTemplatePlacements"
+                            :items="box.registrationTemplatePlacements"
+                            :showBlankItem="false"
+                            inputClasses="placements-dropdown" />
+            <div class="dropdown">
+                <button class="btn btn-panel-action"
+                        type="button"
+                        title="Sort Items"
+                        data-toggle="dropdown">
+                    <i class="ti ti-caret-up-down"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-right">
+                    <li>
+                        <span class="dropdown-header">
+                            Sort Person Order
+                        </span>
+                    </li>
+                    <li v-for="[key, label] in sortOptions"
+                        :key="key"
+                        :class="{ 'selected': currentSortOrder === key }">
+                        <a href="#" @click.prevent="changeSort(key)">
+                            {{ label }}
+                        </a>
+                    </li>
+                </ul>
             </div>
+            <button class="btn btn-panel-action"
+                        type="button"
+                        title="Toggle Gender Highlight View"
+                        @click="toggleHighlightGender">
+                <i class="ti ti-gender-male"></i>
+            </button>
+            <button class="btn btn-panel-action"
+                        type="button"
+                        title="Toggle Details"
+                        @click="toggleCardExpansion">
+                <i class="ti ti-info-circle"></i>
+            </button>
+            <button class="btn btn-panel-action"
+                        type="button"
+                        @click="openPlacementConfigSettings">
+                <i class="ti ti-settings"></i>
+            </button>
+            <button class="btn btn-panel-action"
+                        type="button"
+                        @click="toggleFullScreen">
+                <i class="ti ti-maximize"></i>
+            </button>
         </template>
 
         <NotificationBox v-if="!isNullOrWhiteSpace(dataRetrievalError)" alertType="danger">
@@ -124,13 +117,15 @@
                     </template>
 
                     <template v-if="Object.keys(sourceAttributesForFilter).length > 0 || registrantFeeItemsForFilter.length > 0" #drawer>
-                        <AttributeValuesContainer v-model="pendingSourceAttributeValuesForFilter" :attributes="sourceAttributesForFilter" isEditMode :numberOfColumns="1" />
-                        <DropDownList v-model="pendingRegistrantFeeItemValuesForFilter"
-                                      v-if="placementConfigurationSettings.areFeesDisplayed"
-                                      label="Fees"
-                                      :items="registrantFeeItemsForFilter ?? []"
-                                      :enhanceForLongLists="true"
-                                      :multiple="true" />
+                        <div class="filter-container">
+                            <AttributeValuesContainer v-model="pendingSourceAttributeValuesForFilter" :attributes="sourceAttributesForFilter" isEditMode :numberOfColumns="1" />
+                            <DropDownList v-model="pendingRegistrantFeeItemValuesForFilter"
+                                          v-if="placementConfigurationSettings.areFeesDisplayed"
+                                          label="Fees"
+                                          :items="registrantFeeItemsForFilter ?? []"
+                                          :enhanceForLongLists="true"
+                                          :multiple="true" />
+                        </div>
                         <RockButton :btnType="BtnType.Action"
                                     :btnSize="BtnSize.ExtraSmall"
                                     @click="applyPeopleFilter"
@@ -236,29 +231,30 @@
                     </template>
 
                     <template #drawer v-if="Object.keys(destinationGroupAttributesForFilter).length > 0 || Object.keys(destinationGroupMemberAttributesForFilter).length > 0">
-
-                        <AttributeValuesContainer v-model="pendingDestinationGroupAttributeValuesForFilter"
-                                                  :attributes="destinationGroupAttributesForFilter"
-                                                  isEditMode
-                                                  :numberOfColumns="3"
-                                                  columnBreakpoint="lg"
-                                                  :showCategoryLabel="false" />
-                        <div class="w-100 mb-2">
-                            <RockLabel v-if="Object.keys(destinationGroupMemberAttributesForFilter).length > 0"
-                                       @click="toggleIsGroupMemberFilterDisplayed"
-                                       class="group-member-filter-toggle">
-                                Group Member Filters <i :class="groupMemberFilterIcon"></i>
-                            </RockLabel>
-                            <TransitionVerticalCollapse>
-                                <div v-show="isGroupMemberFilterDisplayed">
-                                    <AttributeValuesContainer v-model="pendingDestinationGroupMemberAttributeValuesForFilter"
-                                                              :attributes="destinationGroupMemberAttributesForFilter"
-                                                              isEditMode
-                                                              :numberOfColumns="3"
-                                                              columnBreakpoint="lg"
-                                                              :showCategoryLabel="false" />
-                                </div>
-                            </TransitionVerticalCollapse>
+                        <div class="filter-container">
+                            <AttributeValuesContainer v-model="pendingDestinationGroupAttributeValuesForFilter"
+                                                      :attributes="destinationGroupAttributesForFilter"
+                                                      isEditMode
+                                                      :numberOfColumns="3"
+                                                      columnBreakpoint="lg"
+                                                      :showCategoryLabel="false" />
+                            <div class="w-100 mb-2">
+                                <RockLabel v-if="Object.keys(destinationGroupMemberAttributesForFilter).length > 0"
+                                           @click="toggleIsGroupMemberFilterDisplayed"
+                                           class="group-member-filter-toggle">
+                                    Group Member Filters <i :class="groupMemberFilterIcon"></i>
+                                </RockLabel>
+                                <TransitionVerticalCollapse>
+                                    <div v-show="isGroupMemberFilterDisplayed">
+                                        <AttributeValuesContainer v-model="pendingDestinationGroupMemberAttributeValuesForFilter"
+                                                                  :attributes="destinationGroupMemberAttributesForFilter"
+                                                                  isEditMode
+                                                                  :numberOfColumns="3"
+                                                                  columnBreakpoint="lg"
+                                                                  :showCategoryLabel="false" />
+                                    </div>
+                                </TransitionVerticalCollapse>
+                            </div>
                         </div>
                         <RockButton :btnType="BtnType.Action"
                                     :btnSize="BtnSize.ExtraSmall"
@@ -521,6 +517,13 @@
 
 :deep(.is-drag-over) {
     display: none;
+}
+
+.filter-container {
+    max-height: 400px;
+    overflow: hidden;
+    overflow-y: auto;
+    padding-right: var(--spacing-xsmall);
 }
 </style>
 

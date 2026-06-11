@@ -122,7 +122,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import ShorthandPixelBox from "../shorthandPixelBox.partial.obs";
     import HorizontalAlignmentPicker from "../horizontalAlignmentPicker.partial.obs";
-    import { UsageType } from "../types";
+    import { UsageType } from "../types.partial";
 
     const props = defineProps({
         buttonGlobalProps: {

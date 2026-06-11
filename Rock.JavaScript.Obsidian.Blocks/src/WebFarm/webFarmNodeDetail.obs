@@ -57,6 +57,7 @@
     import { WebFarmNodeBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmNodeDetail/webFarmNodeBag";
     import { WebFarmNodeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmNodeDetail/webFarmNodeDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
     const config = useConfigurationValues<DetailBlockBox<WebFarmNodeBag, WebFarmNodeDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -107,7 +108,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<void> {
-        resetKey.value = "reset-errors";
+        resetKey.value = newGuid();
         panelMode.value = DetailPanelMode.View;
     }
 

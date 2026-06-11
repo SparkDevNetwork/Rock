@@ -1,0 +1,97 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <SlidingDateRangePicker v-model="dateRange" label="Date Range" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <CheckBox v-model="showUnassignedDevices" label="Show Unassigned Devices" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox v-model="presentDevices" label="Present Devices Only" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        defaultSlidingDateRange: {
+            type: Object as PropType<SlidingDateRange>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const dateRange = ref<SlidingDateRange | null>(props.modelValue.dateRange ?? props.defaultSlidingDateRange);
+    const showUnassignedDevices = ref<boolean>(props.modelValue.showUnassignedDevices);
+    const presentDevices = ref<boolean>(props.modelValue.presentDevices);
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            dateRange: dateRange.value,
+            showUnassignedDevices: showUnassignedDevices.value,
+            presentDevices: presentDevices.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        dateRange.value = props.modelValue.dateRange ?? props.defaultSlidingDateRange;
+        showUnassignedDevices.value = props.modelValue.showUnassignedDevices;
+        presentDevices.value = props.modelValue.presentDevices;
+    });
+
+    watch(dateRange, () => {
+        if (!dateRange.value) {
+            dateRange.value = props.defaultSlidingDateRange;
+        }
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

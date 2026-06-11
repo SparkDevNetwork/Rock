@@ -18,7 +18,7 @@ import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
-import { ConfigurationValueKey } from "./componentField.partial";
+import { ConfigurationKey } from "./componentField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export const EditComponent = defineComponent({
@@ -36,7 +36,7 @@ export const EditComponent = defineComponent({
 
         // The selected container type configuration value.
         const container = computed((): string => {
-            const container = props.configurationValues[ConfigurationValueKey.Container];
+            const container = props.configurationValues[ConfigurationKey.Container];
             return container;
         });
 
@@ -91,10 +91,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.Container] = containerType.value;
+            newValue[ConfigurationKey.Container] = containerType.value;
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.Container] !== (props.modelValue[ConfigurationValueKey.Container]);
+            const anyValueChanged = newValue[ConfigurationKey.Container] !== (props.modelValue[ConfigurationKey.Container]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -121,13 +121,13 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            containerType.value = props.modelValue[ConfigurationValueKey.Container];
+            containerType.value = props.modelValue[ConfigurationKey.Container];
         }, {
             immediate: true
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(containerType, () => maybeUpdateConfiguration(ConfigurationValueKey.Container, containerType.value));
+        watch(containerType, () => maybeUpdateConfiguration(ConfigurationKey.Container, containerType.value));
 
         return {
             containerType,

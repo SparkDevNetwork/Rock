@@ -387,13 +387,14 @@ namespace Rock.CheckIn.v2
         }
 
         /// <summary>
-        /// Gets the current attendance query for the date specified. This
-        /// includes pending attendance records.
+        /// Gets the attendance query for the date specified. This includes
+        /// all attendance records related to check-in, including pending and
+        /// previous service records.
         /// </summary>
         /// <param name="startDateTime">Attendance records must start on this date.</param>
         /// <param name="rockContext">The database context to execute the query on.</param>
         /// <returns>A queryable of <see cref="Attendance"/> records.</returns>
-        public static IQueryable<Attendance> GetCurrentAttendanceQuery( DateTime startDateTime, RockContext rockContext )
+        public static IQueryable<Attendance> GetDailyAttendanceQuery( DateTime startDateTime, RockContext rockContext )
         {
             var attendanceService = new AttendanceService( rockContext );
 
@@ -405,8 +406,7 @@ namespace Rock.CheckIn.v2
                     && a.Occurrence.ScheduleId.HasValue
                     && a.PersonAliasId.HasValue
                     && a.DidAttend.HasValue
-                    && a.DidAttend.Value == true
-                    && !a.EndDateTime.HasValue );
+                    && a.DidAttend.Value == true );
         }
 
         /// <summary>
@@ -419,11 +419,39 @@ namespace Rock.CheckIn.v2
         /// <returns>A collection of <see cref="RecentAttendance"/> records.</returns>
         public static List<RecentAttendance> GetCurrentAttendance( DateTime startDateTime, IReadOnlyList<int> locationIds, RockContext rockContext )
         {
-            var personAttendanceQuery = GetCurrentAttendanceQuery( startDateTime, rockContext );
+            var personAttendanceQuery = GetDailyAttendanceQuery( startDateTime, rockContext );
 
             personAttendanceQuery = WhereContains( personAttendanceQuery, locationIds, a => a.Occurrence.Location.Id );
 
-            return GetRecentAttendanceFromQuery( personAttendanceQuery );
+            var attendance = GetRecentAttendanceFromQuery( personAttendanceQuery );
+
+            return FilterToCurrentlyCheckedIn( attendance, rockContext ).ToList();
+        }
+
+        /// <summary>
+        /// Filters a set of recent attendance records to return only those which
+        /// are currently checked in based on the schedule and the attendance
+        /// status. Specifically, this will filter out records if they have been
+        /// marked as checked out or if their schedule has already ended.
+        /// </summary>
+        /// <param name="attendances">The records to filter.</param>
+        /// <param name="rockContext">The context to use when reading information from the database.</param>
+        /// <returns>A set of recent attendance records that have been filtered to just those that are currently checked in.</returns>
+        public static IEnumerable<RecentAttendance> FilterToCurrentlyCheckedIn( IEnumerable<RecentAttendance> attendances, RockContext rockContext )
+        {
+            return attendances
+                .Where( a => a.Status != Enums.Event.CheckInStatus.CheckedOut
+                    && !a.EndDateTime.HasValue )
+                .GroupBy( a => new { a.ScheduleId, a.CampusId } )
+                .SelectMany( grp =>
+                {
+                    // The vast majority of attendance records for a single
+                    // location should have the same schedule and campus.
+                    var scheduleCache = NamedScheduleCache.GetByIdKey( grp.Key.ScheduleId, rockContext );
+                    var campusCache = CampusCache.GetByIdKey( grp.Key.CampusId, rockContext );
+
+                    return grp.Where( a => Attendance.CalculateIsCurrentlyCheckedIn( a.StartDateTime, a.EndDateTime, campusCache, scheduleCache ) );
+                } );
         }
 
         /// <summary>

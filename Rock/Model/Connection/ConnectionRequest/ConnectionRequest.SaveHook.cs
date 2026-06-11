@@ -15,11 +15,15 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Data;
+using Rock.Enums.Connection;
 using Rock.Tasks;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -66,6 +70,7 @@ namespace Rock.Model
                 var connectionRequest = this.Entity as ConnectionRequest;
 
                 var rockContext = ( RockContext ) this.RockContext;
+
                 var connectionOpportunity = connectionRequest.ConnectionOpportunity;
                 if ( connectionOpportunity == null )
                 {
@@ -78,6 +83,12 @@ namespace Rock.Model
                     this.Entity.ConnectionTypeId = connectionOpportunity.ConnectionTypeId;
                 }
 
+                var connectionTypeCache = ConnectionTypeCache.Get( this.Entity.ConnectionTypeId );
+
+                int dueOffsetDays = 0;
+                int dueSoonOffsetDays = 0;
+                DateTime currentDateTime = RockDateTime.Now;
+
                 switch ( State )
                 {
                     case EntityContextState.Added:
@@ -88,9 +99,55 @@ namespace Rock.Model
                             History.EvaluateChange( HistoryChangeList, "ConnectionStatus", string.Empty, History.GetValue<ConnectionStatus>( connectionRequest.ConnectionStatus, connectionRequest.ConnectionStatusId, rockContext ) );
                             History.EvaluateChange( HistoryChangeList, "ConnectionState", null, connectionRequest.ConnectionState );
                             PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnectionRequestAdded, History.HistoryChangeType.Record, connectionOpportunity.Name );
+
+                            if ( connectionTypeCache.DueDateCalculationMode == DueDateCalculationMode.FixedDaysFromStartTypeLevel )
+                            {
+                                dueOffsetDays = connectionTypeCache.RequestDueDateOffsetInDays ?? 0;
+                                dueSoonOffsetDays = connectionTypeCache.RequestDueSoonOffsetInDays ?? 0;
+                            }
+                            else if ( connectionTypeCache.DueDateCalculationMode == DueDateCalculationMode.FixedDaysFromStartOpportunityLevel )
+                            {
+                                dueOffsetDays = connectionOpportunity.RequestDueSoonOffsetInDays ?? 0;
+                                dueSoonOffsetDays = connectionOpportunity.RequestDueSoonOffsetInDays ?? 0;
+                            }
+                            else
+                            {
+                                var connectionStatus = new ConnectionStatusService( RockContext ).Get( this.Entity.ConnectionStatusId );
+
+                                dueOffsetDays = connectionStatus.RequestStatusDueDateOffsetInDays ?? 0;
+                                dueSoonOffsetDays = connectionStatus.RequestStatusDueSoonOffsetInDays ?? 0;
+                            }
+
+                            this.Entity.DueDate = currentDateTime.AddDays( dueOffsetDays );
+                            this.Entity.DueSoonDate = currentDateTime.AddDays( dueSoonOffsetDays );
+
                             if ( connectionRequest.ConnectionState == ConnectionState.Connected )
                             {
                                 PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnectionRequestConnected, History.HistoryChangeType.Record, connectionOpportunity.Name );
+                                this.Entity.WasCompletedOnTime = !this.Entity.DueDate.HasValue || currentDateTime <= this.Entity.DueDate;
+                            }
+
+                            // For new requests placed at the front of the list (Order = 0), avoid the
+                            // PostSave bulk-update that shifts every sibling record — which causes severe
+                            // row-level lock contention under concurrent load. Instead, compute a new
+                            // Order value for this record that places it before all existing records
+                            // without touching any of them. When the existing minimum Order is already
+                            // 0 or negative, decrement by 1 so this record sorts first; otherwise the
+                            // default Order of 0 is already before all siblings and no change is needed.
+                            if ( connectionRequest.Order == 0 )
+                            {
+                                var minExistingOrder = new ConnectionRequestService( rockContext )
+                                    .Queryable()
+                                    .Where( r =>
+                                        r.ConnectionStatusId == connectionRequest.ConnectionStatusId &&
+                                        r.ConnectionOpportunityId == connectionRequest.ConnectionOpportunityId )
+                                    .Select( r => ( int? ) r.Order )
+                                    .Min();
+
+                                if ( minExistingOrder.HasValue && minExistingOrder.Value <= 0 )
+                                {
+                                    connectionRequest.Order = minExistingOrder.Value - 1;
+                                }
                             }
 
                             break;
@@ -111,7 +168,67 @@ namespace Rock.Model
                                 string connectionStatus = History.GetValue<ConnectionStatus>( connectionRequest.ConnectionStatus, connectionRequest.ConnectionStatusId, rockContext );
                                 History.EvaluateChange( HistoryChangeList, "ConnectionStatus", origConnectionStatus, connectionStatus );
                                 PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnectionRequestStatusModify, History.HistoryChangeType.Record, connectionOpportunity.Name );
+
+                                var newConnectionStatus = new ConnectionStatusService( RockContext ).Get( this.Entity.ConnectionStatusId );
+
+                                if ( newConnectionStatus.AutoInactivateState && this.Entity.ConnectionState != ConnectionState.Inactive )
+                                {
+                                    this.Entity.ConnectionState = ConnectionState.Inactive;
+                                }
+
+                                if ( connectionTypeCache.EnableFutureFollowup && newConnectionStatus.AutoFutureFollowUpPauseInDays.HasValue && newConnectionStatus.AutoFutureFollowUpPauseInDays.Value > 0 )
+                                {
+                                    this.Entity.ConnectionState = ConnectionState.FutureFollowUp;
+                                    this.Entity.FollowupDate = currentDateTime.AddDays( newConnectionStatus.AutoFutureFollowUpPauseInDays.Value );
+                                }
+
+                                // If the connection type is configured to calculate due dates based on status then we need to update the connection request due dates based on the new status.
+                                if ( connectionTypeCache.DueDateCalculationMode == DueDateCalculationMode.DurationPerStatus )
+                                {
+                                    dueOffsetDays = newConnectionStatus.RequestStatusDueDateOffsetInDays ?? 0;
+                                    dueSoonOffsetDays = newConnectionStatus.RequestStatusDueSoonOffsetInDays ?? 0;
+
+                                    this.Entity.DueDate = currentDateTime.AddDays( dueOffsetDays );
+                                    this.Entity.DueSoonDate = currentDateTime.AddDays( dueSoonOffsetDays );
+                                }
+
+                                if ( originalConnectionStatusId.HasValue )
+                                {
+                                    var historyService = new ConnectionRequestStatusHistoryService( rockContext );
+
+                                    // previous history row for this request (if any)
+                                    var prevHistory = historyService.Queryable()
+                                        .Where( h => h.ConnectionRequestId == this.Entity.Id )
+                                        .OrderByDescending( h => h.EndDateTime )
+                                        .Select( h => new { h.EndDateTime, h.ConnectionStatusId } )
+                                        .FirstOrDefault();
+
+                                    // start is previous history end, else created, else now
+                                    var start = prevHistory?.EndDateTime
+                                        ?? this.Entity.CreatedDateTime
+                                        ?? currentDateTime;
+
+                                    historyService.Add( new ConnectionRequestStatusHistory
+                                    {
+                                        ConnectionRequestId = this.Entity.Id,
+                                        // log the status that ended (which is the original status, not the new status)
+                                        ConnectionStatusId = originalConnectionStatusId.Value,
+                                        StartDateTime = start,
+                                        EndDateTime = currentDateTime,
+                                        CompletedByPersonAliasId = rockContext.GetCurrentPersonAliasId(),
+                                        WasCompletedOnTime = currentDateTime < this.Entity.DueDate,
+                                        Note = this.Entity.ConnectionStatusHistoryNote,
+                                        // chain to the previously-ended status (null for first entry)
+                                        PreviousConnectionStatusId = prevHistory?.ConnectionStatusId
+                                    } );
+                                }
                             }
+
+                            DateTime? originalDueDate = Entry.OriginalValues[nameof( ConnectionRequest.DueDate )].ToStringSafe().AsDateTime();
+                            History.EvaluateChange( HistoryChangeList, "DueDate", originalDueDate, connectionRequest.DueDate );
+
+                            DateTime? originalDueSoonDate = Entry.OriginalValues[nameof( ConnectionRequest.DueSoonDate )].ToStringSafe().AsDateTime();
+                            History.EvaluateChange( HistoryChangeList, "DueSoonDate", originalDueSoonDate, connectionRequest.DueSoonDate );
 
                             var originalConnectionState = Entry.OriginalValues[nameof( ConnectionRequest.ConnectionState )].ToStringSafe().ConvertToEnum<ConnectionState>();
                             History.EvaluateChange( HistoryChangeList, "ConnectionState", Entry.OriginalValues[nameof( ConnectionRequest.ConnectionState )].ToStringSafe().ConvertToEnum<ConnectionState>(), connectionRequest.ConnectionState );
@@ -120,6 +237,8 @@ namespace Rock.Model
                                 if ( connectionRequest.ConnectionState == ConnectionState.Connected )
                                 {
                                     PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnectionRequestConnected, History.HistoryChangeType.Record, connectionOpportunity.Name );
+                                    this.Entity.WasCompletedOnTime = !this.Entity.DueDate.HasValue || currentDateTime <= this.Entity.DueDate;
+                                    this.Entity.ConnectedDateTime = RockDateTime.Now;
                                 }
                                 else
                                 {
@@ -164,29 +283,28 @@ namespace Rock.Model
                     Entity.ConnectionStatus = new ConnectionStatusService( rockContext ).Get( Entity.ConnectionStatusId );
                 }
 
-                if ( Entity.ConnectionStatus != null && Entity.ConnectionStatus.AutoInactivateState && Entity.ConnectionState != ConnectionState.Inactive )
-                {
-                    Entity.ConnectionState = ConnectionState.Inactive;
-                    rockContext.SaveChanges();
-                }
-
                 switch ( State )
                 {
                     case EntityContextState.Added:
                         {
-                            var connectionRequestService = new ConnectionRequestService( rockContext );
-                            var requestsOfStatus = connectionRequestService.Queryable()
-                            .Where( r =>
-                                r.ConnectionStatusId == connectionRequest.ConnectionStatusId &&
-                                r.ConnectionOpportunityId == connectionRequest.ConnectionOpportunityId &&
-                                r.Id != connectionRequest.Id );
-
+                            // When Order > 0 the record was explicitly inserted at a specific position
+                            // (a user-initiated reorder, not a high-frequency concurrent operation),
+                            // so shift sibling records at or above that position to make room.
+                            // When Order <= 0 the correct Order was already calculated in PreSave by
+                            // decrementing the existing minimum, so no sibling rows need to be updated.
                             if ( connectionRequest.Order > 0 )
                             {
-                                requestsOfStatus = requestsOfStatus.Where( r => r.Order >= connectionRequest.Order );
+                                var connectionRequestService = new ConnectionRequestService( rockContext );
+                                var requestsOfStatus = connectionRequestService.Queryable()
+                                    .Where( r =>
+                                        r.ConnectionStatusId == connectionRequest.ConnectionStatusId &&
+                                        r.ConnectionOpportunityId == connectionRequest.ConnectionOpportunityId &&
+                                        r.Id != connectionRequest.Id &&
+                                        r.Order >= connectionRequest.Order );
+
+                                rockContext.BulkUpdate( requestsOfStatus, r => new ConnectionRequest { Order = r.Order + 1, ModifiedDateTime = r.ModifiedDateTime } );
                             }
 
-                            rockContext.BulkUpdate( requestsOfStatus, r => new ConnectionRequest { Order = r.Order + 1, ModifiedDateTime = r.ModifiedDateTime } );
                             break;
                         }
                     case EntityContextState.Deleted:

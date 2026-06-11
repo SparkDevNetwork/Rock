@@ -176,6 +176,16 @@ namespace Rock.Model
         [DataMember]
         public DateTime? DueDate { get; set; }
 
+        /// <summary>
+        /// Gets the current calculated state of the group member requirement.
+        ///
+        /// Note: Normally, properties of this type are named to match the name of their enum. In this case, GroupMemberRequirementState was chosen for improved clarity and
+        /// readability when used throughout the codebase.
+        /// </summary>
+        [DataMember]
+        [Required]
+        public MeetsGroupRequirement GroupMemberRequirementState { get; private set; }
+
         #endregion
 
         #region Navigation Properties
@@ -231,6 +241,27 @@ namespace Rock.Model
         /// The overridden by person alias.
         /// </value>
         public virtual PersonAlias OverriddenByPersonAlias { get; set; }
+
+        #endregion
+
+        #region Internal Methods
+
+        internal void UpdateGroupMemberRequirementState()
+        {
+            if ( WasOverridden || WasManuallyCompleted || ( RequirementMetDateTime.HasValue && !RequirementWarningDateTime.HasValue ) )
+            {
+                GroupMemberRequirementState = MeetsGroupRequirement.Meets;
+                return;
+            }
+
+            if ( RequirementWarningDateTime.HasValue )
+            {
+                GroupMemberRequirementState = MeetsGroupRequirement.MeetsWithWarning;
+                return;
+            }
+
+            GroupMemberRequirementState = MeetsGroupRequirement.NotMet;
+        }
 
         #endregion
     }

@@ -35,7 +35,7 @@ namespace Rock.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Lists all reports under a specified report category." )]
     [IconCssClass( "ti ti-list" )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [CategoryField( "Report Category",
         Description = "Category to use to list reports for.",
@@ -52,7 +52,8 @@ namespace Rock.Blocks.Reporting
         Order = 1 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "084e3594-e399-4639-8461-88333399cba2" )]
-    [Rock.SystemGuid.BlockTypeGuid( "7c01525c-2fcc-4f0b-a9b5-25e8146af0d7" )]
+    // Was [Rock.SystemGuid.BlockTypeGuid( "7c01525c-2fcc-4f0b-a9b5-25e8146af0d7" )]
+    [Rock.SystemGuid.BlockTypeGuid( "37D29989-F7CA-4D51-925A-378DB73ED53D" )]
     [CustomizedGrid]
     public class ReportList : RockEntityListBlockType<Report>
     {

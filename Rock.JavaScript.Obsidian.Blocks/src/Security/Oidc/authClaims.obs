@@ -1,0 +1,256 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <template v-if="config.options?.isBlockVisible !== false">
+        <NotificationBox v-if="config.options?.errorMessage" :alertType="AlertType.Danger">
+            {{ config.options.errorMessage }}
+        </NotificationBox>
+
+        <template v-else>
+            <Grid :definition="config.gridDefinition ?? undefined"
+                  :data="gridDataSource"
+                  keyField="idKey"
+                  title="OpenID Connect Claims"
+                  itemTerm="Claim"
+                  :entityTypeGuid="EntityType.AuthClaim"
+                  stickyHeader
+                  liveUpdates
+                  :showLaunchWorkflow="false"
+                  :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+                  @selectItem="onSelectItem">
+
+                <TextColumn name="name"
+                            title="Name"
+                            field="name"
+                            :filter="textValueFilter"
+                            visiblePriority="xs"
+                            width="35%" />
+
+                <TextColumn name="publicName"
+                            title="Public Name"
+                            field="publicName"
+                            :filter="textValueFilter"
+                            visiblePriority="xs"
+                            width="45%" />
+
+                <BooleanColumn name="isActive"
+                               title="Active"
+                               field="isActive"
+                               :filter="booleanValueFilter"
+                               visiblePriority="xs"
+                               width="10%" />
+
+                <BooleanColumn name="isSystem"
+                               title="System"
+                               field="isSystem"
+                               :filter="booleanValueFilter"
+                               visiblePriority="xs"
+                               width="10%" />
+
+                <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+            </Grid>
+
+            <Modal v-model="isModalVisible" :title="`${idKey ? 'Edit' : 'Add'} Claim`" saveText="Save" @save="onSave">
+                <NotificationBox v-if="validationErrorMessage" :alertType="AlertType.Danger">
+                    {{ validationErrorMessage }}
+                </NotificationBox>
+
+                <NotificationBox v-if="isSystem" :alertType="AlertType.Info">
+                    <strong>Note</strong> Because this auth claim is used by Rock, editing is restricted.
+                </NotificationBox>
+
+                <div class="row">
+                    <div class="col-sm-6">
+                        <TextBox v-model="claimName"
+                                 label="Name"
+                                 rules="required"
+                                 :maxLength="50"
+                                 :disabled="isSystem" />
+                    </div>
+                    <div class="col-sm-6">
+                        <CheckBox v-model="isActive"
+                                  label="Active"
+                                  :disabled="isSystem" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="publicName"
+                                 label="Public Name"
+                                 :maxLength="100" />
+                    </div>
+                    <div v-if="!isSystem" class="col-md-6">
+                        <CodeEditor v-model="claimValue"
+                                    label="Value"
+                                    mode="lava"
+                                    help="Claim value that should be returned when this claim is requested.<span class='tip tip-lava'></span>." />
+                    </div>
+                </div>
+            </Modal>
+        </template>
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { reactive, ref } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, booleanValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { AuthClaimsOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/AuthClaims/authClaimsOptionsBag";
+    import { AuthClaimBag } from "@Obsidian/ViewModels/Blocks/Security/AuthClaims/authClaimBag";
+    import { AuthClaimRequestBag } from "@Obsidian/ViewModels/Blocks/Security/AuthClaims/authClaimRequestBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+
+    const config = useConfigurationValues<ListBlockBox<AuthClaimsOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isModalVisible = ref(false);
+    const idKey = ref("");
+    const claimName = ref("");
+    const publicName = ref("");
+    const claimValue = ref("");
+    const isActive = ref(true);
+    const isSystem = ref(false);
+    const validationErrorMessage = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Initializes the modal form values from the given claim bag.
+     *
+     * @param claim The claim bag to populate the modal with, or null for a new claim.
+     */
+    function initializeModalValues(claim: AuthClaimBag | null): void {
+        idKey.value = claim?.idKey ?? "";
+        claimName.value = claim?.name ?? "";
+        publicName.value = claim?.publicName ?? "";
+        claimValue.value = claim?.value ?? "";
+        isActive.value = claim?.isActive ?? true;
+        isSystem.value = claim?.isSystem ?? false;
+        validationErrorMessage.value = "";
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when the Add button has been clicked by the individual.
+     */
+    function onAddItem(): void {
+        initializeModalValues(null);
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    async function onSelectItem(key: string): Promise<void> {
+        const result = await invokeBlockAction<AuthClaimBag>("GetAuthClaimBag", {
+            key
+        });
+
+        if (result.isSuccess && result.data) {
+            initializeModalValues(result.data);
+            isModalVisible.value = true;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to load claim details.");
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete claim.");
+        }
+    }
+
+    /**
+     * Called when the Save button in the modal has been clicked.
+     */
+    async function onSave(): Promise<void> {
+        validationErrorMessage.value = "";
+
+        if (!isSystem.value && claimName.value && !/^[a-zA-Z0-9_]*$/.test(claimName.value)) {
+            validationErrorMessage.value = "Only alphanumeric and underscore characters can be used for the claim name.";
+            return;
+        }
+
+        const bag: AuthClaimRequestBag = {
+            idKey: idKey.value,
+            name: claimName.value,
+            publicName: publicName.value,
+            value: claimValue.value,
+            isActive: isActive.value
+        };
+
+        const result = await invokeBlockAction<string>("Save", {
+            bag
+        });
+
+        if (result.isSuccess) {
+            gridDataSource.value = loadGridData();
+            isModalVisible.value = false;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to save claim.");
+        }
+    }
+
+    // #endregion Event Handlers
+
+    gridDataSource.value = loadGridData();
+</script>

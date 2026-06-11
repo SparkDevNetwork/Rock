@@ -1,0 +1,467 @@
+<template>
+    <RockFormField :modelValue="modelValue"
+                   name="textbox"
+                   v-bind="fieldProps"
+                   :rules="rules"
+                   :formGroupClasses="'rock-pill-list ' + formGroupClasses">
+        <div class="pill-list-root styled-scroll" tabindex="0">
+            <div ref="mainRef" class="pill-list-main">
+                <div ref="containerRef"
+                     class="pill-row"
+                     v-show="!isExpanded && !isCollapsing">
+                    <template v-for="(item, index) in visibleItems" :key="index">
+                        <slot name="item"
+                              :item="item"
+                              :index="index"
+                              :disabled="disabled"
+                              :canRemove="canRemove"
+                              :remove="() => $emit('remove', item, index)"
+                              emptyValue="&nbsp;">
+                            <Pill :disabled="disabled"
+                                  :canRemove="canRemove"
+                                  @remove="$emit('remove', item, index)">
+                                <slot name="itemContent" :item="item" emptyValue="&nbsp;">{{ item || '&nbsp;' }}</slot>
+                            </Pill>
+                        </slot>
+                    </template>
+
+                    <div ref="overflowRef"
+                         class="overflow-indicator"
+                         v-show="isOverflowIndicatorShown">
+                        <Pill :disabled="disabled">{{ modelValue.length - visibleItems.length }} more</Pill>
+                    </div>
+                </div>
+
+                <TransitionVerticalCollapse @transitionStart="isExpandCollapsing = true" @transitionEnd="isExpandCollapsing = false">
+                    <div v-show="isExpanded" class="expanded-container" :style="{ maxHeight: expandedMaxHeight }">
+                        <div class="expanded-list">
+                            <template v-for="(item, index) in modelValue" :key="index">
+                                <slot name="item"
+                                      :item="item"
+                                      :index="index"
+                                      :disabled="disabled"
+                                      :canRemove="canRemove"
+                                      :remove="() => $emit('remove', item, index)"
+                                      emptyValue="&nbsp;">
+                                    <Pill :disabled="disabled"
+                                          :canRemove="canRemove"
+                                          @remove="$emit('remove', item, index)">
+                                        <slot name="itemContent" :item="item" emptyValue="&nbsp;">{{ item || '&nbsp;' }}</slot>
+                                    </Pill>
+                                </slot>
+                            </template>
+                        </div>
+                    </div>
+                </TransitionVerticalCollapse>
+            </div>
+
+            <div ref="controlRef" class="pill-list-controls">
+                <div class="add-button">
+                    <RockButton v-show="canAdd"
+                                aria-label="Add"
+                                btnSize="sm"
+                                btnType="link"
+                                :disabled="disabled || addDisabled"
+                                isSquare
+                                @click="onAdd">
+                        <i class="ti ti-square-plus"></i>
+                    </RockButton>
+                </div>
+                <div class="expand-button">
+                    <RockButton v-show="canExpand && (hiddenCount > 0 || isExpanded)"
+                                :aria-label="isExpanded ? 'Collapse' : 'Expand'"
+                                btnSize="sm"
+                                btnType="link"
+                                isSquare
+                                @click="isExpanded ? onCollapse() : onExpand()">
+                        <i :class="isExpanded ? 'ti ti-chevrons-up' : 'ti ti-chevrons-down'"></i>
+                    </RockButton>
+                </div>
+            </div>
+
+            <div ref="measureRef" class="measure-row">
+                <template v-for="(item, index) in measureItems" :key="index">
+                    <slot name="item"
+                          :item="item"
+                          :index="index"
+                          :disabled="disabled"
+                          :canRemove="canRemove"
+                          emptyValue="&nbsp;"
+                          :remove="() => $emit('remove', item, index)">
+                        <Pill :disabled="disabled"
+                              :canRemove="canRemove">
+                            <slot name="itemContent" :item="item" emptyValue="&nbsp;">{{ item || '&nbsp;' }}</slot>
+                        </Pill>
+                    </slot>
+                </template>
+
+                <div ref="measureOverflowRef" class="overflow-indicator">
+                    <Pill :disabled="disabled">{{ props.modelValue.length }} more</Pill>
+                </div>
+            </div>
+        </div>
+    </RockFormField>
+</template>
+
+<style scoped>
+.pill-list-root {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    column-gap: var(--spacing-xsmall);
+    align-items: center;
+    width: 100%;
+
+    padding: var(--spacing-xsmall);
+    border-radius: var(--rounded-xsmall);
+    border: 1px solid var(--color-interface-soft);
+    background: var(--color-interface-softest);
+    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+}
+
+.pill-list-root:focus,
+.pill-list-root:focus-within {
+    border: var(--focus-state-border);
+    box-shadow: var(--focus-state-shadow);
+    outline: none;
+}
+
+.rock-pill-list.has-error .pill-list-root {
+    border: 1px solid var(--color-danger-strong);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}
+
+.pill-list-main {
+    min-width: 0;
+    overflow: hidden;
+}
+
+.pill-list-controls {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-self: start;
+}
+
+.expand-button .btn {
+    color: var(--color-interface-strongest);
+}
+
+.add-button .btn {
+    color: var(--color-info-strong);
+}
+
+.pill-row {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    white-space: nowrap;
+
+    /* Add a minimum height when there is no item to display so the field doesn't collapse */
+    min-height: var(--spacing-medium);
+}
+
+.expanded-container {
+    overflow-y: auto;
+    padding-right: var(--spacing-xsmall);
+}
+
+.expanded-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xsmall);
+}
+
+.overflow-indicator {
+    flex: 0 0 auto;
+    display: inline-flex;
+    white-space: nowrap;
+    gap: var(--spacing-xsmall);
+}
+
+.measure-row {
+    position: absolute;
+    visibility: hidden;
+    white-space: nowrap;
+    height: 0;
+    overflow: hidden;
+
+    display: flex;
+    flex-wrap: nowrap;
+    gap: var(--spacing-xsmall);
+}
+</style>
+
+<script setup lang="ts" generic="T">
+    import { computed, nextTick, onMounted, onBeforeUnmount, PropType, ref, watch } from "vue";
+    import Pill from "./pill.obs";
+    import RockButton from "./rockButton.obs";
+    import RockFormField from "./rockFormField.obs";
+    import TransitionVerticalCollapse from "./transitionVerticalCollapse.obs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        ...standardRockFormFieldProps,
+
+        /**
+         * The items to display in the pill list.
+         */
+        modelValue: {
+            type: Array as PropType<T[]>,
+            required: true
+        },
+
+        /**
+         * Whether the add button should be shown.
+         *
+         * @remarks This button does not have any built-in behavior besides emitting the "add" event.
+         */
+        canAdd: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Whether the button to expand/collapse should be shown
+         * to allow the user to expand the list to show all items.
+         */
+        canExpand: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Whether each pill should have a remove button.
+         *
+         * @remarks The remove button does not have any built-in behavior besides emitting the "remove" event with the item being removed.
+         */
+        canRemove: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Whether the add button should be disabled.
+         */
+        addDisabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Whether the pill list is disabled.
+         */
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * The maximum height of the expanded list.
+         */
+        expandedMaxHeight: {
+            type: String as PropType<string>,
+            default: "250px"
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: T[]): void;
+        (e: "add"): void;
+        (e: "remove", item: T, index: number): void;
+    }>();
+
+    const fieldProps = useStandardRockFormFieldProps(props);
+
+    // This is used to limit the number of items we measure to improve performance
+    // and keep the calculations scalable.
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const MEASURE_SAMPLE_SIZE = 25;
+
+    // #region Values
+
+    // References to DOM elements needed for measuring available space.
+    // The available space is then used to determine how many items can be shown
+    // before needing to collapse the list.
+    const containerRef = ref<HTMLElement | undefined>();
+    const mainRef = ref<HTMLElement | undefined>();
+    const measureOverflowRef = ref<HTMLElement | undefined>();
+    const measureRef = ref<HTMLElement | undefined>();
+    const overflowRef = ref<HTMLElement | undefined>();
+    const controlRef = ref<HTMLElement | undefined>();
+
+    const isExpanded = ref<boolean>(false);
+    const visibleCount = ref<number>(props.modelValue.length);
+
+    let resizeObserver: ResizeObserver | undefined;
+    let resizeRafId: number | null = null;
+
+    const isExpandCollapsing = ref<boolean>(false);
+
+    // #region Computed Values
+
+    const visibleItems = computed<T[]>(() =>
+        props.modelValue.slice(0, visibleCount.value)
+    );
+
+    const hiddenCount = computed<number>(() =>
+        props.modelValue.length - visibleItems.value.length
+    );
+
+    const isOverflowIndicatorShown = computed<boolean>(() => {
+        return !isExpanded.value && hiddenCount.value > 0;
+    });
+
+    const measureItems = computed<T[]>(() => {
+        if (props.modelValue.length <= MEASURE_SAMPLE_SIZE) {
+            return props.modelValue;
+        }
+        else {
+            return props.modelValue.slice(0, MEASURE_SAMPLE_SIZE);
+        }
+    });
+
+    const isCollapsing = computed<boolean>(() => {
+        if (!isExpandCollapsing.value) {
+            return false;
+        }
+
+        return !isExpanded.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function getFlexGapPx(element: HTMLElement): number {
+        const style = getComputedStyle(element);
+        const gap = style.columnGap || style.gap;
+        return Number.parseFloat(gap) || 0;
+    }
+
+    function calculateVisibleItems(): void {
+        if (isExpanded.value) {
+            visibleCount.value = props.modelValue.length;
+            return;
+        }
+
+        const main = mainRef.value;
+        const container = containerRef.value;
+        const measure = measureRef.value;
+        if (!main || !container || !measure) {
+            return;
+        }
+
+        // Worst case overflow indicator width
+        const indicatorWidth = Math.max(
+            measureOverflowRef.value?.offsetWidth ?? 0,
+            overflowRef.value?.offsetWidth ?? 0
+        );
+
+        const gap = getFlexGapPx(container);
+
+        const availableWidth = Math.max(
+            0,
+            main.clientWidth - indicatorWidth - gap
+        );
+
+        let used = 0;
+        let count = 0;
+
+        const children = Array.from(measure.children) as HTMLElement[];
+
+        for (let i = 0; i < children.length && count < props.modelValue.length; i++) {
+            const w = children[i].offsetWidth;
+
+            const gapWidth = count > 0 ? gap : 0;
+
+            if (used + gapWidth + w > availableWidth) {
+                break;
+            }
+
+            used += gapWidth + w;
+            count++;
+        }
+
+        visibleCount.value = count;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    async function onExpand(): Promise<void> {
+        isExpanded.value = true;
+        await nextTick();
+        calculateVisibleItems();
+    }
+
+    async function onCollapse(): Promise<void> {
+        isExpanded.value = false;
+        await nextTick();
+        calculateVisibleItems();
+    }
+
+    function onAdd(): void {
+        emit("add");
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // Calculate visible items when:
+    // - the number of pills change
+    // - the expand button is shown/hidden
+    // - the add button is shown/hidden
+    // - the pill remove buttons are shown/hidden
+    watch(
+        [() => props.modelValue,
+        () => props.canExpand,
+        () => props.canAdd,
+        () => props.canRemove],
+        async () => {
+            await nextTick();
+            calculateVisibleItems();
+        },
+        { deep: true }
+    );
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onMounted(async () => {
+        resizeObserver = new ResizeObserver(() => {
+            if (resizeRafId !== null) {
+                // requestAnimationFrame is already a debounce mechanism,
+                // but cancel here just in case.
+                cancelAnimationFrame(resizeRafId);
+                resizeRafId = null;
+            }
+
+            resizeRafId = requestAnimationFrame(() => {
+                resizeRafId = null;
+                calculateVisibleItems();
+            });
+        });
+
+        if (containerRef.value) {
+            resizeObserver.observe(containerRef.value);
+        }
+
+        await nextTick();
+        calculateVisibleItems();
+    });
+
+    onBeforeUnmount(() => {
+        if (resizeRafId !== null) {
+            cancelAnimationFrame(resizeRafId);
+            resizeRafId = null;
+        }
+
+        resizeObserver?.disconnect();
+    });
+
+    // #endregion Hooks
+</script>

@@ -28,6 +28,8 @@ namespace Rock.Utility.CaptchaApi
     /// <summary>
     /// Cloudflare API calls
     /// </summary>
+    [Obsolete( "Cloudflare Turnstile is no longer supported in Rock. It has been replaced by a built-in CAPTCHA system in v19." )]
+    [RockObsolete( "19.0" )]
     public class CloudflareApi
     {
         private const string CLOUDFLARE_SERVER = "https://challenges.cloudflare.com";
@@ -50,9 +52,10 @@ namespace Rock.Utility.CaptchaApi
         /// </returns>
         public bool IsTurnstileTokenValid( string token )
         {
+#pragma warning disable CS0618
             var siteKey = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SITE_KEY );
             var secret = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SECRET_KEY );
-
+#pragma warning restore CS0618
             if ( string.IsNullOrWhiteSpace( siteKey ) || string.IsNullOrWhiteSpace( secret) )
             {
                 return true;
@@ -92,9 +95,10 @@ namespace Rock.Utility.CaptchaApi
         /// </returns>
         public async Task<bool> IsTurnstileTokenValidAsync( string token, string remoteIpAddress )
         {
+#pragma warning disable CS0618
             var siteKey = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SITE_KEY );
             var secret = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SECRET_KEY );
-
+#pragma warning restore CS0618
             if ( string.IsNullOrWhiteSpace( siteKey ) || string.IsNullOrWhiteSpace( secret ) )
             {
                 return true;

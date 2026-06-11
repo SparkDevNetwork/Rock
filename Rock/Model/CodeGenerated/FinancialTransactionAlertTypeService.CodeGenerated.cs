@@ -151,7 +151,10 @@ namespace Rock.Model
             target.Name = source.Name;
             target.Order = source.Order;
             target.RepeatPreventionDuration = source.RepeatPreventionDuration;
+            #pragma warning disable 612, 618
             target.RunDays = source.RunDays;
+            #pragma warning restore 612, 618
+            target.RunDaysOfWeek = source.RunDaysOfWeek;
             target.SendBusEvent = source.SendBusEvent;
             target.SystemCommunicationId = source.SystemCommunicationId;
             target.WorkflowTypeId = source.WorkflowTypeId;

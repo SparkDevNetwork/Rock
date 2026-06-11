@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
+using Rock.Enums;
+
 namespace Rock
 {
     /// <summary>
@@ -114,6 +116,32 @@ namespace Rock
 
             return null;
         }
+
+        /// <summary>
+        /// Gets the enum order. Returns null if the enum doesn't have a <see cref="EnumOrderAttribute"/>.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static int? GetOrder( this Enum value )
+        {
+            var attr = GetAttribute<EnumOrderAttribute>( value );
+
+            if ( attr != null )
+            {
+                return attr.Order;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the display name of an enum. If the enum has a Description
+        /// attribute then that value will be used. Otherwise the enum name
+        /// will be used with split case applied.
+        /// </summary>
+        /// <param name="value">The enum value.</param>
+        /// <returns>A string that represents the name of the enum value.</returns>
+        public static string GetDisplayName( this Enum value ) => value.GetDescription() ?? value.ConvertToString();
 
         /// <summary>
         /// Converts to int.

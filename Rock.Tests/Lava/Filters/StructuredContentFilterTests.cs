@@ -120,9 +120,9 @@ namespace Rock.Tests.Lava.Filters
 
             var mergeValues = new LavaDataDictionary { { "JsonString", jsonString } };
 
-            TestHelper.AssertTemplateOutput(expectedOutput,
+            TestHelper.AssertTemplateOutput( expectedOutput,
                 "{{ JsonString | RenderStructuredContentAsHtml }}",
-                mergeValues, true);
+                mergeValues, true );
         }
     }
 }

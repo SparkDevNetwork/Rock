@@ -15,24 +15,22 @@
 // </copyright>
 //
 
-using Rock.Attribute;
-using Rock.Communication;
-using Rock.Constants;
-using Rock.Crm.RecordSource;
-using Rock.Data;
-using Rock.Model;
-using Rock.Utility;
-using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Finance.FinancialPledgeEntry;
-using Rock.ViewModels.Utility;
-using Rock.Web.Cache;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
+using Rock.Attribute;
+using Rock.Communication;
+using Rock.Crm.RecordSource;
+using Rock.Data;
+using Rock.Model;
+using Rock.ViewModels.Blocks;
+using Rock.ViewModels.Blocks.Finance.FinancialPledgeEntry;
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Finance
 {
@@ -117,7 +115,6 @@ namespace Rock.Blocks.Finance
         Key = AttributeKey.ReceiptText,
         Description = "The text (or HTML) to display as the pledge receipt. <span class='tip tip-lava'></span> <span class='tip tip-html'>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         Order = 10,
         DefaultValue =
@@ -407,8 +404,7 @@ namespace Rock.Blocks.Finance
 
             if ( pledgeDateRange.IsNotNullOrWhiteSpace() )
             {
-                var dateRangePicker = new DateRangePicker() { DelimitedValues = pledgeDateRange };
-                var dateRange = dateRangePicker.DateRange;
+                var dateRange = DateRange.FromDelimitedValues( pledgeDateRange );
 
                 entityBag.StartDate = dateRange.Start;
                 entityBag.EndDate = dateRange.End;

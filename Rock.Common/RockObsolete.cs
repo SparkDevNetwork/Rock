@@ -19,7 +19,7 @@ using System;
 namespace Rock
 {
     /// <summary>
-    /// Marks the version at which an [Obsolete] item became obsolete. If the HotFix version matters then include it, otherwise only the major version is required (e.g. 1.8, 1.8.5, 1.9.1, 1.10 ).
+    /// Marks the version at which an [Obsolete] item became obsolete. If the HotFix version matters then include it, otherwise only the major version is required (e.g.  1.13, 18.0, 19.2).
     /// The process for this is:
     /// At the beginning of a new version, we might update [Obsolete]/[RockObsolete] methods as follows
     ///  + Last N public releases and develop: Warning
@@ -49,7 +49,7 @@ namespace Rock
         /// <summary>
         /// Initializes a new instance of the <see cref="RockObsolete"/> class.
         /// </summary>
-        /// <param name="version">The version when this became obsolete (for example, "1.10"). If the HotFix version matters then include it, otherwise only the major version is required (e.g. 1.8, 1.8.5, 1.9.1, 1.10 )</param>
+        /// <param name="version">The version when this became obsolete (for example, "19.0"). If the HotFix version matters then include it, otherwise only the major version is required (e.g. 18.0, 19.2)</param>
         public RockObsolete( string version )
         {
             Version = version;

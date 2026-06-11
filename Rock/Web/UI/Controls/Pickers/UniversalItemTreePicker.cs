@@ -45,7 +45,7 @@ $@"Rock.controls.itemPicker.initialize({{
     categoryPrefix: '',
     defaultText: '',
     expandedIds: [{InitialItemParentIds}],
-    showSelectChildren: false
+    showSelectChildren: {ShowSelectChildren.ToString().ToLower()}
 }});
 ";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-treeviewscript_" + this.ClientID, treeViewScript, true );

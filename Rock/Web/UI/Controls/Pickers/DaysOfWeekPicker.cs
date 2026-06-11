@@ -67,6 +67,8 @@ namespace Rock.Web.UI.Controls
         /// Gets the selected days of week as flags (bit per day of the week).
         /// </summary>
         /// <returns></returns>
+        [Obsolete( "This method is obsolete, use SelectedDaysOfWeek.AsFlags() instead." )]
+        [RockObsolete( "19.0" )]
         public DayOfWeekFlag SelectedDaysOfWeekAsFlags()
         {
             var flags = DayOfWeekFlag.None;

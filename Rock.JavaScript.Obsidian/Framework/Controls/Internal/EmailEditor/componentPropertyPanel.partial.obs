@@ -131,7 +131,7 @@
     import TitleComponentPropertyPanel from "./propertyPanels/titleComponentPropertyPanel.partial.obs";
     import VideoComponentPropertyPanel from "./propertyPanels/videoComponentPropertyPanel.partial.obs";
     import { ButtonGlobalProps, DividerGlobalProps, EditorComponentTypeName } from "./types.partial";
-    import { UsageType } from "./types";
+    import { UsageType } from "./types.partial";
     import { getComponentTypeName } from "./utils.partial";
     import { Guid } from "@Obsidian/Types";
     import { isHTMLElement } from "@Obsidian/Utility/dom";

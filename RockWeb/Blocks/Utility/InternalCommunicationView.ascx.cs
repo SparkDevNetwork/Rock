@@ -39,12 +39,28 @@ namespace RockWeb.Blocks.Utility
     [DisplayName( "Internal Communication View" )]
     [Category( "Utility" )]
     [Description( "Block for showing the contents of internal content channels." )]
-    [CodeEditorField( "Block Title Template", "Lava template for determining the title of the block.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, true, "Staff Updates <small>({{ Item.StartDateTime | Date:'sd' }})</small>", order: 0 )]
+
+    [CodeEditorField( "Block Title Template",
+        Description = "Lava template for determining the title of the block.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 100,
+        IsRequired = true,
+        DefaultValue = "Staff Updates <small>({{ Item.StartDateTime | Date:'sd' }})</small>",
+        Order = 0 )]
+
     [TextField( "Block Title Icon CSS Class", "The icon CSS class for use in the block title.", false, "ti ti-news", order: 1, key: "BlockTitleIconCssClass" )]
     [ContentChannelField( "Content Channel", "The content channel to display with the template. The contant channel must be of type 'Internal Communication Template'.", true, "", order: 2 )]
     [MetricCategoriesField( "Metrics", "Select the metrics you would like to display on the page.", false, "", order: 3 )]
     [IntegerField( "Metric Value Count", "The number of metric values to return per metric. You will always get the lastest value, but if you would like to return additional values (i.e. to create a chart) you can specify that here.", false, 0, order: 4 )]
-    [CodeEditorField( "Body Template", "The Lava template for rendering the body of the block.", CodeEditorMode.Less, CodeEditorTheme.Rock, 600, true, "d", order: 5 )]
+
+    [CodeEditorField( "Body Template",
+        Description = "The Lava template for rendering the body of the block.",
+        EditorMode = CodeEditorMode.Less,
+        EditorHeight = 600,
+        IsRequired = true,
+        DefaultValue = "d",
+        Order = 5 )]
+
     [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be made available to the block.", false, order: 6 )]
     [IntegerField( "Cache Duration", "The time, in seconds, to cache the data for this block. The Lava template will still be run to enable personalization. Only the data for the block will be cached.", false, 3600, order: 7 )]
     [CustomCheckboxListField( "Cache Tags", "Cached tags are used to link cached content so that it can be expired as a group", CACHE_TAG_LIST, false, key: "CacheTags", order: 10 )]

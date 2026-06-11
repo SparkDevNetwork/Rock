@@ -19,7 +19,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 import { Guid } from "@Obsidian/Types";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     Values = "values"
 }
 
@@ -50,7 +50,7 @@ export class ReminderTypeFieldType extends FieldTypeBase {
         }
 
         try {
-            const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ReminderTypeFieldItem[];
+            const values = JSON.parse(configurationValues[ConfigurationKey.Values] ?? "[]") as ReminderTypeFieldItem[];
             const selectedValues = values.filter(o => o.guid.toLowerCase() === value.toLowerCase());
 
             return selectedValues[0].name;

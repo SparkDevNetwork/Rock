@@ -142,7 +142,7 @@ namespace Rock.Field.Types
                         publicConfigurationValues[GROUP_TYPE_KEY] = new ListItemBag()
                         {
                             Text = groupType?.Name,
-                            Value = groupTypeValue
+                            Value = groupTypeGuid.ToString()
                         }.ToCamelCaseJson( false, true );
 
                         // If in Edit mode add GroupType if any so we get its locations.

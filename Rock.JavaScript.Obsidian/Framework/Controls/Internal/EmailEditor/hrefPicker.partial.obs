@@ -50,7 +50,7 @@
 
 <script setup lang="ts">
     import { nextTick, PropType, ref, watch } from "vue";
-    import { UsageType } from "./types";
+    import { UsageType } from "./types.partial";
     import { get } from "./utils.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";

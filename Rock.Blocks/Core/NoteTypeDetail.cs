@@ -189,7 +189,6 @@ namespace Rock.Blocks.Core
                 IsSystem = entity.IsSystem,
                 MaxReplyDepth = entity.MaxReplyDepth.ToStringSafe(),
                 Name = entity.Name,
-                RequiresApprovals = entity.RequiresApprovals,
                 UserSelectable = entity.UserSelectable,
                 ShowEntityTypePicker = true
             };
@@ -307,15 +306,11 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Bag.UserSelectable ),
                 () => entity.UserSelectable = box.Bag.UserSelectable );
 
-            box.IfValidProperty( nameof( box.Bag.RequiresApprovals ), () =>
-            {
-                entity.RequiresApprovals = box.Bag.RequiresApprovals;
-            } );
-
             var aiApprovalSettings = entity.GetAdditionalSettings<NoteType.AIApprovalSettings>();
 
             box.IfValidProperty( nameof( box.Bag.EnabledAIApprovals ), () =>
             {
+                entity.RequiresApprovals = box.Bag.EnabledAIApprovals;
                 aiApprovalSettings.EnabledAIApprovals = box.Bag.EnabledAIApprovals;
             } );
 

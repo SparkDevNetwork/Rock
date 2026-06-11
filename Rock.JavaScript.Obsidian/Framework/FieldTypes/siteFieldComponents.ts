@@ -18,7 +18,7 @@ import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
-import { ConfigurationValueKey } from "./siteField.partial";
+import { ConfigurationKey } from "./siteField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
 
@@ -38,7 +38,7 @@ export const EditComponent = defineComponent({
         // The Site Type options.
         const options = computed(() => {
             try {
-                return JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+                return JSON.parse(props.configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
             }
             catch {
                 return [];
@@ -82,6 +82,7 @@ export const ConfigurationComponent = defineComponent({
     ],
 
     setup(props, { emit }) {
+        const mobileSitesOnly = ref(false);
         const shorteningSitesOnly = ref(false);
 
         /**
@@ -97,10 +98,13 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.ShorteningSitesOnly] = asTrueOrFalseString(shorteningSitesOnly.value);
+            newValue[ConfigurationKey.ShorteningSitesOnly] = asTrueOrFalseString(shorteningSitesOnly.value);
+            newValue[ConfigurationKey.MobileSitesOnly] = asTrueOrFalseString(mobileSitesOnly.value);
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.ShorteningSitesOnly] !== (asTrueOrFalseString(props.modelValue[ConfigurationValueKey.ShorteningSitesOnly]));
+            const anyValueChanged =
+                newValue[ConfigurationKey.ShorteningSitesOnly] !== (asTrueOrFalseString(props.modelValue[ConfigurationKey.ShorteningSitesOnly]))
+                || newValue[ConfigurationKey.MobileSitesOnly] !== (asTrueOrFalseString(props.modelValue[ConfigurationKey.MobileSitesOnly]));
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -115,26 +119,27 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            shorteningSitesOnly.value = asBoolean(props.modelValue[ConfigurationValueKey.ShorteningSitesOnly]);
+            mobileSitesOnly.value = asBoolean(props.modelValue[ConfigurationKey.MobileSitesOnly]);
+            shorteningSitesOnly.value = asBoolean(props.modelValue[ConfigurationKey.ShorteningSitesOnly]);
         }, {
             immediate: true
         });
 
         // Watch for changes in properties that require new configuration
         // properties to be retrieved from the server.
-        watch([shorteningSitesOnly], () => {
+        watch([shorteningSitesOnly, mobileSitesOnly], () => {
             if (maybeUpdateModelValue()) {
                 emit("updateConfiguration");
             }
         });
 
-
-        return { shorteningSitesOnly };
+        return { shorteningSitesOnly, mobileSitesOnly };
     },
 
     template: `
 <div>
-    <CheckBox v-model="shorteningSitesOnly" label="Shortening Enabled Sites Only" help="Should only sites that are enabled for shortening be displayed." />
+    <CheckBox v-model="mobileSitesOnly" label="Mobile Sites Only" help="Should only mobile sites be displayed?" />
+    <CheckBox v-model="shorteningSitesOnly" label="Shortening Enabled Sites Only" help="Should only sites that are enabled for shortening be displayed?" />
 </div>
 `
 });

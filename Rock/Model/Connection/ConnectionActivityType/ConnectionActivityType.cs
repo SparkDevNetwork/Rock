@@ -21,8 +21,10 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Connection;
+using Rock.Enums.Security;
 using Rock.Lava;
-using Rock.Utility;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -48,6 +50,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -68,6 +71,18 @@ namespace Rock.Model
         [DataMember]
         public bool IsActive { get; set; } = true;
 
+        /// <summary>
+        /// Determines whether a Person Note summarizing this activity should be created when the activity is added to a Connection Request.
+        /// </summary>
+        [DataMember]
+        public PersonNoteCreationBehavior? PersonNoteCreationBehavior { get; set; }
+
+        /// <summary>
+        /// The note type to use when creating person notes for this request.
+        /// </summary>
+        [DataMember]
+        public int? PersonNoteTypeId { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -80,6 +95,12 @@ namespace Rock.Model
         /// </value>
         [LavaVisible]
         public virtual ConnectionType ConnectionType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.NoteType">type</see> for the Connection Activity Type/> 
+        /// </summary>
+        [LavaVisible]
+        public virtual NoteType PersonNoteType { get; set; }
 
         #endregion
 
@@ -112,6 +133,7 @@ namespace Rock.Model
         public ConnectionActivityTypeConfiguration()
         {
             this.HasOptional( p => p.ConnectionType ).WithMany( p => p.ConnectionActivityTypes ).HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.PersonNoteType ).WithMany().HasForeignKey( p => p.PersonNoteTypeId ).WillCascadeOnDelete( false );
         }
     }
 

@@ -25,6 +25,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -75,9 +76,9 @@ namespace Rock.Jobs
                     ( a.ExpireDateTime == null || a.ExpireDateTime > currentDateTime ) &&
                     (
                         // Either the refresh interval is valid and elapsed
-                        ( a.RefreshIntervalMinutes.HasValue &&
+                        ( a.PersistedScheduleIntervalMinutes.HasValue &&
                             ( a.LastRefreshDateTime == null ||
-                            DbFunctions.AddMinutes( a.LastRefreshDateTime.Value, a.RefreshIntervalMinutes.Value ) < currentDateTime ) )
+                            DbFunctions.AddMinutes( a.LastRefreshDateTime.Value, a.PersistedScheduleIntervalMinutes.Value ) < currentDateTime ) )
                         ||
                         // Or it has a schedule
                         a.PersistedScheduleId != null
@@ -88,7 +89,7 @@ namespace Rock.Jobs
                     a.Name, // useful when debugging
                     a.Id,
                     a.LastRefreshDateTime,
-                    a.RefreshIntervalMinutes,
+                    a.PersistedScheduleIntervalMinutes,
                     a.PersistedScheduleId,
                 } )
                 .ToList();
@@ -139,7 +140,26 @@ namespace Rock.Jobs
                         {
                             this.UpdateLastStatusMessage( FormatStatusMessage( "Update", name, "success" ) );
                             updatedDatasetCount++;
-                            rockContext.SaveChanges();
+
+                            /*
+                                2/10/2026 - NA
+                                We are calling the SaveChanges( true ) overload that disables pre/post processing hooks
+                                because we only want to change the properties changed in UpdateResultData(). If we don't disable
+                                these hooks, the [ModifiedDateTime] value will also be updated every time a DataView is
+                                run, which is not what we want here.
+
+                                Reason: See Asana task "Persisted Datasets Don't Have CreatedBy/ModifiedBy Values"
+                                https://app.asana.com/1/20866866924293/task/1213144793175484
+                            */
+                            rockContext.SaveChanges( true );
+
+                            // Because the SaveChanges( true ) skipped the UpdateCache hook, the in-memory caches
+                            // still holds the previous ResultData. Invalidate it now.
+#if NET472_OR_GREATER
+                            PersistedDatasetCache.UpdateCachedEntity( persistedDatasetToUpdate.Id, System.Data.Entity.EntityState.Modified );
+#else
+                            PersistedDatasetCache.UpdateCachedEntity( persistedDatasetToUpdate.Id, Microsoft.EntityFrameworkCore.EntityState.Modified );
+#endif
                         }
                         else
                         {

@@ -39,7 +39,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Lists all the event items in the given calendar." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the event calendar item details.",
@@ -47,7 +47,8 @@ namespace Rock.Blocks.Event
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "ca712211-3076-48bd-9321-2b7cee1d5961" )]
-    [Rock.SystemGuid.BlockTypeGuid( "20c68613-f253-4d2f-a465-62afbb01dcd6" )]
+    [Rock.SystemGuid.BlockTypeGuid( "EC8DFDC5-C177-4208-8ABA-1F85010FBBFF" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "20c68613-f253-4d2f-a465-62afbb01dcd6" )]
     [CustomizedGrid]
     [Rock.Web.UI.ContextAware( typeof( EventCalendar ) )]
     public class EventCalendarItemList : RockEntityListBlockType<EventCalendarItem>
@@ -136,7 +137,24 @@ namespace Rock.Blocks.Event
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
         private bool GetIsAddDeleteEnabled()
         {
+            // The legacy block hid the entire grid (including add/delete) unless the person could view the calendar.
+            if ( !IsAuthorizedToView() )
+            {
+                return false;
+            }
+
             return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || GetEventCalendar()?.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) == true;
+        }
+
+        /// <summary>
+        /// Determines if the current person is authorized to view the items of the event calendar.
+        /// Matches the legacy Web Forms behavior, which hid the entire block unless the person had
+        /// View rights on the event calendar itself.
+        /// </summary>
+        /// <returns>A boolean value that indicates if the calendar's items may be viewed.</returns>
+        private bool IsAuthorizedToView()
+        {
+            return GetEventCalendar()?.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) == true;
         }
 
         /// <summary>
@@ -162,6 +180,13 @@ namespace Rock.Blocks.Event
         /// <inheritdoc/>
         protected override IQueryable<EventCalendarItem> GetListQueryable( RockContext rockContext )
         {
+            // Match the legacy Web Forms behavior: do not expose any items unless the person is
+            // authorized to view the event calendar these items belong to.
+            if ( !IsAuthorizedToView() )
+            {
+                return Enumerable.Empty<EventCalendarItem>().AsQueryable();
+            }
+
             var eventCalendarId = GetEventCalendar()?.Id ?? 0;
 
             var qry = new EventCalendarItemService( rockContext )
@@ -334,7 +359,9 @@ namespace Rock.Blocks.Event
                     return ActionBadRequest( $"{EventCalendarItem.FriendlyTypeName} not found." );
                 }
 
-                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                // Match the WebForms behavior: deleting is allowed by block-level Edit rights or
+                // Edit rights on the event calendar the item belongs to.
+                if ( !GetIsAddDeleteEnabled() )
                 {
                     return ActionBadRequest( $"Not authorized to delete {EventCalendarItem.FriendlyTypeName}." );
                 }

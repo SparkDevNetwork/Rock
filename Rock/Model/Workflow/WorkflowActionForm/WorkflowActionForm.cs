@@ -16,7 +16,9 @@
 //
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
@@ -50,17 +52,6 @@ namespace Rock.Model
         public int? NotificationSystemCommunicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the notification system email identifier.
-        /// </summary>
-        /// <value>
-        /// The notification system email identifier.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use NotificationSystemCommunicationId instead.", true )]
-        [RockObsolete( "1.10" )]
-        public int? NotificationSystemEmailId { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [include actions in notification].
         /// </summary>
         /// <value>
@@ -76,6 +67,7 @@ namespace Rock.Model
         /// The header.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Header { get; set; }
 
         /// <summary>
@@ -85,6 +77,7 @@ namespace Rock.Model
         /// The footer.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Footer { get; set; }
 
         /// <summary>
@@ -95,6 +88,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 2000 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Actions { get; set; }
 
         /// <summary>
@@ -133,6 +127,7 @@ namespace Rock.Model
         /// The person entry preHTML.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PersonEntryPreHtml { get; set; }
 
         /// <summary>
@@ -142,6 +137,7 @@ namespace Rock.Model
         /// The person entry post HTML.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PersonEntryPostHtml { get; set; }
 
         /// <summary>
@@ -269,6 +265,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember( IsRequired = false )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PersonEntrySpouseLabel { get; set; } = "Spouse";
 
         /// <summary>
@@ -378,6 +375,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 500 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PersonEntryTitle { get; set; }
 
         /// <summary>
@@ -387,6 +385,7 @@ namespace Rock.Model
         /// The person entry description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PersonEntryDescription { get; set; }
 
         /// <summary>
@@ -402,6 +401,7 @@ namespace Rock.Model
 
         /// <inheritdoc/>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         #endregion Entity Properties
@@ -437,17 +437,6 @@ namespace Rock.Model
         }
 
         private ICollection<WorkflowActionFormAttribute> _formAttributes;
-
-        /// <summary>
-        /// Gets or sets the notification system email.
-        /// </summary>
-        /// <value>
-        /// The notification system email.
-        /// </value>
-        [LavaVisible]
-        [Obsolete( "Use NotificationSystemCommunication instead.", true )]
-        [RockObsolete( "1.10" )]
-        public virtual SystemEmail NotificationSystemEmail { get; set; }
 
         /// <summary>
         /// Gets or sets the notification system communication.

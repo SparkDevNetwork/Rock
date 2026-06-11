@@ -530,6 +530,12 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_SATURATION = "DA0F647C-5317-4368-9514-E408F2254E24";
 
         /// <summary>
+        /// Gets the Communication Unsubscribe Report page guid
+        /// ParentPage: Communications
+        /// </summary>
+        public const string COMMUNICATION_UNSUBSCRIBE_REPORT = "E08EC84A-2F1B-43D9-ACA5-0294C5026E5B";
+
+        /// <summary>
         /// Gets the Communication Templates page guid
         /// ParentPage: Communications
         /// </summary>
@@ -600,6 +606,24 @@ namespace Rock.SystemGuid
         /// ParentPage: Connections
         /// </summary>
         public const string CONNECTION_TYPES = "9CC19684-7AD2-4D4E-A7C4-10DAE56E7FA6";
+
+        /// <summary>
+        /// Gets the Connections Opportunities page guid.
+        /// ParentPage: Connections
+        /// </summary>
+        public const string CONNECTIONS_OPPORTUNITIES = "F8B0E0CE-76A3-4449-B4EB-28DD9A42D71F";
+
+		/// <summary>
+        /// Gets the Connections List page guid.
+        /// ParentPage: Connections
+        /// </summary>
+        public const string CONNECTIONS_LIST = "8B5F2875-0D36-4625-8EE4-B738AE8E12F5";
+
+        /// <summary>
+        /// Gets the Connections Operational Snapshot page guid.
+        /// ParentPage: Connections
+        /// </summary>
+        public const string CONNECTIONS_OPERATIONAL_SNAPSHOT = "3421FD03-018F-457D-A0B6-9326C5D5A5F4";
 
         /// <summary>
         /// Gets the Contact Us page guid
@@ -1888,12 +1912,6 @@ namespace Rock.SystemGuid
         /// ParentPage: Communications
         /// </summary>
         public const string SYSTEM_EMAIL_CATEGORIES_COMMUNICATIONS = "B55323CD-F494-43E7-97BF-4E13DAB58E0B";
-
-        /// <summary>
-        /// Gets the System Email Categories page guid
-        /// ParentPage: System Emails
-        /// </summary>
-        public const string SYSTEM_EMAIL_CATEGORIES_SYSTEM_EMAILS = "66FAF7A6-7523-475C-A88D-51C75178A785";
 
         /// <summary>
         /// Gets the System Communications page guid

@@ -47,7 +47,13 @@ namespace RockWeb.Blocks.Event
     [IntegerField( "Max Occurrences Per Event Item", "The maximum number of occurrences to show per Event Item. Set to 0 to show all occurrences for each Event Item.", false, 0, order: 6 )]
     [LinkedPage( "Event Detail Page", "The page to use for showing event details.", order: 7 )]
     [LinkedPage( "Registration Page", "The page to use for registrations.", order: 8 )]
-    [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue: "{% include '~~/Assets/Lava/EventItemOccurrenceListByAudience.lava' %}", order: 9 )]
+
+    [CodeEditorField( "Lava Template",
+        Description = "The lava template to use for the results",
+        EditorMode = CodeEditorMode.Lava,
+        DefaultValue = "{% include '~~/Assets/Lava/EventItemOccurrenceListByAudience.lava' %}",
+        Order = 9 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "E4703964-7717-4C93-BD40-7DFF85EAC5FD" )]
     public partial class EventItemOccurrenceListByAudienceLava : Rock.Web.UI.RockBlock
     {

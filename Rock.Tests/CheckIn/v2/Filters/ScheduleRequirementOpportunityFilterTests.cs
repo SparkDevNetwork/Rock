@@ -20,7 +20,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
     /// </summary>
     /// <seealso cref="ScheduleRequirementOpportunityFilter"/>
     [TestClass]
-    public class ScheduleRequirementOpportunityFilterTests : CheckInMockDatabase
+    public class ScheduleRequirementOpportunityFilterTests : MockDatabaseTestsBase
     {
         #region IsGroupValid Tests
 
@@ -28,7 +28,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
         public void IsGroupValid_WithSchedulingDisabledAndNoSchedule_IncludesGroup()
         {
             var groupIdHash = IdHasher.Instance.GetHash( 100 );
-            var filter = CreateFilter( GetRockContextMock().Object );
+            var filter = CreateFilter( MockDatabaseHelper.CreateRockContextMock().Object );
             var groupOpportunity = CreateGroupOpportunity( groupIdHash, AttendanceRecordRequiredForCheckIn.ScheduleNotRequired, false );
 
             var isIncluded = filter.IsGroupValid( groupOpportunity );
@@ -40,7 +40,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
         public void IsGroupValid_WithScheduleNotRequiredAndNoSchedule_IncludesGroup()
         {
             var groupIdHash = IdHasher.Instance.GetHash( 100 );
-            var filter = CreateFilter( GetRockContextMock().Object );
+            var filter = CreateFilter( MockDatabaseHelper.CreateRockContextMock().Object );
             var groupOpportunity = CreateGroupOpportunity( groupIdHash, AttendanceRecordRequiredForCheckIn.ScheduleNotRequired, true );
 
             var isIncluded = filter.IsGroupValid( groupOpportunity );
@@ -51,9 +51,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
         [TestMethod]
         public void IsGroupValid_WithScheduleRequiredAndNoSchedule_ExcludesGroup()
         {
-            var rockContextMock = GetRockContextMock();
-
-            rockContextMock.SetupDbSet<Attendance>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
 
             var groupIdHash = IdHasher.Instance.GetHash( 100 );
             var filter = CreateFilter( rockContextMock.Object );
@@ -73,7 +71,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
         [TestMethod]
         public void IsGroupValid_WithScheduleRequiredAndMatchingSchedule_IncludesGroup()
         {
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var groupId = 100;
             var attendance = new Attendance
             {
@@ -91,7 +89,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 }
             };
 
-            rockContextMock.SetupDbSet( attendance );
+            rockContextMock.Object.Set<Attendance>().Add( attendance );
 
             var groupIdHash = IdHasher.Instance.GetHash( groupId );
             var filter = CreateFilter( rockContextMock.Object );
@@ -111,7 +109,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
         [TestMethod]
         public void IsGroupValid_WithScheduleRequiredAndYesterdaySchedule_ExcludesGroup()
         {
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var groupId = 100;
             var attendance = new Attendance
             {
@@ -130,7 +128,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 }
             };
 
-            rockContextMock.SetupDbSet( attendance );
+            rockContextMock.Object.Set<Attendance>().Add( attendance );
 
             var groupIdHash = IdHasher.Instance.GetHash( groupId );
             var filter = CreateFilter( rockContextMock.Object );
@@ -150,7 +148,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
         [TestMethod]
         public void IsGroupValid_WithScheduleRequiredAndMatchingSchedule_RemovesNonMatchingLocations()
         {
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var groupId = 100;
             var attendance = new Attendance
             {
@@ -168,7 +166,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 }
             };
 
-            rockContextMock.SetupDbSet( attendance );
+            rockContextMock.Object.Set<Attendance>().Add( attendance );
 
             var groupIdHash = IdHasher.Instance.GetHash( groupId );
             var filter = CreateFilter( rockContextMock.Object );
@@ -191,14 +189,14 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var isIncluded = filter.IsGroupValid( groupOpportunity );
 
             Assert.IsTrue( isIncluded );
-            Assert.AreEqual( 1, groupOpportunity.Locations.Count );
+            Assert.HasCount( 1, groupOpportunity.Locations );
             Assert.AreEqual( IdHasher.Instance.GetHash( 200 ), groupOpportunity.Locations[0].LocationId );
         }
 
         [TestMethod]
         public void IsGroupValid_WithScheduleRequiredAndMatchingSchedule_RemovesNonMatchingOverflowLocations()
         {
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var groupId = 100;
             var attendance = new Attendance
             {
@@ -216,7 +214,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 }
             };
 
-            rockContextMock.SetupDbSet( attendance );
+            rockContextMock.Object.Set<Attendance>().Add( attendance );
 
             var groupIdHash = IdHasher.Instance.GetHash( groupId );
             var filter = CreateFilter( rockContextMock.Object );
@@ -239,14 +237,14 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var isIncluded = filter.IsGroupValid( groupOpportunity );
 
             Assert.IsTrue( isIncluded );
-            Assert.AreEqual( 1, groupOpportunity.OverflowLocations.Count );
+            Assert.HasCount( 1, groupOpportunity.OverflowLocations );
             Assert.AreEqual( IdHasher.Instance.GetHash( 200 ), groupOpportunity.OverflowLocations[0].LocationId );
         }
 
         [TestMethod]
         public void IsGroupValid_WithPreSelectAndMatchingSchedule_SelectsLocation()
         {
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var groupId = 100;
             var attendance = new Attendance
             {
@@ -264,7 +262,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 }
             };
 
-            rockContextMock.SetupDbSet( attendance );
+            rockContextMock.Object.Set<Attendance>().Add( attendance );
 
             var groupIdHash = IdHasher.Instance.GetHash( groupId );
             var filter = CreateFilter( rockContextMock.Object );
@@ -297,17 +295,15 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var isIncluded = filter.IsGroupValid( groupOpportunity );
 
             Assert.IsTrue( isIncluded );
-            Assert.AreEqual( 1, filter.Person.PreSelectedOpportunities.Count );
+            Assert.HasCount( 1, filter.Person.PreSelectedOpportunities );
             Assert.AreEqual( IdHasher.Instance.GetHash( 200 ), filter.Person.PreSelectedOpportunities[0].Location.Id );
         }
 
         [TestMethod]
         public void IsGroupValid_WithPreSelectAndNoSchedule_DoesNotSelectLocation()
         {
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var groupId = 100;
-
-            rockContextMock.SetupDbSet<Attendance>();
 
             var groupIdHash = IdHasher.Instance.GetHash( groupId );
             var filter = CreateFilter( rockContextMock.Object );
@@ -340,13 +336,13 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var isIncluded = filter.IsGroupValid( groupOpportunity );
 
             Assert.IsTrue( isIncluded );
-            Assert.AreEqual( 0, filter.Person.PreSelectedOpportunities.Count );
+            Assert.IsEmpty( filter.Person.PreSelectedOpportunities );
         }
 
         [TestMethod]
         public void IsGroupValid_WithPreSelectAndScheduleForDifferentGroup_DoesNotSelectLocation()
         {
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var groupId = 100;
             var attendance = new Attendance
             {
@@ -365,7 +361,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 }
             };
 
-            rockContextMock.SetupDbSet( attendance );
+            rockContextMock.Object.Set<Attendance>().Add( attendance );
 
             var groupIdHash = IdHasher.Instance.GetHash( groupId );
             var filter = CreateFilter( rockContextMock.Object );
@@ -398,13 +394,13 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var isIncluded = filter.IsGroupValid( groupOpportunity );
 
             Assert.IsTrue( isIncluded );
-            Assert.AreEqual( 0, filter.Person.PreSelectedOpportunities.Count );
+            Assert.IsEmpty( filter.Person.PreSelectedOpportunities );
         }
 
         [TestMethod]
         public void IsGroupValid_WithPreSelectAndMatchingSchedule_DoesNotOverwriteSelection()
         {
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var groupId = 100;
             var attendance = new Attendance
             {
@@ -422,7 +418,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 }
             };
 
-            rockContextMock.SetupDbSet( attendance );
+            rockContextMock.Object.Set<Attendance>().Add( attendance );
 
             var groupIdHash = IdHasher.Instance.GetHash( groupId );
             var filter = CreateFilter( rockContextMock.Object );
@@ -472,14 +468,14 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var isIncluded = filter.IsGroupValid( groupOpportunity );
 
             Assert.IsTrue( isIncluded );
-            Assert.AreEqual( 1, filter.Person.PreSelectedOpportunities.Count );
+            Assert.HasCount( 1, filter.Person.PreSelectedOpportunities );
             Assert.AreEqual( "OriginalSelection", filter.Person.PreSelectedOpportunities[0].Group.Name );
         }
 
         [TestMethod]
         public void IsGroupValid_WithPreSelectAndMatchingSchedule_DoesNotOverwriteDifferentGroupSelection()
         {
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var groupId = 100;
             var attendance = new Attendance
             {
@@ -497,7 +493,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 }
             };
 
-            rockContextMock.SetupDbSet( attendance );
+            rockContextMock.Object.Set<Attendance>().Add( attendance );
 
             var groupIdHash = IdHasher.Instance.GetHash( groupId );
             var filter = CreateFilter( rockContextMock.Object );
@@ -547,7 +543,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var isIncluded = filter.IsGroupValid( groupOpportunity );
 
             Assert.IsTrue( isIncluded );
-            Assert.AreEqual( 2, filter.Person.PreSelectedOpportunities.Count );
+            Assert.HasCount( 2, filter.Person.PreSelectedOpportunities );
         }
 
         #endregion

@@ -63,8 +63,10 @@
                     </div>
 
                     <div class="col-md-6">
-                        <AddressControl label="Address"
-                                        v-model="address" />
+                        <AddressControl v-if="registrationData.displayAddressOnFamilies !== RequirementLevel.Unavailable"
+                                        label="Address"
+                                        v-model="address"
+                                        :rules="registrationData.displayAddressOnFamilies === RequirementLevel.Required ? 'required' : ''" />
                     </div>
                 </div>
 
@@ -97,6 +99,7 @@
     import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
     import { SaveFamilyOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/saveFamilyOptionsBag";
     import { SaveFamilyResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/saveFamilyResponseBag";
+    import { RequirementLevel } from "@Obsidian/Enums/Controls/requirementLevel";
 
     const props = defineProps({
         configuration: {

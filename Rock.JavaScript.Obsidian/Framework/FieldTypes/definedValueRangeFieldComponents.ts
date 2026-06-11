@@ -19,7 +19,7 @@ import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { getFieldEditorProps } from "./utils";
 import RockFormField from "@Obsidian/Controls/rockFormField.obs";
-import { ClientValue, ConfigurationPropertyKey, ConfigurationValueKey, ValueItem } from "./definedValueRangeField.partial";
+import { ClientValue, ConfigurationPropertyKey, ConfigurationKey, ValueItem } from "./definedValueRangeField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { List } from "@Obsidian/Utility/linq";
@@ -77,7 +77,7 @@ export const EditComponent = defineComponent({
 
         const valueOptions = computed((): ValueItem[] => {
             try {
-                return JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ValueItem[];
+                return JSON.parse(props.configurationValues[ConfigurationKey.Values] ?? "[]") as ValueItem[];
             }
             catch {
                 return [];
@@ -85,7 +85,7 @@ export const EditComponent = defineComponent({
         });
 
         const showDescription = computed((): boolean => {
-            return asBoolean(props.configurationValues[ConfigurationValueKey.DisplayDescription]);
+            return asBoolean(props.configurationValues[ConfigurationKey.DisplayDescription]);
         });
 
         /** The options to choose from in the drop down list */
@@ -197,12 +197,12 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.DefinedType] = definedTypeValue.value;
-            newValue[ConfigurationValueKey.DisplayDescription] = asTrueFalseOrNull(displayDescriptions.value) ?? "False";
+            newValue[ConfigurationKey.DefinedType] = definedTypeValue.value;
+            newValue[ConfigurationKey.DisplayDescription] = asTrueFalseOrNull(displayDescriptions.value) ?? "False";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.DefinedType] !== props.modelValue[ConfigurationValueKey.DefinedType]
-                || newValue[ConfigurationValueKey.DisplayDescription] !== (props.modelValue[ConfigurationValueKey.DisplayDescription] ?? "False");
+            const anyValueChanged = newValue[ConfigurationKey.DefinedType] !== props.modelValue[ConfigurationKey.DefinedType]
+                || newValue[ConfigurationKey.DisplayDescription] !== (props.modelValue[ConfigurationKey.DisplayDescription] ?? "False");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -221,7 +221,7 @@ export const ConfigurationComponent = defineComponent({
             const definedTypes = props.configurationProperties[ConfigurationPropertyKey.DefinedTypes];
             definedTypeItems.value = definedTypes ? JSON.parse(props.configurationProperties.definedTypes) as ListItemBag[] : [];
             definedTypeValue.value = props.modelValue.definedtype;
-            displayDescriptions.value = asBoolean(props.modelValue[ConfigurationValueKey.DisplayDescription]);
+            displayDescriptions.value = asBoolean(props.modelValue[ConfigurationKey.DisplayDescription]);
         }, {
             immediate: true
         });

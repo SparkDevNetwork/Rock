@@ -63,6 +63,20 @@ export type Legend = {
     align?: LegendAlign | undefined;
 };
 
+export const TitleAlign = {
+    Start: "start",
+    Center: "center",
+    End: "end"
+} as const;
+
+export const TitleAlignDescription: Record<string, string> = {
+    "start": "Start",
+    "center": "Center",
+    "end": "End"
+};
+
+export type TitleAlign = typeof TitleAlign[keyof typeof TitleAlign];
+
 export type TimeInput = string | number | RockDateTime;
 
 export type XYPoint = {
@@ -118,7 +132,7 @@ export type LineStyle = typeof LineStyle[keyof typeof LineStyle];
 
 export type BarSeries = {
     label: string;
-    data: (number | null)[];
+    data: ([number, number] | number | null)[];
     /** Color of the bars. Can be a single value or an array for each data point. */
     color?: string | string[] | undefined;
     isUnfilled?: boolean | undefined;
@@ -134,7 +148,7 @@ export type BarChartClickEvent = {
         labelIndex: number;
         label: string;
         series: BarSeries;
-        value: number | null;
+        value: [number, number] | number | null;
     }[];
 };
 
@@ -146,7 +160,7 @@ export type BarLabelContext = {
     /** Dataset (series) label, e.g. “Revenue”. */
     seriesName: string;
     /** Category label on the cross-axis, e.g. “Jan”. */
-    label: string;
+    label: (string | string[]);
     /** Formatted version of the label (may be `undefined`). */
     formattedLabel: string | undefined;
     /** Numeric value that determines bar length. */
@@ -172,6 +186,8 @@ export type BarLabelsConfig = Partial<Record<
     BarLabelSpec
 >>;
 
+export type BarChartAppearanceType = "default" | "stylized";
+
 // #endregion Bar Chart
 
 // #region Pie Chart
@@ -195,6 +211,92 @@ export type DoughnutSeries = {
 };
 
 // #endregion Doughnut Chart
+
+// #region Linear Gauge Chart
+
+/**
+ * A data series for a LinearGaugeChart.
+ *
+ * Each LinearGaugeSeries represents a single section (for example, "On Track").
+ * The `data` array contains the values for that section across one or more linear gauges.
+ *
+ * Index alignment:
+ * 1. `data[i]` is the value of this section in the i-th linear gauge.
+ * 2. Each linear gauge is formed by combining the i-th value from every series.
+ * 3. If the chart is also given gauge labels (for example via a `labels` prop),
+ *    `labels[i]` corresponds to the i-th linear gauge (the same index used by `data[i]`).
+ *
+ * Null values indicate that the section has no value for that gauge index and should not render.
+ *
+ * @example
+ * ```ts
+ * // Example for a single linear gauge composed of three sections
+ * // representing request health (On Track, Due Soon, Overdue)
+ * const series: LinearGaugeSeries[] = [
+ *   { label: "On Track", data: [55], color: "var(--color-success-strong)" },
+ *   { label: "Due Soon", data: [18], color: "#F59E0B" },
+ *   { label: "Overdue", data: [8], color: "#EF4444" }
+ * ];
+ * ```
+ *
+ * @example
+ * ```ts
+ * // Example for multiple linear gauges using the same sections.
+ * // Each index across the data arrays forms a complete gauge.
+ * const series: LinearGaugeSeries[] = [
+ *   { label: "On Track", data: [55, 42], color: "var(--color-success-strong)" },
+ *   { label: "Due Soon", data: [18, 25], color: "#F59E0B" },
+ *   { label: "Overdue", data: [8, 13], color: "#EF4444" }
+ * ];
+ * ```
+ */
+export type LinearGaugeSeries = {
+    /**
+     * The section label.
+     *
+     * This label is shared across all rendered linear gauges and is used in the legend and tooltips.
+     */
+    label: string;
+
+    /**
+     * The values for this section across one or more linear gauges.
+     *
+     * Each element corresponds to a single gauge index:
+     * `data[i]` is the value for this section in the i-th linear gauge.
+     *
+     * The length of this array contributes to how many linear gauges the chart can render.
+     * If some series have fewer entries than others, missing indices are treated as null.
+     *
+     * Null indicates "no value for this section in this gauge" and should not render.
+     */
+    data: (number | null)[];
+
+    /**
+     * The color used to render this section in each linear gauge.
+     * If omitted, the chart may apply a default color.
+     */
+    color?: string | undefined;
+};
+
+/**
+ * Defines the visual style of each section in a linear gauge.
+ */
+export const LinearGaugeSectionStyle = {
+    Segmented: "segmented",
+    Continuous: "continuous"
+} as const;
+
+export const LinearGaugeSectionStyleDescription: Record<string, string> = {
+    "segmented": "Segmented",
+    "continuous": "Continuous"
+};
+
+/**
+ * Defines the visual style of each section in a linear gauge.
+ */
+export type LinearGaugeSectionStyle = typeof LinearGaugeSectionStyle[keyof typeof LinearGaugeSectionStyle];
+
+// #endregion Linear Gauge Chart
 
 // #endregion Types
 

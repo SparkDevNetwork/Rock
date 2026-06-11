@@ -104,6 +104,11 @@
         </p>
 
         <p>
+            <strong>Installation Date Time:</strong><br />
+            <asp:Literal ID="lInstallDateTime" runat="server" />
+        </p>
+
+        <p>
             <strong>Executing Location:</strong><br />
              <asp:Literal ID="lExecLocation" runat="server"></asp:Literal>
         </p>

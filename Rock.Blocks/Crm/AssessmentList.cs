@@ -15,17 +15,16 @@
 // </copyright>
 //
 
-using Rock.Attribute;
-using Rock.Badge.Component;
-using Rock.Data;
-using Rock.Model;
-using Rock.Utility;
-using Rock.ViewModels.Blocks.Crm.AssessmentList;
-using Rock.Web.UI.Controls;
 using System;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
+using Rock.Attribute;
+using Rock.Model;
+using Rock.Utility;
+using Rock.ViewModels.Blocks.Crm.AssessmentList;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Crm
 {
@@ -65,7 +64,6 @@ namespace Rock.Blocks.Crm
         Key = AttributeKey.LavaTemplate,
         Description = "The lava template to use to format the entire block.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
         EditorMode = CodeEditorMode.Html,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = true,
         DefaultValue = lavaTemplateDefaultValue,

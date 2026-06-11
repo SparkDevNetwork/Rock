@@ -22,6 +22,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="isSecurityHidden"
+                 :showExperienceMode="true"
                  :isFullScreenVisible="false"
                  additionalDeleteMessage="All associated Step Types and Step Participants will also be deleted!"
                  @cancelEdit="onCancelEdit"
@@ -37,12 +38,6 @@
         </template>
     </DetailBlock>
 </template>
-
-<style scoped>
-.campus-slicer {
-    margin-bottom: var(--spacing-large);
-}
-</style>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";

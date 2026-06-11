@@ -19,7 +19,7 @@ import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
-import { ConfigurationValueKey } from "./slidingDateRangeField.partial";
+import { ConfigurationKey } from "./slidingDateRangeField.partial";
 import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
 import { updateRefValue } from "@Obsidian/Utility/component";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
@@ -39,7 +39,7 @@ export const EditComponent = defineComponent({
         /** The options to choose from in the drop down list */
         const enabledSlidingDateRangeTypes = computed((): string[] => {
             try {
-                return props.configurationValues[ConfigurationValueKey.EnabledSlidingDateRangeTypes]?.split(",") ;
+                return props.configurationValues[ConfigurationKey.EnabledSlidingDateRangeTypes]?.split(",");
             }
             catch {
                 return [];
@@ -48,7 +48,7 @@ export const EditComponent = defineComponent({
 
         const enabledSlidingDateRangeUnits = computed((): number[] => {
             try {
-                return props.configurationValues[ConfigurationValueKey.EnabledSlidingDateRangeUnits]?.split(",").filter(v => v !== "").map(a=>toNumber(a));
+                return props.configurationValues[ConfigurationKey.EnabledSlidingDateRangeUnits]?.split(",").filter(v => v !== "").map(a => toNumber(a));
             }
             catch {
                 return [];
@@ -97,7 +97,7 @@ export const ConfigurationComponent = defineComponent({
         /** The sliding Date Range types options to choose from in the check box list */
         const slidingDateRangeTypeOptions = computed((): ListItemBag[] => {
             try {
-                return JSON.parse(props.configurationProperties[ConfigurationValueKey.SlidingDateRangeTypes] ?? "[]") as ListItemBag[];
+                return JSON.parse(props.configurationProperties[ConfigurationKey.SlidingDateRangeTypes] ?? "[]") as ListItemBag[];
             }
             catch {
                 return [];
@@ -107,7 +107,7 @@ export const ConfigurationComponent = defineComponent({
         /** The sliding Date Range units options to choose from in the check box list */
         const slidingDateRangeUnitOptions = computed((): ListItemBag[] => {
             try {
-                return JSON.parse(props.configurationProperties[ConfigurationValueKey.TimeUnitTypes] ?? "[]") as ListItemBag[];
+                return JSON.parse(props.configurationProperties[ConfigurationKey.TimeUnitTypes] ?? "[]") as ListItemBag[];
             }
             catch {
                 return [];
@@ -127,12 +127,12 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.EnabledSlidingDateRangeTypes] = enabledSlidingDateRangeTypes.value.join(",");
-            newValue[ConfigurationValueKey.EnabledSlidingDateRangeUnits] = enabledSlidingDateRangeUnits.value.join(",");
+            newValue[ConfigurationKey.EnabledSlidingDateRangeTypes] = enabledSlidingDateRangeTypes.value.join(",");
+            newValue[ConfigurationKey.EnabledSlidingDateRangeUnits] = enabledSlidingDateRangeUnits.value.join(",");
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.EnabledSlidingDateRangeTypes] !== (props.modelValue[ConfigurationValueKey.EnabledSlidingDateRangeTypes] ?? "")
-                || newValue[ConfigurationValueKey.EnabledSlidingDateRangeUnits] !== (props.modelValue[ConfigurationValueKey.EnabledSlidingDateRangeUnits] ?? "");
+            const anyValueChanged = newValue[ConfigurationKey.EnabledSlidingDateRangeTypes] !== (props.modelValue[ConfigurationKey.EnabledSlidingDateRangeTypes] ?? "")
+                || newValue[ConfigurationKey.EnabledSlidingDateRangeUnits] !== (props.modelValue[ConfigurationKey.EnabledSlidingDateRangeUnits] ?? "");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -159,8 +159,8 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            enabledSlidingDateRangeTypes.value =  (props.modelValue[ConfigurationValueKey.EnabledSlidingDateRangeTypes]?.split(",") ?? []).filter(s => s !== "");
-            enabledSlidingDateRangeUnits.value =  (props.modelValue[ConfigurationValueKey.EnabledSlidingDateRangeUnits]?.split(",") ?? []).filter(s => s !== "");
+            enabledSlidingDateRangeTypes.value = (props.modelValue[ConfigurationKey.EnabledSlidingDateRangeTypes]?.split(",") ?? []).filter(s => s !== "");
+            enabledSlidingDateRangeUnits.value = (props.modelValue[ConfigurationKey.EnabledSlidingDateRangeUnits]?.split(",") ?? []).filter(s => s !== "");
         }, {
             immediate: true
         });
@@ -176,8 +176,8 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(enabledSlidingDateRangeTypes, () => maybeUpdateConfiguration(ConfigurationValueKey.EnabledSlidingDateRangeTypes, enabledSlidingDateRangeTypes.value.join(",")));
-        watch(enabledSlidingDateRangeUnits, () => maybeUpdateConfiguration(ConfigurationValueKey.EnabledSlidingDateRangeUnits, enabledSlidingDateRangeUnits.value.join(",")));
+        watch(enabledSlidingDateRangeTypes, () => maybeUpdateConfiguration(ConfigurationKey.EnabledSlidingDateRangeTypes, enabledSlidingDateRangeTypes.value.join(",")));
+        watch(enabledSlidingDateRangeUnits, () => maybeUpdateConfiguration(ConfigurationKey.EnabledSlidingDateRangeUnits, enabledSlidingDateRangeUnits.value.join(",")));
 
         return {
             enabledSlidingDateRangeTypes,

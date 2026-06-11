@@ -17,6 +17,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 
 namespace Rock.Lava.Filters
@@ -87,36 +88,47 @@ namespace Rock.Lava.Filters
             return dict.Keys.ToList();
         }
 
-        ///// <summary>
-        ///// Converts the given value to a dictionary.
-        ///// </summary>
-        ///// <param name="input">The value to be converted.</param>
-        ///// <returns>An IDictionary&lt;string, object&gt; that represents the value.</returns>
-        private static IDictionary<string, object> AsDictionary( object input )
+        /// <summary>
+        /// Converts the given value to a dictionary.
+        /// </summary>
+        /// <param name="input">The value to be converted.</param>
+        /// <returns>An IDictionary&lt;string, object&gt; that represents the value.</returns>
+        public static IDictionary<string, object> AsDictionary( object input )
         {
-            IDictionary<string, object> dict = new Dictionary<string, object>();
-
-            if ( input == null || ( input is string && string.IsNullOrEmpty( (string)input ) ) )
+            if ( input == null || ( input is string inputStr && inputStr.IsNullOrWhiteSpace() ) )
             {
-                /* Intentionally left blank */
+                return new Dictionary<string, object>();
             }
-            else if ( input is IDictionary )
+            else if ( input is IDictionary<string, object> inputGenericDictionary )
             {
-                foreach ( DictionaryEntry kvp in (IDictionary)input )
+                return inputGenericDictionary;
+            }
+            else if ( input is IDictionary inputDictionary )
+            {
+                var dict = new Dictionary<string, object>();
+
+                foreach ( DictionaryEntry kvp in inputDictionary )
                 {
                     dict.Add( kvp.Key.ToString(), kvp.Value );
                 }
-            }
-            else if ( input is IDictionary<string, object> )
-            {
-                dict = (IDictionary<string, object>)input;
+
+                return dict;
             }
             else
             {
-                throw new Exception( "Cannot convert to dictionary type." );
-            }
+                var dict = new Dictionary<string, object>();
+                var properties = input.GetType().GetProperties( System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public );
 
-            return dict;
+                foreach ( var property in properties )
+                {
+                    if ( property.GetIndexParameters().Length == 0 )
+                    {
+                        dict[property.Name] = property.GetValue( input );
+                    }
+                }
+
+                return dict;
+            }
         }
     }
 }

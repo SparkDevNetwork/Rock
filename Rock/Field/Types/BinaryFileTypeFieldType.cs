@@ -47,14 +47,7 @@ namespace Rock.Field.Types
             Guid? binaryFileTypeGuid = privateValue.AsGuidOrNull();
             if ( binaryFileTypeGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
-                {
-                    var binaryFiletype = new BinaryFileTypeService( rockContext ).GetNoTracking( binaryFileTypeGuid.Value );
-                    if ( binaryFiletype != null )
-                    {
-                        return binaryFiletype.Name;
-                    }
-                }
+                return BinaryFileTypeCache.Get( binaryFileTypeGuid.Value )?.Name ?? string.Empty;
             }
 
             return string.Empty;

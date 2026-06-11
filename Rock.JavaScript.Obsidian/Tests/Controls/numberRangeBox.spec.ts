@@ -21,7 +21,7 @@ import { nextTick } from "vue";
 
 config.global.config.warnHandler = () => { /*empty*/ };
 
-function getComponentWrapper(): VueWrapper {
+function getComponentWrapper(): VueWrapper<typeof NumberRangeBox & { $props: { modelValue?: { lower: number, upper: number } } }> {
     const wrapper = mount(NumberRangeBox, {
         props: {
             modelValue: { lower: 1.1, upper: 1.1 },
@@ -29,7 +29,7 @@ function getComponentWrapper(): VueWrapper {
         }
     });
 
-    return wrapper;
+    return wrapper as VueWrapper<typeof NumberRangeBox & { $props: { modelValue?: { lower: number, upper: number } } }>;
 }
 
 describe("Number Range Box", () => {
@@ -38,7 +38,6 @@ describe("Number Range Box", () => {
         const wrapper = getComponentWrapper();
         const input = wrapper.get("input[id$='_lower']");
         const inputElement = input.element as HTMLInputElement;
-        const numberRangeComponent = wrapper.getComponent(NumberRangeBox).vm;
 
         // Make sure any pre-processing events finish up before we try to mess with things.
         await nextTick();
@@ -50,7 +49,7 @@ describe("Number Range Box", () => {
 
         // Verify the value for the NumberRangeBox still has zeroes, but the model is converted to a number without them
         assert.strictEqual(inputElement.value, "1.00");
-        assert.strictEqual(numberRangeComponent.internalValue.lower, "1.00");
+        assert.strictEqual(wrapper.vm.internalValue.lower, "1.00");
         assert.strictEqual(wrapper.props("modelValue")?.lower, 1);
     });
 
@@ -58,7 +57,6 @@ describe("Number Range Box", () => {
         const wrapper = getComponentWrapper();
         const input = wrapper.get("input[id$='_lower']");
         const inputElement = input.element as HTMLInputElement;
-        const numberRangeComponent = wrapper.getComponent(NumberRangeBox).vm;
 
         // Make sure any pre-processing events finish up before we try to mess with things.
         await nextTick();
@@ -69,7 +67,7 @@ describe("Number Range Box", () => {
 
         // Verify the value for the NumberRangeBox still has zeroes, but the model is converted to a number without them
         assert.strictEqual(inputElement.value, "1");
-        assert.strictEqual(numberRangeComponent.internalValue.lower, "1");
+        assert.strictEqual(wrapper.vm.internalValue.lower, "1");
         assert.strictEqual(wrapper.props("modelValue")?.lower, 1);
     });
 
@@ -77,7 +75,6 @@ describe("Number Range Box", () => {
         const wrapper = getComponentWrapper();
         const input = wrapper.get("input[id$='_upper']");
         const inputElement = input.element as HTMLInputElement;
-        const numberRangeComponent = wrapper.getComponent(NumberRangeBox).vm;
 
         // Make sure any pre-processing events finish up before we try to mess with things.
         await nextTick();
@@ -89,7 +86,7 @@ describe("Number Range Box", () => {
 
         // Verify the value for the NumberRangeBox still has zeroes, but the model is converted to a number without them
         assert.strictEqual(inputElement.value, "1.00");
-        assert.strictEqual(numberRangeComponent.internalValue.upper, "1.00");
+        assert.strictEqual(wrapper.vm.internalValue.upper, "1.00");
         assert.strictEqual(wrapper.props("modelValue")?.upper, 1);
     });
 
@@ -97,7 +94,6 @@ describe("Number Range Box", () => {
         const wrapper = getComponentWrapper();
         const input = wrapper.get("input[id$='_upper']");
         const inputElement = input.element as HTMLInputElement;
-        const numberRangeComponent = wrapper.getComponent(NumberRangeBox).vm;
 
         // Make sure any pre-processing events finish up before we try to mess with things.
         await nextTick();
@@ -108,7 +104,7 @@ describe("Number Range Box", () => {
 
         // Verify the value for the NumberRangeBox still has zeroes, but the model is converted to a number without them
         assert.strictEqual(inputElement.value, "1");
-        assert.strictEqual(numberRangeComponent.internalValue.upper, "1");
+        assert.strictEqual(wrapper.vm.internalValue.upper, "1");
         assert.strictEqual(wrapper.props("modelValue")?.upper, 1);
     });
 });

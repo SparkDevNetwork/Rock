@@ -176,7 +176,7 @@ namespace Rock.Workflow
                 var existingMobilePhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), _rockContext );
 
                 var numberTypeMobile = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), _rockContext );
-                var messagingEnabled = existingMobilePhone?.IsMessagingEnabled ?? true;
+                var messagingEnabled = personBag.IsMessagingEnabled ?? existingMobilePhone?.IsMessagingEnabled ?? true;
                 var isUnlisted = existingMobilePhone?.IsUnlisted ?? false;
 
                 person.UpdatePhoneNumber( numberTypeMobile.Id, personBag.MobilePhoneCountryCode, personBag.MobilePhoneNumber, messagingEnabled, isUnlisted, _rockContext );

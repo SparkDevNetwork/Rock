@@ -2,7 +2,8 @@
     Used to manage styles for specific blocks.
 
     1. User Registration - Styling for the user registration blocks
-    2. Security Popup - Styling for the security pop-up window)
+    2. Account Entry - Styling for the account entry blocks
+    3. Security Popup - Styling for the security pop-up window)
 
 */
 
@@ -13,7 +14,35 @@
   margin-left: 21px;
 }
 
-// 2. Security Popup
+// 2. Account Entry
+// -------------------------
+
+// Phone Number
+
+.account-entry {
+
+  .phonegroup.form-group {
+    margin-bottom: 0;
+  }
+
+  .phonegroup-types {
+    display: flex;
+    gap: var(--spacing-large);
+    align-items: center;
+    height: 35px; /* Align with input height */
+
+    .checkbox,
+    .checkbox + .checkbox {
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+
+  }
+
+}
+
+
+// 3. Security Popup
 // -------------------------
 
 .security-inherited {

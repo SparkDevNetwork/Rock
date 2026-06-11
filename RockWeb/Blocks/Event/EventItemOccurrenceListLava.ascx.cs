@@ -46,12 +46,13 @@ namespace RockWeb.Blocks.Event
     [SlidingDateRangeField("Date Range", "Optional date range to filter the occurrences on.", false, enabledSlidingDateRangeTypes: "Next,Upcoming,Current", order:3)]
     [IntegerField("Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 4)]
     [LinkedPage( "Registration Page", "The page to use for registrations.", order: 5 )]
-    [CodeEditorField("Lava Template",
-        "The Lava template used to display the results.<br>Available Lava fields include:<ul><li>RegistrationPage</li><li>EventItem</li><li>EventItemOccurrences</li></ul><span class='tip tip-lava'></span>",
-        CodeEditorMode.Lava,
-        CodeEditorTheme.Rock,
-        defaultValue:"{% include '~~/Assets/Lava/EventItemOccurrenceList.lava' %}",
-        order:6)]
+
+    [CodeEditorField( "Lava Template",
+        Description = "The Lava template used to display the results.<br>Available Lava fields include:<ul><li>RegistrationPage</li><li>EventItem</li><li>EventItemOccurrences</li></ul><span class='tip tip-lava'></span>",
+        EditorMode = CodeEditorMode.Lava,
+        DefaultValue = "{% include '~~/Assets/Lava/EventItemOccurrenceList.lava' %}",
+        Order = 6 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "3ABC7007-CE3E-4092-900F-C907948CA8C2" )]
     public partial class EventItemOccurrenceListLava : Rock.Web.UI.RockBlock
     {

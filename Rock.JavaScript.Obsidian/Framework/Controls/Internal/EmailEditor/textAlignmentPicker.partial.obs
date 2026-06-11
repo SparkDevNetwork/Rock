@@ -39,13 +39,6 @@
     </SingleSelectButtonGroup>
 </template>
 
-<style scoped>
-svg {
-    height: 16px;
-    width: 16px;
-}
-</style>
-
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import SingleSelectButtonGroup from "./singleSelectButtonGroup.partial.obs";

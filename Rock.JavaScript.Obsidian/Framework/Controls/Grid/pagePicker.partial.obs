@@ -1,15 +1,15 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div v-if="hasMultiplePages" class="grid-page-picker">
-        <button :class="prevButtonCssClass" @click.prevent="onPrevButtonClick">
+        <button :class="prevButtonCssClass" type="button" @click.prevent="onPrevButtonClick">
             <i class="ti ti-chevron-left"></i>
         </button>
 
-        <button v-for="pageButton in pageButtons" :class="getPageButtonCssClass(pageButton)" @click.prevent="onPageButtonClick(pageButton)">
+        <button v-for="pageButton in pageButtons" :class="getPageButtonCssClass(pageButton)" type="button" @click.prevent="onPageButtonClick(pageButton)">
             {{ pageButton }}
         </button>
 
-        <button :class="nextButtonCssClass" @click.prevent="onNextButtonClick">
+        <button :class="nextButtonCssClass" type="button" @click.prevent="onNextButtonClick">
             <i class="ti ti-chevron-right"></i>
         </button>
     </div>

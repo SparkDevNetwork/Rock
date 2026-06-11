@@ -25,6 +25,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 
 using Humanizer;
 
@@ -338,8 +339,6 @@ namespace Rock.Jobs
 
             RunCleanupTask( "non-default chrome engines", () => RemoveNonDefaultChromeEngines() );
 
-            RunCleanupTask( "legacy sms phone numbers", () => SynchronizeLegacySmsPhoneNumbers() );
-
             RunCleanupTask( "remove old notification messages", () => RemoveOldNotificationMessages() );
 
             RunCleanupTask( "remove old notification message types", () => RemoveOldNotificationMessageTypes() );
@@ -357,6 +356,10 @@ namespace Rock.Jobs
             RunCleanupTask( "update campus tithe metric", () => UpdateCampusTitheMetric() );
 
             RunCleanupTask( "update campus average weekly attendance", () => UpdateCampusAverageWeekendAttendance() );
+
+            RunCleanupTask( "delete expired short links", () => DeleteExpiredShortLinks() );
+
+            RunCleanupTask( "update schedule dates", () => UpdateScheduleDates() );
 
             /*
              * 21-APR-2022 DMV
@@ -649,7 +652,7 @@ namespace Rock.Jobs
             int recordsUpdated = 0;
             var rockContext = CreateRockContext();
 
-            // just in case when groups has missing InactiveDateTime
+            // Update inactive Groups that are missing InactiveDateTime
             var inactiveGroups = new GroupService( rockContext )
                 .Queryable()
                 .Where( a => !a.IsActive && !a.InactiveDateTime.HasValue );
@@ -659,9 +662,9 @@ namespace Rock.Jobs
                 recordsUpdated += rockContext.BulkUpdate( inactiveGroups, g => new Group { InactiveDateTime = RockDateTime.Now } );
             }
 
-            // just in case when groups has missing archive date time
+            // Update archived Groups that are missing ArchivedDateTime
             var archivedGroups = new GroupService( rockContext )
-                .Queryable()
+                .AsNoFilter() // This is necessary to find archived groups.
                 .Where( a => a.IsArchived && !a.ArchivedDateTime.HasValue );
 
             if ( archivedGroups.Any() )
@@ -669,24 +672,24 @@ namespace Rock.Jobs
                 recordsUpdated += rockContext.BulkUpdate( archivedGroups, g => new Group { ArchivedDateTime = RockDateTime.Now } );
             }
 
-            // Clear InactiveDateTime If the Group record is Not Inactive
-            var activeGroups = new GroupService( rockContext )
+            // Clear the InactiveDateTime if the Group is active
+            var activeGroupsWithInactiveDates = new GroupService( rockContext )
                 .Queryable()
                 .Where( a => a.IsActive && a.InactiveDateTime.HasValue );
 
-            if ( archivedGroups.Any() )
+            if ( activeGroupsWithInactiveDates.Any() )
             {
-                recordsUpdated += rockContext.BulkUpdate( activeGroups, g => new Group { InactiveDateTime = null } );
+                recordsUpdated += rockContext.BulkUpdate( activeGroupsWithInactiveDates, g => new Group { InactiveDateTime = null } );
             }
 
-            // Remove ArchiveDateTime if the Group record is not Archived
-            var inarchivedGroups = new GroupService( rockContext )
+            // Clear the ArchiveDateTime if the Group is NOT archived
+            var nonArchivedGroupsWithArchivedDate = new GroupService( rockContext )
                 .Queryable()
                 .Where( a => !a.IsArchived && a.ArchivedDateTime.HasValue );
 
-            if ( archivedGroups.Any() )
+            if ( nonArchivedGroupsWithArchivedDate.Any() )
             {
-                recordsUpdated += rockContext.BulkUpdate( archivedGroups, g => new Group { ArchivedDateTime = null } );
+                recordsUpdated += rockContext.BulkUpdate( nonArchivedGroupsWithArchivedDate, g => new Group { ArchivedDateTime = null } );
             }
 
             return recordsUpdated;
@@ -713,7 +716,7 @@ namespace Rock.Jobs
 
             // just in case when group members has missing archive date time
             var archivedGroupMembers = new GroupMemberService( rockContext )
-                .Queryable()
+                .AsNoFilter() // This is necessary to find archived group members.
                 .Where( a => a.IsArchived && !a.ArchivedDateTime.HasValue );
 
             if ( archivedGroupMembers.Any() )
@@ -732,13 +735,13 @@ namespace Rock.Jobs
             }
 
             // Remove ArchiveDateTime if the Group members record is not Archived
-            var inarchivedGroupMembers = new GroupMemberService( rockContext )
+            var nonArchivedGroupMembersWithArchivedDate = new GroupMemberService( rockContext )
                 .Queryable()
                 .Where( a => !a.IsArchived && a.ArchivedDateTime.HasValue );
 
-            if ( inarchivedGroupMembers.Any() )
+            if ( nonArchivedGroupMembersWithArchivedDate.Any() )
             {
-                recordsUpdated += rockContext.BulkUpdate( inarchivedGroupMembers, g => new GroupMember { ArchivedDateTime = null } );
+                recordsUpdated += rockContext.BulkUpdate( nonArchivedGroupMembersWithArchivedDate, g => new GroupMember { ArchivedDateTime = null } );
             }
 
             return recordsUpdated;
@@ -1675,7 +1678,7 @@ namespace Rock.Jobs
         {
             int totalRowsDeleted = 0;
 
-            // Event though BulkDelete has a batch amount, that could exceed our command time out since that'll just be one command for the whole thing, so let's break it up into multiple commands
+            // Even though BulkDelete has a batch amount, that could exceed our command time out since that'll just be one command for the whole thing, so let's break it up into multiple commands
             // Also, this helps prevent new record inserts waiting the batch operation (if Snapshot Isolation is disabled)
             var chunkQuery = recordsToDeleteQuery.Take( chunkSize );
 
@@ -2185,7 +2188,10 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Delete group membership duplicates if they are not allowed by web.config and return the
-        /// number of records deleted.
+        /// number of records deleted. Before deleting, re-map any GroupMemberAssignment rows that
+        /// reference a non-oldest duplicate to reference the oldest GroupMember for that person/group/role.
+        /// If the remap would violate the unique index on (GroupMemberId, GroupId, LocationId, ScheduleId),
+        /// delete the newer conflicting assignment instead.
         /// </summary>
         /// <returns>The number of records deleted</returns>
         private int GroupMembershipCleanup()
@@ -2203,30 +2209,116 @@ namespace Rock.Jobs
 
             var groupMemberService = new GroupMemberService( rockContext );
             var groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
+            var groupMemberAssignmentService = new GroupMemberAssignmentService( rockContext );
 
-            var duplicateQuery = groupMemberService.Queryable()
-
-                // Duplicates are the same person, group, and role occurring more than once
+            // Build a per-duplicate mapping: (Duplicate GroupMemberId) -> (Oldest GroupMemberId)
+            // We need this so we can remap any GroupMemberAssignemnts to the surviving GroupMember record.
+            // NOTE: ThenBy(Id) gives deterministic ordering when CreatedDateTime ties.
+            var remapDict = groupMemberService.Queryable()
                 .GroupBy( m => new { m.PersonId, m.GroupId, m.GroupRoleId } )
-
-                // Filter out sets with only one occurrence because those are not duplicates
                 .Where( g => g.Count() > 1 )
+                .SelectMany( g =>
+                    g.OrderBy( gm => gm.CreatedDateTime ?? DateTime.MinValue )
+                     .ThenBy( gm => gm.Id )
+                     .Skip( 1 )
+                     .Select( dup => new
+                     {
+                         DuplicateId = dup.Id,
+                         OldestId = g.OrderBy( gm => gm.CreatedDateTime ?? DateTime.MinValue )
+                                     .ThenBy( gm => gm.Id )
+                                     .Select( gm => gm.Id )
+                                     .FirstOrDefault()
+                     } ) )
+                .ToDictionary( x => x.DuplicateId, x => x.OldestId );
 
-                // Leave the oldest membership and delete the others
-                .SelectMany( g => g.OrderBy( gm => gm.CreatedDateTime ).Skip( 1 ) );
+            if ( !remapDict.Any() )
+            {
+                return 0;
+            }
 
-            // Get the IDs to delete the history
-            var groupMemberIds = duplicateQuery.Select( d => d.Id );
+            var duplicateGroupMemberIds = remapDict.Keys.ToList();
+            var oldestIds = remapDict.Values.Distinct().ToList();
+
+            // Step 1: Re-map GroupMemberAssignments, handling unique index collisions
+            // Unique index columns: GroupMemberId, GroupId, LocationId, ScheduleId
+            // If target exists, delete the newer assignment instead of remapping.
+
+            Func<int, int, int?, int?, string> key = ( groupMemberId, groupId, locationId, scheduleId ) =>
+                $"{groupMemberId}|{groupId}|{locationId?.ToString() ?? "NULL"}|{scheduleId?.ToString() ?? "NULL"}";
+
+            // Load source assignments (ones pointing at duplicates).
+            var sourceAssignments = groupMemberAssignmentService.Queryable()
+                .Where( a => duplicateGroupMemberIds.Contains( a.GroupMemberId ) )
+                .ToList();
+
+            // Load existing assignments for oldest ids (to detect collisions).
+            var existingTargetKeys = new HashSet<string>(
+                groupMemberAssignmentService.Queryable()
+                    .Where( a => oldestIds.Contains( a.GroupMemberId ) )
+                    .Select( a => new
+                    {
+                        a.GroupMemberId,
+                        a.GroupId,
+                        a.LocationId,
+                        a.ScheduleId
+                    } )
+                    .ToList()
+                    .Select( x => key( x.GroupMemberId, x.GroupId, x.LocationId, x.ScheduleId ) )
+            );
+
+            // Reserve keys for assignments that already exist, after they are moved (prevents collisions within the batch).
+            var duplicateAssignmentIdsToDelete = new List<int>();
+
+            foreach ( var assignment in sourceAssignments )
+            {
+                int oldestGroupMemberId;
+                if ( !remapDict.TryGetValue( assignment.GroupMemberId, out oldestGroupMemberId ) || oldestGroupMemberId <= 0 )
+                {
+                    continue;
+                }
+
+                if ( assignment.GroupMemberId == oldestGroupMemberId )
+                {
+                    continue;
+                }
+
+                var targetKey = key( oldestGroupMemberId, assignment.GroupId, assignment.LocationId, assignment.ScheduleId );
+
+                if ( existingTargetKeys.Contains( targetKey ) )
+                {
+                    duplicateAssignmentIdsToDelete.Add( assignment.Id );
+                    continue;
+                }
+
+                // Point this assignment to the oldest, surviving group member id
+                assignment.GroupMemberId = oldestGroupMemberId;
+                existingTargetKeys.Add( targetKey );
+            }
+
+            // Delete any assignments that were going to be duplicates.
+            if ( duplicateAssignmentIdsToDelete.Any() )
+            {
+                var assignmentsToDeleteQuery = groupMemberAssignmentService.Queryable()
+                    .Where( a => duplicateAssignmentIdsToDelete.Contains( a.Id ) );
+
+                groupMemberAssignmentService.DeleteRange( assignmentsToDeleteQuery );
+            }
+
+            // Step 2: Delete history rows for duplicates.
             var historyQuery = groupMemberHistoricalService.Queryable()
-                .Where( gmh => groupMemberIds.Contains( gmh.GroupMemberId ) );
+                .Where( gmh => duplicateGroupMemberIds.Contains( gmh.GroupMemberId ) );
 
-            // Delete the history and duplicate memberships
+            // Step 3: Delete duplicate GroupMember rows (non-oldest).
+            var duplicatesQuery = groupMemberService.Queryable()
+                .Where( gm => duplicateGroupMemberIds.Contains( gm.Id ) );
+
             groupMemberHistoricalService.DeleteRange( historyQuery );
-            groupMemberService.DeleteRange( duplicateQuery );
+            groupMemberService.DeleteRange( duplicatesQuery );
+
             rockContext.SaveChanges();
 
             // Return the count of memberships deleted
-            return groupMemberIds.Count();
+            return duplicateGroupMemberIds.Count;
         }
 
         private int DeleteDuplicatePreviousFamilyLocations()
@@ -3014,43 +3106,6 @@ INNER JOIN [AverageAttendance] aa ON c.[Id] = aa.[CampusId]";
         }
 
         /// <summary>
-        /// Ensures that the legacy SMS phone numbers in the Defined Value
-        /// table are in sync with the new System Phone Number table.
-        /// </summary>
-        /// <remarks>
-        /// The detail block automatically updates the legacy phone numbers,
-        /// but we need to account for other ways they can be edited. This
-        /// code can be removed when legacy phone numbers are no longer
-        /// supported. System Phone Numbers were added in Rock 1.15.0.
-        /// </remarks>
-        /// <returns>The number of legacy phone numbers.</returns>
-        private int SynchronizeLegacySmsPhoneNumbers()
-        {
-            List<int> systemPhoneNumberIds;
-
-            using ( var rockContext = CreateRockContext() )
-            {
-                systemPhoneNumberIds = new SystemPhoneNumberService( rockContext )
-                    .Queryable()
-                    .Select( spn => spn.Id )
-                    .ToList();
-            }
-
-            // Create or update any legacy phone numbers that are somehow
-            // out of sync.
-            foreach ( var systemPhoneNumberId in systemPhoneNumberIds )
-            {
-                SystemPhoneNumberService.UpdateLegacyPhoneNumber( systemPhoneNumberId );
-            }
-
-            // Delete any legacy phone numbers that no longer have an associated
-            // system phone number.
-            SystemPhoneNumberService.DeleteExtraLegacyPhoneNumbers();
-
-            return systemPhoneNumberIds.Count;
-        }
-
-        /// <summary>
         /// Removes the old notification messages. This includes both expired
         /// messages as well as obsolete messages.
         /// </summary>
@@ -3105,16 +3160,16 @@ INNER JOIN [AverageAttendance] aa ON c.[Id] = aa.[CampusId]";
 
             // Delete each duplicate set one at a time. The most recent
             // message of the set is kept, older ones are removed.
-            foreach ( var (NotificationMessageTypeId, PersonId, Key) in duplicateKeys )
+            foreach ( var (notificationMessageTypeId, personId, key) in duplicateKeys )
             {
                 using ( var rockContext = CreateRockContext() )
                 {
                     var messageService = new NotificationMessageService( rockContext );
 
                     var messagesToDelete = messageService.Queryable()
-                        .Where( nm => nm.NotificationMessageTypeId == NotificationMessageTypeId
-                            && nm.PersonAlias.PersonId == PersonId
-                            && nm.Key == Key )
+                        .Where( nm => nm.NotificationMessageTypeId == notificationMessageTypeId
+                            && nm.PersonAlias.PersonId == personId
+                            && nm.Key == key )
                         .OrderByDescending( nm => nm.MessageDateTime )
                         .Skip( 1 )
                         .ToList();
@@ -3201,7 +3256,7 @@ INNER JOIN [AverageAttendance] aa ON c.[Id] = aa.[CampusId]";
         }
 
         /// <summary>
-        /// Updates Person.ViewedCount based on the count of ViewCount.PersonId for the past 90 days
+        /// Updates Person.ViewedCount based on the count of ViewCount.personId for the past 90 days
         /// </summary>
         /// <returns>The number of Person rows updated</returns>
         private int UpdatePersonViewedCount()
@@ -3215,13 +3270,13 @@ INNER JOIN [AverageAttendance] aa ON c.[Id] = aa.[CampusId]";
                     FROM [Person] p
                     INNER JOIN (
                         SELECT
-                            pat.[PersonId]
+                            pat.[personId]
                             , COUNT(*) AS [ViewCount]
                         FROM [PersonViewed] pv
                             INNER JOIN [PersonAlias] pat ON pat.[Id] = pv.[TargetPersonAliasId]
                         WHERE pv.[ViewDateTime] > DATEADD( DAY, -90, GETDATE() )
-                        GROUP BY pat.[PersonId]
-                    ) AS u ON u.[PersonId] = p.[Id]";
+                        GROUP BY pat.[personId]
+                    ) AS u ON u.[personId] = p.[Id]";
 
                 updateCount = rockContext.Database.ExecuteSqlCommand( updateQuery );
             }
@@ -3234,7 +3289,7 @@ INNER JOIN [AverageAttendance] aa ON c.[Id] = aa.[CampusId]";
         /// </summary>
         private int CalculateAgeAndAgeBracketOnAnalyticsSourceDate()
         {
-            var UpdateAgeAndAgeBracketSql = $@"
+            var updateAgeAndAgeBracketSql = $@"
 DECLARE @Today DATE = GETDATE()
 BEGIN 
 	UPDATE A
@@ -3311,7 +3366,7 @@ END
 ";
             using ( var rockContext = CreateRockContext() )
             {
-                int result = rockContext.Database.ExecuteSqlCommand( UpdateAgeAndAgeBracketSql );
+                int result = rockContext.Database.ExecuteSqlCommand( updateAgeAndAgeBracketSql );
                 return result;
             }
         }
@@ -3324,7 +3379,7 @@ END
         {
             CalculateAgeAndAgeBracketOnAnalyticsSourceDate();
 
-            const string UpdateAgeAndAgeRangeSql = @"
+            const string updateAgeAndAgeRangeSql = @"
 BEGIN
 	UPDATE Person
 	SET [BirthDateKey] = FORMAT([BirthDate],'yyyyMMdd')
@@ -3351,7 +3406,7 @@ END
 ";
             using ( var rockContext = CreateRockContext() )
             {
-                int result = rockContext.Database.ExecuteSqlCommand( UpdateAgeAndAgeRangeSql );
+                int result = rockContext.Database.ExecuteSqlCommand( updateAgeAndAgeRangeSql );
                 return result;
             }
         }
@@ -3601,7 +3656,7 @@ CREATE TABLE #GivingFamilies (
     , (SELECT [FamiliesMedianIncome] FROM [dbo].[AnalyticsSourcePostalCode] WHERE [PostalCode] = (SELECT TOP 1 LEFT([PostalCode], 5) FROM [dbo].[Location] l INNER JOIN [dbo].[GroupLocation] gl ON gl.[LocationId] = l.[Id] AND gl.[GroupId] = [PrimaryFamilyId] AND gl.[IsMappedLocation] = 1) ) AS [FamiliesMedianTithe]
  FROM
   [Person] p
-  INNER JOIN [dbo].[PersonAlias] pa ON pa.[PersonId] = p.[Id]
+  INNER JOIN [dbo].[PersonAlias] pa ON pa.[personId] = p.[Id]
   INNER JOIN [dbo].[FinancialTransaction] ft ON ft.[AuthorizedPersonAliasId] = pa.[Id]
   INNER JOIN [dbo].[FinancialTransactionDetail] ftd ON ftd.[TransactionId] = ft.[Id]
   INNER JOIN [dbo].[FinancialAccount] fa ON fa.[Id] = ftd.[AccountId] 
@@ -3658,6 +3713,41 @@ SET @UpdatedCampusCount = @CampusCount;
 
                 return ( int ) outputParam.Value;
             }
+        }
+
+        /// <summary>
+        /// Deletes expired short links from the database.
+        /// </summary>
+        /// <remarks>
+        /// This removes all short links that have an expiration date earlier than the current date.
+        /// It uses a minimum command timeout of 10 minutes to ensure the operation completes
+        /// successfully, even if processing a large number of records.
+        /// </remarks>
+        /// <returns>The total number of short links deleted from the database.</returns>
+        private int DeleteExpiredShortLinks()
+        {
+            using ( var rockContext = CreateRockContext() )
+            {
+                var today = RockDateTime.Today;
+                var totalRowsDeleted = 0;
+
+                var shortLinksToDelete = new PageShortLinkService( rockContext )
+                    .Queryable()
+                    .Where( a => a.ExpireDate.HasValue && a.ExpireDate.Value < today );
+
+                totalRowsDeleted += BulkDeleteInChunks( shortLinksToDelete, batchAmount, commandTimeout );
+
+                return totalRowsDeleted;
+            }
+        }
+
+        /// <summary>
+        /// Updates the ScheduleDates records for all schedules in the database.
+        /// </summary>
+        /// <returns>The total number of dates add or deleted.</returns>
+        private int UpdateScheduleDates()
+        {
+            return ScheduleService.UpdateScheduleDates( true, CancellationToken.None );
         }
 
         /// <summary>

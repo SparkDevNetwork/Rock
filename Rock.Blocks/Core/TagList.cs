@@ -188,7 +188,7 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<Tag> GetListQueryable( RockContext rockContext )
         {
-            var queryable = new TagService( new RockContext() ).Queryable()
+            IQueryable<Tag> queryable = new TagService( new RockContext() ).Queryable()
                 .Include( a => a.EntityType )
                 .Include( a => a.TaggedItems )
                 .Include( a => a.OwnerPersonAlias );

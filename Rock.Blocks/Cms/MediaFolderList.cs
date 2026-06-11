@@ -48,7 +48,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of media folders." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the media folder details.",
@@ -56,7 +56,8 @@ namespace Rock.Blocks.Cms
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "af4fa9d1-c8e7-47a6-a522-d40a7370517c" )]
-    [Rock.SystemGuid.BlockTypeGuid( "75133c37-547f-47fa-991c-6d957b2ea92d" )]
+    // Was [Rock.SystemGuid.BlockTypeGuid( "75133c37-547f-47fa-991c-6d957b2ea92d" )]
+    [Rock.SystemGuid.BlockTypeGuid( "02A91579-9355-45E7-A67A-56E998FB332A" )]
     [CustomizedGrid]
     public class MediaFolderList : RockListBlockType<MediaFolderData>
     {
@@ -100,7 +101,7 @@ namespace Rock.Blocks.Cms
             var builder = GetGridBuilder();
 
             box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = true;
+            box.IsDeleteEnabled = IsBlockEditAuthorized();
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -129,15 +130,25 @@ namespace Rock.Blocks.Cms
 
         /// <summary>
         /// Determines if the add button should be enabled in the grid.
-        /// <summary>
+        /// </summary>
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
         private bool GetIsAddEnabled()
         {
-            var entity = new MediaFolder();
             var mediaAccountComponent = GetMediaAccountComponent();
 
-            bool canAddEditDelete = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
-            return canAddEditDelete && mediaAccountComponent != null && mediaAccountComponent.AllowsManualEntry;
+            // Match the WebForms behavior: adding requires block-level Edit rights and a
+            // component that allows manual entry.
+            return IsBlockEditAuthorized() && mediaAccountComponent != null && mediaAccountComponent.AllowsManualEntry;
+        }
+
+        /// <summary>
+        /// Determines whether the current person has block-level Edit rights, which gates the
+        /// add and delete actions ( matching the original WebForms block behavior ).
+        /// </summary>
+        /// <returns><c>true</c> if the current person is authorized to edit at the block level; otherwise, <c>false</c>.</returns>
+        private bool IsBlockEditAuthorized()
+        {
+            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -308,7 +319,7 @@ namespace Rock.Blocks.Cms
                     return ActionBadRequest( $"{MediaFolder.FriendlyTypeName} not found." );
                 }
 
-                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                if ( !IsBlockEditAuthorized() )
                 {
                     return ActionBadRequest( $"Not authorized to delete {MediaFolder.FriendlyTypeName}." );
                 }

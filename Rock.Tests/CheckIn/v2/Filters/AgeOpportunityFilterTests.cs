@@ -358,7 +358,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
         {
             var birthdate = RockDateTime.Now.AddDays( -1277 ); // 3.5 years old
             var minAge = 4;
-            var maxBirthdate = RockDateTime.Now.AddYears( -3);
+            var maxBirthdate = RockDateTime.Now.AddYears( -3 );
 
             var filter = CreateAgeFilter( birthdate, true );
             var groupOpportunity = CreateGroupOpportunity( minAge, null, null, maxBirthdate );

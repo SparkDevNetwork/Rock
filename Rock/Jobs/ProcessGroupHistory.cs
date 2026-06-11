@@ -19,6 +19,9 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
@@ -30,8 +33,28 @@ namespace Rock.Jobs
     [DisplayName( "Process Group History" )]
     [Description( "Creates Historical snapshots of Groups and Group Members for any group types that have history enabled." )]
 
+    [IntegerField(
+        "Command Timeout",
+        Key = AttributeKey.CommandTimeout,
+        Description = "Maximum amount of time (in seconds) to wait for the sql operations to complete. Leave blank to use the default for this job (300). If there are SQL Timeout exceptions, this value can be increased.",
+        IsRequired = false,
+        DefaultIntegerValue = 300,
+        Category = "Advanced",
+        Order = 1 )]
+
     public class ProcessGroupHistory : RockJob
     {
+        #region Keys
+
+        /// <summary>
+        /// Keys to use for job Attributes.
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string CommandTimeout = "CommandTimeout";
+        }
+
+        #endregion Keys
 
         #region Constructor
 
@@ -50,6 +73,8 @@ namespace Rock.Jobs
 
         #region fields
 
+        private int _commandTimeout;
+
         /// <summary>
         /// The job status messages
         /// </summary>
@@ -62,7 +87,7 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()" />
         public override void Execute()
         {
-
+            _commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 300;
             _jobStatusMessages = new List<string>();
 
             UpdateGroupHistorical();
@@ -87,6 +112,8 @@ namespace Rock.Jobs
         public void UpdateGroupHistorical()
         {
             var rockContext = new RockContext();
+            rockContext.Database.SetCommandTimeout( _commandTimeout );
+
             var groupHistoricalService = new GroupHistoricalService( rockContext );
             var groupService = new GroupService( rockContext );
 
@@ -173,6 +200,8 @@ namespace Rock.Jobs
         public void UpdateGroupMemberHistorical()
         {
             var rockContext = new RockContext();
+            rockContext.Database.SetCommandTimeout( _commandTimeout );
+
             var groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
 
@@ -250,6 +279,8 @@ namespace Rock.Jobs
         public void UpdateGroupLocationHistorical()
         {
             var rockContext = new RockContext();
+            rockContext.Database.SetCommandTimeout( _commandTimeout );
+
             var groupLocationHistoricalService = new GroupLocationHistoricalService( rockContext );
             var groupLocationService = new GroupLocationService( rockContext );
 

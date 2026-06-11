@@ -20,7 +20,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -110,6 +112,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> a JSON return data string of the Assessment result..
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AssessmentResultData { get; set; }
 
         /// <summary>

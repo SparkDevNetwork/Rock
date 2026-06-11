@@ -75,7 +75,7 @@ namespace Rock.Model
                 .Select( value => new ListItemBag
                 {
                     Value = value.ConvertToInt().ToString(),
-                    Text = value.GetDescription() ?? value.ToString().SplitCase()
+                    Text = value.GetDisplayName()
                 } )
                 .ToList();
         }
@@ -133,7 +133,16 @@ namespace Rock.Model
             var completedActivities = new LearningClassActivityCompletionService( rockContext )
                 .Queryable()
                 .Where( a => a.LearningClassActivityId == learningClassActivityId )
-                .Where( a => a.IsStudentCompleted || a.IsFacilitatorCompleted )
+                .Where( a =>
+                    (
+                        a.IsStudentCompleted
+                        && a.LearningClassActivity.AssignTo == AssignTo.Student
+                    )
+                    || (
+                        a.IsFacilitatorCompleted
+                        && a.LearningClassActivity.AssignTo == AssignTo.Facilitator
+                    )
+                )
                 .Where( a => !a.RequiresGrading )
                 .Select( a => new
                 {
@@ -215,7 +224,7 @@ namespace Rock.Model
                 .Select( value => new ListItemBag
                 {
                     Value = value.ConvertToInt().ToString(),
-                    Text = value.GetDescription() ?? value.ToString().SplitCase()
+                    Text = value.GetDisplayName()
                 } )
                 .ToList();
         }

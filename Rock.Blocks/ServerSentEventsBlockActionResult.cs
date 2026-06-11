@@ -16,11 +16,20 @@
 //
 
 using System.Collections.Generic;
+#if WEBFORMS
 using System.Net.Http;
 using System.Net.Http.Formatting;
+#endif
 using System.Threading;
 using System.Threading.Tasks;
+#if WEBFORMS
 using System.Web.Http;
+#endif
+
+#if NET6_0_OR_GREATER
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+#endif
 
 namespace Rock.Blocks
 {
@@ -56,6 +65,7 @@ namespace Rock.Blocks
         #region Methods
 
         /// <inheritdoc/>
+#if WEBFORMS
         internal override Task<IHttpActionResult> ExecuteAsync( ApiController controller, IContentNegotiator defaultContentNegotiator, List<MediaTypeFormatter> validFormatters, CancellationToken cancellationToken )
         {
             var formatter = defaultContentNegotiator.Negotiate( typeof( T ), controller.Request, validFormatters ).Formatter;
@@ -86,6 +96,53 @@ namespace Rock.Blocks
 
             return Task.FromResult( ( IHttpActionResult ) new System.Web.Http.Results.ResponseMessageResult( response ) );
         }
+#else
+        internal override Task<IActionResult> ExecuteAsync( CancellationToken cancellationToken )
+        {
+            return Task.FromResult( ( IActionResult ) new PushStreamResult<T>( _source ) );
+        }
+
+        private class PushStreamResult<TSource> : IActionResult
+        {
+            private readonly IAsyncEnumerable<TSource> _source;
+
+            public PushStreamResult( IAsyncEnumerable<TSource> source )
+            {
+                _source = source;
+            }
+
+            public async Task ExecuteResultAsync( ActionContext context )
+            {
+                var response = context.HttpContext.Response;
+
+                response.StatusCode = StatusCodes.Status200OK;
+                response.ContentType = "text/event-stream";
+                response.Headers["Cache-Control"] = "no-cache";
+
+                //var jsonOptions = context.HttpContext.RequestServices
+                //    .GetRequiredService<IOptions<Microsoft.AspNetCore.Mvc.JsonOptions>>().Value;
+
+                //var serializerOptions = jsonOptions.JsonSerializerOptions;
+
+                using var writer = new System.IO.StreamWriter( response.Body );
+
+                await foreach ( var item in _source )
+                {
+                    await writer.WriteAsync( "data: " );
+                    await writer.FlushAsync();
+
+                    //await formatter.WriteToStreamAsync( typeof( T ), item, stream, content, context, cancellationToken );
+                    await writer.WriteAsync( item.ToCamelCaseJson( false, false ) );
+
+                    await writer.WriteAsync( "\n\n" );
+                    await writer.FlushAsync();
+                }
+
+                await writer.WriteAsync( "data: [DONE]\n" );
+                await writer.FlushAsync();
+            }
+        }
+#endif
 
         #endregion
     }

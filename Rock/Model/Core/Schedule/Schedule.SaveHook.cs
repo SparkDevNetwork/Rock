@@ -48,6 +48,11 @@ namespace Rock.Model
                     }
                 }
 
+                if ( PreSaveState == EntityContextState.Added || PreSaveState == EntityContextState.Modified )
+                {
+                    ScheduleService.UpdateScheduleDates( Entity.Id );
+                }
+
                 base.PostSave();
             }
         }

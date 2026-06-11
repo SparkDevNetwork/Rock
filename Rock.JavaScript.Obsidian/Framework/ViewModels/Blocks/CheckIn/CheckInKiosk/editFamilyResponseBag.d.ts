@@ -43,6 +43,12 @@ export type EditFamilyResponseBag = {
      */
     childRelationship?: ListItemBag | null;
 
+    /**
+     * Controls how the family address field displayed when adding or
+     * editing a family during registration.
+     */
+    displayAddressOnFamilies: RequirementLevel;
+
     /** Determines how the birthdate field will be displayed for adults. */
     displayBirthdateForAdults: RequirementLevel;
 

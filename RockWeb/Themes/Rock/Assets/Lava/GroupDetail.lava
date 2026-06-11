@@ -21,6 +21,7 @@
 
     ButtonVisibility.ShowEmailGroupLeadersButton - If this is true, the Email Group Leaders button should be visible
     ButtonVisibility.ShowEmailGroupLeadersButton - If this is true, the Email Roster Parents button should be visible
+    ButtonVisibility.AllowGroupMemberDelete - If this is true, the delete (X) icon should be visible on each group member
 {% endcomment %}
 
 {% if AllowedActions.View == true or AllowedActions.Edit == true or AllowedActions.Administrate == true %}
@@ -165,9 +166,11 @@
 
 						{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
+							{% if ButtonVisibility.AllowGroupMemberDelete == true %}
 							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
 							<i class="ti ti-x"></i>
 							</a>
+							{% endif %}
 							<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
 							<i class="ti ti-pencil"></i>
 							</a>
@@ -232,9 +235,11 @@
 
 						{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
+							{% if ButtonVisibility.AllowGroupMemberDelete == true %}
 							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
 							<i class="ti ti-x"></i>
 							</a>
+							{% endif %}
 							<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
 							<i class="ti ti-pencil"></i>
 							</a>
@@ -299,9 +304,11 @@
 
 						{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
+							{% if ButtonVisibility.AllowGroupMemberDelete == true %}
 							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
 							<i class="ti ti-x"></i>
 							</a>
+							{% endif %}
 							<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
 							<i class="ti ti-pencil"></i>
 							</a>

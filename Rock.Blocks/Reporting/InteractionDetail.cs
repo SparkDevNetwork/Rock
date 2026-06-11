@@ -42,7 +42,6 @@ namespace Rock.Blocks.Reporting
     [CodeEditorField( "Default Template",
         Description = "The Lava template to use as default.",
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
-        EditorTheme = Rock.Web.UI.Controls.CodeEditorTheme.Rock,
         EditorHeight = 300,
         IsRequired = false,
         Order = 2,
@@ -172,8 +171,10 @@ namespace Rock.Blocks.Reporting
         /// <returns>A string of the Interaction HTML Content</returns>
         private string GetInteractionContent()
         {
-            var interactionId = PageParameter( PageParameterKey.InteractionId ).AsInteger();
-            var interaction = new InteractionService( RockContext ).Get( interactionId );
+            var interaction = new InteractionService( RockContext ).Get(
+                PageParameter( PageParameterKey.InteractionId ),
+                !PageCache.Layout.Site.DisablePredictableIds
+            );
 
             if ( interaction != null )
             {

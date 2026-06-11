@@ -145,7 +145,7 @@ class TextToWorkflowReponseAsync : IAsyncResult
                         var fromPhone = string.Empty;
                         var toPhone = string.Empty;
                         var message = string.Empty;
-                        var twilioMessage = new Twilio.TwiML.Message();
+                        var twilioMessage = new Twilio.TwiML.Messaging.Message();
                         var messagingResponse = new Twilio.TwiML.MessagingResponse();
 
                         response.ContentType = "application/xml";
@@ -171,7 +171,7 @@ class TextToWorkflowReponseAsync : IAsyncResult
                         if ( processResponse != string.Empty )
                         {
                             twilioMessage.Body( processResponse );
-                            messagingResponse.Message( twilioMessage );
+                            messagingResponse.Append( twilioMessage );
                         }
 
                         response.Write( messagingResponse.ToString() );

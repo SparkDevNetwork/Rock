@@ -50,8 +50,29 @@ export const ConnectionWorkflowTriggerType = {
     /** Request Assigned */
     RequestAssigned: 8,
 
-    /** Future Follow-up Date Reached */
-    FutureFollowupDateReached: 9
+    /** Future Follow-Up Date Reached */
+    FutureFollowupDateReached: 9,
+
+    /** Request Becomes Due */
+    RequestBecomesDue: 10,
+
+    /** Request Becomes Due Soon */
+    RequestBecomesDueSoon: 11,
+
+    /** Request Becomes Overdue */
+    RequestBecomesOverdue: 12,
+
+    /** Status Becomes Due */
+    StatusBecomesDue: 13,
+
+    /** Status Becomes Due Soon */
+    StatusBecomesDueSoon: 14,
+
+    /** Status Becomes Overdue */
+    StatusBecomesOverdue: 15,
+
+    /** Connection Celebration Added */
+    ConnectionCelebrationAdded: 16
 } as const;
 
 /** Type of workflow trigger */
@@ -74,8 +95,27 @@ export const ConnectionWorkflowTriggerTypeDescription: Record<number, string> = 
 
     8: "Request Assigned",
 
-    9: "Future Followup Date Reached"
+    9: "Future Follow-Up Date Reached",
+
+    10: "Request Becomes Due",
+
+    11: "Request Becomes Due Soon",
+
+    12: "Request Becomes Overdue",
+
+    13: "Status Becomes Due",
+
+    14: "Status Becomes Due Soon",
+
+    15: "Status Becomes Overdue",
+
+    16: "Connection Celebration Added"
 };
+
+// Add the __order property hidden so it doesn't get enumerated.
+Object.defineProperty(ConnectionWorkflowTriggerTypeDescription, "__order", {
+    value: [0, 8, 7, 1, 3, 10, 11, 12, 2, 13, 14, 15, 4, 5, 9, 16, 6],
+});
 
 /** Type of workflow trigger */
 export type ConnectionWorkflowTriggerType = typeof ConnectionWorkflowTriggerType[keyof typeof ConnectionWorkflowTriggerType];

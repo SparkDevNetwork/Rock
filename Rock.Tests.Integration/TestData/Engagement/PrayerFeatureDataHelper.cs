@@ -153,7 +153,7 @@ namespace Rock.Tests.Integration.TestData.Engagement
             var systemEmailService = new SystemCommunicationService( dataContext );
 
             // Add Email Template
-            var systemCategory = CategoryCache.Get( TestGuids.Category.SystemEmailSystem.AsGuid() );
+            var systemCategory = CategoryCache.Get( TestGuids.Category.SystemCommunicationSystem.AsGuid() );
 
             var template = systemEmailService.Get( TestGuids.SystemEmailGuid.PrayerCommentsNotification.AsGuid() );
             if ( template == null )
@@ -677,7 +677,7 @@ namespace Rock.Tests.Integration.TestData.Engagement
                 Debug.Print( $"Added Prayer Request #{entriesAdded}... [PersonId={person.Id}, Date={requestDate}]" );
             }
 
-            Debug.Print( $"Create Data completed: { entriesAdded } requests created." );
+            Debug.Print( $"Create Data completed: {entriesAdded} requests created." );
 
             if ( entriesAdded == 0 )
             {

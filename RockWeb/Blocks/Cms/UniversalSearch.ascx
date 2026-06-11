@@ -95,16 +95,16 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-12">
-                                    <Rock:CodeEditor ID="ceCustomResultsTemplate" runat="server" Label="Custom Results Template" EditorMode="Lava" EditorTheme="Rock" />
+                                    <Rock:CodeEditor ID="ceCustomResultsTemplate" runat="server" Label="Custom Results Template" EditorMode="Lava" />
                                     <Rock:RockCheckBoxList ID="cblLavaCommands" runat="server" RepeatDirection="Horizontal" Label="Custom Results Lava Commands" />
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:CodeEditor ID="cePreHtml" runat="server" Label="Search Input Pre-HTML" Help="Custom Lava to place before the search input (for styling)." EditorMode="Lava" EditorTheme="Rock" />
+                                    <Rock:CodeEditor ID="cePreHtml" runat="server" Label="Search Input Pre-HTML" Help="Custom Lava to place before the search input (for styling)." EditorMode="Lava" />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:CodeEditor ID="cePostHtml" runat="server" Label="Search Input Post-HTML" Help="Custom Lava to place after the search input (for styling)." EditorMode="Lava" EditorTheme="Rock" />
+                                    <Rock:CodeEditor ID="cePostHtml" runat="server" Label="Search Input Post-HTML" Help="Custom Lava to place after the search input (for styling)." EditorMode="Lava" />
                                 </div>
                             </div>
                         </ContentTemplate>

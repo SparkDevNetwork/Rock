@@ -73,8 +73,8 @@
 
     const importCode = getSfcControlImportPath("keyValueList");
     const exampleCode = computed(() => {
-        const displayValueFirstProp = displayValueFirst.value == true ? " displayValueFirst" : "";
-        const fullWidthProp = fullWidth.value == true ? " fullWidth" : "";
+        const displayValueFirstProp = displayValueFirst.value === true ? " displayValueFirst" : "";
+        const fullWidthProp = fullWidth.value === true ? " fullWidth" : "";
         const keyOptionsProp = keyOptions.value ? ` :keyOptions="keyOptions"` : "";
         const valueOptionsProp = valueOptions.value ? ` :valueOptions="valueOptions"` : "";
 

@@ -29,6 +29,7 @@ using Rock.UniversalSearch;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Event.EventCalendarDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Event
@@ -41,15 +42,16 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the details of the given Event Calendar." )]
     [IconCssClass( "ti ti-question-mark" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "b033f86d-c166-4642-b999-0677f2ca2daf" )]
-    [Rock.SystemGuid.BlockTypeGuid( "2dc334ac-c2c2-4031-9e1c-6a5b6fbcae9c" )]
-    public class EventCalendarDetail : RockEntityDetailBlockType<EventCalendar, EventCalendarBag>
+    // was [Rock.SystemGuid.BlockTypeGuid( "2dc334ac-c2c2-4031-9e1c-6a5b6fbcae9c" )]
+    [Rock.SystemGuid.BlockTypeGuid( "0320DFB9-7A5A-4DAC-8234-3D504E496D71" )]
+    public class EventCalendarDetail : RockEntityDetailBlockType<EventCalendar, EventCalendarBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -110,6 +112,45 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
+        /// Determines whether the current person is authorized to add or edit the event
+        /// calendar. This matches the legacy Web Forms behavior: block-level Administrate
+        /// rights are required in all cases, and editing an existing calendar additionally
+        /// requires Edit rights on the calendar itself.
+        /// </summary>
+        /// <param name="entity">The event calendar to check.</param>
+        /// <returns><c>true</c> if the current person is authorized to add or edit the calendar; otherwise <c>false</c>.</returns>
+        private bool IsAuthorizedToEdit( EventCalendar entity )
+        {
+            // The legacy block required block-level Administrate rights to add, edit, or delete a calendar.
+            if ( !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                return false;
+            }
+
+            // A new calendar only requires block-level Administrate rights.
+            if ( entity.Id == 0 )
+            {
+                return true;
+            }
+
+            // Editing an existing calendar additionally requires Edit rights on the calendar itself.
+            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+        }
+
+        /// <summary>
+        /// Determines whether the current person is authorized to delete the event calendar.
+        /// This matches the legacy Web Forms behavior: the delete action was only offered to
+        /// block administrators and the server required Administrate rights on the calendar itself.
+        /// </summary>
+        /// <param name="entity">The event calendar to check.</param>
+        /// <returns><c>true</c> if the current person is authorized to delete the calendar; otherwise <c>false</c>.</returns>
+        private bool IsAuthorizedToDelete( EventCalendar entity )
+        {
+            return BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson )
+                && entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
+        }
+
+        /// <summary>
         /// Sets the initial entity state of the box. Populates the Entity or
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
@@ -124,8 +165,11 @@ namespace Rock.Blocks.Event
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            // The legacy Web Forms block applied no entity-level View check: it rendered the calendar
+            // read-only to anyone who could see the block. Mirror that ( block-level View is still
+            // enforced by the framework before the block loads ).
+            var isViewable = true;
+            box.IsEditable = IsAuthorizedToEdit( entity );
 
             entity.LoadAttributes( RockContext );
 
@@ -178,7 +222,11 @@ namespace Rock.Blocks.Event
                 IsIndexEnabled = entity.IsIndexEnabled,
                 Name = entity.Name,
                 ExportFeedUrl = string.Format( "{0}GetEventCalendarFeed.ashx?CalendarId={1}", GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ), entity.Id ),
-                CanAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, GetCurrentPerson() ) || entity.IsAuthorized( Authorization.ADMINISTRATE, GetCurrentPerson() )
+
+                // Drives the Edit, Delete, and Security button visibility. The legacy block showed
+                // the Edit and Delete buttons only to block administrators who also had Edit rights
+                // on the calendar itself.
+                CanAdministrate = IsAuthorizedToEdit( entity )
             };
         }
 
@@ -291,6 +339,29 @@ namespace Rock.Blocks.Event
             };
         }
 
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var key = pageReference.GetPageParameter( PageParameterKey.EventCalendarId );
+            var pageParameters = new Dictionary<string, string>();
+
+            string name = new EventCalendarService( RockContext )
+                .GetSelect( key, c => c.Name );
+
+            if ( name != null )
+            {
+                pageParameters.Add( PageParameterKey.EventCalendarId, key );
+            }
+
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+            var breadCrumb = new BreadCrumbLink( name ?? "New Event Calendar", breadCrumbPageRef );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
+            };
+        }
+
         // <inheritdoc/>
         protected override bool TryGetEntityForEditAction( string idKey, out EventCalendar entity, out BlockActionResult error )
         {
@@ -317,9 +388,10 @@ namespace Rock.Blocks.Event
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            // Editing requires block-level Administrate rights, plus Edit rights on an existing calendar.
+            if ( !IsAuthorizedToEdit( entity ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${EventCalendar.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {EventCalendar.FriendlyTypeName}." );
                 return false;
             }
 
@@ -525,10 +597,18 @@ namespace Rock.Blocks.Event
         public BlockActionResult Delete( string key )
         {
             var entityService = new EventCalendarService( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
+            if ( entity == null )
             {
-                return actionError;
+                return ActionBadRequest( $"{EventCalendar.FriendlyTypeName} not found." );
+            }
+
+            // Deleting the calendar requires block-level Administrate rights and Administrate
+            // rights on the calendar itself ( matches the legacy Web Forms behavior ).
+            if ( !IsAuthorizedToDelete( entity ) )
+            {
+                return ActionBadRequest( $"You are not authorized to delete this {EventCalendar.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )
@@ -550,6 +630,12 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult GetAttribute( Guid? attributeGuid )
         {
+            // Editing calendar item attributes required block-level Administrate rights in the legacy block.
+            if ( !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "Not authorized to edit attributes." );
+            }
+
             PublicEditableAttributeBag editableAttribute;
             var entity = GetInitialEntity();
             var eventIdQualifierValue = entity.Id.ToString();

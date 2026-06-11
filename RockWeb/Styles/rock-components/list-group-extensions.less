@@ -1,0 +1,19 @@
+// imported in _components.less
+
+// Bootstrap List Group Extensions
+// --------------------------------------------------
+
+// Ensure Whole Item Hovers if Link Present
+
+li.list-group-item > a {
+  display: block;
+  padding: var(--spacing-small) var(--spacing-medium);
+}
+
+li.list-group-item:has(> a) {
+  padding: 0;
+}
+
+li.list-group-item:hover:has(> a) {
+  background-color: var(--color-interface-softer) !important;
+}

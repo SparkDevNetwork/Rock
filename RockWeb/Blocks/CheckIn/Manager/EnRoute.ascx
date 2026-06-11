@@ -5,11 +5,11 @@
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
-            <div class="panel-heading">
+            <div class="panel-header">
                 <h1 class="panel-title">People En Route
                 </h1>
             </div>
-            <div class="panel-body">
+            <div class="panel-body en-route-filters">
                 <Rock:GroupPicker ID="gpGroups" runat="server" Label="Groups" AllowMultiSelect="true" ValidationGroup="vgFilterCriteria" EnableFullWidth="true" />
                 <small>
                     <asp:Literal ID="lblIncludeChildGroups" runat="server" Text="Child Groups Included" Visible="false" /></small>
@@ -19,11 +19,11 @@
                 <Rock:RockTextBox ID="tbSearch" runat="server" CssClass="js-search" Label="Search by Name" PrependText="<i class='ti ti-search'></i>" spellcheck="false" onkeydown="javascript:return handleSearchBoxKeyPress(this, event.keyCode);" />
 
                 <div class="actions margin-t-md">
-                    <asp:LinkButton ID="btnApplyFilter" runat="server" CssClass="filter btn btn-action btn-xs" Text="Apply Filter" OnClick="btnApplyFilter_Click" ValidationGroup="vgFilterCriteria" CausesValidation="true" />
+                    <asp:LinkButton ID="btnApplyFilter" runat="server" CssClass="filter btn btn-outline-primary btn-xs" Text="Apply Filter" OnClick="btnApplyFilter_Click" ValidationGroup="vgFilterCriteria" CausesValidation="true" />
                     <asp:LinkButton ID="btnClearFilter" runat="server" CssClass="filter-clear btn btn-default btn-xs" Text="Clear Filter" OnClick="btnClearFilter_Click" CausesValidation="false" />
                 </div>
             </div>
-            <div class="panel-body">
+            <div class="panel-body en-route-list">
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gAttendees" runat="server" DisplayType="Light" UseFullStylesForLightGrid="true" OnRowDataBound="gAttendees_RowDataBound" DataKeyNames="PersonGuid,AttendanceIds" ShowActionRow="false">
                         <Columns>
@@ -34,10 +34,11 @@
                             <Rock:RockBoundField DataField="ServiceTimes" HeaderText="Service Times" HeaderStyle-CssClass="d-none d-sm-table-cell" ItemStyle-CssClass="service-times d-none d-sm-table-cell align-middle" />
                             <Rock:RockLiteralField ID="lLocation" HeaderText="Room" Visible="true" HeaderStyle-CssClass="print-last-col" ItemStyle-CssClass="align-middle print-last-col" />
 
-                            <Rock:LinkButtonField ID="btnMovePerson" HeaderStyle-CssClass="d-print-none" ItemStyle-CssClass="grid-columnaction d-print-none" CssClass="btn btn-default btn-square" Text="<i class='ti ti-external-link'></i>" ToolTip="Move Person" OnClick="btnMovePerson_Click" />
+                            <Rock:LinkButtonField ID="btnMovePerson" HeaderStyle-CssClass="d-print-none" ItemStyle-CssClass="grid-columnaction d-print-none" CssClass="btn btn-default btn-square" Text="<i class='ti ti-transfer'></i>" ToolTip="Move Person" OnClick="btnMovePerson_Click" />
                         </Columns>
                     </Rock:Grid>
                 </div>
+            </div>
         </asp:Panel>
 
         <Rock:ModalDialog ID="mdMovePerson" runat="server" Title="Move Person" SaveButtonText="Move" OnSaveClick="mdMovePerson_SaveClick">

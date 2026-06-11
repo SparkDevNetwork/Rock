@@ -31,7 +31,6 @@
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { GroupAndRolePickerGetRolesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupAndRolePickerGetRolesOptionsBag";
-    import { normalizeRules } from "@Obsidian/ValidationRules";
 
     const props = defineProps({
         /** V-model for the role */
@@ -102,15 +101,6 @@
      */
     const actualRoleItems = computed((): ListItemBag[] | (() => Promise<ListItemBag[]>) => {
         return loadedRoleItems.value || loadRoleItems;
-    });
-
-    /** Rules pass to the GroupTypeGroup Picker */
-    const typeGroupPickerRules = computed(() => {
-        const rules = normalizeRules(props.rules);
-        if (rules.includes("required")) {
-            return "required";
-        }
-        return "";
     });
 
     // #endregion

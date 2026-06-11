@@ -173,6 +173,7 @@ export function createInvokeStreamingBlockAction(doStreamingApiCall: HttpDoStrea
                 __context: context,
                 ...data
             },
+            undefined,
             cancellationToken);
     }
 

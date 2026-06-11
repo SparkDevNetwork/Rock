@@ -21,6 +21,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Ical.Net;
@@ -34,7 +35,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     ///
     /// </summary>
-    public class ScheduleBuilder : CompositeControl, IRockControl
+    public class ScheduleBuilder : CompositeControl, IRockControlAdditionalRendering
     {
         #region IRockControl implementation
 
@@ -238,6 +239,7 @@ namespace Rock.Web.UI.Controls
 
         private Panel _scheduleBuilderPanel;
         private LinkButton _btnShowPopup;
+        private HtmlButton _btnSelectNone;
         private ModalDialog _modalDialog;
         private ScheduleBuilderPopupContents _scheduleBuilderPopupContents;
 
@@ -272,6 +274,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 sm.RegisterAsyncPostBackControl( _btnShowPopup );
+                sm.RegisterAsyncPostBackControl( _btnSelectNone );
             }
         }
 
@@ -311,8 +314,11 @@ namespace Rock.Web.UI.Controls
 
                 if ( ShowScheduleFriendlyTextAsToolTip )
                 {
-                    this.ToolTip = new Rock.Model.Schedule { iCalendarContent = _scheduleBuilderPopupContents.iCalendarContent }.ToFriendlyScheduleText( true );
+                    this.ToolTip = GetDisplayedScheduleFriendlyText();
                 }
+
+                UpdatePickerDisplayState();
+
             }
         }
 
@@ -399,6 +405,44 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether a clear button should be shown when a schedule has been selected.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the clear button should be shown; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowClearButton
+        {
+            get
+            {
+                return ViewState["ShowClearButton"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["ShowClearButton"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current schedule friendly text should be displayed after the label.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the friendly text should be rendered after the label; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayScheduleFriendlyTextAfterLabel
+        {
+            get
+            {
+                return ViewState["DisplayScheduleFriendlyTextAfterLabel"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["DisplayScheduleFriendlyTextAfterLabel"] = value;
+            }
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -415,9 +459,19 @@ namespace Rock.Web.UI.Controls
             _btnShowPopup.CausesValidation = false;
             _btnShowPopup.ID = "btnShowPopup_" + this.ClientID;
             _btnShowPopup.CssClass = "picker-label";
-            _btnShowPopup.Text = "<i class='ti ti-calendar'></i> Edit Schedule";
+            _btnShowPopup.Text = "<span class='selected-names'><i class='ti ti-calendar'></i> Edit Schedule</span>";
             _btnShowPopup.ClientIDMode = ClientIDMode.Static;
             _btnShowPopup.Click += _btnShowPopup_Click;
+
+            _btnSelectNone = new HtmlButton();
+            _btnSelectNone.Attributes["role"] = "button";
+            _btnSelectNone.Attributes["type"] = "button";
+            _btnSelectNone.Attributes["aria-label"] = "Clear selection";
+            _btnSelectNone.Attributes["class"] = "btn picker-select-none";
+            _btnSelectNone.ID = "btnClearSchedule_" + this.ClientID;
+            _btnSelectNone.InnerHtml = "<i class='ti ti-x'></i>";
+            _btnSelectNone.CausesValidation = false;
+            _btnSelectNone.ServerClick += _btnSelectNone_Click;
 
             _modalDialog = new ModalDialog();
             _modalDialog.ID = "modalDialog_" + this.ClientID;
@@ -434,8 +488,11 @@ namespace Rock.Web.UI.Controls
 
             this.Controls.Add( _scheduleBuilderPanel );
             _scheduleBuilderPanel.Controls.Add( _btnShowPopup );
+            _scheduleBuilderPanel.Controls.Add( _btnSelectNone );
             _scheduleBuilderPanel.Controls.Add( _modalDialog );
             _modalDialog.Content.Controls.Add( _scheduleBuilderPopupContents );
+
+            UpdatePickerDisplayState();
 
             RockControlHelper.CreateChildControls( this, Controls );
         }
@@ -453,6 +510,30 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Renders content after the label.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public void RenderAfterLabel( HtmlTextWriter writer )
+        {
+            if ( !DisplayScheduleFriendlyTextAfterLabel )
+            {
+                return;
+            }
+
+            var friendlyText = GetDisplayedScheduleFriendlyText();
+            if ( friendlyText.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            writer.WriteLine();
+            writer.AddAttribute( "class", "label label-info schedulebuilder-info" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.WriteEncodedText( friendlyText );
+            writer.RenderEndTag();
+        }
+
+        /// <summary>
         /// This is where you implement the simple aspects of rendering your control.  The rest
         /// will be handled by calling RenderControlHelper's RenderControl() method.
         /// </summary>
@@ -461,6 +542,66 @@ namespace Rock.Web.UI.Controls
         {
             _scheduleBuilderPanel.RenderControl( writer );
             RegisterJavaScript();
+        }
+
+        /// <summary>
+        /// Updates the picker styling and clear-button visibility for the current value.
+        /// </summary>
+        private void UpdatePickerDisplayState()
+        {
+            if ( _scheduleBuilderPanel == null )
+            {
+                return;
+            }
+
+            var hasSchedule = GetDisplayedScheduleFriendlyText().IsNotNullOrWhiteSpace();
+            var pickerClasses = new List<string> { "picker" };
+
+            if ( ShowClearButton )
+            {
+                pickerClasses.Add( "picker-select" );
+                pickerClasses.Add( "rollover-container" );
+
+                if ( hasSchedule )
+                {
+                    pickerClasses.Add( "picker-show-clear" );
+                }
+            }
+
+            _scheduleBuilderPanel.CssClass = pickerClasses.AsDelimited( " " );
+
+            if ( _btnSelectNone != null )
+            {
+                if ( ShowClearButton && hasSchedule )
+                {
+                    _btnSelectNone.Style.Remove( HtmlTextWriterStyle.Display );
+                }
+                else
+                {
+                    _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the friendly text for the current schedule value.
+        /// </summary>
+        /// <returns>The friendly text if a schedule is set; otherwise an empty string.</returns>
+        private string GetDisplayedScheduleFriendlyText()
+        {
+            try
+            {
+                var schedule = new Rock.Model.Schedule
+                {
+                    iCalendarContent = iCalendarContent
+                };
+
+                return schedule.HasSchedule() ? schedule.ToFriendlyScheduleText( true ) : string.Empty;
+            }
+            catch
+            {
+                return string.Empty;
+            }
         }
 
         /// <summary>
@@ -476,6 +617,16 @@ namespace Rock.Web.UI.Controls
             {
                 SaveSchedule( sender, e );
             }
+        }
+
+        /// <summary>
+        /// Handles the ServerClick event of the clear button.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void _btnSelectNone_Click( object sender, EventArgs e )
+        {
+            iCalendarContent = string.Empty;
         }
 
         /// <summary>

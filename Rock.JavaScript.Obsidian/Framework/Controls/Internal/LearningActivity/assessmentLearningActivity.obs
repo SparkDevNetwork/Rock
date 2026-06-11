@@ -57,10 +57,10 @@
                 <div class="assessment-items-title-bar">
                     <h4 class="assessment-items-header">Assessment Items</h4>
                     <div class="add-assessment-item-button-container">
-                        <button
-                                aria-label="Add an assessment item"
+                        <button aria-label="Add an assessment item"
                                 :disabled="disabled"
                                 class="btn btn-default btn-xs align-items-center add-assessment-item-button"
+                                type="button"
                                 @click.prevent="addAssessmentItem(0)">
                             <i class="ti ti-plus" aria-hidden="true"></i> Add Item
                         </button>
@@ -71,7 +71,7 @@
                         <div class="assessment-item assessment-item-reorder-section">
                             <i class="ti ti-menu-2 reorder-handle" :style="reorderIconStyle"></i>
 
-                            <button aria-label="Remove this item" :disabled="disabled" class="btn btn-default btn-square remove-item-button" @click.prevent="items.splice(index, 1)">
+                            <button aria-label="Remove this item" :disabled="disabled" class="btn btn-default btn-square remove-item-button" type="button" @click.prevent="items.splice(index, 1)">
                                 <i class="ti ti-x" aria-hidden="true"></i>
                             </button>
                         </div>
@@ -99,6 +99,7 @@
                             aria-label="Add an assessment item"
                             :disabled="disabled"
                             class="btn btn-default btn-xs align-items-center add-assessment-item-button"
+                            type="button"
                             @click.prevent="addAssessmentItem(items.length - 1)">
                         <i class="ti ti-plus" aria-hidden="true"></i> Add Item
                     </button>
@@ -225,7 +226,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref, toValue, watch, } from "vue";
+    import { computed, nextTick, onMounted, ref, toValue, watch, } from "vue";
     import { debounce } from "@Obsidian/Utility/util";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import Panel from "@Obsidian/Controls/panel.obs";
@@ -675,6 +676,16 @@
 
     watch(() => [props.activityBag, props.completionBag], () => {
         updateLocalValues();
+    });
+
+    /**
+     * Since activity components are dynamically loaded, this gives the parent
+     * component the opportunity to perform any custom actions once it's sure
+     * the child component is fully loaded and ready.
+     */
+    onMounted(async () => {
+        await nextTick();
+        emits("loaded");
     });
 
     updateLocalValues();

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -224,6 +224,11 @@ namespace Rock.Workflow.Action
 
             var documentService = new DocumentService( rockContext );
             documentService.Add( document );
+            rockContext.SaveChanges();
+
+            // Make sure the associated BinaryFile is using the Document Entity for security.
+            binaryFile.ParentEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.DOCUMENT );
+            binaryFile.ParentEntityId = document.Id;
             rockContext.SaveChanges();
 
             action.AddLogEntry( "Added document to the Entity." );

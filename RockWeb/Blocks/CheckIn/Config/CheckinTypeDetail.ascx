@@ -228,6 +228,7 @@
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplayEthnicityOnChildren" runat="server" Label="Display Ethnicity on Children" Help="How should ethnicity be displayed for children?" />
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplayMobilePhoneOnChildren" runat="server" Label="Display Mobile Phone on Children" Help="How should Mobile Phone be displayed for children?" />
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplaySuffix" runat="server" Label="Display Suffix" Help="Show or hide the suffix field when editing an individual." />
+                                    <Rock:RockDropDownList ID="ddlRegistrationDisplayAddressOnFamilies" runat="server" Label="Display Address on Families" Help="Controls how the family address field displayed when adding or editing a family during registration." />
                                 </div>
                             </div>
                         </Rock:PanelWidget>

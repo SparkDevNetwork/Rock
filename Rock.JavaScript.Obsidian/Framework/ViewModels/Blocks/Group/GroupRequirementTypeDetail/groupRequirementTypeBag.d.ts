@@ -91,9 +91,6 @@ export type GroupRequirementTypeBag = {
     /** Gets or sets the SQL expression. */
     sqlExpression?: string | null;
 
-    /** Gets or sets the SQL help text. */
-    sqlHelpHTML?: string | null;
-
     /** Gets or sets the summary. */
     summary?: string | null;
 

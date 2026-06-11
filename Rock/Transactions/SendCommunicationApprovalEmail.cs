@@ -86,7 +86,7 @@ namespace Rock.Transactions
                             if ( string.IsNullOrEmpty( ApprovalPageUrl ) )
                             {
                                 var internalApplicationRoot = GlobalAttributesCache.Value( "InternalApplicationRoot" ).EnsureTrailingForwardslash();
-                                ApprovalPageUrl = $"{internalApplicationRoot}Communication/{communication.Id}";
+                                ApprovalPageUrl = $"{internalApplicationRoot}Communication/{communication.Id.AsIdKey()}";
                             }
 
                             foreach ( var approver in approvers )

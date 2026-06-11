@@ -17,6 +17,11 @@
 using System;
 using System.Linq;
 using System.Web;
+
+using Microsoft.Extensions.DependencyInjection;
+
+using Rock.Configuration;
+using Rock.Net;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -74,22 +79,26 @@ namespace Rock.Lava
         protected virtual string GetCurrentThemeName()
         {
             // Get the theme from the current page.
-            var theme = "Rock";
-
-            var page = HttpContext.Current?.Handler as RockPage;
-            if ( page != null )
+            if ( HttpContext.Current?.Handler is RockPage page )
             {
                 if ( page.Theme.IsNotNullOrWhiteSpace() )
                 {
-                    theme = page.Theme;
+                    return page.Theme;
                 }
                 else if ( page.Site != null && page.Site.Theme.IsNotNullOrWhiteSpace() )
                 {
-                    theme = page.Site.Theme;
+                    return page.Site.Theme;
                 }
             }
 
-            return theme;
+            var requestContext = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext;
+
+            if ( requestContext != null && requestContext.Page?.Layout?.Site?.Theme != null )
+            {
+                return requestContext.Page.Layout.Site.Theme;
+            }
+
+            return "Rock";
         }
 
         internal virtual string ResolveVirtualPath( string virtualPath )

@@ -694,7 +694,6 @@
 
             if (captchaElement.value) {
                 actionContext.captcha = await captchaElement.value.getToken();
-                captchaElement.value.refreshToken();
             }
 
             const result = await invokeBlockAction<FamilyPreRegistrationSaveResponseBag>("Save", { bag }, actionContext);

@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField :modelValue="internalValue" v-bind="fieldProps" label="" help="" :disableLabel="false" name="radio-button" #default="{ fi }">
+    <RockFormField :modelValue="internalValue" v-bind="fieldProps" label="" help="" :disableLabel="false" name="radio-button">
         <slot name="prepend" />
         <label :class="isBlock ? 'radio' : 'radio-inline'">
             <input type="radio" v-model="internalValue" :name="name" :value="value">

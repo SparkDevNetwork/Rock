@@ -47,7 +47,8 @@ namespace Rock.Blocks.Engagement
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "02713f10-e574-45e0-9178-a02f7957b3a4" )]
-    [Rock.SystemGuid.BlockTypeGuid( "8eb82e1e-c0bd-4591-9d7a-f120a871fec3" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "8eb82e1e-c0bd-4591-9d7a-f120a871fec3" )]
+    [Rock.SystemGuid.BlockTypeGuid( "481AE184-4654-48FB-A2B4-90F6604B59B8" )]
     [CustomizedGrid]
     public class ConnectionOpportunityList : RockEntityListBlockType<ConnectionOpportunity>
     {
@@ -63,7 +64,21 @@ namespace Rock.Blocks.Engagement
             public const string DetailPage = "DetailPage";
         }
 
+        private static class PageParameterKey
+        {
+            public const string ConnectionTypeId = "ConnectionTypeId";
+        }
+
         #endregion Keys
+
+        #region Fields
+
+        /// <summary>
+        /// Singleton instance of the connection type, should be accessed via <see cref="GetConnectionType"/>.
+        /// </summary>
+        private ConnectionTypeCache _connectionType;
+
+        #endregion Fields
 
         #region Methods
 
@@ -72,9 +87,10 @@ namespace Rock.Blocks.Engagement
         {
             var box = new ListBlockBox<ConnectionOpportunityListOptionsBag>();
             var builder = GetGridBuilder();
+            var isAddDeleteEnabled = GetIsAddDeleteEnabled();
 
-            box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = true;
+            box.IsAddEnabled = isAddDeleteEnabled;
+            box.IsDeleteEnabled = isAddDeleteEnabled;
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -89,20 +105,59 @@ namespace Rock.Blocks.Engagement
         /// <returns>The options that provide additional details to the block.</returns>
         private ConnectionOpportunityListOptionsBag GetBoxOptions()
         {
-            var options = new ConnectionOpportunityListOptionsBag();
+            var options = new ConnectionOpportunityListOptionsBag
+            {
+                IsReOrderColumnVisible = GetIsAddDeleteEnabled()
+            };
 
             return options;
         }
 
         /// <summary>
-        /// Determines if the add button should be enabled in the grid.
-        /// <summary>
-        /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
-        private bool GetIsAddEnabled()
+        /// Determines if the add and delete actions should be enabled in the grid. This mirrors the
+        /// legacy Web Forms block: edit rights are granted by either block-level Edit security or Edit
+        /// security on the connection type the opportunities belong to.
+        /// </summary>
+        /// <returns>A boolean value that indicates if the add and delete actions should be enabled.</returns>
+        private bool GetIsAddDeleteEnabled()
         {
-            var entity = new ConnectionOpportunity();
+            if ( BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return true;
+            }
 
-            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var connectionType = GetConnectionType();
+            return connectionType?.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) ?? false;
+        }
+
+        /// <summary>
+        /// Determines whether the current person is authorized to delete the specified connection
+        /// opportunity.
+        /// </summary>
+        /// <param name="entity">The connection opportunity being deleted.</param>
+        /// <returns><c>true</c> if the current person is authorized to delete the opportunity; otherwise <c>false</c>.</returns>
+        private bool IsAuthorizedToDelete( ConnectionOpportunity entity )
+        {
+            return GetIsAddDeleteEnabled()
+                || entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+        }
+
+        /// <summary>
+        /// Determines whether the current person may view the opportunity grid at all. This mirrors the
+        /// legacy Web Forms block, which hid the entire panel unless the person had Edit rights (block-level
+        /// or on the connection type) or View rights on the connection type. Individual rows are still
+        /// filtered by per-opportunity View in <see cref="GetListItems"/>.
+        /// </summary>
+        /// <returns><c>true</c> if the current person may view the opportunity grid; otherwise <c>false</c>.</returns>
+        private bool GetIsViewAuthorized()
+        {
+            if ( GetIsAddDeleteEnabled() )
+            {
+                return true;
+            }
+
+            var connectionType = GetConnectionType();
+            return connectionType?.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ?? false;
         }
 
         /// <summary>
@@ -111,16 +166,42 @@ namespace Rock.Blocks.Engagement
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var queryParams = new Dictionary<string, string>
+            {
+                ["ConnectionOpportunityId"] = "((Key))",
+                ["autoEdit"] = "true",
+                ["returnUrl"] = this.GetCurrentPageUrl()
+            };
+
+            var connectionType = GetConnectionType();
+            if ( connectionType != null )
+            {
+                queryParams[PageParameterKey.ConnectionTypeId] = connectionType.IdKey;
+            }
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string> { ["ConnectionOpportunityId"] = "((Key))", ["autoEdit"] = "true", ["returnUrl"] = this.GetCurrentPageUrl() } )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams )
             };
         }
 
         /// <inheritdoc/>
         protected override IQueryable<ConnectionOpportunity> GetListQueryable( RockContext rockContext )
         {
-            return base.GetListQueryable( rockContext );
+            var connectionType = GetConnectionType();
+            if ( connectionType == null )
+            {
+                return new List<ConnectionOpportunity>().AsQueryable();
+            }
+
+            // Mirror the legacy block: the entire grid was hidden unless the person could view ( or edit )
+            // the connection type. Rows are additionally filtered by per-opportunity View in GetListItems.
+            if ( !GetIsViewAuthorized() )
+            {
+                return new List<ConnectionOpportunity>().AsQueryable();
+            }
+
+            return base.GetListQueryable( rockContext ).Where( c => c.ConnectionTypeId == connectionType.Id );
         }
 
         /// <inheritdoc/>
@@ -150,6 +231,19 @@ namespace Rock.Blocks.Engagement
             return queryable.OrderBy( co => co.Order ).ThenBy( co => co.Name );
         }
 
+        /// <summary>
+        /// Retrieve a singleton connection type for data operations in this block.
+        /// </summary>
+        private ConnectionTypeCache GetConnectionType()
+        {
+            if ( _connectionType == null )
+            {
+                _connectionType = ConnectionTypeCache.Get( PageParameter( PageParameterKey.ConnectionTypeId ), !PageCache.Layout.Site.DisablePredictableIds );
+            }
+
+            return _connectionType;
+        }
+
         #endregion
 
         #region Block Actions
@@ -163,24 +257,28 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
-            using ( var rockContext = new RockContext() )
+            // Mirror the legacy block: reordering was only available with Edit rights ( block-level or
+            // on the connection type ). The reorder column was hidden from everyone else.
+            if ( !GetIsAddDeleteEnabled() )
             {
-                // Get the queryable and make sure it is ordered correctly.
-                var qry = GetListQueryable( rockContext );
-                qry = GetOrderedListQueryable( qry, rockContext );
-
-                // Get the entities from the database.
-                var items = GetListItems( qry, rockContext );
-
-                if ( !items.ReorderEntity( key, beforeKey ) )
-                {
-                    return ActionBadRequest( "Invalid reorder attempt." );
-                }
-
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( $"Not authorized to reorder {ConnectionOpportunity.FriendlyTypeName}." );
             }
+
+            // Get the queryable and make sure it is ordered correctly.
+            var qry = GetListQueryable( RockContext );
+            qry = GetOrderedListQueryable( qry, RockContext );
+
+            // Get the entities from the database.
+            var items = GetListItems( qry, RockContext );
+
+            if ( !items.ReorderEntity( key, beforeKey ) )
+            {
+                return ActionBadRequest( "Invalid reorder attempt." );
+            }
+
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         /// <summary>
@@ -191,31 +289,32 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new ConnectionOpportunityService( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
             {
-                var entityService = new ConnectionOpportunityService( rockContext );
-                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-                if ( entity == null )
-                {
-                    return ActionBadRequest( $"{ConnectionOpportunity.FriendlyTypeName} not found." );
-                }
-
-                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete {ConnectionOpportunity.FriendlyTypeName}." );
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( $"{ConnectionOpportunity.FriendlyTypeName} not found." );
             }
+
+            if ( !IsAuthorizedToDelete( entity ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete {ConnectionOpportunity.FriendlyTypeName}." );
+            }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            // Clear cached connection workflow triggers so the
+            // deleted opportunity's triggers are no longer evaluated.
+            ConnectionWorkflowService.RemoveCachedTriggers();
+
+            return ActionOk();
         }
 
         #endregion

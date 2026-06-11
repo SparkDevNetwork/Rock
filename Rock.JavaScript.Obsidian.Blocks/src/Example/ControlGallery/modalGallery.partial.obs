@@ -12,7 +12,7 @@
                :isSaveButtonDisabled="isSaveButtonDisabled"
                :isCloseButtonHidden="isCloseButtonHidden"
                :clickBackdropToClose="clickBackdropToClose"
-               @save="isOpen = false">
+               @save="onSave">
             <TextBox label="Required Value" v-model="value" rules="required" />
         </Modal>
 
@@ -64,4 +64,8 @@
     const exampleCode = `<Modal v-model="isOpen" title="Modal Dialog Title" saveText="Save" @save="isOpen = false">
     <TextBox label="Required Value" v-model="value" rules="required" />
 </Modal>`;
+
+    function onSave(): void {
+        isOpen.value = false;
+    }
 </script>

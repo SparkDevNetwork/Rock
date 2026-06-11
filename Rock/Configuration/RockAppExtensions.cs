@@ -21,6 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Rock.Attribute;
 using Rock.Communication.Chat;
+using Rock.Data;
 using Rock.Lava;
 
 namespace Rock.Configuration
@@ -161,10 +162,10 @@ namespace Rock.Configuration
         /// automatically, if it can't be determined then "Rock" will be used.
         /// </summary>
         /// <remarks>
-        ///     <para>An input starting with "~~/" will return a path like, "{SiteRoot}/Themes/{CurrentSiteTheme}/{input}" without the leading "~~".</para>
-        ///     <para>An input starting with "~/" will return the site root like, {SiteRoot}/{input}" without the leading "~".</para>
-        ///     <para>An input of "~~" will return a path like "{SiteRoot}/Themes/{CurrentSiteTheme}" without a trailing slash.</para>
-        ///     <para>An input of "~" will return the site root "{SiteRoot}/" with a trailing slash. </para>
+        ///     <para>An input like "~~/{input}" will return a path like, "D:\RockWeb\Themes\Rock\{input}".</para>
+        ///     <para>An input like "~/{input}" will return the site root like, "D:\RockWeb\{input}".</para>
+        ///     <para>An input of "~~" will return a path like "D:\RockWeb\Themes\Rock\" with a trailing slash.</para>
+        ///     <para>An input of "~" will return the site root "D:\RockWeb\" with a trailing slash. </para>
         ///     <para>The input will be returned as supplied for all other cases.</para>
         /// </remarks>
         /// <param name="app">The RockApp instance.</param>
@@ -180,10 +181,10 @@ namespace Rock.Configuration
         /// the filesystem.
         /// </summary>
         /// <remarks>
-        ///     <para>An input starting with "~~/" will return a path like, "{SiteRoot}/Themes/{CurrentSiteTheme}/{input}" without the leading "~~".</para>
-        ///     <para>An input starting with "~/" will return the site root like, {SiteRoot}/{input}" without the leading "~".</para>
-        ///     <para>An input of "~~" will return a path like "{SiteRoot}/Themes/{CurrentSiteTheme}" without a trailing slash.</para>
-        ///     <para>An input of "~" will return the site root "{SiteRoot}/" with a trailing slash. </para>
+        ///     <para>An input like "~~/{input}" will return a path like, "D:\RockWeb\Themes\{theme}\{input}".</para>
+        ///     <para>An input like "~/{input}" will return the site root like, "D:\RockWeb\{input}".</para>
+        ///     <para>An input of "~~" will return a path like "D:\RockWeb\Themes\{theme}\" with a trailing slash.</para>
+        ///     <para>An input of "~" will return the site root "D:\RockWeb\" with a trailing slash. </para>
         ///     <para>The input will be returned as supplied for all other cases.</para>
         /// </remarks>
         /// <param name="app">The RockApp instance.</param>
@@ -199,26 +200,58 @@ namespace Rock.Configuration
                 return path;
             }
 
-            if ( path == "~" )
+            string normalizePath( string p )
             {
-                // Special case, make this end with slash.
-                return $"{appPath}{Path.DirectorySeparatorChar}";
+                if ( Path.DirectorySeparatorChar == '\\' )
+                {
+                    // On Windows, convert forward slashes to backslashes.
+                    return p.Replace( '/', '\\' );
+                }
+
+                return p;
             }
 
-            if ( path.StartsWith( "~~" ) )
+            if ( path == "~~/" )
             {
-                return new[] { appPath, "Themes", theme, path.Substring( 2 ) }.JoinStrings( Path.DirectorySeparatorChar.ToString() );
+                return Path.Combine( appPath, "Themes", theme ) + Path.DirectorySeparatorChar;
             }
-
-            if ( path.StartsWith( "~" ) )
+            else if ( path.StartsWith( "~~/" ) )
             {
-                return new[] { appPath, path.Substring( 1 ) }.JoinStrings( Path.DirectorySeparatorChar.ToString() );
+                return Path.Combine( appPath, "Themes", theme, normalizePath( path.Substring( 3 ) ) );
             }
-
-            return path;
+            else if ( path == "~~" )
+            {
+                return Path.Combine( appPath, "Themes", theme ) + Path.DirectorySeparatorChar;
+            }
+            else if ( path == "~/" )
+            {
+                return appPath + Path.DirectorySeparatorChar;
+            }
+            else if ( path.StartsWith( "~/" ) )
+            {
+                return Path.Combine( appPath, normalizePath( path.Substring( 2 ) ) );
+            }
+            else if ( path == "~" )
+            {
+                return appPath + Path.DirectorySeparatorChar;
+            }
+            else
+            {
+                return path;
+            }
         }
 
-        #region Service Provider
+        /// <summary>
+        /// Creates a new <see cref="RockContext"/> for use in the application.
+        /// This provides a central location to creating contexts for accessing
+        /// the database so that unit tests can more easily override the behavior.
+        /// </summary>
+        /// <param name="app">The current Rock application instannce.</param>
+        /// <returns>A new instance of <see cref="RockContext"/>.</returns>
+        internal static RockContext CreateRockContext( this RockApp app )
+        {
+            return app.GetRequiredService<IRockContextFactory>().CreateRockContext();
+        }
 
         /// <summary>
         /// Gets the <see cref="IChatProvider"/> service from the <see cref="RockApp"/>'s <see cref="IServiceProvider"/>.
@@ -235,7 +268,5 @@ namespace Rock.Configuration
         {
             return rockApp.GetRequiredService<IChatProvider>();
         }
-
-        #endregion Service Provider
     }
 }

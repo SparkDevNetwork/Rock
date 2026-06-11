@@ -41,7 +41,7 @@
         .main-content {
             padding: 0 !important;
         }
-        .block-content-main > .panel.panel-block,
+        .block-content-main,
         .panel.panel-block {
             margin-bottom: 0;
             height: calc(100vh - var(--top-header-height, 80px) - 36px); /* Where 152px is the height of the header and footer */

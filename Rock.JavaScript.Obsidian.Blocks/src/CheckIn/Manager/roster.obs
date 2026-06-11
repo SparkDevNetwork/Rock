@@ -1,0 +1,918 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="errorMessage" alertType="warning">
+        {{ errorMessage }}
+    </NotificationBox>
+
+    <MultiScheduleGrid v-else-if="!schedule"
+                       class="rostergrid rostergrid-multi"
+                       :config="config"
+                       :source="gridDataSource"
+                       :data="gridData ?? []"
+                       @rosterModeChanged="onRosterModeChanged"
+                       @updateGridDataSource="updateGridDataSource"
+                       @openRoomSettings="onOpenRoomSettings" />
+
+    <SingleScheduleGrid v-else
+                        class="rostergrid rostergrid-single"
+                        :config="config"
+                        :source="gridDataSource"
+                        :data="gridData ?? []"
+                        @rosterModeChanged="onRosterModeChanged"
+                        @updateGridDataSource="updateGridDataSource"
+                        @openRoomSettings="onOpenRoomSettings" />
+
+    <CheckoutModal ref="checkoutModal" />
+    <CheckoutAllModal ref="checkoutAllModal" />
+    <StayingModal ref="stayingModal" />
+
+    <Modal v-model="showRoomSettings"
+           title="Room Settings"
+           saveText="Save"
+           @save="onRoomSettingsSave">
+        <h4 class="mt-spacing-none">{{ location?.text }}</h4>
+
+        <Toggle v-model="isRoomOpen"
+                label="Room Availability"
+                trueText="Open"
+                falseText="Closed" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import CheckoutAllModal from "./Roster/checkoutAllModal.partial.obs";
+    import CheckoutModal from "./Roster/checkoutModal.partial.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import MultiScheduleGrid from "./Roster/multiScheduleGrid.partial.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import SingleScheduleGrid from "./Roster/singleScheduleGrid.partial.obs";
+    import StayingModal from "./Roster/stayingModal.partial.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import { useContextEntities } from "@Obsidian/Core/Utilities/contextEntity";
+    import { ContextEntityChangedData, Message } from "@Obsidian/Types/Utility/browserBus";
+    import { useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { PageMessages } from "@Obsidian/Utility/browserBus";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { useSuspense } from "@Obsidian/Utility/suspense";
+    import { RosterAttendanceBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/Roster/rosterAttendanceBag";
+    import { RosterOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/Roster/rosterOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
+    import { RosterAttendanceRecord, RosterCompoundAttendanceRecord, RosterSingleAttendanceRecord, RosterViewMode } from "./Roster/types.partial";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { flatten } from "@Obsidian/Utility/arrayUtils";
+    import { clone } from "@Obsidian/Utility/objectUtils";
+    import { getTopic, ITopic } from "@Obsidian/Utility/realTime";
+    import { AttendanceUpdatedMessageBag } from "@Obsidian/ViewModels/Event/attendanceUpdatedMessageBag";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { Guid } from "@Obsidian/Types";
+    import { isPromise, sleep } from "@Obsidian/Utility/promiseUtils";
+    import { CancellationTokenSource } from "@Obsidian/Utility/cancellation";
+    import { calculateDuration, getSingleAttendanceRecords, provideRosterContext, statusMatchesMode, updateSingleGridAttendanceRecord } from "./Roster/utilities.partial";
+
+    const config = useConfigurationValues<RosterOptionsBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const contextEntities = useContextEntities();
+    const suspense = useSuspense();
+    const bus = useBlockBrowserBus();
+
+    // #region Values
+
+    const rosterMode = ref<RosterViewMode>(RosterViewMode.All);
+    const gridData = ref<RosterSingleAttendanceRecord[]>();
+    const gridDataPendingPromise = new Promise<GridDataBag>(() => { });
+    const gridDataSource = ref<Promise<GridDataBag> | GridDataBag>(gridDataPendingPromise);
+    const loadingRowCount = ref<number>();
+
+    const campus = ref<ListItemBag>();
+    const location = ref<ListItemBag>();
+    const schedule = ref<ListItemBag>();
+
+    /**
+     * A map of cancellation tokens for attendance record requests. This helps
+     * us ensure that if multiple updates come in for the same record in a short
+     * period of time, we only process the latest one.
+     */
+    const getAttendanceRecordCancellationTokens = new Map<string, CancellationTokenSource>();
+
+    const checkoutModal = ref<InstanceType<typeof CheckoutModal>>();
+    const checkoutAllModal = ref<InstanceType<typeof CheckoutAllModal>>();
+    const stayingModal = ref<InstanceType<typeof StayingModal>>();
+
+    const showRoomSettings = ref(false);
+    const isRoomOpen = ref(false);
+
+    let isUnloading = false;
+    let lastVisibleTime = Date.now();
+    let durationUpdateTimer: number | undefined;
+
+    let entityUpdatedTopic: ITopic | undefined = undefined;
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The error message to display instead of the roster, or null if there
+     * is no error.
+     */
+    const errorMessage = computed((): string | null => {
+        if (config.errorMessage) {
+            return config.errorMessage;
+        }
+
+        if (!campus.value) {
+            return "Please select a campus to view the roster.";
+        }
+
+        if (!location.value) {
+            return "Please select a location to view the roster.";
+        }
+
+        return null;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Initialize the block by loading the context entities and setting up
+     * real-time monitoring.
+     */
+    async function initialize(): Promise<void> {
+        campus.value = await contextEntities.get("Rock.Model.Campus");
+        location.value = await contextEntities.get("Rock.Model.Location");
+        schedule.value = await contextEntities.get("Rock.Model.Schedule");
+
+        await setupRealTime();
+
+        loadGridData();
+    }
+
+    /**
+     * Initialize the real-time engine and start monitoring for updates to the
+     * proxy connection status messages.
+     */
+    async function setupRealTime(): Promise<void> {
+        entityUpdatedTopic = await getTopic("Rock.RealTime.Topics.EntityUpdatedTopic");
+
+        entityUpdatedTopic.on("attendanceUpdated", onAttendanceUpdated);
+        entityUpdatedTopic.on("attendanceDeleted", onAttendanceDeleted);
+        entityUpdatedTopic.onDisconnected(onRealTimeDisconnected);
+
+        const location = await contextEntities.get("Rock.Model.Location");
+
+        const data = {
+            connectionId: entityUpdatedTopic.connectionId,
+            oldLocationGuid: null,
+            locationGuid: location?.value ?? null,
+        };
+
+        const result = await invokeBlockAction("SubscribeToRealTime", data);
+
+        if (!result.isSuccess) {
+            onRealTimeDisconnected();
+        }
+    }
+
+    /**
+     * Loads the attendance data for the roster grid.
+     */
+    async function loadGridData(): Promise<void> {
+        // If we already have data, set the loading row count so the UI
+        // shows a loading indicator with the same number of rows.
+        if (gridData.value && gridData.value.length > 0) {
+            loadingRowCount.value = gridData.value.length;
+        }
+        else {
+            loadingRowCount.value = undefined;
+        }
+
+        // Clear out any existing data. This also causes the grid to show the
+        // loading/skeleton rows.
+        gridData.value = undefined;
+        updateGridDataSource();
+
+        const result = await invokeBlockAction<RosterAttendanceBag[]>("GetAttendanceData");
+
+        if (result.isSuccess && result.data) {
+            gridData.value = result.data
+                .map(a => {
+                    const r = { idKey: a.idKey! } as RosterSingleAttendanceRecord;
+                    updateSingleGridAttendanceRecord(a, r);
+
+                    return reactive(r);
+                });
+
+            updateGridDataSource();
+        }
+        else {
+            await alert(result.errorMessage || "An unknown error occurred while loading attendance data.");
+        }
+    }
+
+    /**
+     * Updates the data source for the roster grid based on the current
+     * roster mode and sort column.
+     *
+     * @param col The column that is being sorted, if any.
+     */
+    function updateGridDataSource(col?: string): void {
+        if (!gridData.value) {
+            gridDataSource.value = gridDataPendingPromise;
+            return;
+        }
+
+        if (!schedule.value) {
+            let filteredRows = Enumerable.from(gridData.value)
+                .where(a => statusMatchesMode(a.status, rosterMode.value))
+                .groupBy(a => a.attendee.idKey!)
+                .select(a => (<RosterCompoundAttendanceRecord>{
+                    idKey: a.key,
+                    attendee: a.first().attendee,
+                    records: a.toArray()
+                }));
+
+            if (col === "details") {
+                filteredRows = filteredRows
+                    .orderBy(a => Math.min(...a.records.map(r => r.checkInDuration)));
+            }
+            else if (col === "attendee") {
+                filteredRows = filteredRows.orderBy(a => a.attendee.fullName);
+            }
+            else {
+                filteredRows = applyDefaultSortOrder(filteredRows);
+            }
+
+            // Clone so that when we make live changes to the grid data it
+            // doesn't affect the original data.
+            gridDataSource.value = {
+                rows: clone(filteredRows.toArray())
+            };
+        }
+        else {
+            let filteredRows = Enumerable.from(gridData.value)
+                .where(a => statusMatchesMode(a.status, rosterMode.value));
+
+
+            if (col === "tag") {
+                filteredRows = filteredRows.orderBy(a => a.code);
+            }
+            else if (col === "group") {
+                filteredRows = filteredRows.orderBy(a => a.group.text);
+            }
+            else if (col === "status") {
+                filteredRows = filteredRows.orderBy(a => a.status);
+            }
+            else if (col === "duration") {
+                if (rosterMode.value === RosterViewMode.Present) {
+                    filteredRows = filteredRows.orderBy(a => a.presentDuration);
+                }
+                else if (rosterMode.value === RosterViewMode.CheckedOut) {
+                    filteredRows = filteredRows.orderBy(a => a.checkoutDuration);
+                }
+                else {
+                    filteredRows = filteredRows.orderBy(a => a.checkInDuration);
+                }
+            }
+            else if (col === "attendee") {
+                filteredRows = filteredRows.orderBy(a => a.attendee.fullName);
+            }
+            else {
+                filteredRows = applyDefaultSortOrder(filteredRows);
+            }
+
+            // Clone so that when we make live changes to the grid data it
+            // doesn't affect the original data.
+            gridDataSource.value = {
+                rows: clone(filteredRows.toArray())
+            };
+        }
+    }
+
+    /**
+     * Applies the default sort order for the current roster mode.
+     *
+     * @param rows The rows to be sorted.
+     *
+     * @returns The sorted rows.
+     */
+    function applyDefaultSortOrder<T extends RosterAttendanceRecord>(rows: Enumerable<T>): Enumerable<T> {
+        if (rosterMode.value === RosterViewMode.All) {
+            // Default sort is by most recent check-in first.
+            return rows
+                .orderBy(a => Math.min(...getSingleAttendanceRecords(a).map(r => r.checkInDuration)));
+        }
+        else if (rosterMode.value === RosterViewMode.CheckedIn) {
+            // Default sort is by oldest check-in first.
+            return rows
+                .orderByDescending(a => Math.min(...getSingleAttendanceRecords(a).map(r => r.checkInDuration)));
+        }
+        else if (rosterMode.value === RosterViewMode.Present) {
+            // Default sort is by first name ascending.
+            return rows
+                .orderBy(a => a.attendee.fullName);
+        }
+        else if (rosterMode.value === RosterViewMode.CheckedOut) {
+            // Default sort is by most recent checkout first.
+            return rows
+                .orderBy(a => Math.min(...getSingleAttendanceRecords(a).map(r => r.checkoutDuration)));
+        }
+        else {
+            return rows;
+        }
+    }
+
+    /**
+     * Updates the duration fields for all attendance records in the grid.
+     */
+    function updateDurations(): void {
+        // Update the source of truth data so when we refresh the UI it has
+        // the correct values.
+        if (gridData.value) {
+            for (const record of gridData.value) {
+                record.checkInDuration = calculateDuration(record.checkInTime);
+                record.presentDuration = calculateDuration(record.presentTime);
+                record.checkoutDuration = calculateDuration(record.checkoutTime);
+            }
+        }
+
+        // Modify the grid data directly so we don't have to reload the entire grid.
+        getFlatGridRows().forEach(row => {
+            row.checkInDuration = calculateDuration(row.checkInTime);
+            row.presentDuration = calculateDuration(row.presentTime);
+            row.checkoutDuration = calculateDuration(row.checkoutTime);
+        });
+    }
+
+    /**
+     * Updates the attendance records in the grid with the provided
+     * attendance data. If any attendance records are not found then they will
+     * be added to the bottom of the grid.
+     *
+     * @param updatedAttendances The attendance records to update.
+     */
+    function updateAttendance(updatedAttendances: RosterAttendanceBag[]): void {
+        // Update the currently displayed grid rows.
+        updateGridAttendance(updatedAttendances);
+
+        // Also update the underlying data so that if we switch modes we
+        // already have the latest info.
+        if (gridData.value) {
+            for (const attendance of updatedAttendances) {
+                const row = gridData.value.find(r => r.idKey === attendance.idKey);
+
+                if (row) {
+                    updateSingleGridAttendanceRecord(attendance, row);
+                }
+                else {
+                    const r = { idKey: attendance.idKey! } as RosterSingleAttendanceRecord;
+                    updateSingleGridAttendanceRecord(attendance, r);
+
+                    gridData.value = [...gridData.value, reactive(r)];
+                }
+            }
+        }
+
+        updateMissingGridAttendances();
+    }
+
+    /**
+     * Updates the grid to mark any attendances that are no longer
+     * present in the data as removed. We do this so that real-time updates
+     * to attendance records can be reflected in the UI without removing
+     * rows that would cause the UI to jump around.
+     */
+    function updateMissingGridAttendances(): void {
+        const rows = getFlatGridRows();
+        const attendances = gridData.value ?? [];
+
+        for (const row of rows) {
+            const attendance = attendances.find(a => a.idKey === row.idKey);
+
+            row.isRemoved = !attendance || !statusMatchesMode(attendance.status, rosterMode.value);
+        }
+    }
+
+    /**
+     * Updates the grid data source with the provided attendance records.
+     * If any attendance records are not found then they will be added
+     * to the bottom of the grid.
+     *
+     * @param updatedAttendances The attendance records to update.
+     */
+    function updateGridAttendance(updatedAttendances: RosterAttendanceBag[]): void {
+        const rows = getFlatGridRows();
+
+        for (const attendance of updatedAttendances) {
+            const row = rows.find(r => r.idKey === attendance.idKey);
+
+            if (row) {
+                updateSingleGridAttendanceRecord(attendance, row);
+                continue;
+            }
+
+            if (isPromise(gridDataSource.value) || !gridDataSource.value.rows) {
+                continue;
+            }
+
+            // Only add the row to the grid if it matches the current mode.
+            if (!statusMatchesMode(attendance.status, rosterMode.value)) {
+                continue;
+            }
+
+            const r = { idKey: attendance.idKey! } as RosterSingleAttendanceRecord;
+            updateSingleGridAttendanceRecord(attendance, r);
+
+            if (schedule.value) {
+                gridDataSource.value = {
+                    rows: [...gridDataSource.value.rows, clone(r)]
+                };
+            }
+            else {
+                const personRow = gridDataSource.value.rows.find(a => a.idKey === attendance.attendee!.idKey) as RosterCompoundAttendanceRecord | undefined;
+
+                if (personRow) {
+                    personRow.records.push(clone(r));
+                }
+                else {
+                    gridDataSource.value = {
+                        rows: [
+                            ...gridDataSource.value.rows,
+                            {
+                                idKey: attendance.attendee!.idKey!,
+                                attendee: attendance.attendee!,
+                                records: [clone(r)]
+                            }
+                        ]
+                    };
+                }
+            }
+        }
+    }
+
+    /**
+     * Gets a flat list of all attendance records in the grid, regardless
+     * of whether the grid is in single or multi-schedule mode.
+     *
+     * @returns The flattened list of attendance records.
+     */
+    function getFlatGridRows(): RosterSingleAttendanceRecord[] {
+        if (!gridDataSource.value || !("rows" in gridDataSource.value) || !gridDataSource.value.rows) {
+            return [];
+        }
+
+        const nestedRows = (gridDataSource.value.rows as RosterAttendanceRecord[]).map(r => {
+            if ("records" in r) {
+                return r.records;
+            }
+            else {
+                return [r];
+            }
+        });
+
+        return flatten(nestedRows);
+    }
+
+    /**
+     * Performs the checkout operation for the provided attendance records.
+     *
+     * @param idKeys The unique identifiers of the attendance records to check out.
+     */
+    async function performCheckout(idKeys: string[]): Promise<void> {
+        const data = {
+            idKeys: idKeys
+        };
+
+        const result = await invokeBlockAction<RosterAttendanceBag[]>("MarkAsCheckedOut", data);
+
+        if (result.isSuccess && result.data) {
+            updateAttendance(result.data);
+            updateGridDataSource();
+        }
+        else {
+            await alert(result.errorMessage || "An unknown error occurred while checking out attendees.");
+        }
+    }
+
+    /**
+     * Updates a single attendance record by retrieving the latest data
+     * from the server.
+     *
+     * @param attendanceIdKey The unique identifier of the attendance record.
+     */
+    async function updateSingleAttendanceRecord(attendanceIdKey: string): Promise<void> {
+        // Cancel any existing request for this attendance record.
+        const existingCancellationToken = getAttendanceRecordCancellationTokens.get(attendanceIdKey);
+        if (existingCancellationToken) {
+            existingCancellationToken.cancel();
+        }
+
+        // Create a new cancellation token for this request.
+        const cancellationTokenSource = new CancellationTokenSource();
+        const token = cancellationTokenSource.token;
+        getAttendanceRecordCancellationTokens.set(attendanceIdKey, cancellationTokenSource);
+
+        const result = await invokeBlockAction<RosterAttendanceBag>("GetSingleAttendance", { key: attendanceIdKey });
+
+        if (result.isSuccess && result.data && !token.isCancellationRequested) {
+            updateAttendance([result.data]);
+        }
+    }
+
+    /**
+     * Checks in an attendee to stay for an additional service.
+     *
+     * @param attendanceIdKey The unique identifier of the original attendance record.
+     * @param scheduleKey The unique identifier of the schedule to check in for.
+     */
+    async function stayForService(attendanceIdKey: string, scheduleKey: string): Promise<void> {
+        const data = {
+            attendanceKey: attendanceIdKey,
+            scheduleKey: scheduleKey
+        };
+
+        const result = await invokeBlockAction<RosterAttendanceBag>("StayForService", data);
+
+        if (result.isSuccess && result.data) {
+            updateAttendance([result.data]);
+            updateGridDataSource();
+        }
+        else {
+            await alert(result.errorMessage || "An unknown error occurred while checking in for the new schedule.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a context entity has changed by something on the page.
+     *
+     * @param message The message that was received.
+     */
+    async function onContextEntityChanged(message: Message<ContextEntityChangedData>): Promise<void> {
+        if (message.data.entityType === "Rock.Model.Campus") {
+            campus.value = await contextEntities.get("Rock.Model.Campus");
+        }
+
+        if (message.data.entityType === "Rock.Model.Schedule") {
+            schedule.value = await contextEntities.get("Rock.Model.Schedule");
+            updateGridDataSource();
+        }
+
+        if (message.data.entityType === "Rock.Model.Location" || message.data.entityType === "Rock.Model.Schedule") {
+            const oldLocationGuid = location.value?.value;
+
+            location.value = await contextEntities.get("Rock.Model.Location");
+
+            if (entityUpdatedTopic) {
+                const request = {
+                    connectionId: entityUpdatedTopic?.connectionId,
+                    oldLocationGuid: oldLocationGuid ?? null,
+                    locationGuid: location.value?.value ?? null,
+                };
+
+                const result = await invokeBlockAction("SubscribeToRealTime", request);
+
+                if (!result.isSuccess) {
+                    onRealTimeDisconnected();
+                }
+            }
+
+            loadGridData();
+        }
+    }
+
+    /**
+     * Handles when the roster mode has changed.
+     *
+     * @param mode The new roster mode.
+     */
+    function onRosterModeChanged(mode: RosterViewMode): void {
+        rosterMode.value = mode;
+        updateGridDataSource();
+    }
+
+    /**
+     * Handles the beforeunload event to mark that the window is unloading.
+     */
+    function onWindowBeforeUnload(): void {
+        isUnloading = true;
+    }
+
+    /**
+     * Handles the visibilitychange event to track when the page becomes visible.
+     * This helps to know if we should display an error when the real-time
+     * connection is lost or if we should just reload automatically.
+     */
+    function onVisibilityChange(): void {
+        if (document.visibilityState === "visible") {
+            lastVisibleTime = Date.now();
+        }
+    }
+
+    // #endregion
+
+    // #region Grid Event Handlers
+
+    function onSelectItem(itemId: string): void {
+        if (!gridDataSource.value || !("rows" in gridDataSource.value) || !gridDataSource.value.rows) {
+            return;
+        }
+
+        const item = gridDataSource.value.rows.find(a => a.idKey === itemId) as RosterAttendanceRecord | undefined;
+
+        if (item && config.personPageUrl) {
+            window.location.href = config.personPageUrl.replace("((Key))", item.attendee.guid!);
+        }
+    }
+
+    async function onAttendancePresentClick(rows: RosterAttendanceRecord[]): Promise<void> {
+        const data = {
+            idKeys: Enumerable.from(rows)
+                .selectMany(r => getSingleAttendanceRecords(r))
+                .select(a => a.idKey)
+                .toArray()
+        };
+
+        const result = await invokeBlockAction<RosterAttendanceBag[]>("MarkAsPresent", data);
+
+        if (result.isSuccess && result.data) {
+            updateAttendance(result.data);
+            updateGridDataSource();
+        }
+        else {
+            await alert(result.errorMessage || "An unknown error occurred while marking attendance as present.");
+        }
+    }
+
+    async function onAttendanceCheckoutClick(row: RosterAttendanceRecord): Promise<void> {
+        const records = getSingleAttendanceRecords(row);
+
+        if (records.length > 1) {
+            await checkoutModal.value!.show(records, performCheckout);
+        }
+        else {
+            await performCheckout([records[0].idKey]);
+        }
+    }
+
+    async function onAttendanceCheckoutAllClick(records: RosterSingleAttendanceRecord[]): Promise<void> {
+        if (records.length === 0) {
+            await alert("There are not any attendees available to check out.");
+            return;
+        }
+
+        const schedules = Enumerable.from(records)
+            .select(a => a.schedule)
+            .distinctBy(a => a.value)
+            .toArray();
+
+        if (schedules.length === 1) {
+            if (!await confirm(`Would you like to check out all attendees for ${schedules[0].text}?`)) {
+                return;
+            }
+
+            const attendanceKeys = records
+                .filter(r => r.schedule.value === schedules[0].value)
+                .map(r => r.idKey);
+
+            await performCheckout(attendanceKeys);
+        }
+        else {
+            await checkoutAllModal.value!.show(records, schedules, performCheckout);
+        }
+    }
+
+    async function onAttendanceDeleteClick(row: RosterAttendanceRecord): Promise<void> {
+        const records = getSingleAttendanceRecords(row);
+        const message = records.length === 1
+            ? `Are you sure you want to delete the attendance record for ${row.attendee.fullName}?`
+            : `Are you sure you want to delete the attendance records for ${row.attendee.fullName}?`;
+
+        if (!await confirm(message)) {
+            return;
+        }
+
+        const result = await invokeBlockAction("DeleteAttendances", {
+            idKeys: records.map(a => a.idKey)
+        });
+
+        if (result.isSuccess) {
+            // Remove the records from the grid.
+            if (gridData.value) {
+                gridData.value = gridData.value.filter(a => !records.some(r => r.idKey === a.idKey));
+            }
+
+            updateGridDataSource();
+        }
+        else {
+            await alert(result.errorMessage || "An unknown error occurred while deleting attendance records.");
+        }
+    }
+
+    async function onAttendanceStayingClick(row: RosterAttendanceRecord): Promise<void> {
+        const originalAttendance = Enumerable.from(getSingleAttendanceRecords(row))
+            .select(a => ({
+                record: a,
+                start: RockDateTime.parseISO(a.checkInTime)?.toMilliseconds() ?? 0
+            }))
+            .orderByDescending(a => a.start)
+            .select(a => a.record)
+            .first();
+
+        const result = await invokeBlockAction<ListItemBag[]>("GetPossibleStayingSchedules", {
+            key: originalAttendance.idKey
+        });
+
+        if (!result.isSuccess || !result.data) {
+            await alert(result.errorMessage || "An unknown error occurred while retrieving possible schedules.");
+            return;
+        }
+
+        if (result.data.length === 0) {
+            await alert("No other schedules available for this group and location.");
+        }
+        else if (result.data.length === 1) {
+            const message = `Would you like ${row.attendee.fullName} to stay for ${result.data[0].text}?`;
+
+            if (!await confirm(message)) {
+                return;
+            }
+
+            await stayForService(originalAttendance.idKey, result.data[0].value!);
+        }
+        else {
+            await stayingModal.value!.show(originalAttendance, result.data, stayForService);
+        }
+    }
+
+    async function onAttendanceNotPresentClick(row: RosterAttendanceRecord): Promise<void> {
+        const data = {
+            idKeys: getSingleAttendanceRecords(row).map(a => a.idKey)
+        };
+
+        const result = await invokeBlockAction<RosterAttendanceBag[]>("MarkAsNotPresent", data);
+
+        if (result.isSuccess && result.data) {
+            updateAttendance(result.data);
+            updateGridDataSource();
+        }
+        else {
+            await alert(result.errorMessage || "An unknown error occurred while marking attendance as present.");
+        }
+    }
+
+    /**
+     * Handles when the room settings button is clicked. Query the current room
+     * settings and then show the modal.
+     */
+    async function onOpenRoomSettings(): Promise<void> {
+        if (!location.value) {
+            return;
+        }
+
+        const result = await invokeBlockAction<boolean>("GetLocationState", {
+            locationGuid: location.value.value
+        });
+
+        if (result.isSuccess && result.data !== null) {
+            isRoomOpen.value = result.data;
+            showRoomSettings.value = true;
+        }
+        else {
+            await alert(result.errorMessage || "An unknown error occurred while retrieving room settings.");
+        }
+    }
+
+    /**
+     * Saves the room settings when the save button is clicked in the modal.
+     */
+    async function onRoomSettingsSave(): Promise<void> {
+        if (!location.value) {
+            return;
+        }
+
+        const result = await invokeBlockAction("SetLocationState", {
+            locationGuid: location.value.value,
+            isOpen: isRoomOpen.value
+        });
+
+        if (result.isSuccess) {
+            showRoomSettings.value = false;
+        }
+        else {
+            await alert(result.errorMessage || "An unknown error occurred while saving room settings.");
+        }
+    }
+
+    // #endregion
+
+    // #region Real-Time Event Handlers
+
+    /**
+     * Called when we receive a RealTime message that an attendance record
+     * has been created or updated.
+     *
+     * @param attendance The details about the attendance record.
+     */
+    function onAttendanceUpdated(attendance: AttendanceUpdatedMessageBag): void {
+        if (!location.value || !attendance.attendanceIdKey) {
+            return;
+        }
+
+        // Only track attendances for the currently selected location.
+        if (!areEqual(attendance.locationGuid, location.value.value)) {
+            return;
+        }
+
+        updateSingleAttendanceRecord(attendance.attendanceIdKey);
+    }
+
+    /**
+     * Called when we receive a RealTime message that an attendance record has
+     * been deleted from the system.
+     *
+     * @param attendanceGuid The unique identifier of the attendance record.
+     * @param attendance The details about the attendance record.
+     */
+    function onAttendanceDeleted(_attendanceGuid: Guid, attendance?: AttendanceUpdatedMessageBag | null): void {
+        if (!gridData.value || !attendance) {
+            return;
+        }
+
+        gridData.value = gridData.value.filter(a => a.idKey !== attendance.attendanceIdKey);
+
+        updateMissingGridAttendances();
+    }
+
+    /**
+     * Called when the real-time connection has been disconnected.
+     */
+    async function onRealTimeDisconnected(): Promise<void> {
+        // If the page is unloading, such as navigating away or from a manual
+        // refresh, then don't do anything.
+        if (isUnloading) {
+            return;
+        }
+
+        // Wait just a moment to see if the device is waking from sleep.
+        await sleep(250);
+
+        if (Date.now() - lastVisibleTime > 5000) {
+            // If the page became visible more than 5 seconds ago, then it's
+            // likely caused by a real network disconnect rather than the device
+            // waking from sleep.
+            await alert("The connection to the server has been lost. The page must be refreshed to continue.");
+        }
+
+        window.location.assign(window.location.href);
+    }
+
+    // #endregion
+
+    onMounted(() => {
+        window.addEventListener("beforeunload", onWindowBeforeUnload);
+        document.addEventListener("visibilitychange", onVisibilityChange);
+
+        durationUpdateTimer = window.setInterval(updateDurations, 10000);
+    });
+
+    onBeforeUnmount(() => {
+        window.removeEventListener("beforeunload", onWindowBeforeUnload);
+        document.removeEventListener("visibilitychange", onVisibilityChange);
+
+        if (durationUpdateTimer !== undefined) {
+            window.clearInterval(durationUpdateTimer);
+            durationUpdateTimer = undefined;
+        }
+    });
+
+    provideRosterContext({
+        config,
+        loadingRowCount,
+        mode: rosterMode,
+        onAttendancePresentClick,
+        onAttendanceCheckoutClick,
+        onAttendanceCheckoutAllClick,
+        onAttendanceDeleteClick,
+        onAttendanceStayingClick,
+        onAttendanceNotPresentClick,
+        onSelectItem,
+        schedule
+    });
+
+    if (suspense) {
+        suspense.addOperation(initialize());
+    }
+    else {
+        initialize();
+    }
+
+    bus.subscribe(PageMessages.ContextEntityChanged, onContextEntityChanged);
+</script>

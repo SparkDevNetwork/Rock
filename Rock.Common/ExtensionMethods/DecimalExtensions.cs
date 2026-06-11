@@ -62,5 +62,16 @@ namespace Rock
         {
             return $"{( int ) Math.Round( value *= 100 ) }%";
         }
+
+        /// <summary>
+        /// Determines whether the specified decimal value represents an integer without a fractional component.
+        /// </summary>
+        /// <param name="value">The decimal value to evaluate.</param>
+        /// <returns><see langword="true"/> if the value is an integer; otherwise, <see langword="false"/>.</returns>
+        internal static bool IsInteger( this decimal value )
+        {
+            // Replace with decimal.IsInteger when we move to .NET 7 or later.
+            return value == decimal.Truncate( value );
+        }
     }
 }

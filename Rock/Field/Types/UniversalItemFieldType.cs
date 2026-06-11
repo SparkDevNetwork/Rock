@@ -18,12 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.ViewModels.Utility;
@@ -248,6 +248,12 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
+        public sealed override StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues )
+        {
+            return base.GetValidationRules( privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
         public sealed override object ValueAsFieldType( string value, Dictionary<string, ConfigurationValue> configurationValues )
         {
             return value;
@@ -356,27 +362,19 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public sealed override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetTextValue( privateValue, privateConfigurationValues );
+            return GetTextValue( privateValue, privateConfigurationValues ).EncodeHtml();
         }
 
         /// <inheritdoc/>
         public sealed override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetTextValue( privateValue, privateConfigurationValues );
+            return GetTextValue( privateValue, privateConfigurationValues ).EncodeHtml();
         }
 
         /// <inheritdoc/>
         public sealed override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
         {
-            var textValue = GetTextValue( privateValue, privateConfigurationValues );
-
-            return new PersistedValues
-            {
-                TextValue = textValue,
-                HtmlValue = textValue,
-                CondensedTextValue = textValue,
-                CondensedHtmlValue = textValue
-            };
+            return GetSimpleTextPersistedValues( privateValue, privateConfigurationValues );
         }
 
         /// <inheritdoc/>

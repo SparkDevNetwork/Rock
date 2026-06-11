@@ -18,7 +18,7 @@ import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import { ConfigurationValueKey } from "./groupTypeField.partial";
+import { ConfigurationKey } from "./groupTypeField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export const EditComponent = defineComponent({
@@ -40,7 +40,7 @@ export const EditComponent = defineComponent({
     computed: {
         options(): ListItemBag[] {
             try {
-                return JSON.parse(this.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+                return JSON.parse(this.configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
             }
             catch {
                 return [];
@@ -76,7 +76,7 @@ export const ConfigurationComponent = defineComponent({
     ],
 
     setup(props, { emit }) {
-        const groupTypePurposeValueGuid = ref(props.modelValue[ConfigurationValueKey.GroupTypePurposeValueGuid]);
+        const groupTypePurposeValueGuid = ref(props.modelValue[ConfigurationKey.GroupTypePurposeValueGuid]);
 
         /**
          * Update the modelValue property if any value of the dictionary has
@@ -93,10 +93,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.GroupTypePurposeValueGuid] = groupTypePurposeValueGuid.value;
+            newValue[ConfigurationKey.GroupTypePurposeValueGuid] = groupTypePurposeValueGuid.value;
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.GroupTypePurposeValueGuid] !== (props.modelValue[ConfigurationValueKey.GroupTypePurposeValueGuid]);
+            const anyValueChanged = newValue[ConfigurationKey.GroupTypePurposeValueGuid] !== (props.modelValue[ConfigurationKey.GroupTypePurposeValueGuid]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -110,14 +110,14 @@ export const ConfigurationComponent = defineComponent({
 
         const options = computed((): ListItemBag[] => {
             try {
-                return JSON.parse(props.modelValue[ConfigurationValueKey.GroupTypePurposes] ?? "[]") as ListItemBag[];
+                return JSON.parse(props.modelValue[ConfigurationKey.GroupTypePurposes] ?? "[]") as ListItemBag[];
             }
             catch {
                 return [];
             }
         });
 
-        const internalValue = computed(() : string => props.modelValue.value);
+        const internalValue = computed((): string => props.modelValue.value);
 
         /**
          * Emits the updateConfigurationValue if the value has actually changed.
@@ -133,7 +133,7 @@ export const ConfigurationComponent = defineComponent({
         };
 
         // Watch for changes in properties that only require a local UI update.
-        watch(groupTypePurposeValueGuid, () => maybeUpdateConfiguration(ConfigurationValueKey.GroupTypePurposeValueGuid, groupTypePurposeValueGuid.value));
+        watch(groupTypePurposeValueGuid, () => maybeUpdateConfiguration(ConfigurationKey.GroupTypePurposeValueGuid, groupTypePurposeValueGuid.value));
 
         return { groupTypePurposeValueGuid, options, internalValue };
     },

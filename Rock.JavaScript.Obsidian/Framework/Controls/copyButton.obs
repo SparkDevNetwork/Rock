@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-    import { ComponentPublicInstance, onMounted, PropType, ref } from "vue";
+    import { ComponentPublicInstance, nextTick, onMounted, PropType, ref } from "vue";
     import RockButton from "./rockButton.obs";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
 
@@ -78,6 +78,18 @@
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const jquery = <any>window[<any>"$"];
-        jEl = jquery(el.value?.$el).tooltip();
+
+        /*
+            3/25/2026 - MSE
+
+            nextTick is required because RockButton's watcher
+            destroys tooltips when its title prop is falsy.
+
+            Reason: Ensure tooltip init runs after RockButton's
+            watcher has already fired.
+        */
+        nextTick(() => {
+            jEl = jquery(el.value?.$el).tooltip();
+        });
     });
 </script>

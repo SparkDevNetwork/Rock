@@ -21,8 +21,6 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-
 /** Bag used to maintain state of recipients. */
 export type CommunicationEntryWizardRecipientBag = {
     /** Gets or sets email of this recipient. */
@@ -49,8 +47,8 @@ export type CommunicationEntryWizardRecipientBag = {
     /** Gets or sets the name of this recipient. */
     name?: string | null;
 
-    /** Gets or sets the unique identifier of the person associated with this recipient. */
-    personAliasGuid: Guid;
+    /** Gets or sets the identifier key of the person associated with this recipient. */
+    personAliasIdKey?: string | null;
 
     /** Gets or sets the recipient's person identifier. */
     personId: number;

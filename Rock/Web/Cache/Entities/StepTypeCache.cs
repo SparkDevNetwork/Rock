@@ -164,11 +164,29 @@ namespace Rock.Web.Cache
         #region Related Caches
 
         /// <summary>
-        /// Gets the step types.
+        /// Gets the step program that this step type belongs to.
         /// </summary>
         public StepProgramCache StepProgram => StepProgramCache.Get( StepProgramId );
 
         #endregion Related Caches
+
+        #region ISecured
+
+        /*
+             3/12/2026 - NA
+
+             ⚠ SECURITY NOTICE ⚠
+
+             If the model implements custom ISecured behavior, the corresponding
+             {Entity}Cache class MUST implement the same security logic.
+
+             Reason: Prevent security mismatches between model entities and cache objects.
+        */
+
+        /// <inheritdoc cref="Rock.Model.StepType.ParentAuthority"/>
+        public override Security.ISecured ParentAuthority => StepProgram ?? base.ParentAuthority;
+
+        #endregion ISecured
 
         #region Public Methods
 

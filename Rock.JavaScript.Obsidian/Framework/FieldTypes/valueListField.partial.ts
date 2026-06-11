@@ -19,7 +19,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     Values = "values",
     ValuePrompt = "valueprompt",
     AllowHtml = "allowhtml",
@@ -50,7 +50,7 @@ export class ValueListFieldType extends FieldTypeBase {
     public override getTextValue(value: string, configurationValues: Record<string, string>): string {
         try {
             const clientValues = JSON.parse(value ?? "[]") as string[];
-            const configuredValues = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+            const configuredValues = JSON.parse(configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
             const values: string[] = [];
 
             for (const clientValue of clientValues) {

@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Reporting
         "Use Obsidian Components",
         Key = AttributeKey.UseObsidianComponents,
         Description = "Switches the filter components to use Obsidian if supported.",
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         Category = "Advanced" )]
 
     [Rock.SystemGuid.BlockTypeGuid( "E431DBDF-5C65-45DC-ADC5-157A02045CCD" )]
@@ -1597,6 +1597,7 @@ namespace RockWeb.Blocks.Reporting
 
                         var definition = dataSelectComponent.GetComponentDefinition( reportEntityType, string.Empty, rockContext, requestContext );
 
+#pragma warning disable CS0618 // Type or member is obsolete
                         if ( definition == null && dataSelectComponent.ObsidianFileUrl != null )
                         {
                             definition = new Rock.ViewModels.Controls.DynamicComponentDefinitionBag
@@ -1604,6 +1605,7 @@ namespace RockWeb.Blocks.Reporting
                                 Url = ResolveUrl( dataSelectComponent.ObsidianFileUrl )
                             };
                         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
                         if ( definition != null )
                         {
@@ -1873,6 +1875,7 @@ namespace RockWeb.Blocks.Reporting
                             obsidianWrapper.ComponentDefinition = definition;
                             obsidianWrapper.ComponentData = dataSelectComponent.GetObsidianComponentData( reportEntityType, reportField.Selection, rockContext, requestContext );
                         }
+#pragma warning disable CS0618 // Type or member is obsolete
                         else if ( dataSelectComponent.ObsidianFileUrl != null )
                         {
                             if ( dataSelectComponent.ObsidianFileUrl.Length > 0 )
@@ -1880,6 +1883,7 @@ namespace RockWeb.Blocks.Reporting
                                 obsidianWrapper.ComponentData = dataSelectComponent.GetObsidianComponentData( reportEntityType, reportField.Selection, rockContext, requestContext );
                             }
                         }
+#pragma warning restore CS0618 // Type or member is obsolete
                     }
                     else
                     {

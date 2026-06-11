@@ -525,7 +525,9 @@ namespace Rock.Model
         {
             get
             {
-                return this.IsNamedLocation ? ( this.ParentLocation ?? NamedLocationCache.Get( this.ParentLocationId ?? 0 ) ?? base.ParentAuthority ) : base.ParentAuthority;
+                return this.IsNamedLocation && this.ParentLocationId.HasValue
+                    ? NamedLocationCache.Get( this.ParentLocationId.Value ) ?? base.ParentAuthority
+                    : base.ParentAuthority;
             }
         }
 

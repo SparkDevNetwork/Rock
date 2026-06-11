@@ -22,6 +22,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Cms;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -48,6 +51,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -57,6 +61,7 @@ namespace Rock.Model
         /// The description of the shortcode. This is used as a public description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -66,6 +71,7 @@ namespace Rock.Model
         /// The technical description that serves as documentation.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Documentation { get; set; }
 
         /// <summary>
@@ -97,6 +103,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string TagName { get; set; }
 
         /// <summary>
@@ -107,6 +114,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Markup { get; set; }
 
         /// <summary>
@@ -126,6 +134,7 @@ namespace Rock.Model
         /// The enabled lava commands.
         /// </value>
         [MaxLength( 500 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string EnabledLavaCommands { get; set; }
 
         /// <summary>
@@ -135,7 +144,19 @@ namespace Rock.Model
         /// The parameters.
         /// </value>
         [MaxLength( 2500 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Parameters { get; set; }
+
+        /// <summary>
+        /// Gets or sets how variables defined within this shortcode are scoped.
+        /// </summary>
+        /// <value>
+        /// The shortcode scope behavior.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public ShortcodeScopeBehavior ShortcodeScopeBehavior { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties

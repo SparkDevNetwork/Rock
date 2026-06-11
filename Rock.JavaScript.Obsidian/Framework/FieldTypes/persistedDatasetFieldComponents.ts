@@ -16,8 +16,8 @@
 
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps } from "./utils";
-import { ConfigurationValueKey } from "./persistedDatasetField.partial";
-import DropDownList  from "@Obsidian/Controls/dropDownList.obs";
+import { ConfigurationKey } from "./persistedDatasetField.partial";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export const EditComponent = defineComponent({
@@ -35,7 +35,7 @@ export const EditComponent = defineComponent({
 
         // PersistedDatasets from server to choose from.
         const options = computed((): ListItemBag[] => {
-            const options = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] || "[]") as ListItemBag[];
+            const options = JSON.parse(props.configurationValues[ConfigurationKey.Values] || "[]") as ListItemBag[];
             return options;
         });
 

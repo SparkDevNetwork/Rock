@@ -4,13 +4,11 @@
            hasFullscreen
            class="label-designer">
         <template #headerActions>
-            <div style="display: flex; gap: 6px;">
-                <span class="label label-default">
-                    {{ checkInLabelType }}
-                </span>
+            <span class="label label-default">
+                {{ checkInLabelType }}
+            </span>
 
-                <LabelDimensionsButton v-model="labelSize" />
-            </div>
+            <LabelDimensionsButton v-model="labelSize" />
         </template>
 
         <div class="panel-flex-fill-body">

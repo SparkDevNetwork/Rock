@@ -36,8 +36,8 @@ import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 
-export const enum ConfigurationValueKey {
-    EntityTypeName = "entityTypeName"
+export const enum ConfigurationKey {
+    EntityType = "entityType"
 }
 
 // The edit component can be quite large, so load it only as needed.

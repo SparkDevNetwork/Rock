@@ -22,6 +22,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -57,12 +59,14 @@ namespace Rock.Model
         [Required]
         [MaxLength( 200 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets a description of the MediaFolder.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -89,6 +93,7 @@ namespace Rock.Model
         /// The custom provider data for this instance.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SourceData { get; set; }
 
         /// <summary>
@@ -98,6 +103,7 @@ namespace Rock.Model
         /// The custom provider metric data for this instance.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MetricData { get; set; }
 
         /// <summary>
@@ -108,6 +114,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 60 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string SourceKey { get; set; }
 
         /// <summary>

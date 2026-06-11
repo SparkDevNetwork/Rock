@@ -44,6 +44,6 @@ namespace Rock.AI.Agent.Mcp
         /// <param name="request">The details about the request from the MCP client.</param>
         /// <param name="cancellationToken">A token that indicates if the request should be cancelled.</param>
         /// <returns>The content to return to the MCP client. If null or empty then a 202 response should be returned instead.</returns>
-        Task<McpResponse> HandleRequestAsync( IChatAgent agent, McpRequest request, CancellationToken cancellationToken = default );
+        Task<McpResponse> HandleRequestAsync( ChatAgent agent, McpRequest request, CancellationToken cancellationToken = default );
     }
 }

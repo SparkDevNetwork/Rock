@@ -19,6 +19,7 @@ import { standardColumnProps } from "@Obsidian/Core/Controls/grid";
 import { Component, defineComponent, PropType } from "vue";
 import SelectCell from "../Cells/selectCell.partial.obs";
 import SelectHeaderCell from "../Cells/selectHeaderCell.partial.obs";
+import { IGridState } from "@Obsidian/Types/Controls/grid";
 
 /**
  * Displays a checkbox that can be used to select the row for bulk operations
@@ -66,36 +67,26 @@ export default defineComponent({
         // #region Row Exclusion Props
 
         /**
-         * If true, excludeRow can be used to exclude a row from having a selection checkbox.
-         * If false, all rows will ignore the excludeRow setting and show a checkbox.
-         * This is useful when you want to have some rows excluded from selection.
-         * This will disable the "select all" checkbox in the header by default.
-         */
-        enableRowExclusions: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-
-        /**
-         * A function that determines if the row should be excluded from selection.
+         * A function that determines if the row should be excluded from having a Select checkbox.
          * Should return true to exclude the row, false otherwise.
-         * @requires enableRowExclusions to be true
          */
-        excludeRow: {
-            type: Function as PropType<(row: unknown) => boolean>,
-            default: undefined
+        rowDisabled: {
+            type: Function as PropType<((row: Record<string, unknown>, grid: IGridState) => boolean)>,
+            default: undefined,
+            required: false
         },
 
         /**
          * If true, the "select all" checkbox in the header will be available even if
-         * enableRowExclusions is true.
+         * rowDisabled is defined.
          *
          * This is only useful if your rows are sorted in a way that being able to select all
          * selectable rows on the current page is meaningful.
          */
         forceAllowSelectAll: {
             type: Boolean as PropType<boolean>,
-            default: false
+            default: false,
+            required: false
         }
 
         // #endregion Row Exclusion Props

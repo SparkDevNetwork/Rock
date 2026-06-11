@@ -247,43 +247,5 @@ namespace Rock.Communication
             this.Recipients = new List<RockMessageRecipient>();
             this.Recipients.AddRange( recipients );
         }
-
-        #region Obsolete
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RockEmailMessage"/> class.
-        /// This method would be removed in future along with the obsoleted <see cref="SystemEmail"/> Model.
-        /// </summary>
-        /// <param name="systemEmail">The system email.</param>
-        [Obsolete( "Use constructor RockEmailMessage( SystemCommunication ) instead.", true )]
-        [RockObsolete( "1.10")]
-        public RockEmailMessage( SystemEmail systemEmail ) : this()
-        {
-            InitEmailMessage( systemEmail );
-        }
-
-        /// <summary>
-        /// Initializes the email message.
-        /// This method would be removed in future along with the obsoleted <see cref="SystemEmail"/> Model.
-        /// </summary>
-        /// <param name="systemEmail">The system email.</param>
-        [Obsolete("", true)]
-        [RockObsolete( "1.10" )]
-        private void InitEmailMessage( SystemEmail systemEmail )
-        {
-            if ( systemEmail != null )
-            {
-                this.FromEmail = systemEmail.From;
-                this.FromName = systemEmail.FromName;
-                var recipients = systemEmail.To.SplitDelimitedValues().ToList().Select( a => RockEmailMessageRecipient.CreateAnonymous( a, null ) ).ToList();
-                this.SetRecipients( recipients );
-                this.CCEmails = systemEmail.Cc.SplitDelimitedValues().ToList();
-                this.BCCEmails = systemEmail.Bcc.SplitDelimitedValues().ToList();
-                this.Subject = systemEmail.Subject;
-                this.Message = systemEmail.Body;
-            }
-        }
-
-        #endregion
     }
 }

@@ -13,7 +13,7 @@
 
         <TextBox v-model="description" label="Description" textMode="multiline" />
 
-        <CodeEditor v-model="pageTVML" label="Page TVML" theme="rock" mode="text" :editorHeight="200" />
+        <CodeEditor v-model="pageTVML" label="Page TVML" mode="text" :editorHeight="200" />
 
         <CacheabilityPicker v-model="cacheability" :showBlankItem="false" :multiple="false" />
 

@@ -174,8 +174,8 @@ When adding or modifying tests, be sure to verify that the test suite is able to
 
 ### Assert
 
-Tests in this project use the "Assert.That.[Assertion]" pattern in preference to the standard "Assert.[Assertion]" pattern.
-eg. "Assert.That.AreEqual(a, b);" is preferred to "Assert.AreEqual(a, b);
+Tests in this project use the "Assert.[Assertion]" pattern in preference to the standard "Assert.[Assertion]" pattern.
+eg. "Assert.AreEqual(a, b);" is preferred to "Assert.AreEqual(a, b);
 
 This is because "Assert.That" allows a consistent syntax for accessing both the standard MSBuild Assert methods and any custom extension methods we have added to extend the Assert functionality as needed.
 
@@ -217,7 +217,7 @@ namespace Rock.Tests.Integration.Model
                 code = AttendanceCodeService.GetNew( 0, 0, 3, false );
             }
 
-            Assert.That.AreEqual( "100", code.Code );
+            Assert.AreEqual( "100", code.Code );
         }
     }
 }

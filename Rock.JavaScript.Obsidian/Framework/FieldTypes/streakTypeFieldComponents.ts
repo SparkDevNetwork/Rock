@@ -17,7 +17,7 @@
 import { defineComponent, ref, watch } from "vue";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationValueKey } from "./streakTypeField.partial";
+import { ConfigurationKey } from "./streakTypeField.partial";
 import { getFieldEditorProps } from "./utils";
 
 export const EditComponent = defineComponent({
@@ -33,7 +33,7 @@ export const EditComponent = defineComponent({
         // The internal value used by the text editor.
         const internalValue = ref<string>("");
         // The CommunicationTemplate options.
-        const options = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+        const options = JSON.parse(props.configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
 
         // Watch for changes from the parent component and update the text editor.
         watch(() => props.modelValue, () => {

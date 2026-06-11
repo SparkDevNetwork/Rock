@@ -23,6 +23,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Data.Entity.Spatial;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -47,6 +49,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 45 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IpAddress { get; set; }
 
         /// <summary>
@@ -66,6 +69,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PostalCode { get; set; }
 
         /// <summary>
@@ -76,6 +80,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 250 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Location { get; set; }
 
         /// <summary>
@@ -86,6 +91,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ISP { get; set; }
 
         /// <summary>
@@ -96,6 +102,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 2 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string CountryCode { get; set; }
 
         /// <summary>
@@ -115,6 +122,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 3 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string RegionCode { get; set; }
 
         /// <summary>

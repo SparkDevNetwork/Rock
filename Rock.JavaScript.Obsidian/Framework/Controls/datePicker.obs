@@ -4,11 +4,11 @@
         <div class="control-wrapper">
             <div v-if="displayCurrentOption" class="form-control-group">
                 <div class="form-row">
-                    <DatePickerBase v-model.lazy="internalValue" :id="uniqueId" v-bind="field" :disabled="isCurrent || field.disabled" />
+                    <DatePickerBase v-model.lazy="internalValue" :id="uniqueId" v-bind="field" :disabled="isCurrent || disabled" />
                     <div v-if="displayCurrentOption || isCurrent" class="input-group">
                         <div class="checkbox">
                             <label title="">
-                                <input type="checkbox" v-model="isCurrent" :disabled="field.disabled" />
+                                <input type="checkbox" v-model="isCurrent" :disabled="disabled" />
                                 <span class="label-text">Current Date</span></label>
                         </div>
                     </div>
@@ -17,7 +17,7 @@
                     <TextBox label="+- Days" v-model="currentDiff" inputClasses="input-width-md" help="Enter the number of days after the current date to use as the date. Use a negative number to specify days before." :disabled="field.disabled" />
                 </div>
             </div>
-            <DatePickerBase v-else v-model.lazy="internalValue" :id="uniqueId" v-bind="{ ...field, ...basePickerProps }" :disabled="isCurrent || field.disabled" />
+            <DatePickerBase v-else v-model.lazy="internalValue" :id="uniqueId" v-bind="{ ...field, ...basePickerProps }" :disabled="isCurrent || disabled" />
         </div>
     </RockFormField>
 </template>
@@ -34,6 +34,12 @@
         modelValue: {
             type: String as PropType<string | null>,
             default: null
+        },
+
+        /** A disabled field cannot be modified by the individual. */
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         displayCurrentOption: {

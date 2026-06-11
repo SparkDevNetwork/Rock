@@ -487,8 +487,7 @@ namespace Rock.Model
             var metRequirements = this.GroupMemberRequirements.Select( a => new
             {
                 GroupRequirementId = a.GroupRequirement.Id,
-                MeetsGroupRequirement = ( a.RequirementMetDateTime.HasValue || a.WasManuallyCompleted || a.WasOverridden )
-                    ? MeetsGroupRequirement.Meets : a.RequirementWarningDateTime.HasValue ? MeetsGroupRequirement.MeetsWithWarning : MeetsGroupRequirement.NotMet,
+                MeetsGroupRequirement = a.GroupMemberRequirementState,
                 a.RequirementWarningDateTime,
                 a.LastRequirementCheckDateTime,
                 GroupMemberRequirementId = a.Id

@@ -23,7 +23,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -58,6 +60,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -67,6 +70,7 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -131,7 +135,33 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string HighlightColor { get; set; }
+
+        /// <summary>
+        /// Number of days added to the calculated due date for a request status.
+        /// </summary>
+        [DataMember]
+        public int? RequestStatusDueDateOffsetInDays { get; set; }
+
+        /// <summary>
+        /// Number of days before the due date when a request status is considered "due soon."
+        /// </summary>
+        [DataMember]
+        public int? RequestStatusDueSoonOffsetInDays { get; set; }
+
+        /// <summary>
+        /// When set, automatically moves the request to Future Follow-Up for the specified number of days. 
+        /// Leave blank to disable this behavior.
+        /// </summary>
+        [DataMember]
+        public int? AutoFutureFollowUpPauseInDays { get; set; }
+
+        /// <summary>
+        /// Indicates whether completing a request requires entering a note.
+        /// </summary>
+        [DataMember]
+        public bool IsNoteRequiredOnCompletion { get; set; }
 
         #endregion
 

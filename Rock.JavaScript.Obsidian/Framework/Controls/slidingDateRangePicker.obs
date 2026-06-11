@@ -194,7 +194,7 @@
             newValue.timeValue = toNumberOrNull(timeValue.value) ?? undefined;
         }
 
-        if (rangeType.value == "2") {
+        if (rangeType.value === "2") {
             newValue.lowerDate = lowDate.value;
             newValue.upperDate = highDate.value;
         }

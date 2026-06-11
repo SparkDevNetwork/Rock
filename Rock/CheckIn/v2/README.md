@@ -12,6 +12,7 @@ There are a few primary goals to having this file:
 * Concise but easy to understand. We have limited UI space so we want to be concise, and being concise tends to help things be more understandable. But at the same time, we don't want to be so concise that the person isn't clear what it means or does.
 * Make sure configuration options are in the right sections. The names and descriptions of the sections should make sense for all the options inside that section. If they don't make sense we need to either change the section name/description or move the configuration option to another section.
 * Capitalization and spelling of things should be consistent across all configuration options.
+* When creating new configuration label text, use existing label text from other configuration elements to determine patterns first. If a consistent pattern does not emerge then you can look to external sources for common naming conventions, but be sure to point out that the label text does not match an existing pattern being used. This is important so we know to review it carefully to decide if that is a new pattern we want.
 
 ## UI Formatting Rules
 
@@ -570,6 +571,14 @@ Developer Note: Originally called "Grade Confirmation Age".
 ### Family Registration Fields
 
 Description: Configure the types of information to collect from families during registration.
+
+#### Display Address for Families
+
+Type: Single Selection
+Values: Hide; Optional; Required
+Mode: Essentials
+
+Help: Controls how the family address field displayed when adding or editing a family during registration.
 
 #### Required Attributes for Families
 

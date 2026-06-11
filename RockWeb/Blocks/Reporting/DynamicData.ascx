@@ -36,7 +36,7 @@
                             <hr class="mt-0" />
                             <div class="row">
                                 <div class="col-md-12">
-                                    <Rock:CodeEditor ID="ceQuery" EditorHeight="212" EditorMode="Sql" EditorTheme="Rock" runat="server" Label="Query"
+                                    <Rock:CodeEditor ID="ceQuery" EditorHeight="212" EditorMode="Sql" runat="server" Label="Query"
                                         Help="The SQL query or stored procedure name to execute.  If parameters are included they will also need to be in the Parameters field below.
                                             By default, a grid will be displayed showing all the rows and columns returned by the query.  However, if a 'Formatted Output' value is included below, the results will be formatted
                                             according to the 'Formatted Output' value." />

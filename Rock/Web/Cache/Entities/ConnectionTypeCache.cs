@@ -16,10 +16,14 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
+using Rock.Enums.Connection;
 using Rock.Model;
 
 namespace Rock.Web.Cache
@@ -32,7 +36,7 @@ namespace Rock.Web.Cache
     [DataContract]
     public class ConnectionTypeCache : ModelCache<ConnectionTypeCache, ConnectionType>
     {
-        #region Entity Properties
+        #region Properties
 
         /// <summary>
         /// Gets or sets the name.
@@ -79,6 +83,18 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool EnableFullActivityList { get; private set; }
 
+
+        /// <summary>
+        /// Flags that specify which optional features are enabled for this connection type.
+        /// </summary>
+        [DataMember]
+        public EnabledFeatureFlags EnabledFeatures { get; private set; }
+
+        /// <summary>
+        /// Determines how the due date for a request is calculated.
+        /// </summary>
+        [DataMember]
+        public DueDateCalculationMode DueDateCalculationMode { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this connection type requires a placement group to connect.
@@ -180,9 +196,76 @@ namespace Rock.Web.Cache
         [DataMember]
         public int Order { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the request due date offset in days.
+        /// </summary>
+        /// <value>
+        /// The request due date offset in days.
+        /// </value>
+        [DataMember]
+        public int? RequestDueDateOffsetInDays { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the request due soon date offset in days.
+        /// </summary>
+        /// <value>
+        /// The request due soon date offset in days.
+        /// </value>
+        [DataMember]
+        public int? RequestDueSoonOffsetInDays { get; private set; }
+
+        /// <summary>
+        /// Flags that specify which request views are enabled for this connection type.
+        /// </summary>
+        [DataMember]
+        public EnabledViewFlags EnabledViews { get; private set; }
+
+        /// <summary>
+        /// Gets the ordered <see cref="ConnectionStatus"/> list for this <see cref="ConnectionType"/>.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         Will include both active and inactive statuses.
+        ///     </para>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "19.0" )]
+        public List<ConnectionStatus> OrderedStatuses => _orderedStatuses.Value;
+        private readonly Lazy<List<ConnectionStatus>> _orderedStatuses;
+
+        /// <inheritdoc cref="ConnectionType.IsSequentialStatusEnforced"/>
+        [DataMember]
+        public bool IsSequentialStatusEnforced { get; private set; }
+
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Default constructor for the ConnectionTypeCache class.
+        /// </summary>
+        public ConnectionTypeCache()
+        {
+            _orderedStatuses = new Lazy<List<ConnectionStatus>>( () =>
+            {
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
+                {
+                    return new ConnectionStatusService( rockContext )
+                        .Queryable()
+                        .AsNoTracking()
+                        .Where( cs => cs.ConnectionTypeId == Id )
+                        .OrderBy( cs => cs.Order )
+                        .ThenByDescending( cs => cs.IsDefault )
+                        .ThenBy( cs => cs.Name )
+                        .ToList();
+                }
+            } );
+        }
 
         /// <summary>
         /// Gets a list of all attributes defined for the ConnectionTypes specified that
@@ -213,6 +296,59 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets whether <paramref name="targetStatusId"/> is the next sequential, active <see cref="ConnectionStatus"/>
+        /// after <paramref name="currentStatusId"/>.
+        /// </summary>
+        /// <param name="currentStatusId">The identifier of the current <see cref="ConnectionStatus"/>.</param>
+        /// <param name="targetStatusId">The identifier of the target <see cref="ConnectionStatus"/>.</param>
+        /// <returns>Whether <paramref name="targetStatusId"/> is the next sequential, active <see cref="ConnectionStatus"/>.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "19.0" )]
+        public bool IsNextSequentialActiveStatus( int currentStatusId, int targetStatusId )
+        {
+            int? firstActiveStatusId = null;
+            var currentStatusFound = false;
+
+            foreach ( var s in OrderedStatuses )
+            {
+                if ( firstActiveStatusId == null && s.IsActive )
+                {
+                    // Take note of the first active status we encounter in case we need to compare it against
+                    // targetStatusId below (if we somehow don't find currentStatusId in the list).
+                    firstActiveStatusId = s.Id;
+                }
+
+                if ( !currentStatusFound )
+                {
+                    if ( s.Id == currentStatusId )
+                    {
+                        // We found the current status in the list.
+                        currentStatusFound = true;
+                    }
+
+                    continue;
+                }
+
+                // We are after the current status, so the first active we hit is the "next sequential active".
+                if ( s.IsActive )
+                {
+                    // If the next active status IS targetStatusId, return true; otherwise return false.
+                    return s.Id == targetStatusId;
+                }
+            }
+
+            // currentStatusId wasn't in the list. Does targetStatusId match the first active status?
+            return !currentStatusFound && firstActiveStatusId == targetStatusId;
+        }
+
+        /// <summary>
         /// Copies from model.
         /// </summary>
         /// <param name="entity">The entity.</param>
@@ -232,7 +368,9 @@ namespace Rock.Web.Cache
             IconCssClass = sourceModel.IconCssClass;
             EnableFullActivityList = sourceModel.EnableFullActivityList;
             EnableFutureFollowup = sourceModel.EnableFutureFollowup;
+            EnabledFeatures = sourceModel.EnabledFeatures;
             RequiresPlacementGroupToConnect = sourceModel.RequiresPlacementGroupToConnect;
+            DueDateCalculationMode = sourceModel.DueDateCalculationMode;
             OwnerPersonAliasId = sourceModel.OwnerPersonAliasId;
             DaysUntilRequestIdle = sourceModel.DaysUntilRequestIdle;
             EnableRequestSecurity = sourceModel.EnableRequestSecurity;
@@ -242,6 +380,10 @@ namespace Rock.Web.Cache
             RequestHeaderLava = sourceModel.RequestHeaderLava;
             RequestBadgeLava = sourceModel.RequestBadgeLava;
             Order = sourceModel.Order;
+            RequestDueDateOffsetInDays = sourceModel.RequestDueDateOffsetInDays;
+            RequestDueSoonOffsetInDays = sourceModel.RequestDueSoonOffsetInDays;
+            EnabledViews = sourceModel.EnabledViews;
+            IsSequentialStatusEnforced = sourceModel.IsSequentialStatusEnforced;
         }
 
         /// <summary>

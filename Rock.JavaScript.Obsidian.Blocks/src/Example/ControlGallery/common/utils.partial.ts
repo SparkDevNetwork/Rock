@@ -55,6 +55,23 @@ export function getTemplateImportPath(fileName: string): string {
 }
 
 /**
+ * Generate a string of an import statement that imports the directive will the given file name.
+ *
+ * @param fileName Name of the directive's file.
+ * @param named Indicates whether the directive should be imported as a named import.
+ *
+ * @returns A string of code that can be used to import the given directive file.
+ */
+export function getDirectiveImportPath(fileName: string, named: boolean = false): string {
+    if (named) {
+        return `import { v${upperCaseFirstCharacter(fileName)} } from "@Obsidian/Directives/${fileName}";`;
+    }
+    else {
+        return `import v${upperCaseFirstCharacter(fileName)} from "@Obsidian/Directives/${fileName}";`;
+    }
+}
+
+/**
  * Takes a gallery component's name and converts it to a name that is useful for the header and
  * sidebar by adding spaces and stripping out the "Gallery" suffix
  *
@@ -125,6 +142,8 @@ export class ComponentUsage {
     private readonly name: string;
     private readonly attributes: { value: string | boolean | number | null | undefined, name: string }[];
     private body: string = "";
+    private scriptSetupImports: string = "";
+    private scriptSetupBody: string = "";
 
     /**
      * Creates a new instance of the ComponentUsage class.
@@ -215,6 +234,47 @@ export class ComponentUsage {
     }
 
     /**
+     * Adds an import statement to the script setup section. This is useful for
+     * including necessary imports for the component usage, not for the component itself.
+     * e.g., importing the Guid type when using a property that takes it as a value.
+     * @param importStatement The import statement to add.
+     */
+    public addScriptImport(importStatement: string): void {
+        if (this.scriptSetupImports) {
+            this.scriptSetupImports += "\n";
+        }
+
+        this.scriptSetupImports += `    ${importStatement}`;
+    }
+
+    /**
+     * Adds code to the script setup body. This is useful for demonstrating when a variable
+     * or function is better used than a raw value in for the component's property.
+     * @param scriptBody The code to add to the script setup body.
+     */
+    public addScriptBody(scriptBody: string): void {
+        if (this.scriptSetupBody) {
+            this.scriptSetupBody += "\n";
+        }
+
+        this.scriptSetupBody += `    ${scriptBody}\n`;
+    }
+
+    /**
+     * Adds code to the script setup body. This is useful for demonstrating when a variable
+     * or function is better used than a raw value in for the component's property.
+     * @param scriptBody The code to add to the script setup body.
+     */
+    public addScriptBodyWithComment(comment: string, scriptBody: string): void {
+        if (this.scriptSetupBody) {
+            this.scriptSetupBody += "\n";
+        }
+
+        this.scriptSetupBody += `    /** ${comment} */\n`;
+        this.scriptSetupBody += `    ${scriptBody}\n`;
+    }
+
+    /**
      * Converts the component usage to a string representation.
      * This generates the full code for the component, including its attributes
      * and body.
@@ -247,6 +307,28 @@ export class ComponentUsage {
 
             code += "/>";
         }
+
+        return code;
+    }
+
+    /**
+     * Converts the script setup section to a string representation.
+     * This generates the full code for the script setup,
+     * including its imports and body.
+     * @returns The string representation of the script setup section.
+     */
+    public toScriptSetupString(): string {
+        let code = `<script setup lang="ts">\n`;
+
+        if (this.scriptSetupImports) {
+            code += `${this.scriptSetupImports}${this.scriptSetupBody ? "\n\n" : ""}`;
+        }
+
+        if (this.scriptSetupBody) {
+            code += `${this.scriptSetupBody}`;
+        }
+
+        code += `</script>`;
 
         return code;
     }

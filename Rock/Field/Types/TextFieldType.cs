@@ -20,10 +20,13 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 #endif
 using Rock.Attribute;
+using Rock.Enums.Security;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Security;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -44,6 +47,7 @@ namespace Rock.Field.Types
         private const string MAX_CHARACTERS = "maxcharacters";
         private const string SHOW_COUNT_DOWN = "showcountdown";
         private const string IS_FIRST_NAME = "isfirstname";
+        private const string ALLOW_HTML = "allowhtml";
 
         /// <summary>
         /// Determines whether the Attribute Configuration for this field has IsPassword = True
@@ -94,6 +98,23 @@ namespace Rock.Field.Types
 
         #region Edit Control
 
+        /// <inheritdoc/>
+        public override StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateConfigurationValues?.TryGetValue( IS_FIRST_NAME, out var isFirstName ) == true && isFirstName.AsBoolean() )
+            {
+                return StringValueValidator.GetEffectiveRules( StringValidationProfile.Name );
+            }
+
+            if ( privateConfigurationValues?.TryGetValue( ALLOW_HTML, out var allowHtml ) == true && allowHtml.AsBoolean() )
+            {
+                return StringValueValidator.GetEffectiveRules( StringValidationProfile.LavaAndBasicHtml );
+            }
+
+            return StringValueValidator.GetEffectiveRules( StringValidationProfile.PlainText,
+                excludedRules: StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands );
+        }
+
         #endregion
 
         #region FilterControl
@@ -137,6 +158,7 @@ namespace Rock.Field.Types
             configKeys.Add( MAX_CHARACTERS );
             configKeys.Add( SHOW_COUNT_DOWN );
             configKeys.Add( IS_FIRST_NAME );
+            configKeys.Add( ALLOW_HTML );
             return configKeys;
         }
 
@@ -181,6 +203,14 @@ namespace Rock.Field.Types
             cbIsFirstNameField.Label = "FirstName Field";
             cbIsFirstNameField.Help = "When set, edit field will be validated as a first name.";
 
+            // Add checkbox for deciding if the text should allow HTML or not.
+            var cbAllowHtml = new RockCheckBox();
+            controls.Add( cbAllowHtml );
+            cbAllowHtml.AutoPostBack = true;
+            cbAllowHtml.CheckedChanged += OnQualifierUpdated;
+            cbAllowHtml.Label = "Allow HTML";
+            cbAllowHtml.Help = "Controls whether server should prevent HTML from being entered in this field or not.";
+
             return controls;
         }
 
@@ -196,6 +226,7 @@ namespace Rock.Field.Types
             configurationValues.Add( MAX_CHARACTERS, new ConfigurationValue( "Max Characters", "The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text.", "" ) );
             configurationValues.Add( SHOW_COUNT_DOWN, new ConfigurationValue( "Show Character Limit Countdown", "When set, displays a countdown showing how many characters remain (for the Max Characters setting).", "" ) );
             configurationValues.Add( IS_FIRST_NAME, new ConfigurationValue( "FirstName Field", "When set, edit field will be validated as a first name.", "" ) );
+            configurationValues.Add( ALLOW_HTML, new ConfigurationValue( "Allow HTML", "Controls whether server should prevent HTML from being entered in this field or not.", "" ) );
 
             if ( controls != null )
             {
@@ -232,6 +263,14 @@ namespace Rock.Field.Types
                     if ( cbIsFirstNameField != null )
                     {
                         configurationValues[IS_FIRST_NAME].Value = cbIsFirstNameField.Checked.ToString();
+                    }
+                }
+
+                if ( controls.Count > 4 )
+                {
+                    if ( controls[4] is CheckBox cbAllowHtml )
+                    {
+                        configurationValues[ALLOW_HTML].Value = cbAllowHtml.Checked.ToString();
                     }
                 }
             }
@@ -281,6 +320,14 @@ namespace Rock.Field.Types
                     if ( cbIsFirstNameField != null )
                     {
                         cbIsFirstNameField.Checked = configurationValues[IS_FIRST_NAME].Value.AsBoolean();
+                    }
+                }
+
+                if ( controls.Count > 4 && configurationValues.ContainsKey( ALLOW_HTML ) )
+                {
+                    if ( controls[4] is CheckBox cbAllowHtml )
+                    {
+                        cbAllowHtml.Checked = configurationValues[ALLOW_HTML].Value.AsBoolean();
                     }
                 }
             }
@@ -357,6 +404,7 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             RockTextBox tb = base.EditControl( configurationValues, id ) as RockTextBox;
+            var allowHtml = false;
 
             if ( configurationValues != null )
             {
@@ -388,7 +436,15 @@ namespace Rock.Field.Types
                 {
                     tb.ShowCountDown = configurationValues[SHOW_COUNT_DOWN].Value.AsBoolean();
                 }
+
+                if ( configurationValues.ContainsKey( ALLOW_HTML ) )
+                {
+                    allowHtml = configurationValues[ALLOW_HTML].Value.AsBoolean();
+                }
             }
+
+            tb.ValidateRequestMode = allowHtml ? ValidateRequestMode.Disabled : ValidateRequestMode.Enabled;
+
             return tb;
         }
 

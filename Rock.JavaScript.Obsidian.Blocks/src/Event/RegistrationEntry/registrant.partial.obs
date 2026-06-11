@@ -2,6 +2,13 @@
 <template>
     <div class="registrationentry-registrant-details">
         <RockForm @submit="onNext" :formResetKey="formResetKey">
+            <div ref="duplicateRegistrantRef">
+                <NotificationBox v-if="duplicateRegistrantError"
+                                 alertType="danger">
+                    {{ duplicateRegistrantError }}
+                </NotificationBox>
+            </div>
+
             <template v-if="isDataForm">
                 <template v-if="currentFormIndex === 0">
                     <div v-if="familyOptions.length > 1" class="well">
@@ -9,7 +16,11 @@
                     </div>
                     <div v-if="isFamilyMembersDropDownVisible" class="row">
                         <div class="col-md-6">
-                            <DropDownList :modelValue="currentRegistrant.personGuid ?? ''" @update:modelValue="onSetPersonGuid" :items="familyMemberOptions" :label="props.currentRegistrant.isNewFamily ? 'Guest to Register' : 'Family Member to Register'" :showBlankItem="false" />
+                            <DropDownList v-model="selectedPersonGuidOrNewOrEmptyString"
+                                          :items="familyMemberOptions"
+                                          :label="props.currentRegistrant.isNewFamily ? 'Guest to Register' : 'Family Member to Register'"
+                                          :rules="['required', preventDuplicateRegistrantRule]"
+                                          showBlankItem />
                         </div>
                     </div>
                 </template>
@@ -99,6 +110,8 @@
     import { Gender, GenderDescription } from "@Obsidian/Enums/Crm/gender";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
+    import { isElementFullyVisible, scrollElementStartToTop } from "@Obsidian/Utility/dom";
+    import { ResolveRegistrantPersonResultBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/resolveRegistrantPersonResultBag";
 
     const props = defineProps({
         currentRegistrant: {
@@ -235,7 +248,7 @@
         const fields = JSON.parse(JSON.stringify(currentFormFields.value ?? null)) as RegistrationEntryFormFieldBag[];
 
         fields.forEach(value => {
-            if (value.fieldSource != fieldSources.personField) {
+            if (value.fieldSource !== fieldSources.personField) {
                 let isVisible = true;
                 switch (value.visibilityRuleType) {
                     case FilterExpressionType.GroupAll:
@@ -320,7 +333,7 @@
         }
 
         // Add the current person (registrant) if not already added
-        const familyGuid = !props.currentRegistrant.familyGuid || usedFamilyGuids[props.currentRegistrant.familyGuid] == true
+        const familyGuid = !props.currentRegistrant.familyGuid || usedFamilyGuids[props.currentRegistrant.familyGuid] === true
             ? newFamilyGuid
             : props.currentRegistrant.familyGuid;
         options.push({
@@ -366,7 +379,7 @@
             return [
                 {
                     text: "Guest",
-                    value: null
+                    value: <NEW>"NEW"
                 }
             ];
         }
@@ -377,14 +390,15 @@
 
         const familyMembers = viewModel.value.familyMembers
             ?.filter(fm => fm.guid && !usedFamilyMemberGuids.includes(fm.guid))
-            ?.map(fm => ({
-                text: fm.fullName,
-                value: fm.guid
+            ?.map<ListItemBag>(fm => ({
+                text: fm.isIneligible ? `${fm.fullName} (Ineligible)` : fm.fullName,
+                value: fm.guid,
+                disabled: fm.isIneligible
             })) ?? [];
 
         let newFamilyMemberOption = {
             text: "New Family Member",
-            value: null
+            value: <NEW>"NEW"
         };
 
         return [...familyMembers, newFamilyMemberOption];
@@ -509,6 +523,34 @@
         return fieldType.doesValueMatchFilter(value, convertComparisonValue(rule.comparisonValue), comparedToFormField.attribute.configurationValues ?? {});
     }
 
+    function preventDuplicateRegistrantRule(value: unknown): boolean | string {
+        if (!registrationEntryState.viewModel.areDuplicateRegistrantsPrevented) {
+            // If duplicate registrants are not being prevented then this rule should not do anything. Let other validators handle this.
+            return true;
+        }
+
+        if (typeof value !== "string") {
+            // Let other validators handle this.
+            return true;
+        }
+
+        const valueAsGuid = toGuidOrNull(value);
+
+        if (!valueAsGuid) {
+            // Let other validators handle this.
+            return true;
+        }
+
+        if (registrationEntryState.viewModel.familyMembers?.filter(fm => fm.isRegistrantInAnotherRegistration).some(fm => areEqual(fm.guid, valueAsGuid))) {
+            return "has already been registered";
+        }
+
+        return true;
+    }
+
+    const duplicateRegistrantRef = ref<HTMLElement>();
+    const duplicateRegistrantError = ref<string>("");
+
     function onPrevious(): void {
         clearFormErrors();
 
@@ -524,6 +566,40 @@
     async function onNext(): Promise<void> {
         clearFormErrors();
         let lastFormIndex = formsToShow.value.length - 1;
+
+        // Before checking the signature document, make sure the registrant is not already registered
+        // if the template is configured to prevent duplicate registrants.
+        if (registrationEntryState.viewModel.areDuplicateRegistrantsPrevented) {
+            isNextDisabled.value = true;
+            try {
+                const result = await invokeBlockAction<ResolveRegistrantPersonResultBag>("ResolveRegistrantPerson", {
+                    args: getRegistrationEntryBlockArgs(),
+                    registrantGuid: toGuidOrNull(props.currentRegistrant.guid) ?? emptyGuid
+                });
+
+                if (!result.isSuccess) {
+                    console.error(`Duplicate check failed. ${result.errorMessage}`);
+                    // Don't prevent moving forward if the duplicate check fails here.
+                    // A final check is done when the registration is submitted.
+                }
+                else if (result.data) {
+                    if (result.data.isAlreadyInAnotherRegistration || result.data.isAlreadyInCurrentRegistration) {
+                        duplicateRegistrantError.value = result.data.isAlreadyInAnotherRegistration
+                            ? `${firstName.value} has already been registered.`
+                            : `${firstName.value} is already in this registration.`;
+                        if (duplicateRegistrantRef.value) {
+                            if (!isElementFullyVisible(duplicateRegistrantRef.value)) {
+                                scrollElementStartToTop(duplicateRegistrantRef.value);
+                            }
+                        }
+                        return;
+                    }
+                }
+            }
+            finally {
+                isNextDisabled.value = false;
+            }
+        }
 
         // If we have an inline signature then there is an additional form
         // screen that we need to show. Get the document to be signed from
@@ -619,6 +695,7 @@
      */
     function clearFormErrors(): void {
         formResetKey.value = newGuid();
+        duplicateRegistrantError.value = "";
     }
 
     async function onSigned(): Promise<void> {
@@ -805,20 +882,26 @@
         }
     }
 
-    function onSetPersonGuid(guid: Guid | Guid[]): void {
-        if (Array.isArray(guid)) {
-            // This should not happen, but if multiple values are selected, then default to the first selection.
-            guid = guid[0];
-        }
+    watch(() => props.currentRegistrant.guid, (newValue) => {
+        selectedPersonGuidOrNewOrEmptyString.value = toGuidOrNull(newValue) ?? "";
+    });
 
-        if (!areEqual(guid, props.currentRegistrant.personGuid)) {
-            props.currentRegistrant.personGuid = guid;
+    type NEW = "NEW";
+    const selectedPersonGuidOrNewOrEmptyString = ref<Guid | NEW | "">(props.currentRegistrant.personGuid ?? "");
+
+    watch(selectedPersonGuidOrNewOrEmptyString, (newValue) => {
+        const guidOrNull = toGuidOrNull(newValue) ?? null;
+        if (!areEqual(guidOrNull, props.currentRegistrant.personGuid)) {
+            props.currentRegistrant.personGuid = guidOrNull;
 
             if (familyMember.value) {
                 props.currentRegistrant.familyGuid = familyMember.value.familyGuid;
             }
+
+            // Clear the duplicate registrant error when the registrant is changed.
+            duplicateRegistrantError.value = "";
         }
-    }
+    });
 
     // #endregion
 

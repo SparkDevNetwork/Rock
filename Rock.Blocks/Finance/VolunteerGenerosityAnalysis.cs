@@ -198,11 +198,25 @@ namespace Rock.Blocks.Finance
                 }
 
                 dataset.UpdateResultData();
-                rockContext.SaveChanges();
+                /*
+                    2/10/2026 - NA
+                    We are calling the SaveChanges( true ) overload that disables pre/post processing hooks
+                    because we only want to change the properties changed in UpdateResultData(). If we don't disable
+                    these hooks, the [ModifiedDateTime] value will also be updated every time a DataView is
+                    run, which is not what we want here.
 
+                    Reason: See Asana task "Persisted Datasets Don't Have CreatedBy/ModifiedBy Values"
+                    https://app.asana.com/1/20866866924293/task/1213202694111290
+                */
+                rockContext.SaveChanges( true );
+
+#if NET472_OR_GREATER
                 PersistedDatasetCache.UpdateCachedEntity( dataset.Id, System.Data.Entity.EntityState.Modified );
+#else
+                PersistedDatasetCache.UpdateCachedEntity( dataset.Id, Microsoft.EntityFrameworkCore.EntityState.Modified );
+#endif
 
-                var lastUpdated = DateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss" );
+                var lastUpdated = RockDateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss" );
                 var estimatedRefreshTime = dataset.TimeToBuildMS.HasValue ? Math.Round( dataset.TimeToBuildMS.Value / 1000.0, 2 ) : 0.0; // Convert to seconds and round to 2 decimal places
 
                 return ActionOk( new { LastUpdated = lastUpdated, EstimatedRefreshTime = estimatedRefreshTime } );

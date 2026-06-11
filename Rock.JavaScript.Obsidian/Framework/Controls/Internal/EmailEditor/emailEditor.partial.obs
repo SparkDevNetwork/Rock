@@ -109,7 +109,7 @@
     import EmailDesigner from "./emailDesigner.partial.obs";
     import SidePanel from "./sidePanel.partial.obs";
     import { BodyGlobalProps, ButtonGlobalProps, CloneComponentRequest, CompleteComponentRequest, ComponentTypeDragEndRequest, ComponentTypeDragStartRequest, ComponentTypeName, DeleteComponentRequest, DividerGlobalProps, ReplaceComponentRequest } from "./types.partial";
-    import { GetHtmlRequest, UsageType } from "./types";
+    import { GetHtmlRequest, UsageType } from "./types.partial";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { Guid } from "@Obsidian/Types";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

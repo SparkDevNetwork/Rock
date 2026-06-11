@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Core.Grid;
 using Rock.Field;
 using Rock.Model;
 using Rock.Reporting;
@@ -467,10 +468,10 @@ namespace RockWeb.Blocks.Finance
             var additionalColumns = this.GetAttributeValue( CustomGridColumnsConfig.AttributeKey ).FromJsonOrNull<CustomGridColumnsConfig>();
             if ( additionalColumns != null )
             {
-                foreach ( var columnConfig in additionalColumns.ColumnsConfig )
+                foreach ( var columnConfig in additionalColumns.Columns )
                 {
                     int insertPosition;
-                    if ( columnConfig.PositionOffsetType == CustomGridColumnsConfig.ColumnConfig.OffsetType.LastColumn )
+                    if ( columnConfig.PositionOffsetType == ColumnPositionAnchor.LastColumn )
                     {
                         insertPosition = tableColumns.Count - columnConfig.PositionOffset;
                     }

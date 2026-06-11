@@ -34,7 +34,7 @@ export const CommunicationTemplateVersion = {
 export const CommunicationTemplateVersionDescription: Record<number, string> = {
     0: "Legacy",
 
-    1: "Beta"
+    1: "NextGen"
 };
 
 /** Represents the version of a communication template. */

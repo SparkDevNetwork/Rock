@@ -36,10 +36,10 @@
      * (/script)
      */
     import { PropType, ref, watch } from "vue";
-    import { usePluginHelper } from "./utils.partial";
+    import { usePluginHelper } from "../Internal/NoteEditor/utils";
     import { Editor, EditorEvent, EventDispatcher, Events, RawEditorOptions } from "@Obsidian/Libs/tinymce";
     import { newGuid } from "@Obsidian/Utility/guid";
-    import { ConfigureEditorUtilities } from "./types.partial";
+    import { ConfigureEditorUtilities } from "../Internal/NoteEditor/types";
 
     const props = defineProps({
         /**

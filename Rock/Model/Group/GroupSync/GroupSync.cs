@@ -76,17 +76,6 @@ namespace Rock.Model
         public int? WelcomeSystemCommunicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the welcome system email identifier.
-        /// </summary>
-        /// <value>
-        /// The welcome system email identifier.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use WelcomeSystemCommunicationId instead.", true )]
-        [RockObsolete( "1.10" )]
-        public int? WelcomeSystemEmailId { get; set; }
-
-        /// <summary>
         /// Gets or sets the exit <see cref="Rock.Model.SystemCommunication"/> identifier.
         /// </summary>
         /// <value>
@@ -94,17 +83,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? ExitSystemCommunicationId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the exit system email identifier.
-        /// </summary>
-        /// <value>
-        /// The exit system email identifier.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use ExitSystemCommunicationId instead.", true )]
-        [RockObsolete( "1.10" )]
-        public int? ExitSystemEmailId { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [add user accounts during synchronize].
@@ -162,28 +140,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Rock.Model.DataView SyncDataView { get; set; }
-
-        /// <summary>
-        /// Gets or sets the welcome system email.
-        /// </summary>
-        /// <value>
-        /// The welcome system email.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use WelcomeSystemCommunication instead.", true )]
-        [RockObsolete( "1.10" )]
-        public virtual Rock.Model.SystemEmail WelcomeSystemEmail { get; set; }
-
-        /// <summary>
-        /// Gets or sets the exit system email.
-        /// </summary>
-        /// <value>
-        /// The exit system email.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use ExitSystemCommunication instead.", true )]
-        [RockObsolete( "1.10" )]
-        public virtual SystemEmail ExitSystemEmail { get; set; }
 
         /// <summary>
         /// Gets or sets the welcome <see cref="Rock.Model.SystemCommunication"/>.

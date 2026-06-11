@@ -1,0 +1,213 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSection :title="isRootException ? undefined : sectionTitle" :icon="isRootException ? undefined : 'ti ti-alert-triangle'" :light="isRootException">
+        <template v-if="!isRootException" #headerActions>
+            <HighlightLabel labelType="default">Exception Id: {{ exception.id }}</HighlightLabel>
+        </template>
+
+        <div v-if="isRootException && exception.description" class="exception-description">
+            <h5 class="text-danger m-0">{{ isDescriptionExpanded ? fullDescription : truncatedDescription }}</h5>
+
+            <div class="d-flex align-items-center gap-2">
+                <RockButton v-if="isDescriptionTruncated" :btnType="BtnType.Default" :btnSize="BtnSize.ExtraSmall" @click="onToggleDescription">
+                    {{ isDescriptionExpanded ? "Hide Full Description" : "View Full Description" }}
+                    <i :class="['ti ti-chevron-up align-middle', { 'chevron-collapsed': !isDescriptionExpanded }]"></i>
+                </RockButton>
+
+                <CopyButton :value="fullDescription" :btnSize="BtnSize.ExtraSmall" tooltip="Copy Description" />
+            </div>
+        </div>
+
+        <dl class="mb-0">
+            <template v-if="!isRootException && exception.description">
+                <dt>Description</dt>
+                <dd>
+                    <div class="exception-description">
+                        <span class="text-wrap">{{ isDescriptionExpanded ? fullDescription : truncatedDescription }}</span>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <RockButton v-if="isDescriptionTruncated" :btnType="BtnType.Default" :btnSize="BtnSize.ExtraSmall" @click="onToggleDescription">
+                                {{ isDescriptionExpanded ? "Hide Full Description" : "View Full Description" }}
+                                <i :class="['ti ti-chevron-up align-middle', { 'chevron-collapsed': !isDescriptionExpanded }]"></i>
+                            </RockButton>
+
+                            <CopyButton :value="fullDescription" :btnSize="BtnSize.ExtraSmall" tooltip="Copy Description" />
+                        </div>
+                    </div>
+                </dd>
+            </template>
+            <template v-if="isRootException && exception.exceptionDate">
+                <dt>Exception Date</dt>
+                <dd>{{ exception.exceptionDate }}</dd>
+            </template>
+
+            <template v-if="exception.source">
+                <dt>Source</dt>
+                <dd>{{ exception.source }}</dd>
+            </template>
+
+            <template v-if="exception.siteName">
+                <dt>Site</dt>
+                <dd>{{ exception.siteName }}</dd>
+            </template>
+
+            <template v-if="exception.pageName || exception.pageUrl">
+                <dt>Page</dt>
+                <dd>
+                    <a v-if="exception.pageUrl" :href="exception.pageUrl" target="_blank">
+                        {{ exception.pageName || exception.pageUrl }}
+                    </a>
+                    <span v-else>{{ exception.pageName }}</span>
+                </dd>
+            </template>
+
+            <template v-if="exception.queryStringItems && exception.queryStringItems.length">
+                <dt>Query String</dt>
+                <dd>
+                    <div v-for="(item, index) in exception.queryStringItems" :key="index">
+                        <i class="ti ti-point-filled text-xs mr-2 ml-1"></i>{{ item.text }}: {{ item.value }}
+                    </div>
+                </dd>
+            </template>
+
+            <template v-if="exception.personFullName">
+                <dt>User</dt>
+                <dd>
+                    <a v-if="exception.personIdKey" :href="personProfileUrl">
+                        {{ exception.personFullName }}
+                    </a>
+                    <span v-else>{{ exception.personFullName }}</span>
+                </dd>
+            </template>
+        </dl>
+
+        <div v-if="exception.stackTrace">
+            <RockButton :btnType="BtnType.Link" class="p-0 text-decoration-none font-weight-semibold" @click="onToggleStackTrace">
+                <i class="ti ti-stack"></i>
+                {{ isStackTraceVisible ? "Hide" : "Show" }} Stack Trace
+                <i :class="['ti ti-chevron-up stacktrace-chevron', { 'stacktrace-chevron-collapsed': !isStackTraceVisible }]"></i>
+            </RockButton>
+
+            <TransitionVerticalCollapse>
+                <div v-if="isStackTraceVisible" class="contentsection-body-collapse">
+                    <div class="well mt-3 mb-0">
+                        <div class="d-flex align-items-start gap-2">
+                            <div class="stacktrace-text text-sm line-height-normal font-monospace text-muted flex-fill">{{ exception.stackTrace }}</div>
+                            <CopyButton :value="exception.stackTrace ?? ''" :btnSize="BtnSize.ExtraSmall" tooltip="Copy Stack Trace" />
+                        </div>
+                    </div>
+                </div>
+            </TransitionVerticalCollapse>
+        </div>
+    </ContentSection>
+</template>
+
+<style scoped>
+.exception-description {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+}
+
+.stacktrace-chevron {
+    transition: transform 0.35s ease-in-out;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.stacktrace-chevron-collapsed {
+    transform: rotate(180deg);
+}
+
+.chevron-collapsed {
+    transform: rotate(180deg);
+}
+
+.stacktrace-text {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+</style>
+
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import CopyButton from "@Obsidian/Controls/copyButton.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { truncate } from "@Obsidian/Utility/stringUtils";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { ExceptionLogItemBag } from "@Obsidian/ViewModels/Blocks/Core/ExceptionDetail/exceptionLogItemBag";
+
+    const props = defineProps({
+        exception: {
+            type: Object as PropType<ExceptionLogItemBag>,
+            required: true
+        },
+
+        /**
+         * When true, renders the description as a red h5, shows the Exception Date,
+         * and applies light styling with disabled collapse to the ContentSection.
+         */
+        isRootException: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    // #region Values
+
+    const sectionTitle = props.exception.exceptionType ?? "Unknown Exception";
+    const isDescriptionExpanded = ref(false);
+    const isStackTraceVisible = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** The full description with the exception type prepended in brackets. */
+    const fullDescription = computed((): string => {
+        const type = props.exception.exceptionType;
+        const desc = props.exception.description ?? "";
+
+        return type ? `(${type}) ${desc}` : desc;
+    });
+
+    /** The description truncated to 255 characters with "..." appended if longer. */
+    const truncatedDescription = computed((): string => {
+        return truncate(fullDescription.value, 255);
+    });
+
+    /** `true` if the full description exceeds 255 characters. */
+    const isDescriptionTruncated = computed((): boolean => {
+        return fullDescription.value.length > 255;
+    });
+
+    /** The URL to the person's profile page. */
+    const personProfileUrl = computed((): string => {
+        if (props.exception.personIdKey) {
+            return `/Person/${props.exception.personIdKey}`;
+        }
+
+        return "#";
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** Toggles the visibility of the full description. */
+    function onToggleDescription(): void {
+        isDescriptionExpanded.value = !isDescriptionExpanded.value;
+    }
+
+    /** Toggles the visibility of the stack trace. */
+    function onToggleStackTrace(): void {
+        isStackTraceVisible.value = !isStackTraceVisible.value;
+    }
+
+    // #endregion Functions
+</script>

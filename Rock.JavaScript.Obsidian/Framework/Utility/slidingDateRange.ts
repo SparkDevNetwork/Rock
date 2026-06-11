@@ -388,7 +388,7 @@ export function calculateSlidingDateRange(value: SlidingDateRange, currentDateTi
     // not 2019-11-8 So, to make sure we include all the data for 2019-11-7, but
     // avoid the confusion about what DayOfWeek of the end, we'll compromise by
     // subtracting a millisecond from the end date
-    if (result.end && value.timeUnit != TimeUnit.Hour) {
+    if (result.end && value.timeUnit !== TimeUnit.Hour) {
         result.end = result.end.addMilliseconds(-1);
     }
 

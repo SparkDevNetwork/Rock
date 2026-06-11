@@ -42,7 +42,7 @@ namespace Rock.Tests.Integration.TestData.Tests
             var manager = GetLocalDatabaseManager();
             manager.DatabaseInitializer = new BasicDataset();
 
-            manager.InitializeTestDatabase( rebuildArchiveImage:true );
+            manager.InitializeTestDatabase( rebuildArchiveImage: true );
 
             LogHelper.StopTask( taskGuid );
         }

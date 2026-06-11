@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -40,6 +41,14 @@ namespace Rock.Web.Cache
         /// <inheritdoc cref="Rock.Model.FinancialAccount.PublicName" />
         [DataMember]
         public string PublicName { get; private set; }
+
+        /// <inheritdoc cref="Rock.Model.FinancialAccount.PublicDescription" />
+        [DataMember]
+        public string PublicDescription { get; private set; }
+
+        /// <inheritdoc cref="Rock.Model.FinancialAccount.IsTaxDeductible" />
+        [DataMember]
+        public bool IsTaxDeductible { get; private set; }
 
         /// <inheritdoc cref="Rock.Model.FinancialAccount.ParentAccountId" />
         [DataMember]
@@ -132,7 +141,7 @@ namespace Rock.Web.Cache
                     {
                         if ( ChildAccountIds == null )
                         {
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 ChildAccountIds = new FinancialAccountService( rockContext )
                                     .Queryable().Where( a => a.ParentAccountId.HasValue && a.ParentAccountId.Value == this.Id )
@@ -371,6 +380,8 @@ namespace Rock.Web.Cache
             this.IsActive = financialAccount.IsActive;
             this.Order = financialAccount.Order;
             this.UsesCampusChildAccounts = financialAccount.UsesCampusChildAccounts;
+            this.PublicDescription = financialAccount.PublicDescription;
+            this.IsTaxDeductible = financialAccount.IsTaxDeductible;
         }
 
         /// <summary>

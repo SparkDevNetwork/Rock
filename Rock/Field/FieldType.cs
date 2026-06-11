@@ -24,8 +24,10 @@ using System.Web.UI.WebControls;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Security;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field
@@ -429,6 +431,12 @@ namespace Rock.Field
 
             message = string.Empty;
             return true;
+        }
+
+        /// <inheritdoc/>
+        public virtual StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues )
+        {
+            return StringValueValidator.GetEffectiveRules( StringValidationProfile.PlainText );
         }
 
         /// <summary>
@@ -1142,6 +1150,40 @@ namespace Rock.Field
             };
         }
 
+        /// <summary>
+        /// Gets all the persisted values for the private database value. This
+        /// can be called by subclasses that have simple text representations
+        /// of the raw value. This will call GetTextValue once and use that
+        /// value to populate all 4 individual persisted values.
+        /// </summary>
+        /// <param name="privateValue">The raw value.</param>
+        /// <param name="privateConfigurationValues">The private configuration values.</param>
+        /// <returns>An instance of <see cref="PersistedValues"/> that contains all the values to be persisted.</returns>
+        protected PersistedValues GetSimpleTextPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                return new PersistedValues
+                {
+                    TextValue = string.Empty,
+                    CondensedTextValue = string.Empty,
+                    HtmlValue = string.Empty,
+                    CondensedHtmlValue = string.Empty
+                };
+            }
+
+            var textValue = GetTextValue( privateValue, privateConfigurationValues );
+            var condensedTextValue = textValue.Truncate( CondensedTruncateLength );
+
+            return new PersistedValues
+            {
+                TextValue = textValue,
+                CondensedTextValue = condensedTextValue,
+                HtmlValue = textValue?.EncodeHtml(),
+                CondensedHtmlValue = condensedTextValue?.EncodeHtml(),
+            };
+        }
+
         #endregion
 
         #region Event Handlers
@@ -1202,6 +1244,23 @@ namespace Rock.Field
                 .Where( v => v.HasValue )
                 .Select( v => v.Value.ToString() )
                 .JoinStrings( "," );
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <summary>
+        /// Provides hints about the field type values based on the
+        /// configuration values. This is intended to provide consumers with
+        /// information on how to best utilize the field type's raw value and
+        /// in some cases what values are available.
+        /// </summary>
+        /// <param name="privateConfigurationValues">The private configuration values that describe the field type settings.</param>
+        /// <returns>An instance of <see cref="FieldTypeHints"/> or <c>null</c> if no hints are available.</returns>
+        internal virtual FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return null;
         }
 
         #endregion

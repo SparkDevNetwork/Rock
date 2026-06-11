@@ -129,9 +129,10 @@ namespace Rock.Blocks.Communication
                 SecurityGrantToken = GetSecurityGrantToken()
             };
 
-            if ( communicationTemplateKey.IsNotNullOrWhiteSpace() && communicationTemplateKey.AsInteger() != 0 )
+            if ( communicationTemplateKey.IsNotNullOrWhiteSpace() && communicationTemplateKey != "0" )
             {
-                communicationTemplate = new CommunicationTemplateService( this.RockContext ).GetQueryableByKey( communicationTemplateKey )
+                communicationTemplate = new CommunicationTemplateService( this.RockContext )
+                    .GetQueryableByKey( communicationTemplateKey, !PageCache.Layout.Site.DisablePredictableIds )
                     .Include( c => c.Attachments.Select( a => a.BinaryFile ) )
                     .FirstOrDefault();
 
@@ -296,7 +297,8 @@ namespace Rock.Blocks.Communication
 
             if ( communicationTemplateKey.IsNotNullOrWhiteSpace() )
             {
-                communicationTemplate = communicationTemplateService.GetQueryableByKey( communicationTemplateKey )
+                communicationTemplate = communicationTemplateService
+                    .GetQueryableByKey( communicationTemplateKey, !PageCache.Layout.Site.DisablePredictableIds )
                     .Include( c => c.Attachments )
                     .FirstOrDefault();
             }

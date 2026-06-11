@@ -21,6 +21,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Bus.Message;
@@ -89,7 +90,7 @@ namespace RockWeb.Blocks.Finance
         Description = @"Controls how the selected Financial Account is mapped to the selected Campus:<ul>
     <li><b>Enabled</b> – Always use campus-based child account mapping.</li>
     <li><b>Disabled</b> – Never use campus-based child account mapping.</li>
-    <li><b>Use Financial Account Setting</b> – Use mapping only if the first selected Financial Account has <em>Use Campus Child Account Matching</em> enabled.</li>
+    <li><b>Use Financial Account Setting</b> – Use mapping if any selected Financial Account has <em>Use Campus Child Account Matching</em> enabled.</li>
 </ul>
 When mapping is used:<br/>
 &nbsp; - If no campus is selected, the selected account will be used.<br/>
@@ -613,13 +614,6 @@ mission. We are so grateful for your commitment.</p>
             var selectableAccountGuids = this.GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList();
 
             var currentTransactionAccountGuids = scheduledTransaction.ScheduledTransactionDetails.Select( d => d.Account.Guid ).ToList();
-            foreach ( var currentTransactionAccountGuid in currentTransactionAccountGuids )
-            {
-                if ( !selectableAccountGuids.Contains( currentTransactionAccountGuid ) )
-                {
-                    selectableAccountGuids.Add( currentTransactionAccountGuid );
-                }
-            }
 
             // Configure the CampusAccountAmountPicker's UseAccountCampusMappingLogic setting:
             var accountCampusMappingLogicSetting = GetAttributeValue( AttributeKey.UseAccountCampusMappingLogic );
@@ -629,13 +623,70 @@ mission. We are so grateful for your commitment.</p>
             }
             else if ( accountCampusMappingLogicSetting == "UseFinancialAccount" &&  currentTransactionAccountGuids.Any() )
             {
-                var firstAccountGuid = currentTransactionAccountGuids.FirstOrDefault();
-                var firstFinancialAccount = FinancialAccountCache.Get( firstAccountGuid );
-                caapPromptForAccountAmounts.UseAccountCampusMappingLogic = firstFinancialAccount.UsesCampusChildAccounts;
+                caapPromptForAccountAmounts.UseAccountCampusMappingLogic =
+                    currentTransactionAccountGuids.Any( accountGuid =>
+                    {
+                        var account = FinancialAccountCache.Get( accountGuid );
+                        return account?.UsesCampusChildAccounts == true
+                            || account?.ParentAccount?.UsesCampusChildAccounts == true;
+                    } );
             }
             else
             {
                 caapPromptForAccountAmounts.UseAccountCampusMappingLogic = false;
+            }
+
+            /*
+                 2/19/2026 - NA
+
+                 Updated the account selection logic when UseAccountCampusMappingLogic is enabled
+                 and also handle misconfigured block settings.
+
+                 When campus account mapping is enabled, the intended behavior is that **parent**
+                 Financial Accounts are included in selectableAccountGuids and the Account Picker
+                 handles displaying child account-transactions as the mapped **parent** account. 
+                 In this scenario, we explicitly AVOID adding child accounts tied to the current
+                 transaction to prevent them from showing in the UI.
+
+                 However, administrators could misconfigure the block by omitting the required
+                 parent Financial Account even though the transaction being edited may be for a
+                 child account. In that case, the child account would not be selectable and the 
+                 current transaction/account would appear to be missing.
+
+                 To prevent data from appearing lost or uneditable, we also detect when the
+                 parent account is not selectable and explicitly add the child Financial Account
+                 to selectableAccountGuids. This preserves proper behavior when configured
+                 correctly, while defensively handling configuration errors.
+
+                 When UseAccountCampusMappingLogic is disabled, we retain the legacy behavior
+                 of always ensuring transaction accounts are explicitly added so they remain
+                 selectable.
+
+                 Reason: Preserve correct parent/child account display behavior under campus
+                 mapping while preventing misconfiguration from hiding valid transaction accounts.
+            */
+            foreach ( var currentTransactionAccountGuid in currentTransactionAccountGuids )
+            {
+                var parentAccount = FinancialAccountCache.Get( currentTransactionAccountGuid )?.ParentAccount;
+
+                var isCampusMappingEnabled = caapPromptForAccountAmounts.UseAccountCampusMappingLogic;
+                var isParentSelectable = parentAccount != null && selectableAccountGuids.Contains( parentAccount.Guid );
+
+                var requiresAccountCampusMappingLogicForThisAccount = parentAccount?.UsesCampusChildAccounts == true;
+
+                var shouldAlwaysAddBecauseNoCampusChildLogic =
+                    accountCampusMappingLogicSetting == "UseFinancialAccount"
+                    && !requiresAccountCampusMappingLogicForThisAccount;
+
+                var shouldAddCurrentAccount =
+                    !isCampusMappingEnabled
+                    || shouldAlwaysAddBecauseNoCampusChildLogic
+                    || !isParentSelectable;
+
+                if ( shouldAddCurrentAccount && !selectableAccountGuids.Contains( currentTransactionAccountGuid ) )
+                {
+                    selectableAccountGuids.Add( currentTransactionAccountGuid );
+                }
             }
 
             if ( this.GetAttributeValue( AttributeKey.ShowAdditionalAccounts ).AsBoolean() )

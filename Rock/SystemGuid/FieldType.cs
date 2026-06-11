@@ -717,6 +717,11 @@ namespace Rock.SystemGuid
         public const string SCHEDULE = "E9C12C59-98EA-4977-8318-647435BE9A9C";
 
         /// <summary>
+        /// Schedule Builder field type
+        /// </summary>
+        public const string SCHEDULE_BUILDER = "09D6E619-E8BB-4CF4-8C25-296079A7C318";
+
+        /// <summary>
         /// Schedules field type
         /// </summary>
         public const string SCHEDULES = "EC6A5CAF-F6A2-47A4-9CBA-6E1C53D7E59B";

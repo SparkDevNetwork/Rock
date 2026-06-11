@@ -16,7 +16,7 @@
 //
 import { defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
-import { ConfigurationValueKey, ConfigurationPropertyKey } from "./matrixField.partial";
+import { ConfigurationKey, ConfigurationPropertyKey } from "./matrixField.partial";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import AttributeMatrixEditor from "@Obsidian/Controls/Internal/attributeMatrixEditor.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -34,15 +34,15 @@ export const EditComponent = defineComponent({
     setup(props, { emit }) {
         const internalValue = ref(tryParseModel());
 
-        watch(internalValue, () => emit("update:modelValue", JSON.stringify(internalValue.value)), {deep:true});
+        watch(internalValue, () => emit("update:modelValue", JSON.stringify(internalValue.value)), { deep: true });
 
         watch(() => props.modelValue, () => internalValue.value = tryParseModel());
 
-        function tryParseModel() :MatrixFieldDataBag {
-            try{
+        function tryParseModel(): MatrixFieldDataBag {
+            try {
                 return JSON.parse(props.modelValue) as MatrixFieldDataBag;
             }
-            catch(e) {
+            catch (e) {
                 return {
                     matrixItems: [],
                     attributes: {}
@@ -70,7 +70,7 @@ export const ConfigurationComponent = defineComponent({
 
     setup(props, { emit }) {
         const template = ref<string>("");
-        const templateOptions =ref<ListItemBag[]>([]);
+        const templateOptions = ref<ListItemBag[]>([]);
 
         /**
          * Update the modelValue property if any value of the dictionary has
@@ -85,10 +85,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.AttributeMatrixTemplate] = template.value ?? "";
+            newValue[ConfigurationKey.AttributeMatrixTemplate] = template.value ?? "";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.AttributeMatrixTemplate] !== (props.modelValue[ConfigurationValueKey.AttributeMatrixTemplate] ?? "");
+            const anyValueChanged = newValue[ConfigurationKey.AttributeMatrixTemplate] !== (props.modelValue[ConfigurationKey.AttributeMatrixTemplate] ?? "");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -118,7 +118,7 @@ export const ConfigurationComponent = defineComponent({
             const templates = props.configurationProperties[ConfigurationPropertyKey.Templates];
 
             templateOptions.value = templates ? JSON.parse(templates) as ListItemBag[] : [];
-            template.value = props.modelValue[ConfigurationValueKey.AttributeMatrixTemplate] ?? "";
+            template.value = props.modelValue[ConfigurationKey.AttributeMatrixTemplate] ?? "";
         }, {
             immediate: true
         });
@@ -132,7 +132,7 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(template, () => maybeUpdateConfiguration(ConfigurationValueKey.AttributeMatrixTemplate, template.value ?? ""));
+        watch(template, () => maybeUpdateConfiguration(ConfigurationKey.AttributeMatrixTemplate, template.value ?? ""));
 
         return { templateOptions, template };
     },

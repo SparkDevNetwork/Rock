@@ -21,7 +21,7 @@ import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { stringComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 import { FieldTypeBase } from "./fieldType";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     /** Contains "True" if the text field is designed for password entry. */
     IsPassword = "ispassword",
 
@@ -33,6 +33,9 @@ export const enum ConfigurationValueKey {
 
     /** Contains "True" if the text field is designed for first name entry. */
     IsFirstName = "isfirstname",
+
+    /** Contains "True" if the text field should allow HTML content. */
+    AllowHtml = "allowhtml",
 }
 
 // The configuration component can be quite large, so load it only as needed.

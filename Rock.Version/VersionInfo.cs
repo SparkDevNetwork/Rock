@@ -27,7 +27,12 @@ namespace Rock.VersionInfo
         /// <returns>the full name of this Rock version (ex. "Rock McKinley 1.2.5" or "Rock Humphreys 0.1.0 (alpha)"</returns>
         public static string GetRockProductVersionFullName()
         {
-            return GetFileVersionInfo().ProductVersion;
+            var productVersion = GetFileVersionInfo().ProductVersion;
+
+            // The compiler now adds the git commit hash to the end of the
+            // product version. This is not something we want to display in the
+            // UI normally, so strip it off.
+            return productVersion.Split( '+' )[0];
         }
 
         /// <summary>

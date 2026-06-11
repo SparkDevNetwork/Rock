@@ -33,7 +33,7 @@ namespace Rock.Core.Automation
     /// provide UI and logic for a specific trigger type in the automation
     /// system.
     /// </summary>
-    internal abstract class AutomationTriggerComponent : LightComponent
+    public abstract class AutomationTriggerComponent : LightComponent
     {
         #region Properties
 

@@ -333,6 +333,11 @@ namespace Rock.SystemGuid
         public const string UPDATE_MEDIA_ELEMENT_USAGE = "32d0cb70-d4ef-4ac2-8693-bfdfe9e5233e";
 
         /// <summary>
+        /// The <see cref="Rock.Jobs.UpdateOutreachToolboxTouchpoints"/> job.
+        /// </summary>
+        public const string UPDATE_OUTREACH_TOOLBOX_TOUCHPOINTS = "06320140-a5ff-46fa-9ee5-41f747bbc542";
+
+        /// <summary>
         /// The <see cref="Rock.Jobs.UpdatePersistedAttributeValues">Update Persisted Attribute Values</see> job.
         /// </summary>
         public const string UPDATE_PERSISTED_ATTRIBUTE_VALUE = "A7DDA4B0-BA1D-49F1-8749-5E7A9876AE70";
@@ -403,7 +408,7 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string DATA_MIGRATIONS_167_POPULATE_ENTITY_INTENTS_FROM_ADDITIONAL_SETTINGS_JSON = "155C2051-1513-4BB3-83AD-8D37EBBC3F59";
 
-		/// <summary>
+        /// <summary>
         /// The Job to run Post v16.7 Data Migrations to chop AccountEdit Block.
         /// </summary>
         public const string DATA_MIGRATIONS_167_CHOP_ACCOUNT_EDIT_BLOCK = "E581688C-E60D-4841-B3C3-C535CAD0002D";
@@ -568,5 +573,40 @@ namespace Rock.SystemGuid
         /// The job to run Post v18.1 Data Migrations to add indexes to improve communication prep performance.
         /// </summary>
         public const string DATA_MIGRATIONS_181_ADD_INDEXES_FOR_COMMUNICATION_PREP = "88C42A48-6713-4CB1-BF6B-A12AB2E292E7";
+
+        /// <summary>
+        /// The job to run Post v18.3 Data Migrations to fix any possible broken achievement types.
+        /// </summary>
+        public const string DATA_MIGRATIONS_183_FIX_BROKEN_ACHIEVEMENT_TYPES = "2463AB43-8CB2-400E-BAAF-F96FC3E1A43D";
+
+        /// <summary>
+        /// The Job to run Post v19.0 Data Migrations to swap Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_190_SWAP_OBSIDIAN_BLOCKS = "C05C0C81-12B2-4C35-9405-C3CE09E3CE75";
+
+        /// <summary>
+        /// The Job to run Post v19.0 Data Migrations to perform the final chop of the Registration Entry (webforms) Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_190_CHOP_REGISTRATION_ENTRY_FINAL = "37E3EC22-513D-4F13-A929-38BBA2BDAC68";
+
+        /// <summary>
+        /// The Job to run Post v19.0 Data Migrations to perform the final chop of the Service Metric Entry (webforms) Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_190_CHOP_SERVICE_METRIC_ENTRY_FINAL = "DD75B103-88B3-4551-B38F-E688422E2DC5";
+
+        /// <summary>
+        /// The Job to run Post v19.0 Data Migrations to perform the final chop of the File and Asset Manager (webforms) Blocks.
+        /// </summary>
+        public const string DATA_MIGRATIONS_190_CHOP_FILE_AND_ASSET_MANAGER_FINAL = "1EB6ED41-60F6-452E-A688-EB9C5444ECBC";
+
+        /// <summary>
+        /// The job to run Post v19.0 Data Migrations to add an index to ensure the Communication Unsubscribe Report performs efficiently.
+        /// </summary>
+        public const string DATA_MIGRATIONS_190_ADD_COMMUNICATION_UNSUBSCRIBE_REPORT_INDEX = "ECBC94C0-7646-491E-A804-1CA228F0FFAD";
+
+        /// <summary>
+        /// The job to run Post v19.0 Data Migrations to backfill the newly-added [ConnectionRequest].[ConnectedDateTime] and [WasCompletedOnTime] fields from the History table for requests that were already in the Connected state prior to v19.
+        /// </summary>
+        public const string DATA_MIGRATIONS_190_BACKFILL_CONNECTION_REQUEST_CONNECTED_DATETIME = "3B6F52DF-E6AB-47F2-9719-1365718410A3";
     }
 }

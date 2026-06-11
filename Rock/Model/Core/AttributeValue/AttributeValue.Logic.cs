@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+using System.Data.Entity.SqlServer;
 using System.Data.SqlTypes;
 using System.Linq;
 
@@ -471,9 +472,23 @@ namespace Rock.Model
             var attributeService = new AttributeService( rockContext );
             var attributeValueService = new AttributeValueService( rockContext );
 
-            var matrixGuidQuery = attributeMatrixService.Queryable().AsNoTracking().Where( am =>
-                am.AttributeMatrixItems.Any( ami => ami.Id == EntityId ) )
-                .Select( am => am.Guid.ToString() );
+            // Get the matrix that contains the current entity.
+            var matrixQuery = attributeMatrixService.Queryable().AsNoTracking().Where( am =>
+                am.AttributeMatrixItems.Any( ami => ami.Id == EntityId ) );
+
+            var matrixGuidQuery = matrixQuery.Select( am => am.Guid.ToString() );
+
+            /*
+                3/23/2026 - AI
+
+                Updated the query to use a checksum-based subquery when filtering by matrix GUIDs.
+                This leverages the indexed ValueChecksum column instead of querying directly against
+                AttributeValue.Value, which could cause SQL Server to perform a full table scan.
+
+                Reason: Improve query performance by ensuring index usage and avoiding full table scans. (Fixes #6743)
+            */
+            var matrixGuidChecksumQuery = matrixGuidQuery
+                .Select( g => SqlFunctions.Checksum( g ) );
 
             var matrixFieldType = FieldTypeCache.Get( SystemGuid.FieldType.MATRIX );
             var attributeIdQuery = attributeService.Queryable().AsNoTracking().Where( a =>
@@ -481,7 +496,9 @@ namespace Rock.Model
                 .Select( a => a.Id );
 
             var attributeValue = attributeValueService.Queryable().AsNoTracking().FirstOrDefault( av =>
-                 attributeIdQuery.Contains( av.AttributeId ) && matrixGuidQuery.Contains( av.Value ) );
+                 attributeIdQuery.Contains( av.AttributeId )
+                 && matrixGuidChecksumQuery.Contains( ( int? ) av.ValueChecksum )
+                 && matrixGuidQuery.Contains( av.Value ) );
 
             return attributeValue;
         }

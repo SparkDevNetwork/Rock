@@ -177,15 +177,20 @@ namespace RockWeb.Blocks.Administration
             // Delete all cached files
             try
             {
-                var dirInfo = new DirectoryInfo( Path.Combine( webAppPath, "App_Data/Cache" ) );
-                foreach ( var childDir in dirInfo.GetDirectories() )
+                var cachePath = Path.Combine( webAppPath, "App_Data/Cache" );
+                if ( Directory.Exists( cachePath ) )
                 {
-                    childDir.Delete( true );
+                    var dirInfo = new DirectoryInfo( cachePath );
+                    foreach ( var childDir in dirInfo.GetDirectories() )
+                    {
+                        childDir.Delete( true );
+                    }
+                    foreach ( var file in dirInfo.GetFiles().Where( f => f.Name != ".gitignore" ) )
+                    {
+                        file.Delete();
+                    }
                 }
-                foreach ( var file in dirInfo.GetFiles().Where( f => f.Name != ".gitignore" ) )
-                {
-                    file.Delete();
-                }
+
                 msgs.Add( "Cached files have been deleted" );
             }
             catch ( Exception ex )
@@ -567,6 +572,7 @@ namespace RockWeb.Blocks.Administration
             lSystemDateTime.Text = new DateTimeOffset( RockDateTime.SystemDateTime ).ToString();
 
             lRockTime.Text = RockDateTime.Now.ToRockDateTimeOffset().ToString();
+            lInstallDateTime.Text = Rock.Web.SystemSettings.GetRockInstallationDateTime().ToRockDateTimeOffset().ToString();
 
             var currentProcess = System.Diagnostics.Process.GetCurrentProcess();
 

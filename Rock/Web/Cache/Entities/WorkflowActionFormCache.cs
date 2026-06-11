@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -41,12 +42,6 @@ namespace Rock.Web.Cache
         /// <inheritdoc cref="WorkflowActionForm.NotificationSystemCommunicationId"/>
         [DataMember]
         public int? NotificationSystemCommunicationId { get; private set; }
-
-        /// <inheritdoc cref="WorkflowActionForm.NotificationSystemEmailId"/>
-        [DataMember]
-        [Obsolete( "Use NotificationSystemCommunicationId instead.", true )]
-        [RockObsolete( "1.10" )]
-        public int? NotificationSystemEmailId { get; private set; }
 
         /// <inheritdoc cref="WorkflowActionForm.IncludeActionsInNotification"/>
         [DataMember]
@@ -220,7 +215,7 @@ namespace Rock.Web.Cache
                     {
                         if ( _formAttributeIds == null )
                         {
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 _formAttributeIds = new WorkflowActionFormAttributeService( rockContext )
                                     .Queryable().AsNoTracking()

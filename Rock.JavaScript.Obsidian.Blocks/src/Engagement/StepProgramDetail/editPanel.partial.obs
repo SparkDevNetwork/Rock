@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ContentSectionContainer sidebar>
+    <ContentSectionContainer :sidebar="false">
         <ContentSection light>
             <ContentStack>
                 <div class="row">
@@ -45,12 +45,15 @@
                                  v-model="defaultListView"
                                  rules="required"
                                  label="Default List View"
-                                 :items="viewModes" />
+                                 help="Choose the default view used when showing this program's steps on a person's profile page."
+                                 :items="viewModes"
+                                 trailblazerField />
             </ContentStack>
         </ContentSection>
 
         <ContentSection title="Statuses"
-                        icon="ti ti-flag">
+                        icon="ti ti-flag"
+                        :order="1">
             <ContentStack>
                 <Grid :data="statusesGridData"
                       keyField="key"
@@ -111,12 +114,13 @@
             </Modal>
         </ContentSection>
 
-        <ContentSection title="Step Type Attributes"
-                        icon="ti ti-binary-tree-2">
+        <ContentSection title="Type Attributes"
+                        icon="ti ti-binary-tree-2"
+                        :order="2">
             <ContentStack>
                 <Grid :data="attributesGridData"
                       keyField="key"
-                      itemTerm="Step Type Attribute"
+                      itemTerm="Type Attribute"
                       liveUpdates
                       light
                       @addItem="onAddAttribute">
@@ -139,12 +143,13 @@
             </ContentStack>
 
             <Modal v-model="isAttributeModalOpen"
-                   title="Step Type Attributes">
+                   title="Type Attributes">
 
                 <RockForm v-model:submit="saveAttribute"
                           @submit="onSaveAttribute">
                     <AttributeEditor v-model="stepAttribute"
-                                     :reservedKeyNames="reservedKeyNames" />
+                                     :reservedKeyNames="reservedKeyNames"
+                                     :attributeEntityTypeGuid="EntityType.StepType" />
                 </RockForm>
 
                 <template #customButtons>
@@ -158,7 +163,8 @@
 
         <ContentSection v-if="areEntityAttributesDisplayed"
                         title="Step Program Entity Attributes"
-                        icon="ti ti-database">
+                        icon="ti ti-database"
+                        :order="3">
             <ContentStack>
                 <AttributeValuesContainer v-model="attributeValues"
                                           :attributes="attributes"
@@ -167,8 +173,10 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection title="Workflows"
-                        icon="ti ti-route-alt-right">
+        <ContentSection v-if="store.state.trailblazerMode"
+                        title="Workflows"
+                        icon="ti ti-settings-cog"
+                        :order="4">
             <ContentStack>
                 <Grid :data="workflowGridData"
                       keyField="key"
@@ -275,6 +283,7 @@
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { CompletionFlow, CompletionFlowDescription } from "@Obsidian/Enums/Engagement/completionFlow";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { useStore } from "@Obsidian/PageState";
 
     const props = defineProps({
         modelValue: {
@@ -313,6 +322,7 @@
     const defaultListView = propertyRef(props.modelValue?.bag?.defaultListView?.toString() ?? "", "DefaultListView");
     const viewModes = ref(props.options.viewModes ?? []);
     const areViewModesDisplayed = ref(props.options.areViewDisplayOptionsVisible ?? false);
+    const store = useStore();
 
     const stepStatuses = ref(props.modelValue?.bag?.statuses ?? []);
     const isStatusModalOpen = ref(false);
@@ -429,12 +439,12 @@
     }
 
     function getTriggerDescription(triggerType: string, primaryQualifier: string | null | undefined, secondaryQualifier: string | null | undefined): string {
-        if (triggerType == "StatusChanged") {
+        if (triggerType === "StatusChanged") {
 
-            let status = stepStatusOptions.value.find(x => x.value == primaryQualifier);
+            let status = stepStatusOptions.value.find(x => x.value === primaryQualifier);
             const fromStatus = !status?.text ? "[Any]" : status.text;
 
-            status = stepStatusOptions.value.find(x => x.value == secondaryQualifier);
+            status = stepStatusOptions.value.find(x => x.value === secondaryQualifier);
 
             const toStatus = !status?.text ? "[Any]" : status.text;
 
@@ -442,7 +452,7 @@
 
             return description;
         }
-        else if (triggerType == "IsComplete") {
+        else if (triggerType === "IsComplete") {
             return "Step Completed";
         }
         else {
@@ -567,8 +577,8 @@
             const index = stepProgramAttributes.value.findIndex(a => a.guid === stepAttribute.value?.guid);
             if (index !== -1) {
                 // Get the updated attribute and rowItem.
-                let editedAttribute = stepProgramAttributes.value.find(a => a.guid == stepAttribute.value?.guid);
-                let rowItem = attributesGridData.rows?.find(x => x.key == stepAttribute.value?.guid);
+                let editedAttribute = stepProgramAttributes.value.find(a => a.guid === stepAttribute.value?.guid);
+                let rowItem = attributesGridData.rows?.find(x => x.key === stepAttribute.value?.guid);
 
                 if (editedAttribute) {
                     // Replace old attribute with updated attribute.
@@ -621,7 +631,7 @@
     };
 
     const onEditWorkflow = (key: string): void => {
-        const selectedWorkflow = workflows.value.find(x => x.idKey == key);
+        const selectedWorkflow = workflows.value.find(x => x.idKey === key);
         if (selectedWorkflow) {
             workflow.value = selectedWorkflow;
             triggerType.value = selectedWorkflow.workflowTrigger?.value ?? "";
@@ -648,7 +658,7 @@
 
     const onSaveWorkflow = (): void => {
         isWorkflowModalOpen.value = false;
-        const selectedTriggerType = triggerTypes.value.find(t => t.value == triggerType.value);
+        const selectedTriggerType = triggerTypes.value.find(t => t.value === triggerType.value);
 
         if (triggerType.value && workflow.value.workflowType?.value && workflowGridData.rows && selectedTriggerType?.value) {
             const index = workflows.value.findIndex(a => (a.idKey === workflow.value.idKey));
@@ -659,8 +669,8 @@
 
             if (index !== -1) {
                 // Get the updated WorkflowTrigger and RowItem.
-                let editedWorkflowTrigger = workflows.value.find(a => a.idKey == workflow.value.idKey);
-                let rowItem = workflowGridData.rows.find(x => x.key == workflow.value.idKey);
+                let editedWorkflowTrigger = workflows.value.find(a => a.idKey === workflow.value.idKey);
+                let rowItem = workflowGridData.rows.find(x => x.key === workflow.value.idKey);
 
                 if (editedWorkflowTrigger && rowItem) {
                     // Replace old WorkflowTrigger with updated WorkflowTrigger.
@@ -730,7 +740,7 @@
 
         // Update the grid.
         if (statusesGridData.rows) {
-            const index = statusesGridData.rows.findIndex(r => r.key == key);
+            const index = statusesGridData.rows.findIndex(r => r.key === key);
 
             if (index !== -1) {
                 statusesGridData.rows?.splice(index, 1);
@@ -747,7 +757,7 @@
             if (index !== -1) {
                 // Get the updated WorkflowTrigger and RowItem.
                 let editedStatus = stepStatuses.value.find(a => a.guid === stepStatusGuid.value);
-                let rowItem = statusesGridData.rows.find(x => x.key == stepStatusGuid.value);
+                let rowItem = statusesGridData.rows.find(x => x.key === stepStatusGuid.value);
 
                 if (editedStatus && rowItem) {
                     // Replace old WorkflowTrigger with updated WorkflowTrigger.
@@ -798,7 +808,7 @@
 
             const key = stepAttribute.value?.key ?? "";
 
-            if (!reservedKeyNames.value.includes(key) && stepProgramAttributes.value.find(x => x.key == key)) {
+            if (!reservedKeyNames.value.includes(key) && stepProgramAttributes.value.find(x => x.key === key)) {
                 reservedKeyNames.value.push(key);
             }
 

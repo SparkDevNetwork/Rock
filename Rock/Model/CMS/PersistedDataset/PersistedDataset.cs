@@ -21,6 +21,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -36,7 +38,7 @@ namespace Rock.Model
     [CodeGenerateRest( DisableEntitySecurity = true )]
     [HideFromReporting]
     [Rock.SystemGuid.EntityTypeGuid( "9C3064C0-CF9C-4549-9A80-022514B7FF83")]
-    public partial class PersistedDataset : Entity<PersistedDataset>, ICacheable
+    public partial class PersistedDataset : Model<PersistedDataset>, ICacheable
     {
         #region Entity Properties
 
@@ -50,6 +52,7 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         [HideFromReporting]
         [Index( IsUnique = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AccessKey { get; set; }
 
         /// <summary>
@@ -61,6 +64,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -70,6 +74,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the description of the PersistedDataset.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -79,7 +84,28 @@ namespace Rock.Model
         /// The refresh interval minutes.
         /// </value>
         [DataMember]
-        public int? RefreshIntervalMinutes { get; set; }
+        [Obsolete( "RefreshIntervalMinutes is obsolete. Use PersistedScheduleIntervalMinutes instead.", error: false )]
+        [RockObsolete( "19.0" )]
+        public int? RefreshIntervalMinutes
+        {
+            get => PersistedScheduleIntervalMinutes;
+            private set
+            {
+                // Preserve backward compatibility if old payloads still set RefreshIntervalMinutes.
+                PersistedScheduleIntervalMinutes = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the persisted schedule interval minutes.
+        /// If this is null, then the DataView is not persisted by an interval
+        /// but it might be persisted by a <see cref="PersistedSchedule"/>.
+        /// </summary>
+        /// <value>
+        /// The persisted schedule interval minutes.
+        /// </value>
+        [DataMember]
+        public int? PersistedScheduleIntervalMinutes { get; set; }
 
         /// <summary>
         /// Gets or sets the persisted last refresh date time.
@@ -97,6 +123,7 @@ namespace Rock.Model
         /// The enabled lava commands.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string EnabledLavaCommands { get; set; }
 
         /// <summary>
@@ -115,6 +142,7 @@ namespace Rock.Model
         /// The result data.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ResultData { get; set; }
 
         /// <summary>
@@ -142,6 +170,7 @@ namespace Rock.Model
         /// The build script.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string BuildScript { get; set; }
 
         /// <summary>
@@ -199,16 +228,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? ExpireDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the persisted schedule interval minutes.
-        /// If this is null, then the DataView is not persisted.
-        /// </summary>
-        /// <value>
-        /// The persisted schedule interval minutes.
-        /// </value>
-        [DataMember]
-        public int? PersistedScheduleIntervalMinutes { get; set; }
 
         #endregion Entity Properties
 

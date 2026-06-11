@@ -36,7 +36,7 @@
 
         <DropDownList v-else :modelValue="editSkill"
                       label="Skill"
-                      :items="props.availableSkills"
+                      :items="availableSkills"
                       rules="required"
                       :disabled="isSkillLoading"
                       @update:modelValue="onEditSkillChanged" />
@@ -136,9 +136,25 @@
             skillGuid: skill.value!
         }));
 
+        const rows = [...systemSkills, ...skills.value];
+
+        rows.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""));
+
         return {
-            rows: [...systemSkills, ...skills.value]
+            rows
         };
+    });
+
+    const availableSkills = computed((): ListItemBag[] => {
+        const usedSkillGuids = new Set(skills.value.map(s => s.skillGuid));
+        const systemSkillGuids = new Set(props.systemSkills.map(s => s.value!));
+
+        var items = props.availableSkills
+            .filter(s => !usedSkillGuids.has(s.value!) && !systemSkillGuids.has(s.value!));
+
+        items.sort((a, b) => (a.text ?? "").localeCompare(b.text ?? ""));
+
+        return items;
     });
 
     // #endregion

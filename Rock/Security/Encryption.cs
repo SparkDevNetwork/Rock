@@ -250,6 +250,7 @@ namespace Rock.Security
         /// <param name="keyBytes"></param>
         /// <returns></returns>
         [Obsolete( "Do not use this method. It is only for testing v1 encryption." )]
+        [RockObsolete( "18.0" )]
         private static string EncryptStringV1ForTesting( string plainText, byte[] keyBytes )
         {
             if ( string.IsNullOrEmpty( plainText ) )
@@ -732,6 +733,18 @@ namespace Rock.Security
             hash.Key = encryptionKey;
 
             return Convert.ToBase64String( hash.ComputeHash( Encoding.Unicode.GetBytes( plainText ) ) );
+        }
+
+        /// <summary>
+        /// Gets the ephemeral (temporary) hashing key to be used with HMAC and
+        /// other related hashing algorithms. This key should not be used for
+        /// anything that needs to persist for long periods of time as the value
+        /// might change between versions of Rock or even between Rock restarts.
+        /// </summary>
+        /// <returns>A string that can be used as a temporary hashing key.</returns>
+        internal static string GetEphemeralHashingKey()
+        {
+            return GetDataEncryptionKey().Sha256Hash();
         }
 
         /// <summary>
