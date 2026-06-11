@@ -87,6 +87,16 @@ namespace Rock.Model
         public Guid? RecipientPersonGuid { get; set; }
 
         /// <summary>
+        /// Gets or sets the recipient's primary person alias unique identifier.
+        /// Unlike <see cref="RecipientPersonAliasId"/> (the alias that happened to be on
+        /// the message, which can be a non-primary alias after a merge), this is always the
+        /// person's primary alias - which is what callers use to identify/navigate to them.
+        /// Populated by the service so consumers don't have to re-load the <see cref="Person"/>.
+        /// </summary>
+        /// <value>The recipient's primary person alias unique identifier.</value>
+        public Guid? RecipientPrimaryAliasGuid { get; internal set; }
+
+        /// <summary>
         /// Gets or sets the conversation key. All messages that are part of the
         /// same conversation will share a common ConversationKey.
         /// </summary>
@@ -138,6 +148,34 @@ namespace Rock.Model
         /// The recipient person photo identifier.
         /// </value>
         public int? RecipientPhotoId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the recipient's initials. Combined with <see cref="RecipientPhotoId"/>,
+        /// <see cref="Age"/>, <see cref="Gender"/>, <see cref="RecordTypeValueId"/> and
+        /// <see cref="AgeClassification"/>, this lets a consumer build the photo/avatar URL
+        /// (via <see cref="Person.GetPersonPhotoUrl(string, int?, int?, Gender, int?, AgeClassification?, int?)"/>)
+        /// without re-loading the <see cref="Person"/>.
+        /// </summary>
+        /// <value>The recipient's initials.</value>
+        public string Initials { get; internal set; }
+
+        /// <summary>
+        /// Gets or sets the recipient's age, used when building the placeholder photo/avatar.
+        /// </summary>
+        /// <value>The recipient's age.</value>
+        public int? Age { get; internal set; }
+
+        /// <summary>
+        /// Gets or sets the recipient's gender, used when building the placeholder photo/avatar.
+        /// </summary>
+        /// <value>The recipient's gender.</value>
+        public Gender Gender { get; internal set; }
+
+        /// <summary>
+        /// Gets or sets the recipient's age classification, used when building the placeholder photo/avatar.
+        /// </summary>
+        /// <value>The recipient's age classification.</value>
+        public AgeClassification AgeClassification { get; internal set; }
 
         /// <summary>
         /// Gets or sets the created date time.

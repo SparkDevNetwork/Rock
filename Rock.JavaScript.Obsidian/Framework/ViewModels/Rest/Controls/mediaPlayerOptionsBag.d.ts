@@ -148,6 +148,14 @@ export type MediaPlayerOptionsBag = {
     volume: number;
 
     /**
+     * Gets or sets the percentage (between 0 and 1) of the media that the
+     * person has already watched, taken from their existing watch history.
+     * This lets a consumer reflect prior progress on load without requiring
+     * playback. It is null when no watch history is available.
+     */
+    watchedPercentage?: number | null;
+
+    /**
      * Determines if the user's session should be tracked and stored as an
      * Interaction in the system. This is required
      * to provide play metrics as well as use the resume feature later.
