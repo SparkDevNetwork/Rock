@@ -1,0 +1,36 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <a v-if="isSuggestionsButtonVisible" :href="listPageUrl" class="btn btn-primary btn-block margin-b-sm">
+            Following Suggestions <span class="badge">{{ formattedSuggestionCount }}</span>
+        </a>
+
+        <a v-if="isFollowingListButtonVisible" :href="followersPageUrl" class="btn btn-default btn-block margin-b-md">
+            <i class="ti ti-flag"></i> Following List
+        </a>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { PersonSuggestionNoticeBag } from "@Obsidian/ViewModels/Blocks/Core/PersonSuggestionNotice/personSuggestionNoticeBag";
+    import { PersonSuggestionNoticeOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/PersonSuggestionNotice/personSuggestionNoticeOptionsBag";
+    import { NavigationUrlKey } from "./PersonSuggestionNotice/types.partial";
+
+    const config = useConfigurationValues<CustomBlockBox<PersonSuggestionNoticeBag, PersonSuggestionNoticeOptionsBag>>();
+
+    const suggestionCount = config.bag?.suggestionCount ?? 0;
+    const formattedSuggestionCount = suggestionCount.toLocaleString();
+
+    const listPageUrl = config.navigationUrls?.[NavigationUrlKey.ListPage] ?? "";
+    const followersPageUrl = config.navigationUrls?.[NavigationUrlKey.FollowersPage] ?? "";
+
+    // Buttons whose linked page is not configured are hidden rather than
+    // rendered as dead links. A missing followers page URL also covers the
+    // case where the Show Followers Page setting is disabled.
+    const isSuggestionsButtonVisible = suggestionCount > 0 && !!listPageUrl;
+    const isFollowingListButtonVisible = !!followersPageUrl;
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>
