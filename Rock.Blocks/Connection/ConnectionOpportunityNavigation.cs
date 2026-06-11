@@ -107,7 +107,20 @@ namespace Rock.Blocks.Connection
 
         #region Fields
 
+        /// <summary>
+        /// The list of opportunity visibility items the individual may select.
+        /// </summary>
         private List<ListItemBag> _opportunityVisibilityItems;
+
+        /// <summary>
+        /// The identifiers of opportunities within the connection type for which the current person is a connector.
+        /// </summary>
+        private HashSet<int> _selfAssignedOpportunityIds;
+
+        /// <summary>
+        /// The identifiers of active opportunities within the connection type that the current person is not authorized to view.
+        /// </summary>
+        private HashSet<int> _unauthorizedOpportunityIds;
 
         #endregion Fields
 
@@ -290,6 +303,90 @@ namespace Rock.Blocks.Connection
         }
 
         /// <summary>
+        /// Gets whether the current person is authorized to view [or edit] the specified <see cref="ConnectionOpportunity"/>.
+        /// When the connection type has request security enabled, being a connector for any of the opportunity's
+        /// requests also grants visibility.
+        /// </summary>
+        /// <param name="connectionType">The <see cref="ConnectionTypeCache"/> to which the opportunity belongs.</param>
+        /// <param name="connectionOpportunityId">The <see cref="ConnectionOpportunity"/> identifier to check.</param>
+        /// <returns>Whether the current person is authorized to view [or edit] the opportunity.</returns>
+        private bool GetIsAuthorizedToView( ConnectionTypeCache connectionType, int connectionOpportunityId )
+        {
+            var currentPerson = GetCurrentPerson();
+
+            // The authorization checks operate only against IDs, so we can create runtime instances with just the IDs
+            // populated for efficiency instead of needing to load full entities from the database.
+            var opportunity = new ConnectionOpportunity
+            {
+                Id = connectionOpportunityId,
+                ConnectionTypeId = connectionType.Id,
+                ConnectionType = new ConnectionType { Id = connectionType.Id }
+            };
+
+            return opportunity.IsAuthorized( Authorization.VIEW, currentPerson )
+                || opportunity.IsAuthorized( Authorization.EDIT, currentPerson )
+                || GetSelfAssignedOpportunityIds( connectionType ).Contains( connectionOpportunityId );
+        }
+
+        /// <summary>
+        /// Gets the identifiers of opportunities within the connection type for which the current person is a connector.
+        /// Empty unless the connection type has request security enabled.
+        /// </summary>
+        /// <param name="connectionType">The <see cref="ConnectionTypeCache"/> whose opportunities to check.</param>
+        /// <returns>A <see cref="HashSet{T}"/> of self-assigned <see cref="ConnectionOpportunity"/> identifiers.</returns>
+        private HashSet<int> GetSelfAssignedOpportunityIds( ConnectionTypeCache connectionType )
+        {
+            if ( _selfAssignedOpportunityIds == null )
+            {
+                var personId = GetCurrentPerson()?.Id;
+
+                if ( !connectionType.EnableRequestSecurity || !personId.HasValue )
+                {
+                    _selfAssignedOpportunityIds = new HashSet<int>();
+                }
+                else
+                {
+                    _selfAssignedOpportunityIds = new ConnectionRequestService( RockContext )
+                        .Queryable()
+                        .Where( cr =>
+                            cr.ConnectionOpportunity.ConnectionTypeId == connectionType.Id
+                            && cr.ConnectorPersonAlias.PersonId == personId.Value
+                        )
+                        .Select( cr => cr.ConnectionOpportunityId )
+                        .Distinct()
+                        .ToHashSet();
+                }
+            }
+
+            return _selfAssignedOpportunityIds;
+        }
+
+        /// <summary>
+        /// Gets the identifiers of the connection type's active opportunities that the current person is not
+        /// authorized to view [or edit].
+        /// </summary>
+        /// <param name="connectionType">The <see cref="ConnectionTypeCache"/> whose opportunities to check.</param>
+        /// <returns>A <see cref="HashSet{T}"/> of unauthorized <see cref="ConnectionOpportunity"/> identifiers.</returns>
+        private HashSet<int> GetUnauthorizedOpportunityIds( ConnectionTypeCache connectionType )
+        {
+            if ( _unauthorizedOpportunityIds == null )
+            {
+                _unauthorizedOpportunityIds = new ConnectionOpportunityService( RockContext )
+                    .Queryable()
+                    .Where( co =>
+                        co.ConnectionTypeId == connectionType.Id
+                        && co.IsActive
+                    )
+                    .Select( co => co.Id )
+                    .ToList()
+                    .Where( id => !GetIsAuthorizedToView( connectionType, id ) )
+                    .ToHashSet();
+            }
+
+            return _unauthorizedOpportunityIds;
+        }
+
+        /// <summary>
         /// Loads connection opportunity metrics and summaries for the provided <paramref name="connectionTypeId"/>.
         /// </summary>
         /// <param name="connectionType">
@@ -427,7 +524,12 @@ namespace Rock.Blocks.Connection
                 .ThenBy( s => s.Name )
                 .ToList();
 
+            // Filter out any opportunities that the current person is not authorized to view.
+            var unauthorizedOpportunityIds = GetUnauthorizedOpportunityIds( connectionType );
+            summaries.RemoveAll( s => unauthorizedOpportunityIds.Contains( s.Id ?? 0 ) );
+
             var currentPerson = GetCurrentPerson();
+
             var followedOpportunityIds = GetFollowedConnectionOpportunityIds( currentPerson );
 
             summaries.ForEach( s =>
@@ -498,6 +600,15 @@ namespace Rock.Blocks.Connection
                     && cr.ConnectionOpportunity.ConnectionType.IsActive
                     && cr.ConnectionOpportunity.IsActive
                 );
+
+            // Exclude any opportunities that the current person is not authorized to view.
+            var unauthorizedOpportunityIds = GetUnauthorizedOpportunityIds( connectionType );
+
+            if ( unauthorizedOpportunityIds.Any() )
+            {
+                connectionRequestQry = connectionRequestQry
+                    .Where( cr => !unauthorizedOpportunityIds.Contains( cr.ConnectionOpportunityId ) );
+            }
 
             if ( OpportunityVisibilityPreference == OpportunityVisibility.MyOpportunitiesValue )
             {
