@@ -726,6 +726,36 @@
         border-top-left-radius: var(--rounded-medium);
         border-top-right-radius: var(--rounded-medium);
     }
+
+    .grid-actions:empty {
+        display: none;
+    }
+
+    // Remove bottom border and round bottom corners when the footer has no visible content.
+    &:not(:has(.grid-footing .grid-paging-footer)):not(:has(.grid-footing .grid-actions:not(:empty))) {
+        .grid-content-container,
+        .grid-body {
+            border-bottom-left-radius: var(--rounded-medium);
+            border-bottom-right-radius: var(--rounded-medium);
+        }
+
+        .grid-row:not(:has(~ .grid-row)) {
+            border-bottom-left-radius: var(--rounded-medium);
+            border-bottom-right-radius: var(--rounded-medium);
+
+            .grid-cell {
+                border-bottom: none;
+            }
+
+            .grid-cell:first-child {
+                border-bottom-left-radius: var(--rounded-medium);
+            }
+
+            .grid-cell:last-child {
+                border-bottom-right-radius: var(--rounded-medium);
+            }
+        }
+    }
 }
 
 // Inherited Attributes - Light Grid
