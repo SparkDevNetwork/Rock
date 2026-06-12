@@ -383,18 +383,6 @@
     overflow-y: auto;
 }
 
-.sidebar-body::after {
-    content: "";
-    position: sticky;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 12px;
-    margin-top: auto;
-    pointer-events: none;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.08), transparent);
-}
-
 .sidebar-panels {
     display: flex;
     flex-direction: column;

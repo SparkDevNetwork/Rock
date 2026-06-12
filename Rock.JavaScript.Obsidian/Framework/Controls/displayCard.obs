@@ -20,11 +20,11 @@
             </div>
 
             <div v-if="title || description || $slots.description" class="displaycard-heading-text">
-                <h5 v-if="title" class="displaycard-heading-text-title">
+                <h5 v-if="title" v-tooltip.overflow="title" class="displaycard-heading-text-title">
                     <a v-if="titleUrl" :href="titleUrl" @click.stop>{{ title }}</a>
                     <template v-else>{{ title }}</template>
                 </h5>
-                <small v-if="description || $slots.description" class="displaycard-heading-text-description">
+                <small v-if="description || $slots.description" v-tooltip.overflow="description" class="displaycard-heading-text-description">
                     <slot name="description">
                         {{ description }}
                     </slot>
@@ -42,8 +42,8 @@
 
         <div v-if="asideIconCssClass || aside || $slots.aside" class="displaycard-aside">
             <slot name="aside">
-                <i v-if="asideIconCssClass" :class="`${asideIconCssClass}`"></i>
-                <small v-if="aside">{{ aside }}</small>
+                <i v-if="asideIconCssClass" v-tooltip="aside" :class="`${asideIconCssClass}`"></i>
+                <small v-if="aside" v-tooltip.overflow="aside">{{ aside }}</small>
             </slot>
         </div>
 
@@ -92,6 +92,7 @@
     import RockButton from "./rockButton.obs";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
     import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
 
     const highlightLabelTypes = ["default", "primary", "success", "info", "warning", "danger", "type", "campus", "custom"] as const;
     type HighlightLabelType = (typeof highlightLabelTypes)[number];
