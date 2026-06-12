@@ -56,8 +56,17 @@ namespace Rock.Model
         /// <value>
         /// The connection workflow identifier.
         /// </value>
+        /// <remarks>
+        /// This is marked with <see cref="IgnoreCanDelete"/> so the code generator does not add a
+        /// "CanDelete" check that would block deleting a <see cref="Rock.Model.ConnectionWorkflow"/>
+        /// while ConnectionRequestWorkflow rows still point to it.
+        ///
+        /// Skipping that check is safe because the ConnectionWorkflow save hook automatically deletes
+        /// these related rows first whenever a ConnectionWorkflow is deleted, so none are left orphaned.
+        /// </remarks>
         [Required]
         [DataMember]
+        [IgnoreCanDelete]
         public int ConnectionWorkflowId { get; set; }
 
         /// <summary>
