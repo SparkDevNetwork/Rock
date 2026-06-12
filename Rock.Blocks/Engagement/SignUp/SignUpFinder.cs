@@ -1078,25 +1078,6 @@ namespace Rock.Blocks.Engagement.SignUp
                     };
                 } );
 
-            // Honor VIEW security on each sign-up group. A null CurrentPerson (anonymous visitor) resolves
-            // against the group's anonymous/"All Users" rule. Authorization is memoized per group because a
-            // single group yields many opportunities (one per location/schedule) and the check is not free.
-            var currentPerson = this.RequestContext.CurrentPerson;
-            var viewAuthorizationByGroupId = new Dictionary<int, bool>();
-
-            bool isGroupViewable( Rock.Model.Group group )
-            {
-                if ( !viewAuthorizationByGroupId.TryGetValue( group.Id, out var isViewable ) )
-                {
-                    isViewable = group.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson );
-                    viewAuthorizationByGroupId.Add( group.Id, isViewable );
-                }
-
-                return isViewable;
-            }
-
-            opportunities = opportunities.Where( o => isGroupViewable( o.Project ) );
-
             // Now that we have materialized Schedule objects in memory, let's further apply DateTime filtering using the Schedules' runtime-calculated
             // "NextStartDateTime" property values; only show Schedules that have current or upcoming start DateTimes.
             opportunities = opportunities
