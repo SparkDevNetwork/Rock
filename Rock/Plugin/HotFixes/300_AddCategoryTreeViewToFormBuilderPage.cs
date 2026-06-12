@@ -1,0 +1,130 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+namespace Rock.Plugin.HotFixes
+{
+    /// <summary>
+    /// Places the Category Tree View block in a sidebar on the Form Builder page and points it at
+    /// workflow form categories. The block type is the converted WebForms Category Tree View, which
+    /// Rock rewrites to its Obsidian entity-based class at startup, so no block-type registration is
+    /// performed here.
+    /// </summary>
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 300, "20.0" )]
+    public class AddCategoryTreeViewToFormBuilderPage : Migration
+    {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            // Switch the Form Builder page to the internal-site Left Sidebar layout so the tree and
+            // the form list sit side by side. (Rock.SystemGuid.Layout.LEFT_SIDEBAR_INTERNAL_SITE.)
+            Sql( @"
+UPDATE dbo.[Page]
+SET [LayoutId] = (
+    SELECT [Id]
+    FROM dbo.[Layout]
+    WHERE [Guid] = '0CB60906-6B74-44FD-AB25-026050EF70EB'
+)
+WHERE [Guid] = '4F77819C-8F69-4418-933E-08F63E7FC4F9';
+" );
+
+            // Place the Category Tree View block in the page's Sidebar 1 zone. The block type
+            // (ADE003C7) is the converted WebForms Category Tree View; the startup conversion rewrites
+            // it to the Obsidian entity-based block, so no block-type registration is needed here.
+            RockMigrationHelper.AddBlock( true, "4F77819C-8F69-4418-933E-08F63E7FC4F9".AsGuid(), null, "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "ADE003C7-649B-466A-872B-B8AC952E7841".AsGuid(), "Form Categories", "Sidebar1", @"", @"", 0, "3F8E1C5A-7B2D-4A9E-8C6F-1D4B7E2A9C53" );
+
+            /*
+                06/11/26 - JMH
+
+                The Form Builder placement is configured by attribute Key rather than attribute Guid.
+                The block adopts the long-standing WebForms block type, whose attribute Guids are not
+                known here, and the order in which the converted block's attributes register at startup
+                relative to this migration is not guaranteed. Resolving by Key (and creating the newer
+                Boolean attributes when they are missing) keeps the configuration correct either way.
+
+                Reason: Configure the converted block without depending on attribute Guids or startup order.
+            */
+            Sql( $@"
+DECLARE @BlockId INT = ( SELECT [Id] FROM [Block] WHERE [Guid] = '3F8E1C5A-7B2D-4A9E-8C6F-1D4B7E2A9C53' );
+DECLARE @BlockTypeId INT = ( SELECT [Id] FROM [BlockType] WHERE [Guid] = 'ADE003C7-649B-466A-872B-B8AC952E7841' );
+DECLARE @BlockEntityTypeId INT = ( SELECT [Id] FROM [EntityType] WHERE [Guid] = '{SystemGuid.EntityType.BLOCK}' );
+DECLARE @BooleanFieldTypeId INT = ( SELECT [Id] FROM [FieldType] WHERE [Guid] = '{SystemGuid.FieldType.BOOLEAN}' );
+DECLARE @Now DATETIMEOFFSET = SYSDATETIMEOFFSET();
+
+IF @BlockId IS NULL OR @BlockTypeId IS NULL
+BEGIN
+    RETURN;
+END
+
+DECLARE @QualifierValue NVARCHAR(40) = CONVERT( NVARCHAR(40), @BlockTypeId );
+
+DECLARE @EntityTypeAttributeId INT = ( SELECT [Id] FROM [Attribute] WHERE [Key] = 'EntityType' AND [EntityTypeId] = @BlockEntityTypeId AND [EntityTypeQualifierColumn] = 'BlockTypeId' AND [EntityTypeQualifierValue] = @QualifierValue );
+DECLARE @FriendlyNameAttributeId INT = ( SELECT [Id] FROM [Attribute] WHERE [Key] = 'EntityTypeFriendlyName' AND [EntityTypeId] = @BlockEntityTypeId AND [EntityTypeQualifierColumn] = 'BlockTypeId' AND [EntityTypeQualifierValue] = @QualifierValue );
+DECLARE @ShowOnlyCategoriesAttributeId INT = ( SELECT [Id] FROM [Attribute] WHERE [Key] = 'ShowOnlyCategories' AND [EntityTypeId] = @BlockEntityTypeId AND [EntityTypeQualifierColumn] = 'BlockTypeId' AND [EntityTypeQualifierValue] = @QualifierValue );
+
+-- Show Only Categories is a Boolean setting that may not be registered yet; create it if it is
+-- missing so its value can be set below.
+IF @ShowOnlyCategoriesAttributeId IS NULL AND @BooleanFieldTypeId IS NOT NULL
+BEGIN
+    INSERT [Attribute] ( [IsSystem], [FieldTypeId], [EntityTypeId], [EntityTypeQualifierColumn], [EntityTypeQualifierValue], [Key], [Name], [Description], [Order], [IsGridColumn], [IsMultiValue], [IsRequired], [DefaultValue], [Guid] )
+    VALUES ( 1, @BooleanFieldTypeId, @BlockEntityTypeId, 'BlockTypeId', @QualifierValue, 'ShowOnlyCategories', 'Show Only Categories', 'Set to true to show only the categories rather than the categorized entities for the configured entity type.', 0, 0, 0, 0, 'False', NEWID() );
+    SET @ShowOnlyCategoriesAttributeId = SCOPE_IDENTITY();
+END
+
+-- Entity Type => Workflow Type.
+IF @EntityTypeAttributeId IS NOT NULL
+BEGIN
+    IF EXISTS ( SELECT 1 FROM [AttributeValue] WHERE [AttributeId] = @EntityTypeAttributeId AND [EntityId] = @BlockId )
+        UPDATE [AttributeValue] SET [Value] = 'C9F3C4A5-1526-474D-803F-D6C7A45CBBAE', [ModifiedDateTime] = @Now WHERE [AttributeId] = @EntityTypeAttributeId AND [EntityId] = @BlockId;
+    ELSE
+        INSERT [AttributeValue] ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid], [IsPersistedValueDirty], [CreatedDateTime], [ModifiedDateTime] )
+        VALUES ( 0, @EntityTypeAttributeId, @BlockId, 'C9F3C4A5-1526-474D-803F-D6C7A45CBBAE', NEWID(), 1, @Now, @Now );
+END
+
+-- Entity Type Friendly Name => panel title 'Form Categories'.
+IF @FriendlyNameAttributeId IS NOT NULL
+BEGIN
+    IF EXISTS ( SELECT 1 FROM [AttributeValue] WHERE [AttributeId] = @FriendlyNameAttributeId AND [EntityId] = @BlockId )
+        UPDATE [AttributeValue] SET [Value] = 'Form Categories', [ModifiedDateTime] = @Now WHERE [AttributeId] = @FriendlyNameAttributeId AND [EntityId] = @BlockId;
+    ELSE
+        INSERT [AttributeValue] ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid], [IsPersistedValueDirty], [CreatedDateTime], [ModifiedDateTime] )
+        VALUES ( 0, @FriendlyNameAttributeId, @BlockId, 'Form Categories', NEWID(), 1, @Now, @Now );
+END
+
+-- Show Only Categories => True (the tree shows categories; the Form List shows the forms).
+IF @ShowOnlyCategoriesAttributeId IS NOT NULL
+BEGIN
+    IF EXISTS ( SELECT 1 FROM [AttributeValue] WHERE [AttributeId] = @ShowOnlyCategoriesAttributeId AND [EntityId] = @BlockId )
+        UPDATE [AttributeValue] SET [Value] = 'True', [ModifiedDateTime] = @Now WHERE [AttributeId] = @ShowOnlyCategoriesAttributeId AND [EntityId] = @BlockId;
+    ELSE
+        INSERT [AttributeValue] ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid], [IsPersistedValueDirty], [CreatedDateTime], [ModifiedDateTime] )
+        VALUES ( 0, @ShowOnlyCategoriesAttributeId, @BlockId, 'True', NEWID(), 1, @Now, @Now );
+END
+" );
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            // Down migrations are not yet supported in plug-in migrations.
+        }
+    }
+}
