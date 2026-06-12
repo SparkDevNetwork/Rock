@@ -79,34 +79,6 @@
     </Modal>
 </template>
 
-<style scoped>
-.group-location-tabs {
-    padding-left: 0;
-    padding-right: 0;
-}
-
-.capacity-matrix {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.capacity-matrix th,
-.capacity-matrix td {
-    border: 0;
-    padding: var(--spacing-xsmall) var(--spacing-small);
-    vertical-align: middle;
-}
-
-.capacity-matrix th {
-    font-weight: var(--font-weight-regular);
-    color: var(--color-interface-strong);
-}
-
-.capacity-matrix__name {
-    white-space: nowrap;
-}
-</style>
-
 <script setup lang="ts">
     import { LocationPickerMode, SingleLocationPickerMode, LocationPickerModeFlag } from "@Obsidian/Enums/Controls/locationPickerMode";
     import { GroupLocationScheduleConfigBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupLocationScheduleConfigBag";

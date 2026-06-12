@@ -530,17 +530,6 @@
     </ContentSectionContainer>
 </template>
 
-<style scoped>
-.static-compact :deep(.form-group.static-control .form-control-static) {
-    padding: 0;
-    min-height: 0;
-}
-
-.relationship-matrix > :nth-child(n+7) {
-    margin-top: 0.75rem;
-}
-</style>
-
 <script setup lang="ts">
     import { combineFlagValues, extractFlagValues, formatPercent, formatTimeValue, inheritOverrideToRadioValue, intToPercent, nullableInt, parseTimeString, percentToInt, radioValueToInheritOverride, scrollNotificationIntoView, useInvokeGroupDetailBlockAction } from "./utils.partial";
     import { ScheduleCoordinatorNotificationType, ScheduleCoordinatorNotificationTypeDescription } from "@Obsidian/Enums/Group/scheduleCoordinatorNotificationType";
