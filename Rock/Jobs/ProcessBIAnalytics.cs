@@ -201,24 +201,6 @@ namespace Rock.Jobs
 
             var processingDate = this.EffectiveProcessingDate ?? RockDateTime.Today;
 
-            /*
-                6/1/26 - N.A.
-
-                Bail out cleanly before any work is started if the job has already completed
-                successfully today, so the admin sees a useful message in the
-                Jobs UI instead of a partial run plus a raw SQL stack trace.
-
-                Reason: Job is designed to run once per day; second run on same day blows up.
-            */
-            var lastSuccessfulRun = this.ServiceJob?.LastSuccessfulRunDateTime;
-            if ( lastSuccessfulRun.HasValue && lastSuccessfulRun.Value.Date == processingDate.Date )
-            {
-                this.Result = "The Process BI Analytics job is designed to run only once per day. "
-                    + $"It already completed successfully today at {lastSuccessfulRun.Value:g}. "
-                    + "Please wait until tomorrow before running it again, or adjust the schedule.";
-                throw new RockJobWarningException( this.Result );
-            }
-
             StringBuilder results = new StringBuilder();
 
             // Do the stuff for Person related BI Tables
