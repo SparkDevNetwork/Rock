@@ -135,7 +135,7 @@ Doing the polish, the structural moves (top tabs, right-side sidebar, Header/Foo
 The Form List polish MUST:
 
 - Split the page into two side-by-side panels: a left "Form Categories" panel and a right "{Selected Category} Forms" panel. The current single-panel layout is replaced.
-- Render the left panel using a Category Tree control (Rock's existing tree component) sourced from the workflow form category hierarchy. Nodes render with the category icon and a chevron toggle for expandable nodes. Selecting a leaf populates the right panel with that category's forms.
+- Render the left panel using a Category Tree control (Rock's existing tree component) sourced from the workflow form category hierarchy. Nodes render with the category icon and a chevron toggle for expandable nodes. Selecting a leaf populates the right panel with that category's forms. (Superseded by the QA Kickback Revision below: category navigation moves to a page-level Obsidian block that communicates with this block over the browser bus.)
 - Persist the last selected Category as a per-user preference (Rock's `PersonPreference` API) so reopening the block lands the user back on their previously selected category. New users with no preference land on the first available category, or an empty state when no categories exist.
 - Move the "Add Form" button from inline within the form list to the right panel's header (`+` affordance), alongside any panel-level actions.
 - Move "Edit", "Delete", and security action buttons from per-row inline icons to the right panel's footer. Edit acts on the currently selected form. Delete remains disabled when the selected form cannot be deleted (existing behavior preserved verbatim).
@@ -600,6 +600,47 @@ Still deferred and worth tracking:
 
 - **Per-template Connection Requests.** `WorkflowFormBuilderTemplate` uses discrete JSON columns (PersonEntrySettingsJson, ConfirmationEmailSettingsJson, CompletionSettingsJson) rather than the general blob pattern that `WorkflowType.FormBuilderSettingsJson` provides, so there is no existing column the new ConnectionRequests settings can ride inside. The spec's "Configuration only at template level" decision (Decision 1) is good design but needs either (a) a fresh `nvarchar(max) NULL` column on the template entity, which needs the migration token currently held on `release-19.0`, or (b) packing the new settings into one of the existing template JSON blobs (rejected as hacky). Both the C# entity property and the editor section on `formTemplateDetail.obs` are deferred until the migration can be authored.
 - **Form Template Detail token / utility audit.** Spec calls for a css-cleanup pass on `formTemplateDetail.obs` even where the Figma refresh does not change layout. UI team owns this work per the user's preference around visual polish.
+
+## QA Kickback Revision
+
+Added 2026-06-05, after the work above shipped and went to QA. QA returned four items against the Form List block. This section captures the agreed resolutions and is review-ready; the kickback is on hold pending QA confirmation of these resolutions.
+
+### #1 Category navigation moves to a page-level block (revises the Form List requirement at "Render the left panel using a Category Tree control")
+
+> **Update 2026-06-11 (JMH): superseded by a full block conversion, navigate-only.** The thin-wrapper approach below was first built as a *new* parallel block (its own block type Guid) and then grown to near-complete WebForms parity, which left two Category Tree View blocks in the codebase. We are instead converting the WebForms `CategoryTreeView` block to Obsidian outright: the Obsidian class adopts the WebForms block type Guid (`ADE003C7-649B-466A-872B-B8AC952E7841`), the `.ascx`/`.ascx.cs` are chopped, and Rock's startup auto-migration flips every Category Tree View placement to the Obsidian block. The browser bus was removed in favor of 100% WebForms-compatible navigation: selecting a category navigates the page with `?CategoryId=<id>` and the page reloads, so any sibling block (WebForms or Obsidian) picks up the selection on load, exactly as the Event Registration precedent this kickback cited. On the Form Builder page the tree therefore reloads the page on selection; the Form List reads `CategoryId`, the tree's Add Category affordance navigates with `CategoryId=0` (and an optional `ParentCategoryId`) which opens the Form List's inline category editor, and a category add/edit/delete reloads the page so the tree refreshes. The Form List keeps the category CRUD it owns; the page still uses the sidebar + main layout below.
+
+QA: "Form Builder does not use Category Tree View." The shipped Form List embedded the `categoryTree.obs` control inside its own left panel. The correct Rock architecture is a separate category-tree block on the page, with the Form List block reacting to the selected category, the way the Event Registration (Registration Template) page pairs a tree block with a detail block.
+
+Revised approach (all-Obsidian, no reload):
+
+- Add a new thin Obsidian category-tree navigation block in a sidebar zone on the Form Builder page. It wraps the existing `categoryTree.obs` control; the control stays, only its host moves out of the Form List block.
+- The Form List block stops rendering its own tree. It reads the selected category and shows that category's forms. Category Edit / Delete / security stay in the Form List panel footer per the Figma; the Form List block keeps the category CRUD it already owns, so there is no separate Category Detail block.
+- Inter-block communication uses the Obsidian browser bus (`Rock.JavaScript.Obsidian/Framework/Utility/browserBus.ts`):
+  - The tree block updates the URL via `window.history.replaceState` (`?CategoryId=`) and publishes `PageMessages.QueryStringChanged`. The Form List block subscribes and re-fetches the selected category's forms.
+  - After a category add / edit / delete in the Form List footer, the Form List block publishes a "category changed" message; the tree block subscribes and re-fetches. Bidirectional, reload-free.
+  - Mechanism precedent: `Rock.JavaScript.Obsidian.Blocks/src/Reporting/pageParameterFilter.obs` (publisher) and `dynamicData.obs` (subscriber). There is no existing two-block tree-to-list precedent, so this establishes the first.
+- The page moves to a sidebar + main layout (the Full Worksurface page gains a sidebar zone) via a migration that places the new tree block and, if the target branch lacks it, registers the Form List Obsidian block type.
+
+### #2 Forms not visible when the list is minimized (interim fix, now unwound by #1)
+
+QA flagged that the forms were not visible at narrow widths while the category aside lived in the same block. An interim fix (commit `08919e1d37`) added a BreakpointObserver that stacked the in-block aside and forms list responsively. Once #1 moves the tree out of the block, that fix is retired: there is no in-block aside to stack, and two-panel responsiveness becomes a page-zone-layout concern. The BreakpointObserver partials and the stacking CSS come back out of `formList.obs`. The card polish committed alongside it (commit `55db2afbb1`, title-priority plus overflow tooltips on the display cards) is independent and stays.
+
+### #3 Preview button and #4 "This was not a valid workflow" (root-caused, pending QA)
+
+Resolutions not yet specced; root causes recorded for when QA confirms:
+
+- #3: the per-card Preview affordance is gated on a form-sharing Workflow Entry page being configured (`linkToFormOptions`) and hides when none is eligible.
+- #4: the Form Builder form links emit an empty `WorkflowGuid`, which the Workflow Entry block rejects with "This was not a valid workflow."
+
+### Considered but rejected (revision)
+
+#### Keep the embedded Category Tree control in the Form List block
+Rejected by the QA kickback. An embedded control is not the standard category-navigation pattern; navigation belongs in its own block so the page composes a tree block with the list block.
+
+#### WebForms `CategoryTreeView` block plus page parameter plus full reload
+Rejected as the primary approach, documented as the fallback. It is proven (the Event Registration page uses it) and needs no new block, but it re-introduces a WebForms block onto a freshly-Obsidian page and reloads on every category click. The all-Obsidian browser-bus approach keeps the page Obsidian and avoids the reload.
+
+(Update 2026-06-11: the resolution converted the Category Tree View block to Obsidian (adopting the WebForms block type Guid and chopping the `.ascx`) and kept full navigate-and-reload behavior, so the page composes the standard, now-Obsidian tree block with the Form List exactly as the Event Registration precedent does. The browser bus was dropped: it added a coordination mechanism no other Category Tree View page uses, and a full reload is the proven, universal way every sibling block picks up the selection. This is distinct from the thin parallel block first attempted under #1.)
 
 ## Decisions
 
