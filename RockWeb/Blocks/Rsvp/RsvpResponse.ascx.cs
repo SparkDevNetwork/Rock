@@ -635,6 +635,9 @@ $(document).ready(function () {
                     return;
                 }
 
+                // Override the markup default ("RSVP for Event") with the actual occurrence name.
+                lHeading.Text = GetOccurrenceTitle( occurrence );
+
                 person = new PersonService( rockContext ).Get( person.Guid );
                 UpdateOrCreateAttendanceRecord( occurrence, person, rockContext, Rock.Model.RSVP.Yes, phAttributes );
 
@@ -743,6 +746,9 @@ $(document).ready(function () {
                     Show404( true, GetOccurrenceTitle( occurrence ) );
                     return;
                 }
+
+                // Override the markup default ("RSVP for Event") with the actual occurrence name.
+                lHeading.Text = GetOccurrenceTitle( occurrence );
 
                 pnlForm.Visible = false;
                 pnlSingle_Choice.Visible = false;
