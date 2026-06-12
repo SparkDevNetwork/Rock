@@ -16,29 +16,33 @@
 //
 
 using System;
-using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder.FormList
 {
     /// <summary>
-    /// Represents the data for the Form List block.
+    /// Carries a workflow form category's identifiers so the block can resolve the
+    /// selected category from the integer Id carried in the page parameter.
     /// </summary>
-    public class FormListBag : BlockBox
+    public class FormListCategoryBag
     {
         /// <summary>
-        /// Gets or sets the collection of forms grouped by their category Guid.
+        /// Gets or sets the integer identifier carried in the page parameter.
         /// </summary>
-        public Dictionary<Guid, List<FormListItemBag>> Forms { get; set; }
+        public int Id { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the current user can add a new category.
+        /// Gets or sets the obfuscated identifier.
         /// </summary>
-        public bool CanAddNewCategory { get; set; }
+        public string IdKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the workflow form categories paired with their IdKey, so the block can
-        /// resolve the selected category from the IdKey carried in the page parameter.
+        /// Gets or sets the unique identifier the forms are keyed by.
         /// </summary>
-        public List<FormListCategoryBag> Categories { get; set; }
+        public Guid Guid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the category name, shown in the forms panel heading.
+        /// </summary>
+        public string Name { get; set; }
     }
 }
