@@ -1129,5 +1129,19 @@ namespace Rock.Plugin.HotFixes {
                 return ResourceManager.GetString("_298_FixGroupPlacementWaitList_spGetGroupPlacementPeople", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to CREATE PROCEDURE [dbo].[spAnalytics_ETL_Family]
+        ///AS
+        ///BEGIN
+        ///    DECLARE @EtlDate DATE = convert(DATE, SysDateTime())
+        ///        ,@MaxExpireDate DATE = DateFromParts(9999, 1, 1)
+        ///     [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _299_FixAnalyticsETLFamilyOperatorPrecedence_spAnalytics_ETL_Family {
+            get {
+                return ResourceManager.GetString("_299_FixAnalyticsETLFamilyOperatorPrecedence_spAnalytics_ETL_Family", resourceCulture);
+            }
+        }
     }
 }

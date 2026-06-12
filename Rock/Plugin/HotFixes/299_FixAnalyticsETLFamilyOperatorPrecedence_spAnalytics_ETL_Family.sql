@@ -1,12 +1,3 @@
-IF EXISTS (
-        SELECT *
-        FROM [sysobjects]
-        WHERE [id] = OBJECT_ID(N'[dbo].[spAnalytics_ETL_Family]')
-            AND OBJECTPROPERTY([id], N'IsProcedure') = 1
-        )
-    DROP PROCEDURE [dbo].spAnalytics_ETL_Family
-GO
-
 CREATE PROCEDURE [dbo].[spAnalytics_ETL_Family]
 AS
 BEGIN
@@ -82,7 +73,7 @@ BEGIN
         ,g.CampusId [CampusId]
         ,(
             SELECT TOP 1 (
-                    CASE 
+                    CASE
                         WHEN dv.Value IS NULL
                             THEN ''
                         ELSE dv.Value
@@ -119,7 +110,7 @@ BEGIN
             ) [ChildCount]
         ,hhpc.Id [HeadOfHouseholdPersonKey]
         ,(
-            SELECT CASE max(convert(INT, CASE 
+            SELECT CASE max(convert(INT, CASE
      WHEN av.ValueAsBoolean IS NULL
                          THEN 0
                                 ELSE av.ValueAsBoolean
@@ -186,7 +177,7 @@ BEGIN
             WHERE CurrentRowIndicator = 0
                 AND [ExpireDate] = @EtlDate
             )
-	
+
 	-- Insert Families that don't have a "CurrentRowIndicator" Row yet (either it was marked as history, or they are a new family)
     INSERT INTO AnalyticsSourceFamilyHistorical (
         [FamilyId]
