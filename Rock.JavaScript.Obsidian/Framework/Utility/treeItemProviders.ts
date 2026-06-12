@@ -91,6 +91,35 @@ export class CategoryTreeItemProvider implements ITreeItemProvider {
     private readonly http = useHttp();
 
     /**
+     * Whether to include the categorized entity items beneath each category.
+     * Set to undefined or false to show categories only.
+     */
+    public getCategorizedItems?: boolean;
+
+    /**
+     * Whether to include inactive items. Set to undefined or false to hide them.
+     */
+    public includeInactiveItems?: boolean;
+
+    /**
+     * Whether to include entity items that have a blank name. Set to undefined
+     * or false to hide them.
+     */
+    public includeUnnamedEntityItems?: boolean;
+
+    /**
+     * The categories to exclude from the tree, by Guid. Set to undefined or
+     * empty to exclude nothing.
+     */
+    public excludedCategoryGuids?: Guid[];
+
+    /**
+     * The icon CSS class applied to any item that has no icon of its own. Set
+     * to undefined to leave items without an icon.
+     */
+    public defaultIconCssClass?: string;
+
+    /**
      * The root category to start pulling categories from. Set to undefined to
      * begin with any category that does not have a parent.
      */
@@ -136,21 +165,49 @@ export class CategoryTreeItemProvider implements ITreeItemProvider {
             lazyLoad: false,
             securityGrantToken: this.securityGrantToken,
 
-            getCategorizedItems: false,
+            getCategorizedItems: this.getCategorizedItems ?? false,
             includeCategoriesWithoutChildren: true,
-            includeInactiveItems: false,
-            includeUnnamedEntityItems: false,
+            includeInactiveItems: this.includeInactiveItems ?? false,
+            includeUnnamedEntityItems: this.includeUnnamedEntityItems ?? false,
         };
 
         const response = await this.http.post<TreeItemBag[]>("/api/v2/Controls/CategoryPickerChildTreeItems", {}, options);
 
         if (response.isSuccess && response.data) {
-            return response.data;
+            return this.applyClientOptions(response.data);
         }
         else {
             console.log("Error", response.errorMessage);
             return [];
         }
+    }
+
+    /**
+     * Applies the exclude-categories and default-icon options the server endpoint
+     * does not handle: drops excluded category nodes and fills in a fallback icon.
+     *
+     * @param items The items returned from the server.
+     *
+     * @returns The filtered and decorated items.
+     */
+    private applyClientOptions(items: TreeItemBag[]): TreeItemBag[] {
+        const excludedSet = new Set((this.excludedCategoryGuids ?? []).map(guid => guid.toLowerCase()));
+
+        const filtered = excludedSet.size > 0
+            ? items.filter(item => !item.value || !excludedSet.has(item.value.toLowerCase()))
+            : items;
+
+        for (const item of filtered) {
+            if (this.defaultIconCssClass && !item.iconCssClass) {
+                item.iconCssClass = this.defaultIconCssClass;
+            }
+
+            if (item.children && item.children.length > 0) {
+                item.children = this.applyClientOptions(item.children);
+            }
+        }
+
+        return filtered;
     }
 
     /**
