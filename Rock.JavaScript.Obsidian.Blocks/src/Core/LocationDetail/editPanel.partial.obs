@@ -232,7 +232,10 @@
      * Event handler for when the individual clicks the Standardize/VerifyLocation button.
      */
     async function onStandardizeClick(): Promise<void> {
-        const result = await invokeBlockAction<AddressStandardizationResultBag>("StandardizeLocation", { addressFields: addressFields.value });
+        const result = await invokeBlockAction<AddressStandardizationResultBag>("StandardizeLocation", {
+            addressFields: addressFields.value,
+            locationTypeValue: locationTypeValue.value
+        });
 
         if (result.isSuccess && result.data) {
             updateRefValue(addressFields, result.data.addressFields ?? {});
