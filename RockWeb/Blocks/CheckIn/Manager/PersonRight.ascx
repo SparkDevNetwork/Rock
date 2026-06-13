@@ -104,6 +104,12 @@
                             <asp:Literal ID="lActiveLabel" runat="server" /><br />
                         </ItemTemplate>
                     </Rock:RockTemplateField>
+                    <Rock:RockTemplateField HeaderText="Search Family" ItemStyle-CssClass="align-middle">
+                        <ItemTemplate>
+                            <span class="text-sm">
+                                <asp:Literal ID="lSearchResultGroupName" runat="server" /></span>
+                        </ItemTemplate>
+                    </Rock:RockTemplateField>
                     <Rock:RockLiteralField ID="lChevronRight" Text="<i class='ti ti-chevron-right'></i>" ItemStyle-HorizontalAlign="Right" ItemStyle-CssClass="align-middle" />
                 </Columns>
             </Rock:Grid>
