@@ -35,11 +35,35 @@ namespace Rock.Address
     [Export( typeof( VerificationComponent ) )]
     [ExportMetadata( "ComponentName", "Smarty Streets" )]
 
-    [BooleanField( "Use Managed API Key", "Enable this to use the Auth ID and Auth Token that is managed by Spark.", true, "", 1 )]
-    [TextField( "Auth ID", "The Smarty Streets Authorization ID. NOTE: This can be left blank and will be ignored if 'Use Managed API Key' is enabled.", false, "", "", 2 )]
-    [TextField( "Auth Token", "The Smarty Streets Authorization Token. NOTE: This can be left blank and will be ignored if 'Use Managed API Key' is enabled.", false, "", "", 3 )]
-    [TextField( "Acceptable DPV Codes", "The Smarty Streets Delivery Point Validation (DPV) match code values that are considered acceptable levels of standardization (see http://smartystreets.com/kb/liveaddress-api/field-definitions#dpvmatchcode for details).", false, "Y,S,D", "", 4 )]
-    [TextField( "Acceptable Precisions", "The Smarty Streets latitude & longitude precision values that are considered acceptable levels of geocoding (see http://smartystreets.com/kb/liveaddress-api/field-definitions#precision for details).", false, "Zip7,Zip8,Zip9", "", 5 )]
+    [BooleanField( "Use Managed API Key",
+        Description = "Enable this to use the Auth ID and Auth Token that is managed by Spark.",
+        DefaultBooleanValue = true,
+        Category = "",
+        Order = 1 )]
+    [TextField( "Auth ID",
+        Description = "The Smarty Streets Authorization ID. NOTE: This can be left blank and will be ignored if 'Use Managed API Key' is enabled.",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "",
+        Order = 2 )]
+    [TextField( "Auth Token",
+        Description = "The Smarty Streets Authorization Token. NOTE: This can be left blank and will be ignored if 'Use Managed API Key' is enabled.",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "",
+        Order = 3 )]
+    [TextField( "Acceptable DPV Codes",
+        Description = "The Smarty Streets Delivery Point Validation (DPV) match code values that are considered acceptable levels of standardization (see http://smartystreets.com/kb/liveaddress-api/field-definitions#dpvmatchcode for details).",
+        IsRequired = false,
+        DefaultValue = "Y,S,D",
+        Category = "",
+        Order = 4 )]
+    [TextField( "Acceptable Precisions",
+        Description = "The Smarty Streets latitude & longitude precision values that are considered acceptable levels of geocoding (see http://smartystreets.com/kb/liveaddress-api/field-definitions#precision for details).",
+        IsRequired = false,
+        DefaultValue = "Zip7,Zip8,Zip9",
+        Category = "",
+        Order = 5 )]
     [Rock.SystemGuid.EntityTypeGuid( "4278E7EF-221B-45E6-B9C6-5D11884389EF")]
     public class SmartyStreets : VerificationComponent
     {

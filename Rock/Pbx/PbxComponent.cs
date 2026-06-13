@@ -25,13 +25,17 @@ namespace Rock.Pbx
     /// <summary>
     /// MEF Component for PBX Systems
     /// </summary>
-    [CustomDropdownListField( "Internal Phone Type", "The phone type to that is connected to the PBX.", @"  SELECT 
+    [CustomDropdownListField( "Internal Phone Type",
+        Description = "The phone type to that is connected to the PBX.",
+        ListSource = @"  SELECT 
 	dv.[Value] AS [Text],
 	dv.[Id] AS [Value]
 FROM 
 	[DefinedValue] dv
 	INNER JOIN [DefinedType] dt ON dt.[Id] = dv.[DefinedTypeId]
-WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 999 )]
+WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'",
+        IsRequired = true,
+        Order = 999 )]
     public abstract class PbxComponent : Component
     {
         /// <summary>

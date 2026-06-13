@@ -38,7 +38,10 @@ namespace Rock.Security.Authentication
     [Description( "Database Authentication Provider" )]
     [Export( typeof( AuthenticationComponent ) )]
     [ExportMetadata( "ComponentName", "Database" )]
-    [IntegerField( "BCrypt Cost Factor", "The higher this number, the more secure BCrypt can be. However it also will be slower.", false, 11 )]
+    [IntegerField( "BCrypt Cost Factor",
+        Description = "The higher this number, the more secure BCrypt can be. However it also will be slower.",
+        IsRequired = false,
+        DefaultIntegerValue = 11 )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE )]
     public class Database : AuthenticationComponent, ICredentialAuthentication
     {

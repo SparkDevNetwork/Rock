@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,7 +32,11 @@ namespace Rock.Web.HttpModules
     [Description( "A HTTP Module that adds response headers to the request. Header updates are immediate and do not need a Rock restart." )]
     [Export( typeof( HttpModuleComponent ) )]
     [ExportMetadata( "ComponentName", "Response Headers" )]
-    [KeyValueListField("Headers", "List of header key/values to inject into the top of every page loaded in Rock.", false, "", "Header Key", "Header Value")]
+    [KeyValueListField( "Headers",
+        Description = "List of header key/values to inject into the top of every page loaded in Rock.",
+        IsRequired = false,
+        KeyPrompt = "Header Key",
+        ValuePrompt = "Header Value" )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.HTTP_MODULE_COMPONENT )]
     public class ResponseHeaders : HttpModuleComponent
     {

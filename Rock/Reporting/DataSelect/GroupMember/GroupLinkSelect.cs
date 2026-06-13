@@ -35,7 +35,8 @@ namespace Rock.Reporting.DataSelect.GroupMember
     [Description( "Show Group Name" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Group Name" )]
-    [BooleanField( "Show As Link", "", true )]
+    [BooleanField( "Show As Link",
+        DefaultBooleanValue = true )]
     [Rock.SystemGuid.EntityTypeGuid( "9CF6163A-6E6A-47F3-B9E3-4558E75B1B9F" )]
     public class GroupLinkSelect : DataSelectComponent
     {

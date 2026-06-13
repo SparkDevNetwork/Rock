@@ -39,7 +39,11 @@ namespace Rock.Badge.Component
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "In Data View" )]
 
-    [DataViewField( "Data View", "The dataview to use as the source for the query. Only those people in the DataView will be given the badge.", true, entityTypeName: "Rock.Model.Person", order: 0 )]
+    [DataViewField( "Data View",
+        Description = "The dataview to use as the source for the query. Only those people in the DataView will be given the badge.",
+        IsRequired = true,
+        EntityTypeName = "Rock.Model.Person",
+        Order = 0 )]
     [CodeEditorField( "Badge Content",
         Description = "The text or HTML of the badge to display. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,

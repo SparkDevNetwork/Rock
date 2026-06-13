@@ -40,8 +40,16 @@ namespace Rock.Attribute
             int order = 0, string key = null, bool hideFilterMode = false, string fieldTypeClass = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.ValueFilterFieldType ).FullName )
         {
-            var hideFilterModeValue = new Field.ConfigurationValue( hideFilterMode.ToString() );
-            FieldConfigurationValues.Add( Field.Types.ValueFilterFieldType.HIDE_FILTER_MODE, hideFilterModeValue );
+            HideFilterMode = hideFilterMode;
+        }
+
+        /// <summary>
+        /// Determines if the filter mode selection control is hidden.
+        /// </summary>
+        public bool HideFilterMode
+        {
+            get => FieldConfigurationValues.GetValueOrNull( Field.Types.ValueFilterFieldType.HIDE_FILTER_MODE ).AsBoolean();
+            set => FieldConfigurationValues[Field.Types.ValueFilterFieldType.HIDE_FILTER_MODE] = new Field.ConfigurationValue( value.ToString() );
         }
     }
 }

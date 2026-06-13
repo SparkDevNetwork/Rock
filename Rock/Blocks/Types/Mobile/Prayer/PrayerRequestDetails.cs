@@ -169,8 +169,8 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Order = 10 )]
 
     [CustomDropdownListField( "Completion Action",
-        description: "What action to perform after saving the prayer request.",
-        listSource: "0^Show Completion Xaml,1^Pop Page",
+        Description = "What action to perform after saving the prayer request.",
+        ListSource = "0^Show Completion Xaml,1^Pop Page",
         IsRequired = true,
         DefaultValue = "0",
         Category = AttributeCategories.OnSaveBehavior,

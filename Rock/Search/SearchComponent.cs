@@ -27,8 +27,12 @@ namespace Rock.Search
     /// <summary>
     /// The base class for search components.
     /// </summary>
-    [TextField( "Search Label", "The text to display in the search type dropdown", false, "Search" )]
-    [TextField( "Result URL", "The URL to redirect user to after they have entered search text.  (use '{0}' for the search text)" )]
+    [TextField( "Search Label",
+        Description = "The text to display in the search type dropdown",
+        IsRequired = false,
+        DefaultValue = "Search" )]
+    [TextField( "Result URL",
+        Description = "The URL to redirect user to after they have entered search text.  (use '{0}' for the search text)" )]
     public abstract class SearchComponent : Component
     {
         /// <summary>
