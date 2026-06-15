@@ -731,7 +731,13 @@ namespace Rock.Data
                         }
                         else
                         {
-                            ExceptionLogService.LogException( new Exception( "Property validation failed.", ex ) );
+                            // Captures the full current call stack, all callers
+                            // included so that we get more information about
+                            // where this happened in the log.
+                            var stack = new System.Diagnostics.StackTrace( true ).ToString();
+
+                            ex.SetStackTrace( stack );
+                            ExceptionLogService.LogException( ex, HttpContext.Current );
                         }
                     }
                 }
