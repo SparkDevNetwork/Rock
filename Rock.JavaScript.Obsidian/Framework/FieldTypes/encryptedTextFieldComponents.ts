@@ -118,6 +118,7 @@ export const ConfigurationComponent = defineComponent({
         const maxCharacters = ref<number | null>(null);
         const showCountdown = ref(false);
         const firstNameField = ref(false);
+        const allowLava = ref(false);
 
         /**
          * Update the modelValue property if any value of the dictionary has
@@ -138,6 +139,7 @@ export const ConfigurationComponent = defineComponent({
             newValue[ConfigurationValueKey.MaxCharacters] = maxCharacters.value?.toString() ?? "";
             newValue[ConfigurationValueKey.ShowCountDown] = asTrueFalseOrNull(showCountdown.value) ?? "False";
             newValue[ConfigurationValueKey.IsFirstName] = asTrueFalseOrNull(firstNameField.value) ?? "False";
+            newValue[ConfigurationValueKey.AllowLava] = asTrueFalseOrNull(allowLava.value) ?? "False";
 
             // Compare the new value and the old value.
             const anyValueChanged = newValue[ConfigurationValueKey.IsPassword] !== (props.modelValue[ConfigurationValueKey.IsPassword] ?? "False")
@@ -145,7 +147,8 @@ export const ConfigurationComponent = defineComponent({
                 || newValue[ConfigurationValueKey.AllowHtml] !== (props.modelValue[ConfigurationValueKey.AllowHtml] ?? "False")
                 || newValue[ConfigurationValueKey.MaxCharacters] !== (props.modelValue[ConfigurationValueKey.MaxCharacters] ?? "")
                 || newValue[ConfigurationValueKey.ShowCountDown] !== (props.modelValue[ConfigurationValueKey.ShowCountDown] ?? "False")
-                || newValue[ConfigurationValueKey.IsFirstName] !== (props.modelValue[ConfigurationValueKey.IsFirstName] ?? "False");
+                || newValue[ConfigurationValueKey.IsFirstName] !== (props.modelValue[ConfigurationValueKey.IsFirstName] ?? "False")
+                || newValue[ConfigurationValueKey.AllowLava] !== (props.modelValue[ConfigurationValueKey.AllowLava] ?? "False");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -178,6 +181,7 @@ export const ConfigurationComponent = defineComponent({
             maxCharacters.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.MaxCharacters]);
             showCountdown.value = asBoolean(props.modelValue[ConfigurationValueKey.ShowCountDown]);
             firstNameField.value = asBoolean(props.modelValue[ConfigurationValueKey.IsFirstName]);
+            allowLava.value = asBoolean(props.modelValue[ConfigurationValueKey.AllowLava]);
         }, {
             immediate: true
         });
@@ -189,6 +193,7 @@ export const ConfigurationComponent = defineComponent({
         watch(maxCharacters, val => maybeUpdateConfiguration(ConfigurationValueKey.MaxCharacters, val?.toString() ?? ""));
         watch(showCountdown, val => maybeUpdateConfiguration(ConfigurationValueKey.ShowCountDown, asTrueFalseOrNull(val) ?? "False"));
         watch(firstNameField, val => maybeUpdateConfiguration(ConfigurationValueKey.IsFirstName, asTrueFalseOrNull(val) ?? "False"));
+        watch(allowLava, val => maybeUpdateConfiguration(ConfigurationValueKey.AllowLava, asTrueFalseOrNull(val) ?? "False"));
 
         return {
             passwordField,
@@ -197,6 +202,7 @@ export const ConfigurationComponent = defineComponent({
             firstNameField,
             allowHtml,
             showCountdown,
+            allowLava,
         };
     },
 
@@ -206,7 +212,8 @@ export const ConfigurationComponent = defineComponent({
     <NumberBox v-model="maxCharacters" label="Max Characters" help="The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text." />
     <CheckBox v-model="showCountdown" label="Show Character Limit Countdown" help="When set, displays a countdown showing how many characters remain (for the Max Characters setting)." />
     <CheckBox v-model="firstNameField" label="FirstName Field" help="When set, edit field will be validated as a first name." />
-    <CheckBox v-model="allowHtml" label="Allow HTML" help="Controls whether server should prevent HTML from being entered in this field or not" />
+    <CheckBox v-model="allowHtml" label="Allow HTML" help="Controls whether server should allow HTML in this field or not. This can often be a security risk so use with caution." />
+    <CheckBox v-model="allowLava" label="Allow Lava" help="Controls whether server should allow Lava in this field or not. This can often be a security risk so use with caution." />
     <NumberBox v-model="numberOfRows" label="Rows" help="The number of rows to display (note selecting a value greater than 1 will override the Password Field setting)." />
 </div>
 `

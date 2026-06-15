@@ -630,9 +630,32 @@ namespace RockWeb.Blocks.WorkFlow
 
                 foreach ( var param in RockPage.PageParameters() )
                 {
-                    if ( param.Value != null && param.Value.ToString().IsNotNullOrWhiteSpace() )
+                    if ( _workflow.Attributes.TryGetValue( param.Key, out var attribute ) )
                     {
-                        _workflow.SetAttributeValue( param.Key, param.Value.ToString() );
+                        var field = attribute.FieldType.Field;
+                        var rules = field.GetValidationRules( attribute.ConfigurationValues );
+                        var value = param.Value.ToString();
+
+                        if ( param.Value != null && param.Value.ToString().IsNotNullOrWhiteSpace() )
+                        {
+                            try
+                            {
+                                StringValueValidator.Validate( value, rules, typeof( AttributeValue ), nameof( AttributeValue.Value ) );
+                            }
+                            catch ( PropertyValidationException ex )
+                            {
+                                if ( DbContext.EnableStringValidation )
+                                {
+                                    throw;
+                                }
+                                else
+                                {
+                                    ExceptionLogService.LogException( new Exception( "Attribute value validation failed.", ex ) );
+                                }
+                            }
+
+                            _workflow.SetAttributeValue( param.Key, value );
+                        }
                     }
                 }
 
@@ -2113,7 +2136,27 @@ namespace RockWeb.Blocks.WorkFlow
 
                     if ( item != null )
                     {
-                        item.SetAttributeValue( attribute.Key, attribute.FieldType.Field.GetEditValue( attribute.GetControl( control ), attribute.QualifierValues ) );
+                        var field = attribute.FieldType.Field;
+                        var rules = field.GetValidationRules( attribute.ConfigurationValues );
+                        var value = field.GetEditValue( attribute.GetControl( control ), attribute.QualifierValues );
+
+                        try
+                        {
+                            StringValueValidator.Validate( value, rules, typeof( AttributeValue ), nameof( AttributeValue.Value ) );
+                        }
+                        catch ( PropertyValidationException ex )
+                        {
+                            if ( DbContext.EnableStringValidation )
+                            {
+                                throw;
+                            }
+                            else
+                            {
+                                ExceptionLogService.LogException( new Exception( "Attribute value validation failed.", ex ) );
+                            }
+                        }
+
+                        item.SetAttributeValue( attribute.Key, value );
                     }
                 }
             }
