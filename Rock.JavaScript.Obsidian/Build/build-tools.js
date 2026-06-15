@@ -526,7 +526,7 @@ class DeclarationBuilder {
                 continue;
             }
 
-            const proc = spawn("npx", ["vue-tsc", ...this.arguments, "-p", project.projectFile], { shell: true, stdio: "inherit" });
+            const proc = spawn(["npx", "vue-tsc", ...this.arguments, "-p", `"${project.projectFile}"`].join(" "), { shell: true, stdio: "inherit" });
 
             this.buildTasks.push({
                 projectFile: project.projectFile,
