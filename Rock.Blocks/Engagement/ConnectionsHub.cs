@@ -340,6 +340,11 @@ namespace Rock.Blocks.Engagement
                 return options;
             }
 
+            // Determine which opportunities the current person may view so the selector, connector
+            // list, grid scope, and filter-detail panel never surface opportunities the person is
+            // not authorized to see (matching the legacy Connection Request Board).
+            var viewAuthorizedOpportunityIds = GetViewAuthorizedConnectionOpportunityIds( connectionType );
+
             // If a Connection Opportunity was provided as a page parameter, seed the person preference
             // so that GetGridData only needs to read from the preference (not the page parameter).
             // This allows the user to subsequently clear the filter and have the server respect that.
@@ -846,6 +851,115 @@ namespace Rock.Blocks.Engagement
             }
 
             return connectionOpportunity;
+        }
+
+        /// <summary>
+        /// Gets the Ids of the active Connection Opportunities under the specified Connection Type
+        /// that the current person is authorized to VIEW. This mirrors the legacy Connection Request
+        /// Board: an opportunity is viewable when the person has native VIEW authorization on it, or
+        /// (only when Request Security is enabled on the type) when the person is the assigned
+        /// connector on at least one request in that opportunity. Authorization is evaluated over the
+        /// opportunity set, and the self-assigned lookup is a single query keyed on
+        /// ConnectorPersonAlias.PersonId, so the cost does not grow with total Connection Request volume.
+        /// </summary>
+        /// <param name="connectionType">The Connection Type whose opportunities are evaluated.</param>
+        /// <returns>The set of Connection Opportunity Ids the current person is authorized to view.</returns>
+        private HashSet<int> GetViewAuthorizedConnectionOpportunityIds( ConnectionType connectionType )
+        {
+            var authorizedOpportunityIds = new HashSet<int>();
+
+            if ( connectionType == null )
+            {
+                return authorizedOpportunityIds;
+            }
+
+            // When Request Security is enabled, the board also lets a person view any opportunity
+            // where they are the assigned connector on a request. Query these once up front rather
+            // than per opportunity so the cost is independent of Connection Request volume.
+            var selfAssignedOpportunityIds = new HashSet<int>();
+            if ( connectionType.EnableRequestSecurity )
+            {
+                selfAssignedOpportunityIds = new HashSet<int>( new ConnectionRequestService( RockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( r => r.ConnectorPersonAlias.PersonId == RequestContext.CurrentPerson.Id
+                        && r.ConnectionOpportunity.ConnectionTypeId == connectionType.Id )
+                    .Select( r => r.ConnectionOpportunityId )
+                    .Distinct() );
+            }
+
+            foreach ( var opportunity in connectionType.ConnectionOpportunities.Where( o => o.IsActive ) )
+            {
+                // Check native VIEW authorization on the opportunity directly (matching the board),
+                // falling back to the self-assigned connector check only when Request Security is enabled.
+                var canView = opportunity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson )
+                    || ( connectionType.EnableRequestSecurity && selfAssignedOpportunityIds.Contains( opportunity.Id ) );
+
+                if ( canView )
+                {
+                    authorizedOpportunityIds.Add( opportunity.Id );
+                }
+            }
+
+            return authorizedOpportunityIds;
+        }
+
+        /// <summary>
+        /// Filters the materialized grid rows down to the Connection Requests the current person is
+        /// authorized to view, mirroring ConnectionRequestService.GetConnectionRequestViewModelSecurityQuery.
+        /// When Request Security is enabled on the type, each request is evaluated individually (the person
+        /// sees it only if they are its connector or the request itself grants VIEW). When it is disabled,
+        /// the person sees every request in opportunities they can view, plus requests in any opportunity
+        /// where they belong to a connector group (global, or a campus group matching the request's campus).
+        /// </summary>
+        /// <param name="rows">The grid rows returned by the SQL query.</param>
+        /// <param name="connectionType">The Connection Type the rows belong to.</param>
+        /// <returns>The subset of rows the current person is authorized to view.</returns>
+        private List<ConnectionRequestSqlRow> FilterRowsByViewAuthorization( List<ConnectionRequestSqlRow> rows, ConnectionType connectionType )
+        {
+            if ( rows.Count == 0 || connectionType == null )
+            {
+                return rows;
+            }
+
+            var currentPerson = RequestContext.CurrentPerson;
+            var currentPersonId = currentPerson?.Id;
+
+            if ( connectionType.EnableRequestSecurity )
+            {
+                return rows.Where( row =>
+                {
+                    // The assigned connector always has direct access to their own request.
+                    if ( currentPersonId.HasValue && row.ConnectorPersonId == currentPersonId.Value )
+                    {
+                        return true;
+                    }
+
+                    var requestStub = new ConnectionRequest
+                    {
+                        Id = row.Id,
+                        ConnectionTypeId = connectionType.Id,
+                        ConnectionOpportunityId = row.ConnectionOpportunityId,
+                        ConnectionOpportunity = new ConnectionOpportunity
+                        {
+                            Id = row.ConnectionOpportunityId,
+                            ConnectionTypeId = connectionType.Id,
+                            ConnectionType = connectionType
+                        },
+                        CampusId = row.CampusId
+                    };
+
+                    return requestStub.IsAuthorized( Authorization.VIEW, currentPerson );
+                } ).ToList();
+            }
+
+            // Request Security disabled: requests in opportunities the person can view are all visible.
+            var viewableOpportunityIds = GetViewAuthorizedConnectionOpportunityIds( connectionType );
+
+            return rows.Where( row =>
+            {
+                return viewableOpportunityIds.Contains( row.ConnectionOpportunityId );
+            } ).ToList();
         }
 
         /// <summary>
@@ -4060,6 +4174,11 @@ WHERE 1 = 1" );
                 .SqlQuery<ConnectionRequestSqlRow>( sql.ToString(), sqlParams.ToArray() )
                 .ToList();
 
+            // Apply view security to the materialized rows, mirroring the legacy board's authority,
+            // ConnectionRequestService.GetConnectionRequestViewModelSecurityQuery. EnableRequestSecurity
+            // is a Connection Type level flag, so the whole result set follows a single branch.
+            sqlRows = FilterRowsByViewAuthorization( sqlRows, connectionType );
+
             var connectionRequests = new List<ConnectionRow>( sqlRows.Count );
 
             // Resolve grid attributes once up front so we can build the minimal
@@ -4305,6 +4424,13 @@ WHERE 1 = 1" );
                 return ActionNotFound( $"{Rock.Model.ConnectionOpportunity.FriendlyTypeName} not found." );
             }
 
+            // Reject opportunities the current person is not authorized to view so a crafted request
+            // cannot retrieve opportunity-scoped data that the UI would otherwise hide.
+            if ( !GetViewAuthorizedConnectionOpportunityIds( connectionOpportunity.ConnectionType ).Contains( connectionOpportunity.Id ) )
+            {
+                return ActionNotFound( $"{Rock.Model.ConnectionOpportunity.FriendlyTypeName} not found." );
+            }
+
             int? campusId = null;
 
             if ( campusGuid.HasValue )
@@ -4347,6 +4473,13 @@ WHERE 1 = 1" );
                 return ActionNotFound( $"{Rock.Model.ConnectionOpportunity.FriendlyTypeName} not found." );
             }
 
+            // Reject opportunities the current person is not authorized to view so a crafted request
+            // cannot retrieve opportunity-scoped data that the UI would otherwise hide.
+            if ( !GetViewAuthorizedConnectionOpportunityIds( connectionOpportunity.ConnectionType ).Contains( connectionOpportunity.Id ) )
+            {
+                return ActionNotFound( $"{Rock.Model.ConnectionOpportunity.FriendlyTypeName} not found." );
+            }
+
             int? campusId = null;
 
             if ( campusGuid.HasValue )
@@ -4384,6 +4517,13 @@ WHERE 1 = 1" );
                 return ActionNotFound( $"{Rock.Model.ConnectionOpportunity.FriendlyTypeName} not found." );
             }
 
+            // Reject opportunities the current person is not authorized to view so a crafted request
+            // cannot retrieve opportunity-scoped data that the UI would otherwise hide.
+            if ( !GetViewAuthorizedConnectionOpportunityIds( connectionOpportunity.ConnectionType ).Contains( connectionOpportunity.Id ) )
+            {
+                return ActionNotFound( $"{Rock.Model.ConnectionOpportunity.FriendlyTypeName} not found." );
+            }
+
             int? campusId = null;
 
             if ( campusGuid.HasValue )
@@ -4416,6 +4556,13 @@ WHERE 1 = 1" );
             // excludes archived via the global filter, but a defensive check here prevents
             // a stale client reference from surfacing an inactive group.
             if ( connectionOpportunity == null || placementGroup == null || !placementGroup.IsActive || placementGroup.IsArchived )
+            {
+                return ActionNotFound();
+            }
+
+            // Reject opportunities the current person is not authorized to view so a crafted request
+            // cannot retrieve opportunity-scoped placement group data that the UI would otherwise hide.
+            if ( !GetViewAuthorizedConnectionOpportunityIds( connectionOpportunity.ConnectionType ).Contains( connectionOpportunity.Id ) )
             {
                 return ActionNotFound();
             }

@@ -24,7 +24,7 @@
                 </div>
             </template>
             <div v-else class="mb-spacing-sm">
-                <div v-if="isInEditMode" class="d-flex align-items-center justify-content-between p-spacing-md">
+                <div v-if="isInEditMode || !isNullOrWhiteSpace(viewErrorMessage)" class="d-flex align-items-center justify-content-between p-spacing-md">
                     <div class="font-size-h5 text-semibold">Connection Request</div>
                     <i class="ti ti-x cursor-pointer" @click="closeDockedPanel"></i>
                 </div>
@@ -122,6 +122,11 @@
                     <div class="skeleton rounded h-100"></div>
                 </div>
             </template>
+            <NotificationBox v-else-if="!isInEditMode && !isNullOrWhiteSpace(viewErrorMessage)"
+                             alertType="danger"
+                             class="mx-spacing-md mt-spacing-md">
+                {{ viewErrorMessage }}
+            </NotificationBox>
             <template v-else>
                 <EditDockedPanelBody v-if="isInEditMode"
                                      :modelValue="editConnectionRequestBox"
@@ -343,6 +348,7 @@
     import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
     import BadgeList from "@Obsidian/Controls/badgeList.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { NavigationUrlKey } from "./types.partial";
     import { isNullOrWhiteSpace, pluralize } from "@Obsidian/Utility/stringUtils";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
