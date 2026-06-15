@@ -116,6 +116,31 @@ BEGIN
         INSERT [AttributeValue] ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid], [IsPersistedValueDirty], [CreatedDateTime], [ModifiedDateTime] )
         VALUES ( 0, @ShowOnlyCategoriesAttributeId, @BlockId, 'True', NEWID(), 1, @Now, @Now );
 END
+
+DECLARE @DetailPageAttributeId INT = ( SELECT [Id] FROM [Attribute] WHERE [Key] = 'DetailPage' AND [EntityTypeId] = @BlockEntityTypeId AND [EntityTypeQualifierColumn] = 'BlockTypeId' AND [EntityTypeQualifierValue] = @QualifierValue );
+DECLARE @PageReferenceFieldTypeId INT = ( SELECT [Id] FROM [FieldType] WHERE [Guid] = '{SystemGuid.FieldType.PAGE_REFERENCE}' );
+
+-- Detail Page is a Page Reference setting that may not be registered yet on a fresh install (the
+-- converted block registers its attributes at startup, after this migration runs); create it if it
+-- is missing so its value can be set below.
+IF @DetailPageAttributeId IS NULL AND @PageReferenceFieldTypeId IS NOT NULL
+BEGIN
+    INSERT [Attribute] ( [IsSystem], [FieldTypeId], [EntityTypeId], [EntityTypeQualifierColumn], [EntityTypeQualifierValue], [Key], [Name], [Description], [Order], [IsGridColumn], [IsMultiValue], [IsRequired], [DefaultValue], [Guid] )
+    VALUES ( 1, @PageReferenceFieldTypeId, @BlockEntityTypeId, 'BlockTypeId', @QualifierValue, 'DetailPage', 'Detail Page', 'The page to navigate to when a category or item is selected.', 0, 0, 0, 0, '', NEWID() );
+    SET @DetailPageAttributeId = SCOPE_IDENTITY();
+END
+
+-- Detail Page => the Form Builder page itself, paired with its 'admin/general/form-builder' route.
+-- Without this the navigate URL has no configured page to resolve and falls back to the page/{{Id}}
+-- form; setting the page and route makes a category click land on the friendly route with CategoryId.
+IF @DetailPageAttributeId IS NOT NULL
+BEGIN
+    IF EXISTS ( SELECT 1 FROM [AttributeValue] WHERE [AttributeId] = @DetailPageAttributeId AND [EntityId] = @BlockId )
+        UPDATE [AttributeValue] SET [Value] = '4f77819c-8f69-4418-933e-08f63e7fc4f9,335f2313-7fc1-42b4-ad8e-4c2a965f3380', [ModifiedDateTime] = @Now WHERE [AttributeId] = @DetailPageAttributeId AND [EntityId] = @BlockId;
+    ELSE
+        INSERT [AttributeValue] ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid], [IsPersistedValueDirty], [CreatedDateTime], [ModifiedDateTime] )
+        VALUES ( 0, @DetailPageAttributeId, @BlockId, '4f77819c-8f69-4418-933e-08f63e7fc4f9,335f2313-7fc1-42b4-ad8e-4c2a965f3380', NEWID(), 1, @Now, @Now );
+END
 " );
 
             // Rename the 'Well' workflow form section style defined value to 'Card'. Both columns are
