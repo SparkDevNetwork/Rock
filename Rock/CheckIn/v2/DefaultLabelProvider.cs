@@ -458,11 +458,17 @@ namespace Rock.CheckIn.v2
             // it consumes about 40% of the total processing time.
             return new CheckInLabelService( RockContext )
                 .Queryable()
-                .Join( relatedEntityQry, cl => cl.Id, re => re.TargetEntityId, ( cl, re ) => new OrderedAreaLabel
+                .Join( relatedEntityQry, cl => cl.Id, re => re.TargetEntityId, ( cl, re ) => new
                 {
-                    AreaId = re.SourceEntityId,
+                    RelatedEntity = re,
                     CheckInLabel = cl,
-                    Order = re.Order
+                } )
+                .Where( a => a.CheckInLabel.IsActive )
+                .Select( a => new OrderedAreaLabel
+                {
+                    AreaId = a.RelatedEntity.SourceEntityId,
+                    CheckInLabel = a.CheckInLabel,
+                    Order = a.RelatedEntity.Order,
                 } )
                 .ToList();
         }
