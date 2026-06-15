@@ -178,9 +178,9 @@ namespace Rock.Field.Types
 
             if ( controls != null )
             {
-                if ( controls.Count > 5 && controls[5] != null && controls[5] is NumberBox )
+                if ( controls.Count > 6 && controls[6] != null && controls[6] is NumberBox )
                 {
-                    configurationValues[NUMBER_OF_ROWS].Value = ( ( NumberBox ) controls[5] ).Text;
+                    configurationValues[NUMBER_OF_ROWS].Value = ( ( NumberBox ) controls[6] ).Text;
                 }
             }
 
@@ -199,9 +199,9 @@ namespace Rock.Field.Types
 
             if ( controls != null && configurationValues != null )
             {
-                if ( controls.Count > 5 && controls[5] != null && controls[5] is NumberBox && configurationValues.ContainsKey( NUMBER_OF_ROWS ) )
+                if ( controls.Count > 6 && controls[6] != null && controls[6] is NumberBox && configurationValues.ContainsKey( NUMBER_OF_ROWS ) )
                 {
-                    ( ( NumberBox ) controls[5] ).Text = configurationValues[NUMBER_OF_ROWS].Value;
+                    ( ( NumberBox ) controls[6] ).Text = configurationValues[NUMBER_OF_ROWS].Value;
                 }
             }
         }

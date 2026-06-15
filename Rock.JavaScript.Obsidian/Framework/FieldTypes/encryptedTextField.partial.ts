@@ -27,6 +27,7 @@ export const enum ConfigurationValueKey {
     MaxCharacters = "maxcharacters",
     ShowCountDown = "showcountdown",
     IsFirstName = "isfirstname",
+    AllowLava = "allowlava",
 }
 
 // The edit component can be quite large, so load it only as needed.
