@@ -1467,8 +1467,13 @@ namespace Rock.Blocks.CheckIn.Configuration
                     relatedEntityQry,
                     cl => cl.Id,
                     re => re.TargetEntityId,
-                    ( cl, re ) => new { cl.Id, cl.Name, re.Order }
-                )
+                    ( cl, re ) => new {
+                        cl.Id,
+                        cl.Name,
+                        re.Order,
+                        cl.IsActive,
+                    } )
+                .Where( a => a.IsActive )
                 .OrderBy( x => x.Order )
                 .ToList()
                 .Select( x => new CheckInLabelBag
