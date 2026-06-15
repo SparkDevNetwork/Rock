@@ -27,6 +27,7 @@ using Rock.Enums.Workflow;
 using Rock.Field;
 using Rock.Model;
 using Rock.Net;
+using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Reporting;
@@ -840,6 +841,36 @@ namespace Rock.Workflow.Action
                     }
 
                     item?.SetPublicAttributeValue( attribute.Key, formFieldValue, null, false );
+
+                    var value = item?.GetAttributeValue( attribute.Key );
+
+                    if ( value.IsNotNullOrWhiteSpace() )
+                    {
+                        var field = attribute.FieldType.Field;
+                        var rules = field.GetValidationRules( attribute.ConfigurationValues );
+
+                        try
+                        {
+                            StringValueValidator.Validate( value, rules, typeof( AttributeValue ), nameof( AttributeValue.Value ) );
+                        }
+                        catch ( PropertyValidationException ex )
+                        {
+                            if ( DbContext.EnableStringValidation )
+                            {
+                                throw new AttributeValueValidationException( attribute, item.Id, ex.Reason, null );
+                            }
+                            else
+                            {
+                                // Captures the full current call stack, all callers
+                                // included so that we get more information about
+                                // where this happened in the log.
+                                var stack = new System.Diagnostics.StackTrace( true ).ToString();
+                                var ex2 = new AttributeValueValidationException( attribute, item.Id, ex.Reason, stack );
+
+                                ExceptionLogService.LogException( ex2, System.Web.HttpContext.Current );
+                            }
+                        }
+                    }
                 }
             }
         }

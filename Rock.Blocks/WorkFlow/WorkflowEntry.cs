@@ -618,6 +618,7 @@ namespace Rock.Blocks.Workflow
             // Set initial values from the page parameters.
             foreach ( var pageParameter in RequestContext.PageParameters )
             {
+                ValidateAttributeValue( workflow, pageParameter.Key, pageParameter.Value );
                 workflow.SetAttributeValue( pageParameter.Key, pageParameter.Value );
             }
 
@@ -626,7 +627,48 @@ namespace Rock.Blocks.Workflow
             {
                 foreach ( var field in fields )
                 {
+                    ValidateAttributeValue( workflow, field.Key, field.Value );
                     workflow.SetAttributeValue( field.Key, field.Value );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Validates the value of an attribute against the rules defined for the
+        /// field type of the attribute.
+        /// </summary>
+        /// <param name="entity">The entity to retrieve the attribute field definition from.</param>
+        /// <param name="key">The key of the attribute</param>
+        /// <param name="value">The value to validate</param>
+        private static void ValidateAttributeValue( IHasAttributes entity, string key, string value )
+        {
+            if ( !entity.Attributes.TryGetValue( key, out var attribute ) )
+            {
+                return;
+            }
+
+            var field = attribute.FieldType.Field;
+            var rules = field.GetValidationRules( attribute.ConfigurationValues );
+
+            try
+            {
+                StringValueValidator.Validate( value, rules, typeof( AttributeValue ), nameof( AttributeValue.Value ) );
+            }
+            catch ( PropertyValidationException ex )
+            {
+                if ( DbContext.EnableStringValidation )
+                {
+                    throw new AttributeValueValidationException( attribute, entity.Id, ex.Reason, null );
+                }
+                else
+                {
+                    // Captures the full current call stack, all callers
+                    // included so that we get more information about
+                    // where this happened in the log.
+                    var stack = new System.Diagnostics.StackTrace( true ).ToString();
+                    var ex2 = new AttributeValueValidationException( attribute, entity.Id, ex.Reason, stack );
+
+                    ExceptionLogService.LogException( ex2, System.Web.HttpContext.Current );
                 }
             }
         }
