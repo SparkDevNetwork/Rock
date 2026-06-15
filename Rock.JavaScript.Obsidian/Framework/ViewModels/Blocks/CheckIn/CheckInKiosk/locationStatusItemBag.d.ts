@@ -23,6 +23,12 @@
 
 /** Contains the information about a location's status for the admin screens. */
 export type LocationStatusItemBag = {
+    /**
+     * The maximum number of people that can be checked into this location
+     * using an override before it is considered at limit.
+     */
+    firmRoomThreshold?: number | null;
+
     /** Gets or sets the identifier of this item. */
     id?: string | null;
 
@@ -31,4 +37,10 @@ export type LocationStatusItemBag = {
 
     /** Gets or sets the display name of this item. */
     name?: string | null;
+
+    /**
+     * The maximum number of people that can be checked into this location
+     * automatically before it is considered full.
+     */
+    softRoomThreshold?: number | null;
 };

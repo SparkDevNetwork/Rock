@@ -1222,7 +1222,9 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 {
                     Id = l.IdKey,
                     Name = l.Name,
-                    IsOpen = l.IsActive
+                    IsOpen = l.IsActive,
+                    SoftRoomThreshold = l.SoftRoomThreshold,
+                    FirmRoomThreshold = l.FirmRoomThreshold,
                 } )
                 .ToList();
 
