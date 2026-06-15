@@ -2932,6 +2932,12 @@
     }
 
     async function getConnectionRequestDetails(requestIdKey: string): Promise<void> {
+        // Explicitly enter the loading state before fetching. We cannot rely on the docked
+        // panel's detailsBox watch to do this, because when the previous request errored the
+        // details box is already undefined, so re-assigning undefined below is not a reference
+        // change and the watch never fires to show the loading skeleton.
+        connectionRequestDockedPanelRef.value?.setIsLoading(true);
+
         dockedPanelDetailsBox.value = undefined;
 
         const result = await invokeBlockAction<ConnectionRequestDetailBox>("GetConnectionRequestDetails", { connectionRequestIdKey: requestIdKey });
