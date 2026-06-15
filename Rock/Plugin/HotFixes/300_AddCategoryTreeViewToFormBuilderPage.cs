@@ -117,6 +117,15 @@ BEGIN
         VALUES ( 0, @ShowOnlyCategoriesAttributeId, @BlockId, 'True', NEWID(), 1, @Now, @Now );
 END
 " );
+
+            // Rename the 'Well' workflow form section style defined value to 'Card'. Both columns are
+            // guarded with CASE so a site that already changed the value or description is left untouched.
+            Sql( @"
+UPDATE [DefinedValue]
+SET [Value] = CASE WHEN [Value] = 'Well' THEN 'Card' ELSE [Value] END
+    , [Description] = CASE WHEN [Description] = 'This will apply a ''well'' with a muted background color and some padding.' THEN 'This will apply a ''card'' with a muted background color and some padding.' ELSE [Description] END
+WHERE [Guid] = '2D6369C1-3B39-4E94-8122-78C55A962C33';
+" );
         }
 
         /// <summary>
