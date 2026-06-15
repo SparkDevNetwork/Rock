@@ -57,7 +57,8 @@ namespace Rock.CheckIn.v2
         {
             typeof( LocationClosedOpportunityFilter ),
             typeof( ThresholdOpportunityFilter ),
-            typeof( LocationOverflowOpportunityFilter )
+            typeof( LocationOverflowOpportunityFilter ),
+            typeof( LocationOverrideOverflowOpportunityFilter ),
         };
 
         /// <summary>
