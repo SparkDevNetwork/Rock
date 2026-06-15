@@ -637,11 +637,17 @@ namespace Rock.Blocks.Workflow
             {
                 if ( DbContext.EnableStringValidation )
                 {
-                    throw;
+                    throw new AttributeValueValidationException( attribute, entity.Id, ex.Reason, null );
                 }
                 else
                 {
-                    ExceptionLogService.LogException( new Exception( "Attribute value validation failed.", ex ) );
+                    // Captures the full current call stack, all callers
+                    // included so that we get more information about
+                    // where this happened in the log.
+                    var stack = new System.Diagnostics.StackTrace( true ).ToString();
+                    var ex2 = new AttributeValueValidationException( attribute, entity.Id, ex.Reason, stack );
+
+                    ExceptionLogService.LogException( ex2, System.Web.HttpContext.Current );
                 }
             }
         }
