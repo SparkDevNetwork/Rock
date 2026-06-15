@@ -78,11 +78,13 @@ namespace Rock.Model
                             }
                             else
                             {
-                                // captures the full current call stack, all callers included
+                                // Captures the full current call stack, all callers
+                                // included so that we get more information about
+                                // where this happened in the log.
                                 var stack = new System.Diagnostics.StackTrace( true ).ToString();
                                 var ex2 = new AttributeValueValidationException( attributeCache, Entity.EntityId ?? 0, ex.Reason, stack );
 
-                                ExceptionLogService.LogException( ex2 );
+                                ExceptionLogService.LogException( ex2, System.Web.HttpContext.Current );
                             }
                         }
                     }
