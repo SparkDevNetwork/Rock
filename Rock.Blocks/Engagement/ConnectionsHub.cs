@@ -340,11 +340,6 @@ namespace Rock.Blocks.Engagement
                 return options;
             }
 
-            // Determine which opportunities the current person may view so the selector, connector
-            // list, grid scope, and filter-detail panel never surface opportunities the person is
-            // not authorized to see (matching the legacy Connection Request Board).
-            var viewAuthorizedOpportunityIds = GetViewAuthorizedConnectionOpportunityIds( connectionType );
-
             // If a Connection Opportunity was provided as a page parameter, seed the person preference
             // so that GetGridData only needs to read from the preference (not the page parameter).
             // This allows the user to subsequently clear the filter and have the server respect that.
@@ -466,6 +461,11 @@ namespace Rock.Blocks.Engagement
                 return;
             }
 
+            // Limit every opportunity-derived surface (filter detail, board groupings, connector
+            // columns, attribute columns, and the per-type options) to the opportunities the current
+            // person may view, matching the legacy Connection Request Board.
+            var viewAuthorizedOpportunityIds = GetViewAuthorizedConnectionOpportunityIds( connectionType );
+
             options.Title = connectionType.Name + " Requests";
             options.IconCssClass = connectionType.IconCssClass;
 
@@ -494,7 +494,7 @@ namespace Rock.Blocks.Engagement
             {
                 connectionOpportunity = new ConnectionOpportunityService( RockContext ).Get( connectionOpportunityFilter.Value );
             }
-            if ( connectionOpportunity != null )
+            if ( connectionOpportunity != null && viewAuthorizedOpportunityIds.Contains( connectionOpportunity.Id ) )
             {
                 options.ConnectionOpportunityDetailsFromFilter = GetConnectionOpportunityDetailBag( connectionOpportunity );
             }
@@ -512,9 +512,9 @@ namespace Rock.Blocks.Engagement
                 .Select( s => GetGroupingFieldBag( s.Id, "text", s.Name, s.Order, "ti ti-circle-filled", null, null, $"color: {s.HighlightColor};" ) )
                 .ToList();
 
-            // Opportunity groupings: all active opportunities for the connection type.
+            // Opportunity groupings: all active opportunities for the connection type the person may view.
             availableGroupings["opportunityGrouping"] = connectionType.ConnectionOpportunities
-                .Where( o => o.IsActive )
+                .Where( o => o.IsActive && viewAuthorizedOpportunityIds.Contains( o.Id ) )
                 .OrderBy( o => o.Order )
                 .ThenBy( o => o.Name )
                 .Select( o => GetGroupingFieldBag( o.Id, "text", o.Name, o.Order, o.IconCssClass ) )
@@ -525,7 +525,7 @@ namespace Rock.Blocks.Engagement
             // ConnectorGroup navigation to null for archived groups, so guard against null as well.
             // Also exclude inactive/archived group members so they do not appear as connectors.
             var connectorGroupings = connectionType.ConnectionOpportunities
-                .Where( o => o.IsActive )
+                .Where( o => o.IsActive && viewAuthorizedOpportunityIds.Contains( o.Id ) )
                 .SelectMany( o => o.ConnectionOpportunityConnectorGroups )
                 .Where( g => g.ConnectorGroup != null && g.ConnectorGroup.IsActive && !g.ConnectorGroup.IsArchived )
                 .SelectMany( g => g.ConnectorGroup.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && !m.IsArchived ) )
@@ -572,7 +572,7 @@ namespace Rock.Blocks.Engagement
                 typeLevelAttributeKeys.Add( attribute.Key );
             }
 
-            foreach ( var opportunity in connectionType.ConnectionOpportunities.Where( o => o.IsActive ) )
+            foreach ( var opportunity in connectionType.ConnectionOpportunities.Where( o => o.IsActive && viewAuthorizedOpportunityIds.Contains( o.Id ) ) )
             {
                 var tempOpportunityRequest = new ConnectionRequest
                 {
@@ -643,7 +643,7 @@ namespace Rock.Blocks.Engagement
             // follow-up changes.
             options.ConnectionTypeOptionsByIdKey = new Dictionary<string, ConnectionTypeOptionsBag>
             {
-                [connectionType.IdKey] = GetConnectionTypeOptions( connectionType )
+                [connectionType.IdKey] = GetConnectionTypeOptions( connectionType, viewAuthorizedOpportunityIds )
             };
         }
 
@@ -690,7 +690,7 @@ namespace Rock.Blocks.Engagement
 
             foreach ( var connectionType in connectionTypes )
             {
-                options.ConnectionTypeOptionsByIdKey.Add( connectionType.IdKey, GetConnectionTypeOptions( connectionType ) );
+                options.ConnectionTypeOptionsByIdKey.Add( connectionType.IdKey, GetConnectionTypeOptions( connectionType, GetViewAuthorizedConnectionOpportunityIds( connectionType ) ) );
             }
 
             // Build the available groupings for each grouping dimension. These are
@@ -717,7 +717,7 @@ namespace Rock.Blocks.Engagement
             options.AvailableGroupings = availableGroupings;
         }
 
-        private ConnectionTypeOptionsBag GetConnectionTypeOptions( ConnectionType connectionType )
+        private ConnectionTypeOptionsBag GetConnectionTypeOptions( ConnectionType connectionType, HashSet<int> viewAuthorizedOpportunityIds )
         {
             var options = new ConnectionTypeOptionsBag();
 
@@ -730,7 +730,7 @@ namespace Rock.Blocks.Engagement
             // ConnectorGroup navigation to null for archived groups, so guard against null as well.
             // Also exclude inactive/archived group members so they do not appear as connectors.
             var connectors = connectionType.ConnectionOpportunities
-                .Where( o => o.IsActive )
+                .Where( o => o.IsActive && viewAuthorizedOpportunityIds.Contains( o.Id ) )
                 .SelectMany( o => o.ConnectionOpportunityConnectorGroups )
                 .Where( g => g.ConnectorGroup != null && g.ConnectorGroup.IsActive && !g.ConnectorGroup.IsArchived )
                 .SelectMany( g => g.ConnectorGroup.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && !m.IsArchived ) )
@@ -756,7 +756,7 @@ namespace Rock.Blocks.Engagement
 
             options.AllPossibleConnectors = connectors;
 
-            options.ConnectionOpportunities = connectionType.ConnectionOpportunities.Where( o => o.IsActive ).Select( o => new ListItemBag
+            options.ConnectionOpportunities = connectionType.ConnectionOpportunities.Where( o => o.IsActive && viewAuthorizedOpportunityIds.Contains( o.Id ) ).Select( o => new ListItemBag
             {
                 Text = o.Name,
                 Value = o.Guid.ToString(),
