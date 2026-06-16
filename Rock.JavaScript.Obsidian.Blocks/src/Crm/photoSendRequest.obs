@@ -1,0 +1,235 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="Select Criteria" titleIconCssClass="ti ti-list">
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Danger">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <template v-if="!isSent">
+            <CheckBoxList v-model="selectedRoleGuids"
+                          label="Family Roles"
+                          :items="familyRoleOptions"
+                          horizontal />
+
+            <NumberBox v-model="age"
+                       label="Age is more than"
+                       :decimalCount="0"
+                       inputClasses="input-width-sm" />
+
+            <CheckBoxList v-model="selectedConnectionStatusGuids"
+                          label="Connection Status"
+                          :items="connectionStatusOptions"
+                          horizontal />
+
+            <NumberBox v-model="photoUpdatedYears"
+                       label="Exclude people with a photo updated in the last (years)"
+                       :decimalCount="0"
+                       inputClasses="input-width-sm" />
+
+            <NotificationBox v-if="testResultMessage" :alertType="AlertType.Success">
+                {{ testResultMessage }}
+            </NotificationBox>
+
+            <NotificationBox v-if="confirmMessage" :alertType="confirmAlertType" :heading="confirmHeading">
+                {{ confirmMessage }}
+            </NotificationBox>
+
+            <div class="actions">
+                <RockButton v-if="!isConfirmShown"
+                            :btnType="BtnType.Primary"
+                            :disabled="isProcessing"
+                            @click="onSendClick">
+                    Send
+                </RockButton>
+                <RockButton v-if="isConfirmShown"
+                            :btnType="BtnType.Primary"
+                            :disabled="isProcessing"
+                            @click="onConfirmSendClick">
+                    {{ confirmButtonText }}
+                </RockButton>
+                <RockButton v-if="isConfirmShown"
+                            :btnType="BtnType.Danger"
+                            :disabled="isProcessing"
+                            @click="onCancelClick">
+                    Cancel
+                </RockButton>
+                <RockButton :btnType="BtnType.Default"
+                            :disabled="isProcessing"
+                            @click="onTestClick">
+                    Test
+                </RockButton>
+            </div>
+        </template>
+
+        <NotificationBox v-else :alertType="AlertType.Success" heading="Success">
+            {{ successMessage }}
+        </NotificationBox>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { PhotoSendRequestBag } from "@Obsidian/ViewModels/Blocks/Crm/PhotoSendRequest/photoSendRequestBag";
+    import { PhotoSendRequestOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PhotoSendRequest/photoSendRequestOptionsBag";
+    import { PhotoSendRequestCriteriaBag } from "@Obsidian/ViewModels/Blocks/Crm/PhotoSendRequest/photoSendRequestCriteriaBag";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+
+    const config = useConfigurationValues<CustomBlockBox<PhotoSendRequestBag, PhotoSendRequestOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const familyRoleOptions = config.options?.familyRoleOptions ?? [];
+    const connectionStatusOptions = config.options?.connectionStatusOptions ?? [];
+    const maximumRecipients = config.options?.maximumRecipients ?? Number.MAX_SAFE_INTEGER;
+    const isApproveAuthorized = config.options?.isApproveAuthorized ?? false;
+
+    const selectedRoleGuids = ref<string[]>([]);
+    const age = ref<number | null>(config.bag?.age ?? 16);
+    const selectedConnectionStatusGuids = ref<string[]>([]);
+    const photoUpdatedYears = ref<number | null>(config.bag?.photoUpdatedYears ?? 3);
+
+    const isProcessing = ref(false);
+    const isConfirmShown = ref(false);
+    const isSent = ref(false);
+    const recipientCount = ref(0);
+
+    const errorMessage = ref("");
+    const testResultMessage = ref("");
+    const successMessage = ref("");
+    const confirmMessage = ref("");
+    const confirmHeading = ref("");
+    const confirmAlertType = ref<AlertType>(AlertType.Info);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const requiresApproval = computed((): boolean => recipientCount.value > maximumRecipients && !isApproveAuthorized);
+
+    const confirmButtonText = computed((): string => `${requiresApproval.value ? "Confirm and Submit" : "Confirm and Send"} Communication`);
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** Builds the criteria payload sent to the block actions from the current form state. */
+    function buildCriteria(): PhotoSendRequestCriteriaBag {
+        return {
+            familyRoleGuids: selectedRoleGuids.value,
+            age: age.value,
+            connectionStatusGuids: selectedConnectionStatusGuids.value,
+            photoUpdatedYears: photoUpdatedYears.value
+        };
+    }
+
+    /** Returns the form to the pre-confirm state, clearing any confirmation prompt. */
+    function resetConfirmState(): void {
+        isConfirmShown.value = false;
+        confirmMessage.value = "";
+        confirmHeading.value = "";
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /** Counts the matching recipients and either prompts for confirmation or warns that nobody matched. */
+    async function onSendClick(): Promise<void> {
+        errorMessage.value = "";
+        testResultMessage.value = "";
+        isProcessing.value = true;
+
+        try {
+            const result = await invokeBlockAction<number>("GetRecipientCount", { criteria: buildCriteria() });
+
+            if (result.isError) {
+                errorMessage.value = result.errorMessage ?? "Unable to determine the number of recipients.";
+                return;
+            }
+
+            recipientCount.value = result.data ?? 0;
+
+            if (recipientCount.value > 0) {
+                isConfirmShown.value = true;
+                confirmAlertType.value = AlertType.Info;
+                confirmHeading.value = "Please Confirm";
+                confirmMessage.value = `This will send an email to ${recipientCount.value.toLocaleString()} recipients. Press confirm to continue.`;
+            }
+            else {
+                isConfirmShown.value = false;
+                confirmAlertType.value = AlertType.Warning;
+                confirmHeading.value = "Warning";
+                confirmMessage.value = "Hmm, that didn't match anyone. Try adjusting your criteria.";
+            }
+        }
+        finally {
+            isProcessing.value = false;
+        }
+    }
+
+    /** Sends (or submits for approval) the communication to everyone matching the criteria. */
+    async function onConfirmSendClick(): Promise<void> {
+        errorMessage.value = "";
+        isProcessing.value = true;
+
+        try {
+            const result = await invokeBlockAction<string>("SendCommunication", { criteria: buildCriteria() });
+
+            if (result.isError) {
+                errorMessage.value = result.errorMessage ?? "Unable to send the communication.";
+                return;
+            }
+
+            successMessage.value = result.data ?? "The request has been sent.";
+            isSent.value = true;
+        }
+        finally {
+            isProcessing.value = false;
+        }
+    }
+
+    /** Cancels a pending confirmation and returns to the send state. */
+    function onCancelClick(): void {
+        resetConfirmState();
+    }
+
+    /** Sends a test communication to the current person. */
+    async function onTestClick(): Promise<void> {
+        errorMessage.value = "";
+        testResultMessage.value = "";
+        resetConfirmState();
+        isProcessing.value = true;
+
+        try {
+            const result = await invokeBlockAction<string>("SendTestCommunication", {});
+
+            if (result.isError) {
+                errorMessage.value = result.errorMessage ?? "Unable to send the test communication.";
+                return;
+            }
+
+            testResultMessage.value = result.data ?? "Test communication has been sent.";
+        }
+        finally {
+            isProcessing.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // Changing any criterion invalidates a pending confirmation so the user re-counts before sending.
+    watch([selectedRoleGuids, age, selectedConnectionStatusGuids, photoUpdatedYears], () => {
+        resetConfirmState();
+    });
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>
