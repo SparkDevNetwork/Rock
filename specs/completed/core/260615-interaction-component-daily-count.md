@@ -44,7 +44,7 @@ This is a lightweight aggregate table. It does **not** inherit from `Model<T>` a
 
 Class location: `Rock/Model/Core/InteractionComponentDailyCount/InteractionComponentDailyCount.cs` (matching the convention used by sibling interaction models). Namespace: `Rock.Model`.
 
-**Structural precedent:** [WorkflowLog.cs](../Rock/Model/Workflow/WorkflowLog/WorkflowLog.cs) is a close shape match. It is a plain `partial class` (no `Model<T>` / `Entity<T>` inheritance), uses `[Table("WorkflowLog")]`, `[DataContract]`, `[NotAudited]`, defines its own primary key, and declares an `EntityTypeConfiguration<T>` partial class inside the same file for FK configuration. The new class follows the same shape with two differences: there is no surrogate `Id` (composite PK instead), and the FK cascade is `true` (see below).
+**Structural precedent:** [WorkflowLog.cs](../../../Rock/Model/Workflow/WorkflowLog/WorkflowLog.cs) is a close shape match. It is a plain `partial class` (no `Model<T>` / `Entity<T>` inheritance), uses `[Table("WorkflowLog")]`, `[DataContract]`, `[NotAudited]`, defines its own primary key, and declares an `EntityTypeConfiguration<T>` partial class inside the same file for FK configuration. The new class follows the same shape with two differences: there is no surrogate `Id` (composite PK instead), and the FK cascade is `true` (see below).
 
 | Field | Type | Notes |
 |---|---|---|
@@ -60,7 +60,7 @@ Class location: `Rock/Model/Core/InteractionComponentDailyCount/InteractionCompo
 | `TotalSessionCount` | `int` | Sum of logged-in and anonymous session counts. |
 | `AverageInteractionLength` | `decimal(18,2)` | Average of `Interaction.InteractionLength` for this (component, date, operation). Units vary by channel (seconds, minutes, percent watched, etc.); semantics match `Interaction.InteractionLength`. |
 
-**"Logged in" definition.** `Interaction.PersonAliasId` is **non-null** AND `PersonAlias.PersonId` does **not** equal the cached `Anonymous Visitor` person's `Id` (`SystemGuid.Person.ANONYMOUS_VISITOR = "7EBC167B-512D-4683-9D80-98B6BB02E1B9"`, [Rock/SystemGuid/Person.cs:32](../Rock/SystemGuid/Person.cs:32)). Every other row counts as "anonymous." This matches what [RockPage.GetOrCreateAnonymousVisitorPersonId](../Rock/Web/UI/RockPage.cs:1882) writes onto unauthenticated web interactions and aligns with the engagement team's intent (the `nameless` record type is reserved for SMS-originated identities and is not how interactions represent unauthenticated traffic).
+**"Logged in" definition.** `Interaction.PersonAliasId` is **non-null** AND `PersonAlias.PersonId` does **not** equal the cached `Anonymous Visitor` person's `Id` (`SystemGuid.Person.ANONYMOUS_VISITOR = "7EBC167B-512D-4683-9D80-98B6BB02E1B9"`, [Rock/SystemGuid/Person.cs:32](../../../Rock/SystemGuid/Person.cs:32)). Every other row counts as "anonymous." This matches what [RockPage.GetOrCreateAnonymousVisitorPersonId](../../../Rock/Web/UI/RockPage.cs:1882) writes onto unauthenticated web interactions and aligns with the engagement team's intent (the `nameless` record type is reserved for SMS-originated identities and is not how interactions represent unauthenticated traffic).
 
 ### Composite primary key in EF 6
 
@@ -104,7 +104,7 @@ CreateTable(
     .Index( t => t.InteractionDateKey );
 ```
 
-`cascadeDelete: true` on the `InteractionComponentId` FK is intentional: the daily count rows are an aggregate that is meaningless without the parent component, so deleting a component should remove its rolled-up rows. This is the ownership exception in [data-model.md](../.claude/rules/data-model.md).
+`cascadeDelete: true` on the `InteractionComponentId` FK is intentional: the daily count rows are an aggregate that is meaningless without the parent component, so deleting a component should remove its rolled-up rows. This is the ownership exception in [data-model.md](../../../.claude/rules/data-model.md).
 
 ## Related Changes
 
@@ -112,7 +112,7 @@ CreateTable(
 
 Add `EnableComponentDailyCounts` (`bit`, not null, default `false`) to `InteractionChannel`. This is the per-channel opt-in switch that the Rock Clean-up job reads to decide which components to aggregate.
 
-Add the property to [InteractionChannel.cs](../Rock/Model/Core/InteractionChannel/InteractionChannel.cs) following the existing direct-property pattern (see `IsActive`, `UsesSession`, `RetentionDuration`). Boolean naming convention from `CLAUDE.md`: name reflects the `false` default.
+Add the property to [InteractionChannel.cs](../../../Rock/Model/Core/InteractionChannel/InteractionChannel.cs) following the existing direct-property pattern (see `IsActive`, `UsesSession`, `RetentionDuration`). Boolean naming convention from `CLAUDE.md`: name reflects the `false` default.
 
 ### 2. "Interaction Mediums" defined type — new attribute
 
@@ -141,9 +141,9 @@ RockMigrationHelper.AddDefinedTypeAttribute(
 
 ### 3. `InteractionChannel` pre-save hook (Add only)
 
-Create `Rock/Model/Core/InteractionChannel/InteractionChannel.SaveHook.cs` following the partial-class pattern from [InteractionComponent.SaveHook.cs](../Rock/Model/Core/InteractionComponent/InteractionComponent.SaveHook.cs).
+Create `Rock/Model/Core/InteractionChannel/InteractionChannel.SaveHook.cs` following the partial-class pattern from [InteractionComponent.SaveHook.cs](../../../Rock/Model/Core/InteractionComponent/InteractionComponent.SaveHook.cs).
 
-On `EntityContextState.Added` (not `Modified` or `Deleted`), look up the channel's `ChannelTypeMediumValueId` ([InteractionChannel.cs:156](../Rock/Model/Core/InteractionChannel/InteractionChannel.cs:156)), resolve the `DefinedValue`'s `Default Component Daily Counts` attribute value, and set `EnableComponentDailyCounts = true` on the new `InteractionChannel` when that attribute is `true`. Use `DefinedValueCache` for the lookup; never load the `DefinedValue` through the context being saved.
+On `EntityContextState.Added` (not `Modified` or `Deleted`), look up the channel's `ChannelTypeMediumValueId` ([InteractionChannel.cs:156](../../../Rock/Model/Core/InteractionChannel/InteractionChannel.cs:156)), resolve the `DefinedValue`'s `Default Component Daily Counts` attribute value, and set `EnableComponentDailyCounts = true` on the new `InteractionChannel` when that attribute is `true`. Use `DefinedValueCache` for the lookup; never load the `DefinedValue` through the context being saved.
 
 If the channel has no medium (`ChannelTypeMediumValueId` is null), leave `EnableComponentDailyCounts` at its default of `false`.
 
@@ -151,16 +151,16 @@ The hook does **not** fire on `Modified`. Once a channel exists, the operator ow
 
 ### 4. `Operation` null handling
 
-`Interaction.Operation` is nullable [Interaction.cs:108](../Rock/Model/Core/Interaction/Interaction.cs:108). Because `Operation` is part of the `InteractionComponentDailyCount` composite primary key, any `null` `Operation` value MUST be translated to an empty string (`''`) at write time inside the SQL aggregation (e.g. `ISNULL([Operation], '')`). Do not change `Interaction.Operation` to non-nullable; the source column stays nullable.
+`Interaction.Operation` is nullable [Interaction.cs:108](../../../Rock/Model/Core/Interaction/Interaction.cs:108). Because `Operation` is part of the `InteractionComponentDailyCount` composite primary key, any `null` `Operation` value MUST be translated to an empty string (`''`) at write time inside the SQL aggregation (e.g. `ISNULL([Operation], '')`). Do not change `Interaction.Operation` to non-nullable; the source column stays nullable.
 
 ## Rock Clean-up Job
 
-The existing Rock Clean-up job ([RockCleanup.cs](../Rock/Jobs/RockCleanup.cs)) gains a new task that maintains `InteractionComponentDailyCount`. The task is responsible for both the steady-state daily increment and the initial multi-year backfill that runs the first time the new task ever executes.
+The existing Rock Clean-up job ([RockCleanup.cs](../../../Rock/Jobs/RockCleanup.cs)) gains a new task that maintains `InteractionComponentDailyCount`. The task is responsible for both the steady-state daily increment and the initial multi-year backfill that runs the first time the new task ever executes.
 
 ### Behavior (from Figma item 7)
 
-- **a. SQL-first.** The aggregation MUST be implemented as a SQL `INSERT ... SELECT` against `Interaction`, joined to `InteractionComponent`, `InteractionChannel`, and `PersonAlias`, filtered to channels where `EnableComponentDailyCounts = true`. Row-by-row EF is not acceptable. The pattern in [RockCleanup.cs:2646 `UpdateMedianPageLoadTimes`](../Rock/Jobs/RockCleanup.cs:2646) is the closest existing precedent.
-- **b. First-run timeout.** Use the job's existing global `CommandTimeout` attribute ([RockCleanup.cs:103](../Rock/Jobs/RockCleanup.cs:103), default 900s) **multiplied by a hard-coded factor for this task** (proposal: `4×`, so 3600s by default). This avoids introducing a new job attribute for a behavior that is unlikely to need per-environment tuning, while still letting operators raise the ceiling for the first run by raising the global value. The multiplier can be promoted to a dedicated job attribute later if real-world experience demonstrates it's needed.
+- **a. SQL-first.** The aggregation MUST be implemented as a SQL `INSERT ... SELECT` against `Interaction`, joined to `InteractionComponent`, `InteractionChannel`, and `PersonAlias`, filtered to channels where `EnableComponentDailyCounts = true`. Row-by-row EF is not acceptable. The pattern in [RockCleanup.cs:2646 `UpdateMedianPageLoadTimes`](../../../Rock/Jobs/RockCleanup.cs:2646) is the closest existing precedent.
+- **b. First-run timeout.** Use the job's existing global `CommandTimeout` attribute ([RockCleanup.cs:103](../../../Rock/Jobs/RockCleanup.cs:103), default 900s) **multiplied by a hard-coded factor for this task** (proposal: `4×`, so 3600s by default). This avoids introducing a new job attribute for a behavior that is unlikely to need per-environment tuning, while still letting operators raise the ceiling for the first run by raising the global value. The multiplier can be promoted to a dedicated job attribute later if real-world experience demonstrates it's needed.
 - **c. No backward time travel after the first run.** Once a date has been written for a `(InteractionComponentId, InteractionDate, Operation)` row, that row is never recomputed. Late-arriving `Interaction` rows for a date the task already processed are intentionally **not** reflected in the aggregate.
 - **Date-range lower bound.** Track the **last fully processed date** as a `date` (not a `datetime`) so day boundaries line up with the aggregate's `InteractionDate` column. A run-timestamp marker would leave a gap: a job running at noon on Day 1 with upper bound "start of today" would persist `Day 1 12:00`, and the next noon run on Day 2 (lower bound `Day 1 12:00`, upper bound `Day 2 00:00`) would never look at `Day 1 00:00 – Day 1 12:00`. The date-marker design avoids that entirely. Mechanically:
   - Persist a system setting `INTERACTION_COMPONENT_DAILY_COUNT_LAST_PROCESSED_DATE` (new key under `Rock.SystemKey.SystemSetting`) that records the most recent date for which counts are guaranteed complete. The value is a `date`, not a `datetime`.
@@ -240,7 +240,7 @@ The existing Rock Clean-up job ([RockCleanup.cs](../Rock/Jobs/RockCleanup.cs)) g
 
   Each iteration is an independent SQL statement under its own `RockContext`. If a SQL timeout, server restart, or other failure aborts the loop, every previously-completed chunk is durable and the system setting reflects the last fully-processed date. The next clean-up run picks up at `setting + 1 day` automatically — no special "resume" logic required.
 
-- **Set the SQL `CommandTimeout` explicitly.** Follow the convention at [RockCleanup.cs:240](../Rock/Jobs/RockCleanup.cs:240): the new task creates its own `RockContext` and calls `Database.SetCommandTimeout(commandTimeout * 4)`, where `commandTimeout` is the global value resolved at job start.
+- **Set the SQL `CommandTimeout` explicitly.** Follow the convention at [RockCleanup.cs:240](../../../Rock/Jobs/RockCleanup.cs:240): the new task creates its own `RockContext` and calls `Database.SetCommandTimeout(commandTimeout * 4)`, where `commandTimeout` is the global value resolved at job start.
 
 - **Session counting** uses `COUNT(DISTINCT InteractionSessionId)` partitioned the same way as interaction counts. Note that `InteractionSessionId` is nullable on `Interaction`; `COUNT(DISTINCT ...)` ignores nulls, which is the correct behavior.
 
@@ -346,7 +346,7 @@ WHERE NOT EXISTS (
 
 2. **`OPTION (LOOP JOIN, FORCE ORDER)` hint** if the planner refuses to drive from `@EnabledComponents`. Only add this if profiling shows a bad plan; query hints freeze the plan and can age poorly.
 
-3. **Use `InteractionDateKey` for the date GROUP BY** if profiling shows `CAST(InteractionDateTime AS DATE)` is the bottleneck. `InteractionDateKey` is a computed `int` ([Interaction.cs:374](../Rock/Model/Core/Interaction/Interaction.cs:374)) with an existing index (`IX_InteractionDateKey` and `IX_InteractionComponentId_InteractionDateKey`).
+3. **Use `InteractionDateKey` for the date GROUP BY** if profiling shows `CAST(InteractionDateTime AS DATE)` is the bottleneck. `InteractionDateKey` is a computed `int` ([Interaction.cs:374](../../../Rock/Model/Core/Interaction/Interaction.cs:374)) with an existing index (`IX_InteractionDateKey` and `IX_InteractionComponentId_InteractionDateKey`).
 
 4. **Pre-aggregation in tempdb.** As a last resort, `SELECT INTO #temp ... GROUP BY ...` first, then `INSERT INTO InteractionComponentDailyCount ... SELECT FROM #temp WHERE NOT EXISTS (...)`. Decouples the heavy aggregation from the row-existence check, which can help when statistics on `InteractionComponentDailyCount` are misleading (e.g. empty on first run).
 
@@ -491,7 +491,7 @@ All originally-open questions are resolved. The Performance validation section a
 
 ### Inherit from `Model<T>` for consistency
 
-Rejected. `Model<T>` adds eight columns (`Id`, `Guid`, audit, foreign) that have no meaning on an aggregate row and roughly double its storage cost. The table is a derived rollup, not a domain entity that needs auditing. The [WorkflowLog](../Rock/Model/Workflow/WorkflowLog/WorkflowLog.cs) precedent shows the lightweight pattern.
+Rejected. `Model<T>` adds eight columns (`Id`, `Guid`, audit, foreign) that have no meaning on an aggregate row and roughly double its storage cost. The table is a derived rollup, not a domain entity that needs auditing. The [WorkflowLog](../../../Rock/Model/Workflow/WorkflowLog/WorkflowLog.cs) precedent shows the lightweight pattern.
 
 ### Inherit from `Entity<T>`
 
@@ -559,8 +559,8 @@ Rejected (for now). Use the global `CommandTimeout` × 4 multiplier instead. Add
 
 - Figma reference: [Jon's Scratch Pad, node 10761-3844](https://www.figma.com/design/Sedg93yqucAcBJfr6Ux9xX/Jon-s-Scratch-Pad?node-id=10761-3844&t=ZyYwClpKmuQcen2Q-0) — auth-required at spec-write time and could not be fetched programmatically. The full nine-item Overview was reproduced verbatim from screenshots supplied by the author and is preserved in [artifacts/260615-interaction-component-daily-count/figma-overview-transcript.md](artifacts/260615-interaction-component-daily-count/figma-overview-transcript.md). That transcript is the canonical design source for this spec.
 - Benchmark script for the per-chunk aggregation, used to validate `BackfillChunkDays = 30` on production-sized databases: [artifacts/260615-interaction-component-daily-count/benchmark-per-chunk-aggregation.sql](artifacts/260615-interaction-component-daily-count/benchmark-per-chunk-aggregation.sql). Non-destructive (SELECT-only). Findings to be reported into the spec's future Performance validation section.
-- Existing RockCleanup SQL-aggregation precedent: [RockCleanup.cs:2646 `UpdateMedianPageLoadTimes`](../Rock/Jobs/RockCleanup.cs:2646).
-- Existing interaction cleanup precedent: [RockCleanup.cs:1524 `CleanupOldInteractions`](../Rock/Jobs/RockCleanup.cs:1524).
-- SaveHook pattern reference: [InteractionComponent.SaveHook.cs](../Rock/Model/Core/InteractionComponent/InteractionComponent.SaveHook.cs).
-- Channel medium FK reference: [InteractionChannel.cs:156](../Rock/Model/Core/InteractionChannel/InteractionChannel.cs:156).
-- Interaction Operation field: [Interaction.cs:108](../Rock/Model/Core/Interaction/Interaction.cs:108).
+- Existing RockCleanup SQL-aggregation precedent: [RockCleanup.cs:2646 `UpdateMedianPageLoadTimes`](../../../Rock/Jobs/RockCleanup.cs:2646).
+- Existing interaction cleanup precedent: [RockCleanup.cs:1524 `CleanupOldInteractions`](../../../Rock/Jobs/RockCleanup.cs:1524).
+- SaveHook pattern reference: [InteractionComponent.SaveHook.cs](../../../Rock/Model/Core/InteractionComponent/InteractionComponent.SaveHook.cs).
+- Channel medium FK reference: [InteractionChannel.cs:156](../../../Rock/Model/Core/InteractionChannel/InteractionChannel.cs:156).
+- Interaction Operation field: [Interaction.cs:108](../../../Rock/Model/Core/Interaction/Interaction.cs:108).
