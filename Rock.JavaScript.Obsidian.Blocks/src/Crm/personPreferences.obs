@@ -1,0 +1,111 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="Preferences" titleIconCssClass="ti ti-user">
+        <NotificationBox v-if="config.errorMessage" alertType="danger">
+            {{ config.errorMessage }}
+        </NotificationBox>
+
+        <template v-else>
+            <NotificationBox v-if="isSaved" alertType="success">
+                Your preferences have been saved.
+            </NotificationBox>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <DropDownList v-model="defaultSmsPhoneNumber"
+                                  label="Default SMS Phone Number"
+                                  help="The default phone number to use when sending SMS messages. This is currently only supported in specific places in Rock."
+                                  :items="defaultSmsPhoneNumberOptions" />
+                </div>
+
+                <div class="col-md-6">
+                    <TextBox v-model="emailClosingPhrase"
+                             label="E-mail Closing Phrase"
+                             help="A plain text string that will be appended to e-mails as your optional closing phrase. This is currently only supported in specific places in Rock." />
+                </div>
+            </div>
+
+            <div v-if="config.options?.isCallOriginationSourceVisible" class="row">
+                <div class="col-md-6">
+                    <DefinedValuePicker v-model="callOriginationSource"
+                                        label="Call Origination Source"
+                                        help="The number to call when you use click-to-call."
+                                        :definedTypeGuid="DefinedType.PersonPhoneType"
+                                        showBlankItem />
+                </div>
+            </div>
+
+            <RockButton btnType="primary"
+                        type="button"
+                        autoDisable
+                        autoLoading
+                        @click="onSaveClick">
+                Save
+            </RockButton>
+        </template>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { PersonPreferencesBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonPreferences/personPreferencesBag";
+    import { PersonPreferencesOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonPreferences/personPreferencesOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const config = useConfigurationValues<CustomBlockBox<PersonPreferencesBag, PersonPreferencesOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const defaultSmsPhoneNumber = ref(config.bag?.defaultSmsPhoneNumber ?? "");
+    const emailClosingPhrase = ref(config.bag?.emailClosingPhrase ?? "");
+    const callOriginationSource = ref<ListItemBag | undefined>(config.bag?.callOriginationSource ?? undefined);
+    const isSaved = ref(false);
+
+    const defaultSmsPhoneNumberOptions = config.options?.defaultSmsPhoneNumberOptions ?? [];
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Persists the person's preferences and shows a confirmation on success.
+     */
+    async function onSaveClick(): Promise<void> {
+        isSaved.value = false;
+
+        const bag: PersonPreferencesBag = {
+            defaultSmsPhoneNumber: defaultSmsPhoneNumber.value,
+            emailClosingPhrase: emailClosingPhrase.value,
+            callOriginationSource: callOriginationSource.value
+        };
+
+        const result = await invokeBlockAction("Save", { bag });
+
+        if (result.isSuccess) {
+            isSaved.value = true;
+        }
+        else {
+            await alert(result.errorMessage || "Unable to save your preferences.");
+        }
+    }
+
+    // #endregion
+
+    // Clear the saved confirmation as soon as the person edits any field.
+    watch([defaultSmsPhoneNumber, emailClosingPhrase, callOriginationSource], () => {
+        isSaved.value = false;
+    });
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>
