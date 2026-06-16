@@ -46,6 +46,7 @@
 
                     Sys.Application.add_load(function () {
                         $("div.photo-icon").lazyload({
+                            container: $('#content-wrapper'),
                             effect: "fadeIn"
                         });
 
