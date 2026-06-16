@@ -883,11 +883,14 @@
             });
         }
 
-        // Append the action for Launch Workflow.
+        // Append the action for Launch Workflow. When both light and
+        // showLaunchWorkflow are set the action is primary (inline icon button);
+        // otherwise it stays in the ellipsis menu as before.
         if (isLaunchWorkflowVisible.value) {
             actions.push({
                 handler: onLaunchWorkflow,
                 iconCssClass: "ti ti-settings",
+                isPrimary: props.light === true && props.showLaunchWorkflow === true,
                 title: "Launch Workflow",
                 tooltip: "Launch Workflow"
             });
