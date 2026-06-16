@@ -555,6 +555,25 @@ namespace Rock.Blocks.Event
 
             securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
 
+            /*
+                6/16/2026 - MSE
+
+                The Event Calendar Item attributes are edited from this block as well, so
+                their field type rules must also be added to the grant. Without them, inline
+                controls such as the Defined Value editor (used when an attribute allows
+                adding new values) are denied with an HTTP 401 when calling their REST endpoints.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/6881
+            */
+            if ( entity?.EventCalendarItems != null )
+            {
+                foreach ( var eventCalendarItem in entity.EventCalendarItems )
+                {
+                    eventCalendarItem.LoadAttributes();
+                    securityGrant.AddRulesForAttributes( eventCalendarItem, RequestContext.CurrentPerson );
+                }
+            }
+
             return securityGrant.ToToken();
         }
 
