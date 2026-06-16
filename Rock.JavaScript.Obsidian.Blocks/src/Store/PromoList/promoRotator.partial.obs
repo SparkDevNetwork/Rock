@@ -18,7 +18,7 @@
             <div class="carousel-inner" role="listbox">
                 <Transition :name="slideTransitionName">
                     <div :key="currentIndex" class="item active">
-                        <a v-if="currentPromo && isImageLoaded(currentPromo.imageLargeUrl)" :href="currentPromo.detailPageUrl ?? ''">
+                        <a v-if="currentPromo && isImageLoaded(currentPromo.imageLargeUrl)" @click.prevent="onPromoClick">
                             <img :src="currentPromo.imageLargeUrl ?? ''" />
                         </a>
                     </div>
@@ -40,6 +40,24 @@
 </template>
 
 <style scoped>
+/*
+    The dot colors, chevron offsets, and rotator spacing below are copied from
+    _blocks-store.scss so the rotator renders correctly on sites that do not reference
+    that stylesheet (e.g. external sites). The base carousel mechanics still come from
+    Bootstrap. Keep these in sync with the .promotionrotator rules in Rock.Frontend.Styles.
+*/
+.promotionrotator {
+    margin-bottom: 48px;
+}
+
+.carousel-control .ti-chevron-right {
+    right: 20px;
+}
+
+.carousel-control .ti-chevron-left {
+    left: 20px;
+}
+
 .carousel-inner {
     display: grid;
     max-height: 210px;
@@ -79,6 +97,11 @@
 .carousel-indicators li {
     margin-left: 3px;
     margin-right: 3px;
+    border-color: var(--color-interface-medium);
+}
+
+.carousel-indicators .active {
+    background-color: var(--color-interface-medium);
 }
 
 .slide-next-enter-active,
@@ -113,6 +136,10 @@
         promos: PromoBag[];
     }>();
 
+    const emit = defineEmits<{
+        (e: "promoClick", packageId: number): void;
+    }>();
+
     // #region Values
 
     const currentIndex = ref(0);
@@ -139,6 +166,17 @@
     const slideTransitionName = computed((): string => direction.value === 1 ? "slide-next" : "slide-prev");
 
     // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /** Emits the currently shown promo's PackageId so the parent can navigate to its detail page. */
+    function onPromoClick(): void {
+        if (currentPromo.value) {
+            emit("promoClick", currentPromo.value.packageId);
+        }
+    }
+
+    // #endregion Event Handlers
 
     // #region Functions
 

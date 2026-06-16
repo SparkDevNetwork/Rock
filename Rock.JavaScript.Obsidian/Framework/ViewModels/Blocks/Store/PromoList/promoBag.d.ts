@@ -28,12 +28,6 @@
  */
 export type PromoBag = {
     /**
-     * Gets or sets the fully resolved detail page URL for this promo,
-     * with the PackageId already substituted in by the server.
-     */
-    detailPageUrl?: string | null;
-
-    /**
      * Gets or sets the resolved URL for the large promo image.
      * Used by the rotator display style. Null when no large image exists.
      */
