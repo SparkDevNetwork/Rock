@@ -741,7 +741,7 @@ namespace Rock.Blocks.Event
                     {
                         EventCalendarGuid = eventCalendarItem.EventCalendar?.Guid ?? eventCalendarService.Get( eventCalendarItem.EventCalendarId ).Guid,
                         EventCalendarName = eventCalendarItem.EventCalendar?.Name ?? eventCalendarService.Get( eventCalendarItem.EventCalendarId ).Name,
-                        Attributes = eventCalendarItem.GetPublicAttributesForView( GetCurrentPerson(), true ),
+                        Attributes = eventCalendarItem.GetPublicAttributesForEdit( GetCurrentPerson(), enforceSecurity: true ),
                         AttributeValues = eventCalendarItem.GetPublicAttributeValuesForEdit( GetCurrentPerson(), enforceSecurity: true )
                     };
 
