@@ -1,0 +1,51 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Reassign Transactions"
+           saveText="Reassign"
+           @save="onSave">
+        <!-- TODO Step 5: Reassign Transactions To (person picker, required) and
+             Reassign Bank Accounts (radio: Move / Copy / Do not adjust, required) with help text. -->
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { ref, watch } from "vue";
+
+    const props = defineProps<{
+        visible: boolean;
+    }>();
+
+    const emit = defineEmits<{
+        (e: "update:visible", value: boolean): void;
+        (e: "save"): void;
+    }>();
+
+    // #region Values
+
+    const isVisible = ref(props.visible);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    function onSave(): void {
+        // TODO Step 5: invoke the Reassign block action, then close.
+        emit("save");
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.visible, () => {
+        isVisible.value = props.visible;
+    });
+
+    watch(isVisible, () => {
+        emit("update:visible", isVisible.value);
+    });
+
+    // #endregion Watchers
+</script>
