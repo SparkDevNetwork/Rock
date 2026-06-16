@@ -117,7 +117,7 @@
                 var $thisBlock = $('#<%= upnlSignUpOpportunityAttendeeList.ClientID %>');
 
                 $thisBlock.find('div.photo-icon').lazyload({
-                    container: $('#content-wrapper'),
+                    container: $('#content-wrapper')[0] || window,
                     effect: 'fadeIn'
                 });
 
