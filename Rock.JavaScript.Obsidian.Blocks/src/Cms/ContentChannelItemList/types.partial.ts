@@ -25,7 +25,6 @@ export const enum NavigationUrlKey {
 }
 
 export type GridRowItem = {
-    id: string,
     idKey: string,
     contentChannelId: number,
     title: string,

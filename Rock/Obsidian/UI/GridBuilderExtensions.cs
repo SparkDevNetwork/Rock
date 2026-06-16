@@ -209,6 +209,29 @@ namespace Rock.Obsidian.UI
         }
 
         /// <summary>
+        /// Adds only the Launch Workflow action URL when the current person is
+        /// authorized for the route. Use this on embedded light grids that
+        /// should expose Launch Workflow without inheriting all the other
+        /// standard grid actions that <see cref="WithBlock{T}(GridBuilder{T}, IRockBlockType)"/> adds.
+        /// </summary>
+        /// <typeparam name="T">The type of the source collection that will be used to populate the grid.</typeparam>
+        /// <param name="builder">The <see cref="GridBuilder{T}"/> to add the field to.</param>
+        /// <param name="block">The block that is displaying this grid.</param>
+        /// <returns>A reference to the original <see cref="GridBuilder{T}"/> object that can be used to chain calls.</returns>
+        public static GridBuilder<T> WithLaunchWorkflow<T>( this GridBuilder<T> builder, IRockBlockType block )
+        {
+            builder.AddDefinitionAction( definition =>
+            {
+                if ( IsAuthorizedForRoute( block.RequestContext, "/LaunchWorkflows/{EntitySetId}" ) )
+                {
+                    definition.ActionUrls.TryAdd( GridActionUrlKey.LaunchWorkflow, "/LaunchWorkflows/{EntitySetId}" );
+                }
+            } );
+
+            return builder;
+        }
+
+        /// <summary>
         /// Adds all the standard features when displaying a grid as part of a block.
         /// </summary>
         /// <typeparam name="T">The type of the source collection that will be used to populate the grid.</typeparam>

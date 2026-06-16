@@ -1,0 +1,452 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <ContentStack v-if="isChildItemsStackShown"
+                  title="Child Items"
+                  description="Add content items that belong under this item. Child items can be ordered and scheduled independently and will appear wherever this item is displayed."
+                  headerLocation="top">
+        <Grid :definition="options.childItemsGridDefinition ?? undefined"
+              :data="childGridDataSource"
+              keyField="idKey"
+              :entityTypeGuid="EntityType.ContentChannelItem"
+              light
+              showLaunchWorkflow
+              itemTerm="Child Item"
+              :onAddItem="onOpenAddChild"
+              @selectItem="onChildSelectItem">
+
+            <ReorderColumn v-if="isChildReorderEnabled" @orderChanged="onChildOrderChanged" />
+
+            <TextColumn name="title" title="Title" field="title" width="25%" :filter="textValueFilter" />
+
+            <TextColumn name="channel" title="Channel" field="channel" width="20%" :filter="pickExistingValueFilter" />
+
+            <DateColumn name="startDateTime" title="Start" field="startDateTime" :filter="dateValueFilter" />
+
+            <DateColumn name="expireDateTime" title="End" field="expireDateTime" :filter="dateValueFilter" />
+
+            <LabelColumn name="status" title="Status" field="status" :classSource="statusClassSource" />
+
+            <DeleteColumn :disableConfirmation="true" @click="onChildDeleteClick" />
+        </Grid>
+    </ContentStack>
+
+    <ContentStack v-if="isParentItemsStackShown"
+                  title="Parent Items"
+                  description="Shows where this item is included under other content items. These relationships are managed by the parent items and can't be changed here."
+                  headerLocation="top">
+        <Grid :definition="options.parentItemsGridDefinition ?? undefined"
+              :data="parentGridDataSource"
+              keyField="idKey"
+              :entityTypeGuid="EntityType.ContentChannelItem"
+              light
+              showLaunchWorkflow
+              itemTerm="Parent Item"
+              @selectItem="onParentSelectItem">
+
+            <TextColumn name="title" title="Title" field="title" width="25%" :filter="textValueFilter" />
+
+            <TextColumn name="channel" title="Channel" field="channel" width="20%" :filter="pickExistingValueFilter" />
+
+            <DateColumn name="startDateTime" title="Start" field="startDateTime" :filter="dateValueFilter" />
+
+            <DateColumn name="expireDateTime" title="End" field="expireDateTime" :filter="dateValueFilter" />
+
+            <LabelColumn name="status" title="Status" field="status" :classSource="statusClassSource" />
+        </Grid>
+    </ContentStack>
+
+    <Modal v-model="isAddChildOpen"
+           title="Add Child Item"
+           saveText="Add"
+           @save="onAddChildSave">
+
+        <ButtonGroup v-model="addChildMode"
+                     label="Child Content to Add"
+                     help="Choose whether to create a new content item or include an existing one as a child of this item."
+                     formGroupClasses="d-flex flex-column align-items-start"
+                     :items="addChildModeItems" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-model="addChildChannelValue"
+                              label="Content Channel"
+                              :items="options.addChildChannelOptions ?? []"
+                              rules="required" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-if="isExistingAddMode"
+                              v-model="addChildItemValue"
+                              label="Item"
+                              :items="addChildItemOptions"
+                              enhanceForLongLists
+                              rules="required" />
+            </div>
+        </div>
+    </Modal>
+
+    <Modal v-model="isRemoveChildOpen"
+           title="Remove Child Item">
+        <RockButton btnType="primary" class="btn-block" @click="onRemoveChildItem">Remove Child Item</RockButton>
+        <RockButton btnType="primary" class="btn-block" @click="onDeleteChildItem">Delete Child Item</RockButton>
+    </Modal>
+
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import Grid, { TextColumn, DateColumn, LabelColumn, ReorderColumn, DeleteColumn, textValueFilter, dateValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { useInvokeContentChannelItemDetailBlockAction } from "./utils.partial";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ContentChannelItemBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemDetail/contentChannelItemBag";
+    import { ContentChannelItemDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemDetail/contentChannelItemDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { AddChildMode } from "./types.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<ContentChannelItemBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<ContentChannelItemDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const invoker = useInvokeContentChannelItemDetailBlockAction();
+
+    const errorMessage = ref("");
+
+    const childGridDataSource = ref<GridDataBag | Promise<GridDataBag>>(props.modelValue.bag?.childItemsGridData ?? { rows: [] });
+    const parentGridDataSource = ref<GridDataBag | Promise<GridDataBag>>(props.modelValue.bag?.parentItemsGridData ?? { rows: [] });
+
+    // Seeded once from the bag; the server's ReorderChildItem backstop guards
+    // correctness against any concurrent external change.
+    const isChildReorderEnabled = ref(props.modelValue.bag?.isChildReorderEnabled ?? false);
+
+    // Approved=success, Denied=danger; other statuses fall to the neutral default.
+    const statusClassSource: Record<string, string> = {
+        Approved: "success",
+        Denied: "danger"
+    };
+
+    // Add Child modal state.
+    const isAddChildOpen = ref(false);
+    const addChildMode = ref<string>(AddChildMode.New);
+    const addChildChannelValue = ref("");
+    const addChildItemValue = ref("");
+    const addChildItemOptions = ref<ListItemBag[]>([]);
+
+    // Per-channel cache so revisiting a channel within one modal session avoids
+    // a redundant fetch. Cleared on every modal open since options can change.
+    const addChildItemOptionsCache = new Map<string, ListItemBag[]>();
+
+    const addChildModeItems = [
+        { value: AddChildMode.New, text: "Add New Item" },
+        { value: AddChildMode.Existing, text: "Select Existing" }
+    ];
+
+    // Holds the clicked child's IdKey for the remove/delete confirmation modal.
+    const isRemoveChildOpen = ref(false);
+    const removeChildItemKey = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * Whether the child items stack should be rendered.
+     */
+    const isChildItemsStackShown = computed((): boolean => props.modelValue.bag?.isChildItemsStackShown === true);
+
+    /**
+     * Whether the parent items stack should be rendered.
+     */
+    const isParentItemsStackShown = computed((): boolean => props.modelValue.bag?.isParentItemsStackShown === true);
+
+    /**
+     * The current item's IdKey, sent as the key of every related-items action.
+     */
+    const itemIdKey = computed((): string => props.modelValue.bag?.idKey ?? "");
+
+    /**
+     * Whether the Add Child modal is in "Select Existing" mode.
+     */
+    const isExistingAddMode = computed((): boolean => addChildMode.value === AddChildMode.Existing);
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Drag-reorder handler. Persists immediately, then refetches to reconcile
+     * displayed rows with the server's stored order. Returning false reverts
+     * the client-side row move.
+     */
+    async function onChildOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        errorMessage.value = "";
+
+        const result = await invoker.reorderChildItem(
+            itemIdKey.value,
+            item["idKey"] as string,
+            (beforeItem?.["idKey"] as string | null | undefined) ?? null
+        );
+
+        if (result.isSuccess) {
+            await refreshChildGrid();
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to reorder the child items.";
+        }
+
+        return result.isSuccess;
+    }
+
+    /**
+     * Child grid row click: navigates to the clicked child item.
+     */
+    async function onChildSelectItem(key: string): Promise<void> {
+        await navigateToItem(key);
+    }
+
+    /**
+     * Parent grid row click: navigates to the clicked parent item.
+     */
+    async function onParentSelectItem(key: string): Promise<void> {
+        await navigateToItem(key);
+    }
+
+    /**
+     * Delete column click. Opens the remove/delete confirmation modal instead
+     * of deleting directly — the primary choice is Remove (unlink), with
+     * Delete (hard delete) beside it.
+     */
+    function onChildDeleteClick(key: string): void {
+        removeChildItemKey.value = key;
+        isRemoveChildOpen.value = true;
+    }
+
+    /**
+     * Confirmation choice 1: unlinks the child without deleting the item.
+     */
+    async function onRemoveChildItem(): Promise<void> {
+        errorMessage.value = "";
+
+        const result = await invoker.removeChildAssociation(itemIdKey.value, removeChildItemKey.value);
+
+        if (result.isSuccess) {
+            isRemoveChildOpen.value = false;
+            await refreshChildGrid();
+        }
+        else {
+            // Keep the modal open so Remove can be retried; alert avoids the section
+            // notification rendering behind the open modal.
+            await alert(result.errorMessage ?? "Unknown error while trying to remove the child item.");
+        }
+    }
+
+    /**
+     * Confirmation choice 2: hard-deletes the child item.
+     */
+    async function onDeleteChildItem(): Promise<void> {
+        errorMessage.value = "";
+
+        const result = await invoker.deleteChildItem(itemIdKey.value, removeChildItemKey.value);
+
+        if (result.isSuccess) {
+            isRemoveChildOpen.value = false;
+            await refreshChildGrid();
+
+            // Hard delete cleans both association sides, so a parent relationship
+            // to this item is also removed.
+            await refreshParentGrid();
+        }
+        else {
+            // Keep the modal open so Remove remains available when the delete is
+            // blocked (not authorized or CanDelete failed).
+            await alert(result.errorMessage ?? "Unknown error while trying to delete the child item.");
+        }
+    }
+
+    /**
+     * Opens the Add Child modal with a fresh state.
+     */
+    function onOpenAddChild(): void {
+        addChildMode.value = AddChildMode.New;
+        addChildChannelValue.value = "";
+        addChildItemValue.value = "";
+        addChildItemOptions.value = [];
+        addChildItemOptionsCache.clear();
+        isAddChildOpen.value = true;
+    }
+
+    /**
+     * Add Child modal save. Existing mode persists the association and refetches;
+     * New mode navigates to a fresh Add page whose URL the server assembles.
+     */
+    async function onAddChildSave(): Promise<void> {
+        errorMessage.value = "";
+
+        if (isExistingAddMode.value) {
+            const result = await invoker.addExistingChildItem(itemIdKey.value, addChildItemValue.value);
+
+            isAddChildOpen.value = false;
+
+            if (result.isSuccess) {
+                await refreshChildGrid();
+            }
+            else {
+                errorMessage.value = result.errorMessage ?? "Unknown error while trying to add the child item.";
+            }
+
+            return;
+        }
+
+        const result = await invoker.navigateToNewChildItem(itemIdKey.value, addChildChannelValue.value);
+
+        if (result.isSuccess && result.data) {
+            window.location.href = result.data;
+        }
+        else {
+            isAddChildOpen.value = false;
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to add a new child item.";
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    let childGridFetchToken = 0;
+    /**
+     * Refetches the child grid rows, latest-wins (see the token comment above).
+     */
+    async function refreshChildGrid(): Promise<void> {
+        const token = ++childGridFetchToken;
+
+        const result = await invoker.getChildItemsGridData(itemIdKey.value);
+
+        if (token !== childGridFetchToken) {
+            return;
+        }
+
+        if (result.isSuccess && result.data) {
+            childGridDataSource.value = result.data;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to load the child items.";
+        }
+    }
+
+    let parentGridFetchToken = 0;
+    /**
+     * Refetches the read-only parent grid rows, latest-wins.
+     */
+    async function refreshParentGrid(): Promise<void> {
+        const token = ++parentGridFetchToken;
+
+        const result = await invoker.getParentItemsGridData(itemIdKey.value);
+
+        if (token !== parentGridFetchToken) {
+            return;
+        }
+
+        if (result.isSuccess && result.data) {
+            parentGridDataSource.value = result.data;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to load the parent items.";
+        }
+    }
+
+    /**
+     * Resolves the drill navigation URL for a clicked row via the server and
+     * navigates to it (IdKey conversion and Hierarchy trim stay server-side).
+     */
+    async function navigateToItem(selectedItemKey: string): Promise<void> {
+        errorMessage.value = "";
+
+        const result = await invoker.navigateToRelatedItem(itemIdKey.value, selectedItemKey);
+
+        if (result.isSuccess && result.data) {
+            window.location.href = result.data;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to open the selected item.";
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // Refetches eligible-item options when the channel or mode changes in Existing
+    // mode. Clears the stale selection first and serves from the per-session cache
+    // when available. The post-await guard drops stale responses when the channel
+    // changed again while the request was in flight. Failures use alert so an
+    // error never reads as an empty channel list.
+    watch([addChildMode, addChildChannelValue], async () => {
+        addChildItemValue.value = "";
+        addChildItemOptions.value = [];
+
+        if (!isExistingAddMode.value || !addChildChannelValue.value) {
+            return;
+        }
+
+        const requestedChannel = addChildChannelValue.value;
+        const cachedOptions = addChildItemOptionsCache.get(requestedChannel);
+
+        if (cachedOptions) {
+            addChildItemOptions.value = cachedOptions;
+            return;
+        }
+
+        const result = await invoker.getAddChildItemOptions(itemIdKey.value, requestedChannel);
+
+        if (requestedChannel !== addChildChannelValue.value) {
+            return;
+        }
+
+        if (result.isSuccess && result.data) {
+            addChildItemOptionsCache.set(requestedChannel, result.data);
+            addChildItemOptions.value = result.data;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to load the eligible items.");
+        }
+    });
+
+    // Re-seed grid state when the server hands down a fresh bag (re-download swap
+    // or edit re-entry). Tracked-field edits re-spread the bag but keep these
+    // references, so these fire only on a real bag swap.
+    watch(() => props.modelValue.bag?.childItemsGridData, () => {
+        childGridDataSource.value = props.modelValue.bag?.childItemsGridData ?? { rows: [] };
+    });
+
+    watch(() => props.modelValue.bag?.parentItemsGridData, () => {
+        parentGridDataSource.value = props.modelValue.bag?.parentItemsGridData ?? { rows: [] };
+    });
+
+    watch(() => props.modelValue.bag?.isChildReorderEnabled, () => {
+        isChildReorderEnabled.value = props.modelValue.bag?.isChildReorderEnabled ?? false;
+    });
+
+    // #endregion Watchers
+</script>

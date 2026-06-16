@@ -273,7 +273,7 @@ namespace Rock.Blocks.Event
                 {
                     var qryParams = new Dictionary<string, string>
                     {
-                        { PageParameterKey.ContentItemId, contentItem.Id.ToString() }
+                        { PageParameterKey.ContentItemId, contentItem.IdKey }
                     };
 
                     var contentItemUrl = this.GetLinkedPageUrl( AttributeKey.ContentItemDetailPage, qryParams );

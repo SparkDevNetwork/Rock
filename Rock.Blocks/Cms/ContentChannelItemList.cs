@@ -418,7 +418,6 @@ namespace Rock.Blocks.Cms
 
             var builder = new GridBuilder<ContentChannelItem>()
                 .WithBlock( this )
-                .AddTextField( "id", a => a.Id.ToString() )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddField( "contentChannelId", a => a.ContentChannelId )
                 .AddField( "order", a => a.Order )
@@ -769,7 +768,7 @@ WHERE em.[Key] = {SqlParamKey.EntityMetadataKey}
         {
             try
             {
-                var contentChannelItemId = key.AsInteger();
+                var contentChannelItemId = IdHasher.Instance.GetId( key ) ?? 0;
                 var contentChannelItemService = new ContentChannelItemService( RockContext );
                 contentChannelItemService.UploadToContentLibrary(
                     new ContentLibraryItemUploadOptions
@@ -797,7 +796,7 @@ WHERE em.[Key] = {SqlParamKey.EntityMetadataKey}
         {
             try
             {
-                var contentChannelItemId = key.AsInteger();
+                var contentChannelItemId = IdHasher.Instance.GetId( key ) ?? 0;
                 var contentChannelItemService = new ContentChannelItemService( RockContext );
                 contentChannelItemService.UploadToContentLibrary(
                     new ContentLibraryItemUploadOptions
@@ -824,7 +823,7 @@ WHERE em.[Key] = {SqlParamKey.EntityMetadataKey}
         [BlockAction]
         public BlockActionResult ReDownloadContentLibraryItem( string key )
         {
-            var contentChannelItemId = key.AsInteger();
+            var contentChannelItemId = IdHasher.Instance.GetId( key ) ?? 0;
             var contentChannelItemService = new ContentChannelItemService( RockContext );
 
             var contentLibraryItemGuid = contentChannelItemService.AsNoFilter().AsNoTracking().Where( i => i.Id == contentChannelItemId ).Select( i => i.ContentLibrarySourceIdentifier ).FirstOrDefault();
