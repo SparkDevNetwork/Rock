@@ -276,6 +276,18 @@ namespace Rock.Model
         public bool IsActive { get; set; } = true;
 
         /// <summary>
+        /// Gets or sets a value indicating whether the Rock Cleanup job should populate
+        /// per-component daily aggregate rows in <see cref="InteractionComponentDailyCount"/>
+        /// for components belonging to this channel.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if daily component counts should be aggregated for this channel; otherwise <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public bool EnableComponentDailyCounts { get; set; } = false;
+
+        /// <summary>
         /// Gets or sets the interaction custom 1 label.
         /// </summary>
         /// <value>
