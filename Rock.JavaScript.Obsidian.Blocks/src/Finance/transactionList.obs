@@ -29,6 +29,13 @@
 
         <PersonColumn name="person" title="Person" field="person" />
         <DateTimeColumn name="transactionDateTime" title="Date" field="transactionDateTime" />
+
+        <Column name="daysSinceLastTransaction" title="Last Transaction" field="daysSinceLastTransaction">
+            <template #format="{ row }">
+                <span v-if="row.daysSinceLastTransaction != null">{{ row.daysSinceLastTransaction }}d</span>
+            </template>
+        </Column>
+
         <CurrencyColumn name="totalAmount" title="Amount" field="totalAmount" />
         <TextColumn name="foreignCurrency" title="Foreign Currency" field="foreignCurrency" />
         <TextColumn name="currencyType" title="Currency Type" field="currencyType" />
@@ -58,31 +65,36 @@
         <TextColumn name="status" title="Status" field="status" :hideOnScreen="true" />
         <DateTimeColumn name="settledDate" title="Settled Date" field="settledDate" :hideOnScreen="true" />
         <TextColumn name="processorBatchId" title="Processor Batch Id" field="processorBatchId" :hideOnScreen="true" />
+
+        <AttributeColumns :attributes="attributeFields" />
     </Grid>
 </template>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { Column, CurrencyColumn, DateTimeColumn, NumberColumn, PersonColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, Column, CurrencyColumn, DateTimeColumn, NumberColumn, PersonColumn, TextColumn } from "@Obsidian/Controls/grid";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { TransactionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/TransactionList/transactionListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
     import { reactive, ref } from "vue";
     import { ViewMode } from "./TransactionList/types.partial";
     import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
 
     const config = useConfigurationValues<ListBlockBox<TransactionListOptionsBag>>();
+    console.log("Configuration values:", config);
     const invokeBlockAction = useInvokeBlockAction();
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
-    const viewMode = ref<string>(ViewMode.Transactions);
+    const viewMode = ref<string>(config.options?.viewMode ?? ViewMode.Transactions);
+    const attributeFields = ref<AttributeFieldDefinitionBag[]>(config.gridDefinition?.attributeFields ?? []);
 
     // #endregion Values
 
@@ -121,7 +133,13 @@
 
         viewMode.value = mode;
 
-        await invokeBlockAction("SetViewMode", { viewMode: mode });
+        // The server returns the attribute fields for the new mode; updating this reactive ref
+        // re-expands the AttributeColumns placeholder so the columns swap without a page refresh.
+        const result = await invokeBlockAction<AttributeFieldDefinitionBag[]>("SetViewMode", { viewMode: mode });
+
+        if (result.isSuccess && result.data) {
+            attributeFields.value = result.data;
+        }
 
         gridDataSource.value = loadGridData();
     }

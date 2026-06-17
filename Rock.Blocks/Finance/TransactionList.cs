@@ -266,6 +266,16 @@ namespace Rock.Blocks.Finance
         /// </summary>
         private bool _contextInitialized;
 
+        /// <summary>
+        /// The FinancialTransaction attributes configured to show on the grid (Transactions view mode).
+        /// </summary>
+        private readonly Lazy<List<AttributeCache>> _transactionGridAttributes = new Lazy<List<AttributeCache>>( () => BuildGridAttributes( false ) );
+
+        /// <summary>
+        /// The FinancialTransactionDetail attributes configured to show on the grid (Accounts view mode).
+        /// </summary>
+        private readonly Lazy<List<AttributeCache>> _accountGridAttributes = new Lazy<List<AttributeCache>>( () => BuildGridAttributes( true ) );
+
         #endregion Fields
 
         #region Properties
@@ -328,6 +338,14 @@ namespace Rock.Blocks.Finance
         /// (the user's preference, only honored when the toggle is available).
         /// </summary>
         private bool ShowImages => IsImagesToggleVisible && GetBlockPersonPreferences().GetValue( PreferenceKey.ShowImages ).AsBoolean();
+
+        /// <summary>
+        /// Gets the grid attributes for the current view mode: FinancialTransactionDetail attributes
+        /// in Accounts mode, otherwise FinancialTransaction attributes.
+        /// </summary>
+        private Lazy<List<AttributeCache>> GridAttributes => CurrentViewMode == ViewMode.Accounts
+            ? _accountGridAttributes
+            : _transactionGridAttributes;
 
         #endregion Properties
 
@@ -503,6 +521,9 @@ namespace Rock.Blocks.Finance
             return new FinancialTransactionService( rockContext ).Queryable().AsNoTracking()
                 .Select( t => new TransactionListRow
                 {
+                    // Referenced (not constructed) so it is materialized for GridAttributeLoader.
+                    // Only its scalars/attributes are read later — never its navigations.
+                    Transaction = t,
                     Id = t.Id,
                     TransactionId = t.Id,
                     Person = t.AuthorizedPersonAlias.Person,
@@ -540,6 +561,9 @@ namespace Rock.Blocks.Finance
             return new FinancialTransactionDetailService( rockContext ).Queryable().AsNoTracking()
                 .Select( d => new TransactionListRow
                 {
+                    // Referenced (not constructed) so it is materialized for GridAttributeLoader.
+                    // Only its scalars/attributes are read later — never its navigations.
+                    TransactionDetail = d,
                     Id = d.Id,
                     TransactionId = d.TransactionId,
                     Person = d.Transaction.AuthorizedPersonAlias.Person,
@@ -584,16 +608,74 @@ namespace Rock.Blocks.Finance
         }
 
         /// <inheritdoc/>
+        protected override List<TransactionListRow> GetListItems( IQueryable<TransactionListRow> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+
+            // Load the grid attribute values against the entity for the current view mode.
+            if ( CurrentViewMode == ViewMode.Accounts )
+            {
+                GridAttributeLoader.LoadFor( items, i => i.TransactionDetail, GridAttributes.Value, RockContext );
+            }
+            else
+            {
+                GridAttributeLoader.LoadFor( items, i => i.Transaction, GridAttributes.Value, RockContext );
+            }
+
+            BuildDaysSinceLastTransaction( items );
+
+            return items;
+        }
+
+        /// <summary>
+        /// Calculates the number of days between each transaction and the chronologically adjacent
+        /// transaction in the ordered result set. Computed in memory so the query does not pay the
+        /// cost of a windowing calculation. The adjacent transaction may be the next or previous row
+        /// depending on the active sort.
+        /// </summary>
+        /// <param name="items">The materialized rows, in their displayed order.</param>
+        private void BuildDaysSinceLastTransaction( List<TransactionListRow> items )
+        {
+            if ( !GetAttributeValue( AttributeKey.ShowDaysSinceLastTransaction ).AsBoolean() )
+            {
+                return;
+            }
+
+            for ( var index = 0; index < items.Count; index++ )
+            {
+                var currentDate = items[index].TransactionDateTime;
+                if ( !currentDate.HasValue )
+                {
+                    continue;
+                }
+
+                var nextRow = index + 1 < items.Count ? items[index + 1] : null;
+                var prevRow = index - 1 >= 0 ? items[index - 1] : null;
+
+                var nextDate = nextRow?.TransactionDateTime;
+                var prevDate = prevRow?.TransactionDateTime;
+
+                if ( nextDate.HasValue && nextDate.Value < currentDate.Value && items[index].Id != nextRow.Id )
+                {
+                    items[index].DaysSinceLastTransaction = ( int ) Math.Round( ( currentDate.Value - nextDate.Value ).TotalDays, 0 );
+                }
+                else if ( prevDate.HasValue && prevDate.Value < currentDate.Value && items[index].Id != prevRow.Id )
+                {
+                    items[index].DaysSinceLastTransaction = ( int ) Math.Round( ( currentDate.Value - prevDate.Value ).TotalDays, 0 );
+                }
+            }
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<TransactionListRow> GetGridBuilder()
         {
-            // TODO: days-since-last-transaction (needs an in-memory adjacency pass) and the
-            // dynamic attribute columns (need the entity for GridAttributeLoader) are not yet added.
-            return new GridBuilder<TransactionListRow>()
+            var gridBuilder = new GridBuilder<TransactionListRow>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => IdHasher.Instance.GetHash( a.Id ) )
                 .AddTextField( "transactionIdKey", a => IdHasher.Instance.GetHash( a.TransactionId ) )
                 .AddPersonField( "person", a => a.Person )
                 .AddDateTimeField( "transactionDateTime", a => a.TransactionDateTime )
+                .AddField( "daysSinceLastTransaction", a => a.DaysSinceLastTransaction )
                 .AddField( "totalAmount", a => a.TotalAmount )
                 .AddTextField( "currencyType", a => GetCurrencyTypeText( a ) )
                 .AddTextField( "foreignCurrency", a => GetForeignCurrencyText( a ) )
@@ -607,6 +689,18 @@ namespace Rock.Blocks.Finance
                 .AddTextField( "status", a => a.Status )
                 .AddDateTimeField( "settledDate", a => a.SettledDate )
                 .AddTextField( "processorBatchId", a => a.SettledGroupId );
+
+            // Attribute columns target the entity that matches the current view mode.
+            if ( CurrentViewMode == ViewMode.Accounts )
+            {
+                gridBuilder.AddAttributeFieldsFrom( a => a.TransactionDetail, GridAttributes.Value );
+            }
+            else
+            {
+                gridBuilder.AddAttributeFieldsFrom( a => a.Transaction, GridAttributes.Value );
+            }
+
+            return gridBuilder;
         }
 
         /// <summary>
@@ -692,6 +786,25 @@ namespace Rock.Blocks.Finance
             return FileUrlHelper.GetImageUrl( firstImageBinaryFileId.Value, options );
         }
 
+        /// <summary>
+        /// Builds the list of grid attributes for the given view mode's entity type.
+        /// </summary>
+        /// <param name="isAccountsView"><c>true</c> for FinancialTransactionDetail attributes; otherwise FinancialTransaction.</param>
+        /// <returns>The ordered grid attributes.</returns>
+        private static List<AttributeCache> BuildGridAttributes( bool isAccountsView )
+        {
+            var entityTypeId = isAccountsView
+                ? EntityTypeCache.Get<FinancialTransactionDetail>( false )?.Id
+                : EntityTypeCache.Get<FinancialTransaction>( false )?.Id;
+
+            if ( entityTypeId.HasValue )
+            {
+                return AttributeCache.GetOrderedGridAttributes( entityTypeId.Value, string.Empty, string.Empty );
+            }
+
+            return new List<AttributeCache>();
+        }
+
         #endregion Methods
 
         #region Block Actions
@@ -714,7 +827,9 @@ namespace Rock.Blocks.Finance
             preferences.SetValue( PreferenceKey.ViewMode, viewMode );
             preferences.Save();
 
-            return ActionOk();
+            var definition = GetGridBuilder().BuildDefinition();
+
+            return ActionOk( definition.AttributeFields );
         }
 
         // TODO Step 5: Delete, Reassign, and MoveToBatch block actions (with their request bags).
@@ -730,10 +845,28 @@ namespace Rock.Blocks.Finance
         public class TransactionListRow
         {
             /// <summary>
+            /// The financial transaction, carried only so its attributes can be loaded
+            /// (Transactions view mode). Do not read its navigation properties in memory.
+            /// </summary>
+            public FinancialTransaction Transaction { get; set; }
+
+            /// <summary>
+            /// The financial transaction detail, carried only so its attributes can be loaded
+            /// (Accounts view mode). Do not read its navigation properties in memory.
+            /// </summary>
+            public FinancialTransactionDetail TransactionDetail { get; set; }
+
+            /// <summary>
             /// The row's own entity id: the transaction id in Transactions mode, or the
             /// transaction detail id in Accounts mode. Used as the grid key.
             /// </summary>
             public int Id { get; set; }
+
+            /// <summary>
+            /// The number of days between this transaction and the chronologically adjacent
+            /// transaction, when that column is enabled.
+            /// </summary>
+            public int? DaysSinceLastTransaction { get; set; }
 
             /// <summary>
             /// The parent transaction's id (same as <see cref="Id"/> in Transactions mode).
