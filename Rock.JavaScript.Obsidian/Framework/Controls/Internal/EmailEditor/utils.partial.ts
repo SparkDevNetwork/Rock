@@ -121,6 +121,63 @@ export const RockRuntimeWrapperElementCssClass = "rock-runtime-wrapper-element" 
 
 export const SmallEmptyClass = `${RockRuntimeClassCssClassPrefix}-small` as const;
 
+/**
+ * Decodes browser-encoded entities inside every Lava block (`{% %}`, `{{ }}`,
+ * and `{[ ]}` shortcodes).
+ *
+ * Browsers automatically encode characters like `&`, `>` and `<` when HTML is
+ * serialized from the editor. That breaks Lava such as:
+ *
+ * `{% if Total > Threshold %}`            -> `{% if Total &gt; Threshold %}`
+ * `{% assign isBig = a > b %}`            -> `{% assign isBig = a &gt; b %}`
+ * `where:'IsActive == true && Id == 1'`   -> `where:'IsActive == true &amp;&amp; Id == 1'`
+ *
+ * Used both when serializing the final email HTML and when loading a
+ * component's markup back into the design-time code editor, so the editor
+ * shows the same Lava that will be sent.
+ *
+ * Scope is the entire contents of each Lava block; all other HTML is left
+ * untouched. Decoding is delimiter-scoped, so there is no ambiguity about
+ * whether a given `>` is Lava or markup — only characters inside `{% %}`,
+ * `{{ }}`, or `{[ ]}` are decoded.
+ */
+export function decodeLavaEncodedEntities(html: string): string {
+    // Matches a full {% ... %} command/tag, a {{ ... }} output block, or a
+    // {[ ... ]} shortcode tag. Lazy matching keeps each match to a single
+    // delimiter pair, so the content a block wraps is never decoded.
+    const lavaBlockRegex = /{%[\s\S]*?%}|{{[\s\S]*?}}|{\[[\s\S]*?\]}/g;
+
+    // A textarea decodes character references as RCDATA: entities like `&gt;`
+    // become `>`, but tag-like text (e.g. `<div>`) is preserved verbatim
+    // rather than parsed. A <template> would instead parse `<div>` as an
+    // element and drop it, mangling Lava that embeds HTML strings.
+    const decoder = document.createElement("textarea");
+
+    const decodeEntities = (value: string): string => {
+        if (!value.includes("&")) {
+            return value;
+        }
+
+        // Read (never assign) `.value`: assigning it sets the textarea's dirty
+        // value flag, which permanently decouples `.value` from `.innerHTML`,
+        // so every later block would decode to "". Reset via `.innerHTML`.
+        decoder.innerHTML = value;
+        const decoded = decoder.value;
+        decoder.innerHTML = ""; // Reset to avoid retaining references.
+
+        return decoded;
+    };
+
+    return html.replace(lavaBlockRegex, (block) => {
+        // Skip blocks with no entities to decode.
+        if (!block.includes("&")) {
+            return block;
+        }
+
+        return decodeEntities(block);
+    });
+}
+
 export function getComponentCssClass(componentTypeName: ComponentTypeName): string {
     return `component-${componentTypeName}`;
 }
