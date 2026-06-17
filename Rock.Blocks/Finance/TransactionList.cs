@@ -806,7 +806,7 @@ namespace Rock.Blocks.Finance
         private List<AttributeFieldDefinitionBag> GetAttributeOptions( bool isAccountsMode )
         {
             var textFieldTypeGuid = SystemGuid.FieldType.TEXT.AsGuid();
-            var attributes = BuildGridAttributes( isAccountsMode );
+            var attributes = isAccountsMode ? _accountGridAttributes.Value : _transactionGridAttributes.Value;
             var fields = new List<AttributeFieldDefinitionBag>();
 
             foreach ( var attribute in attributes )
