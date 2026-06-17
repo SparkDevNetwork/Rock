@@ -484,24 +484,65 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         protected override IQueryable<TransactionListRow> GetListQueryable( RockContext rockContext )
         {
-            var transactionQuery = new FinancialTransactionService( RockContext ).Queryable().AsNoTracking();
+            InitializeContextEntities();
 
-            var qry = transactionQuery.Select( t => new TransactionListRow
-            {
-                Id = t.Id,
-                Person = t.AuthorizedPersonAlias.Person,
-                TransactionDateTime = t.TransactionDateTime,
-                TotalAmount = t.TransactionDetails.Sum( d => ( decimal? ) d.Amount )
-            } );
+            // The two view modes build rows from different entities: one row per transaction,
+            // or one row per transaction detail (account line).
+            return CurrentViewMode == ViewMode.Accounts
+                ? GetAccountsModeQueryable( rockContext )
+                : GetTransactionsModeQueryable( rockContext );
+        }
 
-            return qry;
+        /// <summary>
+        /// Builds the rows for "Transactions" view mode (one row per <see cref="FinancialTransaction"/>).
+        /// </summary>
+        /// <param name="rockContext">The database context.</param>
+        /// <returns>A queryable of transaction rows.</returns>
+        private IQueryable<TransactionListRow> GetTransactionsModeQueryable( RockContext rockContext )
+        {
+            return new FinancialTransactionService( rockContext ).Queryable().AsNoTracking()
+                .Select( t => new TransactionListRow
+                {
+                    Id = t.Id,
+                    Person = t.AuthorizedPersonAlias.Person,
+                    TransactionDateTime = t.TransactionDateTime,
+                    FutureProcessingDateTime = t.FutureProcessingDateTime,
+                    TotalAmount = t.TransactionDetails.Sum( d => ( decimal? ) d.Amount )
+                } );
+        }
+
+        /// <summary>
+        /// Builds the rows for "Accounts" view mode (one row per <see cref="FinancialTransactionDetail"/>).
+        /// </summary>
+        /// <param name="rockContext">The database context.</param>
+        /// <returns>A queryable of transaction detail rows.</returns>
+        private IQueryable<TransactionListRow> GetAccountsModeQueryable( RockContext rockContext )
+        {
+            return new FinancialTransactionDetailService( rockContext ).Queryable().AsNoTracking()
+                .Select( d => new TransactionListRow
+                {
+                    Id = d.Id,
+                    Person = d.Transaction.AuthorizedPersonAlias.Person,
+                    TransactionDateTime = d.Transaction.TransactionDateTime,
+                    FutureProcessingDateTime = d.Transaction.FutureProcessingDateTime,
+                    TotalAmount = d.Amount
+                } );
         }
 
         /// <inheritdoc/>
         protected override IQueryable<TransactionListRow> GetOrderedListQueryable( IQueryable<TransactionListRow> queryable, RockContext rockContext )
         {
-            // TODO Step 3: apply the default and custom (person name) ordering.
-            return queryable;
+            // In a batch context, default to the natural (Id) order; otherwise show future/pending
+            // charges first, then the most recent transactions, with newest Id breaking ties.
+            if ( _batch != null )
+            {
+                return queryable.OrderBy( r => r.Id );
+            }
+
+            return queryable
+                .OrderByDescending( r => r.FutureProcessingDateTime )
+                .ThenByDescending( r => r.TransactionDateTime )
+                .ThenByDescending( r => r.Id );
         }
 
         /// <inheritdoc/>
@@ -520,6 +561,27 @@ namespace Rock.Blocks.Finance
 
         #region Block Actions
 
+        /// <summary>
+        /// Saves the selected view mode ("Transactions" or "Accounts") as a block person preference.
+        /// The grid reloads its data afterward, which re-reads this preference to build the rows.
+        /// </summary>
+        /// <param name="viewMode">The view mode to save.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult SetViewMode( string viewMode )
+        {
+            if ( viewMode != ViewMode.Transactions && viewMode != ViewMode.Accounts )
+            {
+                return ActionBadRequest( "Invalid view mode." );
+            }
+
+            var preferences = GetBlockPersonPreferences();
+            preferences.SetValue( PreferenceKey.ViewMode, viewMode );
+            preferences.Save();
+
+            return ActionOk();
+        }
+
         // TODO Step 5: Delete, Reassign, and MoveToBatch block actions (with their request bags).
 
         #endregion Block Actions
@@ -537,6 +599,8 @@ namespace Rock.Blocks.Finance
             public Person Person { get; set; }
 
             public DateTime? TransactionDateTime { get; set; }
+
+            public DateTime? FutureProcessingDateTime { get; set; }
 
             public decimal? TotalAmount { get; set; }
         }

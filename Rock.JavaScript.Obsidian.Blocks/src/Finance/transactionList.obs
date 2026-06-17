@@ -7,22 +7,42 @@
           :entityTypeGuid="EntityType.FinancialTransaction"
           stickyHeader
           liveUpdates>
-        <!-- TODO Step 6: columns (select, person, date, last transaction, amount,
-             foreign currency, currency type, transaction code, foreign key, batch id,
-             accounts, comments, image, attributes). -->
-    </Grid>
 
-    <!-- TODO Step 4/5: GridSettingsModal (filters), ReassignModal, Move to Batch action. -->
+        <template #gridHeaderPrepend>
+            <div class="d-flex justify-content-end px-3 py-2">
+                <div class="btn-group">
+                    <RockButton :btnType="viewMode === ViewMode.Transactions ? BtnType.Primary : BtnType.Default"
+                                :btnSize="BtnSize.Small"
+                                @click="onViewModeClick(ViewMode.Transactions)">
+                        Transactions
+                    </RockButton>
+                    <RockButton :btnType="viewMode === ViewMode.Accounts ? BtnType.Primary : BtnType.Default"
+                                :btnSize="BtnSize.Small"
+                                @click="onViewModeClick(ViewMode.Accounts)">
+                        Accounts
+                    </RockButton>
+                </div>
+            </div>
+        </template>
+
+        <PersonColumn name="person" title="Person" field="person" />
+        <DateColumn name="transactionDateTime" title="Date" field="transactionDateTime" />
+        <NumberColumn name="totalAmount" title="Amount" field="totalAmount" />
+    </Grid>
 </template>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid from "@Obsidian/Controls/grid";
+    import Grid, { DateColumn, NumberColumn, PersonColumn } from "@Obsidian/Controls/grid";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { TransactionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/TransactionList/transactionListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { reactive, ref } from "vue";
+    import { ViewMode } from "./TransactionList/types.partial";
 
     const config = useConfigurationValues<ListBlockBox<TransactionListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -31,6 +51,7 @@
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
+    const viewMode = ref<string>(ViewMode.Transactions);
 
     // #endregion Values
 
@@ -54,9 +75,27 @@
 
     // #endregion Functions
 
-    // TODO Step 4: grid settings (filters) + person preferences.
-    // TODO Step 5: row action handlers (select, add, delete, reassign, move to batch).
-    // TODO Step 6: view-mode toggle (Transactions/Accounts) and show-images toggle.
+    // #region Event Handlers
+
+    /**
+     * Called when one of the view mode toggle buttons is clicked. Saves the selected
+     * view mode on the server, then reloads the grid data for the new mode.
+     *
+     * @param mode The view mode that was selected.
+     */
+    async function onViewModeClick(mode: string): Promise<void> {
+        if (viewMode.value === mode) {
+            return;
+        }
+
+        viewMode.value = mode;
+
+        await invokeBlockAction("SetViewMode", { viewMode: mode });
+
+        gridDataSource.value = loadGridData();
+    }
+
+    // #endregion Event Handlers
 
     gridDataSource.value = loadGridData();
 </script>
