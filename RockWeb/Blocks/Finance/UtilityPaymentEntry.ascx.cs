@@ -1994,16 +1994,11 @@ $('#{btnHostedPaymentInfoNext.ClientID}, #{btnSavedAccountPaymentInfoNext.Client
                 var transactionEntityType = EntityTypeCache.Get( transactionEntityTypeGuid.Value );
                 if ( transactionEntityType != null )
                 {
-                    var entityId = this.PageParameter( this.GetAttributeValue( AttributeKey.EntityIdParam ) ).AsIntegerOrNull();
-                    if ( entityId.HasValue )
+                    var entityKey = this.PageParameter( this.GetAttributeValue( AttributeKey.EntityIdParam ) );
+                    if ( entityKey.IsNotNullOrWhiteSpace() )
                     {
-                        var dbContext = Reflection.GetDbContextForEntityType( transactionEntityType.GetEntityType() );
-                        IService serviceInstance = Reflection.GetServiceForEntityType( transactionEntityType.GetEntityType(), dbContext );
-                        if ( serviceInstance != null )
-                        {
-                            System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
-                            transactionEntity = getMethod.Invoke( serviceInstance, new object[] { entityId.Value } ) as Rock.Data.IEntity;
-                        }
+                        // Resolve as an Id, IdKey, or Guid; integer ids stay accepted so existing links keep working.
+                        transactionEntity = Reflection.GetIEntityForEntityType( transactionEntityType.GetEntityType(), entityKey );
                     }
                 }
             }

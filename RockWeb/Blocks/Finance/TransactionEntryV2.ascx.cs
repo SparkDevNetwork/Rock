@@ -3452,10 +3452,11 @@ mission. We are so grateful for your commitment.</p>
                 var transactionEntityType = EntityTypeCache.Get( transactionEntityTypeGuid.Value );
                 if ( transactionEntityType != null )
                 {
-                    var entityId = this.PageParameter( this.GetAttributeValue( AttributeKey.EntityIdParam ) ).AsIntegerOrNull();
-                    if ( entityId.HasValue )
+                    var entityKey = this.PageParameter( this.GetAttributeValue( AttributeKey.EntityIdParam ) );
+                    if ( entityKey.IsNotNullOrWhiteSpace() )
                     {
-                        transactionEntity = Reflection.GetIEntityForEntityType( transactionEntityType.GetEntityType(), entityId.Value );
+                        // Resolve as an Id, IdKey, or Guid; integer ids stay accepted so existing links keep working.
+                        transactionEntity = Reflection.GetIEntityForEntityType( transactionEntityType.GetEntityType(), entityKey );
                     }
                 }
             }
