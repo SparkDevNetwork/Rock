@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -49,7 +49,7 @@ namespace Rock.Model
         /// this daily aggregate row belongs to. First column of the composite primary key.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> referencing <see cref="InteractionComponent.Id"/>.
+        /// The <c>Id</c> of the related <see cref="Rock.Model.InteractionComponent"/>
         /// </value>
         [Key]
         [Column( Order = 0 )]
