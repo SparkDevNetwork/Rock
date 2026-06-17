@@ -5,9 +5,10 @@
           keyField="idKey"
           itemTerm="Transaction"
           :entityTypeGuid="EntityType.FinancialTransaction"
+          :customActions="customActions"
           liveUpdates>
 
-        <template #gridHeaderPrepend>
+        <template #gridHeaderBadges>
             <div class="d-flex justify-content-end px-3 py-2">
                 <div class="btn-group">
                     <RockButton :btnType="(pendingViewMode ?? viewMode) === ViewMode.Transactions ? BtnType.Primary : BtnType.Default"
@@ -28,7 +29,7 @@
 
         <TextColumn name="transactionIdKey" field="transactionIdKey" :hideOnScreen="true" />
 
-        <PersonColumn name="person" title="Person" field="person" />
+        <PersonColumn name="person" title="Person" field="person" width="200px" />
         <DateTimeColumn name="transactionDateTime" title="Date" field="transactionDateTime" />
 
         <Column name="daysSinceLastTransaction" title="Last Transaction" field="daysSinceLastTransaction">
@@ -57,9 +58,9 @@
 
         <TextColumn name="summary" title="Comments" field="summary" />
 
-        <Column name="image" title="Image" field="image">
+        <Column name="image" title="Image" field="image" v-if="showImages" :width="imageColumnWidth">
             <template #format="{ row }">
-                <img v-if="row.image" :src="row.image" />
+                <img v-if="row.image" :src="row.image" :max-height="`${imageHeight}px`" width="auto" @load="onImageLoad" />
             </template>
         </Column>
 
@@ -72,9 +73,10 @@
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { AttributeColumns, Column, CurrencyColumn, DateTimeColumn, NumberColumn, PersonColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import { GridAction } from "@Obsidian/Types/Controls/grid";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
@@ -83,12 +85,13 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
     import { computed, reactive, ref } from "vue";
-    import { ViewMode } from "./TransactionList/types.partial";
+    import { PreferenceKey, ViewMode } from "./TransactionList/types.partial";
     import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
 
     const config = useConfigurationValues<ListBlockBox<TransactionListOptionsBag>>();
     console.log("Configuration values:", config);
     const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
@@ -96,15 +99,37 @@
     let gridData: GridDataBag | undefined;
     const viewMode = ref<string>(config.options?.viewMode ?? ViewMode.Transactions);
     const pendingViewMode = ref<string | null>(null);
+    const showImages = ref<boolean>(preferences.getValue(PreferenceKey.ShowImages) === "true");
+    const imageHeight = config.options?.imageHeight ?? 200;
+
+    // The widest rendered image measured so far, in pixels. The column grows to fit the widest
+    // image as each one loads. Reset whenever the grid data reloads.
+    const maxImageWidth = ref<number>(0);
 
     // #endregion Values
 
     // #region Computed Values
 
+    const imageColumnWidth = computed<string | undefined>(() => {
+        return maxImageWidth.value > 0 ? `${maxImageWidth.value}px` : undefined;
+    });
+
     const attributeFields = computed<AttributeFieldDefinitionBag[]>(() => {
         return viewMode.value === ViewMode.Accounts
             ? (config.options?.transactionDetailAttributeOptions ?? [])
             : (config.options?.transactionAttributeOptions ?? []);
+    });
+
+    const customActions = computed((): GridAction[] => {
+        if (!config.options?.isImagesToggleVisible) {
+            return [];
+        }
+
+        return [{
+            title: showImages.value ? "Hide Images" : "Show Images",
+            iconCssClass: showImages.value ? "ti ti-photo-off" : "ti ti-photo",
+            handler: onToggleImages
+        }];
     });
 
     // #endregion Computed Values
@@ -119,12 +144,36 @@
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
+
+            // Reset the measured width so a new data set re-fits the column to its own images.
+            maxImageWidth.value = 0;
+
             console.log("Grid data loaded:", gridData);
             return gridData;
         }
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
+    }
+
+    /**
+     * Gets the combined left and right padding, in pixels, of the grid cell containing the given
+     * element. The cell padding is driven by `--table-cell-padding-x`; reading the resolved
+     * padding off the cell returns pixels regardless of the unit the variable is authored in.
+     *
+     * @param element An element inside the grid cell.
+     * @returns The horizontal padding in pixels, or 0 if the cell cannot be found.
+     */
+    function getCellPaddingX(element: HTMLElement): number {
+        const cell = element.closest(".grid-cell") as HTMLElement | null;
+
+        if (!cell) {
+            return 0;
+        }
+
+        const style = getComputedStyle(cell);
+
+        return parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
     }
 
     // #endregion Functions
@@ -146,11 +195,43 @@
 
         await invokeBlockAction("SetViewMode", { viewMode: mode });
 
-        await loadGridData();
+        const data = await loadGridData();
 
         viewMode.value = mode;
         pendingViewMode.value = null;
-        gridDataSource.value = loadGridData();
+        gridDataSource.value = Promise.resolve(data);
+    }
+
+    /**
+     * Toggles the "Show Images" preference and reloads the grid so image URLs
+     * are included or excluded in the next data response.
+     */
+    async function onToggleImages(): Promise<void> {
+        showImages.value = !showImages.value;
+        preferences.setValue(PreferenceKey.ShowImages, showImages.value.toString());
+        await preferences.save();
+    }
+
+    /**
+     * Measures each image as it loads and grows the column to fit the widest one. The rendered
+     * width is the natural aspect ratio scaled to the configured image height, plus the cell's
+     * horizontal padding so the image is not clipped by the column edge.
+     *
+     * @param event The image load event.
+     */
+    function onImageLoad(event: Event): void {
+        const img = event.target as HTMLImageElement;
+
+        if (img.naturalHeight === 0) {
+            return;
+        }
+
+        const renderedWidth = (img.naturalWidth / img.naturalHeight) * imageHeight;
+        const totalWidth = renderedWidth + getCellPaddingX(img);
+
+        if (totalWidth > maxImageWidth.value) {
+            maxImageWidth.value = totalWidth;
+        }
     }
 
     // #endregion Event Handlers

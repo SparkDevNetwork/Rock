@@ -691,7 +691,8 @@ namespace Rock.Blocks.Finance
                 .AddField( "image", a => GetTransactionImageUrl( a ) )
                 .AddTextField( "status", a => a.Status )
                 .AddDateTimeField( "settledDate", a => a.SettledDate )
-                .AddTextField( "processorBatchId", a => a.SettledGroupId );
+                .AddTextField( "processorBatchId", a => a.SettledGroupId )
+                .AddAttributeFieldsFrom( a => CurrentViewMode == ViewMode.Accounts ? a.TransactionDetail : a.Transaction, GridAttributes.Value );
 
             return gridBuilder;
         }
@@ -753,18 +754,12 @@ namespace Rock.Blocks.Finance
         }
 
         /// <summary>
-        /// Gets the URL of the first image for the transaction, or <c>null</c> when images are not
-        /// being shown or the transaction has no image.
+        /// Gets the URL of the first image for the transaction, or <c>null</c> when the transaction has no image.
         /// </summary>
         /// <param name="row">The transaction row.</param>
         /// <returns>The image URL or <c>null</c>.</returns>
         private string GetTransactionImageUrl( TransactionListRow row )
         {
-            if ( !ShowImages )
-            {
-                return null;
-            }
-
             var firstImageBinaryFileId = row.ImageBinaryFileIds?.FirstOrDefault();
             if ( !firstImageBinaryFileId.HasValue || firstImageBinaryFileId.Value == 0 )
             {

@@ -19,3 +19,7 @@ export const ViewMode = {
     Transactions: "Transactions",
     Accounts: "Accounts"
 } as const;
+
+export const PreferenceKey = {
+    ShowImages: "show-images"
+} as const;
