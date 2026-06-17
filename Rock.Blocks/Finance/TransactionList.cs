@@ -504,10 +504,29 @@ namespace Rock.Blocks.Finance
                 .Select( t => new TransactionListRow
                 {
                     Id = t.Id,
+                    TransactionId = t.Id,
                     Person = t.AuthorizedPersonAlias.Person,
                     TransactionDateTime = t.TransactionDateTime,
                     FutureProcessingDateTime = t.FutureProcessingDateTime,
-                    TotalAmount = t.TransactionDetails.Sum( d => ( decimal? ) d.Amount )
+                    TotalAmount = t.TransactionDetails.Sum( d => ( decimal? ) d.Amount ),
+                    CurrencyTypeValueId = t.FinancialPaymentDetail.CurrencyTypeValueId,
+                    CreditCardTypeValueId = t.FinancialPaymentDetail.CreditCardTypeValueId,
+                    ForeignCurrencyCodeValueId = t.ForeignCurrencyCodeValueId,
+                    TransactionCode = t.TransactionCode,
+                    ForeignKey = t.ForeignKey,
+                    BatchId = t.BatchId,
+                    Summary = t.Summary,
+                    Status = t.Status,
+                    SettledDate = t.SettledDate,
+                    SettledGroupId = t.SettledGroupId,
+                    Accounts = t.TransactionDetails
+                        .OrderBy( d => d.Account.Order )
+                        .Select( d => new AccountAmount { Name = d.Account.Name, Amount = d.Amount } )
+                        .ToList(),
+                    ImageBinaryFileIds = t.Images
+                        .OrderBy( i => i.Order )
+                        .Select( i => i.BinaryFileId )
+                        .ToList()
                 } );
         }
 
@@ -522,10 +541,29 @@ namespace Rock.Blocks.Finance
                 .Select( d => new TransactionListRow
                 {
                     Id = d.Id,
+                    TransactionId = d.TransactionId,
                     Person = d.Transaction.AuthorizedPersonAlias.Person,
                     TransactionDateTime = d.Transaction.TransactionDateTime,
                     FutureProcessingDateTime = d.Transaction.FutureProcessingDateTime,
-                    TotalAmount = d.Amount
+                    TotalAmount = d.Amount,
+                    CurrencyTypeValueId = d.Transaction.FinancialPaymentDetail.CurrencyTypeValueId,
+                    CreditCardTypeValueId = d.Transaction.FinancialPaymentDetail.CreditCardTypeValueId,
+                    ForeignCurrencyCodeValueId = d.Transaction.ForeignCurrencyCodeValueId,
+                    TransactionCode = d.Transaction.TransactionCode,
+                    ForeignKey = d.Transaction.ForeignKey,
+                    BatchId = d.Transaction.BatchId,
+                    Summary = d.Transaction.Summary,
+                    Status = d.Transaction.Status,
+                    SettledDate = d.Transaction.SettledDate,
+                    SettledGroupId = d.Transaction.SettledGroupId,
+                    Accounts = d.Transaction.TransactionDetails
+                        .Where( x => x.Id == d.Id )
+                        .Select( x => new AccountAmount { Name = x.Account.Name, Amount = x.Amount } )
+                        .ToList(),
+                    ImageBinaryFileIds = d.Transaction.Images
+                        .OrderBy( i => i.Order )
+                        .Select( i => i.BinaryFileId )
+                        .ToList()
                 } );
         }
 
@@ -548,13 +586,110 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         protected override GridBuilder<TransactionListRow> GetGridBuilder()
         {
-            // TODO Step 3: define the remaining grid columns for both view modes (currency, accounts, comments, image, attributes, etc.).
+            // TODO: days-since-last-transaction (needs an in-memory adjacency pass) and the
+            // dynamic attribute columns (need the entity for GridAttributeLoader) are not yet added.
             return new GridBuilder<TransactionListRow>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => IdHasher.Instance.GetHash( a.Id ) )
+                .AddTextField( "transactionIdKey", a => IdHasher.Instance.GetHash( a.TransactionId ) )
                 .AddPersonField( "person", a => a.Person )
                 .AddDateTimeField( "transactionDateTime", a => a.TransactionDateTime )
-                .AddField( "totalAmount", a => a.TotalAmount );
+                .AddField( "totalAmount", a => a.TotalAmount )
+                .AddTextField( "currencyType", a => GetCurrencyTypeText( a ) )
+                .AddTextField( "foreignCurrency", a => GetForeignCurrencyText( a ) )
+                .AddTextField( "transactionCode", a => a.TransactionCode )
+                .AddTextField( "foreignKey", a => a.ForeignKey )
+                .AddField( "batchId", a => a.BatchId )
+                .AddTextField( "batchIdKey", a => a.BatchId.HasValue ? IdHasher.Instance.GetHash( a.BatchId.Value ) : null )
+                .AddField( "accounts", a => a.Accounts )
+                .AddTextField( "summary", a => GetSummaryText( a ) )
+                .AddField( "image", a => GetTransactionImageUrl( a ) )
+                .AddTextField( "status", a => a.Status )
+                .AddDateTimeField( "settledDate", a => a.SettledDate )
+                .AddTextField( "processorBatchId", a => a.SettledGroupId );
+        }
+
+        /// <summary>
+        /// Gets the display text for the currency type column (currency type, optionally with the credit card type).
+        /// </summary>
+        /// <param name="row">The transaction row.</param>
+        /// <returns>The currency type display text.</returns>
+        private string GetCurrencyTypeText( TransactionListRow row )
+        {
+            if ( !row.CurrencyTypeValueId.HasValue )
+            {
+                return string.Empty;
+            }
+
+            var currencyType = DefinedValueCache.GetValue( row.CurrencyTypeValueId );
+
+            if ( row.CreditCardTypeValueId.HasValue )
+            {
+                var creditCardType = DefinedValueCache.GetValue( row.CreditCardTypeValueId );
+                return $"{currencyType} - {creditCardType}";
+            }
+
+            return currencyType;
+        }
+
+        /// <summary>
+        /// Gets the display text for the foreign currency column (currency code and symbol).
+        /// </summary>
+        /// <param name="row">The transaction row.</param>
+        /// <returns>The foreign currency display text.</returns>
+        private string GetForeignCurrencyText( TransactionListRow row )
+        {
+            if ( !row.ForeignCurrencyCodeValueId.HasValue )
+            {
+                return string.Empty;
+            }
+
+            var currencyCode = DefinedValueCache.Get( row.ForeignCurrencyCodeValueId.Value );
+            if ( currencyCode == null )
+            {
+                return string.Empty;
+            }
+
+            return $"{currencyCode.Value} {currencyCode.GetAttributeValue( "Symbol" )}";
+        }
+
+        /// <summary>
+        /// Gets the summary (Comments) text for the row, prefixed when the transaction is pending a future charge.
+        /// </summary>
+        /// <param name="row">The transaction row.</param>
+        /// <returns>The summary text.</returns>
+        private string GetSummaryText( TransactionListRow row )
+        {
+            return row.FutureProcessingDateTime.HasValue
+                ? $"[charge pending] {row.Summary}"
+                : row.Summary;
+        }
+
+        /// <summary>
+        /// Gets the URL of the first image for the transaction, or <c>null</c> when images are not
+        /// being shown or the transaction has no image.
+        /// </summary>
+        /// <param name="row">The transaction row.</param>
+        /// <returns>The image URL or <c>null</c>.</returns>
+        private string GetTransactionImageUrl( TransactionListRow row )
+        {
+            if ( !ShowImages )
+            {
+                return null;
+            }
+
+            var firstImageBinaryFileId = row.ImageBinaryFileIds?.FirstOrDefault();
+            if ( !firstImageBinaryFileId.HasValue || firstImageBinaryFileId.Value == 0 )
+            {
+                return null;
+            }
+
+            var options = new GetImageUrlOptions
+            {
+                Height = GetAttributeValue( AttributeKey.ImageHeight ).AsIntegerOrNull() ?? 200
+            };
+
+            return FileUrlHelper.GetImageUrl( firstImageBinaryFileId.Value, options );
         }
 
         #endregion Methods
@@ -594,7 +729,17 @@ namespace Rock.Blocks.Finance
         /// </summary>
         public class TransactionListRow
         {
+            /// <summary>
+            /// The row's own entity id: the transaction id in Transactions mode, or the
+            /// transaction detail id in Accounts mode. Used as the grid key.
+            /// </summary>
             public int Id { get; set; }
+
+            /// <summary>
+            /// The parent transaction's id (same as <see cref="Id"/> in Transactions mode).
+            /// Used for navigation and entity-level actions.
+            /// </summary>
+            public int TransactionId { get; set; }
 
             public Person Person { get; set; }
 
@@ -603,6 +748,47 @@ namespace Rock.Blocks.Finance
             public DateTime? FutureProcessingDateTime { get; set; }
 
             public decimal? TotalAmount { get; set; }
+
+            public int? CurrencyTypeValueId { get; set; }
+
+            public int? CreditCardTypeValueId { get; set; }
+
+            public int? ForeignCurrencyCodeValueId { get; set; }
+
+            public string TransactionCode { get; set; }
+
+            public string ForeignKey { get; set; }
+
+            public int? BatchId { get; set; }
+
+            public string Summary { get; set; }
+
+            public string Status { get; set; }
+
+            public DateTime? SettledDate { get; set; }
+
+            public string SettledGroupId { get; set; }
+
+            /// <summary>
+            /// The account name/amount entries shown in the Accounts column. One entry per detail
+            /// in Transactions mode; a single entry in Accounts mode.
+            /// </summary>
+            public List<AccountAmount> Accounts { get; set; }
+
+            /// <summary>
+            /// The binary file ids of the transaction's images, ordered, for the image column.
+            /// </summary>
+            public List<int> ImageBinaryFileIds { get; set; }
+        }
+
+        /// <summary>
+        /// A single account name and amount shown in the Accounts column.
+        /// </summary>
+        public class AccountAmount
+        {
+            public string Name { get; set; }
+
+            public decimal Amount { get; set; }
         }
 
         #endregion Supported Classes
