@@ -43,7 +43,7 @@
                 <div class="col-sm-6">
                     <TextBox v-model="entityIdentifier"
                              label="Entity Id"
-                             help="Integer ID or Guid of the entity you are trying to check security of. If you are trying to check the security of the default external homepage (which is Id #1) then set this to 1." />
+                             help="Integer ID, Guid or IdKey of the entity you are trying to check security of. If you are trying to check the security of the default external homepage (which is Id #1) then set this to 1." />
                 </div>
             </div>
 
