@@ -148,7 +148,6 @@ namespace Rock.Blocks.Engagement
         {
             public const string ConnectionmOpportunityFilterConnectionTypeIdKey = "ConnectionOpportunityFilter_ConnectionTypeIdKey_{0}";
             public const string SelectedGroupByMode = "SelectedGroupByMode";
-            public const string AreOnlyMyRequestsVisible = "AreOnlyMyRequestsVisible";
             public const string SelectedConnector = "SelectedConnector";
             public const string FilterStateConnectionTypeIdKey = "FilterState_ConnectionTypeIdKey_{0}";
             public const string FilterAttributeValuesConnectionTypeIdKey = "FilterAttributeValues_ConnectionTypeIdKey_{0}";
@@ -176,10 +175,6 @@ namespace Rock.Blocks.Engagement
 
         #region Properties
 
-        protected bool AreOnlyMyRequestsVisible => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.AreOnlyMyRequestsVisible )
-            .AsBoolean( true );
-
         /// <summary>
         /// Gets a value indicating whether the block is rendering in "My Connections" mode:
         /// a Connector page parameter is supplied without a specific Connection Type or
@@ -188,9 +183,8 @@ namespace Rock.Blocks.Engagement
         protected bool IsMyConnectionsMode =>
             PageParameter( PageParameterKey.IsMyConnectionsView ).AsBoolean() == true;
 
-        protected Guid? SelectedConnector => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.SelectedConnector )
-            .AsGuidOrNull();
+        protected string SelectedConnector => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.SelectedConnector );
 
         protected Guid? FilterConnectionType => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.FilterConnectionType )
@@ -352,15 +346,7 @@ namespace Rock.Blocks.Engagement
             var connectorPerson = new PersonService( RockContext ).Get( PageParameter( PageParameterKey.Connector ), !PageCache.Layout.Site.DisablePredictableIds );
             if ( connectorPerson != null )
             {
-                var connectorListItemBag = new ListItemBag
-                {
-                    Text = $"{connectorPerson.FullName.ToPossessive()} Requests",
-                    Value = connectorPerson.PrimaryAliasGuid.ToString()
-                };
-
-                options.SelectedConnector = connectorListItemBag;
-                options.SelectedConnectorIdKey = connectorPerson.IdKey;
-                this.PersonPreferences.SetValue( PreferenceKey.SelectedConnector, connectorPerson.PrimaryAliasGuid.ToString() );
+                this.PersonPreferences.SetValue( PreferenceKey.SelectedConnector, connectorPerson.IdKey );
 
                 // Connector Grouping is intentionally hidden in My Connections View.
                 if ( !IsMyConnectionsMode )
@@ -368,6 +354,12 @@ namespace Rock.Blocks.Engagement
                     this.PersonPreferences.SetValue( PreferenceKey.SelectedGroupByMode, "connectorGrouping" );
                 }
 
+                this.PersonPreferences.Save();
+            }
+            else if ( SelectedConnector.IsNullOrWhiteSpace() || ( !IdHasher.Instance.GetId( SelectedConnector ).HasValue && SelectedConnector != "All Requests" ) )
+            {
+                // Default the connector filter to the current person.
+                this.PersonPreferences.SetValue( PreferenceKey.SelectedConnector, RequestContext.CurrentPerson.IdKey );
                 this.PersonPreferences.Save();
             }
 
@@ -729,32 +721,53 @@ namespace Rock.Blocks.Engagement
             // Exclude inactive and archived connector groups. A global query filter sets the
             // ConnectorGroup navigation to null for archived groups, so guard against null as well.
             // Also exclude inactive/archived group members so they do not appear as connectors.
-            var connectors = connectionType.ConnectionOpportunities
+            var connectorData = connectionType.ConnectionOpportunities
                 .Where( o => o.IsActive && viewAuthorizedOpportunityIds.Contains( o.Id ) )
                 .SelectMany( o => o.ConnectionOpportunityConnectorGroups )
                 .Where( g => g.ConnectorGroup != null && g.ConnectorGroup.IsActive && !g.ConnectorGroup.IsArchived )
                 .SelectMany( g => g.ConnectorGroup.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && !m.IsArchived ) )
                 .DistinctBy( m => m.Person.PrimaryAlias.Guid )
-                .Select( m => new ListItemBag
+                .Select( m => new
                 {
-                    Value = m.Person.PrimaryAlias.Guid.ToString(),
-                    Text = m.Person.FullName
+                    PrimaryAliasGuid = m.Person.PrimaryAlias.Guid.ToString(),
+                    PersonIdKey = m.Person.IdKey,
+                    ConnectorName = m.Person.FullName
                 } )
                 .ToList();
 
             var currentPersonAliasGuid = RequestContext.CurrentPerson.PrimaryAlias?.Guid;
+            var connectorAliasItems = connectorData.Select( c => new ListItemBag
+            {
+                Text = c.ConnectorName,
+                Value = c.PrimaryAliasGuid
+            } ).ToList();
+
+            var connectorKeyItems = connectorData.Where( c => c.PersonIdKey != RequestContext.CurrentPerson.IdKey )
+                .OrderBy( c => c.ConnectorName )
+                .Select( c => new ListItemBag
+                {
+                    Text = $"{c.ConnectorName.ToPossessive()} Requests",
+                    Value = c.PersonIdKey
+                } ).ToList();
+
+            connectorKeyItems.Insert( 0, new ListItemBag
+            {
+                Text = "My Requests",
+                Value = RequestContext.CurrentPerson.IdKey
+            } );
 
             // Add current person to the connector list to mirror Webforms
-            if ( currentPersonAliasGuid.HasValue && !connectors.Any( c => c.Value == currentPersonAliasGuid.Value.ToString() ) )
+            if ( currentPersonAliasGuid.HasValue && !connectorAliasItems.Any( c => c.Value == currentPersonAliasGuid.Value.ToString() ) )
             {
-                connectors.Add( new ListItemBag
+                connectorAliasItems.Add( new ListItemBag
                 {
                     Text = RequestContext.CurrentPerson.FullName,
                     Value = currentPersonAliasGuid.Value.ToString()
                 } );
             }
 
-            options.AllPossibleConnectors = connectors;
+            options.ConnectorKeyItems = connectorKeyItems;
+            options.ConnectorAliasItems = connectorAliasItems;
 
             options.ConnectionOpportunities = connectionType.ConnectionOpportunities.Where( o => o.IsActive && viewAuthorizedOpportunityIds.Contains( o.Id ) ).Select( o => new ListItemBag
             {
@@ -1390,6 +1403,8 @@ namespace Rock.Blocks.Engagement
             var connectionTypeService = new ConnectionTypeService( RockContext );
             var connectionTypeQry = connectionTypeService.Queryable().Where( ct => !FilterConnectionType.HasValue || ct.Guid == FilterConnectionType.Value );
 
+            var selectedConnector = new PersonService( RockContext ).Get( SelectedConnector, !PageCache.Layout.Site.DisablePredictableIds );
+
             // Use the aggregate variant so that when FilterConnectionType is null and the queryable
             // spans multiple ConnectionTypes, we get a single row that combines all of them rather
             // than one arbitrary per-type row from .FirstOrDefault().
@@ -1402,7 +1417,7 @@ namespace Rock.Blocks.Engagement
                     {
                         CampusGuid = RequestContext.GetContextEntity<Campus>()?.Guid,
                         ConnectionOpportunityGuid = connectionOpportunityGuid,
-                        ConnectorPersonAliasGuid = SelectedConnector
+                        ConnectorPersonAliasGuid = selectedConnector?.PrimaryAliasGuid
                     } )
                 .Select( c => new CompletionMetricsBag
                 {
@@ -1422,16 +1437,9 @@ namespace Rock.Blocks.Engagement
 
             string dashboardTitle = "Connection Dashboard";
 
-            if ( SelectedConnector.HasValue )
+            if ( selectedConnector != null )
             {
-                var connectorPersonAlias = new PersonAliasService( RockContext ).GetInclude( SelectedConnector.Value, pa => pa.Person );
-
-                // The connector alias may not resolve (e.g. a stale preference referencing a
-                // merged or deleted alias). Fall back to the generic title rather than throwing.
-                if ( connectorPersonAlias?.Person != null )
-                {
-                    dashboardTitle = RequestContext.CurrentPerson.Id == connectorPersonAlias.PersonId ? "Your Connection Dashboard" : $"{connectorPersonAlias.Person.FullName.ToPossessive()} Connection Dashboard";
-                }
+                dashboardTitle = RequestContext.CurrentPerson.Id == selectedConnector.Id ? "Your Connection Dashboard" : $"{selectedConnector.FullName.ToPossessive()} Connection Dashboard";
             }
 
             completionMetricsComparison ??= new CompletionMetricsBag();
@@ -4159,14 +4167,21 @@ WHERE 1 = 1" );
             }
 
             // Connector filter
-            if ( PageParameter( PageParameterKey.Connector ).IsNotNullOrWhiteSpace() && SelectedConnector.HasValue )
+            if ( SelectedConnector.IsNotNullOrWhiteSpace() )
             {
-                sql.Append( "\n  AND cpa.[Guid] = @ConnectorGuid" );
-                sqlParams.Add( new SqlParameter( "@ConnectorGuid", SelectedConnector.Value ) );
+                // "All Requests" is the sentinel for "show every connector," so it intentionally
+                // decodes to no Id and applies no filter. Any other value is a connector's IdKey.
+                var personId = IdHasher.Instance.GetId( SelectedConnector );
+
+                if ( personId.HasValue )
+                {
+                    sql.Append( "\n  AND cp.[Id] = @ConnectorPersonId" );
+                    sqlParams.Add( new SqlParameter( "@ConnectorPersonId", personId ) );
+                }
             }
-            else if ( AreOnlyMyRequestsVisible && !IsMyConnectionsMode )
+            else if ( !IsMyConnectionsMode )
             {
-                // @CurrentPersonId is already in sqlParams for the reminder subquery.
+                // No connector chosen yet: default to the current person's own requests.
                 sql.Append( "\n  AND cp.[Id] = @CurrentPersonId" );
             }
 

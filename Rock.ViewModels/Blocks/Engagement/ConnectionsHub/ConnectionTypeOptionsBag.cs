@@ -95,9 +95,14 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public List<ConnectionWorkflowBag> WorkflowItems { get; set; }
 
         /// <summary>
-        /// Gets or sets the complete list of connectors that can be assigned to connection requests.
+        /// Gets or sets the complete list of connectors that can be assigned to connection requests. The Connector's Primary Alias Guid is the value.
         /// </summary>
-        public List<ListItemBag> AllPossibleConnectors { get; set; }
+        public List<ListItemBag> ConnectorAliasItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets a list of Connector item bags where the Connector's Person Id Key is the value.
+        /// </summary>
+        public List<ListItemBag> ConnectorKeyItems { get; set; }
 
         /// <summary>
         /// Gets or sets the list of activity types available to log against connection requests.

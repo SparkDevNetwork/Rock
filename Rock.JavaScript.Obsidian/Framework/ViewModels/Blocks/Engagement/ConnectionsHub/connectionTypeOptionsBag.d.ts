@@ -29,9 +29,6 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The additional configuration options for a specfic Connection Type. */
 export type ConnectionTypeOptionsBag = {
-    /** Gets or sets the complete list of connectors that can be assigned to connection requests. */
-    allPossibleConnectors?: ListItemBag[] | null;
-
     /** Gets or sets a value indicating whether celebrations (milestone notifications) are enabled for connection requests. */
     areCelebrationsEnabled: boolean;
 
@@ -52,6 +49,12 @@ export type ConnectionTypeOptionsBag = {
 
     /** Gets or sets the list of connection statuses available for this Connection Type. */
     connectionStatuses?: ConnectionStatusBag[] | null;
+
+    /** Gets or sets the complete list of connectors that can be assigned to connection requests. The Connector's Primary Alias Guid is the value. */
+    connectorAliasItems?: ListItemBag[] | null;
+
+    /** Gets or sets a list of Connector item bags where the Connector's Person Id Key is the value. */
+    connectorKeyItems?: ListItemBag[] | null;
 
     /** Gets or sets the unique identifier of the Connection Type these options describe. */
     guid: Guid;

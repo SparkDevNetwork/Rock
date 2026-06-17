@@ -11,9 +11,10 @@
                              :btnSize="BtnSize.ExtraSmall" />
                 <div class="slicer-content-right">
                     <DropDownList v-if="!isMyConnectionsView"
-                                  v-model="areOnlyMyRequestsVisible"
-                                  :items="requestToggleItems"
-                                  :showBlankItem="false" />
+                                  v-model="selectedConnector"
+                                  :items="staticConnectionTypeOptions?.connectorKeyItems ?? []"
+                                  blankValue="All Requests"
+                                  enhanceForLongLists />
                     <DropDownList v-else-if="!selectedOpportunity"
                                   v-model="selectedType"
                                   :items="box.options?.connectionTypeItems ?? []"
@@ -759,7 +760,7 @@
     </ReminderModal>
 
     <AssignRequestModal v-model:visible="isAssignRequestModalVisible"
-                        :connectorItems="bulkConnectionTypeOptions?.allPossibleConnectors ?? []"
+                        :connectorItems="bulkConnectionTypeOptions?.connectorAliasItems ?? []"
                         :requestDetails="requestDetailsForModal"
                         :viewOptions="viewOptions"
                         :isSaving="isModalSaving"
@@ -787,7 +788,7 @@
                         @close="onModalErrorMessageDismissed"
                         @deleteRequests="deleteRequestsFromModal" />
     <ActivityModal v-model:visible="isActivityModalVisible"
-                   :connectorItems="activeActionConnectionTypeOptions?.allPossibleConnectors ?? []"
+                   :connectorItems="activeActionConnectionTypeOptions?.connectorAliasItems ?? []"
                    :requestDetails="requestDetailsForModal"
                    :connectionActivities="connectionActivityItems ?? []"
                    :viewOptions="viewOptions"
@@ -1295,24 +1296,9 @@ i.disabled {
 
     // Context Slicer configuration
     const selectedCampus = ref<ListItemBag | null>(null);
-    const areOnlyMyRequestsVisible = ref<string>(isNullOrWhiteSpace(preferences.getValue(PreferenceKey.AreOnlyMyRequestsVisible)) ? "true" : preferences.getValue(PreferenceKey.AreOnlyMyRequestsVisible));
+    const selectedConnector = ref<string>(isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedConnector)) ? (store.state.currentPerson?.idKey ?? "") : preferences.getValue(PreferenceKey.SelectedConnector));
     const internalSelectedType = ref(preferences.getValue(PreferenceKey.FilterConnectionType));
     const internalSelectedOpportunity = ref(box.options?.connectionOpportunityGuidFromPageParameter ?? preferences.getValue(getConnectionFilterKey(PreferenceKey.ConnectionmOpportunityFilterConnectionTypeIdKey)));
-    const internalSelectedConnector = ref<ListItemBag | null | undefined>(box.options?.selectedConnector);
-    const requestToggleItems = ref<ListItemBag[]>([
-        {
-            text: "My Requests",
-            value: "true"
-        },
-        {
-            text: "All Requests",
-            value: "false"
-        }
-    ]);
-    if (internalSelectedConnector.value?.value && !isNullOrWhiteSpace(internalSelectedConnector.value.value)) {
-        requestToggleItems.value.push(internalSelectedConnector.value);
-        areOnlyMyRequestsVisible.value = internalSelectedConnector.value.value;
-    }
 
     // Add Connection Request Configuration
     const newConnectionRequest = ref<ValidPropertiesBox<ConnectionRequestBag>>({ bag: { connectionOpportunityGuid: internalSelectedOpportunity.value, campusGuid: selectedCampus.value?.value } as ConnectionRequestBag });
@@ -1714,7 +1700,7 @@ i.disabled {
             .filter(v => inScopeGridDataToShowValues.value.has(v)),
     }));
 
-    const skeletonCount = computed<number>(() => selectedGrouping.value === "connectorGrouping" && asBoolean(areOnlyMyRequestsVisible.value) ? 1 : 3);
+    const skeletonCount = computed<number>(() => selectedGrouping.value === "connectorGrouping" && !isNullOrWhiteSpace(selectedConnector.value) && selectedConnector.value !== "All Requests" ? 1 : 3);
 
     const allSelectedKeys = computed(() => Object.values(selectedKeys.value).flat());
     const allSelectedKeySet = computed(() => new Set(allSelectedKeys.value));
@@ -2064,19 +2050,15 @@ i.disabled {
         }
 
         // Connector filter
-        if (areOnlyMyRequestsVisible.value !== "false") {
+        if (!isNullOrWhiteSpace(selectedConnector.value) && selectedConnector.value !== "All Requests") {
             const connectorValue = row["connectorDetails"] as ListItemBag | undefined;
 
             if (!connectorValue || typeof connectorValue !== "object") {
                 return false;
             }
 
-            if (areOnlyMyRequestsVisible.value === "true" && currentPerson.value?.idKey === connectorValue?.value) {
-                return true;
-            }
-
-            // Check against the selected connector defined when the block was loaded.
-            return connectorValue?.value === box.options?.selectedConnectorIdKey;
+            // Check against the selected connector filter.
+            return connectorValue?.value === selectedConnector.value;
         }
 
         // Campus Filter
@@ -4537,21 +4519,10 @@ i.disabled {
         }
     });
 
-    watch(areOnlyMyRequestsVisible, async () => {
-        // This prevents saving a "Selected Connector" as this person prefernce
-        if (areOnlyMyRequestsVisible.value !== "true" && areOnlyMyRequestsVisible.value !== "false") {
-            return;
-        }
+    watch(selectedConnector, async () => {
+        preferences.setValue(PreferenceKey.SelectedConnector, selectedConnector.value);
 
-        preferences.setValue(PreferenceKey.AreOnlyMyRequestsVisible, areOnlyMyRequestsVisible.value);
-
-        const connectorIndex = requestToggleItems.value.findIndex(i => i.value !== "true" && i.value !== "false");
-        if (connectorIndex !== -1) {
-            // Clears the selected connector person preference, removes their item from the dropdown, and clears the query param.
-            preferences.setValue(PreferenceKey.SelectedConnector, "");
-            requestToggleItems.value.splice(connectorIndex, 1);
-            removeCurrentUrlQueryParams("Connector");
-        }
+        removeCurrentUrlQueryParams("Connector");
 
         await preferences.save();
 

@@ -22,7 +22,6 @@ export const enum PreferenceKey {
     ConnectionmOpportunityFilterConnectionTypeIdKey = "ConnectionOpportunityFilter_ConnectionTypeIdKey_{0}",
     SelectedGroupByMode = "SelectedGroupByMode",
     SelectedConnector = "SelectedConnector",
-    AreOnlyMyRequestsVisible = "AreOnlyMyRequestsVisible",
     IsAutoCollapseEnabled = "IsAutoCollapseEnabled",
     FilterSortByConnectionTypIdKey = "FilterSortBy_ConnectionTypeIdKey_{0}",
     FilterIsAssignedToMeConnectionTypeIdKey = "FilterIsAssignedToMe_ConnectionTypeIdKey_{0}",
