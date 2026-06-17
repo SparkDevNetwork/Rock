@@ -29,6 +29,7 @@ using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.TransactionList;
+using Rock.ViewModels.Core.Grid;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -385,6 +386,8 @@ namespace Rock.Blocks.Finance
 
             var options = new TransactionListOptionsBag
             {
+                TransactionAttributeOptions = GetAttributeOptions( false ),
+                TransactionDetailAttributeOptions = GetAttributeOptions( true ),
                 Title = GetAttributeValue( AttributeKey.Title ),
                 ViewMode = CurrentViewMode,
                 IsImagesToggleVisible = IsImagesToggleVisible,
@@ -690,16 +693,6 @@ namespace Rock.Blocks.Finance
                 .AddDateTimeField( "settledDate", a => a.SettledDate )
                 .AddTextField( "processorBatchId", a => a.SettledGroupId );
 
-            // Attribute columns target the entity that matches the current view mode.
-            if ( CurrentViewMode == ViewMode.Accounts )
-            {
-                gridBuilder.AddAttributeFieldsFrom( a => a.TransactionDetail, GridAttributes.Value );
-            }
-            else
-            {
-                gridBuilder.AddAttributeFieldsFrom( a => a.Transaction, GridAttributes.Value );
-            }
-
             return gridBuilder;
         }
 
@@ -791,9 +784,9 @@ namespace Rock.Blocks.Finance
         /// </summary>
         /// <param name="isAccountsView"><c>true</c> for FinancialTransactionDetail attributes; otherwise FinancialTransaction.</param>
         /// <returns>The ordered grid attributes.</returns>
-        private static List<AttributeCache> BuildGridAttributes( bool isAccountsView )
+        private static List<AttributeCache> BuildGridAttributes( bool isAccountsMode )
         {
-            var entityTypeId = isAccountsView
+            var entityTypeId = isAccountsMode
                 ? EntityTypeCache.Get<FinancialTransactionDetail>( false )?.Id
                 : EntityTypeCache.Get<FinancialTransaction>( false )?.Id;
 
@@ -803,6 +796,30 @@ namespace Rock.Blocks.Finance
             }
 
             return new List<AttributeCache>();
+        }
+
+        /// <summary>
+        /// Builds the list of attribute column definitions for the grid options bag.
+        /// </summary>
+        /// <param name="isAccountsMode"><c>true</c> returns <see cref="FinancialTransactionDetail"/> attributes; <c>false</c> returns <see cref="FinancialTransaction"/> attributes.</param>
+        /// <returns>A list of attribute field definitions, one per grid-visible attribute.</returns>
+        private List<AttributeFieldDefinitionBag> GetAttributeOptions( bool isAccountsMode )
+        {
+            var textFieldTypeGuid = SystemGuid.FieldType.TEXT.AsGuid();
+            var attributes = BuildGridAttributes( isAccountsMode );
+            var fields = new List<AttributeFieldDefinitionBag>();
+
+            foreach ( var attribute in attributes )
+            {
+                fields.Add( new AttributeFieldDefinitionBag
+                {
+                    Name = $"attr_{attribute.Key}",
+                    Title = attribute.Name,
+                    FieldTypeGuid = attribute.FieldType?.Guid ?? textFieldTypeGuid
+                } );
+            }
+
+            return fields;
         }
 
         #endregion Methods
@@ -827,9 +844,7 @@ namespace Rock.Blocks.Finance
             preferences.SetValue( PreferenceKey.ViewMode, viewMode );
             preferences.Save();
 
-            var definition = GetGridBuilder().BuildDefinition();
-
-            return ActionOk( definition.AttributeFields );
+            return ActionOk();
         }
 
         // TODO Step 5: Delete, Reassign, and MoveToBatch block actions (with their request bags).

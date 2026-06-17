@@ -81,7 +81,7 @@
     import { TransactionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/TransactionList/transactionListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
-    import { reactive, ref } from "vue";
+    import { computed, reactive, ref } from "vue";
     import { ViewMode } from "./TransactionList/types.partial";
     import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
 
@@ -94,9 +94,18 @@
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
     const viewMode = ref<string>(config.options?.viewMode ?? ViewMode.Transactions);
-    const attributeFields = ref<AttributeFieldDefinitionBag[]>(config.gridDefinition?.attributeFields ?? []);
 
     // #endregion Values
+
+    // #region Computed Values
+
+    const attributeFields = computed<AttributeFieldDefinitionBag[]>(() => {
+        return viewMode.value === ViewMode.Accounts
+            ? (config.options?.transactionDetailAttributeOptions ?? [])
+            : (config.options?.transactionAttributeOptions ?? []);
+    });
+
+    // #endregion Computed Values
 
     // #region Functions
 
@@ -133,13 +142,7 @@
 
         viewMode.value = mode;
 
-        // The server returns the attribute fields for the new mode; updating this reactive ref
-        // re-expands the AttributeColumns placeholder so the columns swap without a page refresh.
-        const result = await invokeBlockAction<AttributeFieldDefinitionBag[]>("SetViewMode", { viewMode: mode });
-
-        if (result.isSuccess && result.data) {
-            attributeFields.value = result.data;
-        }
+        await invokeBlockAction("SetViewMode", { viewMode: mode });
 
         gridDataSource.value = loadGridData();
     }

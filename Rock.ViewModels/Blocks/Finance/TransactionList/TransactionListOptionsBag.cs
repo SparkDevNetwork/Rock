@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,9 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
+using Rock.ViewModels.Core.Grid;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Finance.TransactionList
@@ -24,6 +27,17 @@ namespace Rock.ViewModels.Blocks.Finance.TransactionList
     /// </summary>
     public class TransactionListOptionsBag
     {
+
+        /// <summary>
+        /// Contains the entity attribute fields for FinancialTransaction
+        /// </summary>
+        public List<AttributeFieldDefinitionBag> TransactionAttributeOptions { get; set; }
+
+        /// <summary>
+        /// Contains the entity attribute fields for FinancialTransactionDetail.
+        /// </summary>
+        public List<AttributeFieldDefinitionBag> TransactionDetailAttributeOptions { get; set; }
+
         /// <summary>
         /// Gets or sets the title to display above the grid. When empty the title is hidden.
         /// </summary>

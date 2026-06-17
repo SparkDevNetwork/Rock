@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
 import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
 
 /** The additional configuration options for the Transaction List block. */
@@ -98,6 +99,12 @@ export type TransactionListOptionsBag = {
 
     /** Gets or sets the title to display above the grid. When empty the title is hidden. */
     title?: string | null;
+
+    /** Contains the entity attribute fields for FinancialTransaction */
+    transactionAttributeOptions?: AttributeFieldDefinitionBag[] | null;
+
+    /** Contains the entity attribute fields for FinancialTransactionDetail. */
+    transactionDetailAttributeOptions?: AttributeFieldDefinitionBag[] | null;
 
     /** Gets or sets the resolved current view mode ("Transactions" or "Accounts"). */
     viewMode?: string | null;
