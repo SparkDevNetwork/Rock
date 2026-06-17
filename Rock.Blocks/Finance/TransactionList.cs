@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -25,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.TransactionList;
 using Rock.ViewModels.Utility;
@@ -155,10 +157,11 @@ namespace Rock.Blocks.Finance
     [SecurityAction( SecurityActionKey.FilterByPerson, "The roles and/or users that can filter transactions by person." )]
 
     [Rock.SystemGuid.EntityTypeGuid( "36AAA558-649E-49AF-8372-5ED6BD5C9657" )]
-    [Rock.SystemGuid.BlockTypeGuid( "E04320BC-67C3-452D-9EF6-D74D8C177154" )]
+    [Rock.SystemGuid.BlockTypeGuid( "D129A0C7-4A7F-42BC-8E0C-428C4A4122D2" )]
+    //[Rock.SystemGuid.BlockTypeGuid( "E04320BC-67C3-452D-9EF6-D74D8C177154" )]
     [CustomizedGrid]
     [Rock.Web.UI.ContextAware]
-    public class TransactionList : RockListBlockType<TransactionListData>
+    public class TransactionList : RockListBlockType<TransactionListRow>
     {
         #region Keys
 
@@ -479,25 +482,38 @@ namespace Rock.Blocks.Finance
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<TransactionListData> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<TransactionListRow> GetListQueryable( RockContext rockContext )
         {
-            // TODO Step 3: build the query for either Transactions or Accounts view mode.
-            return Enumerable.Empty<TransactionListData>().AsQueryable();
+            var transactionQuery = new FinancialTransactionService( RockContext ).Queryable().AsNoTracking();
+
+            var qry = transactionQuery.Select( t => new TransactionListRow
+            {
+                Id = t.Id,
+                Person = t.AuthorizedPersonAlias.Person,
+                TransactionDateTime = t.TransactionDateTime,
+                TotalAmount = t.TransactionDetails.Sum( d => ( decimal? ) d.Amount )
+            } );
+
+            return qry;
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<TransactionListData> GetOrderedListQueryable( IQueryable<TransactionListData> queryable, RockContext rockContext )
+        protected override IQueryable<TransactionListRow> GetOrderedListQueryable( IQueryable<TransactionListRow> queryable, RockContext rockContext )
         {
             // TODO Step 3: apply the default and custom (person name) ordering.
             return queryable;
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<TransactionListData> GetGridBuilder()
+        protected override GridBuilder<TransactionListRow> GetGridBuilder()
         {
-            // TODO Step 3: define the grid columns for both view modes (person, date, amount, currency, accounts, comments, image, attributes, etc.).
-            return new GridBuilder<TransactionListData>()
-                .WithBlock( this );
+            // TODO Step 3: define the remaining grid columns for both view modes (currency, accounts, comments, image, attributes, etc.).
+            return new GridBuilder<TransactionListRow>()
+                .WithBlock( this )
+                .AddTextField( "idKey", a => IdHasher.Instance.GetHash( a.Id ) )
+                .AddPersonField( "person", a => a.Person )
+                .AddDateTimeField( "transactionDateTime", a => a.TransactionDateTime )
+                .AddField( "totalAmount", a => a.TotalAmount );
         }
 
         #endregion Methods
@@ -511,12 +527,18 @@ namespace Rock.Blocks.Finance
         #region Supported Classes
 
         /// <summary>
-        /// A single row of data for the transaction list grid. Supports both
-        /// the "Transactions" and "Accounts" view modes with minimal special casing.
+        /// A single row of data for the transaction list grid. Rows are built from either
+        /// transactions or transaction details, but the grid is always built on this type.
         /// </summary>
-        public class TransactionListData
+        public class TransactionListRow
         {
-            // TODO Step 3: define the row shape (transaction/detail fields, accounts, summary, etc.).
+            public int Id { get; set; }
+
+            public Person Person { get; set; }
+
+            public DateTime? TransactionDateTime { get; set; }
+
+            public decimal? TotalAmount { get; set; }
         }
 
         #endregion Supported Classes
