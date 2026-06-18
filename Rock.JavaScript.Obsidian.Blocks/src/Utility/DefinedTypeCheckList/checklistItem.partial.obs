@@ -1,0 +1,41 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <article class="panel panel-widget checklist-item" :class="{ collapsed: !isDescriptionVisible }">
+        <header class="panel-heading clearfix">
+            <CheckBox v-model="isChecked" label="" :text="item.text ?? ''" />
+            <a v-if="hasDescription"
+               class="btn btn-link btn-xs pull-right checklist-desc-toggle"
+               href="#"
+               @click.prevent="isDescriptionVisible = !isDescriptionVisible">
+                <i class="ti" :class="isDescriptionVisible ? 'ti-chevron-up' : 'ti-chevron-down'"></i>
+            </a>
+        </header>
+        <div v-if="hasDescription && isDescriptionVisible" class="checklist-description panel-body" v-html="item.description"></div>
+    </article>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { DefinedTypeCheckListItemBag } from "@Obsidian/ViewModels/Blocks/Utility/DefinedTypeCheckList/definedTypeCheckListItemBag";
+
+    const props = defineProps({
+        item: {
+            type: Object as PropType<DefinedTypeCheckListItemBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:isChecked", value: boolean): void;
+    }>();
+
+    const isDescriptionVisible = ref(false);
+
+    const hasDescription = computed((): boolean => !!props.item.description);
+
+    const isChecked = computed({
+        get: (): boolean => props.item.isChecked ?? false,
+        set: (value: boolean) => emit("update:isChecked", value)
+    });
+</script>

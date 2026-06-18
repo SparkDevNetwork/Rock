@@ -1,0 +1,70 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="isBlockVisible" class="defined-type-checklist">
+        <h4 v-if="title?.trim()">{{ title }}</h4>
+
+        <div v-if="description" v-html="description"></div>
+
+        <ChecklistItem v-for="(item, index) in displayItems"
+                       :key="item.idKey ?? index"
+                       :item="item"
+                       @update:isChecked="(value) => onItemToggled(item, value)" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { DefinedTypeCheckListBag } from "@Obsidian/ViewModels/Blocks/Utility/DefinedTypeCheckList/definedTypeCheckListBag";
+    import { DefinedTypeCheckListItemBag } from "@Obsidian/ViewModels/Blocks/Utility/DefinedTypeCheckList/definedTypeCheckListItemBag";
+    import { DefinedTypeCheckListOptionsBag } from "@Obsidian/ViewModels/Blocks/Utility/DefinedTypeCheckList/definedTypeCheckListOptionsBag";
+    import ChecklistItem from "./DefinedTypeCheckList/checklistItem.partial.obs";
+
+    const config = useConfigurationValues<CustomBlockBox<DefinedTypeCheckListBag, DefinedTypeCheckListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const items = ref<DefinedTypeCheckListItemBag[]>(config.bag?.items ?? []);
+    const title = config.bag?.title;
+    const description = config.bag?.description;
+    const areCheckedItemsHidden = config.options?.areCheckedItemsHidden ?? false;
+    const isBlockHiddenWhenEmpty = config.options?.isBlockHiddenWhenEmpty ?? false;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const displayItems = computed((): DefinedTypeCheckListItemBag[] => {
+        return areCheckedItemsHidden ? items.value.filter(i => !i.isChecked) : items.value;
+    });
+
+    const isBlockVisible = computed((): boolean => {
+        return displayItems.value.length > 0 || !isBlockHiddenWhenEmpty;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Persists an item's completion state, reverting the change if the save fails.
+     */
+    async function onItemToggled(item: DefinedTypeCheckListItemBag, value: boolean): Promise<void> {
+        const previous = item.isChecked;
+        item.isChecked = value;
+
+        const result = await invokeBlockAction("SetItemCompletion", { key: item.idKey, isChecked: value });
+
+        if (!result.isSuccess) {
+            item.isChecked = previous;
+            await alert(result.errorMessage ?? "Unable to save your change. Please try again.");
+        }
+    }
+
+    // #endregion Functions
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>
