@@ -187,7 +187,8 @@
                     field="ethnicity"
                     :filter="pickExistingValueFilter" />
 
-        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []"
+                          visiblePriority="xs" />
 
         <Column name="fees"
                 title="Fees"
