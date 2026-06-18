@@ -123,13 +123,22 @@ export type ContentChannelItemBag = {
     /** Gets or sets the sort priority. Round-trips on save even when DisablePriority hides the control. */
     priority: number;
 
-    /** Gets or sets the Content Intent Guids. An empty list removes all associations on save. */
+    /**
+     * Gets or sets the Content Intent Guids. A present empty list removes all
+     * associations on save; the property being absent from ValidProperties leaves them unchanged.
+     */
     selectedIntentGuids?: string[] | null;
 
-    /** Gets or sets the request filter Guids. An empty list removes all associations on save. */
+    /**
+     * Gets or sets the request filter Guids. A present empty list removes all
+     * associations on save; the property being absent from ValidProperties leaves them unchanged.
+     */
     selectedRequestFilterGuids?: string[] | null;
 
-    /** Gets or sets the personalization segment Guids. An empty list removes all associations on save. */
+    /**
+     * Gets or sets the personalization segment Guids. A present empty list removes all
+     * associations on save; the property being absent from ValidProperties leaves them unchanged.
+     */
     selectedSegmentGuids?: string[] | null;
 
     /** Gets or sets the channel-URL prefix shown before each slug (ItemUrl with {{Slug}} stripped), or empty. */
