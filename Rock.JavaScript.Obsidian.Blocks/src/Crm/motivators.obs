@@ -1,0 +1,284 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel>
+        <template #title>
+            <i :class="panelIconCssClass"></i>
+            <span>{{ panelTitle }}</span>
+        </template>
+
+        <template #footerActions>
+            <a v-if="isQuestionsSectionVisible && hasPreviousQuestions" @click.prevent="onPreviousClick" class="btn btn-default">Previous</a>
+        </template>
+        <template #footerSecondaryActions v-if="!blockErrorMessage">
+            <a v-if="isInstructionSectionVisible" @click.prevent="onStartClick" class="btn btn-primary">Start <i class="ti ti-chevron-right"></i></a>
+            <a v-if="isQuestionsSectionVisible && !isLastPage" @click.prevent="onNextClick" class="btn btn-primary">Next</a>
+            <a v-if="isQuestionsSectionVisible && isLastPage" @click.prevent="onFinishClick" class="btn btn-primary" :class="{ disabled: isSaving }">Finish</a>
+        </template>
+
+        <template #default>
+            <NotificationBox v-if="blockErrorMessage" v-text="blockErrorMessage" alertType="danger" />
+            <NotificationBox v-if="infoMessage" v-text="infoMessage" alertType="info" />
+
+            <div v-if="!blockErrorMessage">
+                <div v-if="isInstructionSectionVisible" class="instructions-section" v-html="instructions"></div>
+
+                <div v-if="isQuestionsSectionVisible" ref="questionsContainer" class="question-section">
+                    <NotificationBox alertType="info">Respond to these items quickly and don't overthink them. Usually your first response is your best response.</NotificationBox>
+                    <ProgressBar :percent="percentComplete" :showCompletionText="true" />
+
+                    <div v-for="(response, index) in pageQuestions" :key="response.code ?? index" class="question-row">
+                        <RadioButtonList :label="response.question ?? ''"
+                                         :items="response.options ?? []"
+                                         :modelValue="responseToString(response.response)"
+                                         @update:modelValue="value => setResponse(response, value)"
+                                         horizontal
+                                         formGroupClasses="likert likert-7" />
+                    </div>
+
+                    <NotificationBox v-if="errorMessage" v-text="errorMessage" alertType="danger" />
+                </div>
+
+                <div v-if="isResultsSectionVisible" class="result-section">
+                    <div ref="resultsElement"></div>
+
+                    <div v-if="canRetakeTest" class="actions margin-t-md">
+                        <RockButton class="btn btn-primary" @click="onRetakeClick">Retake Test</RockButton>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </Panel>
+</template>
+
+<style scoped>
+.question-row :deep(.likert-7 .rockradiobuttonlist > span) {
+    display: flex;
+    align-items: center;
+}
+
+.question-row :deep(.likert-7 .rockradiobuttonlist > span .radio-inline) {
+    flex: 0 0 14.28571428571429%;
+}
+
+@media (max-width: 992px) {
+    .question-row :deep(.likert-7 .rockradiobuttonlist > span) {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>
+
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import ProgressBar from "@Obsidian/Controls/progressBar.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { setInnerHTML } from "@Obsidian/Core/Utilities/domUtils";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { MotivatorsInitializationBox } from "@Obsidian/ViewModels/Blocks/Crm/Motivators/motivatorsInitializationBox";
+    import { MotivatorsResponseBag } from "@Obsidian/ViewModels/Blocks/Crm/Motivators/motivatorsResponseBag";
+
+    const box = ref(useConfigurationValues<MotivatorsInitializationBox>());
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    const defaultPageSize = 20;
+
+    const questionsContainer = ref<HTMLElement>();
+    const resultsElement = ref<HTMLElement | null>(null);
+    const errorMessage = ref("");
+
+    // The working set of questions/responses.
+    const responses = ref(box.value?.responses ?? []);
+
+    const currentPage = ref(1);
+    const assessmentId = ref(box.value?.assessmentId ?? 0);
+
+    // The epoch (ms) when the individual started the test, used to measure how long they took.
+    const testStartedAt = ref<number | null>(null);
+
+    const isInstructionSectionVisible = ref(false);
+    const isQuestionsSectionVisible = ref(false);
+    const isResultsSectionVisible = ref(false);
+
+    // True while a save is in flight, to prevent a double-submit creating duplicate assessment records.
+    const isSaving = ref(false);
+
+    //#region Computed Values
+
+    /** The block-level error message that prevents the assessment from being shown. */
+    const blockErrorMessage = computed(() => box.value?.errorMessage ?? "");
+
+    /** An optional informational message to display to the individual. */
+    const infoMessage = computed(() => box.value?.infoMessage ?? "");
+
+    /** The panel icon CSS class configured by the block settings. */
+    const panelIconCssClass = computed(() => box.value?.panelIcon ?? "");
+
+    /** The panel title configured by the block settings. */
+    const panelTitle = computed(() => box.value?.panelTitle ?? "");
+
+    /** The instructions configured by the block settings. */
+    const instructions = computed(() => box.value?.instructions ?? "");
+
+    /** The resolved Results Message HTML (including chart shortcodes) to display. */
+    const resultsHtml = computed(() => box.value?.resultsHtml ?? "");
+
+    /** True if the individual is allowed to retake a completed test. */
+    const canRetakeTest = computed(() => box.value?.canRetakeTest ?? false);
+
+    /** The number of questions to show per page. */
+    const pageSize = computed(() => box.value?.pageSize ?? defaultPageSize);
+
+    /** The responses that have an answer selected. */
+    const answeredQuestions = computed(() => responses.value.filter(r => r.response !== null && r.response !== undefined));
+
+    /** The percent of questions that have been answered. */
+    const percentComplete = computed(() => responses.value.length > 0 ? Math.round(answeredQuestions.value.length / responses.value.length * 100) : 0);
+
+    /** The ending index for the current page of questions. */
+    const pageEndIndex = computed(() => pageSize.value * currentPage.value);
+
+    /** The starting index for the current page of questions. */
+    const pageStartIndex = computed(() => pageEndIndex.value - pageSize.value);
+
+    /** The list of questions for the current page. */
+    const pageQuestions = computed(() => responses.value.filter((r, i) => i >= pageStartIndex.value && i < pageEndIndex.value));
+
+    /** True if there is a previous page of questions. */
+    const hasPreviousQuestions = computed(() => currentPage.value > 1);
+
+    /** True if there are no more questions after the current page. */
+    const isLastPage = computed(() => pageEndIndex.value >= responses.value.length);
+
+    //#endregion
+
+    //#region Functions
+
+    /** Converts a stored response to the string value used by the radio button list. */
+    function responseToString(value: string | null | undefined): string {
+        return value ?? "";
+    }
+
+    /** Stores the selected radio button value back onto the response. */
+    function setResponse(response: MotivatorsResponseBag, value: string): void {
+        response.response = value === "" ? null : value;
+    }
+
+    /** Shows the requested section and hides the others. */
+    function showSection(section: "instructions" | "questions" | "results"): void {
+        isInstructionSectionVisible.value = section === "instructions";
+        isQuestionsSectionVisible.value = section === "questions";
+        isResultsSectionVisible.value = section === "results";
+    }
+
+    /** True if any question on the current page is unanswered. */
+    function hasUnansweredQuestionsOnCurrentPage(): boolean {
+        return pageQuestions.value.some(r => r.response === null || r.response === undefined);
+    }
+
+    /** Scrolls to the top of the questions section. */
+    function scrollToTop(): void {
+        questionsContainer.value?.scrollIntoView({ behavior: "smooth" });
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /** Event handler for the Start button click. */
+    function onStartClick(): void {
+        testStartedAt.value = Date.now();
+        showSection("questions");
+    }
+
+    /** Event handler for the Next button click. */
+    function onNextClick(): void {
+        if (hasUnansweredQuestionsOnCurrentPage()) {
+            errorMessage.value = "Please answer all questions before continuing.";
+            return;
+        }
+
+        errorMessage.value = "";
+        currentPage.value += 1;
+        scrollToTop();
+    }
+
+    /** Event handler for the Previous button click. */
+    function onPreviousClick(): void {
+        errorMessage.value = "";
+        currentPage.value -= 1;
+        scrollToTop();
+    }
+
+    /** Event handler for the Finish button click. */
+    async function onFinishClick(): Promise<void> {
+        // Guard against a double-submit (e.g. a rapid second click) creating duplicate assessment records.
+        if (isSaving.value) {
+            return;
+        }
+
+        if (hasUnansweredQuestionsOnCurrentPage()) {
+            errorMessage.value = "Please answer all questions before continuing.";
+            return;
+        }
+
+        errorMessage.value = "";
+
+        const boxToSend: MotivatorsInitializationBox = {
+            ...box.value,
+            responses: responses.value,
+            assessmentId: assessmentId.value,
+            timeToTake: testStartedAt.value !== null ? (Date.now() - testStartedAt.value) / 1000 : null
+        };
+
+        isSaving.value = true;
+
+        try {
+            const result = await invokeBlockAction<MotivatorsInitializationBox>("Save", { box: boxToSend });
+
+            if (result.isSuccess && result.data) {
+                box.value = result.data;
+                showSection("results");
+            }
+            else {
+                errorMessage.value = result.errorMessage ?? "Unable to save assessment results.";
+            }
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    /** Event handler for the Retake Test button click. */
+    function onRetakeClick(): void {
+        // Reset for a fresh attempt that will create a new assessment record when completed.
+        responses.value.forEach(r => {
+            r.response = null;
+        });
+
+        currentPage.value = 1;
+        assessmentId.value = 0;
+        testStartedAt.value = null;
+        errorMessage.value = "";
+        showSection("instructions");
+    }
+
+    //#endregion
+
+    // Render the results HTML (executing any chart shortcode scripts) once the element and content are available.
+    watch([resultsElement, resultsHtml], () => {
+        if (resultsElement.value && resultsHtml.value) {
+            setInnerHTML(resultsElement.value, resultsHtml.value);
+        }
+    });
+
+    // Show the appropriate starting section.
+    if (!blockErrorMessage.value) {
+        showSection(box.value?.showResults ? "results" : "instructions");
+    }
+</script>
