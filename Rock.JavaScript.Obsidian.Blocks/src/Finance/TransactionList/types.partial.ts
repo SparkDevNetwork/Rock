@@ -18,6 +18,11 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { NumberRangeModelValue } from "@Obsidian/Types/Controls/numberRangeBox";
 
+export const enum NavigationUrlKey {
+    DetailPage = "DetailPage",
+    BatchPage = "BatchPage"
+}
+
 export const ViewMode = {
     Transactions: "Transactions",
     Accounts: "Accounts"

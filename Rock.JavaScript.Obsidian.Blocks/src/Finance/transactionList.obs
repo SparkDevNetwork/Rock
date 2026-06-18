@@ -33,10 +33,22 @@
         <TextColumn name="transactionIdKey" field="transactionIdKey" :hideOnScreen="true" />
 
         <SelectColumn />
-        <PersonColumn name="person" title="Name" field="person" width="200px" />
-        <DateTimeColumn name="transactionDateTime" title="Date" field="transactionDateTime" :showSeconds="true" />
+        <PersonColumn name="person"
+                      title="Name"
+                      field="person"
+                      width="200px"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getPersonNameFilterValue"
+                      :quickFilterValue="getPersonNameFilterValue" />
+        <DateTimeColumn name="transactionDateTime" title="Date" field="transactionDateTime" :showSeconds="true" :filter="dateValueFilter" />
 
-        <Column name="daysSinceLastTransaction" title="Last Transaction" field="daysSinceLastTransaction" headerClass="text-right" itemClass="text-right">
+        <Column name="daysSinceLastTransaction"
+                title="Last Transaction"
+                field="daysSinceLastTransaction"
+                headerClass="text-right"
+                itemClass="text-right"
+                width="150px"
+                :filter="numberValueFilter">
             <template #format="{ row }">
                 <div class="w-100">
                     <span v-if="row.daysSinceLastTransaction != null">{{ row.daysSinceLastTransaction }}d</span>
@@ -44,15 +56,50 @@
             </template>
         </Column>
 
-        <CurrencyColumn name="totalAmount" title="Amount" field="totalAmount" />
-        <TextColumn name="foreignCurrency" title="Foreign Currency" field="foreignCurrency" />
-        <TextColumn name="currencyType" title="Currency Type" field="currencyType" width="200px" />
-        <TextColumn name="transactionCode" title="Transaction Code" field="transactionCode" width="200px" />
-        <TextColumn name="foreignKey" title="Foreign Key" field="foreignKey" width="150px" />
-        <NumberColumn name="batchId" title="Batch Id" field="batchId" />
+        <CurrencyColumn name="totalAmount"
+                        title="Amount"
+                        field="totalAmount"
+                        :filter="numberValueFilter" />
+        <TextColumn name="foreignCurrency"
+                    title="Foreign Currency"
+                    field="foreignCurrency"
+                    :filter="textValueFilter" />
+        <TextColumn name="currencyType"
+                    title="Currency Type"
+                    field="currencyType"
+                    width="200px"
+                    :filter="pickExistingValueFilter" />
+        <TextColumn name="transactionCode"
+                    title="Transaction Code"
+                    field="transactionCode"
+                    width="200px"
+                    :filter="textValueFilter" />
+        <TextColumn name="foreignKey"
+                    title="Foreign Key"
+                    field="foreignKey"
+                    width="150px"
+                    :filter="textValueFilter" />
+
+        <Column name="batchId"
+                title="Batch Id"
+                field="batchId"
+                :filter="numberValueFilter">
+            <template #format="{ row }">
+                <a v-if="config.navigationUrls?.[NavigationUrlKey.BatchPage] && row.batchId"
+                   :href="config.navigationUrls[NavigationUrlKey.BatchPage].replace('((Key))', String(row.batchId))">{{ row.batchId }}</a>
+                <span v-else>{{ row.batchId }}</span>
+            </template>
+        </Column>
+
         <TextColumn name="batchIdKey" field="batchIdKey" :hideOnScreen="true" />
 
-        <Column name="accounts" title="Accounts" field="accounts">
+        <Column name="accounts"
+                title="Accounts"
+                field="accounts"
+                :filter="pickExistingValueFilter"
+                :filterValue="getRowAccountsFilterValue"
+                :quickFilterValue="getRowAccountsFilterValue"
+                width="150px">
             <template #format="{ row }">
                 <div class="text-sm">
                     <div v-for="account in row.accounts">
@@ -62,7 +109,11 @@
             </template>
         </Column>
 
-        <TextColumn name="summary" title="Comments" field="summary" width="200px" />
+        <TextColumn name="summary"
+                    title="Comments"
+                    field="summary"
+                    width="200px"
+                    :filter="textValueFilter" />
         <AttributeColumns :attributes="attributeFields" />
 
         <Column name="image" title="Image" field="image" v-if="showImages" :width="imageColumnWidth">
@@ -71,9 +122,21 @@
             </template>
         </Column>
 
-        <TextColumn name="status" title="Status" field="status" :hideOnScreen="true" />
-        <DateTimeColumn name="settledDate" title="Settled Date" field="settledDate" :hideOnScreen="true" />
-        <TextColumn name="processorBatchId" title="Processor Batch Id" field="processorBatchId" :hideOnScreen="true" />
+        <TextColumn name="status"
+                    title="Status"
+                    field="status"
+                    :hideOnScreen="true"
+                    :filter="pickExistingValueFilter" />
+        <DateTimeColumn name="settledDate"
+                        title="Settled Date"
+                        field="settledDate"
+                        :hideOnScreen="true"
+                        :filter="dateValueFilter" />
+        <TextColumn name="processorBatchId"
+                    title="Processor Batch Id"
+                    field="processorBatchId"
+                    :hideOnScreen="true"
+                    :filter="textValueFilter" />
 
     </Grid>
 
@@ -86,7 +149,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, Column, CurrencyColumn, DateTimeColumn, NumberColumn, PersonColumn, SelectColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, Column, CurrencyColumn, DateTimeColumn, dateValueFilter, numberValueFilter, NumberColumn, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
     import { GridAction } from "@Obsidian/Types/Controls/grid";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
@@ -96,9 +159,10 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
     import { computed, reactive, ref, watch } from "vue";
-    import { GridSettingsOptions, PreferenceKey, ViewMode } from "./TransactionList/types.partial";
+    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey, ViewMode } from "./TransactionList/types.partial";
     import { toCurrencyOrNull, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import GridSettingsModal from "./TransactionList/gridSettingsModal.partial.obs";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<TransactionListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -241,6 +305,34 @@
         return parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
     }
 
+    /**
+    * Gets the filter value text to use for the name column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["person"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+     * Gets the filter value text for the accounts column by joining all account names and amounts.
+     *
+     * @param row The row to be filtered.
+     */
+    function getRowAccountsFilterValue(row: Record<string, unknown>): string {
+        const accounts = row["accounts"] as Array<{ name: string; amount: number }>;
+        if (!accounts?.length) {
+            return "";
+        }
+
+        let filterValue = "";
+        for (const account of accounts) {
+            filterValue += ` ${account.name} ${toCurrencyOrNull(account.amount, config.options?.currencyInfo) ?? ""}`;
+        }
+        return filterValue;
+    }
+
     // #endregion Functions
 
     // #region Event Handlers
@@ -341,6 +433,7 @@
 
         gridDataSource.value = loadGridData();
     });
+
 
     // #endregion Watchers
 
