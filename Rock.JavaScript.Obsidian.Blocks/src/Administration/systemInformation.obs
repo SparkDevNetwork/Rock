@@ -1,0 +1,63 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ul class="nav nav-tabs margin-b-md">
+        <li v-for="tab in tabs"
+            :key="tab"
+            :class="{ active: selectedTab === tab }">
+            <a href="#" @click.prevent="onSelectTab(tab)">{{ tab }}</a>
+        </li>
+    </ul>
+
+    <div v-show="selectedTab === versionInfoTab">
+        <VersionPanel :rockVersion="config.bag?.rockVersion ?? ''"
+                      :rockVersionNumber="config.bag?.rockVersionNumber ?? ''"
+                      :clientCulture="config.bag?.clientCulture ?? ''"
+                      :isAdministrator="config.options?.isAdministrator ?? false" />
+    </div>
+
+    <div v-show="selectedTab === diagnosticsTab">
+        <DiagnosticsPanel v-if="viewedTabs.has(diagnosticsTab)"
+                          :isAdministrator="config.options?.isAdministrator ?? false" />
+    </div>
+</template>
+
+<style scoped>
+.nav-tabs {
+    padding: 0;
+    border: none;
+    border-radius: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { useConfigurationValues, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { SystemInformationBag } from "@Obsidian/ViewModels/Blocks/Administration/SystemInformation/systemInformationBag";
+    import { SystemInformationOptionsBag } from "@Obsidian/ViewModels/Blocks/Administration/SystemInformation/systemInformationOptionsBag";
+    import VersionPanel from "./SystemInformation/versionPanel.partial.obs";
+    import DiagnosticsPanel from "./SystemInformation/diagnosticsPanel.partial.obs";
+
+    const config = useConfigurationValues<CustomBlockBox<SystemInformationBag, SystemInformationOptionsBag>>();
+
+    const versionInfoTab = "Version Info";
+    const diagnosticsTab = "Diagnostics";
+    const tabs = [versionInfoTab, diagnosticsTab];
+
+    // Track the active tab and which tabs have been opened. The Diagnostics
+    // panel runs a server query on mount, so it is not mounted until its tab is
+    // first selected and is then kept mounted to avoid re-querying on each switch.
+    const selectedTab = ref(versionInfoTab);
+    const viewedTabs = ref(new Set<string>([versionInfoTab]));
+
+    /**
+     * Selects the given tab and records it as viewed so its content loads lazily
+     * on first open and stays mounted thereafter.
+     */
+    function onSelectTab(tab: string): void {
+        selectedTab.value = tab;
+        viewedTabs.value.add(tab);
+    }
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>
