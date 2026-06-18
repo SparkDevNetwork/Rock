@@ -269,6 +269,12 @@ namespace Rock.Blocks.Finance
         /// </summary>
         private readonly Lazy<List<AttributeCache>> _accountGridAttributes = new Lazy<List<AttributeCache>>( () => BuildGridAttributes( true ) );
 
+        /// <summary>
+        /// Cached person preferences for this block so that every property access does not
+        /// call <see cref="RockBlockType.GetBlockPersonPreferences"/> separately.
+        /// </summary>
+        private PersonPreferenceCollection _personPreferences;
+
         #endregion Fields
 
         #region Properties
@@ -285,6 +291,22 @@ namespace Rock.Blocks.Finance
         private bool IsBatchEditable => _batch != null && _batch.Status != BatchStatus.Closed && !_batch.IsAutomated;
 
         /// <summary>
+        /// Gets the cached block person preferences, lazily loaded on first access.
+        /// </summary>
+        private PersonPreferenceCollection PersonPreferences
+        {
+            get
+            {
+                if ( _personPreferences == null )
+                {
+                    _personPreferences = GetBlockPersonPreferences();
+                }
+
+                return _personPreferences;
+            }
+        }
+
+        /// <summary>
         /// Gets the resolved current view mode, accounting for the saved person preference
         /// (including the legacy "Transaction Details" value) and the block's default.
         /// </summary>
@@ -292,7 +314,7 @@ namespace Rock.Blocks.Finance
         {
             get
             {
-                var preference = GetBlockPersonPreferences().GetValue( PreferenceKey.ViewMode );
+                var preference = PersonPreferences.GetValue( PreferenceKey.ViewMode );
 
                 if ( preference == ViewMode.Transactions || preference == ViewMode.Accounts )
                 {
@@ -330,7 +352,7 @@ namespace Rock.Blocks.Finance
         /// Gets a value indicating whether the image column should currently be shown
         /// (the user's preference, only honored when the toggle is available).
         /// </summary>
-        private bool ShowImages => IsImagesToggleVisible && GetBlockPersonPreferences().GetValue( PreferenceKey.ShowImages ).AsBoolean();
+        private bool ShowImages => IsImagesToggleVisible && PersonPreferences.GetValue( PreferenceKey.ShowImages ).AsBoolean();
 
         /// <summary>
         /// Gets the grid attributes for the current view mode: FinancialTransactionDetail attributes
@@ -339,6 +361,58 @@ namespace Rock.Blocks.Finance
         private Lazy<List<AttributeCache>> GridAttributes => CurrentViewMode == ViewMode.Accounts
             ? _accountGridAttributes
             : _transactionGridAttributes;
+
+        // Filter properties — each reads from the current view mode's prefixed preference key.
+
+        /// <summary>
+        /// Returns the value of a filter preference for the current view mode.
+        /// Filter preferences are stored with a <c>"{ViewMode}-"</c> prefix so each
+        /// view mode maintains its own independent filter state.
+        /// </summary>
+        /// <param name="key">The base preference key from <see cref="PreferenceKey"/>.</param>
+        private string FilterPreference( string key ) => PersonPreferences.GetValue( $"{CurrentViewMode}-{key}" );
+
+        /// <summary>Gets the lower bound of the transaction date filter.</summary>
+        private DateTime? FilterDateRangeLower => FilterPreference( PreferenceKey.FilterDateRangeLower ).AsDateTime();
+
+        /// <summary>Gets the upper bound of the transaction date filter.</summary>
+        private DateTime? FilterDateRangeUpper => FilterPreference( PreferenceKey.FilterDateRangeUpper ).AsDateTime();
+
+        /// <summary>Gets the minimum transaction amount filter.</summary>
+        private decimal? FilterAmountRangeFrom => FilterPreference( PreferenceKey.FilterAmountRangeFrom ).AsDecimalOrNull();
+
+        /// <summary>Gets the maximum transaction amount filter.</summary>
+        private decimal? FilterAmountRangeTo => FilterPreference( PreferenceKey.FilterAmountRangeTo ).AsDecimalOrNull();
+
+        /// <summary>Gets the currency type defined value GUID filter.</summary>
+        private Guid? FilterCurrencyType => FilterPreference( PreferenceKey.FilterCurrencyType ).FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
+
+        /// <summary>Gets the credit card type defined value GUID filter.</summary>
+        private Guid? FilterCreditCardType => FilterPreference( PreferenceKey.FilterCreditCardType ).FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
+
+        /// <summary>Gets the transaction source type defined value GUID filter.</summary>
+        private Guid? FilterSourceType => FilterPreference( PreferenceKey.FilterSourceType ).FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
+
+        /// <summary>Gets the transaction type defined value GUID filter.</summary>
+        private Guid? FilterTransactionType => FilterPreference( PreferenceKey.FilterTransactionType ).FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
+
+        /// <summary>Gets the transaction code text filter.</summary>
+        private string FilterTransactionCode => FilterPreference( PreferenceKey.FilterTransactionCode );
+
+        /// <summary>Gets the foreign key text filter.</summary>
+        private string FilterForeignKey => FilterPreference( PreferenceKey.FilterForeignKey );
+
+        /// <summary>Gets the account GUID filter (AccountPicker stores the account's Guid as the ListItemBag value).</summary>
+        private string FilterAccount => FilterPreference( PreferenceKey.FilterAccount ).FromJsonOrNull<ListItemBag>()?.Value;
+
+        /// <summary>Gets the batch campus GUID filter (CampusPicker stores the campus Guid as the ListItemBag value).</summary>
+        private string FilterCampusOfBatch => FilterPreference( PreferenceKey.FilterCampusOfBatch ).FromJsonOrNull<ListItemBag>()?.Value;
+
+        /// <summary>Gets the account campus GUID filter (CampusPicker stores the campus Guid as the ListItemBag value).</summary>
+        private string FilterCampusOfAccount => FilterPreference( PreferenceKey.FilterCampusOfAccount ).FromJsonOrNull<ListItemBag>()?.Value;
+
+        /// <summary>Gets the person primary-alias GUID filter (PersonPicker stores primaryAliasGuid as the ListItemBag value).</summary>
+        private string FilterPerson => FilterPreference( PreferenceKey.FilterPerson ).FromJsonOrNull<ListItemBag>()?.Value;
 
         #endregion Properties
 
@@ -499,9 +573,11 @@ namespace Rock.Blocks.Finance
 
             // The two view modes build rows from different entities: one row per transaction,
             // or one row per transaction detail (account line).
-            return CurrentViewMode == ViewMode.Accounts
+            var qry = CurrentViewMode == ViewMode.Accounts
                 ? GetAccountsModeQueryable( rockContext )
                 : GetTransactionsModeQueryable( rockContext );
+
+            return ApplyFilters( qry, rockContext );
         }
 
         /// <summary>
@@ -526,13 +602,25 @@ namespace Rock.Blocks.Finance
                     CurrencyTypeValueId = t.FinancialPaymentDetail.CurrencyTypeValueId,
                     CreditCardTypeValueId = t.FinancialPaymentDetail.CreditCardTypeValueId,
                     ForeignCurrencyCodeValueId = t.ForeignCurrencyCodeValueId,
+                    SourceTypeValueId = t.SourceTypeValueId,
+                    TransactionTypeValueId = t.TransactionTypeValueId,
                     TransactionCode = t.TransactionCode,
                     ForeignKey = t.ForeignKey,
                     BatchId = t.BatchId,
+                    BatchCampusGuid = ( Guid? ) t.Batch.Campus.Guid,
                     Summary = t.Summary,
                     Status = t.Status,
                     SettledDate = t.SettledDate,
                     SettledGroupId = t.SettledGroupId,
+                    AuthorizedPersonAliasId = t.AuthorizedPersonAliasId,
+                    AccountGuids = t.TransactionDetails
+                        .Select( d => d.Account.Guid )
+                        .ToList(),
+                    AccountCampusGuids = t.TransactionDetails
+                        .Where( d => d.Account.CampusId.HasValue )
+                        .Select( d => d.Account.Campus.Guid )
+                        .Distinct()
+                        .ToList(),
                     Accounts = t.TransactionDetails
                         .OrderBy( d => d.Account.Order )
                         .Select( d => new AccountAmount { Name = d.Account.Name, Amount = d.Amount } )
@@ -566,13 +654,25 @@ namespace Rock.Blocks.Finance
                     CurrencyTypeValueId = d.Transaction.FinancialPaymentDetail.CurrencyTypeValueId,
                     CreditCardTypeValueId = d.Transaction.FinancialPaymentDetail.CreditCardTypeValueId,
                     ForeignCurrencyCodeValueId = d.Transaction.ForeignCurrencyCodeValueId,
+                    SourceTypeValueId = d.Transaction.SourceTypeValueId,
+                    TransactionTypeValueId = d.Transaction.TransactionTypeValueId,
                     TransactionCode = d.Transaction.TransactionCode,
                     ForeignKey = d.Transaction.ForeignKey,
                     BatchId = d.Transaction.BatchId,
+                    BatchCampusGuid = ( Guid? ) d.Transaction.Batch.Campus.Guid,
                     Summary = d.Transaction.Summary,
                     Status = d.Transaction.Status,
                     SettledDate = d.Transaction.SettledDate,
                     SettledGroupId = d.Transaction.SettledGroupId,
+                    AuthorizedPersonAliasId = d.Transaction.AuthorizedPersonAliasId,
+                    AccountGuids = d.Transaction.TransactionDetails
+                        .Where( x => x.Id == d.Id )
+                        .Select( x => x.Account.Guid )
+                        .ToList(),
+                    AccountCampusGuids = d.Transaction.TransactionDetails
+                        .Where( x => x.Id == d.Id && x.Account.CampusId.HasValue )
+                        .Select( x => x.Account.Campus.Guid )
+                        .ToList(),
                     Accounts = d.Transaction.TransactionDetails
                         .Where( x => x.Id == d.Id )
                         .Select( x => new AccountAmount { Name = x.Account.Name, Amount = x.Amount } )
@@ -582,6 +682,126 @@ namespace Rock.Blocks.Finance
                         .Select( i => i.BinaryFileId )
                         .ToList()
                 } );
+        }
+
+        /// <summary>
+        /// Applies the active person preference filters to <paramref name="query"/>.
+        /// Each filter is applied only when its preference value is non-empty; missing or
+        /// blank preferences are treated as "no filter" for that criterion.
+        /// </summary>
+        /// <param name="query">The row queryable to filter.</param>
+        /// <param name="rockContext">The database context used to resolve person alias ids.</param>
+        /// <returns>The filtered queryable.</returns>
+        private IQueryable<TransactionListRow> ApplyFilters( IQueryable<TransactionListRow> query, RockContext rockContext )
+        {
+            // Date range — strip time before comparing so a date-only upper bound is inclusive.
+            var dateRangeLower = FilterDateRangeLower;
+            if ( dateRangeLower.HasValue )
+            {
+                var startOfDay = dateRangeLower.Value.Date;
+                query = query.Where( r => r.TransactionDateTime >= startOfDay );
+            }
+
+            var dateRangeUpper = FilterDateRangeUpper;
+            if ( dateRangeUpper.HasValue )
+            {
+                var startOfNextDay = dateRangeUpper.Value.Date.AddDays( 1 );
+                query = query.Where( r => r.TransactionDateTime < startOfNextDay );
+            }
+
+            // Amount range.
+            var amountFrom = FilterAmountRangeFrom;
+            if ( amountFrom.HasValue )
+            {
+                query = query.Where( r => r.TotalAmount >= amountFrom.Value );
+            }
+
+            var amountTo = FilterAmountRangeTo;
+            if ( amountTo.HasValue )
+            {
+                query = query.Where( r => r.TotalAmount <= amountTo.Value );
+            }
+
+            // Defined-value filters — resolve GUID to Id via cache then compare the projected int column.
+            var currencyTypeId = FilterCurrencyType.HasValue ? DefinedValueCache.Get( FilterCurrencyType.Value )?.Id : null;
+            if ( currencyTypeId.HasValue )
+            {
+                query = query.Where( r => r.CurrencyTypeValueId == currencyTypeId.Value );
+            }
+
+            var creditCardTypeId = FilterCreditCardType.HasValue ? DefinedValueCache.Get( FilterCreditCardType.Value )?.Id : null;
+            if ( creditCardTypeId.HasValue )
+            {
+                query = query.Where( r => r.CreditCardTypeValueId == creditCardTypeId.Value );
+            }
+
+            var sourceTypeId = FilterSourceType.HasValue ? DefinedValueCache.Get( FilterSourceType.Value )?.Id : null;
+            if ( sourceTypeId.HasValue )
+            {
+                query = query.Where( r => r.SourceTypeValueId == sourceTypeId.Value );
+            }
+
+            var transactionTypeId = FilterTransactionType.HasValue ? DefinedValueCache.Get( FilterTransactionType.Value )?.Id : null;
+            if ( transactionTypeId.HasValue )
+            {
+                query = query.Where( r => r.TransactionTypeValueId == transactionTypeId.Value );
+            }
+
+            // Free-text filters.
+            var transactionCode = FilterTransactionCode;
+            if ( transactionCode.IsNotNullOrWhiteSpace() )
+            {
+                query = query.Where( r => r.TransactionCode.Contains( transactionCode ) );
+            }
+
+            var foreignKey = FilterForeignKey;
+            if ( foreignKey.IsNotNullOrWhiteSpace() )
+            {
+                query = query.Where( r => r.ForeignKey.Contains( foreignKey ) );
+            }
+
+            // Entity GUID filters — pickers store GUIDs; compare directly against projected GUID columns.
+            var accountGuid = FilterAccount.AsGuidOrNull();
+            if ( accountGuid.HasValue )
+            {
+                query = query.Where( r => r.AccountGuids.Contains( accountGuid.Value ) );
+            }
+
+            var batchCampusGuid = FilterCampusOfBatch.AsGuidOrNull();
+            if ( batchCampusGuid.HasValue )
+            {
+                query = query.Where( r => r.BatchCampusGuid == batchCampusGuid.Value );
+            }
+
+            var accountCampusGuid = FilterCampusOfAccount.AsGuidOrNull();
+            if ( accountCampusGuid.HasValue )
+            {
+                query = query.Where( r => r.AccountCampusGuids.Contains( accountCampusGuid.Value ) );
+            }
+
+            // Person — PersonPicker stores the primary alias GUID. Resolve it to a PersonId, then
+            // match any of that person's aliases so merged records still appear.
+            var personAliasGuid = FilterPerson.AsGuidOrNull();
+            if ( personAliasGuid.HasValue )
+            {
+                var personAliasService = new PersonAliasService( rockContext );
+                var personId = personAliasService.Queryable()
+                    .Where( a => a.Guid == personAliasGuid.Value )
+                    .Select( a => ( int? ) a.PersonId )
+                    .FirstOrDefault();
+
+                if ( personId.HasValue )
+                {
+                    var personAliasIds = personAliasService.Queryable()
+                        .Where( a => a.PersonId == personId.Value )
+                        .Select( a => a.Id );
+
+                    query = query.Where( r => r.AuthorizedPersonAliasId.HasValue
+                        && personAliasIds.Contains( r.AuthorizedPersonAliasId.Value ) );
+                }
+            }
+
+            return query;
         }
 
         /// <inheritdoc/>
@@ -825,9 +1045,8 @@ namespace Rock.Blocks.Finance
                 return ActionBadRequest( "Invalid view mode." );
             }
 
-            var preferences = GetBlockPersonPreferences();
-            preferences.SetValue( PreferenceKey.ViewMode, viewMode );
-            preferences.Save();
+            PersonPreferences.SetValue( PreferenceKey.ViewMode, viewMode );
+            PersonPreferences.Save();
 
             return ActionOk();
         }
@@ -888,11 +1107,20 @@ namespace Rock.Blocks.Finance
 
             public int? ForeignCurrencyCodeValueId { get; set; }
 
+            public int? SourceTypeValueId { get; set; }
+
+            public int? TransactionTypeValueId { get; set; }
+
             public string TransactionCode { get; set; }
 
             public string ForeignKey { get; set; }
 
             public int? BatchId { get; set; }
+
+            /// <summary>
+            /// The GUID of the campus of the batch this transaction belongs to, for campus-of-batch filtering.
+            /// </summary>
+            public Guid? BatchCampusGuid { get; set; }
 
             public string Summary { get; set; }
 
@@ -901,6 +1129,23 @@ namespace Rock.Blocks.Finance
             public DateTime? SettledDate { get; set; }
 
             public string SettledGroupId { get; set; }
+
+            /// <summary>
+            /// The alias id of the authorized person, for person filtering.
+            /// </summary>
+            public int? AuthorizedPersonAliasId { get; set; }
+
+            /// <summary>
+            /// The GUIDs of every account on this row. One per detail in Transactions mode;
+            /// a single entry in Accounts mode. Used for account filtering.
+            /// </summary>
+            public List<Guid> AccountGuids { get; set; }
+
+            /// <summary>
+            /// The campus GUIDs of every account on this row (nulls excluded). Used for
+            /// campus-of-account filtering.
+            /// </summary>
+            public List<Guid> AccountCampusGuids { get; set; }
 
             /// <summary>
             /// The account name/amount entries shown in the Accounts column. One entry per detail

@@ -9,7 +9,8 @@
           liveUpdates
           :gridSettings="config.options?.areFiltersVisible ?? false"
           :gridSettingsActive="hasSettingsFilters"
-          @gridSettingsClick="isGridSettingsVisible = true">
+          @gridSettingsClick="isGridSettingsVisible = true"
+          @selectItem="onSelectItem">
 
         <template #gridHeaderBadges>
             <div class="d-flex justify-content-end px-3 py-2">
@@ -274,10 +275,8 @@
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
-
             // Reset the measured width so a new data set re-fits the column to its own images.
             maxImageWidth.value = 0;
-
             return gridData;
         }
         else {
@@ -336,6 +335,24 @@
     // #endregion Functions
 
     // #region Event Handlers
+
+    /**
+     * Called when the user clicks a row. Navigates to the transaction detail page.
+     * In Accounts mode the row key is the detail IdKey, so the transaction IdKey is
+     * resolved from the loaded grid data instead.
+     *
+     * @param key The idKey of the selected row.
+     */
+    function onSelectItem(key: string): void {
+        if (!config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            return;
+        }
+
+        const row = gridData?.rows?.find(r => r["idKey"] === key);
+        const transactionKey = (row?.["transactionIdKey"] as string | undefined) ?? key;
+
+        window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", transactionKey);
+    }
 
     /**
      * Called when one of the view mode toggle buttons is clicked. Saves the selected
