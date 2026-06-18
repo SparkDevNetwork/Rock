@@ -58,6 +58,13 @@ namespace Rock.ViewModels.Blocks.Crm.Disc
         public bool CanRetakeTest { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the individual is retaking a previously
+        /// completed assessment. When <c>true</c> a new assessment is created instead of
+        /// updating the existing one, mirroring the legacy "Retake Test" behavior.
+        /// </summary>
+        public bool IsRetake { get; set; }
+
+        /// <summary>
         /// Gets or sets the overall personality description for the individual based on the results of their DISC assessment.
         /// </summary>
         public string DiscPersonalityDescription { get; set; }

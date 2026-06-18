@@ -69,6 +69,9 @@ export type DiscInitializationBox = {
     /** Gets or sets a value indicating whether the assessment is for the person currently viewing the assessment. */
     isAsessmentForCurrentPerson: boolean;
 
+    /** Gets or sets a value indicating whether the individual is retaking a previously completed assessment. When true a new assessment is created instead of updating the existing one, mirroring the legacy "Retake Test" behavior. */
+    isRetake: boolean;
+
     /** Gets or sets the date the assessment was last saved. */
     lastSavedDate?: string | null;
 
