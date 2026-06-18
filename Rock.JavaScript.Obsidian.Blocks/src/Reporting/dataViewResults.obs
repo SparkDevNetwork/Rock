@@ -71,15 +71,12 @@
 .dataview-results-collapsed :deep(.grid-title-header > :not(.grid-title):not(.grid-badges)) {
     display: none;
 }
-
-.dataview-results :deep(.grid-cell) {
-    white-space: nowrap;
-}
 </style>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import Grid, { BooleanColumn, CurrencyColumn, DateColumn, DateTimeColumn, defaultColumnFilters, DynamicColumns, HtmlColumn, NumberColumn, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, CurrencyColumn, DateColumn, DateTimeColumn, defaultColumnFilters, DynamicColumns, HtmlColumn, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import NumberTextColumn from "./DataViewResults/numberTextColumn.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { Guid } from "@Obsidian/Types";
     import { ColumnFilter } from "@Obsidian/Types/Controls/grid";
@@ -96,13 +93,18 @@
 
     const showResultsPreferenceKey = "data-view-show-results";
 
+    // Plain numbers use the "number" column type so the grid sorts and filters them
+    // numerically and shows the number filter, but they are rendered with NumberTextColumn
+    // (a text cell) rather than the standard NumberColumn so they display without thousands
+    // separators and keep their exact server-formatted value (e.g. an Id shows as "12345",
+    // not "12,345"), matching the legacy grid.
     const columnComponents = {
         "boolean": BooleanColumn,
         "currency": CurrencyColumn,
         "date": DateColumn,
         "dateTime": DateTimeColumn,
         "html": HtmlColumn,
-        "number": NumberColumn,
+        "number": NumberTextColumn,
         "person": PersonColumn,
         "text": TextColumn
     };
