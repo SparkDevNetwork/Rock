@@ -1,0 +1,505 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.errorMessage" alertType="danger">
+        {{ config.errorMessage }}
+    </NotificationBox>
+
+    <template v-else>
+        <div class="well well-pillwrap">
+            <ul class="nav nav-pills">
+                <li v-for="(actionItem, index) in actions"
+                    :key="actionItem.action ?? index"
+                    :class="{ active: actionItem.action === currentAction }">
+                    <a href="#" @click.prevent="selectAction(actionItem.action)">{{ actionItem.title }}</a>
+                </li>
+                <li class="pull-right pill-help">
+                    <a href="#" @click.prevent="isDescriptionVisible = !isDescriptionVisible"><i class="ti ti-zoom-question"></i></a>
+                </li>
+            </ul>
+        </div>
+
+        <NotificationBox v-if="isDescriptionVisible && currentActionDescription" alertType="info">
+            {{ currentActionDescription }}
+        </NotificationBox>
+
+        <div v-if="addMode === ''">
+            <div class="security-rights">
+                <h4>Item Permissions</h4>
+                <Grid :data="itemRulesData"
+                      light
+                      :isFooterHidden="true"
+                      liveUpdates
+                      keyField="guid"
+                      itemTerm="role/user">
+                    <ReorderColumn @orderChanged="onReorder" />
+
+                    <Column name="displayName" title="Role / User" field="displayName" width="30%">
+                        <template #format="{ row }">
+                            <span v-html="row.displayName"></span>
+                        </template>
+                    </Column>
+
+                    <Column name="allowOrDeny" title="Allow or Deny" field="allowOrDeny">
+                        <template #format="{ row }">
+                            <div class="controls rockradiobuttonlist rockradiobuttonlist-horizontal">
+                                <span>
+                                    <label class="radio-inline">
+                                        <input type="radio"
+                                               :name="`allowDeny-${row.guid}`"
+                                               value="A"
+                                               :checked="row.allowOrDeny === 'A'"
+                                               @change="onSetAllowDeny(`${row.guid}`, 'A')" />
+                                        <span class="label-text">Allow</span>
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio"
+                                               :name="`allowDeny-${row.guid}`"
+                                               value="D"
+                                               :checked="row.allowOrDeny === 'D'"
+                                               @change="onSetAllowDeny(`${row.guid}`, 'D')" />
+                                        <span class="label-text">Deny</span>
+                                    </label>
+                                </span>
+                            </div>
+                        </template>
+                    </Column>
+
+                    <DeleteColumn @click="onDelete" />
+                </Grid>
+            </div>
+
+            <div class="actions">
+                <RockButton :btnType="BtnType.Primary" @click="showAddRole">Add Role</RockButton>
+                <RockButton :btnType="BtnType.Primary" class="ml-2" @click="showAddUser">Add User</RockButton>
+            </div>
+
+            <div class="security-inherited">
+                <h4>Inherited Permissions</h4>
+                <Grid :data="parentRulesData"
+                      light
+                      :isFooterHidden="true"
+                      itemTerm="inherited rule">
+                    <Column name="displayName" title="Role / User" field="displayName" width="30%">
+                        <template #format="{ row }">
+                            <span v-html="row.displayName"></span>
+                        </template>
+                    </Column>
+
+                    <Column name="allowOrDeny" title="Action" field="allowOrDeny">
+                        <template #format="{ row }">
+                            <span v-if="row.allowOrDeny === 'A'" class="label label-success">Allow</span>
+                            <span v-else class="label label-danger">Deny</span>
+                        </template>
+                    </Column>
+
+                    <Column name="entityTitle" title="From" field="entityTitle">
+                        <template #format="{ row }">
+                            <span v-html="row.entityTitle"></span>
+                        </template>
+                    </Column>
+                </Grid>
+            </div>
+
+            <NotificationBox v-if="actionData.noMatchMessage" alertType="info">
+                {{ actionData.noMatchMessage }}
+            </NotificationBox>
+        </div>
+
+        <div v-else-if="addMode === 'role'" class="add-role">
+            <fieldset>
+                <legend>Select Role to Add</legend>
+                <DropDownList label="Role"
+                              v-model="selectedRole"
+                              :items="roles"
+                              :showBlankItem="false"
+                              :enhanceForLongLists="true"
+                              @open="isPickerExpanded = true"
+                              @update:modelValue="loadRoleActions" />
+                <CheckBoxList v-model="selectedRoleActions"
+                              :items="roleActionItems"
+                              :horizontal="true" />
+            </fieldset>
+
+            <div class="actions margin-t-lg">
+                <RockButton :btnType="BtnType.Primary" :disabled="isBusy" @click="onAddRole">Add</RockButton>
+                <RockButton :btnType="BtnType.Link" class="ml-2" @click="cancelAdd">Cancel</RockButton>
+            </div>
+
+            <div v-if="isPickerExpanded" class="picker-spacer-role" aria-hidden="true"></div>
+        </div>
+
+        <div v-else-if="addMode === 'user'" class="add-user">
+            <fieldset>
+                <legend>Select User to Add</legend>
+                <PersonPicker label="User"
+                              v-model="selectedPerson"
+                              @update:isSearchModeOpen="onUserSearchModeChange" />
+            </fieldset>
+
+            <div class="actions margin-t-lg">
+                <RockButton :btnType="BtnType.Primary" :disabled="isBusy || !selectedPerson" @click="onAddUser">Add</RockButton>
+                <RockButton :btnType="BtnType.Link" class="ml-2" @click="cancelAdd">Cancel</RockButton>
+            </div>
+
+            <div v-if="isPickerExpanded" class="picker-spacer-user" aria-hidden="true"></div>
+        </div>
+    </template>
+</template>
+
+<style scoped>
+/* Light grids have no border. Add a flat border (no drop shadow) so the
+   permission grids read as bordered panels like the legacy block. overflow:hidden
+   clips the cells' rounded backgrounds to the border so it shows on every corner;
+   the drag-reorder mirror is position:fixed, so it is not affected. */
+.security-rights :deep(.grid-obsidian),
+.security-inherited :deep(.grid-obsidian) {
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-medium);
+    overflow: hidden;
+}
+
+/* Drop the empty (action-less) footer so it leaves no sliver below the last row. */
+.security-rights :deep(.grid-footing:empty),
+.security-inherited :deep(.grid-footing:empty) {
+    display: none;
+}
+
+/* Each cell carries its own bottom divider; on the last row that doubles up with
+   the panel border, so drop it and let the panel border be the only bottom line. */
+.security-rights :deep(.grid-body .grid-row:last-child .grid-cell),
+.security-inherited :deep(.grid-body .grid-row:last-child .grid-cell) {
+    border-bottom: none;
+}
+
+/* The empty-state row itself also carries a bottom border, which doubles up with the
+   panel border into a thicker line. Drop it so only the panel border shows. */
+.security-rights :deep(.grid-row:has(.table-empty)),
+.security-inherited :deep(.grid-row:has(.table-empty)) {
+    border-bottom: none;
+}
+
+/* Hide the column header when a grid has no rows, matching the legacy block
+   (ShowHeaderWhenEmpty = false). */
+.security-rights :deep(.grid-content-container:has(.table-empty) .grid-column-header-container),
+.security-inherited :deep(.grid-content-container:has(.table-empty) .grid-column-header-container) {
+    display: none;
+}
+
+/* Light grids drop the grid-striped class, but rows still carry grid-row-even, so
+   re-apply zebra striping by painting the even rows the same shade the core
+   grid-striped rule uses. */
+.security-rights :deep(.grid-row.grid-row-even .grid-cell),
+.security-inherited :deep(.grid-row.grid-row-even .grid-cell) {
+    background-color: var(--color-interface-softer);
+}
+
+/* Light grids also drop the grid-hover class. Re-apply the row hover highlight using
+   the same token the core grid-hover rule uses. Placed after the zebra rule so a
+   hovered row overrides its stripe, matching the core grid behavior. */
+.security-rights :deep(.grid-row:hover .grid-cell),
+.security-inherited :deep(.grid-row:hover .grid-cell) {
+    background-color: var(--color-info-soft);
+}
+
+/* Reserved height once a picker (role dropdown or person search) has been opened so
+   the auto-sizing modal grows tall enough for the overlay to show below. Kept for
+   the rest of the session to avoid a collapse flicker on close. */
+.picker-spacer-role {
+    height: 12rem;
+}
+
+/* The person search popup is position:fixed at 55% of the iframe viewport, so the
+   modal must grow much taller than for the role dropdown to keep the popup (search
+   fields plus results) from being clipped. Tune this if the popup is still short. */
+.picker-spacer-user {
+    height: 36rem;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import Grid, { Column, ReorderColumn, DeleteColumn } from "@Obsidian/Controls/grid";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { SecurityInitializationBag } from "@Obsidian/ViewModels/Blocks/Administration/Security/securityInitializationBag";
+    import { SecurityOptionsBag } from "@Obsidian/ViewModels/Blocks/Administration/Security/securityOptionsBag";
+    import { SecurityActionBag } from "@Obsidian/ViewModels/Blocks/Administration/Security/securityActionBag";
+    import { SecurityActionDataBag } from "@Obsidian/ViewModels/Blocks/Administration/Security/securityActionDataBag";
+    import { SecurityRoleActionItemBag } from "@Obsidian/ViewModels/Blocks/Administration/Security/securityRoleActionItemBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { HttpResult } from "@Obsidian/Types/Utility/http";
+
+    const config = useConfigurationValues<CustomBlockBox<SecurityInitializationBag, SecurityOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const actions = ref<SecurityActionBag[]>(config.bag?.actions ?? []);
+    const currentAction = ref<string>(config.bag?.currentAction ?? "");
+    const actionData = ref<SecurityActionDataBag>(config.bag?.actionData ?? {});
+    const roles = config.options?.roles ?? [];
+
+    /** The currently shown form: the permission list (""), Add Role, or Add User. */
+    const addMode = ref<"" | "role" | "user">("");
+    const selectedRole = ref<string>("");
+    const selectedRoleActions = ref<string[]>([]);
+    const roleActionItems = ref<ListItemBag[]>([]);
+    const selectedPerson = ref<ListItemBag | undefined>();
+    const isBusy = ref<boolean>(false);
+
+    /*
+        06/18/2026 - MSE
+
+        Rapid tab/help/screen switching fires overlapping block-action calls that can
+        resolve out of order. Each token is captured at dispatch and a response is
+        applied only if its token is still the latest, dropping stale responses
+        instead of painting interleaved/duplicate rows. Two tokens because the grid
+        (actionData) and the Add Role checkboxes load independently in one selectAction.
+
+        Reason: Discard out-of-order responses; newest dispatch wins.
+    */
+    let latestActionDataToken = 0;
+    let latestRoleActionsToken = 0;
+
+    /**
+     * Whether a picker (the role dropdown or the person search) has been opened. The
+     * security block is shown in an iframe modal that auto-sizes to its content, and
+     * these pickers float as overlays that do not grow that content, so their menus
+     * get clipped or flip upward. Once a picker is opened we reserve extra height
+     * (see the picker-spacer in the template) so the modal grows and the menu shows
+     * downward, matching the legacy block. The role dropdown keeps the reserved
+     * height once opened (collapsing on its rapid close flickers); the person search
+     * popup collapses it again on close since that is a single deliberate action.
+     */
+    const isPickerExpanded = ref<boolean>(false);
+
+    /** Whether the description for the current action is revealed (hidden until the help icon is clicked). */
+    const isDescriptionVisible = ref<boolean>(false);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const itemRulesData = computed<GridDataBag>(() => actionData.value?.itemRules ?? { rows: [] });
+    const parentRulesData = computed<GridDataBag>(() => actionData.value?.parentRules ?? { rows: [] });
+    const currentActionDescription = computed<string>(() => actions.value.find(a => a.action === currentAction.value)?.description ?? "");
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Runs a server call that returns the full action data and applies the result
+     * only if no newer call has been dispatched since it started, discarding
+     * out-of-order responses. Returns true if the result was applied.
+     */
+    async function applyLatestActionData(invoke: () => Promise<HttpResult<SecurityActionDataBag>>, errorFallback: string): Promise<boolean> {
+        const token = ++latestActionDataToken;
+        const result = await invoke();
+
+        // Superseded by a newer dispatch; drop this stale response.
+        if (token !== latestActionDataToken) {
+            return false;
+        }
+
+        if (result.isSuccess && result.data) {
+            actionData.value = result.data;
+            return true;
+        }
+
+        await alert(result.errorMessage ?? errorFallback);
+        return false;
+    }
+
+    /** Loads the permission data for the supplied action into the grids. */
+    async function loadActionData(action: string): Promise<void> {
+        await applyLatestActionData(
+            () => invokeBlockAction<SecurityActionDataBag>("GetActionData", { action }),
+            "Unable to load security for this action."
+        );
+    }
+
+    /** Loads the actions offered in the Add Role form for the selected role. */
+    async function loadRoleActions(): Promise<void> {
+        if (!selectedRole.value) {
+            roleActionItems.value = [];
+            selectedRoleActions.value = [];
+            return;
+        }
+
+        const token = ++latestRoleActionsToken;
+        const result = await invokeBlockAction<SecurityRoleActionItemBag[]>("GetRoleActions", {
+            roleValue: selectedRole.value,
+            action: currentAction.value
+        });
+
+        // Superseded by a newer dispatch; drop this stale response.
+        if (token !== latestRoleActionsToken) {
+            return;
+        }
+
+        if (result.isSuccess && result.data) {
+            roleActionItems.value = result.data.map(a => ({ text: a.title ?? "", value: a.action ?? "" }));
+            selectedRoleActions.value = result.data.filter(a => a.isSelected).map(a => a.action ?? "");
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to load actions for the selected role.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Switches to the requested action tab and loads its permission data. Mirrors
+     * the legacy block, which stayed on whichever form (permission list, Add Role,
+     * or Add User) was open when a tab was clicked rather than returning to the list.
+     */
+    async function selectAction(action: string | null | undefined): Promise<void> {
+        if (!action || action === currentAction.value) {
+            return;
+        }
+
+        // Leave the help text as-is across tab changes. currentActionDescription is a
+        // computed off currentAction, so an open help box swaps its text in place
+        // instead of being removed and re-added, which avoids a modal-resize flicker.
+        currentAction.value = action;
+        await loadActionData(action);
+
+        // The legacy block rebuilt the Add Role action list on a tab change so it
+        // reflects the newly selected action; mirror that while that form is open.
+        if (addMode.value === "role") {
+            await loadRoleActions();
+        }
+    }
+
+    /** Sets a rule to allow or deny. */
+    async function onSetAllowDeny(guid: string, allowOrDeny: string): Promise<void> {
+        await applyLatestActionData(
+            () => invokeBlockAction<SecurityActionDataBag>("SetAllowDeny", {
+                authGuid: guid,
+                allowOrDeny,
+                action: currentAction.value
+            }),
+            "Unable to update the rule."
+        );
+    }
+
+    /** Deletes a rule from the permission list. */
+    async function onDelete(guid: string): Promise<void> {
+        await applyLatestActionData(
+            () => invokeBlockAction<SecurityActionDataBag>("DeleteRule", {
+                authGuid: guid,
+                action: currentAction.value
+            }),
+            "Unable to delete the rule."
+        );
+    }
+
+    /** Persists the new order after a rule has been dragged to a new position. */
+    async function onReorder(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        return await applyLatestActionData(
+            () => invokeBlockAction<SecurityActionDataBag>("ReorderRule", {
+                key: item["guid"],
+                beforeKey: beforeItem?.["guid"] ?? null,
+                action: currentAction.value
+            }),
+            "Unable to reorder the rule."
+        );
+    }
+
+    /** Reveals the Add Role form, defaulting to the first role. */
+    async function showAddRole(): Promise<void> {
+        isPickerExpanded.value = false;
+        addMode.value = "role";
+        selectedRole.value = roles[0]?.value ?? "";
+        await loadRoleActions();
+    }
+
+    /** Reveals the Add User form. */
+    function showAddUser(): void {
+        isPickerExpanded.value = false;
+        selectedPerson.value = undefined;
+        addMode.value = "user";
+    }
+
+    /** Grows the modal while the person search popup is open so it is not clipped,
+        then shrinks it back once the popup closes. The popup opens and closes as a
+        single deliberate action (select or cancel), so collapsing here does not cause
+        the open/close flicker that the role dropdown overlay does. */
+    function onUserSearchModeChange(isOpen: boolean): void {
+        isPickerExpanded.value = isOpen;
+    }
+
+    /** Returns to the permission list without adding anything. */
+    function cancelAdd(): void {
+        isPickerExpanded.value = false;
+        addMode.value = "";
+    }
+
+    /** Adds the selected role to the selected actions. */
+    async function onAddRole(): Promise<void> {
+        isBusy.value = true;
+
+        try {
+            const applied = await applyLatestActionData(
+                () => invokeBlockAction<SecurityActionDataBag>("AddRole", {
+                    bag: {
+                        roleValue: selectedRole.value,
+                        actions: selectedRoleActions.value,
+                        currentAction: currentAction.value
+                    }
+                }),
+                "Unable to add the role."
+            );
+
+            if (applied) {
+                addMode.value = "";
+            }
+        }
+        finally {
+            isBusy.value = false;
+        }
+    }
+
+    /** Adds the selected person to the current action. */
+    async function onAddUser(): Promise<void> {
+        const personAliasGuid = selectedPerson.value?.value;
+
+        if (!personAliasGuid) {
+            return;
+        }
+
+        isBusy.value = true;
+
+        try {
+            const applied = await applyLatestActionData(
+                () => invokeBlockAction<SecurityActionDataBag>("AddUser", {
+                    personAliasGuid,
+                    action: currentAction.value
+                }),
+                "Unable to add the user."
+            );
+
+            if (applied) {
+                addMode.value = "";
+            }
+        }
+        finally {
+            isBusy.value = false;
+        }
+    }
+
+    // #endregion
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>
