@@ -142,7 +142,7 @@ namespace RockWeb.Blocks.Core
             var groupIdString = Request.QueryString["GroupId"];
             if ( groupIdString != null )
             {
-                var groupId = groupIdString.AsInteger();
+                var groupId = groupIdString.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( groupIdString ) ?? 0;
 
                 // if there is a query parameter, ensure that the Group Context cookie is set (and has an updated expiration)
                 // note, the Group Context might already match due to the query parameter, but has a different cookie context, so we still need to ensure the cookie context is updated

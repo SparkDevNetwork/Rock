@@ -457,7 +457,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             int? groupId = 0;
             if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.GroupId ) ) )
             {
-                groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+                groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.GroupId ) );
             }
 
             if ( !Page.IsPostBack )

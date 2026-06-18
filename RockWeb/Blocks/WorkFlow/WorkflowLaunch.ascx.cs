@@ -328,11 +328,11 @@ namespace RockWeb.Blocks.WorkFlow
         /// <returns></returns>
         private WorkflowTypeCache GetSelectedWorkflowType()
         {
-            var workflowTypeId = PageParameter( PageParameterKey.WorkflowTypeId ).AsIntegerOrNull();
+            var workflowType = WorkflowTypeCache.Get( PageParameter( PageParameterKey.WorkflowTypeId ), !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( workflowTypeId.HasValue )
+            if ( workflowType != null )
             {
-                return WorkflowTypeCache.Get( workflowTypeId.Value );
+                return workflowType;
             }
 
             var workflowTypes = GetAttributeValues( AttributeKey.WorkflowTypes )
@@ -341,11 +341,10 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( workflowTypes.Count == 1 )
             {
-                var workflowType = workflowTypes.Single();
-                return workflowType;
+                return workflowTypes.Single();
             }
 
-            workflowTypeId = workflowTypes.Any() ?
+            var workflowTypeId = workflowTypes.Any() ?
                 ddlWorkflowType.SelectedValueAsInt() :
                 wtpWorkflowType.SelectedValueAsInt();
 
@@ -566,13 +565,11 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             // If a page parameter is set, then it overrides everything else
-            var workflowTypeId = PageParameter( PageParameterKey.WorkflowTypeId ).AsIntegerOrNull();
+            var workflowType = WorkflowTypeCache.Get( PageParameter( PageParameterKey.WorkflowTypeId ), !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( workflowTypeId.HasValue )
+            if ( workflowType != null )
             {
-                var workflowType = WorkflowTypeCache.Get( workflowTypeId.Value );
-
-                if ( workflowType != null && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     lWorkflowType.Text = GetLockedWorkflowTypeHtml( workflowType );
                     lWorkflowType.Visible = true;
@@ -593,8 +590,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( workflowTypes.Count == 1 )
             {
-                var workflowType = workflowTypes.Single();
-                lWorkflowType.Text = GetLockedWorkflowTypeHtml( workflowType );
+                lWorkflowType.Text = GetLockedWorkflowTypeHtml( workflowTypes.Single() );
             }
             else if ( workflowTypes.Any() )
             {

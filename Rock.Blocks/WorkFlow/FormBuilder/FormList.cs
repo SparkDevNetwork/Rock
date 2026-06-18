@@ -182,6 +182,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
                 var form = new FormListItemBag
                 {
                     Id = wt.Id,
+                    IdKey = wt.IdKey,
                     Name = wt.Name,
                     Description = wt.Description,
                     Guid = wt.Guid,
@@ -440,7 +441,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             workflowActionType.Order = 0;
             rockContext.SaveChanges();
 
-            return ActionOk( workflowType.Id.ToString() );
+            return ActionOk( workflowType.IdKey );
         }
 
         /// <summary>

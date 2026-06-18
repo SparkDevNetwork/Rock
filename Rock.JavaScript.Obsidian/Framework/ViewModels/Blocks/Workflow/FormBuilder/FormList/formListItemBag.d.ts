@@ -45,6 +45,9 @@ export type FormListItemBag = {
     /** Gets or sets the workflow type identifier. */
     id: number;
 
+    /** Gets or sets the workflow type IdKey. */
+    idKey?: string | null;
+
     /** Gets or sets the form name. */
     name?: string | null;
 

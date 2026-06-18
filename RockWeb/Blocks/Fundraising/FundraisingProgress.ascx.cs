@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Fundraising
                 int? groupId = new GroupService( new RockContext() )
                     .GetSelect( this.PageParameter( "GroupId" ), g => ( int? ) g.Id, !PageCache.Layout.Site.DisablePredictableIds );
 
-                int? groupMemberId = this.PageParameter( "GroupMemberId" ).AsIntegerOrNull();
+                int? groupMemberId = this.PageParameter( "GroupMemberId" ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( this.PageParameter( "GroupMemberId" ) );
 
                 if ( groupId.HasValue || groupMemberId.HasValue )
                 {

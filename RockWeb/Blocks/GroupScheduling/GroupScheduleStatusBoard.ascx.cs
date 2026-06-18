@@ -173,7 +173,7 @@ namespace RockWeb.Blocks.GroupScheduling
         private Group GetGroupFromParameter( GroupService groupService )
         {
             var groupGuid = PageParameter( PageParameterKey.GroupGuid ).AsGuidOrNull();
-            var groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+            var groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.GroupId ) );
             if ( groupGuid.HasValue )
             {
                 return groupService.Get( groupGuid.Value );

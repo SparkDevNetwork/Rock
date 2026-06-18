@@ -91,11 +91,10 @@ namespace Rock.Blocks.Core
                     return box;
                 }
 
-                var categoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
-                if ( categoryId.HasValue )
+                var parentCategory = CategoryCache.Get( PageParameter( PageParameterKey.ParentCategoryId ), !PageCache.Layout.Site.DisablePredictableIds );
+                if ( parentCategory != null )
                 {
-                    box.Entity.Category = CategoryCache.Get( categoryId.Value )
-                        .ToListItemBag();
+                    box.Entity.Category = parentCategory.ToListItemBag();
                 }
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext, entity );
@@ -382,12 +381,12 @@ namespace Rock.Blocks.Core
 
         private string GetCancelLink()
         {
-            var parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
-            if ( parentCategoryId.HasValue )
+            var category = CategoryCache.Get( PageParameter( PageParameterKey.ParentCategoryId ), !PageCache.Layout.Site.DisablePredictableIds );
+            if ( category != null )
             {
                 // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
                 var qryParams = new Dictionary<string, string>();
-                qryParams["CategoryId"] = parentCategoryId.ToString();
+                qryParams["CategoryId"] = category.IdKey;
                 qryParams["ScheduleId"] = null;
                 return this.GetCurrentPageUrl( qryParams );
             }
@@ -612,9 +611,9 @@ namespace Rock.Blocks.Core
 
                 // reload page, selecting the deleted data view's parent
                 var qryParams = new Dictionary<string, string>();
-                if ( entity.CategoryId != null )
+                if ( entity.CategoryId.HasValue )
                 {
-                    qryParams["CategoryId"] = entity.CategoryId.ToString();
+                    qryParams["CategoryId"] = CategoryCache.Get( entity.CategoryId.Value )?.IdKey;
                 }
                 qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
 

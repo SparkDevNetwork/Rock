@@ -227,7 +227,7 @@ namespace RockWeb.Blocks.Finance
             ddlBatch.Visible = this.GetAttributeValue( "ShowBatchFilter" ).AsBoolean();
             dvpDataView.Visible = this.GetAttributeValue( "ShowDataviewFilter" ).AsBoolean();
             nbBlockConfigurationWarning.Visible = false;
-            int? transactionId = this.PageParameter( "TransactionId" ).AsIntegerOrNull();
+            int? transactionId = this.PageParameter( "TransactionId" ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( this.PageParameter( "TransactionId" ) );
             if ( transactionId.HasValue )
             {
                 ddlBatch.Visible = false;
@@ -523,7 +523,7 @@ namespace RockWeb.Blocks.Finance
 
             lHeaderHtml.Text = headers.ToString();
 
-            int? transactionId = this.PageParameter( "TransactionId" ).AsIntegerOrNull();
+            int? transactionId = this.PageParameter( "TransactionId" ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( this.PageParameter( "TransactionId" ) );
             DataViewCache dataView = null;
 
             if ( batchId.HasValue || dataViewId.HasValue || transactionId.HasValue )

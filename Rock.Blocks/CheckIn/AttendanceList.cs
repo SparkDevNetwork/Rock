@@ -92,8 +92,8 @@ namespace Rock.Blocks.CheckIn
             var attendanceService = new AttendanceService( rockContext );
             IEnumerable<Attendance> attendance = new List<Attendance>();
 
-            var groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
-            var scheduleId = PageParameter( PageParameterKey.ScheduleId ).AsIntegerOrNull();
+            var groupId = new GroupService( rockContext ).GetSelect( PageParameter( PageParameterKey.GroupId ), g => (int?)g.Id, !PageCache.Layout.Site.DisablePredictableIds );
+            var scheduleId = new ScheduleService( rockContext ).GetSelect( PageParameter( PageParameterKey.ScheduleId ), s => (int?)s.Id, !PageCache.Layout.Site.DisablePredictableIds );
             var locationId = PageParameter( PageParameterKey.LocationId ).AsIntegerOrNull();
             var attendanceDate = PageParameter( PageParameterKey.AttendanceDate ).AsDateTime();
 

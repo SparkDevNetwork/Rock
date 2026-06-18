@@ -389,16 +389,19 @@ namespace Rock.Blocks.Core
             expandedGuids = expandedGuids ?? new List<Guid>();
 
             /*
-                06/09/26 - JMH
+                06/18/26 - CLAUDE
 
-                Navigate mode emits the integer Id, not the IdKey, to match the WebForms Category Tree
-                View (consumers such as PrayerCardView read the parameter with AsIntegerOrNull, which
-                cannot parse an IdKey). It also routes by node kind the way WebForms did: a category
-                node goes to the CategoryId parameter, while an entity node (Show Only Categories off)
-                goes to the configured Page Parameter Key. The server tells the two apart by resolving
-                the Guid as a category first, then as the configured entity type.
+                Navigate mode emits the entity IdKey for CategoryId and the configured Page Parameter
+                Key; the consumer blocks (PrayerCardView, CategoryList, ScheduleList, AdaptiveMessageList,
+                AdaptiveMessageDetail) have been updated to read them IdKey-aware. It routes by node kind
+                the way WebForms did: a category node goes to the CategoryId parameter, while an entity
+                node (Show Only Categories off) goes to the configured Page Parameter Key. The server
+                tells the two apart by resolving the Guid as a category first, then as the configured
+                entity type. ParentCategoryId is intentionally still emitted as an integer Id pending an
+                IdKey-safe fallback in the Form Builder form list client (Add-child-category path), so do
+                not flip it yet.
 
-                Reason: Match the WebForms parameter routing and integer-Id form for the consumers.
+                Reason: CategoryId and the configured Page Parameter Key now emit the entity IdKey.
             */
             var pageParameterKey = GetAttributeValue( AttributeKey.PageParameterKey ).IfEmpty( DefaultPageParameterKey );
             var qryParams = new Dictionary<string, string>();
@@ -413,7 +416,7 @@ namespace Rock.Blocks.Core
                 var selectedCategory = CategoryCache.Get( categoryGuid );
                 if ( selectedCategory != null )
                 {
-                    qryParams[PageParameterKey.CategoryId] = selectedCategory.Id.ToString();
+                    qryParams[PageParameterKey.CategoryId] = selectedCategory.IdKey;
                 }
                 else
                 {
@@ -424,7 +427,7 @@ namespace Rock.Blocks.Core
                         return string.Empty;
                     }
 
-                    var pageParameterValue = entity.Id;
+                    var pageParameterValue = entity.IdKey;
 
                     // An AdaptiveMessageCategory node carries the AdaptiveMessage.Guid, but its page
                     // parameter is the join-row Id. Map the message back to its join row (preferring
@@ -434,11 +437,11 @@ namespace Rock.Blocks.Core
                         var joinId = GetAdaptiveMessageCategoryId( entity.Id, parentGuid );
                         if ( joinId.HasValue )
                         {
-                            pageParameterValue = joinId.Value;
+                            pageParameterValue = Rock.Utility.IdHasher.Instance.GetHash( joinId.Value );
                         }
                     }
 
-                    qryParams[pageParameterKey] = pageParameterValue.ToString();
+                    qryParams[pageParameterKey] = pageParameterValue;
                 }
             }
 

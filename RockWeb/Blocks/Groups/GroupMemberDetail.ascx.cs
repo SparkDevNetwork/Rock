@@ -301,10 +301,10 @@ namespace RockWeb.Blocks.Groups
                 ShowDetail
                 (
                     GetGroupMemberId( PageParameter( PageParameterKey.GroupMemberId ) ) ?? 0,
-                    PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull(),
+                    PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.GroupId ) ),
                     PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull(),
                     PageParameter( PageParameterKey.LocationId ).AsIntegerOrNull(),
-                    PageParameter( PageParameterKey.ScheduleId ).AsIntegerOrNull()
+                    PageParameter( PageParameterKey.ScheduleId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.ScheduleId ) )
                 );
             }
             else

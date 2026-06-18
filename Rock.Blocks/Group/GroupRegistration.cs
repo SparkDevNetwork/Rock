@@ -339,11 +339,7 @@ namespace Rock.Blocks.Group
 
             if ( group == null && GetAttributeValue( AttributeKey.EnablePassingGroupId ).AsBoolean( false ) )
             {
-                int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
-                if ( groupId.HasValue )
-                {
-                    group = groupService.Get( groupId.Value );
-                }
+                group = groupService.Get( PageParameter( PageParameterKey.GroupId ), !PageCache.Layout.Site.DisablePredictableIds );
             }
 
             return group;

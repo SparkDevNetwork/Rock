@@ -225,7 +225,10 @@ namespace Rock.Blocks.Reporting
 
             if ( entity.Id == 0 )
             {
-                var categoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull() ?? entity.CategoryId;
+                var parentCategoryKey = PageParameter( PageParameterKey.ParentCategoryId );
+                var categoryId = Rock.Utility.IdHasher.Instance.GetId( parentCategoryKey )
+                    ?? ( !PageCache.Layout.Site.DisablePredictableIds ? parentCategoryKey.AsIntegerOrNull() : null )
+                    ?? entity.CategoryId;
                 var category = CategoryCache.Get( categoryId );
                 bag.Category = category.ToListItemBag();
             }
@@ -371,7 +374,9 @@ namespace Rock.Blocks.Reporting
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
             string url;
-            var categoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
+            var parentCategoryKey = PageParameter( PageParameterKey.ParentCategoryId );
+            var categoryId = Rock.Utility.IdHasher.Instance.GetId( parentCategoryKey )
+                ?? ( !PageCache.Layout.Site.DisablePredictableIds ? parentCategoryKey.AsIntegerOrNull() : null );
 
             if ( categoryId.HasValue )
             {
@@ -379,7 +384,7 @@ namespace Rock.Blocks.Reporting
                 var qryParams = new Dictionary<string, string>();
                 if ( categoryId != 0 )
                 {
-                    qryParams[PageParameterKey.CategoryId] = categoryId.ToString();
+                    qryParams[PageParameterKey.CategoryId] = CategoryCache.Get( categoryId.Value )?.IdKey;
                 }
 
                 qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
@@ -651,7 +656,7 @@ namespace Rock.Blocks.Reporting
                 var queryParams = new Dictionary<string, string>();
                 if ( categoryId != 0 )
                 {
-                    queryParams[PageParameterKey.CategoryId] = categoryId.ToString();
+                    queryParams[PageParameterKey.CategoryId] = CategoryCache.Get( categoryId )?.IdKey;
                 }
 
                 queryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );

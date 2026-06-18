@@ -309,8 +309,8 @@ namespace Rock.Blocks.Event
                     {
                         var qryParams = new Dictionary<string, string>
                         {
-                            { PageParameterKey.EventCalendarId, calendarItem.EventCalendarId.ToString() },
-                            { PageParameterKey.EventItemId, calendarItem.EventItem.Id.ToString() }
+                            { PageParameterKey.EventCalendarId, calendarItem.EventCalendar.IdKey },
+                            { PageParameterKey.EventItemId, calendarItem.EventItem.IdKey }
                         };
 
                         var calendarEventUrl = this.GetLinkedPageUrl( AttributeKey.CalendarItemDetailPage, qryParams );

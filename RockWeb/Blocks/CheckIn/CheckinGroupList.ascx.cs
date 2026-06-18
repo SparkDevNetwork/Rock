@@ -218,11 +218,14 @@ namespace RockWeb.Blocks.Checkin
             else if( !string.IsNullOrWhiteSpace( Request["GroupId"] ) )
             {
                 // get the root group type of this group
-                int groupId = Request["GroupId"].AsInteger();
-                var rootGroupType = GetRootGroupType( groupId );
-                if ( rootGroupType != null )
+                var groupId = Request["GroupId"].AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( Request["GroupId"] );
+                if ( groupId.HasValue )
                 {
-                    groupTypeIds.Add( rootGroupType.Id );
+                    var rootGroupType = GetRootGroupType( groupId.Value );
+                    if ( rootGroupType != null )
+                    {
+                        groupTypeIds.Add( rootGroupType.Id );
+                    }
                 }
             }
 

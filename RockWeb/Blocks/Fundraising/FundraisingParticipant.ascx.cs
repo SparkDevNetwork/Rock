@@ -208,8 +208,8 @@ namespace RockWeb.Blocks.Fundraising
         {
             if ( !Page.IsPostBack )
             {
-                int? groupId = this.PageParameter( "GroupId" ).AsIntegerOrNull();
-                int? groupMemberId = this.PageParameter( "GroupMemberId" ).AsIntegerOrNull();
+                int? groupId = this.PageParameter( "GroupId" ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( this.PageParameter( "GroupId" ) );
+                int? groupMemberId = this.PageParameter( "GroupMemberId" ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( this.PageParameter( "GroupMemberId" ) );
 
                 if ( groupId.HasValue && groupMemberId.HasValue )
                 {

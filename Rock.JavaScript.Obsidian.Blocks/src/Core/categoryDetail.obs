@@ -189,10 +189,10 @@
      */
     function onCategoryClick(key: string): void {
         const childCategory = gridData?.rows?.find(c => c.idKey === key);
-        const categoryId = childCategory?.categoryId as number ?? 0;
+        const childIdKey = childCategory?.idKey as string ?? "";
 
-        if (categoryId > 0) {
-            navigateToCategoryDetail(categoryId, categoryViewBag.value?.categoryId ?? 0, true);
+        if (childIdKey) {
+            navigateToCategoryDetail(childIdKey, categoryViewBag.value?.idKey ?? "", true);
         }
     }
 
@@ -340,20 +340,16 @@
 
     /** Handles the onNewChildCategoryClick event. Navigates to the Category Detail page to add a new record. */
     function onNewChildCategoryClick(): void {
-        navigateToCategoryDetail(0, categoryViewBag.value?.categoryId ?? 0, true);
+        navigateToCategoryDetail("", categoryViewBag.value?.idKey ?? "", true);
     }
 
     /**
      * Navigates to the Detail page for a Category.
-     *   One of the use-cases for the CategoryDetail block is
-     *  to be used alongside the Category Tree View webforms block
-     *  which only supports setting the CategoryId as a number.
-     *  Therefore we are only using a number here.
-     * @param categoryId The CategoryId (as a number) for the Category to show.
-     * @param parentCategoryId The ParentCategoryId to use for new Categories.
+     * @param categoryIdKey The IdKey for the Category to show. Pass an empty string when adding a new record.
+     * @param parentCategoryIdKey The ParentCategoryId (as an IdKey) to use for new Categories.
      * @param autoEdit Whether the autoEdit parameter should be true or not.
      */
-    function navigateToCategoryDetail(categoryId: number, parentCategoryId?: number, autoEdit = false): void {
+    function navigateToCategoryDetail(categoryIdKey: string, parentCategoryIdKey = "", autoEdit = false): void {
         const currentPageTemplate = config.navigationUrls?.[NavigationUrlKey.CurrentPageTemplate] ?? "";
         const categoryIdRouteParamKey = "{CategoryId}";
 
@@ -369,20 +365,20 @@
             params.delete("autoEdit");
         }
 
-        if (parentCategoryId && parentCategoryId > 0) {
-            params.set("ParentCategoryId", parentCategoryId.toString());
+        if (parentCategoryIdKey) {
+            params.set("ParentCategoryId", parentCategoryIdKey);
         }
         else {
             params.delete("ParentCategoryId");
         }
 
         if (currentPageTemplate) {
-            const navigationUrl = currentPageTemplate.replace(categoryIdRouteParamKey, categoryId.toString()) + "?" + params.toString();
+            const navigationUrl = currentPageTemplate.replace(categoryIdRouteParamKey, categoryIdKey) + "?" + params.toString();
             window.location.href = navigationUrl;
         }
         else {
             // Fallback: use query string navigation on the current page.
-            params.set("CategoryId", categoryId.toString());
+            params.set("CategoryId", categoryIdKey);
             window.location.href = window.location.pathname + "?" + params.toString();
         }
     }

@@ -79,7 +79,8 @@ namespace Rock.Blocks.Workflow.FormBuilder
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var workflowTypeId = RequestContext.GetPageParameter( PageParameterKey.WorkflowTypeId ).AsIntegerOrNull();
+            var workflowType = new WorkflowTypeService( RockContext ).Get( RequestContext.GetPageParameter( PageParameterKey.WorkflowTypeId ), !PageCache.Layout.Site.DisablePredictableIds );
+            var workflowTypeId = workflowType?.Id;
 
             // Build the basic view model information required to edit a form.
             var viewModel = new FormBuilderDetailViewModel
@@ -104,7 +105,6 @@ namespace Rock.Blocks.Workflow.FormBuilder
             if ( workflowTypeId.HasValue )
             {
                 var formBuilderEntityTypeId = EntityTypeCache.Get( typeof( Rock.Workflow.Action.FormBuilder ) ).Id;
-                var workflowType = new WorkflowTypeService( RockContext ).Get( workflowTypeId.Value );
 
                 // If WorkflowType has an explicit rule for EDIT, use it. Otherwise, fall back to Category security.
                 bool canEdit = false;

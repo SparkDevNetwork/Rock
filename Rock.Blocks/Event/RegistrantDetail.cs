@@ -451,10 +451,10 @@ namespace Rock.Blocks.Event
         /// </summary>
         private Dictionary<string, string> GetBoxNavigationUrls( RegistrationRegistrant entity )
         {
-            var registrationId = entity?.RegistrationId ?? 0;
+            var registrationIdKey = entity?.Registration?.IdKey;
 
-            var parentParams = registrationId > 0
-                ? new Dictionary<string, string> { [PageParameterKey.RegistrationId] = registrationId.ToString() }
+            var parentParams = registrationIdKey.IsNotNullOrWhiteSpace()
+                ? new Dictionary<string, string> { [PageParameterKey.RegistrationId] = registrationIdKey }
                 : null;
 
             var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
@@ -466,22 +466,22 @@ namespace Rock.Blocks.Event
             var instancePage = PageCache.ParentPage?.ParentPage;
             var templatePage = PageCache.ParentPage?.ParentPage?.ParentPage;
 
-            var instanceId = entity?.Registration?.RegistrationInstanceId ?? 0;
-            var templateId = entity?.Registration?.RegistrationInstance?.RegistrationTemplateId ?? 0;
+            var instanceIdKey = entity?.Registration?.RegistrationInstance?.IdKey;
+            var templateIdKey = entity?.Registration?.RegistrationInstance?.RegistrationTemplate?.IdKey;
 
-            if ( instancePage != null && instanceId > 0 )
+            if ( instancePage != null && instanceIdKey.IsNotNullOrWhiteSpace() )
             {
                 urls[NavigationUrlKey.RegistrationInstancePage] = new Rock.Web.PageReference(
                     instancePage.Id, 0,
-                    new Dictionary<string, string> { ["RegistrationInstanceId"] = instanceId.ToString() }
+                    new Dictionary<string, string> { ["RegistrationInstanceId"] = instanceIdKey }
                 ).BuildUrl();
             }
 
-            if ( templatePage != null && templateId > 0 )
+            if ( templatePage != null && templateIdKey.IsNotNullOrWhiteSpace() )
             {
                 urls[NavigationUrlKey.RegistrationTemplatePage] = new Rock.Web.PageReference(
                     templatePage.Id, 0,
-                    new Dictionary<string, string> { ["RegistrationTemplateId"] = templateId.ToString() }
+                    new Dictionary<string, string> { ["RegistrationTemplateId"] = templateIdKey }
                 ).BuildUrl();
             }
 
@@ -1036,9 +1036,9 @@ namespace Rock.Blocks.Event
                 }
             }
 
-            var registrationId = entity.RegistrationId;
-            var parentParams = registrationId > 0
-                ? new Dictionary<string, string> { [PageParameterKey.RegistrationId] = registrationId.ToString() }
+            var registrationIdKey = registration?.IdKey;
+            var parentParams = registrationIdKey.IsNotNullOrWhiteSpace()
+                ? new Dictionary<string, string> { [PageParameterKey.RegistrationId] = registrationIdKey }
                 : null;
 
             var returnUrl = PageParameter( PageParameterKey.ReturnUrl );

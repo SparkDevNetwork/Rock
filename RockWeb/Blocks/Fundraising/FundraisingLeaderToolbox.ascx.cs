@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Fundraising
         {
             if ( !Page.IsPostBack )
             {
-                int? groupId = this.PageParameter( "GroupId" ).AsIntegerOrNull();
+                int? groupId = this.PageParameter( "GroupId" ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( this.PageParameter( "GroupId" ) );
 
                 if ( groupId.HasValue )
                 {

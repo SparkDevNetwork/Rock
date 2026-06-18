@@ -530,7 +530,7 @@ btnCopyToClipboard.ClientID );
             if ( this.PageParameter( PageParameterKey.SelectAllSchedules ).IsNotNullOrWhiteSpace() || this.PageParameter( PageParameterKey.ScheduleId ).IsNotNullOrWhiteSpace() )
             {
                 selectAllSchedules = this.PageParameter( PageParameterKey.SelectAllSchedules ).AsBoolean();
-                selectedIndividualScheduleId = this.PageParameter( PageParameterKey.ScheduleId ).AsIntegerOrNull();
+                selectedIndividualScheduleId = this.PageParameter( PageParameterKey.ScheduleId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( this.PageParameter( PageParameterKey.ScheduleId ) );
             }
             else
             {
@@ -598,7 +598,8 @@ btnCopyToClipboard.ClientID );
 
             gpResourceListAlternateGroup.SetValue( this.GetUrlSettingOrBlockUserPreference( PageParameterKey.AlternateGroupId, UserPreferenceKey.AlternateGroupId ).AsIntegerOrNull() );
 
-            var dataViewId = this.GetUrlSettingOrBlockUserPreference( PageParameterKey.DataViewId, UserPreferenceKey.DataViewId ).AsIntegerOrNull();
+            var dataViewSetting = this.GetUrlSettingOrBlockUserPreference( PageParameterKey.DataViewId, UserPreferenceKey.DataViewId );
+            var dataViewId = dataViewSetting.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( dataViewSetting );
             if ( dataViewId.HasValue )
             {
                 // make sure it is a Person DataView

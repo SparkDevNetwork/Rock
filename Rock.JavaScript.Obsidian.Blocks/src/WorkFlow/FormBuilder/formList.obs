@@ -394,13 +394,13 @@
                 iconCssClass: "ti ti-list",
                 title: "Submissions",
                 type: "default",
-                handler: () => onClickSubmissions(form.id)
+                handler: () => onClickSubmissions(form.idKey ?? "")
             },
             {
                 iconCssClass: "ti ti-chart-bar",
                 title: "Analytics",
                 type: "default",
-                handler: () => onClickAnalytics(form.id)
+                handler: () => onClickAnalytics(form.idKey ?? "")
             },
             {
                 iconCssClass: "ti ti-link",
@@ -413,7 +413,7 @@
                 title: "Builder",
                 type: "default",
                 disabled: !form.canEdit,
-                handler: () => onClickFormBuilder(form.id)
+                handler: () => onClickFormBuilder(form.idKey ?? "")
             }
         ];
     }
@@ -568,15 +568,15 @@
      * Event handler for the "Submissions" button.
      * Redirects the user to the submissions page for the selected form.
      *
-     * @param id The ID of the form (WorkflowType).
+     * @param idKey The IdKey of the form (WorkflowType).
      */
-    function onClickSubmissions(id: number): void {
+    function onClickSubmissions(idKey: string): void {
         if (!config.navigationUrls?.[NavigationUrlKey.SubmissionsPage]) {
             errorMessage.value = "The Submissions Page URL is not configured.";
             return;
         }
 
-        const url = config.navigationUrls[NavigationUrlKey.SubmissionsPage] + `?WorkflowTypeId=${id}`;
+        const url = config.navigationUrls[NavigationUrlKey.SubmissionsPage] + `?WorkflowTypeId=${idKey}`;
 
         window.location.href = url;
     }
@@ -585,15 +585,15 @@
      * Event handler for the "Builder" button.
      * Redirects the user to the form builder page for the selected form.
      *
-     * @param id The ID of the form (WorkflowType).
+     * @param idKey The IdKey of the form (WorkflowType).
      */
-    function onClickFormBuilder(id: number): void {
+    function onClickFormBuilder(idKey: string): void {
         if (!config.navigationUrls?.[NavigationUrlKey.FormBuilderPage]) {
             errorMessage.value = "The Form Builder Page URL is not configured.";
             return;
         }
 
-        const url = config.navigationUrls[NavigationUrlKey.FormBuilderPage] + `?WorkflowTypeId=${id}`;
+        const url = config.navigationUrls[NavigationUrlKey.FormBuilderPage] + `?WorkflowTypeId=${idKey}`;
 
         window.location.href = url;
     }
@@ -602,15 +602,15 @@
      * Event handler for the "Analytics" button.
      * Redirects the user to the analytics page for the selected form.
      *
-     * @param id The ID of the form (WorkflowType).
+     * @param idKey The IdKey of the form (WorkflowType).
      */
-    function onClickAnalytics(id: number): void {
+    function onClickAnalytics(idKey: string): void {
         if (!config.navigationUrls?.[NavigationUrlKey.AnalyticsPage]) {
             errorMessage.value = "The Analytics Page URL is not configured.";
             return;
         }
 
-        const url = config.navigationUrls[NavigationUrlKey.AnalyticsPage] + `?WorkflowTypeId=${id}`;
+        const url = config.navigationUrls[NavigationUrlKey.AnalyticsPage] + `?WorkflowTypeId=${idKey}`;
 
         window.location.href = url;
     }

@@ -363,7 +363,7 @@ namespace RockWeb.Blocks.Groups
             // get the group id
             if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.GroupId ) ) )
             {
-                _groupId = Convert.ToInt32( PageParameter( PageParameterKey.GroupId ) );
+                _groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.GroupId ) ) ?? 0;
             }
         }
 
