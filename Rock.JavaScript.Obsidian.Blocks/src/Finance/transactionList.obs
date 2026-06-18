@@ -49,7 +49,8 @@
                 headerClass="text-right"
                 itemClass="text-right"
                 width="150px"
-                :filter="numberValueFilter">
+                :filter="numberValueFilter"
+                v-if="config.options?.showDaysSinceLastTransaction">
             <template #format="{ row }">
                 <div class="w-100">
                     <span v-if="row.daysSinceLastTransaction != null">{{ row.daysSinceLastTransaction }}d</span>
@@ -62,6 +63,7 @@
                         field="totalAmount"
                         :filter="numberValueFilter" />
         <TextColumn name="foreignCurrency"
+                    v-if="config?.options?.isForeignCurrencyEnabled"
                     title="Foreign Currency"
                     field="foreignCurrency"
                     :filter="textValueFilter" />
@@ -79,7 +81,8 @@
                     title="Foreign Key"
                     field="foreignKey"
                     width="150px"
-                    :filter="textValueFilter" />
+                    :filter="textValueFilter"
+                    v-if="config.options?.showForeignKeyColumn" />
 
         <Column name="batchId"
                 title="Batch Id"

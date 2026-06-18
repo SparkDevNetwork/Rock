@@ -544,23 +544,23 @@ namespace Rock.Blocks.Finance
                 return;
             }
 
-            var contextEntity = GetContextEntity();
+            var contextEntityType = GetContextEntityType();
 
-            if ( contextEntity is Person person )
+            if ( contextEntityType == typeof( Person ) )
             {
-                _person = person;
+                _person = RequestContext.GetContextEntity( contextEntityType ) as Person;
             }
-            else if ( contextEntity is FinancialBatch batch )
+            else if ( contextEntityType == typeof( FinancialBatch ) )
             {
-                _batch = batch;
+                _batch = RequestContext.GetContextEntity( contextEntityType ) as FinancialBatch;
             }
-            else if ( contextEntity is FinancialScheduledTransaction scheduledTransaction )
+            else if ( contextEntityType == typeof( FinancialScheduledTransaction ) )
             {
-                _scheduledTransaction = scheduledTransaction;
+                _scheduledTransaction = RequestContext.GetContextEntity( contextEntityType ) as FinancialScheduledTransaction;
             }
-            else if ( contextEntity is Registration registration )
+            else if ( contextEntityType == typeof( Registration ) )
             {
-                _registration = registration;
+                _registration = RequestContext.GetContextEntity( contextEntityType ) as Registration;
             }
 
             _contextInitialized = true;
@@ -587,8 +587,65 @@ namespace Rock.Blocks.Finance
         /// <returns>A queryable of transaction rows.</returns>
         private IQueryable<TransactionListRow> GetTransactionsModeQueryable( RockContext rockContext )
         {
-            return new FinancialTransactionService( rockContext ).Queryable().AsNoTracking()
-                .Select( t => new TransactionListRow
+            var qry = new FinancialTransactionService( rockContext ).Queryable().AsNoTracking();
+
+            // Include future-dated transactions only when the block setting opts in; otherwise
+            // restrict to rows that have already been posted (TransactionDateTime is set).
+            if ( GetAttributeValue( AttributeKey.ShowFutureTransactions ).AsBoolean() )
+            {
+                qry = qry.Where( t => t.TransactionDateTime.HasValue || t.FutureProcessingDateTime.HasValue );
+            }
+            else
+            {
+                qry = qry.Where( t => t.TransactionDateTime.HasValue );
+            }
+
+            if ( GetAttributeValue( AttributeKey.HideTransactionsInPendingBatches ).AsBoolean() )
+            {
+                qry = qry.Where( t => t.Batch == null || t.Batch.Status != BatchStatus.Pending );
+            }
+
+            var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
+            if ( accountGuids.Any() )
+            {
+                qry = qry.Where( t => t.TransactionDetails.Any( d => accountGuids.Contains( d.Account.Guid ) ) );
+            }
+
+            // Context entity filters — restrict results to the page's entity context.
+            if ( _batch != null )
+            {
+                qry = qry.Where( t => t.BatchId == _batch.Id );
+            }
+            else if ( _scheduledTransaction != null )
+            {
+                qry = qry.Where( t => t.ScheduledTransactionId == _scheduledTransaction.Id );
+            }
+            else if ( _registration != null )
+            {
+                var registrationEntityTypeId = EntityTypeCache.Get( typeof( Registration ) )?.Id;
+                if ( registrationEntityTypeId.HasValue )
+                {
+                    qry = qry.Where( t => t.TransactionDetails.Any( d =>
+                        d.EntityTypeId.HasValue &&
+                        d.EntityTypeId.Value == registrationEntityTypeId.Value &&
+                        d.EntityId.HasValue &&
+                        d.EntityId.Value == _registration.Id ) );
+                }
+            }
+            else if ( _person != null )
+            {
+                // Use GivingId so family members who give together are all included.
+                var personAliasIds = new PersonAliasService( rockContext )
+                    .Queryable()
+                    .Where( a => a.Person.GivingId == _person.GivingId )
+                    .Select( a => a.Id )
+                    .ToList();
+
+                qry = qry.Where( t => t.AuthorizedPersonAliasId.HasValue
+                    && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
+            }
+
+            return qry.Select( t => new TransactionListRow
                 {
                     // Referenced (not constructed) so it is materialized for GridAttributeLoader.
                     // Only its scalars/attributes are read later — never its navigations.
@@ -639,8 +696,62 @@ namespace Rock.Blocks.Finance
         /// <returns>A queryable of transaction detail rows.</returns>
         private IQueryable<TransactionListRow> GetAccountsModeQueryable( RockContext rockContext )
         {
-            return new FinancialTransactionDetailService( rockContext ).Queryable().AsNoTracking()
-                .Select( d => new TransactionListRow
+            var qry = new FinancialTransactionDetailService( rockContext ).Queryable().AsNoTracking();
+
+            if ( GetAttributeValue( AttributeKey.ShowFutureTransactions ).AsBoolean() )
+            {
+                qry = qry.Where( d => d.Transaction.TransactionDateTime.HasValue || d.Transaction.FutureProcessingDateTime.HasValue );
+            }
+            else
+            {
+                qry = qry.Where( d => d.Transaction.TransactionDateTime.HasValue );
+            }
+
+            if ( GetAttributeValue( AttributeKey.HideTransactionsInPendingBatches ).AsBoolean() )
+            {
+                qry = qry.Where( d => d.Transaction.Batch == null || d.Transaction.Batch.Status != BatchStatus.Pending );
+            }
+
+            var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
+            if ( accountGuids.Any() )
+            {
+                qry = qry.Where( d => accountGuids.Contains( d.Account.Guid ) );
+            }
+
+            // Context entity filters — restrict results to the page's entity context.
+            if ( _batch != null )
+            {
+                qry = qry.Where( d => d.Transaction.BatchId == _batch.Id );
+            }
+            else if ( _scheduledTransaction != null )
+            {
+                qry = qry.Where( d => d.Transaction.ScheduledTransactionId == _scheduledTransaction.Id );
+            }
+            else if ( _registration != null )
+            {
+                var registrationEntityTypeId = EntityTypeCache.Get( typeof( Registration ) )?.Id;
+                if ( registrationEntityTypeId.HasValue )
+                {
+                    qry = qry.Where( d =>
+                        d.EntityTypeId.HasValue &&
+                        d.EntityTypeId.Value == registrationEntityTypeId.Value &&
+                        d.EntityId.HasValue &&
+                        d.EntityId.Value == _registration.Id );
+                }
+            }
+            else if ( _person != null )
+            {
+                var personAliasIds = new PersonAliasService( rockContext )
+                    .Queryable()
+                    .Where( a => a.Person.GivingId == _person.GivingId )
+                    .Select( a => a.Id )
+                    .ToList();
+
+                qry = qry.Where( d => d.Transaction.AuthorizedPersonAliasId.HasValue
+                    && personAliasIds.Contains( d.Transaction.AuthorizedPersonAliasId.Value ) );
+            }
+
+            return qry.Select( d => new TransactionListRow
                 {
                     // Referenced (not constructed) so it is materialized for GridAttributeLoader.
                     // Only its scalars/attributes are read later — never its navigations.
@@ -694,6 +805,29 @@ namespace Rock.Blocks.Finance
         /// <returns>The filtered queryable.</returns>
         private IQueryable<TransactionListRow> ApplyFilters( IQueryable<TransactionListRow> query, RockContext rockContext )
         {
+            // Block-level attribute filters — admin-configured, applied to all results regardless of user preferences.
+            var transactionTypeIds = GetAttributeValue( AttributeKey.TransactionTypes )
+                .SplitDelimitedValues().AsGuidList()
+                .Select( g => DefinedValueCache.Get( g ) )
+                .Where( dv => dv != null )
+                .Select( dv => dv.Id )
+                .ToList();
+            if ( transactionTypeIds.Any() )
+            {
+                query = query.Where( r => r.TransactionTypeValueId.HasValue && transactionTypeIds.Contains( r.TransactionTypeValueId.Value ) );
+            }
+
+            var sourceTypeIds = GetAttributeValue( AttributeKey.SourceTypes )
+                .SplitDelimitedValues().AsGuidList()
+                .Select( g => DefinedValueCache.Get( g ) )
+                .Where( dv => dv != null )
+                .Select( dv => dv.Id )
+                .ToList();
+            if ( sourceTypeIds.Any() )
+            {
+                query = query.Where( r => r.SourceTypeValueId.HasValue && sourceTypeIds.Contains( r.SourceTypeValueId.Value ) );
+            }
+
             // Date range — strip time before comparing so a date-only upper bound is inclusive.
             var dateRangeLower = FilterDateRangeLower;
             if ( dateRangeLower.HasValue )
