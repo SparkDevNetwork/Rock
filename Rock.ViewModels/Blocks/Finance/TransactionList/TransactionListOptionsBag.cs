@@ -71,6 +71,11 @@ namespace Rock.ViewModels.Blocks.Finance.TransactionList
         public bool ShowAccountSummary { get; set; }
 
         /// <summary>
+        /// used to conditionally render account filter on grid settings modal
+        /// </summary>
+        public bool AccountConfigured { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the Foreign Key column is shown.
         /// </summary>
         public bool ShowForeignKeyColumn { get; set; }
@@ -111,13 +116,6 @@ namespace Rock.ViewModels.Blocks.Finance.TransactionList
         /// transaction, or registration.
         /// </summary>
         public bool AreFiltersVisible { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the Person filter is shown. This requires that
-        /// the block is not already scoped to a person and that the user has the "FilterByPerson"
-        /// permission.
-        /// </summary>
-        public bool IsPersonFilterVisible { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the "Reassign Transactions" action is available

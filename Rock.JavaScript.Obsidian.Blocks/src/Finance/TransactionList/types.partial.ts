@@ -15,11 +15,44 @@
 // </copyright>
 //
 
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { NumberRangeModelValue } from "@Obsidian/Types/Controls/numberRangeBox";
+
 export const ViewMode = {
     Transactions: "Transactions",
     Accounts: "Accounts"
 } as const;
 
 export const PreferenceKey = {
-    ShowImages: "show-images"
+    ShowImages: "show-images",
+    FilterDateRangeLower: "filter-date-range-lower",
+    FilterDateRangeUpper: "filter-date-range-upper",
+    FilterAmountRangeFrom: "filter-amount-range-from",
+    FilterAmountRangeTo: "filter-amount-range-to",
+    FilterCurrencyType: "filter-currency-type",
+    FilterCreditCardType: "filter-credit-card-type",
+    FilterTransactionCode: "filter-transaction-code",
+    FilterForeignKey: "filter-foreign-key",
+    FilterAccount: "filter-account",
+    FilterTransactionType: "filter-transaction-type",
+    FilterSourceType: "filter-source-type",
+    FilterCampusOfBatch: "filter-campus-of-batch",
+    FilterCampusOfAccount: "filter-campus-of-account",
+    FilterPerson: "filter-person",
 } as const;
+
+export type GridSettingsOptions = {
+    dateRangeLower?: string | null;
+    dateRangeUpper?: string | null;
+    amountRange?: NumberRangeModelValue;
+    currencyType?: ListItemBag | null;
+    creditCardType?: ListItemBag | null;
+    sourceType?: ListItemBag | null;
+    transactionCode?: string | null;
+    foreignKey?: string | null;
+    account?: ListItemBag;
+    transactionType?: ListItemBag | null;
+    campusOfBatch?: ListItemBag;
+    campusOfAccount?: ListItemBag;
+    person?: ListItemBag;
+};

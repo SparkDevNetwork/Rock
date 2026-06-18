@@ -21,6 +21,8 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
+using RestSharp.Extensions;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -155,8 +157,6 @@ namespace Rock.Blocks.Finance
 
     #endregion Block Attributes
 
-    [SecurityAction( SecurityActionKey.FilterByPerson, "The roles and/or users that can filter transactions by person." )]
-
     [Rock.SystemGuid.EntityTypeGuid( "36AAA558-649E-49AF-8372-5ED6BD5C9657" )]
     [Rock.SystemGuid.BlockTypeGuid( "D129A0C7-4A7F-42BC-8E0C-428C4A4122D2" )]
     //[Rock.SystemGuid.BlockTypeGuid( "E04320BC-67C3-452D-9EF6-D74D8C177154" )]
@@ -187,14 +187,6 @@ namespace Rock.Blocks.Finance
             public const string EnableForeignCurrency = "EnableForeignCurrency";
             public const string ShowDaysSinceLastTransaction = "ShowDaysSinceLastTransaction";
             public const string HideTransactionsInPendingBatches = "HideTransactionsInPendingBatches";
-        }
-
-        /// <summary>
-        /// Custom Security Action Keys.
-        /// </summary>
-        private static class SecurityActionKey
-        {
-            public const string FilterByPerson = "FilterByPerson";
         }
 
         /// <summary>
@@ -376,8 +368,6 @@ namespace Rock.Blocks.Finance
         /// <returns>The options that provide additional details to the block.</returns>
         private TransactionListOptionsBag GetBoxOptions()
         {
-            var isFilterByPersonAuthorized = BlockCache.IsAuthorized( SecurityActionKey.FilterByPerson, RequestContext.CurrentPerson );
-
             // Filters are only available when the list is not already scoped to a
             // specific batch, scheduled transaction, or registration.
             var areFiltersVisible = _batch == null && _scheduledTransaction == null && _registration == null;
@@ -394,6 +384,7 @@ namespace Rock.Blocks.Finance
                 ShowImages = ShowImages,
                 ImageHeight = GetAttributeValue( AttributeKey.ImageHeight ).AsIntegerOrNull() ?? 200,
                 ShowAccountSummary = GetAttributeValue( AttributeKey.ShowAccountSummary ).AsBoolean(),
+                AccountConfigured = GetAttributeValue( AttributeKey.Accounts ).HasValue(),
                 ShowForeignKeyColumn = GetAttributeValue( AttributeKey.ShowForeignKey ).AsBoolean(),
                 IsForeignCurrencyEnabled = GetAttributeValue( AttributeKey.EnableForeignCurrency ).AsBoolean(),
                 ShowDaysSinceLastTransaction = GetAttributeValue( AttributeKey.ShowDaysSinceLastTransaction ).AsBoolean(),
@@ -402,7 +393,6 @@ namespace Rock.Blocks.Finance
                 IsScheduledTransactionContext = _scheduledTransaction != null,
                 IsRegistrationContext = _registration != null,
                 AreFiltersVisible = areFiltersVisible,
-                IsPersonFilterVisible = areFiltersVisible && _person == null && isFilterByPersonAuthorized,
                 IsReassignVisible = _person != null && CanEdit,
                 IsMoveToBatchVisible = _batch != null && CanEdit && IsBatchEditable,
                 ShowClosedBatchWarning = _batch != null && _batch.Status == BatchStatus.Closed,

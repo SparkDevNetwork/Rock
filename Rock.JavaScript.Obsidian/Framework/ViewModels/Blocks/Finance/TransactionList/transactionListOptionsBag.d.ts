@@ -26,6 +26,9 @@ import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
 
 /** The additional configuration options for the Transaction List block. */
 export type TransactionListOptionsBag = {
+    /** used to conditionally render account filter on grid settings modal */
+    accountConfigured: boolean;
+
     /**
      * Gets or sets a value indicating whether the filter drawer is available. Filters are
      * hidden when the block is showing transactions for a specific batch, scheduled
@@ -59,13 +62,6 @@ export type TransactionListOptionsBag = {
 
     /** Gets or sets a value indicating whether the block is in a Person context. */
     isPersonContext: boolean;
-
-    /**
-     * Gets or sets a value indicating whether the Person filter is shown. This requires that
-     * the block is not already scoped to a person and that the user has the "FilterByPerson"
-     * permission.
-     */
-    isPersonFilterVisible: boolean;
 
     /**
      * Gets or sets a value indicating whether the "Reassign Transactions" action is available
