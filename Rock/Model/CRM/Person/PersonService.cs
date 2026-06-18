@@ -3230,11 +3230,23 @@ namespace Rock.Model
         [RockInternal( "17.2" )]
         internal Dictionary<int, string> GetSpousesFullName( IQueryable<Person> personQuery )
         {
+            /*
+                6/17/26 - MSE
+
+                Excludes deceased spouses and self-matches so this batched lookup matches the canonical per-person
+                Person.GetSpouse() (which the Person Search block relies on). Without them a widow/widower could show
+                a deceased spouse, and a person could match themselves when their gender is Unknown or the Bible
+                Strict Spouse setting is off.
+
+                Reason: Keep this batched spouse lookup consistent with Person.GetSpouse.
+            */
+
             // Note this logic is duplicated in SpouseNameSelect and SpouseTransform.
             //// Spouse is determined if all these conditions are met
             //// 1) Both Persons are adults in the same family (GroupType = Family, GroupRole = Adult, and in same Group)
             //// 2) Opposite Gender as Person, if Gender of both Persons is known. This condition won't hold true if the church sets the Bible Strict Spouse setting to false.
             //// 3) Both Persons are Married
+            //// 4) The spouse is neither deceased nor the person themselves (matching Person.GetSpouse).
 
             var marriedDefinedValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
             var isBibleStrictSpouse = Rock.Web.SystemSettings.GetValue( SystemSetting.BIBLE_STRICT_SPOUSE ).AsBoolean( true );
@@ -3270,6 +3282,9 @@ namespace Rock.Model
                     m.MatchedPerson.Person.Gender != m.Spouse.Person.Gender ||
                     m.MatchedPerson.Person.Gender == Gender.Unknown ||
                     m.Spouse.Person.Gender == Gender.Unknown )
+                // Never return a deceased person or the person themselves as the spouse (matches Person.GetSpouse).
+                .Where( m => !m.Spouse.Person.IsDeceased )
+                .Where( m => m.Spouse.PersonId != m.MatchedPerson.PersonId )
                 .OrderBy( m => m.Spouse.GroupOrder ?? int.MaxValue )
                 .ThenBy( m => Math.Abs( DbFunctions.DiffDays(
                     m.Spouse.Person.BirthDate ?? new DateTime( 1, 1, 1 ),
