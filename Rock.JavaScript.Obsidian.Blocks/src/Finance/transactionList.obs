@@ -29,20 +29,23 @@
 
         <TextColumn name="transactionIdKey" field="transactionIdKey" :hideOnScreen="true" />
 
-        <PersonColumn name="person" title="Person" field="person" width="200px" />
-        <DateTimeColumn name="transactionDateTime" title="Date" field="transactionDateTime" />
+        <SelectColumn />
+        <PersonColumn name="person" title="Name" field="person" width="200px" />
+        <DateTimeColumn name="transactionDateTime" title="Date" field="transactionDateTime" :showSeconds="true" />
 
-        <Column name="daysSinceLastTransaction" title="Last Transaction" field="daysSinceLastTransaction">
+        <Column name="daysSinceLastTransaction" title="Last Transaction" field="daysSinceLastTransaction" headerClass="text-right" itemClass="text-right">
             <template #format="{ row }">
-                <span v-if="row.daysSinceLastTransaction != null">{{ row.daysSinceLastTransaction }}d</span>
+                <div class="w-100">
+                    <span v-if="row.daysSinceLastTransaction != null">{{ row.daysSinceLastTransaction }}d</span>
+                </div>
             </template>
         </Column>
 
         <CurrencyColumn name="totalAmount" title="Amount" field="totalAmount" />
         <TextColumn name="foreignCurrency" title="Foreign Currency" field="foreignCurrency" />
-        <TextColumn name="currencyType" title="Currency Type" field="currencyType" />
-        <TextColumn name="transactionCode" title="Transaction Code" field="transactionCode" />
-        <TextColumn name="foreignKey" title="Foreign Key" field="foreignKey" />
+        <TextColumn name="currencyType" title="Currency Type" field="currencyType" width="200px" />
+        <TextColumn name="transactionCode" title="Transaction Code" field="transactionCode" width="200px" />
+        <TextColumn name="foreignKey" title="Foreign Key" field="foreignKey" width="150px" />
         <NumberColumn name="batchId" title="Batch Id" field="batchId" />
         <TextColumn name="batchIdKey" field="batchIdKey" :hideOnScreen="true" />
 
@@ -56,7 +59,8 @@
             </template>
         </Column>
 
-        <TextColumn name="summary" title="Comments" field="summary" />
+        <TextColumn name="summary" title="Comments" field="summary" width="200px" />
+        <AttributeColumns :attributes="attributeFields" />
 
         <Column name="image" title="Image" field="image" v-if="showImages" :width="imageColumnWidth">
             <template #format="{ row }">
@@ -68,14 +72,13 @@
         <DateTimeColumn name="settledDate" title="Settled Date" field="settledDate" :hideOnScreen="true" />
         <TextColumn name="processorBatchId" title="Processor Batch Id" field="processorBatchId" :hideOnScreen="true" />
 
-        <AttributeColumns :attributes="attributeFields" />
     </Grid>
 </template>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, Column, CurrencyColumn, DateTimeColumn, NumberColumn, PersonColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, Column, CurrencyColumn, DateTimeColumn, NumberColumn, PersonColumn, SelectColumn, TextColumn } from "@Obsidian/Controls/grid";
     import { GridAction } from "@Obsidian/Types/Controls/grid";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
