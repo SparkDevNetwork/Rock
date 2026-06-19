@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <RootNamespace>Rock.Blocks</RootNamespace>
+    <RockWebPath>..\RockWeb</RockWebPath>
+    <CopyToRockWeb>True</CopyToRockWeb>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rock\Rock.csproj" />
+  </ItemGroup>
+
+</Project>

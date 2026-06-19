@@ -164,6 +164,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "JavaScript", "JavaScript", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Rest.Abstractions", "Rock.Rest.Abstractions\Rock.Rest.Abstractions.csproj", "{63B7DF5E-FA47-6CCB-85AD-01BEED7386FF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Blocks.Abstractions", "Rock.Blocks.Abstractions\Rock.Blocks.Abstractions.csproj", "{F4AF517A-BB01-1BEC-7D2C-7859FE541C92}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -338,6 +340,10 @@ Global
 		{63B7DF5E-FA47-6CCB-85AD-01BEED7386FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{63B7DF5E-FA47-6CCB-85AD-01BEED7386FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{63B7DF5E-FA47-6CCB-85AD-01BEED7386FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4AF517A-BB01-1BEC-7D2C-7859FE541C92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4AF517A-BB01-1BEC-7D2C-7859FE541C92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4AF517A-BB01-1BEC-7D2C-7859FE541C92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4AF517A-BB01-1BEC-7D2C-7859FE541C92}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

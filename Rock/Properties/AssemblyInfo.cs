@@ -19,6 +19,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo( "Rock.AI.Agent" )]
 [assembly: InternalsVisibleTo( "Rock.AI.Agent.Tests" )]
 [assembly: InternalsVisibleTo( "Rock.Blocks" )]
+[assembly: InternalsVisibleTo( "Rock.Blocks.Abstractions" )]
 [assembly: InternalsVisibleTo( "Rock.CodeGeneration" )]
 [assembly: InternalsVisibleTo( "Rock.Migrations" )]
 [assembly: InternalsVisibleTo( "Rock.Oidc" )]
