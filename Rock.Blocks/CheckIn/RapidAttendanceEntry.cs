@@ -1301,7 +1301,14 @@ namespace Rock.Blocks.CheckIn
 
             var isAdult = role.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
             var isEmailShown = isAdult || GetAttributeValue( AttributeKey.ChildAllowEmailEdit ).AsBoolean();
-            var isCommunicationPreferenceShown = isAdult && GetAttributeValue( AttributeKey.ShowCommunicationPreference ).AsBoolean();
+
+            // Communication preference only matters when a phone field is shown (SMS needs an enterable messaging
+            // number). With no phone fields shown it is hidden and left unchanged, so it is neither applied nor
+            // validated below; this keeps a person already set to SMS from blocking the save.
+            var arePhoneNumbersShown = GetPhoneTypeItems( isAdult ? AttributeKey.AdultPhoneTypes : AttributeKey.ChildPhoneTypes ).Any();
+            var isCommunicationPreferenceShown = isAdult
+                && GetAttributeValue( AttributeKey.ShowCommunicationPreference ).AsBoolean()
+                && arePhoneNumbersShown;
 
             var personService = new PersonService( RockContext );
             var groupMemberService = new GroupMemberService( RockContext );

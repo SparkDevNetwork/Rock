@@ -91,7 +91,8 @@
                     </div>
                 </ContentSection>
 
-                <ContentSection title="Contact Information"
+                <ContentSection v-if="isContactInfoShown"
+                                title="Contact Information"
                                 icon="ti ti-address-book"
                                 disableCollapse>
                     <div class="contact-rows">
@@ -311,10 +312,23 @@
 
     /**
      * Whether the communication preference field is shown: adults only, when
-     * the setting enables it.
+     * the setting enables it and at least one phone field is shown (SMS needs
+     * an enterable number, so the choice is pointless without one).
      */
     const isCommunicationPreferenceShown = computed((): boolean =>
-        isAdult.value && !!options.value?.isCommunicationPreferenceShown
+        isAdult.value
+        && !!options.value?.isCommunicationPreferenceShown
+        && activePhoneTypes.value.length > 0
+    );
+
+    /**
+     * Whether the Contact Information section has anything to edit for the
+     * selected role.
+     */
+    const isContactInfoShown = computed((): boolean =>
+        isEmailShown.value
+        || activePhoneTypes.value.length > 0
+        || isCommunicationPreferenceShown.value
     );
 
     const isRaceShown = computed((): boolean => (options.value?.raceVisibility ?? "Hide") !== "Hide");
