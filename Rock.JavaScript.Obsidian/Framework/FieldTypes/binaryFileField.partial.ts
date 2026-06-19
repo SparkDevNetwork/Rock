@@ -18,6 +18,8 @@
 import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldTypeBase } from "./fieldType";
 
 export const enum ConfigurationKey {
@@ -37,7 +39,35 @@ const configurationComponent = defineAsyncComponent(async () => {
 
 export class BinaryFileFieldType extends FieldTypeBase {
     public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
-        return value ?? "";
+        try {
+            const realValue = JSON.parse(value) as ListItemBag;
+
+            return realValue.text ?? "";
+        }
+        catch {
+            return value;
+        }
+    }
+
+    public override getHtmlValue(value: string, _configurationValues: Record<string, string>, isEscaped: boolean = false): string {
+        try {
+            const realValue = JSON.parse(value ?? "") as ListItemBag;
+
+            const html = `<a href="/GetFile.ashx?guid=${realValue.value}" title="${escapeHtml(realValue.text ?? "")}" class="btn btn-xs btn-default">View</a>`;
+
+            if (isEscaped) {
+                escapeHtml(html);
+            }
+
+            return html;
+        }
+        catch {
+            if (isEscaped) {
+                escapeHtml(value ?? "");
+            }
+
+            return value ?? "";
+        }
     }
 
     public override getEditComponent(): Component {

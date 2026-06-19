@@ -137,10 +137,42 @@ namespace Rock.Field.Types
             }
         }
 
+        /// <remarks>
+        ///     <inheritdoc/>
+        ///     <para>
+        ///     Returns the value as a JSON <see cref="ListItemBag"/> (the binary file's Guid and
+        ///     file name) instead of just the file name. Obsidian renders attribute values on the
+        ///     client, so the client component formats this value itself and needs the Guid to
+        ///     build the file's "View" link. (WebForms does not need this because it renders the
+        ///     HTML server side through FormatValue.) This matches the public value already
+        ///     returned by the Image, Audio, and Video file field types.
+        ///     </para>
+        /// </remarks>
         /// <inheritdoc/>
         public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetTextValue( privateValue, privateConfigurationValues );
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue || guid.Value.IsEmpty() )
+            {
+                return string.Empty;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var fileName = new BinaryFileService( rockContext ).GetSelect( guid.Value, f => f.FileName );
+
+                if ( fileName == null )
+                {
+                    return string.Empty;
+                }
+
+                return new ListItemBag
+                {
+                    Text = fileName,
+                    Value = guid.Value.ToString()
+                }.ToCamelCaseJson( false, true );
+            }
         }
 
         /// <inheritdoc/>
