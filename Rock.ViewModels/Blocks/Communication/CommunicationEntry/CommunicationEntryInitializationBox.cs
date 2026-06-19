@@ -141,5 +141,18 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// Determines if the asset manager feature is enabled in the HTML editor control.
         /// </summary>
         public bool EnableAssetManager { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the sender may choose a communication list as the recipient source.
+        /// </summary>
+        public bool IsCommunicationListSelectionEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication list groups the current person may choose from.
+        /// </summary>
+        /// <remarks>
+        /// Populated only when list selection is enabled and the block was not launched from a list.
+        /// </remarks>
+        public List<ListItemBag> CommunicationListGroups { get; set; }
     }
 }
