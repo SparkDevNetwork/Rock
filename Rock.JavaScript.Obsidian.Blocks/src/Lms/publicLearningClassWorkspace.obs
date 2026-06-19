@@ -312,6 +312,7 @@
     import { AvailabilityCriteria } from "@Obsidian/Enums/Lms/availabilityCriteria";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
+    import { ColorRecipe } from "@Obsidian/Enums/Core/colorRecipe";
     import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
     import { tooltip } from "@Obsidian/Utility/tooltip";
     import { useStore } from "@Obsidian/PageState";
@@ -563,11 +564,18 @@
             return;
         }
 
-        const backgroundColor = new RockColor(activity.gradeColor as string).toRgba();
-        const foreColor = new RockColor("#292828B0").toRgba();
-
         if (isCompleted(activity) && activity.gradeName) {
-            return `background-color: ${backgroundColor}; color: ${foreColor};`;
+            const background = new RockColor(activity.gradeColor as string);
+
+            // Pick a foreground that contrasts with the badge background: white
+            // on dark backgrounds, and a very dark shade of the background's own
+            // hue on light backgrounds. This keeps the grade text readable
+            // regardless of the configured grade color.
+            const foreground = background.isLight
+                ? RockColor.calculateColorRecipe(background, ColorRecipe.Darkest)
+                : new RockColor("#ffffff");
+
+            return `background-color: ${background.toRgba()}; color: ${foreground.toRgba()};`;
         }
     }
 
