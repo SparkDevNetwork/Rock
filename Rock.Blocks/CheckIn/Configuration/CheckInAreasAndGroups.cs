@@ -61,6 +61,7 @@ namespace Rock.Blocks.CheckIn.Configuration
     public class CheckInAreasAndGroups : RockBlockType
     {
         #region Keys
+
         private static class AttributeKey
         {
             public const string EnableClassicCheckInLabels = "EnableClassicCheckInLabels";

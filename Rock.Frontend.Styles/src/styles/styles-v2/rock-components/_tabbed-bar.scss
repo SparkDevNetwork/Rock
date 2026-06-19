@@ -91,6 +91,17 @@
 
 // ====================== END PILLS STYLE ======================
 
+// ======================== WRAPPING STYLE ========================
+
+// When wrapping is enabled, tabs flow onto multiple lines instead of
+// collapsing into the "More" overflow dropdown.
+.tabbed-bar.allow-wrapping > .toolbar-nav {
+    flex-wrap: wrap;
+    row-gap: var(--spacing-xsmall);
+}
+
+// ====================== END WRAPPING STYLE ======================
+
 // ======================== DROP DOWN MENU button overrides ========================
 
 .tabbed-bar

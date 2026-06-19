@@ -1,0 +1,517 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           :title="title"
+           saveText="Save"
+           :isSaveButtonDisabled="isLoading"
+           saveAutoDisable
+           saveAutoLoading
+           saveLoadingText="Saving..."
+           :onSave="onSave">
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <LoadingIndicator v-if="isLoading" />
+
+        <template v-else-if="options">
+            <div v-if="options.isAdd && options.familyName" class="well rapid-attendance-entry-family-banner">
+                <RockLabel>{{ options.familyName }}</RockLabel>
+                <div v-if="options.familyAddressFormatted" v-html="options.familyAddressFormatted"></div>
+            </div>
+
+            <ContentSectionContainer class="rapid-attendance-entry-edit-person" :sidebar="false">
+                <ContentSection light disableCollapse>
+                    <div class="person-fields">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <TextBox v-model="firstName" label="First Name" rules="required" :disabled="isSaving" />
+                            </div>
+                            <div class="col-md-6">
+                                <TextBox v-model="lastName" label="Last Name" rules="required" :disabled="isSaving" />
+                            </div>
+                        </div>
+
+                        <DefinedValuePicker v-model="suffix"
+                                            label="Suffix"
+                                            :definedTypeGuid="DefinedType.PersonSuffix"
+                                            formGroupClasses="field-suffix"
+                                            showBlankItem
+                                            :disabled="isSaving" />
+
+                        <RadioButtonList v-model="gender"
+                                         label="Gender"
+                                         :items="genderItems"
+                                         rules="required"
+                                         :disabled="isSaving" />
+
+                        <BirthdayPicker v-model="birthDate" label="Birthdate" :disabled="isSaving" />
+
+                        <RadioButtonList v-model="roleGuid"
+                                         label="Role"
+                                         :items="options.roleItems ?? []"
+                                         rules="required"
+                                         :disabled="isSaving" />
+
+                        <ConditionalWell>
+                            <DefinedValuePicker v-if="isAdult"
+                                                v-model="maritalStatus"
+                                                label="Marital Status"
+                                                :definedTypeGuid="DefinedType.PersonMaritalStatus"
+                                                formGroupClasses="field-role-detail"
+                                                showBlankItem
+                                                :disabled="isSaving" />
+
+                            <GradePicker v-else
+                                         v-model="grade"
+                                         label="Grade"
+                                         formGroupClasses="field-role-detail"
+                                         useAbbreviation
+                                         showBlankItem
+                                         :disabled="isSaving" />
+                        </ConditionalWell>
+
+                        <div v-if="isRaceShown" class="row">
+                            <div class="col-md-6">
+                                <RacePicker v-model="race"
+                                            showBlankItem
+                                            :rules="isRaceRequired ? 'required' : ''"
+                                            :disabled="isSaving" />
+                            </div>
+                        </div>
+
+                        <div v-if="isEthnicityShown" class="row">
+                            <div class="col-md-6">
+                                <EthnicityPicker v-model="ethnicity"
+                                                 showBlankItem
+                                                 :rules="isEthnicityRequired ? 'required' : ''"
+                                                 :disabled="isSaving" />
+                            </div>
+                        </div>
+                    </div>
+                </ContentSection>
+
+                <ContentSection title="Contact Information"
+                                icon="ti ti-address-book"
+                                disableCollapse>
+                    <div class="contact-rows">
+                        <div v-if="isEmailShown" class="row">
+                            <div class="col-md-6">
+                                <EmailBox v-model="email" label="Email" :disabled="isSaving" />
+                            </div>
+                            <div class="col-md-6">
+                                <div class="contact-flags">
+                                    <InlineCheckBox v-model="isEmailActive" label="Email Is Active" :disabled="isSaving" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-for="phoneType in activePhoneTypes"
+                             :key="phoneType.value ?? ''"
+                             class="row">
+                            <div class="col-md-6">
+                                <PhoneNumberBox v-model="phoneValues[phoneType.value ?? ''].number"
+                                                v-model:countryCode="phoneValues[phoneType.value ?? ''].countryCode"
+                                                :label="phoneType.text ?? ''"
+                                                :disabled="isSaving" />
+                            </div>
+                            <div class="col-md-6">
+                                <div class="contact-flags">
+                                    <InlineCheckBox :modelValue="phoneValues[phoneType.value ?? ''].isMessagingEnabled"
+                                                    label="SMS"
+                                                    :disabled="isSaving"
+                                                    @update:modelValue="onSmsToggle(phoneType.value ?? '', $event)" />
+
+                                    <InlineCheckBox v-model="phoneValues[phoneType.value ?? ''].isUnlisted"
+                                                    label="Unlisted"
+                                                    :disabled="isSaving" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <RadioButtonList v-if="isCommunicationPreferenceShown"
+                                         v-model="communicationPreference"
+                                         label="Communication Preference"
+                                         :items="communicationPreferenceItems"
+                                         rules="required"
+                                         :disabled="isSaving" />
+                    </div>
+                </ContentSection>
+
+                <ContentSection v-if="hasAttributes"
+                                :title="attributesTitle"
+                                icon="ti ti-binary-tree-2"
+                                disableCollapse>
+                    <AttributeValuesContainer v-model="attributeValues"
+                                              :attributes="activeAttributes"
+                                              isEditMode
+                                              :disabled="isSaving"
+                                              :numberOfColumns="1"
+                                              :showCategoryLabel="false" />
+                </ContentSection>
+            </ContentSectionContainer>
+        </template>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, reactive, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
+    import GradePicker from "@Obsidian/Controls/gradePicker.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import RacePicker from "@Obsidian/Controls/racePicker.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
+    import { Gender } from "@Obsidian/Enums/Crm/gender";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { Guid } from "@Obsidian/Types";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { RapidAttendanceEntryEditPersonBag } from "@Obsidian/ViewModels/Blocks/CheckIn/RapidAttendanceEntry/rapidAttendanceEntryEditPersonBag";
+    import { RapidAttendanceEntryEditPersonOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/RapidAttendanceEntry/rapidAttendanceEntryEditPersonOptionsBag";
+    import { DatePartsPickerValueBag } from "@Obsidian/ViewModels/Controls/datePartsPickerValueBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        /** Whether the modal is visible. */
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        /** The family the person belongs to, or is being added to. */
+        familyGuid: {
+            type: String as PropType<Guid | null>,
+            default: null
+        },
+
+        /** The person being edited. Null adds a new family member. */
+        personGuid: {
+            type: String as PropType<Guid | null>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void,
+        (e: "saved", personGuid: Guid): void
+    }>();
+
+    // #region Types
+
+    /**
+     * The editable values for one phone row, kept by phone type so they
+     * survive a role switch.
+     */
+    type PhoneRowValue = {
+        countryCode: string;
+        number: string;
+        isMessagingEnabled: boolean;
+        isUnlisted: boolean;
+    };
+
+    // #endregion Types
+
+    // #region Values
+
+    const isVisible = ref(props.modelValue);
+    const isLoading = ref(false);
+    const isSaving = ref(false);
+    const errorMessage = ref("");
+
+    const options = ref<RapidAttendanceEntryEditPersonOptionsBag | null>(null);
+
+    const firstName = ref("");
+    const lastName = ref("");
+    const suffix = ref<ListItemBag | null>(null);
+    const gender = ref("");
+    const birthDate = ref<DatePartsPickerValueBag>({ year: 0, month: 0, day: 0 });
+    const roleGuid = ref("");
+    const maritalStatus = ref<ListItemBag | null>(null);
+    const grade = ref<ListItemBag | null>(null);
+    const race = ref<ListItemBag | null>(null);
+    const ethnicity = ref<ListItemBag | null>(null);
+    const email = ref("");
+    const isEmailActive = ref(true);
+    const communicationPreference = ref(String(CommunicationType.Email));
+
+    /**
+     * The editable phone values keyed by phone type guid, covering both the
+     * adult and child phone types.
+     */
+    const phoneValues = reactive<Record<string, PhoneRowValue>>({});
+
+    const attributeValues = ref<Record<string, string>>({});
+
+    const genderItems: ListItemBag[] = [
+        { value: String(Gender.Male), text: "Male" },
+        { value: String(Gender.Female), text: "Female" },
+        { value: String(Gender.Unknown), text: "Unknown" }
+    ];
+
+    const communicationPreferenceItems: ListItemBag[] = [
+        { value: String(CommunicationType.Email), text: "Email" },
+        { value: String(CommunicationType.SMS), text: "SMS" }
+    ];
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * The modal title, reflecting whether a member is being added or an
+     * existing person edited.
+     */
+    const title = computed((): string => options.value?.isAdd ? "Add New Family Member" : "Edit Person");
+
+    /**
+     * Whether the selected role is the adult family role, which drives the
+     * role-dependent fields.
+     */
+    const isAdult = computed((): boolean => roleGuid.value === options.value?.adultRoleGuid);
+
+    /** The phone types shown for the selected role. */
+    const activePhoneTypes = computed((): ListItemBag[] =>
+        (isAdult.value ? options.value?.adultPhoneTypes : options.value?.childPhoneTypes) ?? []
+    );
+
+    /** The person attributes shown for the selected role. */
+    const activeAttributes = computed((): Record<string, PublicAttributeBag> =>
+        (isAdult.value ? options.value?.adultAttributes : options.value?.childAttributes) ?? {}
+    );
+
+    /** Whether any attributes are configured for the selected role. */
+    const hasAttributes = computed((): boolean => Object.keys(activeAttributes.value).length > 0);
+
+    /** The attributes section title for the selected role. */
+    const attributesTitle = computed((): string => isAdult.value ? "Adult Attributes" : "Child Attributes");
+
+    /**
+     * Whether the email field is shown: always for adults, for children only
+     * when allowed.
+     */
+    const isEmailShown = computed((): boolean => isAdult.value || !!options.value?.isChildEmailEditAllowed);
+
+    /**
+     * Whether the communication preference field is shown: adults only, when
+     * the setting enables it.
+     */
+    const isCommunicationPreferenceShown = computed((): boolean =>
+        isAdult.value && !!options.value?.isCommunicationPreferenceShown
+    );
+
+    const isRaceShown = computed((): boolean => (options.value?.raceVisibility ?? "Hide") !== "Hide");
+    const isRaceRequired = computed((): boolean => options.value?.raceVisibility === "Required");
+    const isEthnicityShown = computed((): boolean => (options.value?.ethnicityVisibility ?? "Hide") !== "Hide");
+    const isEthnicityRequired = computed((): boolean => options.value?.ethnicityVisibility === "Required");
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Seeds the per-type phone values from the person's existing numbers,
+     * defaulting a fresh mobile to SMS.
+     */
+    function initPhoneValues(): void {
+        for (const key of Object.keys(phoneValues)) {
+            delete phoneValues[key];
+        }
+
+        const allTypes = [...(options.value?.adultPhoneTypes ?? []), ...(options.value?.childPhoneTypes ?? [])];
+        const existing = options.value?.person?.phoneNumbers ?? [];
+
+        for (const phoneType of allTypes) {
+            const typeGuid = phoneType.value;
+
+            if (!typeGuid || phoneValues[typeGuid]) {
+                continue;
+            }
+
+            const match = existing.find(p => p.phoneTypeGuid === typeGuid);
+
+            phoneValues[typeGuid] = {
+                countryCode: match?.countryCode ?? "",
+                number: match?.number ?? "",
+                isMessagingEnabled: match ? match.isMessagingEnabled : typeGuid === options.value?.mobilePhoneTypeGuid,
+                isUnlisted: match?.isUnlisted ?? false
+            };
+        }
+    }
+
+    /** Populates the form fields from the loaded options. */
+    function applyOptions(): void {
+        const data = options.value;
+        const person = data?.person;
+
+        if (!data || !person) {
+            return;
+        }
+
+        firstName.value = person.firstName ?? "";
+        lastName.value = person.lastName ?? "";
+        suffix.value = person.suffix ?? null;
+        gender.value = data.isAdd ? "" : String(person.gender ?? Gender.Unknown);
+        birthDate.value = person.birthDate ?? { year: 0, month: 0, day: 0 };
+        roleGuid.value = person.roleGuid ?? data.adultRoleGuid ?? "";
+        maritalStatus.value = person.maritalStatus ?? null;
+        grade.value = person.grade ?? null;
+        race.value = person.race ?? null;
+        ethnicity.value = person.ethnicity ?? null;
+        email.value = person.email ?? "";
+        isEmailActive.value = person.isEmailActive;
+        communicationPreference.value = data.isAdd || person.communicationPreference == null
+            ? String(CommunicationType.Email)
+            : String(person.communicationPreference);
+        attributeValues.value = { ...(person.attributeValues ?? {}) };
+
+        initPhoneValues();
+    }
+
+    /** Loads the editable person and the role-dependent configuration. */
+    async function load(): Promise<void> {
+        errorMessage.value = "";
+        options.value = null;
+
+        if (!props.familyGuid) {
+            return;
+        }
+
+        isLoading.value = true;
+
+        const response = await invokeBlockAction<RapidAttendanceEntryEditPersonOptionsBag>("GetPersonForEdit", {
+            personGuid: props.personGuid || null,
+            familyGuid: props.familyGuid
+        });
+
+        isLoading.value = false;
+
+        if (!response.isSuccess || !response.data || !response.data.person) {
+            errorMessage.value = response.errorMessage || "Unable to load the individual.";
+            return;
+        }
+
+        options.value = response.data;
+        applyOptions();
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Enforces a single SMS-enabled number by clearing the flag on the other
+     * rows.
+     */
+    function onSmsToggle(phoneTypeGuid: string, isChecked: boolean): void {
+        if (!phoneValues[phoneTypeGuid]) {
+            return;
+        }
+
+        phoneValues[phoneTypeGuid].isMessagingEnabled = isChecked;
+
+        if (isChecked) {
+            for (const key of Object.keys(phoneValues)) {
+                if (key !== phoneTypeGuid) {
+                    phoneValues[key].isMessagingEnabled = false;
+                }
+            }
+        }
+    }
+
+    /**
+     * Saves the individual, then notifies the parent with the saved person and
+     * closes.
+     */
+    async function onSave(): Promise<void> {
+        if (!props.familyGuid) {
+            return;
+        }
+
+        errorMessage.value = "";
+        isSaving.value = true;
+
+        try {
+            const bag: RapidAttendanceEntryEditPersonBag = {
+                personGuid: props.personGuid || null,
+                familyGuid: props.familyGuid,
+                firstName: firstName.value,
+                lastName: lastName.value,
+                suffix: suffix.value,
+                gender: (toNumberOrNull(gender.value) ?? Gender.Unknown) as Gender,
+                birthDate: birthDate.value,
+                roleGuid: roleGuid.value as Guid,
+                maritalStatus: isAdult.value ? maritalStatus.value : null,
+                grade: isAdult.value ? null : grade.value,
+                race: isRaceShown.value ? race.value : null,
+                ethnicity: isEthnicityShown.value ? ethnicity.value : null,
+                email: email.value,
+                isEmailActive: isEmailActive.value,
+                communicationPreference: (toNumberOrNull(communicationPreference.value) ?? CommunicationType.Email) as CommunicationType,
+                phoneNumbers: activePhoneTypes.value.map(phoneType => {
+                    const typeGuid = phoneType.value ?? "";
+                    const value = phoneValues[typeGuid];
+
+                    return {
+                        phoneTypeGuid: typeGuid as Guid,
+                        phoneTypeName: phoneType.text ?? "",
+                        countryCode: value?.countryCode ?? "",
+                        number: value?.number ?? "",
+                        isMessagingEnabled: value?.isMessagingEnabled ?? false,
+                        isUnlisted: value?.isUnlisted ?? false
+                    };
+                }),
+                attributeValues: attributeValues.value
+            };
+
+            const response = await invokeBlockAction<Guid>("SavePerson", { bag });
+
+            if (!response.isSuccess || !response.data) {
+                errorMessage.value = response.errorMessage || "Unable to save the individual.";
+                return;
+            }
+
+            emit("saved", response.data);
+            isVisible.value = false;
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // Load fresh each time the modal opens so a prior Cancel doesn't leak in.
+    watch(() => props.modelValue, async (value) => {
+        isVisible.value = value;
+
+        if (value) {
+            await load();
+        }
+    });
+
+    watch(isVisible, (value) => {
+        emit("update:modelValue", value);
+    });
+
+    // #endregion Watchers
+</script>

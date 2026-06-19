@@ -1,0 +1,147 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSection title="Attendance" icon="ti ti-circle-check" disableCollapse>
+        <div class="rapid-attendance-entry-attendance">
+            <div v-if="rows.length > 1" class="checkbox rapid-attendance-entry-select-all">
+                <label>
+                    <input type="checkbox"
+                           :checked="isEveryEligiblePersonAttended"
+                           @change="onSelectAllChanged" />
+                    <span class="label-text">Select All</span>
+                </label>
+            </div>
+
+            <div class="rapid-attendance-entry-attendance-list" role="group" aria-label="Attendance">
+                <div v-for="row in rows"
+                     :key="row.personGuid"
+                     class="checkbox">
+                    <label v-tooltip="row.isDisabled ? 'Does Not Meet Attendance Age Minimum' : undefined">
+                        <input type="checkbox"
+                               :checked="attendedPersonGuids.includes(row.personGuid)"
+                               :disabled="row.isDisabled"
+                               @change="onRowChanged(row, $event)" />
+                        <span class="label-text">{{ row.label }}</span>
+                        <HelpBlock v-if="row.isGuest" text="Relationship: Can Check-In" />
+                    </label>
+                </div>
+            </div>
+        </div>
+    </ContentSection>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+    import { Guid } from "@Obsidian/Types";
+    import { RapidAttendanceEntryPersonBag } from "@Obsidian/ViewModels/Blocks/CheckIn/RapidAttendanceEntry/rapidAttendanceEntryPersonBag";
+
+    // #region Types
+
+    type AttendanceRow = {
+        personGuid: Guid;
+        label: string;
+        isGuest: boolean;
+        isDisabled: boolean;
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** The family members listed on the roster. */
+        members: {
+            type: Array as PropType<RapidAttendanceEntryPersonBag[]>,
+            default: () => []
+        },
+
+        /** The can check-in guests listed after the family members. */
+        canCheckInGuests: {
+            type: Array as PropType<RapidAttendanceEntryPersonBag[]>,
+            default: () => []
+        },
+
+        /** The guids of the people currently marked as attended. */
+        attendedPersonGuids: {
+            type: Array as PropType<Guid[]>,
+            required: true
+        },
+
+        /** The age below which a person cannot be marked as attended. */
+        minimumAttendanceAge: {
+            type: Number as PropType<number>,
+            default: 0
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "toggle", personGuid: Guid, didAttend: boolean): void
+    }>();
+
+    // #region Computed Values
+
+    const rows = computed((): AttendanceRow[] => {
+        const memberRows = props.members.map(m => ({
+            personGuid: m.personGuid,
+            label: withAge(m.nickName ?? "", m.age),
+            isGuest: false,
+            isDisabled: m.isBelowMinimumAge
+        }));
+
+        const guestRows = props.canCheckInGuests.map(g => ({
+            personGuid: g.personGuid,
+            label: withAge(g.fullName ?? "", g.age),
+            isGuest: true,
+            isDisabled: g.isBelowMinimumAge
+        }));
+
+        return [...memberRows, ...guestRows];
+    });
+
+    /** The rows old enough to be marked as attended. */
+    const eligibleRows = computed((): AttendanceRow[] =>
+        rows.value.filter(r => !r.isDisabled)
+    );
+
+    /**
+     * Whether every eligible person is attended, which is the Select All state.
+     */
+    const isEveryEligiblePersonAttended = computed((): boolean =>
+        eligibleRows.value.length > 0
+        && eligibleRows.value.every(r => props.attendedPersonGuids.includes(r.personGuid))
+    );
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** Appends the age in parentheses when it is known. */
+    function withAge(name: string, age: number | null | undefined): string {
+        return age != null ? `${name} (${age})` : name;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Marks every eligible person attended, or clears them all when all are
+     * attended.
+     */
+    function onSelectAllChanged(): void {
+        const didAttend = !isEveryEligiblePersonAttended.value;
+
+        for (const row of eligibleRows.value) {
+            if (props.attendedPersonGuids.includes(row.personGuid) !== didAttend) {
+                emit("toggle", row.personGuid, didAttend);
+            }
+        }
+    }
+
+    /** Emits the row's new attended state for the parent to apply. */
+    function onRowChanged(row: AttendanceRow, event: Event): void {
+        emit("toggle", row.personGuid, (event.target as HTMLInputElement).checked);
+    }
+
+    // #endregion Event Handlers
+</script>
