@@ -23,7 +23,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Controllers;
-using System.Web.Http.OData;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -31,6 +30,8 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Net;
 using Rock.Web.Cache;
+using Rock.Configuration;
+
 
 #if WEBFORMS
 using System.Web.Http.Results;
@@ -51,7 +52,9 @@ namespace Rock.Rest
     /// Supports ODataV3 Queries and ODataRouting
     /// </summary>
     /// <seealso cref="System.Web.Http.ApiController" />
-    [ODataRouting]
+#if WEBFORMS
+    [System.Web.Http.OData.ODataRouting]
+#endif
     public class ApiControllerBase : ApiController
     {
         /// <summary>
@@ -204,6 +207,21 @@ namespace Rock.Rest
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="CrudEndpoint{TEntity, TService}"/>
+        /// class for the specified entity and service types.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of the entity.</typeparam>
+        /// <typeparam name="TService">The type of the service class.</typeparam>
+        /// <param name="controller">The controller for which to create the helper.</param>
+        /// <returns>A new instance of the <see cref="CrudEndpoint{TEntity, TService}"/> class.</returns>
+        protected CrudEndpoint<TEntity, TService> CreateCrudEndpointHelper<TEntity, TService>( ApiControllerBase controller )
+            where TEntity : class, IEntity, new()
+            where TService : Service<TEntity>
+        {
+            return RockApp.Current.GetRequiredService<ICrudEndpointFactory>().Create<TEntity, TService>( controller );
         }
 
         #region .NET Core compatible methods

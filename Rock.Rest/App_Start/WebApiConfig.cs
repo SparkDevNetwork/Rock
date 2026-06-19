@@ -58,6 +58,8 @@ namespace Rock.Rest
         public static void Register( HttpConfiguration config )
         {
             config.EnableCors( new Rock.Rest.EnableCorsFromOriginAttribute() );
+            config.Filters.Add( new Rock.Rest.Filters.AuthenticateFilter() );
+            config.Filters.Add( new Rock.Rest.Filters.SecuredFilter() );
             config.Filters.Add( new Rock.Rest.Filters.ValidateAttribute() );
             config.Filters.Add( new Rock.Rest.Filters.RockCacheabilityAttribute() );
             config.Services.Replace( typeof( IExceptionLogger ), new RockApiExceptionLogger() );

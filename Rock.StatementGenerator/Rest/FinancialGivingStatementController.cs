@@ -26,7 +26,7 @@ using System.Web.Http;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
-using Rock.Rest.Filters;
+using Rock.Rest;
 
 namespace Rock.StatementGenerator.Rest
 {

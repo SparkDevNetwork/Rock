@@ -4,8 +4,11 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Principal;
 using System.ServiceModel.Channels;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Controllers;
+using System.Web.Http.Filters;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -23,7 +26,7 @@ namespace Rock.Tests.Integration.Rest
     public class SecuredAttributeTests : DatabaseTestsBase
     {
         [TestMethod]
-        public void AuthenticateWithoutPinAuthenticationActive()
+        async public Task AuthenticateWithoutPinAuthenticationActive()
         {
             // Set PIN authentication Active status to false
             var activeAttributeGuid = Guid.Parse( "f8926e80-1cd1-4dfd-ac1f-28b5dc75b207" );
@@ -42,17 +45,17 @@ namespace Rock.Tests.Integration.Rest
             // Categories controller because it is authenticated and will activate SecuredAttribute filter and has an endpoint which us called to populate a tree-view
             var descriptor = new HttpControllerDescriptor( new HttpConfiguration(), nameof( CategoriesController ), typeof( CategoriesController ) );
             var controller = new CategoriesController() { Request = request, RequestContext = requestContext, User = principal };
-            var actionFilter = new SecuredAttribute();
+            var actionFilter = ( IActionFilter ) new SecuredFilter();
             var httpContext = new HttpActionContext()
             {
                 ControllerContext = new HttpControllerContext( requestContext, request, descriptor, controller ),
                 ActionDescriptor = new ReflectedHttpActionDescriptor() { ControllerDescriptor = descriptor, MethodInfo = descriptor.ControllerType.GetMethod( "GetChildren" ) },
-                Response = new HttpResponseMessage( HttpStatusCode.OK )
+                Response = null
             };
 
-            actionFilter.OnActionExecuting( httpContext );
+            var response = await actionFilter.ExecuteActionFilterAsync( httpContext, CancellationToken.None, () => Task.FromResult( new HttpResponseMessage( HttpStatusCode.OK ) ) );
 
-            Assert.AreEqual( HttpStatusCode.OK, httpContext.Response.StatusCode );
+            Assert.AreEqual( HttpStatusCode.OK, response.StatusCode );
         }
     }
 }

@@ -45,18 +45,11 @@ namespace Rock.Rest
     /// </summary>
     /// <typeparam name="TEntity">The type of the entity.</typeparam>
     /// <typeparam name="TService">The type of the service class.</typeparam>
-    public class CrudEndpointHelper<TEntity, TService>
+    public class CrudEndpointHelper<TEntity, TService> : CrudEndpoint<TEntity, TService>
         where TEntity : class, IEntity, new()
         where TService : Service<TEntity>
     {
         private readonly ApiControllerBase _controller;
-
-        /// <summary>
-        /// A value indicating whether security is ignored. When security is
-        /// not ignored the entity will be checked for either VIEW or EDIT
-        /// permissions depending on the operation.
-        /// </summary>
-        public bool IsSecurityIgnored { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CrudEndpointHelper{TEntity, TService}"/> class.
@@ -69,12 +62,8 @@ namespace Rock.Rest
 
         #region API Methods
 
-        /// <summary>
-        /// POST endpoint. Use this to INSERT a new <typeparamref name="TEntity"/> entity.
-        /// </summary>
-        /// <param name="entity">The entity to be created.</param>
-        /// <returns>The response that should be sent back.</returns>
-        public IActionResult Create( TEntity entity )
+        /// <inheritdoc/>
+        public override IActionResult Create( TEntity entity )
         {
             try
             {
@@ -144,12 +133,8 @@ namespace Rock.Rest
             }
         }
 
-        /// <summary>
-        /// GET endpoint. Use this to get an existing <typeparamref name="TEntity"/>.
-        /// </summary>
-        /// <param name="id">The identifier, unique identifier or IdKey of the item.</param>
-        /// <returns>The response that should be sent back.</returns>
-        public IActionResult Get( string id )
+        /// <inheritdoc/>
+        public override IActionResult Get( string id )
         {
             if ( id.IsNullOrWhiteSpace() )
             {
@@ -184,13 +169,8 @@ namespace Rock.Rest
             }
         }
 
-        /// <summary>
-        /// PUT endpoint. Use this to update an existing <typeparamref name="TEntity"/>.
-        /// </summary>
-        /// <param name="id">The identifier, unique identifier or IdKey of the item.</param>
-        /// <param name="entity">The entity data to update the existing entity with.</param>
-        /// <returns>The response that should be sent back.</returns>
-        public IActionResult Update( string id, TEntity entity )
+        /// <inheritdoc/>
+        public override IActionResult Update( string id, TEntity entity )
         {
             try
             {
@@ -246,12 +226,8 @@ namespace Rock.Rest
             }
         }
 
-        /// <summary>
-        /// DELETE endpoint. Use this to delete an existing <typeparamref name="TEntity"/>.
-        /// </summary>
-        /// <param name="id">The identifier, unique identifier or IdKey of the item.</param>
-        /// <returns>The response that should be sent back.</returns>
-        public IActionResult Delete( string id )
+        /// <inheritdoc/>
+        public override IActionResult Delete( string id )
         {
             try
             {
@@ -290,14 +266,8 @@ namespace Rock.Rest
             }
         }
 
-        /// <summary>
-        /// PATCH endpoint. Use this to perform a partial update to an
-        /// existing <typeparamref name="TEntity"/>.
-        /// </summary>
-        /// <param name="id">The identifier, unique identifier or IdKey of the item.</param>
-        /// <param name="values">The new values to be set on the entity.</param>
-        /// <returns>The response that should be sent back.</returns>
-        public IActionResult Patch( string id, Dictionary<string, object> values )
+        /// <inheritdoc/>
+        public override IActionResult Patch( string id, Dictionary<string, object> values )
         {
             try
             {
@@ -409,12 +379,8 @@ namespace Rock.Rest
             }
         }
 
-        /// <summary>
-        /// Get all the attribute values for the <typeparamref name="TEntity"/>.
-        /// </summary>
-        /// <param name="id">The identifier, unique identifier or IdKey of the item.</param>
-        /// <returns>The response that should be sent back.</returns>
-        public IActionResult GetAttributeValues( string id )
+        /// <inheritdoc/>
+        public override IActionResult GetAttributeValues( string id )
         {
             if ( id.IsNullOrWhiteSpace() )
             {
@@ -487,14 +453,8 @@ namespace Rock.Rest
             }
         }
 
-        /// <summary>
-        /// PATCH endpoint. Use this to perform a partial update of attribute
-        /// values to an existing <typeparamref name="TEntity"/>.
-        /// </summary>
-        /// <param name="id">The identifier, unique identifier or IdKey of the item.</param>
-        /// <param name="values">The new values to be set on the entity.</param>
-        /// <returns>The response that should be sent back.</returns>
-        public IActionResult PatchAttributeValues( string id, Dictionary<string, string> values )
+        /// <inheritdoc/>
+        public override IActionResult PatchAttributeValues( string id, Dictionary<string, string> values )
         {
             if ( id.IsNullOrWhiteSpace() )
             {
@@ -578,15 +538,8 @@ namespace Rock.Rest
             }
         }
 
-        /// <summary>
-        /// POST endpoint. Use this to perform a query via a user supplied
-        /// entity search query. This should be considered an administrative
-        /// level search since no security is checked and no limitations are
-        /// set by the system.
-        /// </summary>
-        /// <param name="query">The custom user query options.</param>
-        /// <returns>The response that should be sent back.</returns>
-        public IActionResult Search( EntitySearchQueryBag query )
+        /// <inheritdoc/>
+        public override IActionResult Search( EntitySearchQueryBag query )
         {
             try
             {
@@ -626,14 +579,8 @@ namespace Rock.Rest
             }
         }
 
-        /// <summary>
-        /// GET and POST endpoint. Use this to perform a query via a defined
-        /// Entity Search.
-        /// </summary>
-        /// <param name="searchKey">The search key to use for the query.</param>
-        /// <param name="query">The custom user query options.</param>
-        /// <returns>The response that should be sent back.</returns>
-        public IActionResult Search( string searchKey, EntitySearchQueryBag query )
+        /// <inheritdoc/>
+        public override IActionResult Search( string searchKey, EntitySearchQueryBag query )
         {
             try
             {

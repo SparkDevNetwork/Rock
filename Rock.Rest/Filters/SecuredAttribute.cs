@@ -17,16 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.ServiceModel.Channels;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
-
-using Rock.Data;
-using Rock.Model;
-using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Rest.Filters
 {
@@ -41,6 +33,8 @@ namespace Rock.Rest.Filters
     /// to have authorization for one of the actions to access the endpoint.
     /// </para>
     /// </summary>
+    [Obsolete( "Use Rock.Rest.SecuredAttribute from Rock.Rest.Abstractions assembly instead." )]
+    [RockObsolete( "20.0" )]
     public class SecuredAttribute : ActionFilterAttribute
     {
         /// <summary>
@@ -95,139 +89,7 @@ namespace Rock.Rest.Filters
         /// <param name="actionContext">The action context.</param>
         public override void OnActionExecuting( HttpActionContext actionContext )
         {
-            var principal = actionContext.Request.GetUserPrincipal();
-            Person person = null;
-
-            if ( principal != null && principal.Identity != null )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    string userName = principal.Identity.Name;
-                    UserLogin userLogin = null;
-                    if ( userName.StartsWith( "rckipid=" ) )
-                    {
-                        var personService = new PersonService( rockContext );
-                        var impersonatedPerson = personService.GetByImpersonationToken( userName.Substring( 8 ) );
-                        if ( impersonatedPerson != null )
-                        {
-                            userLogin = impersonatedPerson.GetImpersonatedUser();
-                        }
-                    }
-                    else
-                    {
-                        var userLoginService = new UserLoginService( rockContext );
-                        userLogin = userLoginService.GetByUserName( userName );
-                    }
-
-                    if ( userLogin != null )
-                    {
-                        person = userLogin.Person;
-                        var pinAuthentication = AuthenticationContainer.GetComponent( typeof( Security.Authentication.PINAuthentication ).FullName );
-
-                        // Don't allow PIN authentications.
-                        if ( userLogin.EntityTypeId != null )
-                        {
-                            var userLoginEntityType = EntityTypeCache.Get( userLogin.EntityTypeId.Value );
-                            if ( userLoginEntityType != null && userLoginEntityType.Id == pinAuthentication?.EntityType?.Id )
-                            {
-                                actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
-
-            var reflectedHttpActionDescriptor = ( ReflectedHttpActionDescriptor ) actionContext.ActionDescriptor;
-
-            var controller = actionContext.ActionDescriptor.ControllerDescriptor;
-            var controllerClassName = controller.ControllerType.FullName;
-            var actionMethod = actionContext.Request.Method.Method;
-
-            var apiId = RestControllerService.GetApiId( reflectedHttpActionDescriptor.MethodInfo, actionMethod, controller.ControllerName, out Guid? restActionGuid );
-            ISecured item;
-            if ( restActionGuid.HasValue )
-            {
-                item = RestActionCache.Get( restActionGuid.Value );
-            }
-            else
-            {
-#pragma warning disable CS0618 // Type or member is obsolete
-                item = RestActionCache.Get( apiId );
-#pragma warning restore CS0618 // Type or member is obsolete
-            }
-
-            if ( item == null )
-            {
-                // if there isn't a RestAction in the database, use the Controller as the secured item
-                item = RestControllerCache.Get( controllerClassName );
-                if ( item == null )
-                {
-                    item = new RestController();
-                }
-            }
-
-            if ( actionContext.Request.Properties.Keys.Contains( "Person" ) )
-            {
-                person = actionContext.Request.Properties["Person"] as Person;
-            }
-            else
-            {
-                actionContext.Request.Properties.Add( "Person", person );
-
-                /* 12/12/2019 BJW
-                 *
-                 * Setting this current person item was only done in put, post, and patch in the ApiController
-                 * class. Set it here so that it is always set for all methods, including delete. This enhances
-                 * history logging done in the pre and post save model hooks (when the pre-save event is called
-                 * we can access DbContext.GetCurrentPersonAlias and log who deleted the record).
-                 *
-                 * Task: https://app.asana.com/0/1120115219297347/1153140643799337/f
-                 */
-                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", person );
-            }
-
-            var actions = SecurityActions;
-
-            if ( actions.Count == 0 )
-            {
-                var action = actionMethod.Equals( "GET", StringComparison.OrdinalIgnoreCase ) ?
-                    Security.Authorization.VIEW : Security.Authorization.EDIT;
-
-                actions = new[] { action };
-            }
-
-            bool authorized = false;
-
-            if ( actions.Any( action => item.IsAuthorized( action, person ) ) )
-            {
-                authorized = true;
-            }
-            else if ( actionContext.Request.Headers.Contains( "X-Rock-App-Id" ) && actionContext.Request.Headers.Contains( "X-Rock-Mobile-Api-Key" ) )
-            {
-                // Normal authorization failed, but this is a Mobile App request so check
-                // if the application itself has been given permission.
-                var appId = actionContext.Request.Headers.GetValues( "X-Rock-App-Id" ).First().AsIntegerOrNull();
-                var mobileApiKey = actionContext.Request.Headers.GetValues( "X-Rock-Mobile-Api-Key" ).First();
-
-                if ( appId.HasValue )
-                {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        var appUser = Mobile.MobileHelper.GetMobileApplicationUser( appId.Value, mobileApiKey, rockContext );
-
-                        if ( appUser != null && actions.Any( action => item.IsAuthorized( action, appUser.Person ) ) )
-                        {
-                            authorized = true;
-                        }
-                    }
-                }
-            }
-
-            if ( !authorized )
-            {
-                actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
-            }
+            SecuredFilter.AuthorizeRequest( actionContext, SecurityActions );
         }
     }
 }

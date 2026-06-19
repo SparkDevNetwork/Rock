@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <RootNamespace>Rock.Rest</RootNamespace>
+    <RockWebPath>..\RockWeb</RockWebPath>
+    <CopyToRockWeb>True</CopyToRockWeb>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Rock.Rest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNet.WebApi.OData" Version="5.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rock\Rock.csproj" />
+  </ItemGroup>
+
+</Project>

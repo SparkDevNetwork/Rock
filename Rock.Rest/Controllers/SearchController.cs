@@ -18,8 +18,8 @@ using System.Linq;
 using System.Net;
 using System.Web.Http;
 using System.Web.Http.OData;
-using Rock.Data;
-using Rock.Rest.Filters;
+
+using Rock.Rest;
 
 namespace Rock.Controllers
 {

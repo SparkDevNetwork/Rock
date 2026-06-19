@@ -24,6 +24,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo( "Rock.Oidc" )]
 [assembly: InternalsVisibleTo( "Rock.RealTime.Dynamic" )]
 [assembly: InternalsVisibleTo( "Rock.Rest" )]
+[assembly: InternalsVisibleTo( "Rock.Rest.Abstractions" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Shared" )]
 [assembly: InternalsVisibleTo( "Rock.Tests" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Integration" )]

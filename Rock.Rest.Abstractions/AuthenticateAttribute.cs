@@ -13,11 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
-using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo( "Rock.Blocks" )]
+using System;
 
-// The following type forwardings were setup in Rock 20.0.4
-[assembly: TypeForwardedTo( typeof( Rock.Rest.ApiControllerBase ) )]
-[assembly: TypeForwardedTo( typeof( Rock.Rest.ProducesResponseAttribute ) )]
+namespace Rock.Rest;
+
+/// <summary>
+/// Specifies that this endpoint wants to know who the CurrentPerson is.
+/// This will trigger the authentication process to run and attempt to
+/// identify the individual making the request.
+/// </summary>
+[AttributeUsage( AttributeTargets.Method, AllowMultiple = false )]
+public class AuthenticateAttribute : System.Attribute
+{
+}
