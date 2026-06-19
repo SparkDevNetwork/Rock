@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,9 @@ namespace Rock.ViewModels.Blocks.Cms.ContentChannelItemDetail
     /// </summary>
     public class ContentChannelItemBag : EntityBagBase
     {
+        /// <summary>
+        /// The title of the content channel item.
+        /// </summary>
         public string Title { get; set; }
 
         /// <summary>
