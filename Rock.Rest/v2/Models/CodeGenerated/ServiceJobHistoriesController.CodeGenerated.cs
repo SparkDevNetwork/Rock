@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a7cee710-b292-54c6-8cd6-e89edab33613" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ServiceJobHistory, Rock.Model.ServiceJobHistoryService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ServiceJobHistory, Rock.Model.ServiceJobHistoryService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "5667c41e-2611-5cbd-9cbf-7fff83acb85f" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ServiceJobHistory, Rock.Model.ServiceJobHistoryService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ServiceJobHistory, Rock.Model.ServiceJobHistoryService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -116,7 +115,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a6ebf8c7-db0c-5e63-b97d-e78c154bf9cd" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ServiceJobHistory, Rock.Model.ServiceJobHistoryService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ServiceJobHistory, Rock.Model.ServiceJobHistoryService>( this );
 
             return helper.Search( query );
         }
@@ -137,7 +136,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "93ea6387-a99d-5f77-b017-d8d0846b9ddc" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ServiceJobHistory, Rock.Model.ServiceJobHistoryService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ServiceJobHistory, Rock.Model.ServiceJobHistoryService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -162,7 +161,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e900bc2e-0e0e-5d40-b19e-9a1126066a4e" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ServiceJobHistory, Rock.Model.ServiceJobHistoryService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ServiceJobHistory, Rock.Model.ServiceJobHistoryService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

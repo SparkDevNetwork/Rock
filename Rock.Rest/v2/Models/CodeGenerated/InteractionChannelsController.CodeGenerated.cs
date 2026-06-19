@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d02d1b7c-e414-58d7-be39-5821096ac427" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionChannel, Rock.Model.InteractionChannelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionChannel, Rock.Model.InteractionChannelService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "29639f7b-d7ae-567f-8c91-bd3d8cf8d2f1" )]
         public IActionResult PostItem( [FromBody] Rock.Model.InteractionChannel value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionChannel, Rock.Model.InteractionChannelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionChannel, Rock.Model.InteractionChannelService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6df835f4-d9b6-5f4d-a5fd-330cb0e4c5bb" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.InteractionChannel value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionChannel, Rock.Model.InteractionChannelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionChannel, Rock.Model.InteractionChannelService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c8d1bfca-58d0-5fe3-bf96-a8d6322fb7cc" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionChannel, Rock.Model.InteractionChannelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionChannel, Rock.Model.InteractionChannelService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "152deb0b-b19b-57f2-abfe-426b12ce6d1b" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionChannel, Rock.Model.InteractionChannelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionChannel, Rock.Model.InteractionChannelService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0e3b1afc-a146-534d-a8ef-bb4f1b914978" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionChannel, Rock.Model.InteractionChannelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionChannel, Rock.Model.InteractionChannelService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3f3ea594-b4f0-5645-bf23-e33aeb05387a" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionChannel, Rock.Model.InteractionChannelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionChannel, Rock.Model.InteractionChannelService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3c7dd8a2-ee8d-524b-90f9-55ccd2733b33" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionChannel, Rock.Model.InteractionChannelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionChannel, Rock.Model.InteractionChannelService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "312cf705-62fe-5a9a-97e2-8bb1508c1c4e" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionChannel, Rock.Model.InteractionChannelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionChannel, Rock.Model.InteractionChannelService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ad634780-2c5e-5eab-a6cb-6f74c4a498bf" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionChannel, Rock.Model.InteractionChannelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionChannel, Rock.Model.InteractionChannelService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

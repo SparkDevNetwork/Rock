@@ -51,7 +51,7 @@ namespace Rock.CodeGeneration
             // RestController Guids
             EnsureRockGuidAttributesForType<System.Web.Http.ApiController, RestControllerGuidAttribute>( rootFolder,
                 GetDatabaseGuidLookup( rootFolder, $"SELECT [Guid], [ClassName] FROM [RestController]", "ClassName" ),
-                new Type[1] { typeof( Rock.Rest.ApiControllerBase ) } );
+                excludeTypeNames: new string[] { "Rock.Rest.ApiControllerBase" } );
 
             // RestAction Guids
             EnsureRockGuidAttributesForControllerActionMethods( rootFolder );
@@ -98,7 +98,7 @@ JOIN EntityType et
         /// <param name="rootFolder">The root folder.</param>
         /// <param name="databaseGuidLookup">The database unique identifier lookup.</param>
         /// <param name="excludedTypes">The excluded types.</param>
-        private static void EnsureRockGuidAttributesForType<T, GA>( string rootFolder, Lazy<Dictionary<string, Guid>> databaseGuidLookup, Type[] excludedTypes = null )
+        private static void EnsureRockGuidAttributesForType<T, GA>( string rootFolder, Lazy<Dictionary<string, Guid>> databaseGuidLookup, Type[] excludedTypes = null, string[] excludeTypeNames = null )
             where T : class
             where GA : RockGuidAttribute
         {
@@ -109,6 +109,11 @@ JOIN EntityType et
             if ( excludedTypes != null )
             {
                 types = types.Where( a => !excludedTypes.Contains( a ) ).ToList();
+            }
+
+            if ( excludeTypeNames != null )
+            {
+                types = types.Where( a => !excludeTypeNames.Contains( a.FullName ) ).ToList();
             }
 
 
@@ -315,7 +320,7 @@ JOIN EntityType et
         private static void EnsureRockGuidAttributesForControllerActionMethods( string rootFolder )
         {
             var processedMethodInfos = new HashSet<MethodInfo>();
-            var methodInfoList = typeof( Rock.Rest.ApiControllerBase ).Assembly
+            var methodInfoList = typeof( Rock.Rest.ApiController<> ).Assembly
                 .GetTypes()
                 .SelectMany( a => a.GetMethods() )
                 .Where( a => a.GetCustomAttributes<System.Web.Http.RouteAttribute>()?.Any() == true )

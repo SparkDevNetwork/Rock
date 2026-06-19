@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "721a89b8-6f77-56b7-bd4d-2da73efd0cc2" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AutomationTrigger, Rock.Model.AutomationTriggerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AutomationTrigger, Rock.Model.AutomationTriggerService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "90f8f18b-0c05-568d-8484-8f9de6e2db19" )]
         public IActionResult PostItem( [FromBody] Rock.Model.AutomationTrigger value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AutomationTrigger, Rock.Model.AutomationTriggerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AutomationTrigger, Rock.Model.AutomationTriggerService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "96e7a2be-620b-5572-b88f-8c2071bac85c" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.AutomationTrigger value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AutomationTrigger, Rock.Model.AutomationTriggerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AutomationTrigger, Rock.Model.AutomationTriggerService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "4d9861b5-a4e1-52c2-a5ed-c0f1b6d06a96" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AutomationTrigger, Rock.Model.AutomationTriggerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AutomationTrigger, Rock.Model.AutomationTriggerService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "65d5e27c-40f3-53b5-ad1f-794f48e623c4" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AutomationTrigger, Rock.Model.AutomationTriggerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AutomationTrigger, Rock.Model.AutomationTriggerService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9020fc83-d20b-5376-a936-b60d39097221" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AutomationTrigger, Rock.Model.AutomationTriggerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AutomationTrigger, Rock.Model.AutomationTriggerService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a2555a11-9c02-5e17-bacc-8b448d3b7b1d" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AutomationTrigger, Rock.Model.AutomationTriggerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AutomationTrigger, Rock.Model.AutomationTriggerService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7b930624-1549-52e5-bf3c-19a59e4751c7" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AutomationTrigger, Rock.Model.AutomationTriggerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AutomationTrigger, Rock.Model.AutomationTriggerService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "444cd3ba-85c4-5eaa-9256-74d893222b1f" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AutomationTrigger, Rock.Model.AutomationTriggerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AutomationTrigger, Rock.Model.AutomationTriggerService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2a8f4e80-6e4d-5ed0-b7b5-14a5ceab8bc3" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AutomationTrigger, Rock.Model.AutomationTriggerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AutomationTrigger, Rock.Model.AutomationTriggerService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

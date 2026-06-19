@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "859dd0c2-7799-580e-b582-e5913e91a8f5" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractiveExperienceOccurrence, Rock.Model.InteractiveExperienceOccurrenceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractiveExperienceOccurrence, Rock.Model.InteractiveExperienceOccurrenceService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "77f317cb-24e5-5ee1-a6dc-850e6a4d2a3e" )]
         public IActionResult PostItem( [FromBody] Rock.Model.InteractiveExperienceOccurrence value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractiveExperienceOccurrence, Rock.Model.InteractiveExperienceOccurrenceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractiveExperienceOccurrence, Rock.Model.InteractiveExperienceOccurrenceService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8dfe4884-b34f-5856-8eb5-9b0b339512c8" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.InteractiveExperienceOccurrence value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractiveExperienceOccurrence, Rock.Model.InteractiveExperienceOccurrenceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractiveExperienceOccurrence, Rock.Model.InteractiveExperienceOccurrenceService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8cc29aa1-f3af-57e8-8aee-dd287ed2e43d" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractiveExperienceOccurrence, Rock.Model.InteractiveExperienceOccurrenceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractiveExperienceOccurrence, Rock.Model.InteractiveExperienceOccurrenceService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "5e34dc21-3718-5353-894b-392dc230297b" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractiveExperienceOccurrence, Rock.Model.InteractiveExperienceOccurrenceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractiveExperienceOccurrence, Rock.Model.InteractiveExperienceOccurrenceService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "992e06bd-a2f6-593d-9442-ca2e9840ae54" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractiveExperienceOccurrence, Rock.Model.InteractiveExperienceOccurrenceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractiveExperienceOccurrence, Rock.Model.InteractiveExperienceOccurrenceService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d4cb4f27-b615-5a69-8327-6cb395ca20ab" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractiveExperienceOccurrence, Rock.Model.InteractiveExperienceOccurrenceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractiveExperienceOccurrence, Rock.Model.InteractiveExperienceOccurrenceService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "fcde929d-d8ba-5a8e-bdda-d4884d84169a" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractiveExperienceOccurrence, Rock.Model.InteractiveExperienceOccurrenceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractiveExperienceOccurrence, Rock.Model.InteractiveExperienceOccurrenceService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "17dbd7e5-8831-5560-bc5c-53404465e8ef" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractiveExperienceOccurrence, Rock.Model.InteractiveExperienceOccurrenceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractiveExperienceOccurrence, Rock.Model.InteractiveExperienceOccurrenceService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a867f20f-d345-5da3-bd05-2ea4f203b1e1" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractiveExperienceOccurrence, Rock.Model.InteractiveExperienceOccurrenceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractiveExperienceOccurrence, Rock.Model.InteractiveExperienceOccurrenceService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "1d182349-f3ab-5c16-8fb8-2b2e20f1e0c2" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialTransactionAlert, Rock.Model.FinancialTransactionAlertService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialTransactionAlert, Rock.Model.FinancialTransactionAlertService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9d37208e-ef14-5c12-a991-0bfca958e5c6" )]
         public IActionResult PostItem( [FromBody] Rock.Model.FinancialTransactionAlert value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialTransactionAlert, Rock.Model.FinancialTransactionAlertService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialTransactionAlert, Rock.Model.FinancialTransactionAlertService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e2699fdf-e34c-5cc0-8c5a-0bba9c6a5efe" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.FinancialTransactionAlert value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialTransactionAlert, Rock.Model.FinancialTransactionAlertService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialTransactionAlert, Rock.Model.FinancialTransactionAlertService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "1bd9f3a9-6760-5e55-a320-177f31277b80" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialTransactionAlert, Rock.Model.FinancialTransactionAlertService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialTransactionAlert, Rock.Model.FinancialTransactionAlertService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "48d92697-7a2e-59f0-b77f-429af6d8567e" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialTransactionAlert, Rock.Model.FinancialTransactionAlertService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialTransactionAlert, Rock.Model.FinancialTransactionAlertService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2638cde8-f380-5703-869c-352d76ff85d0" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialTransactionAlert, Rock.Model.FinancialTransactionAlertService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialTransactionAlert, Rock.Model.FinancialTransactionAlertService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f08f1009-9641-5289-8754-d789b2994627" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialTransactionAlert, Rock.Model.FinancialTransactionAlertService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialTransactionAlert, Rock.Model.FinancialTransactionAlertService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "69f1bd5d-9236-5958-a89b-96bc9b3ddaa2" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialTransactionAlert, Rock.Model.FinancialTransactionAlertService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialTransactionAlert, Rock.Model.FinancialTransactionAlertService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b2992663-ce29-55cf-b94b-2ca552f431f5" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialTransactionAlert, Rock.Model.FinancialTransactionAlertService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialTransactionAlert, Rock.Model.FinancialTransactionAlertService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6eb73f63-217b-5f33-bd41-7932e2db58f4" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialTransactionAlert, Rock.Model.FinancialTransactionAlertService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialTransactionAlert, Rock.Model.FinancialTransactionAlertService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

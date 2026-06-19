@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "df249c3a-478e-5832-8583-08bb1090db10" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetaFirstNameGenderLookup, Rock.Model.MetaFirstNameGenderLookupService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetaFirstNameGenderLookup, Rock.Model.MetaFirstNameGenderLookupService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "fbd8f2c3-eaf8-5efb-af4c-ac1f12afda91" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetaFirstNameGenderLookup, Rock.Model.MetaFirstNameGenderLookupService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetaFirstNameGenderLookup, Rock.Model.MetaFirstNameGenderLookupService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -116,7 +115,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "5aa29b78-f875-53b5-ad1c-02e359b67b05" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetaFirstNameGenderLookup, Rock.Model.MetaFirstNameGenderLookupService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetaFirstNameGenderLookup, Rock.Model.MetaFirstNameGenderLookupService>( this );
 
             return helper.Search( query );
         }
@@ -137,7 +136,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6a0ad5ce-4f18-5e2e-9f9c-7e02c72c997f" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetaFirstNameGenderLookup, Rock.Model.MetaFirstNameGenderLookupService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetaFirstNameGenderLookup, Rock.Model.MetaFirstNameGenderLookupService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -162,7 +161,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e3fd8907-5fcb-567b-a9af-3a176227f500" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetaFirstNameGenderLookup, Rock.Model.MetaFirstNameGenderLookupService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetaFirstNameGenderLookup, Rock.Model.MetaFirstNameGenderLookupService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

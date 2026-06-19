@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2fa475e4-f323-54e7-a674-d05bec9a4989" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RestController, Rock.Model.RestControllerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RestController, Rock.Model.RestControllerService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "92287e5b-98eb-5766-afdf-b086a7be9f63" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RestController, Rock.Model.RestControllerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RestController, Rock.Model.RestControllerService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -116,7 +115,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ccc5f150-8e53-5320-9c3a-efcf6e9be026" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RestController, Rock.Model.RestControllerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RestController, Rock.Model.RestControllerService>( this );
 
             return helper.Search( query );
         }
@@ -137,7 +136,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9a43f4bc-7d4e-5591-88d9-ac4376375a52" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RestController, Rock.Model.RestControllerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RestController, Rock.Model.RestControllerService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -162,7 +161,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "fd5f317b-f92f-5c64-bb6f-525b3325482c" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RestController, Rock.Model.RestControllerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RestController, Rock.Model.RestControllerService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "64936e6f-9c23-5c17-89f5-f0dbb0aeb5eb" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Schedule, Rock.Model.ScheduleService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Schedule, Rock.Model.ScheduleService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "185e7d5c-cff4-553d-bee6-5d3c21705d52" )]
         public IActionResult PostItem( [FromBody] Rock.Model.Schedule value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Schedule, Rock.Model.ScheduleService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Schedule, Rock.Model.ScheduleService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f2b2c1c8-b6a0-5f7d-943a-ccce5db8c81d" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.Schedule value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Schedule, Rock.Model.ScheduleService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Schedule, Rock.Model.ScheduleService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "078c9fcc-d6cf-52b0-95b4-8f9ff04160ac" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Schedule, Rock.Model.ScheduleService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Schedule, Rock.Model.ScheduleService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b55018a7-6be7-5f98-815e-5350aa14b7c4" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Schedule, Rock.Model.ScheduleService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Schedule, Rock.Model.ScheduleService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "66a02a67-be2c-5681-8627-a573fe7737d7" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Schedule, Rock.Model.ScheduleService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Schedule, Rock.Model.ScheduleService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9f3f2c02-5a97-562f-a809-b83b81102718" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Schedule, Rock.Model.ScheduleService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Schedule, Rock.Model.ScheduleService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "fc735e4b-4a42-500a-8dfb-57c373b13033" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Schedule, Rock.Model.ScheduleService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Schedule, Rock.Model.ScheduleService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "71f1c8ed-6ffd-5554-b79f-3baa40cffe9f" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Schedule, Rock.Model.ScheduleService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Schedule, Rock.Model.ScheduleService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "86ed4b4e-9b12-5072-ab75-41ede793524b" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Schedule, Rock.Model.ScheduleService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Schedule, Rock.Model.ScheduleService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

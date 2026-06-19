@@ -49,7 +49,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "1bb0244c-40f1-565d-8de4-7b0e3de2e742" )]
         public IActionResult PostItem( [FromBody] Rock.Model.EventItem value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventItem, Rock.Model.EventItemService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventItem, Rock.Model.EventItemService>( this );
 
             // We want to ignore security when creating new items because there
             // is no EventCalendar linkage yet to check security against.

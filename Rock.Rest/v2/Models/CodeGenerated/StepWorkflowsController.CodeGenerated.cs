@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b3670c44-daf4-55c8-890a-9628acda83b6" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.StepWorkflow, Rock.Model.StepWorkflowService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.StepWorkflow, Rock.Model.StepWorkflowService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "4f2c294d-17ff-53bc-96eb-73cfdd5c79d3" )]
         public IActionResult PostItem( [FromBody] Rock.Model.StepWorkflow value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.StepWorkflow, Rock.Model.StepWorkflowService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.StepWorkflow, Rock.Model.StepWorkflowService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "139623ba-d52d-5a8d-9bbe-24d3a63a07a0" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.StepWorkflow value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.StepWorkflow, Rock.Model.StepWorkflowService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.StepWorkflow, Rock.Model.StepWorkflowService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7f0217d0-3170-520a-902b-bbfc97900c6b" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.StepWorkflow, Rock.Model.StepWorkflowService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.StepWorkflow, Rock.Model.StepWorkflowService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "94788801-c6d7-52c4-832e-1b27dea1a6b8" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.StepWorkflow, Rock.Model.StepWorkflowService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.StepWorkflow, Rock.Model.StepWorkflowService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8d36a0d4-cd0a-5eac-b50e-6164ea2663f3" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.StepWorkflow, Rock.Model.StepWorkflowService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.StepWorkflow, Rock.Model.StepWorkflowService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "4f371eb2-42f2-505b-8e49-099855cf07b8" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.StepWorkflow, Rock.Model.StepWorkflowService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.StepWorkflow, Rock.Model.StepWorkflowService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "72d24f52-7785-5114-84a1-04dbdb871153" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.StepWorkflow, Rock.Model.StepWorkflowService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.StepWorkflow, Rock.Model.StepWorkflowService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "fbb19983-8acb-52ca-9095-d95ae5cf8739" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.StepWorkflow, Rock.Model.StepWorkflowService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.StepWorkflow, Rock.Model.StepWorkflowService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b8326dac-acad-57fe-9882-1ed345b58c11" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.StepWorkflow, Rock.Model.StepWorkflowService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.StepWorkflow, Rock.Model.StepWorkflowService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

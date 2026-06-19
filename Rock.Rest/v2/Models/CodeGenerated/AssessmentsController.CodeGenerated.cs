@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e0a946f1-09a6-5f5e-95a4-1e1c155f0be8" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Assessment, Rock.Model.AssessmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Assessment, Rock.Model.AssessmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "51cfb634-2046-5e4c-96b0-51ef6db1c66c" )]
         public IActionResult PostItem( [FromBody] Rock.Model.Assessment value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Assessment, Rock.Model.AssessmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Assessment, Rock.Model.AssessmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "5570e4ea-a1cf-52db-bda4-4e50fe289d7e" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.Assessment value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Assessment, Rock.Model.AssessmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Assessment, Rock.Model.AssessmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7a89213e-b727-5d39-825e-34fe41c92cac" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Assessment, Rock.Model.AssessmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Assessment, Rock.Model.AssessmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2c7dc7c1-1a12-5765-bed4-bef338d817b7" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Assessment, Rock.Model.AssessmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Assessment, Rock.Model.AssessmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "dccbc23b-0270-5088-afbd-d548a7f74f91" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Assessment, Rock.Model.AssessmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Assessment, Rock.Model.AssessmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f38ec1aa-c08d-5956-b626-134474bfeafb" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Assessment, Rock.Model.AssessmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Assessment, Rock.Model.AssessmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "66d473d3-2b92-531b-802a-14fcb41dd73a" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Assessment, Rock.Model.AssessmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Assessment, Rock.Model.AssessmentService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b54e873f-463a-5192-89e1-c4343428f51a" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Assessment, Rock.Model.AssessmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Assessment, Rock.Model.AssessmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a9641237-a7a4-5b37-bd45-bc5d6e2b888d" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Assessment, Rock.Model.AssessmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Assessment, Rock.Model.AssessmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

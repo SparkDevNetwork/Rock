@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6bd07ca0-8be2-5cb2-8d9f-8fd3344beb36" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupRequirement, Rock.Model.GroupRequirementService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupRequirement, Rock.Model.GroupRequirementService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9ed520fb-024c-50f0-83f7-4db423e4bc63" )]
         public IActionResult PostItem( [FromBody] Rock.Model.GroupRequirement value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupRequirement, Rock.Model.GroupRequirementService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupRequirement, Rock.Model.GroupRequirementService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "baebc669-b042-5007-ba3c-64ebcec98926" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.GroupRequirement value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupRequirement, Rock.Model.GroupRequirementService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupRequirement, Rock.Model.GroupRequirementService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "99908693-a14f-58e9-a5b0-1adb6f4e430d" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupRequirement, Rock.Model.GroupRequirementService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupRequirement, Rock.Model.GroupRequirementService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "41f4b183-5cfe-5d3c-abd8-8aa27c9304a8" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupRequirement, Rock.Model.GroupRequirementService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupRequirement, Rock.Model.GroupRequirementService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b62b3154-081e-5280-b64d-765648c2513b" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupRequirement, Rock.Model.GroupRequirementService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupRequirement, Rock.Model.GroupRequirementService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "10e27d76-5445-5ec9-a5d9-3b1b5e35b0a5" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupRequirement, Rock.Model.GroupRequirementService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupRequirement, Rock.Model.GroupRequirementService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3afefddf-e96f-5455-b17e-4c191681a643" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupRequirement, Rock.Model.GroupRequirementService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupRequirement, Rock.Model.GroupRequirementService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "17b89923-f1a8-58ff-b07e-55402b2f975c" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupRequirement, Rock.Model.GroupRequirementService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupRequirement, Rock.Model.GroupRequirementService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "40751e25-93c6-5986-81e9-67cf3367720e" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupRequirement, Rock.Model.GroupRequirementService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupRequirement, Rock.Model.GroupRequirementService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

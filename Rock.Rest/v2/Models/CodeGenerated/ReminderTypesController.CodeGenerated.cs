@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "5193f359-aced-517e-ac27-54abe7134dcf" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ReminderType, Rock.Model.ReminderTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ReminderType, Rock.Model.ReminderTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c6e6b92b-9c90-5100-a153-fce96c01434f" )]
         public IActionResult PostItem( [FromBody] Rock.Model.ReminderType value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ReminderType, Rock.Model.ReminderTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ReminderType, Rock.Model.ReminderTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a64b4b59-17ce-5fb8-9df8-054f660601db" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.ReminderType value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ReminderType, Rock.Model.ReminderTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ReminderType, Rock.Model.ReminderTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f8a71a4e-e575-51da-a6ac-ef8e054cf6ae" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ReminderType, Rock.Model.ReminderTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ReminderType, Rock.Model.ReminderTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a85cd7f2-1d23-5ae8-9599-64f8f62c92fd" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ReminderType, Rock.Model.ReminderTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ReminderType, Rock.Model.ReminderTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d7a033fc-71a4-5307-9e74-b71d28b91331" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ReminderType, Rock.Model.ReminderTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ReminderType, Rock.Model.ReminderTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "64ad88d7-4d5c-55da-b057-1e606a7d207c" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ReminderType, Rock.Model.ReminderTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ReminderType, Rock.Model.ReminderTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "de915ed9-3378-5501-b998-206ab7e56fb9" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ReminderType, Rock.Model.ReminderTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ReminderType, Rock.Model.ReminderTypeService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3296b34e-cf4b-5c5a-8da9-d1bc9239dacc" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ReminderType, Rock.Model.ReminderTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ReminderType, Rock.Model.ReminderTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9c3720c3-a02a-5985-839f-a834b91888eb" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ReminderType, Rock.Model.ReminderTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ReminderType, Rock.Model.ReminderTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

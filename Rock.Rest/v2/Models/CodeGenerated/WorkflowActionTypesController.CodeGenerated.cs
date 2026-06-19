@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7972d60f-5a5a-5216-8094-1084c6cad523" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WorkflowActionType, Rock.Model.WorkflowActionTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WorkflowActionType, Rock.Model.WorkflowActionTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d311a4bb-000a-5968-94e1-33faacd7e47c" )]
         public IActionResult PostItem( [FromBody] Rock.Model.WorkflowActionType value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WorkflowActionType, Rock.Model.WorkflowActionTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WorkflowActionType, Rock.Model.WorkflowActionTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f71f47bb-a6cc-5c81-860f-bb28bc600c64" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.WorkflowActionType value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WorkflowActionType, Rock.Model.WorkflowActionTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WorkflowActionType, Rock.Model.WorkflowActionTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2d9b05e3-e2b2-5075-85a0-5b742df29a99" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WorkflowActionType, Rock.Model.WorkflowActionTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WorkflowActionType, Rock.Model.WorkflowActionTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6be47580-6007-5c1f-813d-2fb51141ea98" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WorkflowActionType, Rock.Model.WorkflowActionTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WorkflowActionType, Rock.Model.WorkflowActionTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7b6334e7-6de9-5953-a68f-13f539737f6b" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WorkflowActionType, Rock.Model.WorkflowActionTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WorkflowActionType, Rock.Model.WorkflowActionTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "4ccfe73e-9df3-5a5d-812e-e5fc1138daa4" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WorkflowActionType, Rock.Model.WorkflowActionTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WorkflowActionType, Rock.Model.WorkflowActionTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c7895fc7-0300-5f2f-a65e-b3d926e36e0f" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WorkflowActionType, Rock.Model.WorkflowActionTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WorkflowActionType, Rock.Model.WorkflowActionTypeService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f8f05538-7aef-543b-bbf9-def5045bc491" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WorkflowActionType, Rock.Model.WorkflowActionTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WorkflowActionType, Rock.Model.WorkflowActionTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "15a37cfa-4ae8-54a4-86ef-9795d9c36fe1" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WorkflowActionType, Rock.Model.WorkflowActionTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WorkflowActionType, Rock.Model.WorkflowActionTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

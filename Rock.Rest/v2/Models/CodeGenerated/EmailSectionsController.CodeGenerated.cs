@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "762ad574-12c8-5880-86f0-735231c551f6" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EmailSection, Rock.Model.EmailSectionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EmailSection, Rock.Model.EmailSectionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "85a921f9-9895-5631-8552-d827f19b1a4d" )]
         public IActionResult PostItem( [FromBody] Rock.Model.EmailSection value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EmailSection, Rock.Model.EmailSectionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EmailSection, Rock.Model.EmailSectionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0b015434-7b31-55f1-b319-77f150480882" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.EmailSection value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EmailSection, Rock.Model.EmailSectionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EmailSection, Rock.Model.EmailSectionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2666481d-3e97-5443-93c7-fdade88e5feb" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EmailSection, Rock.Model.EmailSectionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EmailSection, Rock.Model.EmailSectionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d5fb3190-9e64-5a8a-a814-eb33275e14c1" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EmailSection, Rock.Model.EmailSectionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EmailSection, Rock.Model.EmailSectionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "14692206-e476-5756-8635-62fda08c4a92" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EmailSection, Rock.Model.EmailSectionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EmailSection, Rock.Model.EmailSectionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c2318353-7c31-52e8-a67f-6cbccd7ac64c" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EmailSection, Rock.Model.EmailSectionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EmailSection, Rock.Model.EmailSectionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "4bfc05e0-f7d3-538a-bc2e-4e0a298e4a84" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EmailSection, Rock.Model.EmailSectionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EmailSection, Rock.Model.EmailSectionService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "25a21807-e6eb-5caf-89bd-014007bb79fa" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EmailSection, Rock.Model.EmailSectionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EmailSection, Rock.Model.EmailSectionService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e1581451-a323-5c37-86fe-70d05fb3b55d" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EmailSection, Rock.Model.EmailSectionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EmailSection, Rock.Model.EmailSectionService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

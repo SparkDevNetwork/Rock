@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "69df9413-a4a6-58a0-b7ce-e0c0045a8bd3" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NoteWatch, Rock.Model.NoteWatchService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NoteWatch, Rock.Model.NoteWatchService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "853379da-1267-5bee-8600-1b073021e15e" )]
         public IActionResult PostItem( [FromBody] Rock.Model.NoteWatch value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NoteWatch, Rock.Model.NoteWatchService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NoteWatch, Rock.Model.NoteWatchService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9f5e1275-c6bb-5a4a-a26f-ddaa1358ef5f" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.NoteWatch value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NoteWatch, Rock.Model.NoteWatchService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NoteWatch, Rock.Model.NoteWatchService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c1f508fb-3429-54e7-b18e-2b855acebe91" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NoteWatch, Rock.Model.NoteWatchService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NoteWatch, Rock.Model.NoteWatchService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f25cd35b-7120-5a02-8619-8cf7d04017e3" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NoteWatch, Rock.Model.NoteWatchService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NoteWatch, Rock.Model.NoteWatchService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9286edd8-ce48-535a-9078-6d895c316f52" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NoteWatch, Rock.Model.NoteWatchService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NoteWatch, Rock.Model.NoteWatchService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "5107d58c-77ec-5fee-9fa2-9abe2d984897" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NoteWatch, Rock.Model.NoteWatchService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NoteWatch, Rock.Model.NoteWatchService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b8cfedca-726a-5501-b291-648bfadc463d" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NoteWatch, Rock.Model.NoteWatchService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NoteWatch, Rock.Model.NoteWatchService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "03e34901-2357-5411-916c-be18ffb91290" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NoteWatch, Rock.Model.NoteWatchService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NoteWatch, Rock.Model.NoteWatchService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "1f552d05-6aa1-5fe4-8b9f-c912b9078d38" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NoteWatch, Rock.Model.NoteWatchService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NoteWatch, Rock.Model.NoteWatchService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

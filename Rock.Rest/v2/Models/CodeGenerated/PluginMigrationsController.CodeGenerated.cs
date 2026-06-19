@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "16614cd9-0fde-53fe-b818-06584c11872b" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PluginMigration, Rock.Model.PluginMigrationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PluginMigration, Rock.Model.PluginMigrationService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -92,7 +91,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6296dec8-7715-5174-8e74-965c4890ddeb" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PluginMigration, Rock.Model.PluginMigrationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PluginMigration, Rock.Model.PluginMigrationService>( this );
 
             return helper.Search( query );
         }
@@ -113,7 +112,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a9ba18a4-9b7a-52be-91f6-4c529c720ae6" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PluginMigration, Rock.Model.PluginMigrationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PluginMigration, Rock.Model.PluginMigrationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -138,7 +137,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3ab7198a-b3b3-5d36-9805-4d9d520d8d69" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PluginMigration, Rock.Model.PluginMigrationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PluginMigration, Rock.Model.PluginMigrationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

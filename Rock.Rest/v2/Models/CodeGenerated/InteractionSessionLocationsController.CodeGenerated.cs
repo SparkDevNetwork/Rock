@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "5f1991aa-6b34-56e9-8d73-8419ad199bb6" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionSessionLocation, Rock.Model.InteractionSessionLocationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionSessionLocation, Rock.Model.InteractionSessionLocationService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ce2cfa7d-602a-55b0-b9cd-a6cb9ac863f8" )]
         public IActionResult PostItem( [FromBody] Rock.Model.InteractionSessionLocation value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionSessionLocation, Rock.Model.InteractionSessionLocationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionSessionLocation, Rock.Model.InteractionSessionLocationService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "5f273684-4770-5909-9d3a-abe0f8d24ae4" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.InteractionSessionLocation value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionSessionLocation, Rock.Model.InteractionSessionLocationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionSessionLocation, Rock.Model.InteractionSessionLocationService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "356789d5-2101-586f-8b09-09317d35c394" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionSessionLocation, Rock.Model.InteractionSessionLocationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionSessionLocation, Rock.Model.InteractionSessionLocationService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2e64968d-6b11-5dc8-85e9-9cd2a8da64de" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionSessionLocation, Rock.Model.InteractionSessionLocationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionSessionLocation, Rock.Model.InteractionSessionLocationService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6356f559-dd03-5934-8bb4-f39254493798" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionSessionLocation, Rock.Model.InteractionSessionLocationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionSessionLocation, Rock.Model.InteractionSessionLocationService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "440f55fa-93c5-5d3e-a96d-7d488994a050" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionSessionLocation, Rock.Model.InteractionSessionLocationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionSessionLocation, Rock.Model.InteractionSessionLocationService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "522fb550-013e-5975-960b-276f257512c8" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionSessionLocation, Rock.Model.InteractionSessionLocationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionSessionLocation, Rock.Model.InteractionSessionLocationService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "62055311-4520-5ebc-a065-790a88f46f78" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionSessionLocation, Rock.Model.InteractionSessionLocationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionSessionLocation, Rock.Model.InteractionSessionLocationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "316572d9-be57-503f-b8cc-7d28f465360b" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionSessionLocation, Rock.Model.InteractionSessionLocationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionSessionLocation, Rock.Model.InteractionSessionLocationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

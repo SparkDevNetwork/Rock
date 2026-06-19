@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "4660a381-d244-5d03-adfe-edbe1a4520e4" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FollowingEventNotification, Rock.Model.FollowingEventNotificationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FollowingEventNotification, Rock.Model.FollowingEventNotificationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8d4fae50-1580-5dd3-8f13-e9bdf128ee40" )]
         public IActionResult PostItem( [FromBody] Rock.Model.FollowingEventNotification value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FollowingEventNotification, Rock.Model.FollowingEventNotificationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FollowingEventNotification, Rock.Model.FollowingEventNotificationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "afe13d7b-2dc9-51fb-acbc-7953aaf99a18" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.FollowingEventNotification value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FollowingEventNotification, Rock.Model.FollowingEventNotificationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FollowingEventNotification, Rock.Model.FollowingEventNotificationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c3fa4f7b-1849-50b4-a4e2-e677a3c568f4" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FollowingEventNotification, Rock.Model.FollowingEventNotificationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FollowingEventNotification, Rock.Model.FollowingEventNotificationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d0e9b1c5-77b0-56e0-9933-ea518bd3a188" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FollowingEventNotification, Rock.Model.FollowingEventNotificationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FollowingEventNotification, Rock.Model.FollowingEventNotificationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7caf971e-26d1-53f8-9b4c-95b857dd1316" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FollowingEventNotification, Rock.Model.FollowingEventNotificationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FollowingEventNotification, Rock.Model.FollowingEventNotificationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b4e9b777-0717-5a00-8414-4e4d75d28dae" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FollowingEventNotification, Rock.Model.FollowingEventNotificationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FollowingEventNotification, Rock.Model.FollowingEventNotificationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "334b59e2-cf82-5814-a237-c526de222e7c" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FollowingEventNotification, Rock.Model.FollowingEventNotificationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FollowingEventNotification, Rock.Model.FollowingEventNotificationService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0ea0c6ed-fd19-54a6-b14e-6ad63f0bacff" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FollowingEventNotification, Rock.Model.FollowingEventNotificationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FollowingEventNotification, Rock.Model.FollowingEventNotificationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "4a653b6f-5878-521c-b337-0ed90ccc1ddd" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FollowingEventNotification, Rock.Model.FollowingEventNotificationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FollowingEventNotification, Rock.Model.FollowingEventNotificationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

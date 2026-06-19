@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a14963e3-2706-5914-a70a-706c6dc8ac4d" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.SignatureDocument, Rock.Model.SignatureDocumentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.SignatureDocument, Rock.Model.SignatureDocumentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0030fbf7-9ed6-5077-b0ad-8100e417e811" )]
         public IActionResult PostItem( [FromBody] Rock.Model.SignatureDocument value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.SignatureDocument, Rock.Model.SignatureDocumentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.SignatureDocument, Rock.Model.SignatureDocumentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "11b8257a-30a8-58c0-a856-5caec6da19e2" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.SignatureDocument value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.SignatureDocument, Rock.Model.SignatureDocumentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.SignatureDocument, Rock.Model.SignatureDocumentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e270b4f5-351e-5ac1-8dae-0cf0f614a4de" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.SignatureDocument, Rock.Model.SignatureDocumentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.SignatureDocument, Rock.Model.SignatureDocumentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "fc4b5c67-1daa-584e-ad87-577de4e61935" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.SignatureDocument, Rock.Model.SignatureDocumentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.SignatureDocument, Rock.Model.SignatureDocumentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "fe8a1af8-b064-5885-9ad3-dd703e574c3c" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.SignatureDocument, Rock.Model.SignatureDocumentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.SignatureDocument, Rock.Model.SignatureDocumentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9120b1c8-695c-55cb-b794-8a7b3ab1e9fe" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.SignatureDocument, Rock.Model.SignatureDocumentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.SignatureDocument, Rock.Model.SignatureDocumentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a6370904-23c3-5fad-a65f-0b37b897338a" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.SignatureDocument, Rock.Model.SignatureDocumentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.SignatureDocument, Rock.Model.SignatureDocumentService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "45417c44-b11d-5b3a-a645-2b5892d15b63" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.SignatureDocument, Rock.Model.SignatureDocumentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.SignatureDocument, Rock.Model.SignatureDocumentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "39bb9bd0-0d1e-53b7-b38d-457544722e18" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.SignatureDocument, Rock.Model.SignatureDocumentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.SignatureDocument, Rock.Model.SignatureDocumentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

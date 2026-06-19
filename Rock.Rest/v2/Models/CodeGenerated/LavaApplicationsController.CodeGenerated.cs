@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "93fd4aef-ed7e-507f-9140-08e263b76bc8" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.LavaApplication, Rock.Model.LavaApplicationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.LavaApplication, Rock.Model.LavaApplicationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "13551f4a-3679-5066-a411-cf44714a501a" )]
         public IActionResult PostItem( [FromBody] Rock.Model.LavaApplication value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.LavaApplication, Rock.Model.LavaApplicationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.LavaApplication, Rock.Model.LavaApplicationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "cce67b5e-1a1c-5af6-9500-847596c307d6" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.LavaApplication value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.LavaApplication, Rock.Model.LavaApplicationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.LavaApplication, Rock.Model.LavaApplicationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "40f1ec86-0936-5c67-817e-5553d84ae4fe" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.LavaApplication, Rock.Model.LavaApplicationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.LavaApplication, Rock.Model.LavaApplicationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "65b34ee5-aee8-5f7c-aa76-be60803fb8fa" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.LavaApplication, Rock.Model.LavaApplicationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.LavaApplication, Rock.Model.LavaApplicationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7521b36f-ad52-5492-82b4-b799a3a54d0d" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.LavaApplication, Rock.Model.LavaApplicationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.LavaApplication, Rock.Model.LavaApplicationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2c32fe36-19a7-5994-ae8f-ffd4f6e83d3a" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.LavaApplication, Rock.Model.LavaApplicationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.LavaApplication, Rock.Model.LavaApplicationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d06baf33-f2b7-5793-b607-c96d25662712" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.LavaApplication, Rock.Model.LavaApplicationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.LavaApplication, Rock.Model.LavaApplicationService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e935cc02-afdc-5c01-b58b-b7a16b3ef29c" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.LavaApplication, Rock.Model.LavaApplicationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.LavaApplication, Rock.Model.LavaApplicationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "01867340-905b-5916-9d0f-b1eafc6de1e8" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.LavaApplication, Rock.Model.LavaApplicationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.LavaApplication, Rock.Model.LavaApplicationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

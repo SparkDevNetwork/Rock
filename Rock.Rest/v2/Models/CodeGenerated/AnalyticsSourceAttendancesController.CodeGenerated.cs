@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e4b1d985-b2a5-50e7-9d34-b81c75c49bf2" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AnalyticsSourceAttendance, Rock.Model.AnalyticsSourceAttendanceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AnalyticsSourceAttendance, Rock.Model.AnalyticsSourceAttendanceService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2accef8a-ecd8-5c7c-a21b-69ee95e56d9a" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AnalyticsSourceAttendance, Rock.Model.AnalyticsSourceAttendanceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AnalyticsSourceAttendance, Rock.Model.AnalyticsSourceAttendanceService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -116,7 +115,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "beb2ab00-05ea-50a4-8575-5a1a4ef75148" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AnalyticsSourceAttendance, Rock.Model.AnalyticsSourceAttendanceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AnalyticsSourceAttendance, Rock.Model.AnalyticsSourceAttendanceService>( this );
 
             return helper.Search( query );
         }
@@ -137,7 +136,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f0d468a1-1591-5d20-94df-5d1ab2c989b9" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AnalyticsSourceAttendance, Rock.Model.AnalyticsSourceAttendanceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AnalyticsSourceAttendance, Rock.Model.AnalyticsSourceAttendanceService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -162,7 +161,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "64245a81-d403-5521-b42a-d90f6a03f6ab" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AnalyticsSourceAttendance, Rock.Model.AnalyticsSourceAttendanceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AnalyticsSourceAttendance, Rock.Model.AnalyticsSourceAttendanceService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

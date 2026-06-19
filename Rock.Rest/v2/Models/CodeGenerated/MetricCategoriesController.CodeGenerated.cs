@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f2fef2c5-0cc3-5aa8-b1b8-12a10a7adac1" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetricCategory, Rock.Model.MetricCategoryService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetricCategory, Rock.Model.MetricCategoryService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b5a9710b-49c2-539b-a917-ad56d67dd9c5" )]
         public IActionResult PostItem( [FromBody] Rock.Model.MetricCategory value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetricCategory, Rock.Model.MetricCategoryService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetricCategory, Rock.Model.MetricCategoryService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9c135bc8-2c2f-5bb1-8e74-6852d12af8eb" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.MetricCategory value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetricCategory, Rock.Model.MetricCategoryService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetricCategory, Rock.Model.MetricCategoryService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2c9d0d7e-2bb5-5de5-b9de-900ada456ba3" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetricCategory, Rock.Model.MetricCategoryService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetricCategory, Rock.Model.MetricCategoryService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7696c53f-36c9-549a-ad21-79ea4ce6eac3" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetricCategory, Rock.Model.MetricCategoryService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetricCategory, Rock.Model.MetricCategoryService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "779b24eb-42bd-58f6-bb49-49e8300b1567" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetricCategory, Rock.Model.MetricCategoryService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetricCategory, Rock.Model.MetricCategoryService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "5cc82a01-4f72-55f9-9cfe-01e33895049a" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetricCategory, Rock.Model.MetricCategoryService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetricCategory, Rock.Model.MetricCategoryService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "776e8117-def0-58fb-af7f-ebfa59f67a2b" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetricCategory, Rock.Model.MetricCategoryService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetricCategory, Rock.Model.MetricCategoryService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c7b567a1-48cc-5fb8-9536-1b66e0de36bd" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetricCategory, Rock.Model.MetricCategoryService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetricCategory, Rock.Model.MetricCategoryService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "92d7d7ea-f9d9-57e2-9efb-0d4207fe28ce" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetricCategory, Rock.Model.MetricCategoryService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetricCategory, Rock.Model.MetricCategoryService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

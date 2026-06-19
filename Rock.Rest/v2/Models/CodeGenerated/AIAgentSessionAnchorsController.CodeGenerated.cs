@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "47732578-a643-5d1d-9f92-19a8c616765c" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AIAgentSessionAnchor, Rock.Model.AIAgentSessionAnchorService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AIAgentSessionAnchor, Rock.Model.AIAgentSessionAnchorService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3ee2d21c-5334-5c78-827e-562ed80c545f" )]
         public IActionResult PostItem( [FromBody] Rock.Model.AIAgentSessionAnchor value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AIAgentSessionAnchor, Rock.Model.AIAgentSessionAnchorService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AIAgentSessionAnchor, Rock.Model.AIAgentSessionAnchorService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d5aff4da-e215-5527-b926-8e8c7f86c42f" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.AIAgentSessionAnchor value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AIAgentSessionAnchor, Rock.Model.AIAgentSessionAnchorService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AIAgentSessionAnchor, Rock.Model.AIAgentSessionAnchorService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "94c054ef-3574-5a5f-af9e-e139d5e956ef" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AIAgentSessionAnchor, Rock.Model.AIAgentSessionAnchorService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AIAgentSessionAnchor, Rock.Model.AIAgentSessionAnchorService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "1ae1e6df-89e3-5817-ae3d-ffe0f8c1f647" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AIAgentSessionAnchor, Rock.Model.AIAgentSessionAnchorService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AIAgentSessionAnchor, Rock.Model.AIAgentSessionAnchorService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7b6a5e3e-6036-5016-b439-e933e76994a7" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AIAgentSessionAnchor, Rock.Model.AIAgentSessionAnchorService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AIAgentSessionAnchor, Rock.Model.AIAgentSessionAnchorService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "809f8de6-4f5d-5078-aa88-22cfedc04c1f" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AIAgentSessionAnchor, Rock.Model.AIAgentSessionAnchorService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AIAgentSessionAnchor, Rock.Model.AIAgentSessionAnchorService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ab78aad5-eaf8-5ceb-943e-859aa968b37f" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AIAgentSessionAnchor, Rock.Model.AIAgentSessionAnchorService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AIAgentSessionAnchor, Rock.Model.AIAgentSessionAnchorService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6ed05f10-7497-527e-8580-9dabd35a9497" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AIAgentSessionAnchor, Rock.Model.AIAgentSessionAnchorService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AIAgentSessionAnchor, Rock.Model.AIAgentSessionAnchorService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "681c510a-ca3f-5c0b-b40a-579a694281b2" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AIAgentSessionAnchor, Rock.Model.AIAgentSessionAnchorService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AIAgentSessionAnchor, Rock.Model.AIAgentSessionAnchorService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

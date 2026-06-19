@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "dfffa3bf-fa8f-509e-94c3-e9ab4a04c10e" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "58c0adcc-9937-531c-8576-e4d6afe5e2c7" )]
         public IActionResult PostItem( [FromBody] Rock.Model.Following value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "20425f52-1a78-5449-8bfc-47c48e32f098" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.Following value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f10fc10a-8d1d-5bf6-a608-16e00da81aaf" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b231c5b0-3c8a-5e06-8158-66f224ce6319" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "cd59b51b-cdea-5711-b542-dc233e933476" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2dfd7a64-f15a-5507-957e-b90f059c3791" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "1c2a30d1-dd65-5a12-82a8-4f3853ab9204" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2b9a7470-a4f1-500a-80a3-aa8f9b6a3d40" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "be4e120e-f8bb-5483-849e-b34bf3bb33f5" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

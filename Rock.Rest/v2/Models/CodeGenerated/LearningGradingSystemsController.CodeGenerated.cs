@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "15c9fe22-0082-5cc9-9f59-f41590b81907" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.LearningGradingSystem, Rock.Model.LearningGradingSystemService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.LearningGradingSystem, Rock.Model.LearningGradingSystemService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "58d2ce7b-0d63-52a6-8ec7-95576d97589c" )]
         public IActionResult PostItem( [FromBody] Rock.Model.LearningGradingSystem value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.LearningGradingSystem, Rock.Model.LearningGradingSystemService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.LearningGradingSystem, Rock.Model.LearningGradingSystemService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a1a53b44-46a1-5d68-8af8-7f49acf57e4a" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.LearningGradingSystem value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.LearningGradingSystem, Rock.Model.LearningGradingSystemService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.LearningGradingSystem, Rock.Model.LearningGradingSystemService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e8e3e713-04a3-5f46-a572-ac39749539ec" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.LearningGradingSystem, Rock.Model.LearningGradingSystemService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.LearningGradingSystem, Rock.Model.LearningGradingSystemService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ffe0dd18-b5eb-5f20-bc81-78cac91c4de5" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.LearningGradingSystem, Rock.Model.LearningGradingSystemService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.LearningGradingSystem, Rock.Model.LearningGradingSystemService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7f237d5f-ad40-5064-9762-0c1e8127f581" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.LearningGradingSystem, Rock.Model.LearningGradingSystemService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.LearningGradingSystem, Rock.Model.LearningGradingSystemService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "912f2287-98b2-50d9-857f-0b0dc7873d4c" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.LearningGradingSystem, Rock.Model.LearningGradingSystemService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.LearningGradingSystem, Rock.Model.LearningGradingSystemService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0361fc66-dfe1-5e58-99b5-c66949c11669" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.LearningGradingSystem, Rock.Model.LearningGradingSystemService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.LearningGradingSystem, Rock.Model.LearningGradingSystemService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e6806e56-198f-5447-b841-f6bb6d356b11" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.LearningGradingSystem, Rock.Model.LearningGradingSystemService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.LearningGradingSystem, Rock.Model.LearningGradingSystemService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "4a7c62b5-fc88-58af-b343-e8a2a74af27f" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.LearningGradingSystem, Rock.Model.LearningGradingSystemService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.LearningGradingSystem, Rock.Model.LearningGradingSystemService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

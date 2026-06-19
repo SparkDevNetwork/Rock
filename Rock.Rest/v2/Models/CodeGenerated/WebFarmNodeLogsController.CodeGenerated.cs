@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "1dece746-c83e-5e5f-8e7b-32f74125bd3c" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WebFarmNodeLog, Rock.Model.WebFarmNodeLogService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WebFarmNodeLog, Rock.Model.WebFarmNodeLogService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "436e8f30-7789-5a81-9cf3-f3dc9bc58bb5" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WebFarmNodeLog, Rock.Model.WebFarmNodeLogService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WebFarmNodeLog, Rock.Model.WebFarmNodeLogService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -116,7 +115,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "83a95218-9155-52eb-b439-009b4e071ff9" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WebFarmNodeLog, Rock.Model.WebFarmNodeLogService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WebFarmNodeLog, Rock.Model.WebFarmNodeLogService>( this );
 
             return helper.Search( query );
         }
@@ -137,7 +136,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9de849e6-1f62-5839-ba5a-27e4bbc998de" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WebFarmNodeLog, Rock.Model.WebFarmNodeLogService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WebFarmNodeLog, Rock.Model.WebFarmNodeLogService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -162,7 +161,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6eca19ac-ac56-5a55-b824-31116b47fc4c" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WebFarmNodeLog, Rock.Model.WebFarmNodeLogService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WebFarmNodeLog, Rock.Model.WebFarmNodeLogService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

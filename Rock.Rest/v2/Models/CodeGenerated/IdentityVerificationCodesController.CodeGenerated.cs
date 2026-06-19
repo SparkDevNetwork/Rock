@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e48a575a-9d78-56a6-afd6-cfaa7d8cf33c" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.IdentityVerificationCode, Rock.Model.IdentityVerificationCodeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.IdentityVerificationCode, Rock.Model.IdentityVerificationCodeService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8e0d94ee-1e00-5c5b-bed0-06d0049d7b68" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.IdentityVerificationCode, Rock.Model.IdentityVerificationCodeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.IdentityVerificationCode, Rock.Model.IdentityVerificationCodeService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -116,7 +115,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "eb04b0f8-06b3-5255-8b7c-e758a59888ca" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.IdentityVerificationCode, Rock.Model.IdentityVerificationCodeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.IdentityVerificationCode, Rock.Model.IdentityVerificationCodeService>( this );
 
             return helper.Search( query );
         }
@@ -137,7 +136,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ae1db91f-4ea3-5a5b-8411-dba3e27917ad" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.IdentityVerificationCode, Rock.Model.IdentityVerificationCodeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.IdentityVerificationCode, Rock.Model.IdentityVerificationCodeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -162,7 +161,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "74d08152-664d-5b0a-bd72-2863cf3243b9" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.IdentityVerificationCode, Rock.Model.IdentityVerificationCodeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.IdentityVerificationCode, Rock.Model.IdentityVerificationCodeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

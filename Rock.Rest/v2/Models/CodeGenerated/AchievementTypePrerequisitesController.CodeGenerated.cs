@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "540e1a29-c136-5ca9-b8d6-4c76124d4ef8" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b2101b0d-eb0b-50be-ab88-26c913cd9fbe" )]
         public IActionResult PostItem( [FromBody] Rock.Model.AchievementTypePrerequisite value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "63071d20-f648-573b-b901-5ac6331fa429" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.AchievementTypePrerequisite value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b10620bd-152c-519d-a77f-8bf00abf987a" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "18e76023-bf13-50e7-adbd-bc8e73235814" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "784997c0-69a4-50c6-b69f-67d6cf8e10d7" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "cb5d981e-2466-5d73-b9bc-5d3a583df0bb" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "bfd26d24-2faf-56ac-b36b-0801f6376859" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "1e034ac2-96d9-5ca7-b262-0d76df597e00" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "fe31a987-d58a-5cb8-bb44-055ef7170a0c" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

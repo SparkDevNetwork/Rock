@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "cbe94391-549c-5a89-be91-52286805bb1d" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NcoaHistory, Rock.Model.NcoaHistoryService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NcoaHistory, Rock.Model.NcoaHistoryService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "16b013a6-c0e9-58ea-9551-ba5fc993f720" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NcoaHistory, Rock.Model.NcoaHistoryService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NcoaHistory, Rock.Model.NcoaHistoryService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -116,7 +115,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f52c0024-32b1-5e13-9501-c01f3579ab81" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NcoaHistory, Rock.Model.NcoaHistoryService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NcoaHistory, Rock.Model.NcoaHistoryService>( this );
 
             return helper.Search( query );
         }
@@ -137,7 +136,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e34503cb-c27f-5f87-a8e2-4192cefb830e" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NcoaHistory, Rock.Model.NcoaHistoryService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NcoaHistory, Rock.Model.NcoaHistoryService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -162,7 +161,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "920d7ecb-1017-53b4-ac59-50809c9a6604" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NcoaHistory, Rock.Model.NcoaHistoryService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NcoaHistory, Rock.Model.NcoaHistoryService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

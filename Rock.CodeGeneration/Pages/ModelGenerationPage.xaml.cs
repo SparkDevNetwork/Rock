@@ -462,7 +462,7 @@ namespace Rock.CodeGeneration.Pages
             List<string> obsoleteReportList = new List<string>();
             List<Assembly> rockAssemblyList = new List<Assembly>();
             rockAssemblyList.Add( typeof( Rock.Data.RockContext ).Assembly );
-            rockAssemblyList.Add( typeof( Rock.Rest.ApiControllerBase ).Assembly );
+            rockAssemblyList.Add( typeof( Rock.Rest.ApiController<> ).Assembly );
 
             foreach ( var rockAssembly in rockAssemblyList )
             {
@@ -1454,7 +1454,7 @@ GO
             var obsolete = type.GetCustomAttribute<ObsoleteAttribute>();
             var rockObsolete = type.GetCustomAttribute<RockObsolete>();
             var fullClassName = $"{restNamespace}.{pluralizedName}Controller";
-            var restControllerType = Type.GetType( $"{fullClassName}, {typeof( Rock.Rest.ApiControllerBase ).Assembly.FullName}" );
+            var restControllerType = Type.GetType( $"{fullClassName}, {typeof( Rock.Rest.ApiController<> ).Assembly.FullName}" );
             var restControllerGuid = restControllerType?.GetCustomAttribute<Rock.SystemGuid.RestControllerGuidAttribute>()?.Guid;
 
             if ( ( type.GetCustomAttribute<CodeGenExcludeAttribute>()?.ExcludedFeatures ?? CodeGenFeature.None ).HasFlag( CodeGenFeature.DefaultRestController ) )

@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6f2e93d8-3702-5e3c-9832-638712c00bde" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupMemberAssignment, Rock.Model.GroupMemberAssignmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupMemberAssignment, Rock.Model.GroupMemberAssignmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7fcfba15-821b-5e1e-a9d6-37223224197e" )]
         public IActionResult PostItem( [FromBody] Rock.Model.GroupMemberAssignment value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupMemberAssignment, Rock.Model.GroupMemberAssignmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupMemberAssignment, Rock.Model.GroupMemberAssignmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "00c7f36f-737d-5f29-80ad-b9acd2fdb718" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.GroupMemberAssignment value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupMemberAssignment, Rock.Model.GroupMemberAssignmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupMemberAssignment, Rock.Model.GroupMemberAssignmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "43a774f5-0d55-5ff1-a794-9efdbec05976" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupMemberAssignment, Rock.Model.GroupMemberAssignmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupMemberAssignment, Rock.Model.GroupMemberAssignmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6bf0e1ee-ab0b-5ada-940b-a33b7b731389" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupMemberAssignment, Rock.Model.GroupMemberAssignmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupMemberAssignment, Rock.Model.GroupMemberAssignmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "aef4f4f9-0e2c-5a88-ba46-39b3fc3910de" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupMemberAssignment, Rock.Model.GroupMemberAssignmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupMemberAssignment, Rock.Model.GroupMemberAssignmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d30c5501-9767-5c3e-8968-77195d8fd917" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupMemberAssignment, Rock.Model.GroupMemberAssignmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupMemberAssignment, Rock.Model.GroupMemberAssignmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6fd22330-5204-5f7f-a8c1-deb4ce878808" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupMemberAssignment, Rock.Model.GroupMemberAssignmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupMemberAssignment, Rock.Model.GroupMemberAssignmentService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2f6f45ef-a410-5b27-b909-195a74584db9" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupMemberAssignment, Rock.Model.GroupMemberAssignmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupMemberAssignment, Rock.Model.GroupMemberAssignmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f71cadc0-5a77-5b86-82cf-ec687f3d26f1" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupMemberAssignment, Rock.Model.GroupMemberAssignmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupMemberAssignment, Rock.Model.GroupMemberAssignmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

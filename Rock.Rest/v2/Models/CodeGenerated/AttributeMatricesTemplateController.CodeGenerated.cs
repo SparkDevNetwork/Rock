@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "aa91a47f-7173-510a-afe9-a63676c31c8c" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttributeMatrixTemplate, Rock.Model.AttributeMatrixTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttributeMatrixTemplate, Rock.Model.AttributeMatrixTemplateService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "1ade14df-3f91-5140-976d-754ca93c0ca6" )]
         public IActionResult PostItem( [FromBody] Rock.Model.AttributeMatrixTemplate value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttributeMatrixTemplate, Rock.Model.AttributeMatrixTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttributeMatrixTemplate, Rock.Model.AttributeMatrixTemplateService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "409ae173-45c1-58b0-916e-6cf96557d5a2" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.AttributeMatrixTemplate value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttributeMatrixTemplate, Rock.Model.AttributeMatrixTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttributeMatrixTemplate, Rock.Model.AttributeMatrixTemplateService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c6cc3b3b-069e-5583-8289-07bb731edca0" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttributeMatrixTemplate, Rock.Model.AttributeMatrixTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttributeMatrixTemplate, Rock.Model.AttributeMatrixTemplateService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2e3ce3d9-0e27-56da-b97a-5d4837a30c5f" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttributeMatrixTemplate, Rock.Model.AttributeMatrixTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttributeMatrixTemplate, Rock.Model.AttributeMatrixTemplateService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f73c5c24-7093-5253-8a96-0fe93d68750d" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttributeMatrixTemplate, Rock.Model.AttributeMatrixTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttributeMatrixTemplate, Rock.Model.AttributeMatrixTemplateService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b5b862a8-db21-5233-ae60-b40302dc4490" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttributeMatrixTemplate, Rock.Model.AttributeMatrixTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttributeMatrixTemplate, Rock.Model.AttributeMatrixTemplateService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c942cf74-ad32-501c-88f3-ff65024cb351" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttributeMatrixTemplate, Rock.Model.AttributeMatrixTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttributeMatrixTemplate, Rock.Model.AttributeMatrixTemplateService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "903404b6-7d7c-5fb3-b600-a4af184c49ea" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttributeMatrixTemplate, Rock.Model.AttributeMatrixTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttributeMatrixTemplate, Rock.Model.AttributeMatrixTemplateService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0f2adb4d-bbf1-5363-a631-9ba3e2320e13" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttributeMatrixTemplate, Rock.Model.AttributeMatrixTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttributeMatrixTemplate, Rock.Model.AttributeMatrixTemplateService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

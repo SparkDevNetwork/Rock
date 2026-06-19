@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e5e6f592-24de-5ad6-a7af-346b99b0222a" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupMemberScheduleTemplate, Rock.Model.GroupMemberScheduleTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupMemberScheduleTemplate, Rock.Model.GroupMemberScheduleTemplateService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "693ded62-e7ef-5083-a1ce-033c1453615b" )]
         public IActionResult PostItem( [FromBody] Rock.Model.GroupMemberScheduleTemplate value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupMemberScheduleTemplate, Rock.Model.GroupMemberScheduleTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupMemberScheduleTemplate, Rock.Model.GroupMemberScheduleTemplateService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0ca32a7d-bd52-50d9-80f9-0368a72a4095" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.GroupMemberScheduleTemplate value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupMemberScheduleTemplate, Rock.Model.GroupMemberScheduleTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupMemberScheduleTemplate, Rock.Model.GroupMemberScheduleTemplateService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9826b963-c323-5651-98de-598feef3d329" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupMemberScheduleTemplate, Rock.Model.GroupMemberScheduleTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupMemberScheduleTemplate, Rock.Model.GroupMemberScheduleTemplateService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "70133e22-729a-5290-8d50-ddb320e7a2c2" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupMemberScheduleTemplate, Rock.Model.GroupMemberScheduleTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupMemberScheduleTemplate, Rock.Model.GroupMemberScheduleTemplateService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c458ac14-1b23-52aa-acc9-5bfb2ea6e8a6" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupMemberScheduleTemplate, Rock.Model.GroupMemberScheduleTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupMemberScheduleTemplate, Rock.Model.GroupMemberScheduleTemplateService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3e864906-7031-5eae-9b57-8fe40b0a384e" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupMemberScheduleTemplate, Rock.Model.GroupMemberScheduleTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupMemberScheduleTemplate, Rock.Model.GroupMemberScheduleTemplateService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "629b30ae-7b0b-56eb-a7b3-d86ffafe3d91" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupMemberScheduleTemplate, Rock.Model.GroupMemberScheduleTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupMemberScheduleTemplate, Rock.Model.GroupMemberScheduleTemplateService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "5711cce6-2674-53b3-b935-40758b2bea8a" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupMemberScheduleTemplate, Rock.Model.GroupMemberScheduleTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupMemberScheduleTemplate, Rock.Model.GroupMemberScheduleTemplateService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "980c8a92-1fac-5f89-a28d-405366e7b2f0" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupMemberScheduleTemplate, Rock.Model.GroupMemberScheduleTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupMemberScheduleTemplate, Rock.Model.GroupMemberScheduleTemplateService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

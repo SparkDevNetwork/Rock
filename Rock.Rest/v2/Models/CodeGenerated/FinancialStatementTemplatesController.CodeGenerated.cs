@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a64de011-4fbc-59fe-b28b-ff978af878d9" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialStatementTemplate, Rock.Model.FinancialStatementTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialStatementTemplate, Rock.Model.FinancialStatementTemplateService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "530a841e-744d-5fea-9e24-6575dd6835c5" )]
         public IActionResult PostItem( [FromBody] Rock.Model.FinancialStatementTemplate value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialStatementTemplate, Rock.Model.FinancialStatementTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialStatementTemplate, Rock.Model.FinancialStatementTemplateService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "4c281884-e5af-5803-a093-629eff389b74" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.FinancialStatementTemplate value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialStatementTemplate, Rock.Model.FinancialStatementTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialStatementTemplate, Rock.Model.FinancialStatementTemplateService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "4848f922-e061-5f27-9da0-316801022ff0" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialStatementTemplate, Rock.Model.FinancialStatementTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialStatementTemplate, Rock.Model.FinancialStatementTemplateService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8fdf2d9e-2143-54b6-b5f5-3f4b9daf7d91" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialStatementTemplate, Rock.Model.FinancialStatementTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialStatementTemplate, Rock.Model.FinancialStatementTemplateService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "092f1b3e-8ecf-50fd-901d-0f852a379203" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialStatementTemplate, Rock.Model.FinancialStatementTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialStatementTemplate, Rock.Model.FinancialStatementTemplateService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e64d0485-6190-5c6c-9595-a55e8382bd86" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialStatementTemplate, Rock.Model.FinancialStatementTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialStatementTemplate, Rock.Model.FinancialStatementTemplateService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2a671fda-1d92-5ac9-88f4-e6858a7f0c50" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialStatementTemplate, Rock.Model.FinancialStatementTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialStatementTemplate, Rock.Model.FinancialStatementTemplateService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "945312bf-949d-5577-be2a-079d233b5d8a" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialStatementTemplate, Rock.Model.FinancialStatementTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialStatementTemplate, Rock.Model.FinancialStatementTemplateService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "85f1ae7b-5d0f-5eb1-9a32-726e764421d6" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialStatementTemplate, Rock.Model.FinancialStatementTemplateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialStatementTemplate, Rock.Model.FinancialStatementTemplateService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

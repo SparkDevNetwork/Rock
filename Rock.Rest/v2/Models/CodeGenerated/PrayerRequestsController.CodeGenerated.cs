@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "25427d43-ee30-56f7-8c20-1b0fe1053bf7" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7ef29382-7125-51a7-b364-607585e67a18" )]
         public IActionResult PostItem( [FromBody] Rock.Model.PrayerRequest value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "5074a78a-1bed-5064-b69f-e807505123a7" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.PrayerRequest value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "175ccbcd-ab9f-5073-ba1a-d52792c8d481" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ec029e07-b7e2-5690-b438-2f1f41d651d4" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b3008fbe-3d07-5ec4-9ae6-03d5fa686801" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "02b1398a-1291-5ad7-8ce0-7427d13c23c6" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "937187b1-7b37-5913-81ab-0d9cd4bd05d1" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "23690838-16f0-58a9-9bfc-a1ade311799d" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d7d58359-2b0a-5328-a1b4-71068d716c2b" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

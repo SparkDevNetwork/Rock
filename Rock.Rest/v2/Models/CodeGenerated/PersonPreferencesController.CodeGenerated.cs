@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "23c241ab-5716-5f33-8bf8-3ba36e3c8c1e" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonPreference, Rock.Model.PersonPreferenceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonPreference, Rock.Model.PersonPreferenceService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e8b126fe-c310-5171-a4a7-ab50f74527c3" )]
         public IActionResult PostItem( [FromBody] Rock.Model.PersonPreference value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonPreference, Rock.Model.PersonPreferenceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonPreference, Rock.Model.PersonPreferenceService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f5bbf5d6-3301-5551-a5f6-dea663faa381" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.PersonPreference value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonPreference, Rock.Model.PersonPreferenceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonPreference, Rock.Model.PersonPreferenceService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "38007b84-f14b-56e1-b4da-05f0bcd9c7d4" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonPreference, Rock.Model.PersonPreferenceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonPreference, Rock.Model.PersonPreferenceService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "400a4e9e-2248-592d-bf9b-a83fb1025e5d" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonPreference, Rock.Model.PersonPreferenceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonPreference, Rock.Model.PersonPreferenceService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "caabefdb-4281-5b05-bc59-eb4357e936b9" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonPreference, Rock.Model.PersonPreferenceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonPreference, Rock.Model.PersonPreferenceService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f75f764b-4eee-5396-b0de-e09b9e0d300d" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonPreference, Rock.Model.PersonPreferenceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonPreference, Rock.Model.PersonPreferenceService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d273de57-0a02-5032-b000-2bcc62ed6bf1" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonPreference, Rock.Model.PersonPreferenceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonPreference, Rock.Model.PersonPreferenceService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "65669f95-c06d-55b3-bb5d-2da399d2988e" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonPreference, Rock.Model.PersonPreferenceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonPreference, Rock.Model.PersonPreferenceService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e691d42b-6e3a-5934-a0ad-4761acb07abf" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonPreference, Rock.Model.PersonPreferenceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonPreference, Rock.Model.PersonPreferenceService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

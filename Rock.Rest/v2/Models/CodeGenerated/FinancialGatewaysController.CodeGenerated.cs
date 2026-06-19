@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0c8e436f-386a-5dcb-bc5c-e93a9665b28f" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialGateway, Rock.Model.FinancialGatewayService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialGateway, Rock.Model.FinancialGatewayService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c3df7136-3fb8-55db-bd90-0c21be9b8dfb" )]
         public IActionResult PostItem( [FromBody] Rock.Model.FinancialGateway value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialGateway, Rock.Model.FinancialGatewayService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialGateway, Rock.Model.FinancialGatewayService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "eec65e39-7a6c-5973-881d-221845b79f85" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.FinancialGateway value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialGateway, Rock.Model.FinancialGatewayService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialGateway, Rock.Model.FinancialGatewayService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "5aee70d8-f3d8-57fb-ab94-cce407b5071e" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialGateway, Rock.Model.FinancialGatewayService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialGateway, Rock.Model.FinancialGatewayService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "af3f30f6-c12b-5ef5-863c-d3b28645a009" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialGateway, Rock.Model.FinancialGatewayService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialGateway, Rock.Model.FinancialGatewayService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "4e4843e3-6469-5953-a10e-558a9b5966ef" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialGateway, Rock.Model.FinancialGatewayService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialGateway, Rock.Model.FinancialGatewayService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0458604b-4d42-51c4-935c-3c6926e9688c" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialGateway, Rock.Model.FinancialGatewayService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialGateway, Rock.Model.FinancialGatewayService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3757d210-cf1b-5857-af16-633af78db16b" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialGateway, Rock.Model.FinancialGatewayService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialGateway, Rock.Model.FinancialGatewayService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "06e768e3-a76d-5b21-a31c-e2a124cf58f2" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialGateway, Rock.Model.FinancialGatewayService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialGateway, Rock.Model.FinancialGatewayService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ef0b7b8f-673f-5c0f-97bf-d920dcb41c32" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialGateway, Rock.Model.FinancialGatewayService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialGateway, Rock.Model.FinancialGatewayService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

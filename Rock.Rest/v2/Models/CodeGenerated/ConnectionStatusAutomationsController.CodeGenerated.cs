@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "4ecb6755-9ffe-56c0-a727-3eac00ce1654" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ConnectionStatusAutomation, Rock.Model.ConnectionStatusAutomationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ConnectionStatusAutomation, Rock.Model.ConnectionStatusAutomationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "748495ea-869a-52ab-9b25-18116f5a630f" )]
         public IActionResult PostItem( [FromBody] Rock.Model.ConnectionStatusAutomation value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ConnectionStatusAutomation, Rock.Model.ConnectionStatusAutomationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ConnectionStatusAutomation, Rock.Model.ConnectionStatusAutomationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "10c504b6-573e-5802-bfae-616c8a7abc73" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.ConnectionStatusAutomation value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ConnectionStatusAutomation, Rock.Model.ConnectionStatusAutomationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ConnectionStatusAutomation, Rock.Model.ConnectionStatusAutomationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "47528d6a-0f10-5927-9bb1-a14c1ef7ba53" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ConnectionStatusAutomation, Rock.Model.ConnectionStatusAutomationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ConnectionStatusAutomation, Rock.Model.ConnectionStatusAutomationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6f4d2293-073b-5d94-a200-a90d32f1c9a8" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ConnectionStatusAutomation, Rock.Model.ConnectionStatusAutomationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ConnectionStatusAutomation, Rock.Model.ConnectionStatusAutomationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "14c91ee3-a37f-5d86-b23d-d50793638b20" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ConnectionStatusAutomation, Rock.Model.ConnectionStatusAutomationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ConnectionStatusAutomation, Rock.Model.ConnectionStatusAutomationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "269072b5-b4ff-54ac-927d-6bb94ff81517" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ConnectionStatusAutomation, Rock.Model.ConnectionStatusAutomationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ConnectionStatusAutomation, Rock.Model.ConnectionStatusAutomationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "259d2f37-b124-58a2-8c14-60be3b4f9dfb" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ConnectionStatusAutomation, Rock.Model.ConnectionStatusAutomationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ConnectionStatusAutomation, Rock.Model.ConnectionStatusAutomationService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "73656a6a-0b23-5363-b7d2-9cae18837e95" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ConnectionStatusAutomation, Rock.Model.ConnectionStatusAutomationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ConnectionStatusAutomation, Rock.Model.ConnectionStatusAutomationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "60324485-9f14-5831-904b-b473c47f86e3" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ConnectionStatusAutomation, Rock.Model.ConnectionStatusAutomationService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ConnectionStatusAutomation, Rock.Model.ConnectionStatusAutomationService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

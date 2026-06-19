@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "84eba317-f032-5968-9be0-1323efff37e4" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AchievementAttempt, Rock.Model.AchievementAttemptService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AchievementAttempt, Rock.Model.AchievementAttemptService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f5a2fde0-05ef-5bd3-b832-f3571fabf561" )]
         public IActionResult PostItem( [FromBody] Rock.Model.AchievementAttempt value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AchievementAttempt, Rock.Model.AchievementAttemptService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AchievementAttempt, Rock.Model.AchievementAttemptService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a352ce69-33e2-5daf-bc10-e86c18369eeb" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.AchievementAttempt value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AchievementAttempt, Rock.Model.AchievementAttemptService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AchievementAttempt, Rock.Model.AchievementAttemptService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9fa8e3e6-0181-5126-8478-55b3f75aca2f" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AchievementAttempt, Rock.Model.AchievementAttemptService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AchievementAttempt, Rock.Model.AchievementAttemptService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f5032552-4ebe-5e5d-b15c-5cf42b667b91" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AchievementAttempt, Rock.Model.AchievementAttemptService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AchievementAttempt, Rock.Model.AchievementAttemptService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a9071aa2-c310-5148-a92f-6760da9defd7" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AchievementAttempt, Rock.Model.AchievementAttemptService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AchievementAttempt, Rock.Model.AchievementAttemptService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ee91c75d-5e4f-5c87-a347-cffdb28d2e92" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AchievementAttempt, Rock.Model.AchievementAttemptService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AchievementAttempt, Rock.Model.AchievementAttemptService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "34bedf10-d1f8-52e1-b448-4d15cffd35da" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AchievementAttempt, Rock.Model.AchievementAttemptService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AchievementAttempt, Rock.Model.AchievementAttemptService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3cc8cf51-cc3f-51db-b706-5ee16c1d4fdb" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AchievementAttempt, Rock.Model.AchievementAttemptService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AchievementAttempt, Rock.Model.AchievementAttemptService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f2d4b8a7-a925-5c10-ba16-5b9ab5d5034f" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AchievementAttempt, Rock.Model.AchievementAttemptService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AchievementAttempt, Rock.Model.AchievementAttemptService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

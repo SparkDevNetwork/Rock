@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "1fc019fb-c568-5ba6-b0fa-c19af94d1bfb" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MediaFolder, Rock.Model.MediaFolderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MediaFolder, Rock.Model.MediaFolderService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "dbabbf14-67bb-5772-b14c-335a5337d9a9" )]
         public IActionResult PostItem( [FromBody] Rock.Model.MediaFolder value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MediaFolder, Rock.Model.MediaFolderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MediaFolder, Rock.Model.MediaFolderService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6e79d79f-3bcf-54c8-9be7-8e06cc10bf53" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.MediaFolder value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MediaFolder, Rock.Model.MediaFolderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MediaFolder, Rock.Model.MediaFolderService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f72af8be-3883-5211-b2c3-0a2937489133" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MediaFolder, Rock.Model.MediaFolderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MediaFolder, Rock.Model.MediaFolderService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "034633f0-6b7b-5678-a389-2083d7852a17" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MediaFolder, Rock.Model.MediaFolderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MediaFolder, Rock.Model.MediaFolderService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e13f4ad7-0121-58ca-8b07-bad81d292a83" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MediaFolder, Rock.Model.MediaFolderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MediaFolder, Rock.Model.MediaFolderService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "89bb3cf2-662c-56f5-ba96-56a54144d558" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MediaFolder, Rock.Model.MediaFolderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MediaFolder, Rock.Model.MediaFolderService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2ba87534-d2d5-55ae-a2fa-8a94e6f53df9" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MediaFolder, Rock.Model.MediaFolderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MediaFolder, Rock.Model.MediaFolderService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7f8230f6-7151-5aa4-97ea-00042c942504" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MediaFolder, Rock.Model.MediaFolderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MediaFolder, Rock.Model.MediaFolderService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a732dce5-be59-533b-8a55-b6f608da1ae4" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MediaFolder, Rock.Model.MediaFolderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MediaFolder, Rock.Model.MediaFolderService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

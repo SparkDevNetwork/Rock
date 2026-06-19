@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "1258e7c1-2743-5b39-b257-7aef15998d0a" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RegistrationTemplateFormField, Rock.Model.RegistrationTemplateFormFieldService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RegistrationTemplateFormField, Rock.Model.RegistrationTemplateFormFieldService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b55d601b-2d84-537e-b192-851bea457619" )]
         public IActionResult PostItem( [FromBody] Rock.Model.RegistrationTemplateFormField value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RegistrationTemplateFormField, Rock.Model.RegistrationTemplateFormFieldService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RegistrationTemplateFormField, Rock.Model.RegistrationTemplateFormFieldService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d720a337-99a7-5ea4-9372-d64c850e6bf9" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.RegistrationTemplateFormField value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RegistrationTemplateFormField, Rock.Model.RegistrationTemplateFormFieldService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RegistrationTemplateFormField, Rock.Model.RegistrationTemplateFormFieldService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "43ed402d-0a52-5c07-bb0c-a043ab06a5d2" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RegistrationTemplateFormField, Rock.Model.RegistrationTemplateFormFieldService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RegistrationTemplateFormField, Rock.Model.RegistrationTemplateFormFieldService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ba56403c-6aa1-59d4-a576-49b9b825152b" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RegistrationTemplateFormField, Rock.Model.RegistrationTemplateFormFieldService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RegistrationTemplateFormField, Rock.Model.RegistrationTemplateFormFieldService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "65b4dc2c-0a5b-5c37-8ec5-c2060befd32f" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RegistrationTemplateFormField, Rock.Model.RegistrationTemplateFormFieldService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RegistrationTemplateFormField, Rock.Model.RegistrationTemplateFormFieldService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3e63bca2-93f2-57d8-a37d-c59398c59731" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RegistrationTemplateFormField, Rock.Model.RegistrationTemplateFormFieldService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RegistrationTemplateFormField, Rock.Model.RegistrationTemplateFormFieldService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c1025dc3-b8c5-59e9-9e11-69690db305fb" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RegistrationTemplateFormField, Rock.Model.RegistrationTemplateFormFieldService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RegistrationTemplateFormField, Rock.Model.RegistrationTemplateFormFieldService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "4aac3783-9b80-580f-8ff9-58404140a540" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RegistrationTemplateFormField, Rock.Model.RegistrationTemplateFormFieldService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RegistrationTemplateFormField, Rock.Model.RegistrationTemplateFormFieldService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "dc220183-123f-59f3-8908-55b359fe9302" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RegistrationTemplateFormField, Rock.Model.RegistrationTemplateFormFieldService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RegistrationTemplateFormField, Rock.Model.RegistrationTemplateFormFieldService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

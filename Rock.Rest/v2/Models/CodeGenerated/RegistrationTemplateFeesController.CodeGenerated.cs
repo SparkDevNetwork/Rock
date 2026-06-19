@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "4ae5425e-859e-50f3-9b67-b91ed081b4e2" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RegistrationTemplateFee, Rock.Model.RegistrationTemplateFeeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RegistrationTemplateFee, Rock.Model.RegistrationTemplateFeeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "31aeee24-6701-5e97-af3b-80e6bda5886e" )]
         public IActionResult PostItem( [FromBody] Rock.Model.RegistrationTemplateFee value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RegistrationTemplateFee, Rock.Model.RegistrationTemplateFeeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RegistrationTemplateFee, Rock.Model.RegistrationTemplateFeeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0a6bb949-2abc-53dd-aa7b-312e633e8f95" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.RegistrationTemplateFee value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RegistrationTemplateFee, Rock.Model.RegistrationTemplateFeeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RegistrationTemplateFee, Rock.Model.RegistrationTemplateFeeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c9cd7bee-afd0-58cc-9853-435e84685d71" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RegistrationTemplateFee, Rock.Model.RegistrationTemplateFeeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RegistrationTemplateFee, Rock.Model.RegistrationTemplateFeeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7de51418-9142-5561-9dae-54aab280f090" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RegistrationTemplateFee, Rock.Model.RegistrationTemplateFeeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RegistrationTemplateFee, Rock.Model.RegistrationTemplateFeeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b98bb7c4-1e2a-57be-9423-e3880b696cb9" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RegistrationTemplateFee, Rock.Model.RegistrationTemplateFeeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RegistrationTemplateFee, Rock.Model.RegistrationTemplateFeeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7ba60543-e5f7-5392-9c50-abfbff741e5c" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RegistrationTemplateFee, Rock.Model.RegistrationTemplateFeeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RegistrationTemplateFee, Rock.Model.RegistrationTemplateFeeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "95d29443-ed29-5978-a365-db55fe664404" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RegistrationTemplateFee, Rock.Model.RegistrationTemplateFeeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RegistrationTemplateFee, Rock.Model.RegistrationTemplateFeeService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "85dfef72-e730-5d79-92c7-4635e0a6d934" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RegistrationTemplateFee, Rock.Model.RegistrationTemplateFeeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RegistrationTemplateFee, Rock.Model.RegistrationTemplateFeeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7100278e-971c-5d59-88df-2acf935c8ac5" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RegistrationTemplateFee, Rock.Model.RegistrationTemplateFeeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RegistrationTemplateFee, Rock.Model.RegistrationTemplateFeeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "88dcb065-f4cb-57f5-9caf-3b5c1a29bd94" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.SystemPhoneNumber, Rock.Model.SystemPhoneNumberService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.SystemPhoneNumber, Rock.Model.SystemPhoneNumberService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "333445eb-19af-5edb-a256-e80c9274cfc1" )]
         public IActionResult PostItem( [FromBody] Rock.Model.SystemPhoneNumber value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.SystemPhoneNumber, Rock.Model.SystemPhoneNumberService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.SystemPhoneNumber, Rock.Model.SystemPhoneNumberService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7bac1722-ca9e-579a-8d52-1419ed6409c4" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.SystemPhoneNumber value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.SystemPhoneNumber, Rock.Model.SystemPhoneNumberService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.SystemPhoneNumber, Rock.Model.SystemPhoneNumberService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2d506988-44f7-5b20-a66c-57a1811de834" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.SystemPhoneNumber, Rock.Model.SystemPhoneNumberService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.SystemPhoneNumber, Rock.Model.SystemPhoneNumberService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "5f772b64-b35e-5ecd-882c-bce0f9125b72" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.SystemPhoneNumber, Rock.Model.SystemPhoneNumberService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.SystemPhoneNumber, Rock.Model.SystemPhoneNumberService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "92313adc-5c79-56a5-89c2-228d580b1dfc" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.SystemPhoneNumber, Rock.Model.SystemPhoneNumberService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.SystemPhoneNumber, Rock.Model.SystemPhoneNumberService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0aebb942-2ae5-5eff-9d05-e0749268c61c" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.SystemPhoneNumber, Rock.Model.SystemPhoneNumberService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.SystemPhoneNumber, Rock.Model.SystemPhoneNumberService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ebf74255-e855-5ce9-8c47-c06f94601bd3" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.SystemPhoneNumber, Rock.Model.SystemPhoneNumberService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.SystemPhoneNumber, Rock.Model.SystemPhoneNumberService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "aa120595-0403-5b70-af8d-e9710e322d97" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.SystemPhoneNumber, Rock.Model.SystemPhoneNumberService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.SystemPhoneNumber, Rock.Model.SystemPhoneNumberService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "5b450da8-fb8d-5322-bb91-038ae35061c1" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.SystemPhoneNumber, Rock.Model.SystemPhoneNumberService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.SystemPhoneNumber, Rock.Model.SystemPhoneNumberService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

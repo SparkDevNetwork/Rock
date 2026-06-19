@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d9babae8-b80c-51b0-a79e-dd54aa64a10c" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonalizationSegment, Rock.Model.PersonalizationSegmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonalizationSegment, Rock.Model.PersonalizationSegmentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3ca5ae5c-97fd-566e-9570-8ddba8b79806" )]
         public IActionResult PostItem( [FromBody] Rock.Model.PersonalizationSegment value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonalizationSegment, Rock.Model.PersonalizationSegmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonalizationSegment, Rock.Model.PersonalizationSegmentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d240797a-e8e5-5a36-8006-c4ca31e348b8" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.PersonalizationSegment value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonalizationSegment, Rock.Model.PersonalizationSegmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonalizationSegment, Rock.Model.PersonalizationSegmentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3327d3eb-93e2-52ac-8788-9ae447641cbe" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonalizationSegment, Rock.Model.PersonalizationSegmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonalizationSegment, Rock.Model.PersonalizationSegmentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a370dd69-2aae-50aa-8750-fe457ba8905d" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonalizationSegment, Rock.Model.PersonalizationSegmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonalizationSegment, Rock.Model.PersonalizationSegmentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f3f73f25-0adf-541b-a627-454b167ce76f" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonalizationSegment, Rock.Model.PersonalizationSegmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonalizationSegment, Rock.Model.PersonalizationSegmentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "66e834ef-b639-5de5-a154-4bbf3940c3a9" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonalizationSegment, Rock.Model.PersonalizationSegmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonalizationSegment, Rock.Model.PersonalizationSegmentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b5a1659d-f9bc-5681-9c4e-de08f07cc88e" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonalizationSegment, Rock.Model.PersonalizationSegmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonalizationSegment, Rock.Model.PersonalizationSegmentService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f65b8427-4d2d-5903-9b26-a4bb9544af7a" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonalizationSegment, Rock.Model.PersonalizationSegmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonalizationSegment, Rock.Model.PersonalizationSegmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9549ba6e-ed03-5107-bbaf-33cce72bd340" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonalizationSegment, Rock.Model.PersonalizationSegmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonalizationSegment, Rock.Model.PersonalizationSegmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

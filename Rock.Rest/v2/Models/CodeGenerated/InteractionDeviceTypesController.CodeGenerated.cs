@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3cd716b7-48b5-520f-9914-285b37b509c3" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionDeviceType, Rock.Model.InteractionDeviceTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionDeviceType, Rock.Model.InteractionDeviceTypeService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0904115a-6f7a-50c2-96ec-fbc833963851" )]
         public IActionResult PostItem( [FromBody] Rock.Model.InteractionDeviceType value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionDeviceType, Rock.Model.InteractionDeviceTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionDeviceType, Rock.Model.InteractionDeviceTypeService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e05a4ff2-d1a6-51c0-b703-cd5a1626d9fc" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.InteractionDeviceType value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionDeviceType, Rock.Model.InteractionDeviceTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionDeviceType, Rock.Model.InteractionDeviceTypeService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "efc98bfe-f523-541d-99ad-950b52c9da3d" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionDeviceType, Rock.Model.InteractionDeviceTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionDeviceType, Rock.Model.InteractionDeviceTypeService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "39667bfc-356e-5bb1-a49d-e35ecb2efd31" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionDeviceType, Rock.Model.InteractionDeviceTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionDeviceType, Rock.Model.InteractionDeviceTypeService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f6ffc0ac-65fa-5bb2-9c7d-b0460869927a" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionDeviceType, Rock.Model.InteractionDeviceTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionDeviceType, Rock.Model.InteractionDeviceTypeService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "305eb875-fcf2-56a7-a8de-5b39278d013e" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionDeviceType, Rock.Model.InteractionDeviceTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionDeviceType, Rock.Model.InteractionDeviceTypeService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "20a7dbed-ba68-5783-a968-e9e78f329e58" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionDeviceType, Rock.Model.InteractionDeviceTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionDeviceType, Rock.Model.InteractionDeviceTypeService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8e9ba4dd-461c-5045-bc04-ec47630f02f0" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionDeviceType, Rock.Model.InteractionDeviceTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionDeviceType, Rock.Model.InteractionDeviceTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ceffb4c9-c676-516a-877b-5de0b823ada2" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractionDeviceType, Rock.Model.InteractionDeviceTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractionDeviceType, Rock.Model.InteractionDeviceTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

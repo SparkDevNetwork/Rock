@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a78b422a-3412-5d92-8adb-f5443721d995" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonDuplicate, Rock.Model.PersonDuplicateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonDuplicate, Rock.Model.PersonDuplicateService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7e0770d7-6013-5f8f-aec9-f794386d9f6b" )]
         public IActionResult PostItem( [FromBody] Rock.Model.PersonDuplicate value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonDuplicate, Rock.Model.PersonDuplicateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonDuplicate, Rock.Model.PersonDuplicateService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "77cfe006-30e6-58d4-8eb8-d990ae5c8005" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.PersonDuplicate value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonDuplicate, Rock.Model.PersonDuplicateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonDuplicate, Rock.Model.PersonDuplicateService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7240d003-b5fc-56fb-9145-477858ea83dd" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonDuplicate, Rock.Model.PersonDuplicateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonDuplicate, Rock.Model.PersonDuplicateService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f4e50fe3-9b7c-56bf-831d-addbcce7b77c" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonDuplicate, Rock.Model.PersonDuplicateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonDuplicate, Rock.Model.PersonDuplicateService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "14025fec-40f2-5291-8b36-91a35b55a855" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonDuplicate, Rock.Model.PersonDuplicateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonDuplicate, Rock.Model.PersonDuplicateService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8a70c07d-1c57-5025-ab51-6c261f95bf72" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonDuplicate, Rock.Model.PersonDuplicateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonDuplicate, Rock.Model.PersonDuplicateService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "23373391-360d-52b6-a6ca-99d4ffa7231f" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonDuplicate, Rock.Model.PersonDuplicateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonDuplicate, Rock.Model.PersonDuplicateService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3f8a7ab8-7f6f-5abd-8966-e23f6dd94f02" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonDuplicate, Rock.Model.PersonDuplicateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonDuplicate, Rock.Model.PersonDuplicateService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "1c9a4800-2a3b-5482-aeec-e56c760db120" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonDuplicate, Rock.Model.PersonDuplicateService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonDuplicate, Rock.Model.PersonDuplicateService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ad5e6241-f87c-5280-9b23-ae66b4abea40" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CommunicationAttachment, Rock.Model.CommunicationAttachmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CommunicationAttachment, Rock.Model.CommunicationAttachmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "407f0310-239a-5b87-b4e7-4f681f2b9c4b" )]
         public IActionResult PostItem( [FromBody] Rock.Model.CommunicationAttachment value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CommunicationAttachment, Rock.Model.CommunicationAttachmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CommunicationAttachment, Rock.Model.CommunicationAttachmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "12f3c899-d22b-5859-8302-09f34c9e49cd" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.CommunicationAttachment value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CommunicationAttachment, Rock.Model.CommunicationAttachmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CommunicationAttachment, Rock.Model.CommunicationAttachmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "386ba308-c9d4-5521-be29-ae1979692a22" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CommunicationAttachment, Rock.Model.CommunicationAttachmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CommunicationAttachment, Rock.Model.CommunicationAttachmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "5c99607c-894b-5524-bb2e-af1f597ea6ae" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CommunicationAttachment, Rock.Model.CommunicationAttachmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CommunicationAttachment, Rock.Model.CommunicationAttachmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b308f1ad-9963-5669-9a82-bac38c42f709" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CommunicationAttachment, Rock.Model.CommunicationAttachmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CommunicationAttachment, Rock.Model.CommunicationAttachmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f9d136f0-00b5-5d78-8f02-f3c41eebab3a" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CommunicationAttachment, Rock.Model.CommunicationAttachmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CommunicationAttachment, Rock.Model.CommunicationAttachmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8fa7d820-1e91-55a3-a9ee-23693e45b2fd" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CommunicationAttachment, Rock.Model.CommunicationAttachmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CommunicationAttachment, Rock.Model.CommunicationAttachmentService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "864e3bae-4d48-598c-98c5-371b3d9840aa" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CommunicationAttachment, Rock.Model.CommunicationAttachmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CommunicationAttachment, Rock.Model.CommunicationAttachmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "270b54c5-b17e-5177-bd7a-340379fd5edb" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CommunicationAttachment, Rock.Model.CommunicationAttachmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CommunicationAttachment, Rock.Model.CommunicationAttachmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

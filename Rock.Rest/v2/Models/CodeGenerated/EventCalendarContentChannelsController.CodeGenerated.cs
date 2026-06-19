@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c9f1e3af-adf5-562c-be6c-50a3a1642209" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventCalendarContentChannel, Rock.Model.EventCalendarContentChannelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventCalendarContentChannel, Rock.Model.EventCalendarContentChannelService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "72454eb4-b9d9-5cde-bce2-98a395201e05" )]
         public IActionResult PostItem( [FromBody] Rock.Model.EventCalendarContentChannel value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventCalendarContentChannel, Rock.Model.EventCalendarContentChannelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventCalendarContentChannel, Rock.Model.EventCalendarContentChannelService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9ca92d7d-e299-5e17-a0fa-03b75e486870" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.EventCalendarContentChannel value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventCalendarContentChannel, Rock.Model.EventCalendarContentChannelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventCalendarContentChannel, Rock.Model.EventCalendarContentChannelService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c12c2a8a-0c65-5564-a6ab-88bb01984bc3" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventCalendarContentChannel, Rock.Model.EventCalendarContentChannelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventCalendarContentChannel, Rock.Model.EventCalendarContentChannelService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "af717b6d-dd19-5009-8e1e-6acc0d6b4ab2" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventCalendarContentChannel, Rock.Model.EventCalendarContentChannelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventCalendarContentChannel, Rock.Model.EventCalendarContentChannelService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d10e0ca1-7587-55f2-968d-e5a0a8767f77" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventCalendarContentChannel, Rock.Model.EventCalendarContentChannelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventCalendarContentChannel, Rock.Model.EventCalendarContentChannelService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "61a0c0a9-4452-50c7-9952-240daa894e6a" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventCalendarContentChannel, Rock.Model.EventCalendarContentChannelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventCalendarContentChannel, Rock.Model.EventCalendarContentChannelService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "58caf886-4741-511e-b3cf-2336d7bae77b" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventCalendarContentChannel, Rock.Model.EventCalendarContentChannelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventCalendarContentChannel, Rock.Model.EventCalendarContentChannelService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "89ce34da-59d0-574a-9025-c3831ec5f80b" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventCalendarContentChannel, Rock.Model.EventCalendarContentChannelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventCalendarContentChannel, Rock.Model.EventCalendarContentChannelService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "10460d6e-cf71-5b86-8fb8-b7d8fbcb7472" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventCalendarContentChannel, Rock.Model.EventCalendarContentChannelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventCalendarContentChannel, Rock.Model.EventCalendarContentChannelService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

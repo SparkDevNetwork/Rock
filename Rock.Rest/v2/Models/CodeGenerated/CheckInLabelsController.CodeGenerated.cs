@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "620fed09-3480-5c30-8088-40fc08075224" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CheckInLabel, Rock.Model.CheckInLabelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CheckInLabel, Rock.Model.CheckInLabelService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "bec4c34b-edae-554b-b2f3-e7ced3b8d8d8" )]
         public IActionResult PostItem( [FromBody] Rock.Model.CheckInLabel value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CheckInLabel, Rock.Model.CheckInLabelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CheckInLabel, Rock.Model.CheckInLabelService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "531066a8-c3a9-5381-b3fa-6d61799015a1" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.CheckInLabel value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CheckInLabel, Rock.Model.CheckInLabelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CheckInLabel, Rock.Model.CheckInLabelService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d66b3dd8-204c-56c1-9d6d-8ad2969ae002" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CheckInLabel, Rock.Model.CheckInLabelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CheckInLabel, Rock.Model.CheckInLabelService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "36d66dd4-32fd-5fcb-97f7-f3048784ab4c" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CheckInLabel, Rock.Model.CheckInLabelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CheckInLabel, Rock.Model.CheckInLabelService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2e7f39b4-2c18-5e1a-80df-d66839dca0b9" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CheckInLabel, Rock.Model.CheckInLabelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CheckInLabel, Rock.Model.CheckInLabelService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0789e4b7-c280-58ab-b49c-c912a0220352" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CheckInLabel, Rock.Model.CheckInLabelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CheckInLabel, Rock.Model.CheckInLabelService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d4b8190d-3db1-5d3a-9a77-018fd7d3de8e" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CheckInLabel, Rock.Model.CheckInLabelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CheckInLabel, Rock.Model.CheckInLabelService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "5513052e-e54b-5ab1-9e9c-366c816be6e6" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CheckInLabel, Rock.Model.CheckInLabelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CheckInLabel, Rock.Model.CheckInLabelService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0f5cef1b-ba72-54c5-afd4-daa7f1ed6df5" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CheckInLabel, Rock.Model.CheckInLabelService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CheckInLabel, Rock.Model.CheckInLabelService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

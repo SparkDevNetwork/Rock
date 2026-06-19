@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0a326059-cf4f-5e97-8884-8b613c9bfce1" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ConnectionTypeSource, Rock.Model.ConnectionTypeSourceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ConnectionTypeSource, Rock.Model.ConnectionTypeSourceService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b3edec7b-da36-5da9-9a1f-bbf40e29fb17" )]
         public IActionResult PostItem( [FromBody] Rock.Model.ConnectionTypeSource value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ConnectionTypeSource, Rock.Model.ConnectionTypeSourceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ConnectionTypeSource, Rock.Model.ConnectionTypeSourceService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0303e975-11cf-548b-851c-485618b15372" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.ConnectionTypeSource value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ConnectionTypeSource, Rock.Model.ConnectionTypeSourceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ConnectionTypeSource, Rock.Model.ConnectionTypeSourceService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6046e678-a6d5-5135-ae74-28a3fe5e03c6" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ConnectionTypeSource, Rock.Model.ConnectionTypeSourceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ConnectionTypeSource, Rock.Model.ConnectionTypeSourceService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "215fe569-2438-5059-953b-2c0344583d81" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ConnectionTypeSource, Rock.Model.ConnectionTypeSourceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ConnectionTypeSource, Rock.Model.ConnectionTypeSourceService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ebc95487-4e20-5dff-b3c6-49ebd5f53488" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ConnectionTypeSource, Rock.Model.ConnectionTypeSourceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ConnectionTypeSource, Rock.Model.ConnectionTypeSourceService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7663482c-bc6d-5e13-a480-94b2cfa70b27" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ConnectionTypeSource, Rock.Model.ConnectionTypeSourceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ConnectionTypeSource, Rock.Model.ConnectionTypeSourceService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "59cd87ea-459d-5ca5-9102-2e262e0ab428" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ConnectionTypeSource, Rock.Model.ConnectionTypeSourceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ConnectionTypeSource, Rock.Model.ConnectionTypeSourceService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "cc4ffc73-f0c0-57fb-8de2-fc4059d96ea2" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ConnectionTypeSource, Rock.Model.ConnectionTypeSourceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ConnectionTypeSource, Rock.Model.ConnectionTypeSourceService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "fe4df891-6ab6-5d34-8398-16ac2ed7bf91" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ConnectionTypeSource, Rock.Model.ConnectionTypeSourceService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ConnectionTypeSource, Rock.Model.ConnectionTypeSourceService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "17597115-c15c-55df-850c-49c01bea6598" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttendanceCheckInSession, Rock.Model.AttendanceCheckInSessionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttendanceCheckInSession, Rock.Model.AttendanceCheckInSessionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0ec2027c-b6c8-563e-ac8f-3965b6b7f598" )]
         public IActionResult PostItem( [FromBody] Rock.Model.AttendanceCheckInSession value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttendanceCheckInSession, Rock.Model.AttendanceCheckInSessionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttendanceCheckInSession, Rock.Model.AttendanceCheckInSessionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "daab4764-a88e-54ff-80ad-64db9deda1df" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.AttendanceCheckInSession value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttendanceCheckInSession, Rock.Model.AttendanceCheckInSessionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttendanceCheckInSession, Rock.Model.AttendanceCheckInSessionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f13ed34e-c4bd-5597-9542-9a1d0de4da01" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttendanceCheckInSession, Rock.Model.AttendanceCheckInSessionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttendanceCheckInSession, Rock.Model.AttendanceCheckInSessionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e111b19f-1af7-55d8-a9e5-230e26d1cb9e" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttendanceCheckInSession, Rock.Model.AttendanceCheckInSessionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttendanceCheckInSession, Rock.Model.AttendanceCheckInSessionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "08ec3a1c-bc33-5f5a-a50f-a887034ef132" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttendanceCheckInSession, Rock.Model.AttendanceCheckInSessionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttendanceCheckInSession, Rock.Model.AttendanceCheckInSessionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9fbdd0be-b16e-5e60-9443-7851a690599b" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttendanceCheckInSession, Rock.Model.AttendanceCheckInSessionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttendanceCheckInSession, Rock.Model.AttendanceCheckInSessionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "791b31cb-0c25-50d7-937f-591b8f7ca726" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttendanceCheckInSession, Rock.Model.AttendanceCheckInSessionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttendanceCheckInSession, Rock.Model.AttendanceCheckInSessionService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "161c39b8-d79e-5135-a574-ba0a95485e54" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttendanceCheckInSession, Rock.Model.AttendanceCheckInSessionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttendanceCheckInSession, Rock.Model.AttendanceCheckInSessionService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c092568b-9e55-5e3d-a1e7-8e071cf22329" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttendanceCheckInSession, Rock.Model.AttendanceCheckInSessionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttendanceCheckInSession, Rock.Model.AttendanceCheckInSessionService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

@@ -52,7 +52,6 @@ namespace Rock.CodeGeneration.FileGenerators
 
             usings.Add( "System.Collections.Generic" );
             usings.Add( "System.Net" );
-            usings.Add( "Rock.Rest.Filters" );
             usings.Add( "Rock.Security" );
             usings.Add( "Rock.ViewModels.Core" );
             usings.Add( "Rock.ViewModels.Rest.Models" );
@@ -223,7 +222,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine( $"var helper = CreateCrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
 
                 if ( disableEntitySecurity )
@@ -279,7 +278,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine( $"var helper = CreateCrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
 
                 if ( disableEntitySecurity )
@@ -337,7 +336,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine( $"var helper = CreateCrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
 
                 if ( disableEntitySecurity )
@@ -395,7 +394,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine( $"var helper = CreateCrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
 
                 if ( disableEntitySecurity )
@@ -451,7 +450,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine( $"var helper = CreateCrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
 
                 if ( disableEntitySecurity )
@@ -507,7 +506,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine( $"var helper = CreateCrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
 
                 if ( disableEntitySecurity )
@@ -565,7 +564,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine( $"var helper = CreateCrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
 
                 if ( disableEntitySecurity )
@@ -609,7 +608,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine( $"var helper = CreateCrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
                 codeBuilder.AppendLine( $"return helper.Search( query );" );
             } );
@@ -644,7 +643,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine( $"var helper = CreateCrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
                 codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );" );
                 codeBuilder.AppendLine();
@@ -683,7 +682,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine( $"var helper = CreateCrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
                 codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );" );
                 codeBuilder.AppendLine();

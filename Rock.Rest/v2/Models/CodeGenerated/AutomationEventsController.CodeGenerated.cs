@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "44d9281b-cbdb-5aa6-a86e-3d856386a051" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AutomationEvent, Rock.Model.AutomationEventService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AutomationEvent, Rock.Model.AutomationEventService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "938a5388-ae20-5277-81d5-090e4e20ec93" )]
         public IActionResult PostItem( [FromBody] Rock.Model.AutomationEvent value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AutomationEvent, Rock.Model.AutomationEventService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AutomationEvent, Rock.Model.AutomationEventService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "56782d98-8d57-5626-ab8e-ea6d1cd7d146" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.AutomationEvent value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AutomationEvent, Rock.Model.AutomationEventService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AutomationEvent, Rock.Model.AutomationEventService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "dbd123c1-5623-591c-b7e1-9d2a75b7a4a3" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AutomationEvent, Rock.Model.AutomationEventService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AutomationEvent, Rock.Model.AutomationEventService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "1be02d31-31bf-566c-aa3b-62539c51d305" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AutomationEvent, Rock.Model.AutomationEventService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AutomationEvent, Rock.Model.AutomationEventService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "73bf1be3-041e-5325-8060-55f0aa6038b2" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AutomationEvent, Rock.Model.AutomationEventService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AutomationEvent, Rock.Model.AutomationEventService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ecf02f7e-6a5e-5011-a7fa-0c23645a129a" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AutomationEvent, Rock.Model.AutomationEventService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AutomationEvent, Rock.Model.AutomationEventService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "790d5ac5-5c34-5bec-ba61-10bab29c8282" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AutomationEvent, Rock.Model.AutomationEventService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AutomationEvent, Rock.Model.AutomationEventService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "631e98f0-789d-5813-be37-b7ea99964aff" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AutomationEvent, Rock.Model.AutomationEventService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AutomationEvent, Rock.Model.AutomationEventService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d1a86587-9c30-5e9b-91b1-1a1860ffa2ea" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AutomationEvent, Rock.Model.AutomationEventService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AutomationEvent, Rock.Model.AutomationEventService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

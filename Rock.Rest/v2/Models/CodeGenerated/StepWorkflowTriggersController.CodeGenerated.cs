@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "5ddb1b85-11c4-505e-bef2-a5896bb18cd6" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.StepWorkflowTrigger, Rock.Model.StepWorkflowTriggerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.StepWorkflowTrigger, Rock.Model.StepWorkflowTriggerService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3e6f6fb1-bc31-59c9-a2fe-8d60db5b5800" )]
         public IActionResult PostItem( [FromBody] Rock.Model.StepWorkflowTrigger value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.StepWorkflowTrigger, Rock.Model.StepWorkflowTriggerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.StepWorkflowTrigger, Rock.Model.StepWorkflowTriggerService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3645405a-5a11-575a-8397-c3d273da5280" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.StepWorkflowTrigger value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.StepWorkflowTrigger, Rock.Model.StepWorkflowTriggerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.StepWorkflowTrigger, Rock.Model.StepWorkflowTriggerService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0fc1a382-2972-5ba5-8717-bd5def9e1712" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.StepWorkflowTrigger, Rock.Model.StepWorkflowTriggerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.StepWorkflowTrigger, Rock.Model.StepWorkflowTriggerService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0f9db0e8-6f1f-5fa3-ae60-a122832d530f" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.StepWorkflowTrigger, Rock.Model.StepWorkflowTriggerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.StepWorkflowTrigger, Rock.Model.StepWorkflowTriggerService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c0427162-d55a-57ff-aac6-46f832b45d44" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.StepWorkflowTrigger, Rock.Model.StepWorkflowTriggerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.StepWorkflowTrigger, Rock.Model.StepWorkflowTriggerService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "1bdbe788-1be7-5dcb-bf76-a3a7fd88f2bb" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.StepWorkflowTrigger, Rock.Model.StepWorkflowTriggerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.StepWorkflowTrigger, Rock.Model.StepWorkflowTriggerService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "95d43e77-4a57-5268-af16-e94d683e2cda" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.StepWorkflowTrigger, Rock.Model.StepWorkflowTriggerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.StepWorkflowTrigger, Rock.Model.StepWorkflowTriggerService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "90c3c933-629d-5470-9fd4-49e345d559f9" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.StepWorkflowTrigger, Rock.Model.StepWorkflowTriggerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.StepWorkflowTrigger, Rock.Model.StepWorkflowTriggerService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6e04864a-ff18-56a9-b968-1e89837e53c6" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.StepWorkflowTrigger, Rock.Model.StepWorkflowTriggerService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.StepWorkflowTrigger, Rock.Model.StepWorkflowTriggerService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

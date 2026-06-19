@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "007eb686-8cf6-5c5b-90f1-27416fa7ca18" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AIAgent, Rock.Model.AIAgentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AIAgent, Rock.Model.AIAgentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "20934337-7afc-57c3-9142-344177366d17" )]
         public IActionResult PostItem( [FromBody] Rock.Model.AIAgent value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AIAgent, Rock.Model.AIAgentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AIAgent, Rock.Model.AIAgentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b125a4a6-1d08-52a4-a2bf-5241d1ac705f" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.AIAgent value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AIAgent, Rock.Model.AIAgentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AIAgent, Rock.Model.AIAgentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d5e9db3b-3a52-5e5b-9fdf-3f58cb742dfa" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AIAgent, Rock.Model.AIAgentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AIAgent, Rock.Model.AIAgentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c0cd30a8-06f7-5eb5-ab53-d818e8e631b9" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AIAgent, Rock.Model.AIAgentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AIAgent, Rock.Model.AIAgentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "1302773d-f499-5a88-a864-2e869c3c1507" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AIAgent, Rock.Model.AIAgentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AIAgent, Rock.Model.AIAgentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ada4b888-026f-5351-b50d-6776e1692f55" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AIAgent, Rock.Model.AIAgentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AIAgent, Rock.Model.AIAgentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "bfaaa8a4-7e5f-582b-89ad-507db90a5ff4" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AIAgent, Rock.Model.AIAgentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AIAgent, Rock.Model.AIAgentService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "eb98c941-c4a3-501b-ab42-ca2cc0ba0488" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AIAgent, Rock.Model.AIAgentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AIAgent, Rock.Model.AIAgentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "28caeea7-8f06-554f-b1d5-b64ad87f6cae" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AIAgent, Rock.Model.AIAgentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AIAgent, Rock.Model.AIAgentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

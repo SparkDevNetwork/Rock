@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e5e5c388-a2ad-5ce3-9185-394b3f9a7344" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AdaptiveMessageAdaptationSegment, Rock.Model.AdaptiveMessageAdaptationSegmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AdaptiveMessageAdaptationSegment, Rock.Model.AdaptiveMessageAdaptationSegmentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ae92cb88-d68f-5c57-bfc7-9adf7b18311d" )]
         public IActionResult PostItem( [FromBody] Rock.Model.AdaptiveMessageAdaptationSegment value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AdaptiveMessageAdaptationSegment, Rock.Model.AdaptiveMessageAdaptationSegmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AdaptiveMessageAdaptationSegment, Rock.Model.AdaptiveMessageAdaptationSegmentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8ce71a76-71df-54bd-aadb-a42058ec9f38" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.AdaptiveMessageAdaptationSegment value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AdaptiveMessageAdaptationSegment, Rock.Model.AdaptiveMessageAdaptationSegmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AdaptiveMessageAdaptationSegment, Rock.Model.AdaptiveMessageAdaptationSegmentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f7ef21a6-6b57-5e25-8dfb-2db897fe1f39" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AdaptiveMessageAdaptationSegment, Rock.Model.AdaptiveMessageAdaptationSegmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AdaptiveMessageAdaptationSegment, Rock.Model.AdaptiveMessageAdaptationSegmentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6db9c299-ba13-5b21-9ce6-fdeec2bc09fa" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AdaptiveMessageAdaptationSegment, Rock.Model.AdaptiveMessageAdaptationSegmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AdaptiveMessageAdaptationSegment, Rock.Model.AdaptiveMessageAdaptationSegmentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "edb2e01c-6be2-5479-8a05-e46902188764" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AdaptiveMessageAdaptationSegment, Rock.Model.AdaptiveMessageAdaptationSegmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AdaptiveMessageAdaptationSegment, Rock.Model.AdaptiveMessageAdaptationSegmentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e3034d40-ca48-5bc3-b51e-17c35aa5f52e" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AdaptiveMessageAdaptationSegment, Rock.Model.AdaptiveMessageAdaptationSegmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AdaptiveMessageAdaptationSegment, Rock.Model.AdaptiveMessageAdaptationSegmentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8d0099af-1115-5d5b-abe2-1092c1467295" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AdaptiveMessageAdaptationSegment, Rock.Model.AdaptiveMessageAdaptationSegmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AdaptiveMessageAdaptationSegment, Rock.Model.AdaptiveMessageAdaptationSegmentService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2d0a582c-e8b3-5459-b27e-0436265d8491" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AdaptiveMessageAdaptationSegment, Rock.Model.AdaptiveMessageAdaptationSegmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AdaptiveMessageAdaptationSegment, Rock.Model.AdaptiveMessageAdaptationSegmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "afa54707-445b-5c94-a4da-0748b629e255" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AdaptiveMessageAdaptationSegment, Rock.Model.AdaptiveMessageAdaptationSegmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AdaptiveMessageAdaptationSegment, Rock.Model.AdaptiveMessageAdaptationSegmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

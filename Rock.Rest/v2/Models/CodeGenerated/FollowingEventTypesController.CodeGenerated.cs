@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "48555dd0-8808-5be4-966c-a70878d21bbe" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FollowingEventType, Rock.Model.FollowingEventTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FollowingEventType, Rock.Model.FollowingEventTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7498af6f-6316-52e7-bd87-56fc89183b83" )]
         public IActionResult PostItem( [FromBody] Rock.Model.FollowingEventType value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FollowingEventType, Rock.Model.FollowingEventTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FollowingEventType, Rock.Model.FollowingEventTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "fb6070ed-b8b2-5758-ad46-79d5f8721119" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.FollowingEventType value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FollowingEventType, Rock.Model.FollowingEventTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FollowingEventType, Rock.Model.FollowingEventTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f8064f54-6ee6-5e54-a3cb-cf054ae4289c" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FollowingEventType, Rock.Model.FollowingEventTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FollowingEventType, Rock.Model.FollowingEventTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3f02fede-b1bd-55df-bb36-b5f3249f95a7" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FollowingEventType, Rock.Model.FollowingEventTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FollowingEventType, Rock.Model.FollowingEventTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "78e6604e-4e29-51e4-add4-cdaccd57b9e7" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FollowingEventType, Rock.Model.FollowingEventTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FollowingEventType, Rock.Model.FollowingEventTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ff7554ff-e353-5cca-8fd8-d94f3dfb0c71" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FollowingEventType, Rock.Model.FollowingEventTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FollowingEventType, Rock.Model.FollowingEventTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c76a7583-188c-5e8c-a67f-49ea0f03fa8b" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FollowingEventType, Rock.Model.FollowingEventTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FollowingEventType, Rock.Model.FollowingEventTypeService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9d6d3662-b2b4-5f1f-952d-30a12682f005" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FollowingEventType, Rock.Model.FollowingEventTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FollowingEventType, Rock.Model.FollowingEventTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f57f9027-8da5-52f6-ae38-dfbf2e0793db" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FollowingEventType, Rock.Model.FollowingEventTypeService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FollowingEventType, Rock.Model.FollowingEventTypeService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

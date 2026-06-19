@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3e35ed51-a640-58fa-aaa3-4c7c280d6b0a" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventCalendarItem, Rock.Model.EventCalendarItemService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventCalendarItem, Rock.Model.EventCalendarItemService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "14c8437a-bcfc-5efb-8cca-363d09b5f6bf" )]
         public IActionResult PostItem( [FromBody] Rock.Model.EventCalendarItem value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventCalendarItem, Rock.Model.EventCalendarItemService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventCalendarItem, Rock.Model.EventCalendarItemService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "af5715ca-2e81-5d94-a797-ddb346cecac0" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.EventCalendarItem value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventCalendarItem, Rock.Model.EventCalendarItemService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventCalendarItem, Rock.Model.EventCalendarItemService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0a320b6f-b06b-5031-bc81-7e2361f88b1c" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventCalendarItem, Rock.Model.EventCalendarItemService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventCalendarItem, Rock.Model.EventCalendarItemService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "44964448-5d39-50e9-ac6b-4765c4dbf9c5" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventCalendarItem, Rock.Model.EventCalendarItemService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventCalendarItem, Rock.Model.EventCalendarItemService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "26b3b6cf-1874-5f70-bd57-ef062c740015" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventCalendarItem, Rock.Model.EventCalendarItemService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventCalendarItem, Rock.Model.EventCalendarItemService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "734b3fa6-735f-5a8f-9dcf-5db170f70ccd" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventCalendarItem, Rock.Model.EventCalendarItemService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventCalendarItem, Rock.Model.EventCalendarItemService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2fd2a497-5931-5de4-ba2a-107853415f09" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventCalendarItem, Rock.Model.EventCalendarItemService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventCalendarItem, Rock.Model.EventCalendarItemService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "4bfed688-d30c-537a-89bf-180d74cd9265" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventCalendarItem, Rock.Model.EventCalendarItemService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventCalendarItem, Rock.Model.EventCalendarItemService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ed9214e8-9d4a-55cc-94d7-28bf54a35519" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventCalendarItem, Rock.Model.EventCalendarItemService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventCalendarItem, Rock.Model.EventCalendarItemService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d2955071-e70d-5ab8-a5c7-7c7fb2d42855" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AssetStorageProvider, Rock.Model.AssetStorageProviderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AssetStorageProvider, Rock.Model.AssetStorageProviderService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e3fed706-39df-5b19-acf7-0b4c77774424" )]
         public IActionResult PostItem( [FromBody] Rock.Model.AssetStorageProvider value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AssetStorageProvider, Rock.Model.AssetStorageProviderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AssetStorageProvider, Rock.Model.AssetStorageProviderService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "843a79a4-2020-58de-9643-64c6437cfbb5" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.AssetStorageProvider value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AssetStorageProvider, Rock.Model.AssetStorageProviderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AssetStorageProvider, Rock.Model.AssetStorageProviderService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "269e0dbe-c902-5d6e-af59-7c43c9793813" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AssetStorageProvider, Rock.Model.AssetStorageProviderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AssetStorageProvider, Rock.Model.AssetStorageProviderService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8ad0f26e-4716-5fb5-ba87-490ee4aef95b" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AssetStorageProvider, Rock.Model.AssetStorageProviderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AssetStorageProvider, Rock.Model.AssetStorageProviderService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "976e328c-b505-5f82-a7ac-85d6238e2344" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AssetStorageProvider, Rock.Model.AssetStorageProviderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AssetStorageProvider, Rock.Model.AssetStorageProviderService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "63b6dd63-54fc-5df6-b79b-28ac0490abfd" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AssetStorageProvider, Rock.Model.AssetStorageProviderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AssetStorageProvider, Rock.Model.AssetStorageProviderService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8a159a9b-850b-5679-9c8e-0c98f606d738" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AssetStorageProvider, Rock.Model.AssetStorageProviderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AssetStorageProvider, Rock.Model.AssetStorageProviderService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "56a3899f-3b61-506c-8dec-5f3ffa3bd0f5" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AssetStorageProvider, Rock.Model.AssetStorageProviderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AssetStorageProvider, Rock.Model.AssetStorageProviderService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6bb7a62f-bf98-56aa-8e3f-9bca4e7508b7" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AssetStorageProvider, Rock.Model.AssetStorageProviderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AssetStorageProvider, Rock.Model.AssetStorageProviderService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

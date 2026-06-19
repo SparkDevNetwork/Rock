@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7895db84-c3bc-58a5-ad47-0a2470d3f4c1" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonalLinkSectionOrder, Rock.Model.PersonalLinkSectionOrderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonalLinkSectionOrder, Rock.Model.PersonalLinkSectionOrderService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "50624c55-9e9b-5d6a-af05-12d90b2b5076" )]
         public IActionResult PostItem( [FromBody] Rock.Model.PersonalLinkSectionOrder value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonalLinkSectionOrder, Rock.Model.PersonalLinkSectionOrderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonalLinkSectionOrder, Rock.Model.PersonalLinkSectionOrderService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d86c1786-8948-5cf7-8b3a-18627e3160cd" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.PersonalLinkSectionOrder value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonalLinkSectionOrder, Rock.Model.PersonalLinkSectionOrderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonalLinkSectionOrder, Rock.Model.PersonalLinkSectionOrderService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b33f9bd1-f52b-5dbe-b1b7-101e9c6ae362" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonalLinkSectionOrder, Rock.Model.PersonalLinkSectionOrderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonalLinkSectionOrder, Rock.Model.PersonalLinkSectionOrderService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "effd5409-6aa2-5428-b9d2-2f7fa332578d" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonalLinkSectionOrder, Rock.Model.PersonalLinkSectionOrderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonalLinkSectionOrder, Rock.Model.PersonalLinkSectionOrderService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "94428951-2dbb-5b6c-94e3-4081e2fab87d" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonalLinkSectionOrder, Rock.Model.PersonalLinkSectionOrderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonalLinkSectionOrder, Rock.Model.PersonalLinkSectionOrderService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "65c9eb24-7e48-5d6d-a024-4235f36323d9" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonalLinkSectionOrder, Rock.Model.PersonalLinkSectionOrderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonalLinkSectionOrder, Rock.Model.PersonalLinkSectionOrderService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "340046d8-6d1d-52c3-8234-911e8be7e547" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonalLinkSectionOrder, Rock.Model.PersonalLinkSectionOrderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonalLinkSectionOrder, Rock.Model.PersonalLinkSectionOrderService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7f56fbf1-5a93-5daa-b054-35bf0b5c50d8" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonalLinkSectionOrder, Rock.Model.PersonalLinkSectionOrderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonalLinkSectionOrder, Rock.Model.PersonalLinkSectionOrderService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "76a68b0c-30e2-504c-82bf-ce3900035540" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonalLinkSectionOrder, Rock.Model.PersonalLinkSectionOrderService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersonalLinkSectionOrder, Rock.Model.PersonalLinkSectionOrderService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

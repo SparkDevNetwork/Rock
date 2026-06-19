@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8035d754-dd6f-5193-a2c2-7acc5a1c73ba" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AdaptiveMessage, Rock.Model.AdaptiveMessageService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AdaptiveMessage, Rock.Model.AdaptiveMessageService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "bae1fbd3-a7ea-5d23-849b-0c4253a1d919" )]
         public IActionResult PostItem( [FromBody] Rock.Model.AdaptiveMessage value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AdaptiveMessage, Rock.Model.AdaptiveMessageService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AdaptiveMessage, Rock.Model.AdaptiveMessageService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f16957c5-e9db-52f0-8894-d4c73eb2ad84" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.AdaptiveMessage value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AdaptiveMessage, Rock.Model.AdaptiveMessageService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AdaptiveMessage, Rock.Model.AdaptiveMessageService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "acf4f562-53f5-5617-b853-43200a7cb917" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AdaptiveMessage, Rock.Model.AdaptiveMessageService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AdaptiveMessage, Rock.Model.AdaptiveMessageService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c73f98bd-82e4-573c-914c-fcdb912c22c4" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AdaptiveMessage, Rock.Model.AdaptiveMessageService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AdaptiveMessage, Rock.Model.AdaptiveMessageService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6898f48d-7bf9-5e6b-a163-020d73320429" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AdaptiveMessage, Rock.Model.AdaptiveMessageService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AdaptiveMessage, Rock.Model.AdaptiveMessageService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c2e42692-a35c-5af7-a0ac-6250e2e05611" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AdaptiveMessage, Rock.Model.AdaptiveMessageService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AdaptiveMessage, Rock.Model.AdaptiveMessageService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "68640387-fc8c-584e-83c4-62aa49757607" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AdaptiveMessage, Rock.Model.AdaptiveMessageService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AdaptiveMessage, Rock.Model.AdaptiveMessageService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2469d0c6-08fd-5cee-bc96-5fdb54479180" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AdaptiveMessage, Rock.Model.AdaptiveMessageService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AdaptiveMessage, Rock.Model.AdaptiveMessageService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2590030c-94b4-5ee3-b389-714ed3baa828" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AdaptiveMessage, Rock.Model.AdaptiveMessageService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AdaptiveMessage, Rock.Model.AdaptiveMessageService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

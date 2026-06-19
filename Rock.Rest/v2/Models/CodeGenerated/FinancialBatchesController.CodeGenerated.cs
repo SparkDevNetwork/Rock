@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a046e896-0750-58f4-853c-3168ba2ee44d" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9a7451d7-2bce-5231-941e-5efcda3fa78d" )]
         public IActionResult PostItem( [FromBody] Rock.Model.FinancialBatch value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "4209f567-f969-5670-a95b-e1d1596abd53" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.FinancialBatch value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "13862270-64f6-519e-b3d4-393b0b4ceb3d" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "efe2fbdc-987a-5086-8eae-4ab0bdf490d3" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6d8c5261-3a8f-5c9c-85b4-a9a96b214b87" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ba8c906f-5370-5f17-bc8c-38212805af95" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8b77291f-f292-5b90-aee7-86e198e4b901" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "93f3d4d0-f878-56bf-a195-aaec820d02ae" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e5f4f6bb-eb58-5c8a-b3f7-cf6f3964a45b" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

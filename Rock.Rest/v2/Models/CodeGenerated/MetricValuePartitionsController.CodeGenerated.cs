@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "1ce481ce-b879-52ca-bf8d-62ad4c31bae7" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetricValuePartition, Rock.Model.MetricValuePartitionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetricValuePartition, Rock.Model.MetricValuePartitionService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "73bdf13d-4c5d-526f-8bd2-ed410657179b" )]
         public IActionResult PostItem( [FromBody] Rock.Model.MetricValuePartition value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetricValuePartition, Rock.Model.MetricValuePartitionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetricValuePartition, Rock.Model.MetricValuePartitionService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "92cc0afa-c468-541e-ab87-69afaffecdd1" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.MetricValuePartition value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetricValuePartition, Rock.Model.MetricValuePartitionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetricValuePartition, Rock.Model.MetricValuePartitionService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9a13826e-352e-5636-8391-98c5975fd91b" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetricValuePartition, Rock.Model.MetricValuePartitionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetricValuePartition, Rock.Model.MetricValuePartitionService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8f2ddfa0-bc85-5638-9ab5-8ced6dc03398" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetricValuePartition, Rock.Model.MetricValuePartitionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetricValuePartition, Rock.Model.MetricValuePartitionService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "09edac34-d3cb-591a-9bff-e4fd6a863ee7" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetricValuePartition, Rock.Model.MetricValuePartitionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetricValuePartition, Rock.Model.MetricValuePartitionService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "cf825224-2b8e-5541-b884-b53e4fd80059" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetricValuePartition, Rock.Model.MetricValuePartitionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetricValuePartition, Rock.Model.MetricValuePartitionService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7cdd7ca3-aca3-541e-9942-1c4790cfa4ee" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetricValuePartition, Rock.Model.MetricValuePartitionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetricValuePartition, Rock.Model.MetricValuePartitionService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "082f3fa2-3e85-53d1-aa82-fa7dbc9c4088" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetricValuePartition, Rock.Model.MetricValuePartitionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetricValuePartition, Rock.Model.MetricValuePartitionService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9abf5129-5576-5be9-8816-82d9f489011c" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetricValuePartition, Rock.Model.MetricValuePartitionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetricValuePartition, Rock.Model.MetricValuePartitionService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7cda0d91-bec8-5dcd-a3c7-6f93ee40ea45" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventItemOccurrenceGroupMap, Rock.Model.EventItemOccurrenceGroupMapService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventItemOccurrenceGroupMap, Rock.Model.EventItemOccurrenceGroupMapService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "12ca4e4c-cddc-5aff-92a0-e8cab2782f22" )]
         public IActionResult PostItem( [FromBody] Rock.Model.EventItemOccurrenceGroupMap value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventItemOccurrenceGroupMap, Rock.Model.EventItemOccurrenceGroupMapService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventItemOccurrenceGroupMap, Rock.Model.EventItemOccurrenceGroupMapService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "1c7ae086-aa84-5a02-bad7-2b26ab61365d" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.EventItemOccurrenceGroupMap value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventItemOccurrenceGroupMap, Rock.Model.EventItemOccurrenceGroupMapService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventItemOccurrenceGroupMap, Rock.Model.EventItemOccurrenceGroupMapService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "11a7183c-2262-5ee1-9394-44e16205315b" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventItemOccurrenceGroupMap, Rock.Model.EventItemOccurrenceGroupMapService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventItemOccurrenceGroupMap, Rock.Model.EventItemOccurrenceGroupMapService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b7c19bc2-ebca-5e05-8647-ef7b4a94eff5" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventItemOccurrenceGroupMap, Rock.Model.EventItemOccurrenceGroupMapService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventItemOccurrenceGroupMap, Rock.Model.EventItemOccurrenceGroupMapService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "47cec891-cd18-57f4-988c-52aa53356719" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventItemOccurrenceGroupMap, Rock.Model.EventItemOccurrenceGroupMapService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventItemOccurrenceGroupMap, Rock.Model.EventItemOccurrenceGroupMapService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f15cc224-26d0-5a84-a1cc-d8ca3a6edb93" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventItemOccurrenceGroupMap, Rock.Model.EventItemOccurrenceGroupMapService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventItemOccurrenceGroupMap, Rock.Model.EventItemOccurrenceGroupMapService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d89f699b-18d3-5d45-bfe2-c756b9e25254" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventItemOccurrenceGroupMap, Rock.Model.EventItemOccurrenceGroupMapService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventItemOccurrenceGroupMap, Rock.Model.EventItemOccurrenceGroupMapService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "82ca7e95-2bd7-570b-b6da-717503b0e95c" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventItemOccurrenceGroupMap, Rock.Model.EventItemOccurrenceGroupMapService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventItemOccurrenceGroupMap, Rock.Model.EventItemOccurrenceGroupMapService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "064d6d67-dc35-5f62-8faa-e0e91b4cf358" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.EventItemOccurrenceGroupMap, Rock.Model.EventItemOccurrenceGroupMapService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.EventItemOccurrenceGroupMap, Rock.Model.EventItemOccurrenceGroupMapService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

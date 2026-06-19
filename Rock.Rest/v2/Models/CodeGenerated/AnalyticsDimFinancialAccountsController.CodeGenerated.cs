@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d6c51474-c23c-5b62-96ff-10e8d69bd0b0" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AnalyticsDimFinancialAccount, Rock.Model.AnalyticsDimFinancialAccountService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AnalyticsDimFinancialAccount, Rock.Model.AnalyticsDimFinancialAccountService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "07d4481a-9480-5e62-a70b-8a86badbb1a2" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AnalyticsDimFinancialAccount, Rock.Model.AnalyticsDimFinancialAccountService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AnalyticsDimFinancialAccount, Rock.Model.AnalyticsDimFinancialAccountService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -116,7 +115,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3b75520c-d1ca-574f-ab1b-86b0a5d1cb9e" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AnalyticsDimFinancialAccount, Rock.Model.AnalyticsDimFinancialAccountService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AnalyticsDimFinancialAccount, Rock.Model.AnalyticsDimFinancialAccountService>( this );
 
             return helper.Search( query );
         }
@@ -137,7 +136,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d1d12561-d3f9-55d5-82d3-e1c07ff7c255" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AnalyticsDimFinancialAccount, Rock.Model.AnalyticsDimFinancialAccountService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AnalyticsDimFinancialAccount, Rock.Model.AnalyticsDimFinancialAccountService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -162,7 +161,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a8e1e0a1-3fcc-5188-8ab6-9c3c3763dd39" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AnalyticsDimFinancialAccount, Rock.Model.AnalyticsDimFinancialAccountService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AnalyticsDimFinancialAccount, Rock.Model.AnalyticsDimFinancialAccountService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

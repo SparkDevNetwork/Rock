@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "acebc0c5-1408-548f-9434-7db0a0967fce" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NotificationMessage, Rock.Model.NotificationMessageService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NotificationMessage, Rock.Model.NotificationMessageService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c79dfd67-2cec-5ef4-afe7-455d46567a84" )]
         public IActionResult PostItem( [FromBody] Rock.Model.NotificationMessage value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NotificationMessage, Rock.Model.NotificationMessageService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NotificationMessage, Rock.Model.NotificationMessageService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "130d3b78-98ed-5e78-b81b-c3c5a64011c0" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.NotificationMessage value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NotificationMessage, Rock.Model.NotificationMessageService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NotificationMessage, Rock.Model.NotificationMessageService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8d53df8c-3c87-5351-abe4-e27e9e180603" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NotificationMessage, Rock.Model.NotificationMessageService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NotificationMessage, Rock.Model.NotificationMessageService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ae4ff714-8f4b-54c0-bed3-1e7fbe8e1475" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NotificationMessage, Rock.Model.NotificationMessageService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NotificationMessage, Rock.Model.NotificationMessageService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "90f76ade-d24a-5992-8ed6-8b11b24619f3" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NotificationMessage, Rock.Model.NotificationMessageService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NotificationMessage, Rock.Model.NotificationMessageService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f0544fdb-bb50-5342-adb7-430575102274" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NotificationMessage, Rock.Model.NotificationMessageService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NotificationMessage, Rock.Model.NotificationMessageService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ee2f6b63-9a6f-5000-8464-ddbb9b83f517" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NotificationMessage, Rock.Model.NotificationMessageService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NotificationMessage, Rock.Model.NotificationMessageService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "bd3dedf6-5d1b-5ddb-a4bf-25bd2b29c9d6" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NotificationMessage, Rock.Model.NotificationMessageService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NotificationMessage, Rock.Model.NotificationMessageService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f141f699-0161-548d-ba98-87cb65030cf0" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.NotificationMessage, Rock.Model.NotificationMessageService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.NotificationMessage, Rock.Model.NotificationMessageService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

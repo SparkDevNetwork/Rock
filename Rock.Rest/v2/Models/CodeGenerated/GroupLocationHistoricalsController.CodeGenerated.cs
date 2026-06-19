@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "769657e9-0bf6-5ac3-ad76-42c006e6a4ab" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupLocationHistorical, Rock.Model.GroupLocationHistoricalService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupLocationHistorical, Rock.Model.GroupLocationHistoricalService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d11f8bc7-a56b-51c8-a282-368f8cda94a3" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupLocationHistorical, Rock.Model.GroupLocationHistoricalService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupLocationHistorical, Rock.Model.GroupLocationHistoricalService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -116,7 +115,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "5ec4a61b-7af9-5355-b1a8-c3002824f224" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupLocationHistorical, Rock.Model.GroupLocationHistoricalService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupLocationHistorical, Rock.Model.GroupLocationHistoricalService>( this );
 
             return helper.Search( query );
         }
@@ -137,7 +136,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "716e83fc-f297-5325-9032-8b12daf77076" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupLocationHistorical, Rock.Model.GroupLocationHistoricalService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupLocationHistorical, Rock.Model.GroupLocationHistoricalService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -162,7 +161,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "71cc690e-20d4-5eba-b470-efa0ea8c8283" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.GroupLocationHistorical, Rock.Model.GroupLocationHistoricalService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.GroupLocationHistorical, Rock.Model.GroupLocationHistoricalService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

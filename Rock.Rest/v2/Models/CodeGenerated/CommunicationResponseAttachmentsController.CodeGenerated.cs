@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9269596d-564c-5574-9631-7aacb95b9eff" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CommunicationResponseAttachment, Rock.Model.CommunicationResponseAttachmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CommunicationResponseAttachment, Rock.Model.CommunicationResponseAttachmentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "cfc97140-cc85-5a44-a71e-ab3700a3ff1d" )]
         public IActionResult PostItem( [FromBody] Rock.Model.CommunicationResponseAttachment value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CommunicationResponseAttachment, Rock.Model.CommunicationResponseAttachmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CommunicationResponseAttachment, Rock.Model.CommunicationResponseAttachmentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "34bc2267-29b0-537f-b80a-43e690650621" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.CommunicationResponseAttachment value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CommunicationResponseAttachment, Rock.Model.CommunicationResponseAttachmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CommunicationResponseAttachment, Rock.Model.CommunicationResponseAttachmentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8dac3fd8-4eba-55f1-9cac-524b306f1056" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CommunicationResponseAttachment, Rock.Model.CommunicationResponseAttachmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CommunicationResponseAttachment, Rock.Model.CommunicationResponseAttachmentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f679836f-3d8f-5758-9d4e-7cbfe7b596c8" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CommunicationResponseAttachment, Rock.Model.CommunicationResponseAttachmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CommunicationResponseAttachment, Rock.Model.CommunicationResponseAttachmentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "685e6234-792e-5da4-968f-3f9f059d9cf3" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CommunicationResponseAttachment, Rock.Model.CommunicationResponseAttachmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CommunicationResponseAttachment, Rock.Model.CommunicationResponseAttachmentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e2b240c8-4813-5bf0-b624-d9e02a36cc3b" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CommunicationResponseAttachment, Rock.Model.CommunicationResponseAttachmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CommunicationResponseAttachment, Rock.Model.CommunicationResponseAttachmentService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "4bc0742f-48b4-530f-b975-4ca1d4a09152" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CommunicationResponseAttachment, Rock.Model.CommunicationResponseAttachmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CommunicationResponseAttachment, Rock.Model.CommunicationResponseAttachmentService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "98f4812c-e14a-5889-8d32-91057b16bfd6" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CommunicationResponseAttachment, Rock.Model.CommunicationResponseAttachmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CommunicationResponseAttachment, Rock.Model.CommunicationResponseAttachmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7d141324-b804-531e-9ab7-5c711c5846c1" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.CommunicationResponseAttachment, Rock.Model.CommunicationResponseAttachmentService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.CommunicationResponseAttachment, Rock.Model.CommunicationResponseAttachmentService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

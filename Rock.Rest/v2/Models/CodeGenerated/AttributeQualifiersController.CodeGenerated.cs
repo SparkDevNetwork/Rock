@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2031666e-e56b-5b06-b94a-b200aa0ad07b" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0132dfd2-b504-5c82-ae22-d2a482772508" )]
         public IActionResult PostItem( [FromBody] Rock.Model.AttributeQualifier value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a58163b8-228d-588c-ae08-b40efe1c1689" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.AttributeQualifier value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9cfdfb36-8cdf-54ba-8bd6-78287970f5b9" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "aa3339f1-87bc-57b8-9a39-ae5b3334be86" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "62eebc23-0959-51da-8a1d-4315cb8c0e26" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "01ea6d1f-f4e1-503a-9c34-050b3caabaf8" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7b23146a-aea9-5647-a040-2eef1d9ab926" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "4e1d80e3-edd0-5cde-8e02-723367c96ee8" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "1da5b303-2516-5ccd-8a24-e807949285d3" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

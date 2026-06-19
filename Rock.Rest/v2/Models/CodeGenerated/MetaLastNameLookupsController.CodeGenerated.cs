@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a409b2b7-8f39-55fd-baab-959f2d335e24" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetaLastNameLookup, Rock.Model.MetaLastNameLookupService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetaLastNameLookup, Rock.Model.MetaLastNameLookupService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "dcd2e032-0939-58a3-b3d2-13b732a18c5e" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetaLastNameLookup, Rock.Model.MetaLastNameLookupService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetaLastNameLookup, Rock.Model.MetaLastNameLookupService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -116,7 +115,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "13e69fd4-edcf-5a08-b095-1b0cf8af6057" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetaLastNameLookup, Rock.Model.MetaLastNameLookupService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetaLastNameLookup, Rock.Model.MetaLastNameLookupService>( this );
 
             return helper.Search( query );
         }
@@ -137,7 +136,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6ae799b8-5ce0-5fcd-beb0-ae579ec87ade" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetaLastNameLookup, Rock.Model.MetaLastNameLookupService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetaLastNameLookup, Rock.Model.MetaLastNameLookupService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -162,7 +161,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6f6e9326-4842-58e6-850b-73ab6146435a" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.MetaLastNameLookup, Rock.Model.MetaLastNameLookupService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.MetaLastNameLookup, Rock.Model.MetaLastNameLookupService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

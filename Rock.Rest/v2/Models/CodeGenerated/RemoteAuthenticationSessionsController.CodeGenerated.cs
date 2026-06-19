@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "5d9abfc5-2bfc-561b-ac11-f30f46d21c87" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RemoteAuthenticationSession, Rock.Model.RemoteAuthenticationSessionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RemoteAuthenticationSession, Rock.Model.RemoteAuthenticationSessionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0a13b05d-5596-54d7-895d-bb2bbb45302f" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RemoteAuthenticationSession, Rock.Model.RemoteAuthenticationSessionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RemoteAuthenticationSession, Rock.Model.RemoteAuthenticationSessionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -116,7 +115,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3e9d0674-2ccc-5d93-b07c-2c4831932752" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RemoteAuthenticationSession, Rock.Model.RemoteAuthenticationSessionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RemoteAuthenticationSession, Rock.Model.RemoteAuthenticationSessionService>( this );
 
             return helper.Search( query );
         }
@@ -137,7 +136,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6ec3903c-0945-578b-96d4-d1dd663a4245" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RemoteAuthenticationSession, Rock.Model.RemoteAuthenticationSessionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RemoteAuthenticationSession, Rock.Model.RemoteAuthenticationSessionService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -162,7 +161,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e447bf91-8a91-5558-9585-1744c3786252" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.RemoteAuthenticationSession, Rock.Model.RemoteAuthenticationSessionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.RemoteAuthenticationSession, Rock.Model.RemoteAuthenticationSessionService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

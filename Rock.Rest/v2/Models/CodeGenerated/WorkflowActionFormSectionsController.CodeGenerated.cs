@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b498be7b-6d73-5c98-8f3f-1a3716b38384" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WorkflowActionFormSection, Rock.Model.WorkflowActionFormSectionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WorkflowActionFormSection, Rock.Model.WorkflowActionFormSectionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "4938e120-6e77-5b68-9478-d54cb66073aa" )]
         public IActionResult PostItem( [FromBody] Rock.Model.WorkflowActionFormSection value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WorkflowActionFormSection, Rock.Model.WorkflowActionFormSectionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WorkflowActionFormSection, Rock.Model.WorkflowActionFormSectionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3b96cacb-7b3d-50eb-a11c-f3103a8a41ab" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.WorkflowActionFormSection value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WorkflowActionFormSection, Rock.Model.WorkflowActionFormSectionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WorkflowActionFormSection, Rock.Model.WorkflowActionFormSectionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "44fcbb12-b606-585e-9a86-cb851ac241a4" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WorkflowActionFormSection, Rock.Model.WorkflowActionFormSectionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WorkflowActionFormSection, Rock.Model.WorkflowActionFormSectionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3f78869e-aae1-5fe3-9bc3-46cf7b2d9851" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WorkflowActionFormSection, Rock.Model.WorkflowActionFormSectionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WorkflowActionFormSection, Rock.Model.WorkflowActionFormSectionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "728acb72-177e-5c07-a6b1-71f9846d1aa9" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WorkflowActionFormSection, Rock.Model.WorkflowActionFormSectionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WorkflowActionFormSection, Rock.Model.WorkflowActionFormSectionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "1041d231-6b91-56a1-9810-9f8ab9789269" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WorkflowActionFormSection, Rock.Model.WorkflowActionFormSectionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WorkflowActionFormSection, Rock.Model.WorkflowActionFormSectionService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "cacb7b01-2bdf-534f-8218-88e0a0f72784" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WorkflowActionFormSection, Rock.Model.WorkflowActionFormSectionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WorkflowActionFormSection, Rock.Model.WorkflowActionFormSectionService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e720bd98-5aa9-5e74-8a75-3c613ad9ea8f" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WorkflowActionFormSection, Rock.Model.WorkflowActionFormSectionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WorkflowActionFormSection, Rock.Model.WorkflowActionFormSectionService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "23a7c770-2f39-56c0-a113-11af891ad36f" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.WorkflowActionFormSection, Rock.Model.WorkflowActionFormSectionService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.WorkflowActionFormSection, Rock.Model.WorkflowActionFormSectionService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

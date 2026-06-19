@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3305ae22-1053-51f8-9095-b87e4c08bc5f" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ExceptionLog, Rock.Model.ExceptionLogService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ExceptionLog, Rock.Model.ExceptionLogService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b50f36a9-5776-5c4c-997c-ea34310abea5" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ExceptionLog, Rock.Model.ExceptionLogService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ExceptionLog, Rock.Model.ExceptionLogService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -116,7 +115,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "fbad5272-f2e2-587f-bdee-059a167128ba" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ExceptionLog, Rock.Model.ExceptionLogService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ExceptionLog, Rock.Model.ExceptionLogService>( this );
 
             return helper.Search( query );
         }
@@ -137,7 +136,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ae9ec08d-80e3-57ac-af46-5bd756c288c5" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ExceptionLog, Rock.Model.ExceptionLogService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ExceptionLog, Rock.Model.ExceptionLogService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -162,7 +161,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "83f691b9-8528-5460-ad23-5dfb629868ee" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.ExceptionLog, Rock.Model.ExceptionLogService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.ExceptionLog, Rock.Model.ExceptionLogService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

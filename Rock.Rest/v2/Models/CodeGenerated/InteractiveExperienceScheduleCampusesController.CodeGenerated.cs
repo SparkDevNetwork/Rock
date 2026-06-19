@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "0e51e6ac-a721-5e72-acc7-83dee2188c41" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractiveExperienceScheduleCampus, Rock.Model.InteractiveExperienceScheduleCampusService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractiveExperienceScheduleCampus, Rock.Model.InteractiveExperienceScheduleCampusService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "829e0eac-ec87-5a54-9cd0-04d31787793b" )]
         public IActionResult PostItem( [FromBody] Rock.Model.InteractiveExperienceScheduleCampus value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractiveExperienceScheduleCampus, Rock.Model.InteractiveExperienceScheduleCampusService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractiveExperienceScheduleCampus, Rock.Model.InteractiveExperienceScheduleCampusService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "9ffd6cd7-ccca-590f-9cec-13302b6e5279" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.InteractiveExperienceScheduleCampus value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractiveExperienceScheduleCampus, Rock.Model.InteractiveExperienceScheduleCampusService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractiveExperienceScheduleCampus, Rock.Model.InteractiveExperienceScheduleCampusService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f4d4a569-9125-54b9-9ea0-e8fcf837c8f1" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractiveExperienceScheduleCampus, Rock.Model.InteractiveExperienceScheduleCampusService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractiveExperienceScheduleCampus, Rock.Model.InteractiveExperienceScheduleCampusService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "810fbfdb-db81-5f28-96dd-4f905790f288" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractiveExperienceScheduleCampus, Rock.Model.InteractiveExperienceScheduleCampusService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractiveExperienceScheduleCampus, Rock.Model.InteractiveExperienceScheduleCampusService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c898cb58-23e2-5fe0-9f62-f24b6a747ebc" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractiveExperienceScheduleCampus, Rock.Model.InteractiveExperienceScheduleCampusService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractiveExperienceScheduleCampus, Rock.Model.InteractiveExperienceScheduleCampusService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "bd015d6e-7bb3-57e7-9fe9-7b1a3f0d19cc" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractiveExperienceScheduleCampus, Rock.Model.InteractiveExperienceScheduleCampusService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractiveExperienceScheduleCampus, Rock.Model.InteractiveExperienceScheduleCampusService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "741a3fa3-1dae-5775-afaa-3ebc509f1080" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractiveExperienceScheduleCampus, Rock.Model.InteractiveExperienceScheduleCampusService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractiveExperienceScheduleCampus, Rock.Model.InteractiveExperienceScheduleCampusService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c7fc3bf5-94e9-581d-9021-e33935370e6b" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractiveExperienceScheduleCampus, Rock.Model.InteractiveExperienceScheduleCampusService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractiveExperienceScheduleCampus, Rock.Model.InteractiveExperienceScheduleCampusService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "aebe4cc2-f3bb-58ff-8da3-f87d62fcbad8" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.InteractiveExperienceScheduleCampus, Rock.Model.InteractiveExperienceScheduleCampusService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.InteractiveExperienceScheduleCampus, Rock.Model.InteractiveExperienceScheduleCampusService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

@@ -24,7 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
@@ -71,7 +70,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b033438f-383c-5cb4-b1c7-5c77263fb617" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersistedDataset, Rock.Model.PersistedDatasetService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersistedDataset, Rock.Model.PersistedDatasetService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -95,7 +94,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "4909835b-5787-522d-b858-6d0cc2dc31ba" )]
         public IActionResult PostItem( [FromBody] Rock.Model.PersistedDataset value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersistedDataset, Rock.Model.PersistedDatasetService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersistedDataset, Rock.Model.PersistedDatasetService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -121,7 +120,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "6b6e1314-8662-5033-8dc5-a9b13d9b4b3c" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.PersistedDataset value )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersistedDataset, Rock.Model.PersistedDatasetService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersistedDataset, Rock.Model.PersistedDatasetService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -147,7 +146,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c0030fda-b666-5722-879c-dcc2ad0270c6" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersistedDataset, Rock.Model.PersistedDatasetService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersistedDataset, Rock.Model.PersistedDatasetService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -171,7 +170,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b581330b-d0fa-5889-a1f4-9edc060035fb" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersistedDataset, Rock.Model.PersistedDatasetService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersistedDataset, Rock.Model.PersistedDatasetService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -195,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d10a9fc4-8a07-55ad-815f-f82f6626d950" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersistedDataset, Rock.Model.PersistedDatasetService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersistedDataset, Rock.Model.PersistedDatasetService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -221,7 +220,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "926555aa-9acc-51eb-b53c-50345a7f7581" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersistedDataset, Rock.Model.PersistedDatasetService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersistedDataset, Rock.Model.PersistedDatasetService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -242,7 +241,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8343467e-2ff6-5c24-bcea-27f7e3d3627f" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersistedDataset, Rock.Model.PersistedDatasetService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersistedDataset, Rock.Model.PersistedDatasetService>( this );
 
             return helper.Search( query );
         }
@@ -263,7 +262,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "c5ca5700-7927-5de3-83e9-ac7c8458f893" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersistedDataset, Rock.Model.PersistedDatasetService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersistedDataset, Rock.Model.PersistedDatasetService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -288,7 +287,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d594abc7-9fd4-5c3a-9d0f-39b5eeacd8d4" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new CrudEndpointHelper<Rock.Model.PersistedDataset, Rock.Model.PersistedDatasetService>( this );
+            var helper = CreateCrudEndpointHelper<Rock.Model.PersistedDataset, Rock.Model.PersistedDatasetService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
