@@ -471,6 +471,7 @@ namespace Rock.Blocks.Finance
                 IsReassignVisible = _person != null && CanEdit,
                 IsMoveToBatchVisible = _batch != null && CanEdit && IsBatchEditable,
                 ShowClosedBatchWarning = _batch != null && _batch.Status == BatchStatus.Closed,
+                MoveToBatchTargets = GetMoveToBatchTargets(),
                 CurrencyInfo = new CurrencyInfoBag
                 {
                     Symbol = currencyInfo.Symbol,
@@ -480,6 +481,47 @@ namespace Rock.Blocks.Finance
             };
 
             return options;
+        }
+
+        /// <summary>
+        /// Gets the open batches (excluding the current batch) that selected transactions can be moved
+        /// to. Returns an empty list unless the block is in an editable batch context, since the
+        /// Move to Batch toolbar is only available there.
+        /// </summary>
+        /// <returns>The candidate batches as list items keyed by IdKey.</returns>
+        private List<ListItemBag> GetMoveToBatchTargets()
+        {
+            if ( _batch == null || !CanEdit || !IsBatchEditable )
+            {
+                return new List<ListItemBag>();
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var currentBatchId = _batch.Id;
+
+                var batches = new FinancialBatchService( rockContext )
+                    .Queryable()
+                    .Where( b => b.Status == BatchStatus.Open
+                        && b.BatchStartDateTime.HasValue
+                        && b.Id != currentBatchId )
+                    .OrderBy( b => b.Id )
+                    .Select( b => new
+                    {
+                        b.Id,
+                        b.Name,
+                        b.BatchStartDateTime
+                    } )
+                    .ToList();
+
+                return batches
+                    .Select( b => new ListItemBag
+                    {
+                        Value = IdHasher.Instance.GetHash( b.Id ),
+                        Text = $"#{b.Id} {b.Name} ({b.BatchStartDateTime.Value:d})"
+                    } )
+                    .ToList();
+            }
         }
 
         /// <summary>
@@ -1318,7 +1360,98 @@ namespace Rock.Blocks.Finance
             return null;
         }
 
-        // TODO Step 5: Reassign and MoveToBatch block actions (with their request bags).
+        /// <summary>
+        /// Moves the selected transactions to the specified batch, adjusting the control amounts on
+        /// both the source and destination batches and recording the changes in their history.
+        /// Only available in Transactions view mode within an editable batch context.
+        /// </summary>
+        /// <param name="transactionKeys">The IdKeys of the transactions to move.</param>
+        /// <param name="batchKey">The IdKey of the destination batch.</param>
+        /// <returns>A result describing how many transactions were moved and to which batch.</returns>
+        [BlockAction]
+        public BlockActionResult MoveTransactions( List<string> transactionKeys, string batchKey )
+        {
+            InitializeContextEntities();
+
+            if ( !CanEdit || _batch == null || !IsBatchEditable )
+            {
+                return ActionBadRequest( "Not authorized to move transactions." );
+            }
+
+            if ( transactionKeys == null || !transactionKeys.Any() )
+            {
+                return ActionBadRequest( "There were not any transactions selected." );
+            }
+
+            var allowIntegerId = !PageCache.Layout.Site.DisablePredictableIds;
+
+            var batchService = new FinancialBatchService( RockContext );
+            var newBatch = batchService.Get( batchKey, allowIntegerId );
+            var oldBatch = batchService.Get( _batch.Id );
+
+            if ( oldBatch == null || newBatch == null || newBatch.Status != BatchStatus.Open )
+            {
+                return ActionBadRequest( "The selected batch does not exist, or is no longer open." );
+            }
+
+            var transactionIds = transactionKeys
+                .Select( key => IdHasher.Instance.GetId( key ) ?? ( allowIntegerId ? key.AsIntegerOrNull() : null ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            var transactions = new FinancialTransactionService( RockContext )
+                .Queryable()
+                .Include( t => t.TransactionDetails )
+                .Where( t => transactionIds.Contains( t.Id ) )
+                .ToList();
+
+            var oldControlAmount = oldBatch.ControlAmount;
+            var newControlAmount = newBatch.ControlAmount;
+
+            foreach ( var transaction in transactions )
+            {
+                transaction.BatchId = newBatch.Id;
+                oldControlAmount -= transaction.TotalAmount;
+                newControlAmount += transaction.TotalAmount;
+            }
+
+            // Record the control amount change on the source batch.
+            var oldBatchChanges = new History.HistoryChangeList();
+            History.EvaluateChange( oldBatchChanges, "Control Amount", oldBatch.ControlAmount.FormatAsCurrency(), oldControlAmount.FormatAsCurrency() );
+            oldBatch.ControlAmount = oldControlAmount;
+
+            HistoryService.SaveChanges(
+                RockContext,
+                typeof( FinancialBatch ),
+                Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                oldBatch.Id,
+                oldBatchChanges,
+                false );
+
+            // Record the control amount change on the destination batch.
+            var newBatchChanges = new History.HistoryChangeList();
+            History.EvaluateChange( newBatchChanges, "Control Amount", newBatch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
+            newBatch.ControlAmount = newControlAmount;
+
+            HistoryService.SaveChanges(
+                RockContext,
+                typeof( FinancialBatch ),
+                Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                newBatch.Id,
+                newBatchChanges,
+                false );
+
+            RockContext.SaveChanges();
+
+            return ActionOk( new
+            {
+                MovedCount = transactions.Count,
+                BatchName = newBatch.Name
+            } );
+        }
+
+        // TODO Step 5: Reassign block action (with its request bag).
 
         #endregion Block Actions
 

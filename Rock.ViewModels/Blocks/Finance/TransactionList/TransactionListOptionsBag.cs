@@ -142,6 +142,12 @@ namespace Rock.ViewModels.Blocks.Finance.TransactionList
         public bool ShowClosedBatchWarning { get; set; }
 
         /// <summary>
+        /// Gets or sets the open batches (excluding the current batch) that selected transactions can
+        /// be moved to. Populated only when the Move to Batch action is available.
+        /// </summary>
+        public List<ListItemBag> MoveToBatchTargets { get; set; }
+
+        /// <summary>
         /// Gets or sets the currency formatting information used to render amounts on the client.
         /// </summary>
         public CurrencyInfoBag CurrencyInfo { get; set; }

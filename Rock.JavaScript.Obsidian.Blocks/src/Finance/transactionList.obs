@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid ref="gridElement"
+          :definition="config.gridDefinition ?? undefined"
           :title="config.options?.title ?? ''"
           :data="gridDataSource"
           keyField="idKey"
@@ -13,19 +14,20 @@
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @gridSettingsClick="isGridSettingsVisible = true"
           @filteredRowsChanged="onFilteredRowsChanged"
+          @selectedKeysChanged="onSelectedKeysChanged"
           @selectItem="onSelectItem">
 
         <template #gridHeaderBadges>
             <div class="d-flex justify-content-end px-3 py-2">
                 <div class="btn-group">
                     <RockButton :btnType="(pendingViewMode ?? viewMode) === ViewMode.Transactions ? BtnType.Primary : BtnType.Default"
-                                :btnSize="BtnSize.Small"
+                                :btnSize="BtnSize.ExtraSmall"
                                 :disabled="pendingViewMode !== null"
                                 @click="onViewModeClick(ViewMode.Transactions)">
                         Transactions
                     </RockButton>
                     <RockButton :btnType="(pendingViewMode ?? viewMode) === ViewMode.Accounts ? BtnType.Primary : BtnType.Default"
-                                :btnSize="BtnSize.Small"
+                                :btnSize="BtnSize.ExtraSmall"
                                 :disabled="pendingViewMode !== null"
                                 @click="onViewModeClick(ViewMode.Accounts)">
                         Accounts
@@ -34,9 +36,40 @@
             </div>
         </template>
 
+        <template #gridHeaderPrepend v-if="isMoveToBatchToolbarVisible">
+            <div class="transaction-action-toolbar">
+                <div class="d-flex align-items-center gap-4">
+                    <span class="label label-info p-0">Selected {{ selectedCount }}</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span>Move to Batch</span>
+                        <DropDownList v-model="selectedBatchKey"
+                                      blankValue="Select..."
+                                      :items="moveToBatchTargets"
+                                      :showBlankItem="true"
+                                      :enhanceForLongLists="true"
+                                      formGroupClasses="mb-0"
+                                      inputClasses="move-to-batch-select" />
+
+                        <RockButton :btnType="BtnType.Primary"
+                                    :btnSize="BtnSize.Small"
+                                    :disabled="!selectedBatchKey || isMovingTransactions"
+                                    @click="onMoveTransactions">
+                            Move
+                        </RockButton>
+                    </div>
+                </div>
+                <button type="button"
+                        class="btn btn-link btn-sm text-muted p-0"
+                        title="Clear selection"
+                        @click="onClearSelection">
+                    <i class="ti ti-x"></i>
+                </button>
+            </div>
+        </template>
+
         <TextColumn name="transactionIdKey" field="transactionIdKey" :hideOnScreen="true" />
 
-        <SelectColumn />
+        <SelectColumn v-if="config.options?.isMoveToBatchVisible && viewMode == ViewMode.Transactions" />
         <PersonColumn name="person"
                       title="Name"
                       field="person"
@@ -182,13 +215,27 @@
 .account-summary {
     border-bottom: 1px var(--color-interface-soft) solid;
 }
+
+.transaction-action-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-xsmall);
+    padding: var(--spacing-xsmall) var(--spacing-large);
+    background-color: var(--color-info-soft);
+    border-bottom: 1px solid var(--color-interface-soft);
+}
+
+.transaction-action-toolbar :deep(.move-to-batch-select) {
+    min-width: 400px;
+}
 </style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { AttributeColumns, Column, CurrencyColumn, DateTimeColumn, dateValueFilter, DeleteColumn, numberValueFilter, NumberColumn, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
-    import { alert } from "@Obsidian/Utility/dialogs";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
     import { GridAction, IGridState } from "@Obsidian/Types/Controls/grid";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
@@ -202,6 +249,7 @@
     import { toCurrencyOrNull, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import GridSettingsModal from "./TransactionList/gridSettingsModal.partial.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<TransactionListOptionsBag>>();
@@ -229,6 +277,15 @@
     const summaryTotal = ref<number>(0);
     const isAccountSummaryFiltered = ref<boolean>(false);
 
+    // Move to Batch action state.
+    const gridElement = ref<InstanceType<typeof Grid> | undefined>();
+    const hasSelectedRows = ref<boolean>(false);
+    const selectedCount = ref<number>(0);
+    const selectedTransactionKeys = ref<string[]>([]);
+    const moveToBatchTargets = config.options?.moveToBatchTargets ?? [];
+    const selectedBatchKey = ref<string>("");
+    const isMovingTransactions = ref<boolean>(false);
+
     // #endregion Values
 
     // #region Computed Values
@@ -253,6 +310,16 @@
             iconCssClass: showImages.value ? "ti ti-photo-off" : "ti ti-photo",
             handler: onToggleImages
         }];
+    });
+
+    /**
+     * Whether the Move to Batch selection toolbar should be shown. Mirrors the WebForms behavior:
+     * only in an editable batch context, in Transactions mode, and when rows are selected.
+     */
+    const isMoveToBatchToolbarVisible = computed((): boolean => {
+        return !!config.options?.isMoveToBatchVisible
+            && viewMode.value === ViewMode.Transactions
+            && hasSelectedRows.value;
     });
 
     const hasSettingsFilters = computed((): boolean => {
@@ -482,6 +549,61 @@
         else {
             await alert(result.errorMessage ?? "Unknown error while trying to delete the transaction.");
         }
+    }
+
+    /**
+     * Tracks the current selection so the Move to Batch toolbar can show, enable, and act on it.
+     *
+     * @param state The current grid state.
+     */
+    function onSelectedKeysChanged(state: IGridState): void {
+        selectedTransactionKeys.value = [...state.selectedKeys] as string[];
+        selectedCount.value = state.selectedKeys.length;
+        hasSelectedRows.value = state.selectedKeys.length > 0;
+    }
+
+    /**
+     * Moves the selected transactions to the chosen batch, then clears the selection and reloads
+     * the grid on success.
+     */
+    async function onMoveTransactions(): Promise<void> {
+        if (!selectedBatchKey.value || selectedTransactionKeys.value.length === 0) {
+            return;
+        }
+
+        const confirmed = await confirm("Move the selected transactions to a new batch? Each batch's control amount will update to reflect the change.");
+
+        if (!confirmed) {
+            return;
+        }
+
+        isMovingTransactions.value = true;
+
+        try {
+            const result = await invokeBlockAction<{ movedCount: number; batchName: string }>("MoveTransactions", {
+                transactionKeys: selectedTransactionKeys.value,
+                batchKey: selectedBatchKey.value
+            });
+
+            if (result.isSuccess && result.data) {
+                selectedBatchKey.value = "";
+                gridElement.value?.clearSelectedKeys();
+                gridDataSource.value = loadGridData();
+            }
+            else {
+                await alert(result.errorMessage ?? "Unknown error while trying to move the transactions.");
+            }
+        }
+        finally {
+            isMovingTransactions.value = false;
+        }
+    }
+
+    /**
+     * Clears the current row selection, which hides the Move to Batch toolbar.
+     */
+    function onClearSelection(): void {
+        gridElement.value?.clearSelectedKeys();
     }
 
     /**

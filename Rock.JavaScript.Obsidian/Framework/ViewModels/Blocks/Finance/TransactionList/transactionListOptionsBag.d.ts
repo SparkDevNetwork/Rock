@@ -23,6 +23,7 @@
 
 import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
 import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The additional configuration options for the Transaction List block. */
 export type TransactionListOptionsBag = {
@@ -81,6 +82,12 @@ export type TransactionListOptionsBag = {
 
     /** Gets or sets a value indicating whether the block is in a Financial Scheduled Transaction context. */
     isScheduledTransactionContext: boolean;
+
+    /**
+     * Gets or sets the open batches (excluding the current batch) that selected transactions can
+     * be moved to. Populated only when the Move to Batch action is available.
+     */
+    moveToBatchTargets?: ListItemBag[] | null;
 
     /** Gets or sets a value indicating whether the account summary panel is shown below the grid. */
     showAccountSummary: boolean;
