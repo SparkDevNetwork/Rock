@@ -36,11 +36,11 @@
             </div>
         </template>
 
-        <template #gridHeaderPrepend v-if="isMoveToBatchToolbarVisible">
+        <template #gridHeaderPrepend v-if="isActionToolbarVisible">
             <div class="transaction-action-toolbar">
                 <div class="d-flex align-items-center gap-4">
                     <span class="label label-info p-0">Selected {{ selectedCount }}</span>
-                    <div class="d-flex align-items-center gap-2">
+                    <div v-if="isMoveToBatchAvailable" class="d-flex align-items-center gap-2">
                         <span>Move to Batch</span>
                         <DropDownList v-model="selectedBatchKey"
                                       blankValue="Select..."
@@ -57,6 +57,13 @@
                             Move
                         </RockButton>
                     </div>
+                    <RockButton v-else-if="config.options?.isReassignVisible"
+                                :btnType="BtnType.Default"
+                                :btnSize="BtnSize.Small"
+                                @click="onReassignClick">
+                        <i class="ti ti-arrows-left-right"></i>
+                        Reassign Transactions
+                    </RockButton>
                 </div>
                 <button type="button"
                         class="btn btn-link btn-sm text-muted p-0"
@@ -69,7 +76,7 @@
 
         <TextColumn name="transactionIdKey" field="transactionIdKey" :hideOnScreen="true" />
 
-        <SelectColumn v-if="config.options?.isMoveToBatchVisible && viewMode == ViewMode.Transactions" />
+        <SelectColumn v-if="isMoveToBatchAvailable || config.options?.isReassignVisible" />
         <PersonColumn name="person"
                       title="Name"
                       field="person"
@@ -209,6 +216,9 @@
                        :isAccountFilterVisible="!config.options?.accountConfigured"
                        :isActiveAccountsOnlyFilter="config.options?.isActiveAccountsOnlyFilter ?? false"
                        :isCampusFilterVisible="!config.options?.isPersonContext" />
+
+    <ReassignTransactionsModal v-model="isReassignModalVisible"
+                               @save="onReassignSave" />
 </template>
 
 <style scoped>
@@ -248,9 +258,11 @@
     import { AccountSummary, GridSettingsOptions, NavigationUrlKey, PreferenceKey, ViewMode } from "./TransactionList/types.partial";
     import { toCurrencyOrNull, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import GridSettingsModal from "./TransactionList/gridSettingsModal.partial.obs";
+    import ReassignTransactionsModal from "./TransactionList/reassignTransactionsModal.partial.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const config = useConfigurationValues<ListBlockBox<TransactionListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -291,6 +303,9 @@
     const selectedBatchKey = ref<string>("");
     const isMovingTransactions = ref<boolean>(false);
 
+    // Reassign action state.
+    const isReassignModalVisible = ref<boolean>(false);
+
     // #endregion Values
 
     // #region Computed Values
@@ -318,13 +333,21 @@
     });
 
     /**
-     * Whether the Move to Batch selection toolbar should be shown. Mirrors the WebForms behavior:
-     * only in an editable batch context, in Transactions mode, and when rows are selected.
+     * Whether Move to Batch is available. Mirrors the WebForms behavior: only in an editable batch
+     * context and in Transactions mode (the move control is hidden in Accounts/Details mode).
      */
-    const isMoveToBatchToolbarVisible = computed((): boolean => {
+    const isMoveToBatchAvailable = computed((): boolean => {
         return !!config.options?.isMoveToBatchVisible
-            && viewMode.value === ViewMode.Transactions
-            && hasSelectedRows.value;
+            && viewMode.value === ViewMode.Transactions;
+    });
+
+    /**
+     * Whether the selection action toolbar should be shown. Visible when rows are selected and at
+     * least one selection action (Move to Batch or Reassign) is available for the current context.
+     */
+    const isActionToolbarVisible = computed((): boolean => {
+        return hasSelectedRows.value
+            && (isMoveToBatchAvailable.value || (config.options?.isReassignVisible ?? false));
     });
 
     const hasSettingsFilters = computed((): boolean => {
@@ -609,7 +632,33 @@
     }
 
     /**
-     * Clears the current row selection, which hides the Move to Batch toolbar.
+     * Called when the "Reassign Transactions" action is clicked. Opens the reassign modal for the
+     * currently selected transactions.
+     */
+    function onReassignClick(): void {
+        if (selectedTransactionKeys.value.length === 0) {
+            return;
+        }
+
+        isReassignModalVisible.value = true;
+    }
+
+    /**
+     * Called when the user confirms the reassign modal.
+     *
+     * @param person The person to reassign the selected transactions to.
+     * @param bankAccountAction How the source person's saved bank accounts should be handled ("MOVE", "COPY", or "NONE").
+     */
+    async function onReassignSave(person: ListItemBag, bankAccountAction: string): Promise<void> {
+        isReassignModalVisible.value = false;
+
+        // TODO: invoke the ReassignTransactions block action (server side to be implemented).
+        void person;
+        void bankAccountAction;
+    }
+
+    /**
+     * Clears the current row selection, which hides the selection action toolbar.
      */
     function onClearSelection(): void {
         gridElement.value?.clearSelectedKeys();
