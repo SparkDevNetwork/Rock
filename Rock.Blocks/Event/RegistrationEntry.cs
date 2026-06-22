@@ -1550,6 +1550,11 @@ namespace Rock.Blocks.Event
                     session.SessionStatus = sessionStatus;
                     session.RegistrationCount = nonWaitlistRegistrantCount;
                 },
+                // The registration count above is the registration's full non-wait-list
+                // total, so credit spots it already holds and only require capacity for
+                // any increase. This lets an existing registrant complete payment even
+                // when the registration is full or was pushed over capacity.
+                creditAlreadyReservedSpots: true,
                 out errorMessage );
 
             return registrationSession;
