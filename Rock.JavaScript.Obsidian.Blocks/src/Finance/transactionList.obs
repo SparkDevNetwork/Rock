@@ -120,7 +120,6 @@
         <TextColumn name="summary"
                     title="Comments"
                     field="summary"
-                    width="200px"
                     :filter="textValueFilter" />
         <AttributeColumns :attributes="attributeFields" />
 
@@ -152,7 +151,8 @@
                        v-model:visible="isGridSettingsVisible"
                        :isForeignKeyFilterVisible="config.options?.showForeignKeyColumn ?? false"
                        :isAccountFilterVisible="!config.options?.accountConfigured"
-                       :isActiveAccountsOnlyFilter="config.options?.isActiveAccountsOnlyFilter ?? false" />
+                       :isActiveAccountsOnlyFilter="config.options?.isActiveAccountsOnlyFilter ?? false"
+                       :isCampusFilterVisible="!config.options?.isPersonContext" />
 </template>
 
 <script setup lang="ts">

@@ -84,7 +84,7 @@
                                             :displayStyle="PickerDisplayStyle.Condensed" />
                     </div>
                 </div>
-                <div class="row">
+                <div v-if="isCampusFilterVisible" class="row">
                     <div class="col-md-6">
                         <CampusPicker v-model="campusOfBatch"
                                       :showBlankItem="true"
@@ -93,7 +93,7 @@
                                       :forceVisible="true" />
                     </div>
                 </div>
-                <div class="row">
+                <div v-if="isCampusFilterVisible" class="row">
                     <div class="col-md-6">
                         <CampusPicker v-model="campusOfAccount"
                                       :showBlankItem="true"
@@ -136,11 +136,6 @@
             required: true
         },
 
-        isPersonFilterVisible: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-
         isForeignKeyFilterVisible: {
             type: Boolean as PropType<boolean>,
             default: false
@@ -154,6 +149,11 @@
         isActiveAccountsOnlyFilter: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        isCampusFilterVisible: {
+            type: Boolean as PropType<boolean>,
+            default: true
         }
     });
 
