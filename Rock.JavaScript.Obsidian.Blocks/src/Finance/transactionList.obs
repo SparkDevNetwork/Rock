@@ -232,7 +232,7 @@
 </style>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { AttributeColumns, Column, CurrencyColumn, DateTimeColumn, dateValueFilter, DeleteColumn, numberValueFilter, NumberColumn, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
@@ -255,6 +255,11 @@
     const config = useConfigurationValues<ListBlockBox<TransactionListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const preferences = usePersonPreferences().blockPreferences;
+    const browserBus = useBlockBrowserBus();
+
+    // Browser bus message published when transactions are moved to another batch. Sibling blocks
+    // (e.g. Batch Detail) subscribe to this same string to refresh their batch totals.
+    const transactionsMovedMessage = "finance.transactionList.transactionsMoved";
 
     // #region Values
 
@@ -586,6 +591,10 @@
             });
 
             if (result.isSuccess && result.data) {
+                // Notify sibling blocks (e.g. Batch Detail) so they refresh their batch totals,
+                // matching the WebForms UpdateBlocks behavior without a full page reload.
+                browserBus.publish(transactionsMovedMessage);
+
                 selectedBatchKey.value = "";
                 gridElement.value?.clearSelectedKeys();
                 gridDataSource.value = loadGridData();
