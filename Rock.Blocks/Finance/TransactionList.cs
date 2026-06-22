@@ -575,20 +575,19 @@ namespace Rock.Blocks.Finance
             // The two view modes build rows from different entities: one row per transaction,
             // or one row per transaction detail (account line).
             var qry = CurrentViewMode == ViewMode.Accounts
-                ? GetAccountsModeQueryable( rockContext )
-                : GetTransactionsModeQueryable( rockContext );
+                ? GetAccountsModeQueryable()
+                : GetTransactionsModeQueryable();
 
-            return ApplyFilters( qry, rockContext );
+            return ApplyFilters( qry );
         }
 
         /// <summary>
         /// Builds the rows for "Transactions" view mode (one row per <see cref="FinancialTransaction"/>).
         /// </summary>
-        /// <param name="rockContext">The database context.</param>
         /// <returns>A queryable of transaction rows.</returns>
-        private IQueryable<TransactionListRow> GetTransactionsModeQueryable( RockContext rockContext )
+        private IQueryable<TransactionListRow> GetTransactionsModeQueryable()
         {
-            var qry = new FinancialTransactionService( rockContext ).Queryable().AsNoTracking();
+            var qry = new FinancialTransactionService( RockContext ).Queryable().AsNoTracking();
 
             // Include future-dated transactions only when the block setting opts in; otherwise
             // restrict to rows that have already been posted (TransactionDateTime is set).
@@ -636,7 +635,7 @@ namespace Rock.Blocks.Finance
             else if ( _person != null )
             {
                 // Use GivingId so family members who give together are all included.
-                var personAliasIds = new PersonAliasService( rockContext )
+                var personAliasIds = new PersonAliasService( RockContext )
                     .Queryable()
                     .Where( a => a.Person.GivingId == _person.GivingId )
                     .Select( a => a.Id )
@@ -693,11 +692,10 @@ namespace Rock.Blocks.Finance
         /// <summary>
         /// Builds the rows for "Accounts" view mode (one row per <see cref="FinancialTransactionDetail"/>).
         /// </summary>
-        /// <param name="rockContext">The database context.</param>
         /// <returns>A queryable of transaction detail rows.</returns>
-        private IQueryable<TransactionListRow> GetAccountsModeQueryable( RockContext rockContext )
+        private IQueryable<TransactionListRow> GetAccountsModeQueryable()
         {
-            var qry = new FinancialTransactionDetailService( rockContext ).Queryable().AsNoTracking();
+            var qry = new FinancialTransactionDetailService( RockContext ).Queryable().AsNoTracking();
 
             if ( GetAttributeValue( AttributeKey.ShowFutureTransactions ).AsBoolean() )
             {
@@ -742,7 +740,7 @@ namespace Rock.Blocks.Finance
             }
             else if ( _person != null )
             {
-                var personAliasIds = new PersonAliasService( rockContext )
+                var personAliasIds = new PersonAliasService( RockContext )
                     .Queryable()
                     .Where( a => a.Person.GivingId == _person.GivingId )
                     .Select( a => a.Id )
@@ -802,9 +800,8 @@ namespace Rock.Blocks.Finance
         /// blank preferences are treated as "no filter" for that criterion.
         /// </summary>
         /// <param name="query">The row queryable to filter.</param>
-        /// <param name="rockContext">The database context used to resolve person alias ids.</param>
         /// <returns>The filtered queryable.</returns>
-        private IQueryable<TransactionListRow> ApplyFilters( IQueryable<TransactionListRow> query, RockContext rockContext )
+        private IQueryable<TransactionListRow> ApplyFilters( IQueryable<TransactionListRow> query )
         {
             // Block-level attribute filters — admin-configured, applied to all results regardless of user preferences.
             var transactionTypeIds = GetAttributeValue( AttributeKey.TransactionTypes )
@@ -919,7 +916,7 @@ namespace Rock.Blocks.Finance
             var personAliasGuid = FilterPerson.AsGuidOrNull();
             if ( personAliasGuid.HasValue )
             {
-                var personAliasService = new PersonAliasService( rockContext );
+                var personAliasService = new PersonAliasService( RockContext );
                 var personId = personAliasService.Queryable()
                     .Where( a => a.Guid == personAliasGuid.Value )
                     .Select( a => ( int? ) a.PersonId )
@@ -1186,7 +1183,142 @@ namespace Rock.Blocks.Finance
             return ActionOk();
         }
 
-        // TODO Step 5: Delete, Reassign, and MoveToBatch block actions (with their request bags).
+        /// <summary>
+        /// Deletes a row from the grid. In Transactions mode the row is a <see cref="FinancialTransaction"/>;
+        /// in Accounts mode it is a <see cref="FinancialTransactionDetail"/>. Mirrors the WebForms guards:
+        /// rows belonging to a closed or automated batch cannot be deleted.
+        /// </summary>
+        /// <param name="key">The IdKey of the row to delete.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult Delete( string key )
+        {
+            if ( !CanEdit )
+            {
+                return ActionBadRequest( $"Not authorized to delete {FinancialTransaction.FriendlyTypeName}." );
+            }
+
+            var allowIntegerId = !PageCache.Layout.Site.DisablePredictableIds;
+
+            // In Accounts mode each row is a transaction detail; otherwise it is a whole transaction.
+            if ( CurrentViewMode == ViewMode.Accounts )
+            {
+                return DeleteTransactionDetail( key, allowIntegerId );
+            }
+
+            return DeleteTransaction( key, allowIntegerId );
+        }
+
+        /// <summary>
+        /// Deletes a <see cref="FinancialTransaction"/> by IdKey, recording the change in the batch's history.
+        /// </summary>
+        /// <param name="key">The IdKey of the transaction to delete.</param>
+        /// <param name="allowIntegerId">Whether integer Ids are permitted in addition to IdKeys.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        private BlockActionResult DeleteTransaction( string key, bool allowIntegerId )
+        {
+            var transactionService = new FinancialTransactionService( RockContext );
+            var transaction = transactionService.Get( key, allowIntegerId );
+
+            if ( transaction == null )
+            {
+                return ActionBadRequest( $"{FinancialTransaction.FriendlyTypeName} not found." );
+            }
+
+            if ( !transactionService.CanDelete( transaction, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            var batchRestriction = GetBatchDeleteRestriction( transaction.Batch );
+            if ( batchRestriction != null )
+            {
+                return ActionBadRequest( batchRestriction );
+            }
+
+            // Record the deletion in the batch's history, mirroring the WebForms behavior.
+            if ( transaction.BatchId.HasValue )
+            {
+                var caption = transaction.AuthorizedPersonAlias?.Person != null
+                    ? transaction.AuthorizedPersonAlias.Person.FullName
+                    : $"Transaction: {transaction.Id}";
+
+                var changes = new History.HistoryChangeList();
+                changes.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" );
+
+                HistoryService.SaveChanges(
+                    RockContext,
+                    typeof( FinancialBatch ),
+                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                    transaction.BatchId.Value,
+                    changes,
+                    caption,
+                    typeof( FinancialTransaction ),
+                    transaction.Id,
+                    false );
+            }
+
+            transactionService.Delete( transaction );
+            RockContext.SaveChanges();
+
+            return ActionOk();
+        }
+
+        /// <summary>
+        /// Deletes a <see cref="FinancialTransactionDetail"/> by IdKey (Accounts view mode).
+        /// </summary>
+        /// <param name="key">The IdKey of the transaction detail to delete.</param>
+        /// <param name="allowIntegerId">Whether integer Ids are permitted in addition to IdKeys.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        private BlockActionResult DeleteTransactionDetail( string key, bool allowIntegerId )
+        {
+            var detailService = new FinancialTransactionDetailService( RockContext );
+            var transactionDetail = detailService.Get( key, allowIntegerId );
+
+            if ( transactionDetail == null )
+            {
+                return ActionBadRequest( $"{FinancialTransactionDetail.FriendlyTypeName} not found." );
+            }
+
+            var batchRestriction = GetBatchDeleteRestriction( transactionDetail.Transaction?.Batch );
+            if ( batchRestriction != null )
+            {
+                return ActionBadRequest( batchRestriction );
+            }
+
+            detailService.Delete( transactionDetail );
+            RockContext.SaveChanges();
+
+            return ActionOk();
+        }
+
+        /// <summary>
+        /// Returns an error message when the given batch prevents deletion (it is closed or automated),
+        /// or <c>null</c> when deletion is allowed.
+        /// </summary>
+        /// <param name="batch">The batch the transaction belongs to, if any.</param>
+        /// <returns>The restriction message, or <c>null</c> when there is no restriction.</returns>
+        private string GetBatchDeleteRestriction( FinancialBatch batch )
+        {
+            if ( batch == null )
+            {
+                return null;
+            }
+
+            if ( batch.Status == BatchStatus.Closed )
+            {
+                return $"This {FinancialTransaction.FriendlyTypeName} is assigned to a closed {FinancialBatch.FriendlyTypeName} and cannot be deleted.";
+            }
+
+            if ( batch.IsAutomated )
+            {
+                return $"This {FinancialTransaction.FriendlyTypeName} is assigned to an automated {FinancialBatch.FriendlyTypeName} and cannot be deleted.";
+            }
+
+            return null;
+        }
+
+        // TODO Step 5: Reassign and MoveToBatch block actions (with their request bags).
 
         #endregion Block Actions
 

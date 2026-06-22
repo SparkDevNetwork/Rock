@@ -10,6 +10,7 @@
           liveUpdates
           :gridSettings="config.options?.areFiltersVisible ?? false"
           :gridSettingsActive="hasSettingsFilters"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @gridSettingsClick="isGridSettingsVisible = true"
           @filteredRowsChanged="onFilteredRowsChanged"
           @selectItem="onSelectItem">
@@ -146,6 +147,8 @@
                     :hideOnScreen="true"
                     :filter="textValueFilter" />
 
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+
         <template #gridFooterAppend v-if="config.options?.showAccountSummary">
             <div class="d-flex justify-content-end">
                 <div class="col-sm-12 col-md-5 pt-3 pb-3">
@@ -184,7 +187,8 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, Column, CurrencyColumn, DateTimeColumn, dateValueFilter, numberValueFilter, NumberColumn, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, Column, CurrencyColumn, DateTimeColumn, dateValueFilter, DeleteColumn, numberValueFilter, NumberColumn, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
     import { GridAction, IGridState } from "@Obsidian/Types/Controls/grid";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
@@ -443,6 +447,41 @@
         const transactionKey = (row?.["transactionIdKey"] as string | undefined) ?? key;
 
         window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", transactionKey);
+    }
+
+    /**
+     * Called when the Add button is clicked. Navigates to the detail page to create a new
+     * transaction. The batch context is already baked into the detail page URL.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+     * Called when a row's delete button is clicked. Deletes the transaction (Transactions mode) or
+     * transaction detail (Accounts mode); the server enforces the closed/automated batch guards.
+     *
+     * @param key The idKey of the row to delete.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", { key });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows.splice(index, 1);
+                }
+            }
+
+            loadGridData();
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete the transaction.");
+        }
     }
 
     /**
