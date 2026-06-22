@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,7 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Enums.Event;
 using Rock.Model;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
 
 namespace Rock.Tests.Integration.Core.Model
 {
