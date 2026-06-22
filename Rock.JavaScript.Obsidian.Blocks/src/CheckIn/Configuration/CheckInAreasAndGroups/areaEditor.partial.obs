@@ -41,6 +41,7 @@
                     <ContentStack>
                         <DropDownList v-model="inheritedGroupTypeGuid"
                                       label="Inherit Check-in Setup Type From"
+                                      help='Choose how you want to configure groups in this area. For example, selecting "Check in by Grade" enables grade-specific options when setting up groups.'
                                       :items="inheritedGroupTypeOptions ?? []"
                                       :showBlankItem="true" />
 
@@ -52,7 +53,7 @@
 
                         <RadioButtonList v-model="attendanceRule"
                                          label="Group Membership Requirement"
-                                         help='The rule that decides what happens when someone tries to check in to a group of this type.  If "None" is selected, the individual will not be added to group and is not required to belong to group.  If "Add On Check In" is selected, the individual will be added to group if they do not already belong.  If "Already Enrolled in Group" is selected, the individual must already be a member of the group to check in.'
+                                         help="Defines if a person must already belong to the group to check in, or if they will be auto-added at check-in."
                                          :items="attendanceRuleOptions" />
 
                         <ConditionalWell v-if="attendanceRule === alreadyEnrolledRuleValue">

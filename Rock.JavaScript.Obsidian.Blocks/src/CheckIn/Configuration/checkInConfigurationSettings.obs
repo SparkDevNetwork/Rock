@@ -7,13 +7,14 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
+                 entityTypeName="Check-in Configuration"
                  :entityKey="entityKey"
                  :isAuditHidden="false"
                  :isBadgesVisible="false"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
-                 :isSecurityHidden="false"
+                 :isSecurityHidden="true"
                  :showExperienceMode="true"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
@@ -195,15 +196,8 @@
             box: checkInConfigurationEditBag.value
         });
 
-        if (result.isSuccess && result.data) {
-            if (result.statusCode === 200 && typeof result.data === "object") {
-                checkInConfigurationViewBag.value = result.data.bag;
-
-                return true;
-            }
-            else if (result.statusCode === 201 && typeof result.data === "string") {
-                return result.data;
-            }
+        if (result.isSuccess && typeof result.data === "string") {
+            return result.data;
         }
 
         errorMessage.value = result.errorMessage ?? "Unknown error while trying to save check-in configuration.";

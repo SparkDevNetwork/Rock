@@ -566,8 +566,6 @@ namespace Rock.Blocks.CheckIn.Configuration
         [BlockAction]
         public BlockActionResult Save( ValidPropertiesBox<CheckInConfigurationSettingsBag> box )
         {
-            var entityService = new GroupTypeService( RockContext );
-
             if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
                 return actionError;
@@ -608,23 +606,10 @@ namespace Rock.Blocks.CheckIn.Configuration
 
             if ( isNew )
             {
-                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                {
-                    [PageParameterKey.CheckInConfiguration] = entity.IdKey
-                } ) );
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl() );
             }
 
-            // Ensure navigation properties will work now.
-            entity = entityService.Get( entity.Id );
-            entity.LoadAttributes( RockContext );
-
-            var bag = GetEntityBagForView( entity );
-
-            return ActionOk( new ValidPropertiesBox<CheckInConfigurationSettingsBag>
-            {
-                Bag = bag,
-                ValidProperties = GetValidProperties( bag )
-            } );
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>
@@ -658,15 +643,7 @@ namespace Rock.Blocks.CheckIn.Configuration
 
             RefreshConnectedKiosks();
 
-            var pageRef = new Rock.Web.PageReference( PageCache.Id );
-            var routeId = PageCache.PageRoutes.FirstOrDefault()?.Id;
-
-            if ( routeId.HasValue )
-            {
-                pageRef.RouteId = routeId.Value;
-            }
-
-            return ActionOk( pageRef.BuildUrl() );
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         #endregion Block Actions

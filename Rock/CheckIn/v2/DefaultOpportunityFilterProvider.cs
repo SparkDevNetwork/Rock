@@ -180,8 +180,8 @@ namespace Rock.CheckIn.v2
         {
             // Skip the ability level selection if:
             // The configuration tells us to never ask.
-            // If we only ask if they have no ability level but they already do
-            // If we only ask if they have an ability level but they don't have one
+            // We only ask when they already have a level, but this person has none.
+            // We only ask when they have no level, but this person already has one.
             // If no groups require ability level for check-in.
             var skipAbilityLevels =
                 Session.TemplateConfiguration.AbilityLevelDetermination == AbilityLevelDeterminationMode.DoNotAsk

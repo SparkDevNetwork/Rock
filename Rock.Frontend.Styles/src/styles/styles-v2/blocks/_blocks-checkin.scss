@@ -344,6 +344,17 @@
     margin-top: var(--spacing-large);
 }
 
+/* Columns have no title, so the grid omits its header row and the core grid's
+   header-less corner rounding skips the first data row. Round its outer top
+   corner cells to match the rounded panel. */
+.area-group-locations-grid .grid-row:first-child .grid-cell:first-child {
+    border-top-left-radius: var(--rounded-medium);
+}
+
+.area-group-locations-grid .grid-row:first-child .grid-cell:last-child {
+    border-top-right-radius: var(--rounded-medium);
+}
+
 // ====================== END CHECKIN AREAS AND GROUPS ======================
 
 // ======================== CHECKIN SCHEDULE BUILDER ========================
