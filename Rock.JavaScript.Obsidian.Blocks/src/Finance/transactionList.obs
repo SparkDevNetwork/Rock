@@ -11,6 +11,7 @@
           :gridSettings="config.options?.areFiltersVisible ?? false"
           :gridSettingsActive="hasSettingsFilters"
           @gridSettingsClick="isGridSettingsVisible = true"
+          @filteredRowsChanged="onFilteredRowsChanged"
           @selectItem="onSelectItem">
 
         <template #gridHeaderBadges>
@@ -184,7 +185,7 @@
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { AttributeColumns, Column, CurrencyColumn, DateTimeColumn, dateValueFilter, numberValueFilter, NumberColumn, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
-    import { GridAction } from "@Obsidian/Types/Controls/grid";
+    import { GridAction, IGridState } from "@Obsidian/Types/Controls/grid";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
@@ -222,6 +223,7 @@
     // Per-account totals shown in the "Total Results" summary panel, and their grand total.
     const accountSummaries = ref<AccountSummary[]>([]);
     const summaryTotal = ref<number>(0);
+    const isAccountSummaryFiltered = ref<boolean>(false);
 
     // #endregion Values
 
@@ -357,7 +359,6 @@
      */
     function calculateAccountSummary(rows: Record<string, unknown>[]): void {
         const summaries = new Map<string, AccountSummary>();
-        let total = 0;
 
         for (const row of rows) {
             const accounts = (row["accounts"] as Array<{ name: string; amount: number }>) ?? [];
@@ -371,12 +372,27 @@
                 }
 
                 summary.amount += account.amount;
-                total += account.amount;
             }
         }
 
-        accountSummaries.value = [...summaries.values()];
-        summaryTotal.value = total;
+        let entries = [...summaries.values()];
+
+        /*
+            If filtered to a specific account, and in transaction mode, transactions
+            with contributions to other accounts will still be included but our total
+            summary will not account for those contributions.
+        */
+        const filteredAccountName = !config.options?.accountConfigured
+            ? gridSettings.value.account?.text
+            : undefined;
+
+        if (filteredAccountName) {
+            entries = entries.filter(entry => entry.name === filteredAccountName);
+        }
+
+        accountSummaries.value = entries;
+        summaryTotal.value = entries.reduce((sum, entry) => sum + entry.amount, 0);
+        isAccountSummaryFiltered.value = !!filteredAccountName;
     }
 
     /**
@@ -488,6 +504,18 @@
 
         if (totalWidth > maxImageWidth.value) {
             maxImageWidth.value = totalWidth;
+        }
+    }
+
+    /**
+     * Recomputes the account summary whenever the grid's column value filters change so the
+     * "Total Results" panel reflects only the rows currently visible in the grid.
+     *
+     * @param state The current grid state, including the rows that pass the active column filters.
+     */
+    function onFilteredRowsChanged(state: IGridState): void {
+        if (config.options?.showAccountSummary) {
+            calculateAccountSummary(state.filteredRows as Record<string, unknown>[]);
         }
     }
 
