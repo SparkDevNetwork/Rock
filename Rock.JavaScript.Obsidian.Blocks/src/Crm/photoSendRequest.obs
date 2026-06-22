@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Panel title="Select Criteria" titleIconCssClass="ti ti-list">
+    <Panel title="Select Criteria">
         <NotificationBox v-if="errorMessage" :alertType="AlertType.Danger">
             {{ errorMessage }}
         </NotificationBox>

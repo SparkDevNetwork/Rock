@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Panel title="Preferences" titleIconCssClass="ti ti-user">
+    <Panel title="Preferences">
         <NotificationBox v-if="config.errorMessage" alertType="danger">
             {{ config.errorMessage }}
         </NotificationBox>
