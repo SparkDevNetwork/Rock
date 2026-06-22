@@ -145,6 +145,25 @@
                     :hideOnScreen="true"
                     :filter="textValueFilter" />
 
+        <template #gridFooterAppend v-if="config.options?.showAccountSummary">
+            <div class="d-flex justify-content-end">
+                <div class="col-sm-12 col-md-5 pt-3 pb-3">
+                    <ContentSection title="Total Results" disableCollapse>
+                        <div class="account-summary">
+                            <div v-for="account in accountSummaries" :key="account.name" class="d-flex justify-content-between">
+                                <p class="text-muted">{{ account.name }}</p>
+                                <p class="text-right">{{ toCurrencyOrNull(account.amount, config.options?.currencyInfo) }}</p>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between text-bold">
+                            <span>Total:</span>
+                            <span class="text-right">{{ toCurrencyOrNull(summaryTotal, config.options?.currencyInfo) }}</span>
+                        </div>
+                    </ContentSection>
+                </div>
+            </div>
+        </template>
+
     </Grid>
 
     <GridSettingsModal v-model="gridSettings"
@@ -154,6 +173,12 @@
                        :isActiveAccountsOnlyFilter="config.options?.isActiveAccountsOnlyFilter ?? false"
                        :isCampusFilterVisible="!config.options?.isPersonContext" />
 </template>
+
+<style scoped>
+.account-summary {
+    border-bottom: 1px var(--color-interface-soft) solid;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
@@ -168,9 +193,10 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
     import { computed, reactive, ref, watch } from "vue";
-    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey, ViewMode } from "./TransactionList/types.partial";
+    import { AccountSummary, GridSettingsOptions, NavigationUrlKey, PreferenceKey, ViewMode } from "./TransactionList/types.partial";
     import { toCurrencyOrNull, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import GridSettingsModal from "./TransactionList/gridSettingsModal.partial.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<TransactionListOptionsBag>>();
@@ -192,6 +218,10 @@
 
     const isGridSettingsVisible = ref(false);
     const gridSettings = ref<GridSettingsOptions>(loadGridSettingsFromPreferences(viewMode.value));
+
+    // Per-account totals shown in the "Total Results" summary panel, and their grand total.
+    const accountSummaries = ref<AccountSummary[]>([]);
+    const summaryTotal = ref<number>(0);
 
     // #endregion Values
 
@@ -285,6 +315,11 @@
             gridData = reactive(result.data);
             // Reset the measured width so a new data set re-fits the column to its own images.
             maxImageWidth.value = 0;
+
+            if (config.options?.showAccountSummary) {
+                calculateAccountSummary(gridData.rows ?? []);
+            }
+
             return gridData;
         }
         else {
@@ -310,6 +345,38 @@
         const style = getComputedStyle(cell);
 
         return parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+    }
+
+    /**
+     * Builds the per-account totals for the "Total Results" summary panel from the full result
+     * set. Each row's accounts entries are summed by account name, mirroring the WebForms summary
+     * which totals every transaction detail (not just the current grid page). Accounts are kept in
+     * first-seen order, which follows the account display order produced by the server query.
+     *
+     * @param rows The full set of rows returned for the current filters and view mode.
+     */
+    function calculateAccountSummary(rows: Record<string, unknown>[]): void {
+        const summaries = new Map<string, AccountSummary>();
+        let total = 0;
+
+        for (const row of rows) {
+            const accounts = (row["accounts"] as Array<{ name: string; amount: number }>) ?? [];
+
+            for (const account of accounts) {
+                let summary = summaries.get(account.name);
+
+                if (!summary) {
+                    summary = { name: account.name, amount: 0 };
+                    summaries.set(account.name, summary);
+                }
+
+                summary.amount += account.amount;
+                total += account.amount;
+            }
+        }
+
+        accountSummaries.value = [...summaries.values()];
+        summaryTotal.value = total;
     }
 
     /**

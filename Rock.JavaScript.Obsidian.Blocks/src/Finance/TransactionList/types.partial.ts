@@ -46,6 +46,11 @@ export const PreferenceKey = {
     FilterPerson: "filter-person",
 } as const;
 
+export type AccountSummary = {
+    name: string;
+    amount: number;
+};
+
 export type GridSettingsOptions = {
     dateRangeLower?: string | null;
     dateRangeUpper?: string | null;
