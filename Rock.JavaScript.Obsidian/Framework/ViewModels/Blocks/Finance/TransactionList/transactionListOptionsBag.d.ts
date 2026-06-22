@@ -42,6 +42,13 @@ export type TransactionListOptionsBag = {
     /** Gets or sets the height, in pixels, of the transaction image when the image column is shown. */
     imageHeight: number;
 
+    /**
+     * Gets or sets a value indicating whether the account filter picker is restricted to
+     * active accounts only. When true, the picker hides inactive accounts and removes the
+     * "Show Inactive" toggle, preventing the user from filtering by retired accounts.
+     */
+    isActiveAccountsOnlyFilter: boolean;
+
     /** Gets or sets a value indicating whether the block is in a Financial Batch context. */
     isBatchContext: boolean;
 

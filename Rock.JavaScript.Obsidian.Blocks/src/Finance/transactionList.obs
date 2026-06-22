@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Grid :definition="config.gridDefinition ?? undefined"
+          :title="config.options?.title ?? ''"
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Transaction"
@@ -41,7 +42,7 @@
                       :filter="pickExistingValueFilter"
                       :filterValue="getPersonNameFilterValue"
                       :quickFilterValue="getPersonNameFilterValue" />
-        <DateTimeColumn name="transactionDateTime" title="Date" field="transactionDateTime" :showSeconds="true" :filter="dateValueFilter" />
+        <DateTimeColumn name="transactionDateTime" title="Date" field="transactionDateTime" :showSeconds="true" :filter="dateValueFilter" width="200px" />
 
         <Column name="daysSinceLastTransaction"
                 title="Last Transaction"
@@ -61,11 +62,13 @@
         <CurrencyColumn name="totalAmount"
                         title="Amount"
                         field="totalAmount"
-                        :filter="numberValueFilter" />
+                        :filter="numberValueFilter"
+                        width="200px" />
         <TextColumn name="foreignCurrency"
                     v-if="config?.options?.isForeignCurrencyEnabled"
                     title="Foreign Currency"
                     field="foreignCurrency"
+                    width="150px"
                     :filter="textValueFilter" />
         <TextColumn name="currencyType"
                     title="Currency Type"
@@ -87,7 +90,8 @@
         <Column name="batchId"
                 title="Batch Id"
                 field="batchId"
-                :filter="numberValueFilter">
+                :filter="numberValueFilter"
+                v-if="!config.options?.isBatchContext">
             <template #format="{ row }">
                 <a v-if="config.navigationUrls?.[NavigationUrlKey.BatchPage] && row.batchId"
                    :href="config.navigationUrls[NavigationUrlKey.BatchPage].replace('((Key))', String(row.batchId))">{{ row.batchId }}</a>
@@ -103,7 +107,7 @@
                 :filter="pickExistingValueFilter"
                 :filterValue="getRowAccountsFilterValue"
                 :quickFilterValue="getRowAccountsFilterValue"
-                width="150px">
+                width="200px">
             <template #format="{ row }">
                 <div class="text-sm">
                     <div v-for="account in row.accounts">
@@ -147,7 +151,8 @@
     <GridSettingsModal v-model="gridSettings"
                        v-model:visible="isGridSettingsVisible"
                        :isForeignKeyFilterVisible="config.options?.showForeignKeyColumn ?? false"
-                       :isAccountFilterVisible="!config.options?.accountConfigured" />
+                       :isAccountFilterVisible="!config.options?.accountConfigured"
+                       :isActiveAccountsOnlyFilter="config.options?.isActiveAccountsOnlyFilter ?? false" />
 </template>
 
 <script setup lang="ts">

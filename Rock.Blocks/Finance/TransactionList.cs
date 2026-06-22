@@ -459,6 +459,7 @@ namespace Rock.Blocks.Finance
                 ImageHeight = GetAttributeValue( AttributeKey.ImageHeight ).AsIntegerOrNull() ?? 200,
                 ShowAccountSummary = GetAttributeValue( AttributeKey.ShowAccountSummary ).AsBoolean(),
                 AccountConfigured = GetAttributeValue( AttributeKey.Accounts ).HasValue(),
+                IsActiveAccountsOnlyFilter = GetAttributeValue( AttributeKey.ActiveAccountsOnlyFilter ).AsBoolean(),
                 ShowForeignKeyColumn = GetAttributeValue( AttributeKey.ShowForeignKey ).AsBoolean(),
                 IsForeignCurrencyEnabled = GetAttributeValue( AttributeKey.EnableForeignCurrency ).AsBoolean(),
                 ShowDaysSinceLastTransaction = GetAttributeValue( AttributeKey.ShowDaysSinceLastTransaction ).AsBoolean(),

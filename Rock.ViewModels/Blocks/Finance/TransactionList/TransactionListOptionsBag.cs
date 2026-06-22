@@ -81,6 +81,13 @@ namespace Rock.ViewModels.Blocks.Finance.TransactionList
         public bool ShowForeignKeyColumn { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the account filter picker is restricted to
+        /// active accounts only. When true, the picker hides inactive accounts and removes the
+        /// "Show Inactive" toggle, preventing the user from filtering by retired accounts.
+        /// </summary>
+        public bool IsActiveAccountsOnlyFilter { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the foreign currency column is shown.
         /// </summary>
         public bool IsForeignCurrencyEnabled { get; set; }

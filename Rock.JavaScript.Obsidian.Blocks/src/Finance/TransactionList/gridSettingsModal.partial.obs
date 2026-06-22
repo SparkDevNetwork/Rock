@@ -71,7 +71,8 @@
                 <div class="row">
                     <div v-if="isAccountFilterVisible" class="col-md-6">
                         <AccountPicker v-model="account"
-                                       label="Account" />
+                                       label="Account"
+                                       :activeOnly="isActiveAccountsOnlyFilter" />
                     </div>
                 </div>
                 <div class="row">
@@ -148,6 +149,11 @@
         isAccountFilterVisible: {
             type: Boolean as PropType<boolean>,
             default: true
+        },
+
+        isActiveAccountsOnlyFilter: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
