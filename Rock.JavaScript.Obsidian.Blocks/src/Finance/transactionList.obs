@@ -167,7 +167,13 @@
 
         <Column name="image" title="Image" field="image" v-if="showImages" :width="imageColumnWidth">
             <template #format="{ row }">
-                <img v-if="row.image" :src="row.image" :max-height="`${imageHeight}px`" width="auto" @load="onImageLoad" />
+                <img v-if="row.image"
+                     :src="row.image"
+                     :max-height="`${imageHeight}px`"
+                     width="auto"
+                     class="cursor-pointer"
+                     @load="onImageLoad"
+                     @click.stop.prevent="openImage(String(row.image))" />
             </template>
         </Column>
 
@@ -219,6 +225,14 @@
 
     <ReassignTransactionsModal v-model="isReassignModalVisible"
                                @save="onReassignSave" />
+
+    <transition name="img-zoom">
+        <div v-if="zoomedImage"
+             class="image-zoom-overlay"
+             @click="closeImage">
+            <img :src="zoomedImage" />
+        </div>
+    </transition>
 </template>
 
 <style scoped>
@@ -285,6 +299,9 @@
     // The widest rendered image measured so far, in pixels. The column grows to fit the widest
     // image as each one loads. Reset whenever the grid data reloads.
     const maxImageWidth = ref<number>(0);
+
+    // The image URL currently shown in the full-screen zoom overlay, or null when closed.
+    const zoomedImage = ref<string | null>(null);
 
     const isGridSettingsVisible = ref(false);
     const gridSettings = ref<GridSettingsOptions>(loadGridSettingsFromPreferences(viewMode.value));
@@ -734,6 +751,20 @@
         if (totalWidth > maxImageWidth.value) {
             maxImageWidth.value = totalWidth;
         }
+    }
+
+    /**
+     * Opens the full-screen image zoom overlay for the given image URL.
+     *
+     * @param image The URL of the image to zoom into.
+     */
+    function openImage(image: string): void {
+        zoomedImage.value = image;
+    }
+
+    /** Closes the full-screen image zoom overlay. */
+    function closeImage(): void {
+        zoomedImage.value = null;
     }
 
     /**
