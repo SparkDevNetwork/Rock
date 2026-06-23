@@ -207,7 +207,17 @@ public partial class PersonSessionService
     /// <param name="isPersistent">Whether the session was created from a "remember me" login.</param>
     /// <param name="mfaRecency">When supplied, the moment the MFA event occurred. Pass <c>null</c> to leave the MFA timestamp null.</param>
     /// <returns>A populated, unsaved <see cref="PersonSession"/>. The caller is responsible for adding it to the context and saving.</returns>
-    internal PersonSession StartComponentSession( RockRequestContext requestContext, int personAliasId, int userLoginId, int authComponentEntityTypeId, bool isPersistent, DateTime? mfaRecency = null )
+    /// <remarks>
+    /// This method is intended to be <c>internal</c>. It is exposed as
+    /// <c>public</c> solely so the WebForms <c>AttendanceSelfEntry</c> block in
+    /// RockWeb can call it — RockWeb's runtime-generated assembly name cannot be
+    /// granted <c>InternalsVisibleTo</c>. It should be reverted to
+    /// <c>internal</c> once that block is converted to Obsidian. The
+    /// <c>[RockInternal]</c> attribute keeps it out of the documented public API
+    /// surface in the meantime.
+    /// </remarks>
+    [RockInternal( "20.0", keepInternalForever: true )]
+    public PersonSession StartComponentSession( RockRequestContext requestContext, int personAliasId, int userLoginId, int authComponentEntityTypeId, bool isPersistent, DateTime? mfaRecency = null )
     {
         var session = PopulateNewSession( requestContext, personAliasId, PersonSessionCreationSource.Component );
 
@@ -1357,6 +1367,57 @@ public partial class PersonSessionService
         }
 
         return session;
+    }
+
+    /// <summary>
+    /// Signs the current request out of its <see cref="PersonSession"/>. Marks
+    /// the session inactive, clears the <c>.ROCK</c> cookie, and detaches the
+    /// session from <paramref name="requestContext"/> so the remainder of this
+    /// request observes the anonymous state without re-resolving from the
+    /// cookie. The post-condition "this request is anonymous" holds whether or
+    /// not a session was attached.
+    /// </summary>
+    /// <remarks>
+    /// This is the single seam every logout path migrates onto. It deliberately
+    /// does NOT regenerate the browser-session identifier — that stays the
+    /// caller's responsibility (mirroring <c>Logout.cs</c>, which calls
+    /// <c>RequestContext.RegenerateBrowserSessionId()</c> after sign-out), so a
+    /// "re-login expected, keep the trail" caller (e.g. an MFA bounce-out) can
+    /// opt out of regeneration while an explicit logout opts in.
+    /// </remarks>
+    /// <param name="requestContext">The current <see cref="RockRequestContext"/>.</param>
+    [RockInternal( "20.0", keepInternalForever: true )]
+    public void SignOut( RockRequestContext requestContext )
+    {
+        if ( requestContext == null )
+        {
+            throw new ArgumentNullException( nameof( requestContext ) );
+        }
+
+        var currentSession = requestContext.PersonSession;
+        if ( currentSession == null )
+        {
+            // Already anonymous; nothing to sign out.
+            return;
+        }
+
+        // Reload the session on this service's RockContext so the IsActive
+        // flip + SaveHook run against a tracked entity (the context-attached
+        // instance may have been resolved on a different, possibly disposed,
+        // context). Mirrors the reload pattern in EndImpersonationAndRestore.
+        var trackedSession = Get( currentSession.Guid );
+        if ( trackedSession != null )
+        {
+            // SaveHook stamps InactiveDateTime when IsActive flips false.
+            trackedSession.IsActive = false;
+            ( Context as RockContext ).SaveChanges();
+        }
+
+        ExpireAuthCookie( requestContext );
+
+        // Detach so downstream code in the same request observes the anonymous
+        // state without re-resolving from the (now-expired) cookie.
+        requestContext.SetPersonSession( null );
     }
 
     /// <summary>

@@ -200,9 +200,6 @@ namespace RockWeb
 
                 BundleConfig.RegisterBundles( BundleTable.Bundles );
 
-                // mark any user login stored as 'IsOnline' in the database as offline
-                MarkOnlineUsersOffline();
-
                 SqlServerTypes.Utilities.LoadNativeAssemblies( Server.MapPath( "~" ) );
 
                 RockApplicationStartupHelper.ShowDebugTimingMessage( "Register Types" );
@@ -555,26 +552,10 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Session_End( object sender, EventArgs e )
         {
-            try
-            {
-                // mark user offline
-                if ( this.Session["RockUserId"] != null )
-                {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        var userLoginService = new UserLoginService( rockContext );
-
-                        var user = userLoginService.Get( int.Parse( this.Session["RockUserId"].ToString() ) );
-                        user.IsOnLine = false;
-
-                        rockContext.SaveChanges();
-                    }
-                }
-            }
-            catch
-            {
-                // ignore exception
-            }
+            // Online state is no longer tracked on UserLogin; it is derived
+            // from PersonSession. The session-end offline-flag write was removed
+            // with the PersonSession migration. The handler shell is retained
+            // for any future Session_End work.
         }
 
         /// <summary>
@@ -942,9 +923,6 @@ namespace RockWeb
                 // Process the transaction queue
                 DrainTransactionQueue();
 
-                // Mark any user login stored as 'IsOnline' in the database as offline
-                MarkOnlineUsersOffline();
-
                 // Auto-restart appdomain restarts (triggered by web.config changes, new dlls in the bin folder, etc.)
                 // These types of restarts don't cause the worker process to restart, but they do cause ASP.NET to unload
                 // the current AppDomain and start up a new one. This will launch a web request which will auto-start Rock
@@ -989,24 +967,6 @@ namespace RockWeb
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, null );
-            }
-        }
-
-        /// <summary>
-        /// Adds the call back.
-        /// </summary>
-        private void MarkOnlineUsersOffline()
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var userLoginService = new UserLoginService( rockContext );
-
-                foreach ( var user in userLoginService.Queryable().Where( u => u.IsOnLine == true ) )
-                {
-                    user.IsOnLine = false;
-                }
-
-                rockContext.SaveChanges();
             }
         }
 

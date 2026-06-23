@@ -594,13 +594,28 @@ namespace Rock.Blocks.Security
 #if REVIEW_WEBFORMS
             // 2FA: An individual is authenticated after registering for a new person
             // or an existing person with a user confirmed account
-            // or a brand new account. Mark the auth ticket as two-factor authenticated.
-            Authorization.SetAuthCookie(
-                userLogin.UserName,
-                isPersisted: true,
-                isImpersonated: false,
-                isTwoFactorAuthenticated: true,
-                TimeSpan.FromMinutes( securitySettings.PasswordlessSignInSessionDuration ) );
+            // or a brand new account. The account-entry flow satisfies the second
+            // factor, so the session is stamped with MFA recency to avoid
+            // re-prompting.
+            var personAliasId = userLogin.Person?.PrimaryAliasId
+                ?? new UserLoginService( RockContext ).GetInclude( userLogin.Id, u => u.Person )?.Person?.PrimaryAliasId
+                ?? throw new InvalidOperationException( $"UserLogin {userLogin.Id} has no associated PersonAlias; cannot start session." );
+
+            var personSessionService = new PersonSessionService( RockContext );
+            var session = personSessionService.StartComponentSession(
+                RequestContext,
+                personAliasId,
+                userLogin.Id,
+                userLogin.EntityTypeId.Value,
+                isPersistent: true,
+                mfaRecency: RockDateTime.Now );
+
+            session.ExpiresDateTime = RockDateTime.Now.Add( TimeSpan.FromMinutes( securitySettings.PasswordlessSignInSessionDuration ) );
+
+            personSessionService.Add( session );
+            RockContext.SaveChanges();
+
+            personSessionService.SetAuthCookie( session, RequestContext );
 #else
             throw new NotImplementedException();
 #endif

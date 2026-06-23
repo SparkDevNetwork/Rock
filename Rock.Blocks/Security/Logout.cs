@@ -20,7 +20,6 @@ using System.ComponentModel;
 
 using Rock.Attribute;
 using Rock.Security;
-using Rock.Tasks;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Security.Logout;
 using Rock.Web.UI.Controls;
@@ -104,19 +103,6 @@ namespace Rock.Blocks.Security
 
             if ( currentPerson != null )
             {
-                if ( RequestContext.CurrentUser != null )
-                {
-#pragma warning disable 618 // UpdateUserLastActivity is obsolete; the writer is retained during the dual-reader window. See Phase 15 of the PersonSession spec.
-                    var updateUserLastActivityMsg = new UpdateUserLastActivity.Message
-                    {
-                        UserId = RequestContext.CurrentUser.Id,
-                        LastActivityDate = RockDateTime.Now,
-                        IsOnline = false
-                    };
-                    updateUserLastActivityMsg.Send();
-#pragma warning restore 618
-                }
-
                 // Resolve the Lava message before signing out so CurrentPerson is available.
                 var redirectPageUrl = this.GetLinkedPageUrl( AttributeKey.RedirectPage );
 
@@ -135,7 +121,7 @@ namespace Rock.Blocks.Security
                     bag.RedirectUrl = redirectPageUrl;
                 }
 
-                Authorization.SignOut();
+                new Model.PersonSessionService( RockContext ).SignOut( RequestContext );
 
                 // Regenerate the browser-session identifier so the next
                 // interaction-tracking call creates a fresh InteractionSession

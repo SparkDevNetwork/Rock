@@ -90,6 +90,8 @@ namespace Rock.Model
         /// </value>
         [NotAudited]
         [DataMember]
+        [RockObsolete( "20.0" )]
+        [Obsolete( "Activity is now tracked on PersonSession. Read PersonSession.LastActivityDateTime instead." )]
         public DateTime? LastActivityDateTime { get; set; }
 
         /// <summary>
@@ -120,6 +122,8 @@ namespace Rock.Model
         /// </value>
         [NotAudited]
         [DataMember]
+        [RockObsolete( "20.0" )]
+        [Obsolete( "Online state is now derived from PersonSession. Read PersonSession.IsActive instead." )]
         public bool? IsOnLine { get; set; }
         
         /// <summary>

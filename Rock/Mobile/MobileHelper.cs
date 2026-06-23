@@ -231,7 +231,7 @@ namespace Rock.Mobile
         /// Generate an authentication token (.ROCK Cookie) for the given
         /// username, producing a new-format <see cref="PersonSession"/>-backed
         /// cookie value. Reuses an existing active
-        /// <see cref="PersonSessionCreationSource.Component"/> session for the
+        /// <see cref="Enums.Security.PersonSessionCreationSource.Component"/> session for the
         /// resolved <see cref="UserLogin"/> when present (device-token-refresh
         /// case); otherwise creates one via
         /// <see cref="PersonSessionService.FindOrCreateDeviceComponentSession"/>.

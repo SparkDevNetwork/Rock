@@ -821,18 +821,6 @@ namespace Rock.Security
         /// <param name="userName">Name of the user.</param>
         /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
         /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
-        /// <param name="isTwoFactorAuthenticated">if set to <c>true</c> [is two-factor authenticated].</param>
-        private static HttpCookie GetAuthCookie( string userName, bool isPersisted, bool isImpersonated, bool isTwoFactorAuthenticated )
-        {
-            return GetAuthCookie( userName, isPersisted, isImpersonated, isTwoFactorAuthenticated, FormsAuthentication.Timeout );
-        }
-
-        /// <summary>
-        /// Gets the auth cookie.
-        /// </summary>
-        /// <param name="userName">Name of the user.</param>
-        /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
-        /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
         /// <param name="expiresIn">The cookie expiration.</param>
         /// <param name="isTwoFactorAuthenticated">if set to <c>true</c> [is two-factor authenticated].</param>
         private static HttpCookie GetAuthCookie( string userName, bool isPersisted, bool isImpersonated, bool isTwoFactorAuthenticated, TimeSpan expiresIn )
@@ -966,6 +954,8 @@ namespace Rock.Security
         /// <param name="userName">Name of the user.</param>
         /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
         /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
+        [RockObsolete( "20.0" )]
+        [Obsolete( "Use PersonSessionService.StartComponentSession + RockContext.SaveChanges + PersonSessionService.SetAuthCookie( session, requestContext ) instead." )]
         public static void SetAuthCookie( string userName, bool isPersisted, bool isImpersonated )
         {
             SetAuthCookie( userName, isPersisted, isImpersonated, isTwoFactorAuthenticated: false );
@@ -978,22 +968,11 @@ namespace Rock.Security
         /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
         /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
         /// <param name="isTwoFactorAuthenticated">if set to <c>true</c> [is two-factor authenticated].</param>
+        [RockObsolete( "20.0" )]
+        [Obsolete( "Use PersonSessionService.StartComponentSession + RockContext.SaveChanges + PersonSessionService.SetAuthCookie( session, requestContext ) instead." )]
         public static void SetAuthCookie( string userName, bool isPersisted, bool isImpersonated, bool isTwoFactorAuthenticated )
         {
-            SetAuthCookie( userName, isPersisted, isImpersonated, isTwoFactorAuthenticated, FormsAuthentication.Timeout );
-        }
-
-        /// <summary>
-        /// Sets the auth cookie.
-        /// </summary>
-        /// <param name="userName">Name of the user.</param>
-        /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
-        /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
-        /// <param name="isTwoFactorAuthenticated">if set to <c>true</c> [is two-factor authenticated].</param>
-        /// <param name="expiresIn">The cookie expiration.</param>
-        internal static void SetAuthCookie( string userName, bool isPersisted, bool isImpersonated, bool isTwoFactorAuthenticated, TimeSpan expiresIn )
-        {
-            var authCookie = GetAuthCookie( userName, isPersisted, isImpersonated, isTwoFactorAuthenticated, expiresIn );
+            var authCookie = GetAuthCookie( userName, isPersisted, isImpersonated, isTwoFactorAuthenticated, FormsAuthentication.Timeout );
             RockPage.AddOrUpdateCookie( authCookie );
 
             // If cookie is for a more generic domain, we need to store that domain so that we can expire it correctly
@@ -1047,6 +1026,8 @@ namespace Rock.Security
         /// <summary>
         /// Signs a user out of rock by deleting the appropriate forms authentication cookies
         /// </summary>
+        [RockObsolete( "20.0" )]
+        [Obsolete( "Use PersonSessionService.SignOut( requestContext ) instead." )]
         public static void SignOut()
         {
             ExpireUnsecuredPersonIdentifierCookie();

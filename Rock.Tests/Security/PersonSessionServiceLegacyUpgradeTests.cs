@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -68,7 +68,9 @@ public class PersonSessionServiceLegacyUpgradeTests
         var requestContext = BuildRequestContext( new TrackingResponseContext() );
 
         var service = new PersonSessionService( rockContext );
+#pragma warning disable CS0618 // Type or member is obsolete
         var session = service.UpgradeLegacyTicket( ticket, requestContext );
+#pragma warning restore CS0618 // Type or member is obsolete
 
         Assert.IsNotNull( session );
         Assert.AreEqual( PersonSessionCreationSource.Legacy, session.CreationSource );
@@ -98,8 +100,10 @@ public class PersonSessionServiceLegacyUpgradeTests
 
         var service = new PersonSessionService( rockContext );
 
+#pragma warning disable CS0618 // Type or member is obsolete
         var firstSession = service.UpgradeLegacyTicket( ticket, BuildRequestContext( new TrackingResponseContext() ) );
         var secondSession = service.UpgradeLegacyTicket( ticket, BuildRequestContext( new TrackingResponseContext() ) );
+#pragma warning restore CS0618 // Type or member is obsolete
 
         Assert.IsNotNull( firstSession );
         Assert.IsNotNull( secondSession );
@@ -130,11 +134,13 @@ public class PersonSessionServiceLegacyUpgradeTests
         var requestContext = BuildRequestContext( response );
 
         var service = new PersonSessionService( rockContext );
+#pragma warning disable CS0618 // Type or member is obsolete
         var session = service.UpgradeLegacyTicket( ticket, requestContext );
+#pragma warning restore CS0618 // Type or member is obsolete
 
         Assert.IsNull( session );
         Assert.AreEqual( 0, rockContext.Set<PersonSession>().Count() );
-        Assert.AreEqual( 1, response.RemovedCookies.Count );
+        Assert.HasCount( 1, response.RemovedCookies );
         Assert.AreEqual( PersonSessionService.AuthCookieName, response.RemovedCookies[0].Name );
     }
 
@@ -162,11 +168,13 @@ public class PersonSessionServiceLegacyUpgradeTests
         var requestContext = BuildRequestContext( response );
 
         var service = new PersonSessionService( rockContext );
+#pragma warning disable CS0618 // Type or member is obsolete
         var session = service.UpgradeLegacyTicket( ticket, requestContext );
+#pragma warning restore CS0618 // Type or member is obsolete
 
         Assert.IsNull( session );
         Assert.AreEqual( 0, rockContext.Set<PersonSession>().Count() );
-        Assert.AreEqual( 1, response.RemovedCookies.Count );
+        Assert.HasCount( 1, response.RemovedCookies );
         Assert.AreEqual( PersonSessionService.AuthCookieName, response.RemovedCookies[0].Name );
     }
 
@@ -188,11 +196,13 @@ public class PersonSessionServiceLegacyUpgradeTests
         var requestContext = BuildRequestContext( response );
 
         var service = new PersonSessionService( rockContext );
+#pragma warning disable CS0618 // Type or member is obsolete
         var session = service.UpgradeLegacyTicket( ticket, requestContext );
+#pragma warning restore CS0618 // Type or member is obsolete
 
         Assert.IsNull( session );
         Assert.AreEqual( 0, rockContext.Set<PersonSession>().Count() );
-        Assert.AreEqual( 1, response.RemovedCookies.Count );
+        Assert.HasCount( 1, response.RemovedCookies );
         Assert.AreEqual( PersonSessionService.AuthCookieName, response.RemovedCookies[0].Name );
     }
 
@@ -217,7 +227,9 @@ public class PersonSessionServiceLegacyUpgradeTests
         var requestContext = BuildRequestContext( new TrackingResponseContext() );
 
         var service = new PersonSessionService( rockContext );
+#pragma warning disable CS0618 // Type or member is obsolete
         var session = service.UpgradeLegacyTicket( ticket, requestContext );
+#pragma warning restore CS0618 // Type or member is obsolete
 
         Assert.IsNotNull( session );
         Assert.IsNull( session.LastStepUpAuthenticationDateTime );
@@ -249,7 +261,9 @@ public class PersonSessionServiceLegacyUpgradeTests
         var requestContext = BuildRequestContext( new TrackingResponseContext() );
 
         var service = new PersonSessionService( rockContext );
+#pragma warning disable CS0618 // Type or member is obsolete
         var session = service.UpgradeLegacyTicket( ticket, requestContext );
+#pragma warning restore CS0618 // Type or member is obsolete
 
         Assert.IsNotNull( session );
         Assert.AreEqual( ticketIssueDate, session.IssuedDateTime );
@@ -273,10 +287,12 @@ public class PersonSessionServiceLegacyUpgradeTests
         var requestContext = BuildRequestContext( response );
 
         var service = new PersonSessionService( rockContext );
+#pragma warning disable CS0618 // Type or member is obsolete
         var session = service.UpgradeLegacyTicket( ticket, requestContext );
+#pragma warning restore CS0618 // Type or member is obsolete
 
         Assert.IsNotNull( session );
-        Assert.AreEqual( 1, response.AddedCookies.Count );
+        Assert.HasCount( 1, response.AddedCookies );
         Assert.AreEqual( PersonSessionService.AuthCookieName, response.AddedCookies[0].Name );
         Assert.IsFalse( string.IsNullOrEmpty( response.AddedCookies[0].Value ) );
     }

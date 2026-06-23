@@ -324,6 +324,12 @@ namespace Rock.Model
 
             // ignoring PersonalizedEntity,EntityTypeId
 
+            if ( new Service<PersonSession>( Context ).Queryable().Any( a => a.AuthenticationComponentId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, PersonSession.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<RelatedEntity>( Context ).Queryable().Any( a => a.SourceEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, RelatedEntity.FriendlyTypeName );

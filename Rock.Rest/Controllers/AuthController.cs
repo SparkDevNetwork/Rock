@@ -20,6 +20,7 @@ using System.Web.Http;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Rest.Jwt;
 using Rock.Security;
 
@@ -50,30 +51,62 @@ namespace Rock.Rest.Controllers
             }
 
             /*
-                6/10/26 - DSH
+                6/23/26 - DSH
 
-                This endpoint passes isTwoFactorAuthenticated: true without
-                actually verifying a second factor. Any caller with a valid
-                username/password (or JWT) lands a session that the
-                PersonSession model will treat as MultiFactor-strength on
-                subsequent requests, bypassing MFA-gated pages.
+                This endpoint mints a full interactive PersonSession from
+                credentials and returns its auth cookie for use in subsequent
+                REST calls. It stamps MFA recency (mfaRecency) on purpose, so the
+                resulting session reports MultiFactor strength WITHOUT verifying
+                an actual second factor. Any caller with a valid
+                username/password lands a session that bypasses MFA-gated pages.
 
-                The legacy behavior is preserved here intentionally so the v1
-                REST API does not break for existing API consumers. The
-                security concern is tracked against the v2 REST conversion,
-                where the API auth flow will be redesigned to either (a) drop
-                the MFA recency stamping entirely or (b) require a real second
-                factor before stamping it.
+                This is a deliberate rule-break. It is NOT secure and it is NOT a
+                pattern to follow. It exists only because existing v1 REST API
+                consumers depend on this endpoint granting two-factor-authenticated
+                status. That was the pre-PersonSession behavior (the legacy auth
+                ticket carried isTwoFactorAuthenticated: true), and dropping the
+                MFA stamp here would silently break those consumers, so we
+                preserve it through the migration.
 
-                Reason: Deferred to v2 REST conversion to avoid breaking
-                existing API consumers; see PersonSession spec
-                "Touch-points to update / AuthController.Login".
+                Do NOT replicate this anywhere. New code must never stamp MFA
+                recency without a verified second factor. This compatibility shim
+                stays until the v1 REST API is deprecated; the v2 REST conversion
+                will require a genuine second factor before granting any elevated
+                or MFA strength, at which point this behavior is removed.
+
+                Reason: Preserve v1 REST MFA-granting behavior that existing API
+                consumers depend on; remove when the v1 API is deprecated.
             */
-            Rock.Security.Authorization.SetAuthCookie(
-                userName,
-                loginParameters.Persisted,
-                isImpersonated: false,
-                isTwoFactorAuthenticated: true );
+            using ( var rockContext = new RockContext() )
+            {
+                var userLogin = new UserLoginService( rockContext ).GetByUserName( userName );
+                var personAliasId = userLogin?.Person?.PrimaryAliasId;
+
+                if ( userLogin == null || !personAliasId.HasValue || !userLogin.EntityTypeId.HasValue )
+                {
+                    var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.Unauthorized, "Unable to establish a session for this account." );
+                    throw new HttpResponseException( errorResponse );
+                }
+
+                var requestContext = RockRequestContextAccessor.Current;
+                var personSessionService = new PersonSessionService( rockContext );
+
+                // Stamps MFA recency intentionally to preserve the v1 endpoint's
+                // two-factor-authenticated behavior. See the engineering note
+                // above: this is a documented rule-break, not a pattern to follow.
+                var session = personSessionService.StartComponentSession(
+                    requestContext,
+                    personAliasId.Value,
+                    userLogin.Id,
+                    userLogin.EntityTypeId.Value,
+                    loginParameters.Persisted,
+                    mfaRecency: Rock.RockDateTime.Now );
+
+                personSessionService.Add( session );
+                rockContext.SaveChanges();
+
+                personSessionService.SetAuthCookie( session, requestContext );
+            }
         }
 
         /// <summary>

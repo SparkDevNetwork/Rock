@@ -426,7 +426,24 @@ namespace Rock.Blocks.Security
                         */
                         var isTwoFactorAuthenticated = IsTwoFactorAuthenticationRequired( person.AccountProtectionProfile );
 
-                        Authorization.SetAuthCookie( userLogin.UserName, isPersisted: false, isImpersonated: false, isTwoFactorAuthenticated );
+                        // Start a PersonSession-backed component session for the
+                        // phone-verified login and write the new-format cookie.
+                        // The phone verification satisfies the second factor when
+                        // 2FA is required, so MFA recency is stamped accordingly.
+                        var mfaRecency = isTwoFactorAuthenticated ? ( DateTime? ) RockDateTime.Now : null;
+                        var personSessionService = new PersonSessionService( RockContext );
+                        var session = personSessionService.StartComponentSession(
+                            RequestContext,
+                            person.PrimaryAliasId.Value,
+                            userLogin.Id,
+                            userLogin.EntityTypeId.Value,
+                            isPersistent: false,
+                            mfaRecency );
+
+                        personSessionService.Add( session );
+                        RockContext.SaveChanges();
+
+                        personSessionService.SetAuthCookie( session, RequestContext );
 
                         new HistoryLogin
                         {

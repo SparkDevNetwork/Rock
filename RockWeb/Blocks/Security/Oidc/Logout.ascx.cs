@@ -70,7 +70,11 @@ namespace RockWeb.Blocks.Security.Oidc
             if ( response == null )
             {
                 context.Authentication.SignOut( OpenIdConnectServerDefaults.AuthenticationType );
-                Authorization.SignOut();
+
+                using ( var rockContext = new Rock.Data.RockContext() )
+                {
+                    new PersonSessionService( rockContext ).SignOut( RockPage.RequestContext );
+                }
             }
             else if ( !string.IsNullOrWhiteSpace( response.Error ) )
             {

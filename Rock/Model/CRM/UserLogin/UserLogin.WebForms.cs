@@ -34,18 +34,12 @@ namespace Rock.Model
         /// </value>
         /// <remarks>
         /// Under the PersonSession model authentication strength lives on the
-        /// current <see cref="PersonSession"/>, not on the legacy
-        /// <c>FormsAuthenticationTicket.UserData</c>. This property is
-        /// preserved as a Pattern A bridge so existing readers still compile
-        /// during the dual-reader window: it returns <c>true</c> only when the
-        /// current request's <see cref="PersonSession"/> is active AND is not
-        /// an impersonated session. New callers should read
-        /// <c>RockRequestContext.PersonSession</c> (or call
-        /// <see cref="Rock.Net.RockRequestContext.MeetsRequirement"/>) directly;
-        /// this property will be obsoleted in a follow-up phase.
+        /// current <see cref="PersonSession"/>.
         /// </remarks>
         [NotMapped]
         [LavaVisible]
+        [RockObsolete( "20.0" )]
+        [System.Obsolete( "Authentication state now lives on PersonSession. Read RockRequestContext.PersonSession or call RockRequestContext.MeetsRequirement(...) instead." )]
         public virtual bool IsAuthenticated
         {
             get
@@ -68,14 +62,11 @@ namespace Rock.Model
         /// </value>
         /// <remarks>
         /// Under the PersonSession model two-factor recency lives on the
-        /// current <see cref="PersonSession"/>. This Pattern A bridge returns
-        /// <c>true</c> only when the current request's session meets the
-        /// <see cref="Rock.Enums.Security.AuthenticationRequirement.MultiFactor"/>
-        /// requirement. New callers should call
-        /// <c>RockRequestContext.MeetsRequirement(MultiFactor)</c> directly;
-        /// this property will be obsoleted in a follow-up phase.
+        /// current <see cref="PersonSession"/>.
         /// </remarks>
         [NotMapped]
+        [RockObsolete( "20.0" )]
+        [System.Obsolete( "Two-factor state now lives on PersonSession. Call RockRequestContext.MeetsRequirement(AuthenticationRequirement.MultiFactor) instead." )]
         public virtual bool IsTwoFactorAuthenticated
         {
             get

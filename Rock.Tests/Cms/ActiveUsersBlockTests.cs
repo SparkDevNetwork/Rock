@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -62,6 +62,7 @@ public class ActiveUsersBlockTests
         var staleDate = RockDateTime.Now.AddDays( -90 );
         var recentDate = RockDateTime.Now.AddMinutes( -2 );
 
+#pragma warning disable 618 // Intentionally seeding the obsolete UserLogin.LastActivityDateTime/IsOnLine to prove the PersonSession-based query ignores legacy data.
         rockContext.Set<UserLogin>().Add( new UserLogin
         {
             Id = 1,
@@ -70,6 +71,7 @@ public class ActiveUsersBlockTests
             LastActivityDateTime = staleDate,
             IsOnLine = false,
         } );
+#pragma warning restore 618
 
         var personAlias = new PersonAlias
         {
@@ -114,6 +116,7 @@ public class ActiveUsersBlockTests
 
         const int targetPersonId = 99;
 
+#pragma warning disable 618 // Intentionally seeding the obsolete UserLogin.LastActivityDateTime/IsOnLine to prove the PersonSession-based query ignores legacy data.
         rockContext.Set<UserLogin>().Add( new UserLogin
         {
             Id = 1,
@@ -122,6 +125,7 @@ public class ActiveUsersBlockTests
             LastActivityDateTime = RockDateTime.Now,
             IsOnLine = true,
         } );
+#pragma warning restore 618
 
         var personAlias = new PersonAlias
         {
@@ -147,7 +151,7 @@ public class ActiveUsersBlockTests
             .Select( s => s.PersonAlias.PersonId )
             .ToList();
 
-        Assert.IsFalse( activePersonIds.Contains( targetPersonId ),
+        Assert.DoesNotContain( targetPersonId, activePersonIds,
             "Person whose only sessions are inactive must NOT appear in the active-users query." );
     }
 

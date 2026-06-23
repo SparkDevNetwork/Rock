@@ -599,7 +599,7 @@ Mark deprecated public surface `[Obsolete]` `[RockObsolete( "20.0" )]`. Remove e
 #### Obsolete markers — `UserLogin` properties
 - **`UserLogin.LastActivityDateTime`** — `[Obsolete]` `[RockObsolete( "20.0" )]`. Property at `Rock/Model/CRM/UserLogin/UserLogin.cs:93`. All in-core writers removed (see "Writer removals" below). The writer inside the obsoleted `UpdateUserLastActivity` bus task body (`Rock/Tasks/UpdateUserLastActivity.cs:93`) is intentionally LEFT IN PLACE — plugins still calling the obsolete bus task should continue to function during the dual-reader window; the bus task itself is the obsolete entry point.
 - **`UserLogin.IsOnLine`** — `[Obsolete]` `[RockObsolete( "20.0" )]`. Property at `Rock/Model/CRM/UserLogin/UserLogin.cs:123`. Same writer-retention reasoning as `LastActivityDateTime` for `Rock/Tasks/UpdateUserLastActivity.cs:94`.
-- **`UserLogin.IsAuthenticated`, `UserLogin.IsTwoFactorAuthenticated`** — `[Obsolete]` `[RockObsolete( "20.0" )]`. Properties at `Rock/Model/CRM/UserLogin/UserLogin.WebForms.cs:49,79`. Both keep their signatures but the Phase 14 PersonSession-bridge bodies are replaced with `return false;`. Lava templates that referenced these properties get `false` silently — intentional, so template authors notice and migrate. All in-core readers already moved to `MeetsRequirement` in Phase 14, so no compile breakage.
+- **`UserLogin.IsAuthenticated`, `UserLogin.IsTwoFactorAuthenticated`** — `[Obsolete]` `[RockObsolete( "20.0" )]`. Properties at `Rock/Model/CRM/UserLogin/UserLogin.WebForms.cs:43,70`. Both keep their signatures **and** their functional Phase 14 PersonSession-bridge bodies: `IsAuthenticated` reads the current `PersonSession` (active and not impersonated), and `IsTwoFactorAuthenticated` calls `RockRequestContext.MeetsRequirement( MultiFactor )`. The `[Obsolete]` attribute is the deprecation notice for C# callers; the bodies are intentionally **NOT** collapsed to `return false;`. An earlier draft of this phase collapsed them to force Lava authors to notice (Lava has no obsolete-warning surface), but that would silently break Lava templates and plugins that read these properties with no transition period. Keeping the bridge bodies functional while obsolete-marked gives a proper deprecation window; neutering or removing the bodies is deferred to a later version once that window has passed. All in-core readers already moved to `MeetsRequirement` in Phase 14, so there is no in-core dependency on the bodies.
 
 #### Writer removals — `UserLogin.IsOnLine` / `UserLogin.LastActivityDateTime`
 - **`MarkOnlineUsersOffline()`** — remove the method entirely (`RockWeb/App_Code/Global.asax.cs:998`) and both call sites (`Global.asax.cs:204` startup, `Global.asax.cs:946` shutdown). Plan-draft line numbers `:203,782,834` are stale; only two call sites exist today.
@@ -646,8 +646,7 @@ These callers create a new auth session and write the cookie. After the obsolete
 After the markers land, run `build` and treat every new `CS0618` warning as a migration candidate. Most will be in the lists above; surface anything unexpected before deleting it.
 
 ### Tests
-- Plain unit: `UserLogin.IsAuthenticated` always returns `false`. New file or addition to `Rock.Tests/Security/PersonSessionTests.cs` — single-line assertion against a fresh `UserLogin` instance, no mocked context needed once the body is hardcoded.
-- Plain unit: `UserLogin.IsTwoFactorAuthenticated` always returns `false`. Same shape.
+- No new plain-unit tests for `UserLogin.IsAuthenticated` / `IsTwoFactorAuthenticated`. They retain their functional Phase 14 PersonSession-bridge bodies (only the `[Obsolete]` markers are added in this phase), so their behavior is unchanged and is already exercised by the Phase 14 / `MeetsRequirement` coverage. (An earlier draft asserted these "always return `false`" after a body collapse; that collapse was dropped, so those assertions no longer apply.)
 - Static check (not a runtime test): `MarkOnlineUsersOffline()` no longer exists or has zero call sites — grep the codebase to confirm. (Booting `Global.asax` startup inside Rock.Tests is not feasible; see Guardrails. The cleanup is verified by absence at compile time and by the "App pool recycle does NOT mark all users offline" item in the Phase 17 manual checklist.)
 - Mocked-database: a logout via `PersonSessionService.SignOut( requestContext )` marks the current `PersonSession` inactive (verify `IsActive == false` AND `InactiveDateTime != null`), clears the `.ROCK` cookie (verify via `TrackingResponseContext.RemovedCookies` like the existing Phase 6 legacy-upgrade tests do), and clears `requestContext.PersonSession`. New file: `Rock.Tests/Security/PersonSessionServiceSignOutTests.cs` (or fold into an existing file; the "Phase 17 follow-ups" already note that file consolidation is a pre-merge sweep).
 - Mocked-database: `PersonSessionService.SignOut` on a `requestContext` with no `PersonSession` is a no-op (no `SaveChanges` call, no cookie remove). Defensive regression test.
@@ -754,6 +753,15 @@ This phase is for a human, not the implementation agent. After phases 1-16 land 
 - [ ] JWT requests do NOT create `PersonSession` rows (verify by issuing JWT against an unused user and counting rows).
 - [ ] OAuth bearer requests do NOT create `PersonSession` rows.
 
+### REST `api/Auth/Login` endpoint
+
+This endpoint was migrated off the legacy `Authorization.SetAuthCookie` bridge to create a `Component` `PersonSession` directly (it previously minted a legacy `FormsAuthenticationTicket` cookie that was upgraded on the next request).
+
+- [ ] `POST api/Auth/Login` with valid credentials returns a new-format `.ROCK` cookie and creates a `Component` `PersonSession` for the user. Reusing that cookie on a subsequent REST call authenticates as that user (no re-login).
+- [ ] The created session reports `MultiFactor` strength and grants access to MFA-gated resources without a second factor. This is intentional v1 compatibility behavior: the endpoint stamps MFA recency on purpose (see the engineering note in `AuthController.Login`). It is a documented rule-break preserved for existing API consumers, NOT a pattern to follow.
+- [ ] Invalid credentials still return `401 Unauthorized` and create no `PersonSession`.
+- [ ] `persisted: true` produces a persistent cookie; `persisted: false` produces a session cookie, same as before the migration.
+
 ### `InteractionSession` linkage
 
 - [ ] Anonymous user arrives → `InteractionSession` row created with `PersonSessionId = null`.
@@ -804,7 +812,7 @@ This phase is for a human, not the implementation agent. After phases 1-16 land 
 
 - [ ] ChangePassword (Obsidian): correctly enforces step-up via `MeetsRequirement`.
 - [ ] Authorize.ascx (WebForms): correctly enforces step-up via the new properties / `MeetsRequirement`.
-- [ ] `RockPage.cs:941` MFA-required page enforcement: the deprecated `UserLogin.IsTwoFactorAuthenticated` property returns false; the new path enforces via `RockRequestContext.MeetsRequirement(MultiFactor)`.
+- [ ] `RockPage.cs:941` MFA-required page enforcement: enforcement runs through `RockRequestContext.MeetsRequirement(MultiFactor)`. The deprecated `UserLogin.IsTwoFactorAuthenticated` property is obsolete but still functional (it reflects the current session via the Phase 14 bridge), so any lingering reader sees correct values during the deprecation window.
 
 ### Kill-switch and recovery
 
@@ -864,7 +872,7 @@ For each file the implementation will modify, the phase that owns the change. Us
 | `Rock.Rest/ApiControllerBase.cs:103` | 12 |
 | `Rock/Web/HttpModules/RockGateway.cs:499` | 12 |
 | `Rock/Model/CRM/UserLogin/UserLogin.cs:93,123` (Obsolete markers on `LastActivityDateTime` and `IsOnLine`) | 15 |
-| `Rock/Model/CRM/UserLogin/UserLogin.WebForms.cs:49,79` (Obsolete markers + body → `return false;` on `IsAuthenticated` and `IsTwoFactorAuthenticated`; Pattern A bridge was added in Phase 14) | 14 (bridge) / 15 (obsolete + body collapse) |
+| `Rock/Model/CRM/UserLogin/UserLogin.WebForms.cs:43,70` (Pattern A bridge bodies for `IsAuthenticated` and `IsTwoFactorAuthenticated` added in Phase 14; `[Obsolete]` markers added in Phase 15 with the functional bridge bodies retained — no `return false;` collapse, to avoid breaking Lava/plugins without a deprecation window) | 14 (bridge) / 15 (obsolete markers) |
 | `Rock/Model/CRM/UserLogin/UserLoginService.WebForms.cs:78-118` (UpdateUserLastActivity removals, both branches) and `:115` (SignOut migration) | 15 |
 | `Rock/Mobile/MobileHelper.cs:206` | 11 |
 | `Rock/Tv/TvHelper.cs:193` | 11 |
@@ -873,7 +881,7 @@ For each file the implementation will modify, the phase that owns the change. Us
 | `Rock/Security/Authorization.cs:969,981` (SetAuthCookie obsolete markers) and `:1050` (SignOut obsolete marker). `GetAuthCookie` and `internal SetAuthCookie(... TimeSpan)` are private/internal and out of scope per the Phase 15 interpretation note. | 15 |
 | `Rock/Model/Security/PersonSession/PersonSessionService.cs` (new `SignOut( RockRequestContext )` public method) | 15 |
 | `Rock/Security/SecuritySettings.cs:123` (kill-switch read) | 5 |
-| `Rock.Rest/Controllers/AuthController.cs:43-77` (engineering note in Phase 14; pragma 618 wrap around `Authorization.SetAuthCookie` call in Phase 15) | 14, 15 |
+| `Rock.Rest/Controllers/AuthController.cs:43-77` (engineering note in Phase 14; migrated off `Authorization.SetAuthCookie` to `StartComponentSession` + `SetAuthCookie` in Phase 15, intentionally stamping MFA recency to preserve the v1 endpoint's two-factor-authenticated behavior, documented as a rule-break) | 14, 15 |
 | Active Users block | 14 |
 | Data Automation job | 14 |
 | Rock Cleanup job | 16 |

@@ -58,6 +58,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", InteractionDeviceType.FriendlyTypeName, InteractionSession.FriendlyTypeName );
                 return false;
             }
+
+            if ( new Service<PersonSession>( Context ).Queryable().Any( a => a.InteractionDeviceTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", InteractionDeviceType.FriendlyTypeName, PersonSession.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }

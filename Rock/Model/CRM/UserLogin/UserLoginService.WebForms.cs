@@ -76,23 +76,6 @@ namespace Rock.Model
                 if ( user != null && userIsOnline )
                 {
                     // Save last activity date.
-                    //
-                    // NOTE: UpdateUserLastActivity is deprecated as of Rock
-                    // 20.0 and is being replaced by
-                    // UpdatePersonSessionLastActivity, which targets
-                    // PersonSession.LastActivityDateTime. Both writers fire
-                    // here during the dual-reader window so legacy readers
-                    // (e.g. the Active Users block prior to its migration)
-                    // continue to see fresh data. UpdateUserLastActivity and
-                    // its UserLogin.LastActivityDateTime writer are scheduled
-                    // for removal in Phase 15 of the PersonSession spec.
-#pragma warning disable 618 // UpdateUserLastActivity is obsolete; writer retained during the dual-reader window.
-                    var message = new UpdateUserLastActivity.Message
-                    {
-                        UserId = user.Id,
-                        LastActivityDate = RockDateTime.Now,
-                    };
-
                     if ( ( user.IsConfirmed ?? true ) && !( user.IsLockedOut ?? false ) )
                     {
                         if ( HttpContext.Current != null && HttpContext.Current.Session != null )
@@ -100,22 +83,22 @@ namespace Rock.Model
                             HttpContext.Current.Session["RockUserId"] = user.Id;
                         }
 
-                        message.SendIfNeeded();
                         FireUpdatePersonSessionLastActivityIfPresent();
                     }
                     else
                     {
-                        // Even though we are in the userIsOnline == true condition,
-                        // The user is either not confirmed or is locked out, so we'll mark them
-                        // as offline and sign them out.
+                        // The user is either not confirmed or is locked out, so
+                        // sign them out. RequestContext is resolved from the
+                        // ambient accessor since this method runs outside a
+                        // block; when absent there is no session to sign out.
+                        var requestContext = RockRequestContextAccessor.Current;
+                        if ( requestContext != null )
+                        {
+                            new PersonSessionService( rockContext ).SignOut( requestContext );
+                        }
 
-                        message.IsOnline = false;
-                        message.SendIfNeeded();
-
-                        Authorization.SignOut();
                         return null;
                     }
-#pragma warning restore 618
                 }
 
                 return user;

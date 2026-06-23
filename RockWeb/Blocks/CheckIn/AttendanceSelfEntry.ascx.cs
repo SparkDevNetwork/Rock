@@ -834,9 +834,10 @@ ORDER BY [Text]",
 
             SaveHomeAddress( rockContext, family );
 
+            UserLogin userLogin = null;
             if ( isAccountRequired )
             {
-                var userLogin = UserLoginService.Create(
+                userLogin = UserLoginService.Create(
                     rockContext,
                     person,
                     Rock.Model.AuthenticationServiceType.Internal,
@@ -871,11 +872,25 @@ ORDER BY [Text]",
                     isTwoFactorAuthenticated = true;
                 }
 
-                Authorization.SetAuthCookie(
-                    txtUserName.Text,
-                    isPersisted: false,
-                    isImpersonated: false,
-                    isTwoFactorAuthenticated );
+                // NOTE: PersonSessionService.StartComponentSession is public only
+                // so this RockWeb WebForms block can reach it (RockWeb's
+                // runtime-generated assembly name cannot be granted
+                // InternalsVisibleTo). It can and should be switched back to
+                // internal once this block is converted to Obsidian.
+                var mfaRecency = isTwoFactorAuthenticated ? ( DateTime? ) RockDateTime.Now : null;
+                var personSessionService = new PersonSessionService( rockContext );
+                var session = personSessionService.StartComponentSession(
+                    RockPage.RequestContext,
+                    person.PrimaryAliasId.Value,
+                    userLogin.Id,
+                    userLogin.EntityTypeId.Value,
+                    isPersistent: false,
+                    mfaRecency );
+
+                personSessionService.Add( session );
+                rockContext.SaveChanges();
+
+                personSessionService.SetAuthCookie( session, RockPage.RequestContext );
             }
 
             pnlAccount.Visible = false;

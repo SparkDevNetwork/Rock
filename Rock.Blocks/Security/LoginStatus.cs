@@ -23,7 +23,6 @@ using System.Text;
 
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Tasks;
 using Rock.ViewModels.Blocks.Security.LoginStatus;
 using Rock.Web.Cache;
 
@@ -327,19 +326,6 @@ namespace Rock.Blocks.Security
         [BlockAction]
         public BlockActionResult Logout()
         {
-            if ( RequestContext.CurrentUser != null )
-            {
-#pragma warning disable 618 // UpdateUserLastActivity is obsolete; the writer is retained during the dual-reader window. See Phase 15 of the PersonSession spec.
-                var updateUserLastActivityMsg = new UpdateUserLastActivity.Message
-                {
-                    UserId = RequestContext.CurrentUser.Id,
-                    LastActivityDate = RockDateTime.Now,
-                    IsOnline = false
-                };
-                updateUserLastActivityMsg.Send();
-#pragma warning restore 618
-            }
-
             // Check if the current page is viewable by anonymous users.
             // If so, redirect back to the same page; otherwise redirect
             // to the site root.
@@ -354,7 +340,7 @@ namespace Rock.Blocks.Security
                 redirectUrl = "/";
             }
 
-            Authorization.SignOut();
+            new PersonSessionService( RockContext ).SignOut( RequestContext );
 
             return ActionOk( redirectUrl );
         }

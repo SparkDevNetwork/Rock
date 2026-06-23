@@ -839,20 +839,10 @@ namespace Rock.Web.UI
             Page.Trace.Warn( "Checking for logout request" );
             if ( PageParameter( "Logout" ) != string.Empty )
             {
-                if ( CurrentUser != null )
+                using ( var logoutRockContext = new RockContext() )
                 {
-#pragma warning disable 618 // UpdateUserLastActivity is obsolete; the writer is retained during the dual-reader window. See Phase 15 of the PersonSession spec.
-                    var message = new UpdateUserLastActivity.Message
-                    {
-                        UserId = CurrentUser.Id,
-                        LastActivityDate = RockDateTime.Now,
-                        IsOnline = false
-                    };
-                    message.Send();
-#pragma warning restore 618
+                    new PersonSessionService( logoutRockContext ).SignOut( RequestContext );
                 }
-
-                Authorization.SignOut();
 
                 // After logging out check to see if an anonymous user is allowed to view the current page.  If so
                 // redirect back to the current page, otherwise redirect to the site's default page
@@ -950,7 +940,10 @@ namespace Rock.Web.UI
                      && !RequestContext.MeetsRequirement( AuthenticationRequirement.MultiFactor ) )
                 {
                     // Sign out and redirect to the login page to force two-factor authentication.
-                    Authorization.SignOut();
+                    using ( var signOutRockContext = new RockContext() )
+                    {
+                        new PersonSessionService( signOutRockContext ).SignOut( RequestContext );
+                    }
 
                     var site = _pageCache.Layout.Site;
 

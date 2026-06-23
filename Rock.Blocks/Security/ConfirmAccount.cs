@@ -21,7 +21,6 @@ using Rock.Attribute;
 using Rock.Enums.Blocks.Security.ConfirmAccount;
 using Rock.Model;
 using Rock.Security;
-using Rock.Tasks;
 using Rock.ViewModels.Blocks.Security.ConfirmAccount;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -387,19 +386,7 @@ namespace Rock.Blocks.Security
 
             if ( this.RequestContext.CurrentUser != null && this.RequestContext.CurrentUser.UserName == user.UserName )
             {
-                // It seems silly to update user activity when deleting and this may be removed in the future, but this is for compatibility with WebForms.
-#pragma warning disable 618 // UpdateUserLastActivity is obsolete; the writer is retained during the dual-reader window. See Phase 15 of the PersonSession spec.
-                var updateUserLastActivityMsg = new UpdateUserLastActivity.Message
-                {
-                    UserId = this.RequestContext.CurrentUser.Id,
-                    LastActivityDate = RockDateTime.Now,
-                    IsOnline = false
-                };
-
-                updateUserLastActivityMsg.Send();
-#pragma warning restore 618
-
-                Authorization.SignOut();
+                new PersonSessionService( RockContext ).SignOut( this.RequestContext );
             }
 
             userLoginService.Delete( user );

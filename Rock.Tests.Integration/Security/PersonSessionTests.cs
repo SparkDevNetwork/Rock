@@ -30,6 +30,7 @@ using Rock.Model;
 using Rock.Net;
 using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Tests.Shared.Constants;
+using Rock.Tests.Shared.Utility;
 
 namespace Rock.Tests.Integration.Security;
 
@@ -160,6 +161,61 @@ public class PersonSessionTests : DatabaseTestsBase
             var session = rockContext.Set<PersonSession>().First( s => s.Guid == sessionGuid );
             Assert.IsFalse( session.IsActive );
             Assert.IsNotNull( session.InactiveDateTime, "InactiveDateTime should be stamped on a Component session that flips to inactive." );
+        }
+    }
+
+    /// <summary>
+    /// <c>PersonSessionService.SignOut</c> end-to-end against the real save
+    /// pipeline: the current session is marked inactive AND its
+    /// <c>InactiveDateTime</c> is stamped by the save hook. The mocked-database
+    /// SignOut test cannot assert the stamp (the save hook does not run there),
+    /// so this is the integration coverage for that half of the post-condition.
+    /// </summary>
+    [TestMethod]
+    [IsolatedTestDatabase]
+    public void SignOut_MarksSessionInactiveAndStampsInactiveDateTime()
+    {
+        Guid sessionGuid;
+
+        using ( var rockContext = new RockContext() )
+        {
+            var tedDecker = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
+            Assert.IsNotNull( tedDecker?.PrimaryAliasId, "Ted Decker test data with a primary alias is required for this test." );
+
+            var session = new PersonSession
+            {
+                Guid = Guid.NewGuid(),
+                PersonAliasId = tedDecker.PrimaryAliasId.Value,
+                IsActive = true,
+                IssuedDateTime = RockDateTime.Now,
+                IsPersistent = true,
+                CreationSource = PersonSessionCreationSource.Component,
+            };
+
+            rockContext.Set<PersonSession>().Add( session );
+            rockContext.SaveChanges();
+            sessionGuid = session.Guid;
+        }
+
+        // Sign out against a fresh service/context so the real save pipeline
+        // (and the PersonSession.SaveHook that stamps InactiveDateTime) runs.
+        using ( var rockContext = new RockContext() )
+        {
+            var session = rockContext.Set<PersonSession>().First( s => s.Guid == sessionGuid );
+
+            var requestContext = new RockRequestContext( new TrackingResponseContext() );
+            requestContext.SetPersonSession( session );
+
+            new PersonSessionService( rockContext ).SignOut( requestContext );
+
+            Assert.IsNull( requestContext.PersonSession, "SignOut should detach the session from the request context." );
+        }
+
+        using ( var rockContext = new RockContext() )
+        {
+            var session = rockContext.Set<PersonSession>().First( s => s.Guid == sessionGuid );
+            Assert.IsFalse( session.IsActive, "SignOut should mark the current session inactive." );
+            Assert.IsNotNull( session.InactiveDateTime, "SignOut should stamp InactiveDateTime via the save hook." );
         }
     }
 

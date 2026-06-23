@@ -318,16 +318,13 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// Gets the response to send for a valid log in on mobile.
         /// </summary>
         /// <param name="userLogin">The user login.</param>
-        /// <param name="rememberMe">if set to <c>true</c> then the login should persist beyond this session.</param>
         /// <returns>The result of the action.</returns>
-        private BlockActionResult GetMobileResponse( UserLogin userLogin, bool rememberMe )
+        private BlockActionResult GetMobileResponse( UserLogin userLogin )
         {
             var site = PageCache.Layout.Site;
 
-            var authCookie = Rock.Security.Authorization.GetSimpleAuthCookie( userLogin.UserName, rememberMe, false );
-
             var mobilePerson = MobileHelper.GetMobilePerson( userLogin.Person, site );
-            mobilePerson.AuthToken = authCookie.Value;
+            mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( userLogin.UserName, RequestContext );
 
             return ActionOk( new MobileLoginResult
             {
@@ -865,7 +862,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 {
                     UpdateLastLoginDetails( userLogin, personalDeviceGuid, rockContext );
 
-                    return GetMobileResponse( userLogin, rememberMe );
+                    return GetMobileResponse( userLogin );
                 }
                 else if ( state == UserLoginValidationState.LockedOut )
                 {
@@ -999,9 +996,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
             UpdateLastLoginDetails( userLogin, options.PersonalDeviceGuid, RockContext );
 
-            var authCookie = Rock.Security.Authorization.GetSimpleAuthCookie( userLogin.UserName, true, false );
             var mobilePerson = MobileHelper.GetMobilePerson( userLogin.Person, PageCache.Layout.Site );
-            mobilePerson.AuthToken = authCookie.Value;
+            mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( userLogin.UserName, RequestContext );
 
             return ActionOk( new
             {
@@ -1120,9 +1116,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
                 UpdateLastLoginDetails( userLogin, personalDeviceGuid, rockContext );
 
-                var authCookie = Rock.Security.Authorization.GetSimpleAuthCookie( userLogin.UserName, rememberMe, false );
                 var mobilePerson = MobileHelper.GetMobilePerson( userLogin.Person, PageCache.Layout.Site );
-                mobilePerson.AuthToken = authCookie.Value;
+                mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( userLogin.UserName, RequestContext );
 
                 return ActionOk( new
                 {

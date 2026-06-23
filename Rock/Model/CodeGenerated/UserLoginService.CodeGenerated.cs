@@ -54,6 +54,12 @@ namespace Rock.Model
             errorMessage = string.Empty;
 
             // ignoring HistoryLogin,UserLoginId
+
+            if ( new Service<PersonSession>( Context ).Queryable().Any( a => a.UserLoginId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", UserLogin.FriendlyTypeName, PersonSession.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
@@ -142,9 +148,13 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.IsConfirmed = source.IsConfirmed;
             target.IsLockedOut = source.IsLockedOut;
+            #pragma warning disable 612, 618
             target.IsOnLine = source.IsOnLine;
+            #pragma warning restore 612, 618
             target.IsPasswordChangeRequired = source.IsPasswordChangeRequired;
+            #pragma warning disable 612, 618
             target.LastActivityDateTime = source.LastActivityDateTime;
+            #pragma warning restore 612, 618
             target.LastLockedOutDateTime = source.LastLockedOutDateTime;
             target.LastLoginDateTime = source.LastLoginDateTime;
             target.LastPasswordChangedDateTime = source.LastPasswordChangedDateTime;

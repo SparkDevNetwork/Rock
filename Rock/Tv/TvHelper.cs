@@ -243,7 +243,7 @@ namespace Rock.Tv
         /// Generate a new-format <see cref="PersonSession"/>-backed
         /// authentication token for the resolved <see cref="UserLogin"/>.
         /// Reuses an existing active
-        /// <see cref="PersonSessionCreationSource.Component"/> session when
+        /// <see cref="Enums.Security.PersonSessionCreationSource.Component"/> session when
         /// present (device-token-refresh case); otherwise creates one via
         /// <see cref="PersonSessionService.FindOrCreateDeviceComponentSession"/>.
         /// </summary>

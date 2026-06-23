@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -60,6 +60,7 @@ namespace Rock.Tests.Jobs
 
             // Stale UserLogin activity: under the legacy path this person would
             // be excluded; under the PersonSession path they must be included.
+#pragma warning disable 618 // Intentionally seeding the obsolete UserLogin.LastActivityDateTime to prove the PersonSession-based path ignores legacy data.
             var userLogin = new UserLogin
             {
                 Id = 1,
@@ -67,6 +68,7 @@ namespace Rock.Tests.Jobs
                 PersonId = targetPersonId,
                 LastActivityDateTime = staleDate,
             };
+#pragma warning restore 618
             rockContext.Set<UserLogin>().Add( userLogin );
 
             var personAlias = new PersonAlias
@@ -107,7 +109,7 @@ namespace Rock.Tests.Jobs
 
             var result = InvokeGetPeopleWhoHaveSiteLogins( enabled: false, periodInDays: 30, rockContext: rockContext );
 
-            Assert.AreEqual( 0, result.Count );
+            Assert.IsEmpty( result );
         }
 
         /// <summary>

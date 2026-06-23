@@ -367,7 +367,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 // Update the last login details and log the user in.
                 UpdateLastLoginDetails( userLogin, personalDeviceGuid, rockContext );
 
-                return GetMobileResponse( userLogin, true );
+                return GetMobileResponse( userLogin );
             }
         }
 
@@ -392,7 +392,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 {
                     UpdateLastLoginDetails( userLogin, personalDeviceGuid, rockContext );
 
-                    return GetMobileResponse( userLogin, rememberMe );
+                    return GetMobileResponse( userLogin );
                 }
                 else
                 {
@@ -616,9 +616,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// Gets the response to send for a valid log in on mobile.
         /// </summary>
         /// <param name="userLogin">The user login.</param>
-        /// <param name="rememberMe">if set to <c>true</c> then the login should persist beyond this session.</param>
         /// <returns>The result of the action.</returns>
-        private BlockActionResult GetMobileResponse( UserLogin userLogin, bool rememberMe )
+        private BlockActionResult GetMobileResponse( UserLogin userLogin )
         {
             var site = MobileHelper.GetCurrentApplicationSite();
 
@@ -627,10 +626,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 return ActionStatusCode( HttpStatusCode.Unauthorized );
             }
 
-            var authCookie = Rock.Security.Authorization.GetSimpleAuthCookie( userLogin.UserName, rememberMe, false );
-
             var mobilePerson = MobileHelper.GetMobilePerson( userLogin.Person, site );
-            mobilePerson.AuthToken = authCookie.Value;
+            mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( userLogin.UserName, RequestContext );
 
             return ActionOk( new
             {
