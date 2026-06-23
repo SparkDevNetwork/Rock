@@ -8,6 +8,8 @@
           itemTerm="Transaction"
           :entityTypeGuid="EntityType.FinancialTransaction"
           :customActions="customActions"
+          :showMergeTemplate="isTransactionEntityActionEnabled"
+          :showLaunchWorkflow="isTransactionEntityActionEnabled"
           liveUpdates
           :gridSettings="config.options?.areFiltersVisible ?? false"
           :gridSettingsActive="hasSettingsFilters"
@@ -347,6 +349,10 @@
             iconCssClass: showImages.value ? "ti ti-photo-off" : "ti ti-photo",
             handler: onToggleImages
         }];
+    });
+
+    const isTransactionEntityActionEnabled = computed((): boolean | undefined => {
+        return viewMode.value === ViewMode.Accounts ? false : undefined;
     });
 
     /**
