@@ -266,7 +266,7 @@
 <script setup lang="ts">
     import { useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, Column, CurrencyColumn, DateTimeColumn, dateValueFilter, DeleteColumn, numberValueFilter, NumberColumn, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, Column, CurrencyColumn, DateTimeColumn, dateValueFilter, DeleteColumn, numberValueFilter, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
     import { GridAction, IGridState } from "@Obsidian/Types/Controls/grid";
     import RockButton from "@Obsidian/Controls/rockButton.obs";

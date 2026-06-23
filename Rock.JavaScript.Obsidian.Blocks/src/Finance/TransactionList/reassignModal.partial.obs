@@ -31,7 +31,6 @@
     // #region Event Handlers
 
     function onSave(): void {
-        // TODO Step 5: invoke the Reassign block action, then close.
         emit("save");
     }
 
