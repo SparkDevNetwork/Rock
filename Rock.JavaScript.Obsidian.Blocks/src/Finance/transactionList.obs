@@ -224,7 +224,8 @@
 
     </Grid>
 
-    <GridSettingsModal v-model="gridSettings"
+    <GridSettingsModal :modelValue="gridSettings"
+                       @update:modelValue="onGridSettingsApply"
                        v-model:visible="isGridSettingsVisible"
                        :isForeignKeyFilterVisible="config.options?.showForeignKeyColumn ?? false"
                        :isAccountFilterVisible="!config.options?.accountConfigured"
@@ -277,7 +278,7 @@
     import { TransactionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/TransactionList/transactionListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
-    import { computed, reactive, ref, watch } from "vue";
+    import { computed, reactive, ref } from "vue";
     import { AccountSummary, GridSettingsOptions, NavigationUrlKey, PreferenceKey, ViewMode } from "./TransactionList/types.partial";
     import { toCurrencyOrNull, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import GridSettingsModal from "./TransactionList/gridSettingsModal.partial.obs";
@@ -552,6 +553,31 @@
         return filterValue;
     }
 
+    /**
+     * Saves the given filter settings as block person preferences, prefixed by the current view
+     * mode so each mode keeps its own independent filter state.
+     *
+     * @param settings The filter settings to persist.
+     */
+    function persistFilterPreferences(settings: GridSettingsOptions): void {
+        const key = (baseKey: string): string => `${viewMode.value}-${baseKey}`;
+
+        preferences.setValue(key(PreferenceKey.FilterDateRangeLower), settings.dateRangeLower ?? "");
+        preferences.setValue(key(PreferenceKey.FilterDateRangeUpper), settings.dateRangeUpper ?? "");
+        preferences.setValue(key(PreferenceKey.FilterAmountRangeFrom), settings.amountRange?.lower?.toString() ?? "");
+        preferences.setValue(key(PreferenceKey.FilterAmountRangeTo), settings.amountRange?.upper?.toString() ?? "");
+        preferences.setValue(key(PreferenceKey.FilterCurrencyType), JSON.stringify(settings.currencyType ?? null));
+        preferences.setValue(key(PreferenceKey.FilterCreditCardType), JSON.stringify(settings.creditCardType ?? null));
+        preferences.setValue(key(PreferenceKey.FilterSourceType), JSON.stringify(settings.sourceType ?? null));
+        preferences.setValue(key(PreferenceKey.FilterTransactionCode), settings.transactionCode ?? "");
+        preferences.setValue(key(PreferenceKey.FilterForeignKey), settings.foreignKey ?? "");
+        preferences.setValue(key(PreferenceKey.FilterAccount), JSON.stringify(settings.account ?? null));
+        preferences.setValue(key(PreferenceKey.FilterTransactionType), JSON.stringify(settings.transactionType ?? null));
+        preferences.setValue(key(PreferenceKey.FilterCampusOfBatch), JSON.stringify(settings.campusOfBatch ?? null));
+        preferences.setValue(key(PreferenceKey.FilterCampusOfAccount), JSON.stringify(settings.campusOfAccount ?? null));
+        preferences.setValue(key(PreferenceKey.FilterPerson), JSON.stringify(settings.person ?? null));
+    }
+
     // #endregion Functions
 
     // #region Event Handlers
@@ -719,17 +745,33 @@
 
         await invokeBlockAction("SetViewMode", { viewMode: mode });
 
-        isSwitchingMode = true;
-
-
         const data = await loadGridData();
-        gridSettings.value = loadGridSettingsFromPreferences(mode);
-        gridDataSource.value = Promise.resolve(data);
 
         viewMode.value = mode;
 
-        isSwitchingMode = false;
+        // Load the new mode's saved filter values into the drawer. This is a plain state update
+        // with no side effect: persisting and reloading only happen when the user saves the
+        // settings modal (onGridSettingsApply), so switching modes does a single grid load.
+        gridSettings.value = loadGridSettingsFromPreferences(mode);
+
         pendingViewMode.value = null;
+        gridDataSource.value = Promise.resolve(data);
+    }
+
+    /**
+     * Called when the user saves the grid settings modal with changed filter values. Persists the
+     * filters for the current view mode and reloads the grid. Programmatic updates to the settings
+     * (e.g. switching view mode) do not flow through here, so they never trigger an extra reload.
+     *
+     * @param value The updated grid settings from the modal.
+     */
+    async function onGridSettingsApply(value: GridSettingsOptions): Promise<void> {
+        gridSettings.value = value;
+
+        persistFilterPreferences(value);
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
     }
 
     /**
@@ -791,42 +833,6 @@
     }
 
     // #endregion Event Handlers
-
-    // #region Watchers
-
-    // Suppresses the gridSettings watch during view mode transitions so reloading
-    // the filter values for the new mode does not trigger an extra server round trip.
-    let isSwitchingMode = false;
-
-    watch(gridSettings, async () => {
-        if (isSwitchingMode) {
-            return;
-        }
-
-        const key = (baseKey: string): string => `${viewMode.value}-${baseKey}`;
-
-        preferences.setValue(key(PreferenceKey.FilterDateRangeLower), gridSettings.value.dateRangeLower ?? "");
-        preferences.setValue(key(PreferenceKey.FilterDateRangeUpper), gridSettings.value.dateRangeUpper ?? "");
-        preferences.setValue(key(PreferenceKey.FilterAmountRangeFrom), gridSettings.value.amountRange?.lower?.toString() ?? "");
-        preferences.setValue(key(PreferenceKey.FilterAmountRangeTo), gridSettings.value.amountRange?.upper?.toString() ?? "");
-        preferences.setValue(key(PreferenceKey.FilterCurrencyType), JSON.stringify(gridSettings.value.currencyType ?? null));
-        preferences.setValue(key(PreferenceKey.FilterCreditCardType), JSON.stringify(gridSettings.value.creditCardType ?? null));
-        preferences.setValue(key(PreferenceKey.FilterSourceType), JSON.stringify(gridSettings.value.sourceType ?? null));
-        preferences.setValue(key(PreferenceKey.FilterTransactionCode), gridSettings.value.transactionCode ?? "");
-        preferences.setValue(key(PreferenceKey.FilterForeignKey), gridSettings.value.foreignKey ?? "");
-        preferences.setValue(key(PreferenceKey.FilterAccount), JSON.stringify(gridSettings.value.account ?? null));
-        preferences.setValue(key(PreferenceKey.FilterTransactionType), JSON.stringify(gridSettings.value.transactionType ?? null));
-        preferences.setValue(key(PreferenceKey.FilterCampusOfBatch), JSON.stringify(gridSettings.value.campusOfBatch ?? null));
-        preferences.setValue(key(PreferenceKey.FilterCampusOfAccount), JSON.stringify(gridSettings.value.campusOfAccount ?? null));
-        preferences.setValue(key(PreferenceKey.FilterPerson), JSON.stringify(gridSettings.value.person ?? null));
-
-        await preferences.save();
-
-        gridDataSource.value = loadGridData();
-    });
-
-
-    // #endregion Watchers
 
     gridDataSource.value = loadGridData();
 </script>
