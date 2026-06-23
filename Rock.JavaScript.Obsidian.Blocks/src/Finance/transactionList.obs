@@ -82,8 +82,8 @@
                       field="person"
                       width="200px"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getPersonNameFilterValue"
-                      :quickFilterValue="getPersonNameFilterValue" />
+                      :filterValue="config.options?.isPersonFilterVisible ? getPersonNameFilterValue : undefined"
+                      :quickFilterValue="config.options?.isPersonFilterVisible ? getPersonNameFilterValue : undefined" />
         <DateTimeColumn name="transactionDateTime" title="Date" field="transactionDateTime" :showSeconds="true" :filter="dateValueFilter" width="200px" />
 
         <Column name="daysSinceLastTransaction"

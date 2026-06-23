@@ -49,6 +49,8 @@ namespace Rock.Blocks.Finance
     [IconCssClass( "ti ti-credit-card" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
+    [SecurityAction( SecurityActionKey.FilterByPerson, "The roles and/or users that can filter transactions by person." )]
+
     #region Block Attributes
 
     [LinkedPage( "Detail Page",
@@ -162,6 +164,7 @@ namespace Rock.Blocks.Finance
     //[Rock.SystemGuid.BlockTypeGuid( "E04320BC-67C3-452D-9EF6-D74D8C177154" )]
     [CustomizedGrid]
     [Rock.Web.UI.ContextAware]
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     public class TransactionList : RockListBlockType<TransactionListRow>
     {
         #region Keys
@@ -206,6 +209,17 @@ namespace Rock.Blocks.Finance
             public const string TransactionId = "TransactionId";
             public const string BatchId = "BatchId";
             public const string PersonId = "PersonId";
+        }
+
+        /// <summary>
+        /// Custom block security action keys.
+        /// </summary>
+        private static class SecurityActionKey
+        {
+            /// <summary>
+            /// Controls which roles/users may filter the transaction list by a specific person.
+            /// </summary>
+            public const string FilterByPerson = "FilterByPerson";
         }
 
         /// <summary>
@@ -283,6 +297,12 @@ namespace Rock.Blocks.Finance
         /// Gets a value indicating whether the current user can edit transactions in this block.
         /// </summary>
         private bool CanEdit => BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+
+        /// <summary>
+        /// Gets a value indicating whether the current user is authorized to filter the list by a
+        /// specific person (the "FilterByPerson" custom security action).
+        /// </summary>
+        private bool CanFilterByPerson => BlockCache.IsAuthorized( SecurityActionKey.FilterByPerson, RequestContext.CurrentPerson );
 
         /// <summary>
         /// Gets a value indicating whether the batch context (when present) is open and editable
@@ -468,6 +488,7 @@ namespace Rock.Blocks.Finance
                 IsScheduledTransactionContext = _scheduledTransaction != null,
                 IsRegistrationContext = _registration != null,
                 AreFiltersVisible = areFiltersVisible,
+                IsPersonFilterVisible = areFiltersVisible && _person == null && CanFilterByPerson,
                 IsReassignVisible = _person != null && CanEdit,
                 IsMoveToBatchVisible = _batch != null && CanEdit && IsBatchEditable,
                 ShowClosedBatchWarning = _batch != null && _batch.Status == BatchStatus.Closed,
@@ -954,8 +975,9 @@ namespace Rock.Blocks.Finance
             }
 
             // Person — PersonPicker stores the primary alias GUID. Resolve it to a PersonId, then
-            // match any of that person's aliases so merged records still appear.
-            var personAliasGuid = FilterPerson.AsGuidOrNull();
+            // match any of that person's aliases so merged records still appear. Only honored when
+            // the user is authorized for the "FilterByPerson" security action.
+            var personAliasGuid = CanFilterByPerson ? FilterPerson.AsGuidOrNull() : null;
             if ( personAliasGuid.HasValue )
             {
                 var personAliasService = new PersonAliasService( RockContext );

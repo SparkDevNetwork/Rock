@@ -72,6 +72,11 @@ export type TransactionListOptionsBag = {
     isPersonContext: boolean;
 
     /**
+     * Gets whether the person filter is visible.
+     */
+    isPersonFilterVisible: boolean;
+
+    /**
      * Gets or sets a value indicating whether the "Reassign Transactions" action is available
      * (Person context with edit permission).
      */

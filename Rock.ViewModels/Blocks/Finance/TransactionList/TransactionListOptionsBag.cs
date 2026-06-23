@@ -125,6 +125,11 @@ namespace Rock.ViewModels.Blocks.Finance.TransactionList
         public bool AreFiltersVisible { get; set; }
 
         /// <summary>
+        /// Gets whether the person filter is visible.
+        /// </summary>
+        public bool IsPersonFilterVisible { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the "Reassign Transactions" action is available
         /// (Person context with edit permission).
         /// </summary>
