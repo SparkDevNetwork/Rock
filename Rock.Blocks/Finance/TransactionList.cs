@@ -1451,7 +1451,144 @@ namespace Rock.Blocks.Finance
             } );
         }
 
-        // TODO Step 5: Reassign block action (with its request bag).
+        /// <summary>
+        /// Reassigns the selected transactions to a different person, and optionally moves or copies
+        /// that source person's saved bank accounts to the target person. Only available in a Person
+        /// context with edit permission. In Accounts view mode the selected keys are transaction
+        /// details, whose parent transactions are reassigned.
+        /// </summary>
+        /// <param name="transactionKeys">The IdKeys of the selected transactions (Transactions mode) or transaction details (Accounts mode).</param>
+        /// <param name="personAliasKey">The Guid of the target person's alias (from the person picker).</param>
+        /// <param name="bankAccountAction">How to handle the source person's saved bank accounts: "MOVE", "COPY", or "NONE".</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult ReassignTransactions( List<string> transactionKeys, string personAliasKey, string bankAccountAction )
+        {
+            InitializeContextEntities();
+
+            if ( !CanEdit || _person == null )
+            {
+                return ActionBadRequest( "Not authorized to reassign transactions." );
+            }
+
+            if ( transactionKeys == null || !transactionKeys.Any() )
+            {
+                return ActionBadRequest( "There were not any transactions selected." );
+            }
+
+            var targetPersonAlias = new PersonAliasService( RockContext ).Get( personAliasKey.AsGuid() );
+            if ( targetPersonAlias == null )
+            {
+                return ActionBadRequest( "The selected person could not be found." );
+            }
+
+            var allowIntegerId = !PageCache.Layout.Site.DisablePredictableIds;
+            var selectedIds = transactionKeys
+                .Select( key => IdHasher.Instance.GetId( key ) ?? ( allowIntegerId ? key.AsIntegerOrNull() : null ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            var transactionService = new FinancialTransactionService( RockContext );
+
+            // In Accounts mode the keys are transaction details, so reassign their parent transactions;
+            // in Transactions mode the keys are the transactions themselves.
+            var transactionsToReassign = CurrentViewMode == ViewMode.Accounts
+                ? transactionService.Queryable().Where( t => t.TransactionDetails.Any( d => selectedIds.Contains( d.Id ) ) )
+                : transactionService.Queryable().Where( t => selectedIds.Contains( t.Id ) );
+
+            foreach ( var transaction in transactionsToReassign.ToList() )
+            {
+                transaction.AuthorizedPersonAliasId = targetPersonAlias.Id;
+            }
+
+            RockContext.SaveChanges();
+
+            ReassignBankAccounts( bankAccountAction, targetPersonAlias );
+
+            return ActionOk();
+        }
+
+        /// <summary>
+        /// Moves or copies the context person's saved bank accounts to the target person, depending on
+        /// the requested action. Accounts the target already has (matched by secured account number)
+        /// are skipped, and the change is recorded in each person's history. Does nothing when the
+        /// action is "NONE" or the source person has no saved bank accounts.
+        /// </summary>
+        /// <param name="bankAccountAction">"MOVE", "COPY", or "NONE".</param>
+        /// <param name="targetPersonAlias">The alias of the person receiving the accounts.</param>
+        private void ReassignBankAccounts( string bankAccountAction, PersonAlias targetPersonAlias )
+        {
+            if ( bankAccountAction == "NONE" || _person == null )
+            {
+                return;
+            }
+
+            var bankAccountService = new FinancialPersonBankAccountService( RockContext );
+
+            var sourceBankAccounts = bankAccountService.Queryable()
+                .Where( a => a.PersonAlias != null && a.PersonAlias.PersonId == _person.Id )
+                .ToList();
+
+            if ( !sourceBankAccounts.Any() )
+            {
+                return;
+            }
+
+            // Secured account numbers the target already has, used to avoid creating duplicates.
+            var targetSecuredNumbers = bankAccountService.Queryable()
+                .Where( a => a.PersonAlias != null && a.PersonAlias.PersonId == targetPersonAlias.PersonId )
+                .Select( a => a.AccountNumberSecured )
+                .ToList();
+
+            var isMove = bankAccountAction == "MOVE";
+
+            foreach ( var bankAccount in sourceBankAccounts )
+            {
+                var targetAlreadyHasAccount = targetSecuredNumbers.Contains( bankAccount.AccountNumberSecured );
+
+                if ( isMove )
+                {
+                    // Reassign the account to the target, deleting it instead when the target already has it.
+                    if ( targetAlreadyHasAccount )
+                    {
+                        bankAccountService.Delete( bankAccount );
+                    }
+                    else
+                    {
+                        bankAccount.PersonAliasId = targetPersonAlias.Id;
+                    }
+                }
+                else if ( !targetAlreadyHasAccount )
+                {
+                    // Copy: leave the source account in place and add a matching one for the target.
+                    bankAccountService.Add( new FinancialPersonBankAccount
+                    {
+                        PersonAliasId = targetPersonAlias.Id,
+                        AccountNumberMasked = bankAccount.AccountNumberMasked,
+                        AccountNumberSecured = bankAccount.AccountNumberSecured
+                    } );
+                }
+            }
+
+            RockContext.SaveChanges();
+
+            var modifiedByPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
+
+            // Moving removes the accounts from the source person, so log that on their history.
+            if ( isMove )
+            {
+                var sourceChanges = new History.HistoryChangeList();
+                sourceChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Acct/Routing information" );
+                HistoryService.SaveChanges( RockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON.AsGuid(),
+                    _person.Id, sourceChanges, true, modifiedByPersonAliasId );
+            }
+
+            var targetChanges = new History.HistoryChangeList();
+            targetChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Acct/Routing information" );
+            HistoryService.SaveChanges( RockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON.AsGuid(),
+                targetPersonAlias.PersonId, targetChanges, true, modifiedByPersonAliasId );
+        }
 
         #endregion Block Actions
 

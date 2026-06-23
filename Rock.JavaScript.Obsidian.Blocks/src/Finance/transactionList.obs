@@ -650,11 +650,21 @@
      * @param bankAccountAction How the source person's saved bank accounts should be handled ("MOVE", "COPY", or "NONE").
      */
     async function onReassignSave(person: ListItemBag, bankAccountAction: string): Promise<void> {
+        const result = await invokeBlockAction("ReassignTransactions", {
+            transactionKeys: selectedTransactionKeys.value,
+            personAliasKey: person.value,
+            bankAccountAction
+        });
+
         isReassignModalVisible.value = false;
 
-        // TODO: invoke the ReassignTransactions block action (server side to be implemented).
-        void person;
-        void bankAccountAction;
+        if (result.isSuccess) {
+            gridElement.value?.clearSelectedKeys();
+            gridDataSource.value = loadGridData();
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to reassign the transactions.");
+        }
     }
 
     /**
