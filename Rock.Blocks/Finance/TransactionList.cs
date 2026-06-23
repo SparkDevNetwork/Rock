@@ -227,7 +227,8 @@ namespace Rock.Blocks.Finance
         /// </summary>
         private static class PreferenceKey
         {
-            public const string ViewMode = "view-mode";
+            public const string ViewMode = "TransactionViewMode";
+
             public const string ShowImages = "show-images";
 
             public const string FilterDateRangeLower = "filter-date-range-lower";
@@ -252,7 +253,13 @@ namespace Rock.Blocks.Finance
         private static class ViewMode
         {
             public const string Transactions = "Transactions";
+
             public const string Accounts = "Accounts";
+
+            // The WebForms block persisted the Accounts view under the legacy value
+            // "Transaction Details". Read once in CurrentViewMode for backward compatibility so a
+            // view mode chosen before the conversion is honored; it is never written.
+            public const string LegacyAccounts = "Transaction Details";
         }
 
         #endregion Keys
@@ -336,28 +343,30 @@ namespace Rock.Blocks.Finance
             {
                 var preference = PersonPreferences.GetValue( PreferenceKey.ViewMode );
 
+                /*
+                    6/23/2026 - CH
+
+                    The WebForms block persisted the Accounts view as "Transaction Details" under
+                    this same "TransactionViewMode" preference key. Translate that legacy value
+                    forward so a view mode chosen before the conversion is honored. Once the user
+                    toggles the view here, SetViewMode overwrites it with the new "Accounts" value
+                    and this no longer applies.
+
+                    Reason: Backward compatibility for the renamed view mode preference value.
+                */
+                if ( preference == ViewMode.LegacyAccounts )
+                {
+                    preference = ViewMode.Accounts;
+                }
+
                 if ( preference == ViewMode.Transactions || preference == ViewMode.Accounts )
                 {
                     return preference;
                 }
 
-                /*
-                    6/16/2026 - CH
-
-                    The WebForms block persisted this preference as "Transaction Details". When converting
-                    we renamed that mode to "Accounts", so map the legacy value forward instead of
-                    stranding users who already had the old preference saved.
-
-                    Reason: Backward compatibility for the renamed view mode preference.
-                */
-                if ( preference == "Transaction Details" )
-                {
-                    return ViewMode.Accounts;
-                }
-
                 var defaultViewMode = GetAttributeValue( AttributeKey.DefaultTransactionView );
 
-                return ( defaultViewMode == ViewMode.Accounts || defaultViewMode == "Transaction Details" )
+                return ( defaultViewMode == ViewMode.Accounts )
                     ? ViewMode.Accounts
                     : ViewMode.Transactions;
             }
@@ -635,9 +644,10 @@ namespace Rock.Blocks.Finance
         {
             InitializeContextEntities();
 
-            if (_contextInitialized && _person == null && _batch == null && _scheduledTransaction == null && _registration == null )
+            var isContextEntityRequired = GetContextEntityType() != null;
+
+            if ( isContextEntityRequired && _person == null && _batch == null && _scheduledTransaction == null && _registration == null )
             {
-                // if context entity is required and not found, return empty list
                 return new List<TransactionListRow>().AsQueryable();
             }
 
