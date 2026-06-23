@@ -38,8 +38,14 @@
             </div>
         </template>
 
-        <template #gridHeaderPrepend v-if="isActionToolbarVisible">
-            <div class="transaction-action-toolbar">
+        <template #gridHeaderPrepend>
+            <NotificationBox v-if="config.options?.showClosedBatchWarning"
+                             alertType="info"
+                             heading="Note"
+                             class="mb-0">
+                This batch has been closed and transactions cannot be edited.
+            </NotificationBox>
+            <div class="transaction-action-toolbar" v-if="isActionToolbarVisible">
                 <div class="d-flex align-items-center gap-4">
                     <span class="label label-info p-0">Selected {{ selectedCount }}</span>
                     <div v-if="isMoveToBatchAvailable" class="d-flex align-items-center gap-2">
@@ -264,6 +270,7 @@
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
     import { GridAction, IGridState } from "@Obsidian/Types/Controls/grid";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";

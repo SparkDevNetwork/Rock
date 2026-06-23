@@ -635,6 +635,12 @@ namespace Rock.Blocks.Finance
         {
             InitializeContextEntities();
 
+            if (_contextInitialized && _person == null && _batch == null && _scheduledTransaction == null && _registration == null )
+            {
+                // if context entity is required and not found, return empty list
+                return new List<TransactionListRow>().AsQueryable();
+            }
+
             // The two view modes build rows from different entities: one row per transaction,
             // or one row per transaction detail (account line).
             var qry = CurrentViewMode == ViewMode.Accounts
