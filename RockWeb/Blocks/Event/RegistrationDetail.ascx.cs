@@ -1223,7 +1223,8 @@ namespace RockWeb.Blocks.Event
                     // reload registration
                     Registration = GetRegistration( Registration.Id, rockContext );
 
-                    RockPage.UpdateBlocks( "~/Blocks/Finance/TransactionList.ascx" );
+
+                    //RockPage.UpdateBlocks( "~/Blocks/Finance/TransactionList.ascx" );
 
                     ShowReadonlyDetails( Registration );
 
@@ -1862,10 +1863,32 @@ namespace RockWeb.Blocks.Event
 
             bool anyPayments = registration.PaymentPlanFinancialScheduledTransaction != null && registration.PaymentPlanFinancialScheduledTransaction.IsActive;
             hfHasPayments.Value = anyPayments.ToString();
-            foreach ( RockWeb.Blocks.Finance.TransactionList block in RockPage.RockBlocks.Where( a => a is RockWeb.Blocks.Finance.TransactionList ) )
-            {
-                block.SetVisible( anyPayments );
-            }
+
+            /*
+                6/23/26 - CH
+
+                The commented-out loop below was the legacy WebForms mechanism for toggling a sibling
+                Transaction List block on this same page: it reached into RockPage.RockBlocks, found any
+                instance of the WebForms TransactionList block, and showed/hid it based on whether the
+                registration had active payments. The strongly-typed cast required the
+                "<%@ Reference Control="~/Blocks/Finance/TransactionList.ascx" %>" directive in the .ascx,
+                which is why removing the chopped WebForms block broke the build.
+
+                In current Rock, no page places a Transaction List block alongside the Registration Detail
+                block, so this loop was already a no-op and has been left commented out for context.
+
+                When the Registration Detail block is itself converted to Obsidian, this cross-block
+                visibility coordination cannot be replicated with RockPage.RockBlocks (Obsidian blocks are
+                not WebForms controls). If we ever want to keep this behavior, the Obsidian-friendly
+                approach is the browser bus: Registration Detail would publish a message (e.g. a
+                "registration payments changed" event carrying the hasPayments flag) and an Obsidian
+                Transaction List block on the same page would subscribe and toggle its own visibility.
+            */
+
+            //foreach ( RockWeb.Blocks.Finance.TransactionList block in RockPage.RockBlocks.Where( a => a is RockWeb.Blocks.Finance.TransactionList ) )
+            //{
+            //    block.SetVisible( anyPayments );
+            //}
 
             lbAddRegistrant.Visible = EditAllowed;
 
@@ -1886,7 +1909,7 @@ namespace RockWeb.Blocks.Event
                 var balanceDue = registration.BalanceDue;
                 hlBalance.Visible = true;
                 hlBalance.Text = balanceDue.FormatAsCurrency();
-                
+
                 var isPaymentPlanActive = registration.IsPaymentPlanActive;
 
                 if ( balanceDue > 0.0m )
@@ -2620,12 +2643,12 @@ namespace RockWeb.Blocks.Event
                     && a.TransactionDateTime.HasValue
                 )
                 .Max( t => ( DateTime? ) t.TransactionDateTime.Value );
-            
+
             // Use the financial gateway associated with the existing payment plan
             // instead of what's configured on the template, as the template's gateway may
             // have changed after the payment plan was created.
             var nextPaymentDate = registration.PaymentPlanFinancialScheduledTransaction.FinancialGateway?.GetGatewayComponent()?.GetNextPaymentDate( registration.PaymentPlanFinancialScheduledTransaction, lastTransactionDate );
-                
+
             if ( nextPaymentDate.HasValue )
             {
                 // Show the next payment date.
@@ -3239,7 +3262,7 @@ namespace RockWeb.Blocks.Event
         }
 
         #endregion Support Classes and Enumerations
-        
+
         #region Payment Plan Methods
 
         /// <summary>
@@ -3291,7 +3314,7 @@ namespace RockWeb.Blocks.Event
 
                 AmountForPaymentPlan = this.Registration.BalanceDue,
                 CurrencyPrecision = new RockCurrencyCodeInfo().DecimalPlaces,
-                
+
                 // Admins can choose whatever payment frequency and number of payments as long as there is at least one payment.
                 DesiredNumberOfPayments = this.Registration.PaymentPlanFinancialScheduledTransaction.NumberOfPayments ?? 0,
                 IsNumberOfPaymentsLimited = false,
@@ -3300,7 +3323,7 @@ namespace RockWeb.Blocks.Event
                 // The start date should default to tomorrow if the next payment date is not set.
                 DesiredStartDate = ( financialGatewayComponent.GetNextPaymentDate( this.Registration.PaymentPlanFinancialScheduledTransaction, lastTransactionDate )
                     ?? RockDateTime.Now.AddDays( 1 ) ).Date,
-                
+
                 // The Registration Instance payment deadline should have a value since it's a required field,
                 // but default to next year just in case it's missing.
                 EndDate = ( this.Registration.RegistrationInstance.PaymentDeadlineDate
@@ -3360,7 +3383,7 @@ namespace RockWeb.Blocks.Event
                 DesiredAllowedPaymentFrequencies = frequencyValueOptions,
 
                 // Admins can choose whatever payment frequency and number of payments as long as there is at least one payment.
-                IsNumberOfPaymentsLimited = false,                
+                IsNumberOfPaymentsLimited = false,
                 DesiredNumberOfPayments = nbUpdatePaymentPlanNumberOfPayments.IntegerValue ?? 0,
                 MinNumberOfPayments = 1,
 
@@ -3380,7 +3403,7 @@ namespace RockWeb.Blocks.Event
                 // Ensure the selected frequency value is one of the available options.
                 paymentPlanConfigurationOptions.DesiredPaymentFrequency = paymentPlanConfigurationOptions.DesiredAllowedPaymentFrequencies.FirstOrDefault( option => option.Id == frequencyValueId.Value );
             }
-        
+
             return new PaymentPlanConfigurationService().Get( paymentPlanConfigurationOptions );
         }
 
@@ -3423,7 +3446,7 @@ namespace RockWeb.Blocks.Event
             }
 
             if ( paymentPlanConfiguration.AmountPerPayment > 0 )
-            { 
+            {
                 pnlUpdatePaymentPlanSummary.Visible = true;
             }
             else
@@ -3467,7 +3490,7 @@ namespace RockWeb.Blocks.Event
                     .Include( f => f.FinancialPaymentDetail )
                     .Include( f => f.FinancialGateway )
                     .FirstOrDefault( f => f.Id == paymentPlanFinancialScheduledTransactionId.Value );
-                
+
                 // Use the financial gateway associated with the existing payment plan
                 // instead of what's configured on the template, as the template's gateway may
                 // have changed after the payment plan was created.
@@ -3527,8 +3550,8 @@ namespace RockWeb.Blocks.Event
                     /*
                         07/11/2025 - NA
 
-                        Some gateways do not properly populate the FinancialPaymentDetail record they create 
-                        during the UpdateScheduledPayment() method. To compensate, we're preserving existing 
+                        Some gateways do not properly populate the FinancialPaymentDetail record they create
+                        during the UpdateScheduledPayment() method. To compensate, we're preserving existing
                         values to restore them if needed.
 
                         Reason: Expedites resolution of issue #6367 by ensuring payment details remain complete.
@@ -3551,9 +3574,9 @@ namespace RockWeb.Blocks.Event
                     /*
                         07/11/2025 - NA
 
-                        After the transaction is processed, the gateway should populate the FinancialPaymentDetail 
-                        since it has more data than Rock (as the gateway collects the payment information directly). 
-                        However, if paymentPlanPaymentInfo contains additional values, we’ll attempt to merge those 
+                        After the transaction is processed, the gateway should populate the FinancialPaymentDetail
+                        since it has more data than Rock (as the gateway collects the payment information directly).
+                        However, if paymentPlanPaymentInfo contains additional values, we’ll attempt to merge those
                         into FinancialPaymentDetail.
 
                         Reason: This mirrors similar logic used in the TransactionEntryV2 block.
@@ -3730,7 +3753,7 @@ namespace RockWeb.Blocks.Event
         protected void dpPaymentPlanStartDate_SelectDate( object sender, EventArgs e )
         {
             var paymentPlanConfiguration = GetPaymentPlanConfigurationFromModal();
-            SetUpdatePaymentPlanModalConfiguration( paymentPlanConfiguration ); 
+            SetUpdatePaymentPlanModalConfiguration( paymentPlanConfiguration );
         }
 
         protected void ddlPaymentPlanNumberOfPayments_SelectedIndexChanged( object sender, EventArgs e )
