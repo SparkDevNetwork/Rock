@@ -160,8 +160,8 @@ namespace Rock.Blocks.Finance
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "36AAA558-649E-49AF-8372-5ED6BD5C9657" )]
-    [Rock.SystemGuid.BlockTypeGuid( "D129A0C7-4A7F-42BC-8E0C-428C4A4122D2" )]
-    //[Rock.SystemGuid.BlockTypeGuid( "E04320BC-67C3-452D-9EF6-D74D8C177154" )]
+    // WAS [Rock.SystemGuid.BlockTypeGuid( "D129A0C7-4A7F-42BC-8E0C-428C4A4122D2" )]
+    [Rock.SystemGuid.BlockTypeGuid( "E04320BC-67C3-452D-9EF6-D74D8C177154" )]
     [CustomizedGrid]
     [Rock.Web.UI.ContextAware]
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]

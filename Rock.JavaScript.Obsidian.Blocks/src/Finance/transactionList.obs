@@ -719,19 +719,17 @@
 
         await invokeBlockAction("SetViewMode", { viewMode: mode });
 
+        isSwitchingMode = true;
+
+
         const data = await loadGridData();
+        gridSettings.value = loadGridSettingsFromPreferences(mode);
+        gridDataSource.value = Promise.resolve(data);
 
         viewMode.value = mode;
 
-        // Reinitialize the filter drawer with the new mode's saved values.
-        // The flag suppresses the watch's save-and-reload side effect since
-        // the grid data was already loaded above.
-        isSwitchingMode = true;
-        gridSettings.value = loadGridSettingsFromPreferences(mode);
         isSwitchingMode = false;
-
         pendingViewMode.value = null;
-        gridDataSource.value = Promise.resolve(data);
     }
 
     /**
