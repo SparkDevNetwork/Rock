@@ -16,6 +16,7 @@
 //
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
 
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
@@ -30,4 +31,5 @@ export const enum PreferenceKey {
 
 export type GridSettingsOptions = {
     category?: ListItemBag | null;
+    dateRange?: SlidingDateRange | null;
 };
