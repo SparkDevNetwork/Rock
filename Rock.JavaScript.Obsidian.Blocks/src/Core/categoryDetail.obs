@@ -436,16 +436,25 @@
     //     }
     // });
 
+    /*
+        6/24/2026 - MSE
 
-    // Handle any initial error conditions or the need to go into edit mode.
-    if (config.errorMessage) {
+        Block visibility is evaluated before any error/warning condition.
+        This block is frequently placed on a page alongside other entity detail
+        blocks (Data View, Report, Metric) and a Category Tree View. When one of
+        those entities is being added or edited, there is no CategoryId page
+        parameter, so showBlock is false and the block must stay hidden. Checking
+        the error message first would surface the "not authorized to edit this
+        category" warning even though the individual is not acting on a category.
+    */
+    if (!options.value.showBlock) {
+        isBlockVisible.value = false;
+    }
+    else if (config.errorMessage) {
         blockError.value = config.errorMessage;
     }
     else if (!config.entity) {
         blockError.value = "The specified category could not be viewed.";
-    }
-    else if (!options.value.showBlock) {
-        isBlockVisible.value = false;
     }
     else if (config.entity.categoryId === 0) {
         panelMode.value = DetailPanelMode.Add;
