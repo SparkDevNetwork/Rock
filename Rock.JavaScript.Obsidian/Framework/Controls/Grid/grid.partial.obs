@@ -197,12 +197,14 @@ Most styles are redundent from groupedPanel.obs */
     6/24/26 - Carter - Action Toolbar Slot
 
     (This is probably not the cleanest solution)
-    But the current scss for the grid sticky header was hard coding the
-    offset to 57px, which is the height of the column header. Now that the
-    action toolbar lives inside the sticky .grid-header, when it is visible
-    the hardcoded value overlaped the tollbar. So we are now ofsetting by the
-    height of the grid header as well.
+    Before the toolbar was added to the grid header, it was always 57px. So the
+    sticky header offset was able to be hardcoded to 57px. Now that the toolbar
+    can potentially be rendered in the grid header, the sticky element offset needs to vary based on the height
+    of the grid header element so that no overlapping occurs. Currently I am tracking the height
+    of the grid header element via javascript, then setting it in-line as a CSS variable so I can
+    reference it here for the offset.
 
+    Reason: Sticky column-header offset must track the grid header's actual height now that the action toolbar can grow it.
 */
 .grid-obsidian.grid-sticky .sticky-column-header {
     top: calc(var(--sticky-element-offset) + var(--grid-header-height, 57px));
