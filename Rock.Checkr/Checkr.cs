@@ -15,19 +15,25 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+
+using Microsoft.Extensions.DependencyInjection;
+
 using Newtonsoft.Json;
+
 using Rock.Attribute;
-using Rock.Web.Cache;
 using Rock.Checkr.CheckrApi;
 using Rock.Checkr.Constants;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Checkr
 {
@@ -236,11 +242,7 @@ namespace Rock.Checkr
         /// <returns></returns>
         private Person GetCurrentPerson()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
-                return currentUser != null ? currentUser.Person : null;
-            }
+            return RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson;
         }
 
         /// <summary>

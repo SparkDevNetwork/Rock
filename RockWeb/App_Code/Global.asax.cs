@@ -13,22 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Diagnostics;
-using System.Linq;
-using System.Net;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Web;
-using System.Web.Caching;
-using System.Web.Hosting;
-using System.Web.Http;
-using System.Web.Optimization;
-using System.Web.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
 using Rock;
 using Rock.Blocks;
 using Rock.Communication;
@@ -45,6 +32,22 @@ using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.WebStartup;
+
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Diagnostics;
+using System.Linq;
+using System.Net;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
+using System.Web.Caching;
+using System.Web.Hosting;
+using System.Web.Http;
+using System.Web.Optimization;
+using System.Web.Routing;
 
 [assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Global" )]
 namespace RockWeb
@@ -522,12 +525,10 @@ namespace RockWeb
         {
             try
             {
-                // get a current context so that we can set it inside the thread (which doesn't have a context)
-                var thisContext = HttpContext.Current;
+                var currentUserName = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentUser?.UserName;
+
                 Task.Run( () =>
                 {
-                    HttpContext.Current = thisContext;
-                    var currentUserName = UserLogin.GetCurrentUserName();
                     UserLoginService.UpdateLastLogin(
                         new UpdateLastLoginArgs {
                             UserName = currentUserName,

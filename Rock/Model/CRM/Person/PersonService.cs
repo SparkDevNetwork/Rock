@@ -24,12 +24,16 @@ using System.Linq;
 using System.Text;
 using System.Web.UI.WebControls;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock;
 using Rock.Attribute;
 using Rock.BulkExport;
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.DTO;
+using Rock.Configuration;
 using Rock.Data;
+using Rock.Net;
 using Rock.Security;
 using Rock.SystemKey;
 using Rock.Utility;
@@ -2825,10 +2829,20 @@ namespace Rock.Model
         /// Gets the current person.
         /// </summary>
         /// <returns>Person.</returns>
+        [RockObsolete( "20.0" )]
+        [Obsolete( "Use RockRequestContext.CurrentPerson instead." )]
         public Person GetCurrentPerson()
         {
-            var currentUser = new UserLoginService( ( RockContext ) this.Context ).GetByUserName( UserLogin.GetCurrentUserName() );
-            return currentUser != null ? currentUser.Person : null;
+            var currentPerson = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson;
+
+            if ( currentPerson == null )
+            {
+                return null;
+            }
+
+            // Load a new person to match the previous logic of always returning
+            // a new Person instance loaded from the current Context.
+            return new PersonService( ( RockContext ) Context ).Get( currentPerson.Id );
         }
 
         /// <summary>

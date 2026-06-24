@@ -27,6 +27,9 @@ using Rock.Web.Cache;
 using System.Data.Entity;
 using Microsoft.Ajax.Utilities;
 using Rock.Security;
+using Rock.Net;
+using Rock.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Rock.Drawing
 {
@@ -133,8 +136,7 @@ namespace Rock.Drawing
                 return true;
             }
 
-            var currentUser = new UserLoginService( new RockContext() ).GetByUserName( UserLogin.GetCurrentUserName() );
-            Person currentPerson = currentUser?.Person;
+            var currentPerson = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson;
             var parentEntityAllowsView = binaryFile.ParentEntityAllowsView( currentPerson );
 
             // If no parent entity is specified then check if there is security on the BinaryFileType

@@ -14,6 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
+using ImageResizer;
+
+using Microsoft.Extensions.DependencyInjection;
+
+using Rock;
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Model;
+using Rock.Net;
+using Rock.Security;
+using Rock.Utility;
+using Rock.Web.Cache;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -23,13 +36,6 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Web;
-using ImageResizer;
-using Rock;
-using Rock.Data;
-using Rock.Model;
-using Rock.Security;
-using Rock.Utility;
-using Rock.Web.Cache;
 
 namespace RockWeb
 {
@@ -283,8 +289,7 @@ namespace RockWeb
             context.Response.AddHeader( "Last-Modified", binaryFileMetaData.ModifiedDateTime.ToUniversalTime().ToString( "R" ) );
             context.Response.AddHeader( "ETag", binaryFileMetaData.ModifiedDateTime.ToString().XxHash() );
 
-            var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
-            Person currentPerson = currentUser != null ? currentUser.Person : null;
+            var currentPerson = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson;
             BinaryFile binaryFileAuth = new BinaryFileService( rockContext ).Queryable( "BinaryFileType" ).AsNoTracking().First( a => a.Id == binaryFileMetaData.Id );
 
             var parentEntityAllowsView = binaryFileAuth.ParentEntityAllowsView( currentPerson );

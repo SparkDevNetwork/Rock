@@ -14,19 +14,23 @@
 // limitations under the License.
 // </copyright>
 //
+using Microsoft.Extensions.DependencyInjection;
+
+using Rock;
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Drawing.Avatar;
+using Rock.Model;
+using Rock.Net;
+using Rock.Security;
+using Rock.Utility;
+using Rock.Web.Cache;
+
 using System;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Web;
-
-using Rock;
-using Rock.Data;
-using Rock.Drawing.Avatar;
-using Rock.Model;
-using Rock.Security;
-using Rock.Utility;
-using Rock.Web.Cache;
 
 namespace RockWeb
 {
@@ -209,8 +213,7 @@ namespace RockWeb
         private bool IsPersonAllowedRefeshCache()
         {
             var rockContext = new RockContext();
-            var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
-            var currentPerson = currentUser != null ? currentUser.Person : null;
+            var currentPerson = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson;
 
             return RoleCache.AllRoles()
                         .Where( r =>

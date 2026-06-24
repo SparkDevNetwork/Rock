@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,9 +24,13 @@ using System.Net;
 using System.Text;
 using System.Xml.Linq;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Web.Cache;
 
 namespace Rock.Security.BackgroundCheck
@@ -426,11 +430,7 @@ Response XML ({2}):
 
         private Person GetCurrentPerson()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
-                return currentUser != null ? currentUser.Person : null;
-            }
+            return RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson;
         }
 
         /// <summary>

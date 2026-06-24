@@ -157,8 +157,7 @@ namespace RockWeb
 
 
             // Need to replace CurrentUser with the result of a person token, in the meantime this will always create a null person unless directly downloadng the ical when logged into the site
-            UserLogin currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
-            Person currentPerson = currentUser != null ? currentUser.Person : null;
+            var currentPerson = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson;
             var isAuthorized = eventCalendar.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson );
 
             if ( isAuthorized )

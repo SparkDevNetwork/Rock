@@ -20,11 +20,7 @@ namespace Rock.Net
     /// Provides an interface to be used by dependency injection to access the
     /// current RockRequestContext.
     /// </summary>
-    /// <remarks>
-    /// This interface would become public at some point once plugins need
-    /// access to it.
-    /// </remarks>
-    internal interface IRockRequestContextAccessor
+    public interface IRockRequestContextAccessor
     {
         /// <summary>
         /// Gets the rock request context.

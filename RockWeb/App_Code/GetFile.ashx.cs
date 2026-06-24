@@ -14,17 +14,22 @@
 // limitations under the License.
 // </copyright>
 //
+using Microsoft.Extensions.DependencyInjection;
+
+using Rock;
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Model;
+using Rock.Net;
+using Rock.Security;
+using Rock.Utility;
+using Rock.Web.Cache;
+
 using System;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
-using Rock;
-using Rock.Data;
-using Rock.Model;
-using Rock.Security;
-using Rock.Utility;
-using Rock.Web.Cache;
 
 namespace RockWeb
 {
@@ -103,9 +108,7 @@ namespace RockWeb
                 if ( binaryFile != null )
                 {
                     binaryFile.BinaryFileType = binaryFile.BinaryFileType ?? new BinaryFileTypeService( rockContext ).Get( binaryFile.BinaryFileTypeId.Value );
-                    //UserLogin currentUser = UserLoginService.GetCurrentUser();
-                    var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
-                    Person currentPerson = currentUser?.Person;
+                    var currentPerson = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson;
                     var parentEntityAllowsView = binaryFile.ParentEntityAllowsView( currentPerson );
 
                     // If no parent entity is specified then check if there is scecurity on the BinaryFileType
