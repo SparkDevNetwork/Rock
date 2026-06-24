@@ -61,12 +61,10 @@ namespace Rock.Model
 
             if ( userName.StartsWith( "rckipid=" ) )
             {
-                Rock.Model.PersonTokenService personTokenService = new Model.PersonTokenService( rockContext );
-                Rock.Model.PersonToken personToken = personTokenService.GetByImpersonationToken( userName.Substring( 8 ) );
-                if ( personToken?.PersonAlias?.Person != null )
-                {
-                    return personToken.PersonAlias.Person.GetImpersonatedUser();
-                }
+                // This shouldn't happen and can safely be removed in the future.
+                // Leaving this here for now to help identify any remaining cases
+                // where this might happen.
+                throw new InvalidOperationException( "Unexpected rckipid token encountered while getting the current user." );
             }
             else
             {
@@ -103,8 +101,6 @@ namespace Rock.Model
 
                 return user;
             }
-
-            return null;
         }
 
         /// <summary>
@@ -164,26 +160,21 @@ namespace Rock.Model
 
             var userName = args.UserName;
 
-            int? personId = null;
-            UserLogin userLogin = null;
-            bool impersonated = userName.StartsWith( "rckipid=" );
+            if ( userName.StartsWith( "rckipid=" ) )
+            {
+                throw new ArgumentException( "rckipid usernames are no longer supported.", nameof( args ) );
+            }
 
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                if ( !impersonated )
+                int? personId = null;
+
+                var userLogin = new UserLoginService( rockContext ).Queryable().Where( a => a.UserName == userName ).FirstOrDefault();
+                if ( userLogin != null )
                 {
-                    userLogin = new UserLoginService( rockContext ).Queryable().Where( a => a.UserName == userName ).FirstOrDefault();
-                    if ( userLogin != null )
-                    {
-                        userLogin.LastLoginDateTime = RockDateTime.Now;
-                        personId = userLogin.PersonId;
-                        rockContext.SaveChanges();
-                    }
-                }
-                else if ( !args.ShouldSkipWritingHistoryLog )
-                {
-                    var impersonationToken = userName.Substring( 8 );
-                    personId = new PersonService( rockContext ).GetByImpersonationToken( impersonationToken, false, null )?.Id;
+                    userLogin.LastLoginDateTime = RockDateTime.Now;
+                    personId = userLogin.PersonId;
+                    rockContext.SaveChanges();
                 }
 
                 if ( args.ShouldSkipWritingHistoryLog || personId == null )
@@ -193,27 +184,12 @@ namespace Rock.Model
 
                 var historyLogin = new HistoryLogin
                 {
-                    UserName = PersonToken.ObfuscateRockMagicToken( userName ),
+                    UserName = userName,
                     UserLoginId = userLogin?.Id,
                     PersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( personId.Value ),
                     SourceSiteId = args.SourceSiteIdOverride,
                     WasLoginSuccessful = true
                 };
-
-                if ( impersonated )
-                {
-                    var impersonatedByUser = HttpContext.Current?.Session?["ImpersonatedByUser"] as UserLogin;
-                    if ( impersonatedByUser?.Person != null )
-                    {
-                        var relatedData = new HistoryLoginRelatedData
-                        {
-                            ImpersonatedByPersonFullName = impersonatedByUser.Person.FullName,
-                            LoginContext = "Impersonation"
-                        };
-
-                        historyLogin.SetRelatedDataJson( relatedData );
-                    }
-                }
 
                 historyLogin.SaveAfterDelay();
             }
