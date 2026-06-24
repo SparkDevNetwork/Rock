@@ -48,13 +48,23 @@ namespace Rock.Blocks.Crm
         DefaultValue = InstructionsDefaultValue,
         Order = 0 )]
 
+    [CodeEditorField(
+        "Results Message",
+        Key = AttributeKey.ResultsMessage,
+        Description = "The text (HTML) to display at the top of the results section.<span class='tip tip-lava'></span><span class='tip tip-html'></span>",
+        EditorMode = CodeEditorMode.Html,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = ResultsMessageDefaultValue,
+        Order = 1 )]
+
     [TextField(
         "Set Page Title",
         Key = AttributeKey.SetPageTitle,
         Description = "The text to display as the heading.",
         IsRequired = false,
         DefaultValue = "EQ Inventory Assessment",
-        Order = 1 )]
+        Order = 2 )]
 
     [TextField(
         "Set Page Icon",
@@ -62,7 +72,7 @@ namespace Rock.Blocks.Crm
         Description = "The css class name to use for the heading icon.",
         IsRequired = false,
         DefaultValue = "ti ti-masks-theater",
-        Order = 2 )]
+        Order = 3 )]
 
     [IntegerField(
         "Number of Questions",
@@ -70,7 +80,7 @@ namespace Rock.Blocks.Crm
         Description = "The number of questions to show per page while taking the test",
         IsRequired = true,
         DefaultIntegerValue = 7,
-        Order = 3 )]
+        Order = 4 )]
 
     #endregion Block Attributes
 
@@ -85,6 +95,7 @@ namespace Rock.Blocks.Crm
         private static class AttributeKey
         {
             public const string Instructions = "Instructions";
+            public const string ResultsMessage = "ResultsMessage";
             public const string SetPageTitle = "SetPageTitle";
             public const string SetPageIcon = "SetPageIcon";
             public const string NumberOfQuestions = "NumberofQuestions";
@@ -183,72 +194,150 @@ namespace Rock.Blocks.Crm
 </p>";
 
         /*
-            6/18/26 - MSE
+            6/24/26 - MSE
 
-            These constants hold the static display copy for the six EQ Inventory dimensions shown on the
-            results panel: the section heading, the explanatory HTML body, and the interpretation sentence
-            (which carries a "{0}" placeholder for the individual's percentile). BuildResults pairs each
-            dimension's copy with its scored percentile to produce the result bags the client renders.
+            The results panel is rendered from this Lava template (resolved server-side, including the
+            {[ chart ]} shortcodes) rather than natively by the client. This restores the original WebForms
+            results display, a horizontal bar chart on a 0 to 100 axis per dimension, and matches the sibling
+            Motivators assessment block, which renders its results the same way.
 
-            Reason: The results panel is rendered natively by the client, so this descriptive copy is owned by the block rather than an editable template.
+            Reason: The native client rendering produced a progress bar look that differed from the WebForms chart; rendering the Lava keeps parity.
         */
 
-        private const string SelfAwarenessDescription = @"
-Self-Awareness is being aware of what emotions you are experiencing and why you
-are experiencing them. This skill is demonstrated in real time. In other words,
-when you are in the midst of a discussion or even a disagreement with someone else,
-ask yourself these questions:
-<ul>
-    <li>Are you aware of what emotions you are experiencing?</li>
-    <li>Are you aware of why you are experiencing these emotions?</li>
-</ul>";
+        private const string ResultsMessageDefaultValue = @"
 
-        private const string SelfAwarenessInterpretationFormat = "Your responses to the items on the Self Awareness scale indicate the score for the ability to be aware of your own emotions is equal to or better than {0}% of those who completed this instrument.";
+{%- assign chartColor = '#709AC7' -%}
+{%- assign chartHeight = '100px' -%}
 
-        private const string SelfRegulatingDescription = @"
-Self-Regulating is appropriately expressing your emotions in the context of the relationships
-around you. This doesn’t indicate suppressing emotions; rather the ability to express your
-emotions appropriately. Healthy human beings experience a full range of emotions and these are
-important for family, friends, and co-workers to understand. Self-Regulating is learning to
-tell others what you are feeling in the moment.";
+<h1 class='text-center'>EQ Inventory Assessment Results</h1>
 
-        private const string SelfRegulatingInterpretationFormat = "Your responses to the items on the Self Regulation scale indicate the score for the ability to appropriately express your own emotions is equal to or better than {0}% of those who completed this instrument.";
+<p>
+    {{ Person.NickName }}, here are your emotional intelligence results. This is a snapshot
+    in time and may change through intentional effort and practice. You will rank high, medium
+    or low in each of the following six areas.
+</p>
 
-        private const string OthersAwarenessDescription = @"
-Others-Awareness is being aware of what emotions others are experiencing around you and
-why they are experiencing these emotions. As with understanding your own emotions, this
-skill is knowing in real time what another person is experiencing. This skill involves
-reading cues to their emotional state through their eyes, facial expressions, body
-posture, the tone of voice and many other ways.";
+<h3 id='eq-SelfAwareness'>Self Awareness</h3>
+<p>
+    Self-Awareness is being aware of what emotions you are experiencing and why you
+    are experiencing them. This skill is demonstrated in real time. In other words,
+    when you are in the midst of a discussion or even a disagreement with someone else,
+    ask yourself these questions:
+    <ul>
+        <li>Are you aware of what emotions you are experiencing?</li>
+        <li>Are you aware of why you are experiencing these emotions?</li>
+    </ul>
+</p>
 
-        private const string OthersAwarenessInterpretationFormat = "Your responses to the items on the Others-Awareness scale indicate the score for the ability to be aware of others emotions is equal to or better than {0}% of those who completed this instrument.";
+<!-- Graph -->
+{[ chart type:'horizontalBar' legendshow:'false' tooltipshow:'false' chartheight:'{{chartHeight}}' xaxistype:'linearhorizontal0to100' ]}
+    [[ dataitem label:'Self Awareness' value:'{{SelfAwareness}}' fillcolor:'{{chartColor}}' ]] [[ enddataitem ]]
+{[ endchart ]}
 
-        private const string OthersRegulatingDescription = @"
-Others-Regulating is helping those around you express their emotions appropriately
-in the context of your relationship with them. This skill centers on helping others
-know what emotions they are experiencing and then asking questions or giving them
-permission to freely and appropriately express their emotions in the context of
-your relationship.";
+<blockquote>
+    Your responses to the items on the Self Awareness scale indicate the score for the
+    ability to be aware of your own emotions is equal to or better than {{ SelfAwareness }}%
+    of those who completed this instrument.
+</blockquote>
 
-        private const string OthersRegulatingInterpretationFormat = "Your responses to the items on the Others-Regulation scale indicate the score for the ability to enable others to appropriately express their emotions in the context of your relationship is equal to or better than {0}% of those who completed this instrument.";
+<h3 id='eq-selfregulating'>Self-Regulating</h3>
+<p>
+    Self-Regulating is appropriately expressing your emotions in the context of the relationships
+    around you. This doesn’t indicate suppressing emotions; rather the ability to express your
+    emotions appropriately. Healthy human beings experience a full range of emotions and these are
+    important for family, friends, and co-workers to understand. Self-Regulating is learning to
+    tell others what you are feeling in the moment.
+</p>
 
-        private const string ProblemSolvingDescription = @"
-EQ in Problem Solving identifies how proficient you are at using emotions to solve
-problems. This skill requires first being aware of what emotions are involved in
-the problem and what is the source of those emotions. It also includes helping
-others (and yourself) express those emotions appropriate in the context of
-the situation.";
+    {[ chart type:'horizontalBar' legendshow:'false' tooltipshow:'false' chartheight:'{{chartHeight}}' xaxistype:'linearhorizontal0to100' ]}
+        [[ dataitem label:'Self Regulating' value:'{{SelfRegulating}}' fillcolor:'{{chartColor}}']] [[ enddataitem ]]
+    {[ endchart ]}
 
-        private const string ProblemSolvingInterpretationFormat = "Your responses to the items on the EQ in Problem Solving scale indicate the score for the ability to use emotions in resolving problems is equal to or better than {0}% of those who completed this instrument.";
+<blockquote>
+    Your responses to the items on the Self Regulation scale indicate the score for the
+    ability to appropriately express your own emotions is equal to or better than {{ SelfRegulating }}%
+    of those who completed this instrument.
+</blockquote>
 
-        private const string UnderStressDescription = @"
-EQ Under Stress identifies how capable you are of keeping high EQ under high-stress
-moments; which is particularly challenging. This skill requires highly developed
-Self- and Others-Awareness to understand the impact of the current stress. It also
-involves being able to articulate the appropriate emotions under pressure which
-may be different from articulating them when not under stress.";
 
-        private const string UnderStressInterpretationFormat = "Your responses to the items on the EQ in Under Stress scale indicate the score for the ability to maintain EQ under significant stress is equal to or better than {0}% of those who completed this instrument.";
+<h3 id='eq-othersawareness'>Others-Awareness</h3>
+<p>
+    Others-Awareness is being aware of what emotions others are experiencing around you and
+    why they are experiencing these emotions. As with understanding your own emotions, this
+    skill is knowing in real time what another person is experiencing. This skill involves
+    reading cues to their emotional state through their eyes, facial expressions, body
+    posture, the tone of voice and many other ways.
+</p>
+
+    {[ chart type:'horizontalBar' legendshow:'false' tooltipshow:'false' chartheight:'{{chartHeight}}' xaxistype:'linearhorizontal0to100' ]}
+        [[ dataitem label:'Others Awareness' value:'{{OthersAwareness}}' fillcolor:'{{chartColor}}' ]] [[ enddataitem ]]
+    {[ endchart ]}
+
+<blockquote>
+    Your responses to the items on the Others-Awareness scale indicate the score for the
+    ability to be aware of others emotions is equal to or better than {{ OthersAwareness }}%
+    of those who completed this instrument.
+</blockquote>
+
+
+<h3 id='eq-othersregulating'>Others-Regulating</h3>
+<p>
+    Others-Regulating is helping those around you express their emotions appropriately
+    in the context of your relationship with them. This skill centers on helping others
+    know what emotions they are experiencing and then asking questions or giving them
+    permission to freely and appropriately express their emotions in the context of
+    your relationship.
+</p>
+
+    {[ chart type:'horizontalBar' legendshow:'false' tooltipshow:'false' chartheight:'{{chartHeight}}' xaxistype:'linearhorizontal0to100' ]}
+        [[ dataitem label:'Others Regulating' value:'{{OthersRegulating}}' fillcolor:'{{chartColor}}' ]] [[ enddataitem ]]
+    {[ endchart ]}
+
+<blockquote>
+    Your responses to the items on the Others-Regulation scale indicate the score for
+    the ability to enable others to appropriately express their emotions in the context
+    of your relationship is equal to or better than {{OthersRegulating}}% of those who
+    completed this instrument.
+</blockquote>
+
+<h3 id='eq-problemsolving'>EQ in Problem Solving</h3>
+<p>
+    EQ in Problem Solving identifies how proficient you are at using emotions to solve
+    problems. This skill requires first being aware of what emotions are involved in
+    the problem and what is the source of those emotions. It also includes helping
+    others (and yourself) express those emotions appropriate in the context of
+    the situation.
+</p>
+
+    {[ chart type:'horizontalBar' legendshow:'false' tooltipshow:'false' chartheight:'{{chartHeight}}' xaxistype:'linearhorizontal0to100' ]}
+        [[ dataitem label:'EQ in Problem Solving' value:'{{EQinProblemSolving}}' fillcolor:'{{chartColor}}' ]] [[ enddataitem ]]
+    {[ endchart ]}
+
+<blockquote>
+    Your responses to the items on the EQ in Problem Solving scale indicate the score for
+    the ability to use emotions in resolving problems is equal to or better than {{ EQinProblemSolving }}%
+    of those who completed this instrument.
+</blockquote>
+
+
+<h3 id='eq-understress'>EQ Under Stress</h3>
+<p>
+    EQ Under Stress identifies how capable you are of keeping high EQ under high-stress
+    moments; which is particularly challenging. This skill requires highly developed
+    Self- and Others-Awareness to understand the impact of the current stress. It also
+    involves being able to articulate the appropriate emotions under pressure which
+    may be different from articulating them when not under stress.
+</p>
+
+    {[ chart type:'horizontalBar' legendshow:'false' tooltipshow:'false' chartheight:'{{chartHeight}}' xaxistype:'linearhorizontal0to100' ]}
+        [[ dataitem label:'EQ Under Stress' value:'{{EQUnderStress}}' fillcolor:'{{chartColor}}' ]] [[ enddataitem ]]
+    {[ endchart ]}
+
+<blockquote>
+    Your responses to the items on the EQ in Under Stress scale indicate the score
+    for the ability to maintain EQ under significant stress is equal to or better than {{ EQUnderStress }}%
+    of those who completed this instrument.
+</blockquote>";
 
         #endregion Properties
 
@@ -528,45 +617,34 @@ may be different from articulating them when not under stress.";
                 && assessment.CompletedDateTime.HasValue
                 && assessment.CompletedDateTime.Value.AddDays( assessmentType.MinimumDaysToRetake ) <= RockDateTime.Now;
 
-            box.ResultsGreeting = $"{targetPerson.NickName}, here are your emotional intelligence results. This is a snapshot in time and may change through intentional effort and practice. You will rank high, medium or low in each of the following six areas.";
-            box.Results = BuildResults( result );
+            box.ShowResults = true;
+            box.ResultsHtml = GetResultsHtml( result, targetPerson );
         }
 
         /// <summary>
-        /// Builds the ordered list of dimension results from the scored percentiles.
+        /// Resolves the Results Message Lava template using the scored assessment results.
         /// </summary>
-        /// <param name="result">The scored assessment results.</param>
-        /// <returns>The six dimension results in display order.</returns>
-        private static List<EQInventoryDimensionScoreBag> BuildResults( EQInventoryService.AssessmentResults result )
+        /// <param name="result">The scored assessment results whose percentiles populate the chart and interpretation merge fields.</param>
+        /// <param name="targetPerson">The person the results are for (used in the Lava template).</param>
+        /// <returns>The resolved results HTML, including the chart shortcodes.</returns>
+        private string GetResultsHtml( EQInventoryService.AssessmentResults result, Person targetPerson )
         {
-            return new List<EQInventoryDimensionScoreBag>
-            {
-                BuildDimension( "Self Awareness", SelfAwarenessDescription, SelfAwarenessInterpretationFormat, result.SelfAwareConstruct ),
-                BuildDimension( "Self-Regulating", SelfRegulatingDescription, SelfRegulatingInterpretationFormat, result.SelfRegulatingConstruct ),
-                BuildDimension( "Others-Awareness", OthersAwarenessDescription, OthersAwarenessInterpretationFormat, result.OtherAwarenessContruct ),
-                BuildDimension( "Others-Regulating", OthersRegulatingDescription, OthersRegulatingInterpretationFormat, result.OthersRegulatingConstruct ),
-                BuildDimension( "EQ in Problem Solving", ProblemSolvingDescription, ProblemSolvingInterpretationFormat, result.EQ_ProblemSolvingScale ),
-                BuildDimension( "EQ Under Stress", UnderStressDescription, UnderStressInterpretationFormat, result.EQ_UnderStressScale )
-            };
-        }
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, targetPerson );
 
-        /// <summary>
-        /// Builds a single dimension result, formatting the interpretation sentence with the percentile score.
-        /// </summary>
-        /// <param name="name">The dimension name.</param>
-        /// <param name="description">The descriptive HTML for the dimension.</param>
-        /// <param name="interpretationFormat">The interpretation sentence with a "{0}" placeholder for the score.</param>
-        /// <param name="score">The percentile score (0-100).</param>
-        /// <returns>The populated dimension result.</returns>
-        private static EQInventoryDimensionScoreBag BuildDimension( string name, string description, string interpretationFormat, decimal score )
-        {
-            return new EQInventoryDimensionScoreBag
+            if ( targetPerson != null )
             {
-                Name = name,
-                Description = description,
-                Interpretation = string.Format( interpretationFormat, score ),
-                Percentage = ( double ) score
-            };
+                mergeFields.Add( "Person", targetPerson );
+            }
+
+            // The six dimension percentiles referenced by the Results Message Lava template.
+            mergeFields.Add( "SelfAwareness", result.SelfAwareConstruct );
+            mergeFields.Add( "SelfRegulating", result.SelfRegulatingConstruct );
+            mergeFields.Add( "OthersAwareness", result.OtherAwarenessContruct );
+            mergeFields.Add( "OthersRegulating", result.OthersRegulatingConstruct );
+            mergeFields.Add( "EQinProblemSolving", result.EQ_ProblemSolvingScale );
+            mergeFields.Add( "EQUnderStress", result.EQ_UnderStressScale );
+
+            return GetAttributeValue( AttributeKey.ResultsMessage ).ResolveMergeFields( mergeFields );
         }
 
         #endregion Methods

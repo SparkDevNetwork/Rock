@@ -77,13 +77,13 @@ namespace Rock.ViewModels.Blocks.Crm.EQInventory
         public List<AssessmentResponseBag> Responses { get; set; }
 
         /// <summary>
-        /// Gets or sets the personalized greeting shown above the results. Only populated when results are shown.
+        /// Gets or sets a value indicating whether the completed results should be displayed rather than the test.
         /// </summary>
-        public string ResultsGreeting { get; set; }
+        public bool ShowResults { get; set; }
 
         /// <summary>
-        /// Gets or sets the scored dimension results of the most recent assessment. This is <c>null</c> until the assessment is completed.
+        /// Gets or sets the resolved Results Message HTML (including chart shortcodes) to display. Only populated when <see cref="ShowResults"/> is <c>true</c>.
         /// </summary>
-        public List<EQInventoryDimensionScoreBag> Results { get; set; }
+        public string ResultsHtml { get; set; }
     }
 }

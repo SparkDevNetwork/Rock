@@ -22,7 +22,6 @@
 //
 
 import { AssessmentResponseBag } from "@Obsidian/ViewModels/Blocks/Crm/EQInventory/assessmentResponseBag";
-import { EQInventoryDimensionScoreBag } from "@Obsidian/ViewModels/Blocks/Crm/EQInventory/eQInventoryDimensionScoreBag";
 
 /** Contains all the initial configuration data required to render the EQ Inventory Assessment block. */
 export type EQInventoryInitializationBox = {
@@ -65,14 +64,14 @@ export type EQInventoryInitializationBox = {
     /** Gets or sets the responses/questions for the assessment. */
     responses?: AssessmentResponseBag[] | null;
 
-    /** Gets or sets the scored dimension results of the most recent assessment. This is null until the assessment is completed. */
-    results?: EQInventoryDimensionScoreBag[] | null;
-
-    /** Gets or sets the personalized greeting shown above the results. Only populated when results are shown. */
-    resultsGreeting?: string | null;
+    /** Gets or sets the resolved Results Message HTML (including chart shortcodes) to display. Only populated when Rock.ViewModels.Blocks.Crm.EQInventory.EQInventoryInitializationBox.ShowResults is true. */
+    resultsHtml?: string | null;
 
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;
+
+    /** Gets or sets a value indicating whether the completed results should be displayed rather than the test. */
+    showResults: boolean;
 
     /** Gets or sets the date the individual started the assessment (should be after clicking start). */
     startDateTime?: string | null;
