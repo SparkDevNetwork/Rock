@@ -32,7 +32,7 @@ using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Tests.Shared.Constants;
 using Rock.Tests.Shared.Utility;
 
-namespace Rock.Tests.Integration.Security;
+namespace Rock.Tests.Integration.Model;
 
 /// <summary>
 /// Full integration tests for the <see cref="PersonSession"/> entity. These

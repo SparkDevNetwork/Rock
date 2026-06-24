@@ -112,7 +112,7 @@ public partial class PersonSession : Model<PersonSession>, IHasAdditionalSetting
     /// </summary>
     [Required]
     [DataMember( IsRequired = true )]
-    public DateTime LastActivityDateTime { get; set; }
+    public DateTime LastActivityDateTime { get; set; } = RockDateTime.Now;
 
     /// <summary>
     /// The most recent date and time the person successfully provided any
