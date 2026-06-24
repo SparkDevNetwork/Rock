@@ -14,8 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
+
 using Rock.CheckIn.v2;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -27,6 +30,8 @@ namespace Rock.Model
         /// <seealso cref="Rock.Data.EntitySaveHook{TEntity}" />
         internal class SaveHook : EntitySaveHook<Location>
         {
+            private List<int> _parentLocationIds;
+
             /// <summary>
             /// Called before the save operation is executed.
             /// </summary>
@@ -47,12 +52,69 @@ namespace Rock.Model
                     Entity.Description = Entity.ToString( true );
                 }
 
+
+                _parentLocationIds = new List<int>();
+
+                switch ( State )
+                {
+                    case EntityContextState.Added:
+                        {
+                            if ( Entity.ParentLocationId.HasValue )
+                            {
+                                _parentLocationIds.Add( Entity.ParentLocationId.Value );
+                            }
+
+                            break;
+                        }
+
+                    case EntityContextState.Modified:
+                        {
+                            var originalLocationId = ( int? ) OriginalValues[nameof( Location.ParentLocationId )];
+
+                            if ( originalLocationId != Entity.ParentLocationId )
+                            {
+                                if ( originalLocationId.HasValue )
+                                {
+                                    _parentLocationIds.Add( originalLocationId.Value );
+                                }
+
+                                if ( Entity.ParentLocationId.HasValue )
+                                {
+                                    _parentLocationIds.Add( Entity.ParentLocationId.Value );
+                                }
+                            }
+
+                            break;
+                        }
+
+                    case EntityContextState.Deleted:
+                        {
+                            if ( Entity.ParentLocationId.HasValue )
+                            {
+                                _parentLocationIds.Add( Entity.ParentLocationId.Value );
+                            }
+
+                            break;
+                        }
+                }
+
                 base.PreSave();
             }
 
             /// <inheritdoc/>
             protected override void PostSave()
             {
+                // If any parent location identifiers were found then we need
+                // to clear their cache otherwise the ChildLocationIds will
+                // be wrong.
+                if ( _parentLocationIds != null && _parentLocationIds.Count > 0 )
+                {
+                    foreach ( var locationId in _parentLocationIds )
+                    {
+                        NamedLocationCache.FlushItem( locationId );
+                    }
+                }
+
                 if ( Entity.Name.IsNotNullOrWhiteSpace() && PreSaveState == EntityContextState.Modified )
                 {
                     // Changes to the hierarchy of a named location can cause
