@@ -197,6 +197,18 @@
     </div>
 </template>
 
+<style scoped>
+/* Long, unbreakable values (URL/link attributes such as an Asana board link)
+   have no break opportunities, so with the default overflow-wrap they spill out
+   of their column in the two-column Overview layout and render on top of the
+   adjacent column's values. Force them to wrap within their column. The
+   attribute values are rendered by the AttributeValuesContainer child
+   component, so :deep is required to pierce the scoped boundary. */
+:deep(.form-control-static) {
+    overflow-wrap: break-word;
+}
+</style>
+
 <script setup lang="ts">
     import { GroupMeetingLocationBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupMeetingLocationBag";
     import { GroupDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupDetailOptionsBag";
