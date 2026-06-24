@@ -335,6 +335,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "expired saved account", () => RemoveExpiredSavedAccounts() );
 
+            RunCleanupTask( "expired person session", () => CleanupExpiredPersonSessions() );
+
             RunCleanupTask( "upcoming event date", () => UpdateEventNextOccurrenceDates() );
 
             RunCleanupTask( "non-default chrome engines", () => RemoveNonDefaultChromeEngines() );
@@ -445,6 +447,19 @@ namespace Rock.Jobs
                 rockContext.SaveChanges();
                 return count;
             }
+        }
+
+        /// <summary>
+        /// Marks expired <see cref="PersonSession"/> rows inactive once their
+        /// <see cref="PersonSession.ExpiresDateTime"/> has passed. Thin wrapper
+        /// over <see cref="PersonSessionService.MarkExpiredSessionsInactive(int, int)"/>,
+        /// which owns the batching and save-hook behavior; the rows are never
+        /// deleted, so the session history is preserved.
+        /// </summary>
+        /// <returns>The number of <see cref="PersonSession"/> rows marked inactive.</returns>
+        private int CleanupExpiredPersonSessions()
+        {
+            return PersonSessionService.MarkExpiredSessionsInactive( batchAmount, commandTimeout );
         }
 
         /// <summary>

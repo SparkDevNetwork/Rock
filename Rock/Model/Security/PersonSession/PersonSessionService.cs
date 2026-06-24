@@ -22,6 +22,8 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text.Json;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
@@ -1418,6 +1420,66 @@ public partial class PersonSessionService
         // Detach so downstream code in the same request observes the anonymous
         // state without re-resolving from the (now-expired) cookie.
         requestContext.SetPersonSession( null );
+    }
+
+    /// <summary>
+    /// Marks every active <see cref="PersonSession"/> whose
+    /// <see cref="PersonSession.ExpiresDateTime"/> has passed as inactive. Rows
+    /// are flipped through the save pipeline (not a bulk SQL update) so the
+    /// <c>PersonSession</c> save hook stamps <c>InactiveDateTime</c> in lockstep
+    /// with <c>IsActive</c>. Rows are never deleted, preserving session history.
+    /// Intended to be driven by the Rock Cleanup job; the work runs in batches
+    /// against fresh <see cref="RockContext"/> instances so a large backlog does
+    /// not accumulate in a single change tracker or exceed the command timeout.
+    /// </summary>
+    /// <param name="batchSize">The maximum number of rows to process per batch.</param>
+    /// <param name="commandTimeout">The command timeout, in seconds, applied to each batch's <see cref="RockContext"/>.</param>
+    /// <returns>The number of <see cref="PersonSession"/> rows marked inactive.</returns>
+    internal static int MarkExpiredSessionsInactive( int batchSize, int commandTimeout )
+    {
+        var recordsUpdated = 0;
+
+        // Capture "now" once so a row that expires while this run is in progress
+        // is picked up by the next run rather than extending this one.
+        var asOfDateTime = RockDateTime.Now;
+
+        var keepGoing = true;
+        while ( keepGoing )
+        {
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
+            {
+                rockContext.Database.SetCommandTimeout( commandTimeout );
+
+                var expiredSessions = new PersonSessionService( rockContext )
+                    .Queryable()
+                    .Where( s => s.IsActive
+                        && s.ExpiresDateTime.HasValue
+                        && s.ExpiresDateTime.Value < asOfDateTime )
+                    .OrderBy( s => s.Id )
+                    .Take( batchSize )
+                    .ToList();
+
+                if ( !expiredSessions.Any() )
+                {
+                    break;
+                }
+
+                foreach ( var personSession in expiredSessions )
+                {
+                    // The save hook stamps InactiveDateTime when IsActive flips
+                    // false. The row is intentionally not deleted.
+                    personSession.IsActive = false;
+                }
+
+                rockContext.SaveChanges();
+                recordsUpdated += expiredSessions.Count;
+
+                // If we filled the batch there may be more expired rows.
+                keepGoing = expiredSessions.Count == batchSize;
+            }
+        }
+
+        return recordsUpdated;
     }
 
     /// <summary>
