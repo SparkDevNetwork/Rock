@@ -45,41 +45,35 @@
                              class="mb-0">
                 This batch has been closed and transactions cannot be edited.
             </NotificationBox>
-            <div class="transaction-action-toolbar" v-if="isActionToolbarVisible">
-                <div class="d-flex align-items-center gap-4">
-                    <span class="label label-info p-0">Selected {{ selectedCount }}</span>
-                    <div v-if="isMoveToBatchAvailable" class="d-flex align-items-center gap-2">
-                        <span>Move to Batch</span>
-                        <DropDownList v-model="selectedBatchKey"
-                                      blankValue="Select..."
-                                      :items="moveToBatchTargets"
-                                      :showBlankItem="true"
-                                      :enhanceForLongLists="true"
-                                      formGroupClasses="mb-0"
-                                      inputClasses="move-to-batch-select" />
+        </template>
 
-                        <RockButton :btnType="BtnType.Primary"
-                                    :btnSize="BtnSize.Small"
-                                    :disabled="!selectedBatchKey || isMovingTransactions"
-                                    @click="onMoveTransactions">
-                            Move
-                        </RockButton>
-                    </div>
-                    <RockButton v-else-if="config.options?.isReassignVisible"
-                                :btnType="BtnType.Default"
-                                :btnSize="BtnSize.Small"
-                                @click="onReassignClick">
-                        <i class="ti ti-arrows-left-right"></i>
-                        Reassign Transactions
-                    </RockButton>
+        <template #actionToolbar>
+            <div v-if="isMoveToBatchAvailable" class="d-flex align-items-center gap-2 flex-grow-1">
+                <span class="text-nowrap">Move to Batch</span>
+                <div class="move-to-batch-group">
+                    <DropDownList v-model="selectedBatchKey"
+                                  blankValue="Select..."
+                                  :items="moveToBatchTargets"
+                                  :showBlankItem="true"
+                                  :enhanceForLongLists="true"
+                                  formGroupClasses="mb-0" />
                 </div>
-                <button type="button"
-                        class="btn btn-link btn-sm text-muted p-0"
-                        title="Clear selection"
-                        @click="onClearSelection">
-                    <i class="ti ti-x"></i>
-                </button>
+
+                <RockButton :btnType="BtnType.Primary"
+                            :btnSize="BtnSize.Small"
+                            :disabled="!selectedBatchKey || isMovingTransactions"
+                            @click="onMoveTransactions">
+                    Move
+                </RockButton>
             </div>
+            <RockButton v-else-if="config.options?.isReassignVisible"
+                        :btnType="BtnType.Default"
+                        :btnSize="BtnSize.Small"
+                        @click="onReassignClick">
+                <i class="ti ti-arrows-left-right"></i>
+                Reassign Transactions
+            </RockButton>
+
         </template>
 
         <TextColumn name="transactionIdKey" field="transactionIdKey" :hideOnScreen="true" />
@@ -249,18 +243,10 @@
     border-bottom: 1px var(--color-interface-soft) solid;
 }
 
-.transaction-action-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-xsmall);
-    padding: var(--spacing-xsmall) var(--spacing-large);
-    background-color: var(--color-info-soft);
-    border-bottom: 1px solid var(--color-interface-soft);
-}
-
-.transaction-action-toolbar :deep(.move-to-batch-select) {
-    min-width: 400px;
+.move-to-batch-group {
+    flex: 1 1 auto;
+    min-width: 200px;
+    max-width: 400px;
 }
 </style>
 
@@ -370,15 +356,6 @@
     const isMoveToBatchAvailable = computed((): boolean => {
         return !!config.options?.isMoveToBatchVisible
             && viewMode.value === ViewMode.Transactions;
-    });
-
-    /**
-     * Whether the selection action toolbar should be shown. Visible when rows are selected and at
-     * least one selection action (Move to Batch or Reassign) is available for the current context.
-     */
-    const isActionToolbarVisible = computed((): boolean => {
-        return hasSelectedRows.value
-            && (isMoveToBatchAvailable.value || (config.options?.isReassignVisible ?? false));
     });
 
     const hasSettingsFilters = computed((): boolean => {
@@ -721,13 +698,6 @@
         else {
             await alert(result.errorMessage ?? "Unknown error while trying to reassign the transactions.");
         }
-    }
-
-    /**
-     * Clears the current row selection, which hides the selection action toolbar.
-     */
-    function onClearSelection(): void {
-        gridElement.value?.clearSelectedKeys();
     }
 
     /**
