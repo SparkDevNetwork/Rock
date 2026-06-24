@@ -179,7 +179,7 @@ namespace Rock.Rest.Filters
                     actionContext.Request.SetUserPrincipal( principal );
                     SetRequestContextUser( actionContext, userLogin );
 
-                    // Phase 10 of the PersonSession spec: API-key requests
+                    // API-key requests
                     // participate in PersonSession via a long-lived
                     // ApiKey-source session. FindOrCreateApiKeySession
                     // reuses an existing active session for this UserLogin

@@ -643,10 +643,9 @@ namespace RockWeb
                     rockRequestContext.SetPersonSession( personSession );
 
                     // Only set the principal when the session has a
-                    // backing UserLogin. Sessions without one (future
-                    // Impersonation and UserToken flows) are not reachable
-                    // in this phase; later phases will define the principal
-                    // shape for those cases.
+                    // backing UserLogin. Sessions without one (such as
+                    // Impersonation and UserToken flows) do not set a
+                    // principal here.
                     if ( personSession != null && personSession.UserLogin != null )
                     {
                         var identity = new System.Security.Principal.GenericIdentity( personSession.UserLogin.UserName );

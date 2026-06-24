@@ -34,8 +34,8 @@ using Rock.Web.Cache;
 namespace Rock.Tests.Blocks.Security;
 
 /// <summary>
-/// Mocked-database tests for <see cref="ChangePassword"/>. Phase 14 of the
-/// PersonSession plan: the block must gate access on the current request
+/// Mocked-database tests for <see cref="ChangePassword"/>: the block must gate
+/// access on the current request
 /// having a non-impersonated <see cref="PersonSession"/>, replacing the
 /// legacy <c>UserLogin.IsAuthenticated</c> read (which historically returned
 /// false for impersonated forms tickets).
@@ -146,7 +146,7 @@ public class ChangePasswordTests
     /// because the block's check is <c>PersonSession?.IsImpersonated() ==
     /// true</c>. This guards the edge case where a code path sets
     /// <c>CurrentUser</c> without populating <c>PersonSession</c> (e.g., a
-    /// pre-Phase-5 test rig or a non-PersonSession auth flow).
+    /// legacy test rig or a non-PersonSession auth flow).
     /// </summary>
     [TestMethod]
     public void GetObsidianBlockInitialization_AllowsPasswordChange_WhenCurrentUserButNoPersonSession()

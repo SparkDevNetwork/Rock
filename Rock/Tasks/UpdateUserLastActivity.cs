@@ -32,7 +32,7 @@ namespace Rock.Tasks
     /// <see cref="PersonSession.LastActivityDateTime"/> on the authoritative
     /// session row. Existing writers remain in place during the dual-reader
     /// window so plugins on the old API continue to function; they will be
-    /// removed in Phase 15 of the PersonSession spec.
+    /// removed once the dual-reader window closes.
     /// </remarks>
     [RockObsolete( "20.0" )]
     [Obsolete( "Use UpdatePersonSessionLastActivity instead. UserLogin.LastActivityDateTime is being replaced by PersonSession.LastActivityDateTime." )]

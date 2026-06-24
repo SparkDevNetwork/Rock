@@ -1681,7 +1681,7 @@ public partial class PersonSessionService
         // kill switch correct for upgraded sessions for free.
         var session = FindOrCreateLegacyUpgradeSession( requestContext, userLogin.Id, ticket.IssueDate );
 
-        // Step 5: Emit the new-format cookie unconditionally. The Phase 4
+        // Step 5: Emit the new-format cookie unconditionally. The standard
         // reissue-trigger logic (half-life, key rotation, payload version)
         // does not apply here because the source cookie is not new-format
         // — there is nothing to compare against.

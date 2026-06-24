@@ -35,7 +35,7 @@ namespace Rock.Tests.Blocks.Cms;
 /// Mocked-database tests for the Active Users block's switch from
 /// <see cref="UserLogin"/> (<c>IsOnLine</c> / <c>LastActivityDateTime</c>) to
 /// <see cref="PersonSession"/> as the source of truth for who is currently
-/// active. Phase 14 of the PersonSession plan.
+/// active.
 /// </summary>
 /// <remarks>
 /// <para>

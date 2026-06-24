@@ -426,7 +426,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             try
             {
                 /*
-                    Phase 13 of the PersonSession spec: the handoff is now
+                    The handoff is now
                     cookie-based, with no `PersonToken` write and no `rckipid`
                     in the URL. `PersonSessionService.ImpersonatePerson`
                     creates the new `Impersonation`-source PersonSession,

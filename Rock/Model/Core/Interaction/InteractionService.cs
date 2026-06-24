@@ -646,7 +646,7 @@ namespace Rock.Model
             // To make this more thread safe and to avoid overhead of an extra database call, etc, run a SQL block to Get/Create in one quick SQL round trip.
             //
             // The PersonSessionId column rides along with the existing
-            // unique-key-mediated upsert (per Phase 9 of the PersonSession spec):
+            // unique-key-mediated upsert:
             // - On INSERT, the supplied @personSessionId stamps the new row at
             //   creation (anonymous browsers pass NULL; authenticated requests
             //   pass their PersonSession.Id).

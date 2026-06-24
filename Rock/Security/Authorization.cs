@@ -862,7 +862,7 @@ namespace Rock.Security
         /// saved through the standard <c>RockContext.SaveChanges()</c> flow.
         /// </para>
         /// <para>
-        /// As of Phase 11 of the PersonSession spec, this helper is a thin
+        /// This helper is a thin
         /// wrapper that resolves (or creates) a <c>Component</c>-source
         /// <see cref="PersonSession"/> for the named <see cref="UserLogin"/>
         /// via
@@ -873,7 +873,7 @@ namespace Rock.Security
         /// inherently persistent. <paramref name="isImpersonated"/> set to
         /// <c>true</c> throws <see cref="NotSupportedException"/> because
         /// admin impersonation now flows through
-        /// <c>PersonSessionService.ImpersonatePerson</c> (Phase 13) and
+        /// <c>PersonSessionService.ImpersonatePerson</c> and
         /// must NOT be initiated through this seam.
         /// </para>
         /// <para>
@@ -887,7 +887,7 @@ namespace Rock.Security
         {
             if ( isImpersonated )
             {
-                throw new NotSupportedException( "GetSimpleAuthCookie no longer supports admin impersonation. Use PersonSessionService.ImpersonatePerson (Phase 13 of the PersonSession spec) for that flow." );
+                throw new NotSupportedException( "GetSimpleAuthCookie no longer supports admin impersonation. Use PersonSessionService.ImpersonatePerson for that flow." );
             }
 
             var rockContext = new Rock.Data.RockContext();

@@ -29,8 +29,8 @@ using Rock.Tests.Shared.TestFramework;
 namespace Rock.Tests.Jobs
 {
     /// <summary>
-    /// Mocked-database tests for the <see cref="DataAutomation"/> job. Phase 14
-    /// of the PersonSession plan: GetPeopleWhoHaveSiteLogins must read activity
+    /// Mocked-database tests for the <see cref="DataAutomation"/> job:
+    /// GetPeopleWhoHaveSiteLogins must read activity
     /// from <see cref="PersonSession.LastActivityDateTime"/>, not
     /// <see cref="UserLogin.LastActivityDateTime"/> (which is no longer
     /// written under the PersonSession model).

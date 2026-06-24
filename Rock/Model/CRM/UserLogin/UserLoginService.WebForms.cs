@@ -111,8 +111,7 @@ namespace Rock.Model
         /// Fires the new <see cref="UpdatePersonSessionLastActivity"/> bus
         /// task against the <see cref="PersonSession"/> resolved on the
         /// current request, when one is present. No-op for anonymous
-        /// requests, API-key requests (until Phase 10 wires
-        /// <c>FindOrCreateApiKeySession</c>), bearer-token requests, and
+        /// requests, API-key requests, bearer-token requests, and
         /// server-side jobs.
         /// </summary>
         private static void FireUpdatePersonSessionLastActivityIfPresent()

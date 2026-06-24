@@ -105,8 +105,8 @@ public class PersonSessionTests : DatabaseTestsBase
     /// <summary>
     /// A session created via <c>StartComponentSession</c> + Add + SaveChanges
     /// then deactivated also gets <c>InactiveDateTime</c> stamped by the save
-    /// hook. Re-verifies the Phase 1 invariant now that callers can go
-    /// through the central creation path end-to-end.
+    /// hook. Re-verifies the save-hook stamping invariant now that callers can
+    /// go through the central creation path end-to-end.
     /// </summary>
     [TestMethod]
     [IsolatedTestDatabase]
@@ -229,7 +229,7 @@ public class PersonSessionTests : DatabaseTestsBase
     /// The unique-constraint-violation retry leg inside
     /// <see cref="PersonSessionService.FindOrCreateApiKeySession"/> (catch
     /// <c>DbUpdateException</c> → re-run <c>FindActiveApiKeySession</c>) is
-    /// NOT verified by this test, nor by any test in the Phase 10 suite. A
+    /// NOT verified by this test, nor by any other test in this suite. A
     /// deterministic test would have to interleave a concurrent INSERT
     /// between this caller's <c>FindActiveApiKeySession</c> and
     /// <c>SaveChanges</c>, and the harness has no clean seam for that.
@@ -291,7 +291,7 @@ public class PersonSessionTests : DatabaseTestsBase
     /// unique constraint — this test exercises the single-thread create path,
     /// which is the primary correctness property. Validating concurrency
     /// would require harnessing parallel threads against the same DB and is
-    /// out of scope for the basic Phase 3 coverage; the same behavior is
+    /// out of scope for this basic coverage; the same behavior is
     /// what <see cref="InteractionService"/> ships with today.
     /// </remarks>
     [TestMethod]
@@ -300,7 +300,7 @@ public class PersonSessionTests : DatabaseTestsBase
     {
         // Use a deliberately uncommon UA string so we can be confident no
         // seed data already has a matching InteractionDeviceType row.
-        const string userAgent = "RockPhaseThreeTestAgent/1.0 (PersonSessionUnitTest; rv:1) Gecko/20260101 Firefox/120.0";
+        const string userAgent = "RockPersonSessionTestAgent/1.0 (PersonSessionUnitTest; rv:1) Gecko/20260101 Firefox/120.0";
 
         using var rockContext = new RockContext();
         var tedDecker = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
@@ -355,7 +355,7 @@ public class PersonSessionTests : DatabaseTestsBase
     [IsolatedTestDatabase]
     public void PopulateNewSession_SameUserAgentTwice_ReusesExistingDeviceTypeRow()
     {
-        const string userAgent = "RockPhaseThreeReuseAgent/2.0 (PersonSessionUnitTest; rv:1) Gecko/20260101 Firefox/121.0";
+        const string userAgent = "RockPersonSessionReuseAgent/2.0 (PersonSessionUnitTest; rv:1) Gecko/20260101 Firefox/121.0";
 
         using var rockContext = new RockContext();
         var tedDecker = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
@@ -442,7 +442,7 @@ public class PersonSessionTests : DatabaseTestsBase
 
     #endregion UA → InteractionDeviceType resolution
 
-    #region InteractionSession.PersonSessionId upsert (Phase 9)
+    #region InteractionSession.PersonSessionId upsert
 
     /// <summary>
     /// First-time browser-session presented by an authenticated request
@@ -611,5 +611,5 @@ public class PersonSessionTests : DatabaseTestsBase
         return session;
     }
 
-    #endregion InteractionSession.PersonSessionId upsert (Phase 9)
+    #endregion InteractionSession.PersonSessionId upsert
 }

@@ -423,7 +423,7 @@ public class PersonSessionServiceTests
 
     #endregion StartUserTokenSession
 
-    #region FindOrCreateApiKeySession (Phase 10)
+    #region FindOrCreateApiKeySession
 
     /// <summary>
     /// A second call to <c>FindOrCreateApiKeySession</c> for a UserLogin that
@@ -590,9 +590,9 @@ public class PersonSessionServiceTests
         }
     }
 
-    #endregion FindOrCreateApiKeySession (Phase 10)
+    #endregion FindOrCreateApiKeySession
 
-    #region FindOrCreateDeviceComponentSession (Phase 11)
+    #region FindOrCreateDeviceComponentSession
 
     /// <summary>
     /// A second call to <c>FindOrCreateDeviceComponentSession</c> for a
@@ -865,7 +865,7 @@ public class PersonSessionServiceTests
         }
     }
 
-    #endregion FindOrCreateDeviceComponentSession (Phase 11)
+    #endregion FindOrCreateDeviceComponentSession
 
     #region EndImpersonationAndRestore
 
@@ -997,7 +997,7 @@ public class PersonSessionServiceTests
 
     #endregion EndImpersonationAndRestore
 
-    #region Phase 9 — browser-session id reset / restore
+    #region Browser-session id reset / restore
 
     /// <summary>
     /// <see cref="PersonSessionService.StartImpersonationSession"/> regenerates
@@ -1179,9 +1179,9 @@ public class PersonSessionServiceTests
         Assert.AreEqual( target, requestContext.SessionGuid );
     }
 
-    #endregion Phase 9 — browser-session id reset / restore
+    #endregion Browser-session id reset / restore
 
-    #region ImpersonatePerson (Phase 13)
+    #region ImpersonatePerson
 
     /// <summary>
     /// <see cref="PersonSessionService.ImpersonatePerson"/> on a request
@@ -1442,7 +1442,7 @@ public class PersonSessionServiceTests
         rockContext.Set<InteractionSession>().Add( adminInteractionSession );
     }
 
-    #endregion ImpersonatePerson (Phase 13)
+    #endregion ImpersonatePerson
 
     #region Cookie I/O — Encode / Decode
 
