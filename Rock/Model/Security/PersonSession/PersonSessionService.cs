@@ -69,45 +69,35 @@ public partial class PersonSessionService
     /// The configured <c>.ROCK</c> authentication cookie name.
     /// </summary>
     /// <remarks>
-    /// The plan's "no <c>System.Web</c> in <c>PersonSessionService</c>" rule
-    /// allows this single getter to read
-    /// <c>System.Web.Security.FormsAuthentication.FormsCookieName</c> directly
-    /// (fully qualified) so the rest of the service does not need a config
-    /// abstraction yet. The <c>#if WEBFORMS</c> boundary is the seam the
-    /// .NET Core port will swap when it lands. Use this property — not raw
-    /// <c>System.Web</c> reads — anywhere else in the service that needs the
-    /// cookie name.
+    /// The single seam for the auth cookie name, so the value has one place to
+    /// change; use this property anywhere in the service that needs it.
     /// </remarks>
     internal static string AuthCookieName
     {
-        get
-        {
 #if WEBFORMS
-            return System.Web.Security.FormsAuthentication.FormsCookieName;
+        get => System.Web.Security.FormsAuthentication.FormsCookieName;
 #else
-            return ".ROCK";
+        get => ".ROCK";
 #endif
-        }
     }
 
     /// <summary>
-    /// The configured forms-authentication timeout, used as the upper bound on
-    /// the browser-side <c>Expires</c> attribute under the
+    /// The configured auth cookie timeout, used as the upper bound on the
+    /// browser-side <c>Expires</c> attribute under the
     /// <c>MIN( PersonSession.ExpiresDateTime ?? MaxValue, Now + Timeout )</c>
-    /// formula. Same <c>#if WEBFORMS</c> seam as <see cref="AuthCookieName"/>.
-    /// Default (43200 minutes = 30 days) matches the Rock
-    /// <c>web.config.example</c> default.
+    /// formula. Defaults to 30 days (43200 minutes).
     /// </summary>
+    /// <remarks>
+    /// The single seam for the auth cookie timeout, so the value has one place
+    /// to change.
+    /// </remarks>
     internal static TimeSpan AuthCookieTimeout
     {
-        get
-        {
 #if WEBFORMS
-            return System.Web.Security.FormsAuthentication.Timeout;
+        get => System.Web.Security.FormsAuthentication.Timeout;
 #else
-            return TimeSpan.FromMinutes( 43200 );
+        get => TimeSpan.FromMinutes( 43200 );
 #endif
-        }
     }
 
     #endregion Auth Cookie Settings
@@ -1503,13 +1493,6 @@ public partial class PersonSessionService
     /// <c>null</c> when no configured cross-subdomain entry matches (the
     /// cookie is then host-only).
     /// </summary>
-    /// <remarks>
-    /// Equivalent to <c>Authorization.GetCookieDomain()</c> in behavior but
-    /// reads the host from <see cref="RockRequestContext"/> rather than
-    /// <c>HttpContext.Current</c>. Drops the <c>FormsAuthentication.CookieDomain</c>
-    /// fallback the legacy helper used (a host-only cookie is the safer modern
-    /// default when no explicit domain is configured).
-    /// </remarks>
     private static string GetCookieDomain( RockRequestContext requestContext )
     {
         var host = requestContext?.RequestUri?.Host;

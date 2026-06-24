@@ -532,7 +532,7 @@ namespace Rock.Security.Authentication.Auth0
         public Uri GenerateExternalLoginUrl( string externalProviderReturnUrl, string successfulAuthenticationRedirectUrl )
         {
             // see: https://auth0.com/docs/api/authentication#support
-            successfulAuthenticationRedirectUrl = successfulAuthenticationRedirectUrl ?? System.Web.Security.FormsAuthentication.DefaultUrl;
+            successfulAuthenticationRedirectUrl = successfulAuthenticationRedirectUrl ?? Rock.Web.RockPageHelper.FallbackLoginReturnUrl;
             var authDomain = this.GetAttributeValue( AttributeKey.ClientDomain );
             var customDomain = this.GetAttributeValue( AttributeKey.CustomDomain );
 

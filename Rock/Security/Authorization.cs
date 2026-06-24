@@ -905,10 +905,10 @@ namespace Rock.Security
 
             return new SimpleCookie
             {
-                Name = FormsAuthentication.FormsCookieName,
+                Name = Rock.Model.PersonSessionService.AuthCookieName,
                 Value = personSessionService.GetCookieValue( session ),
                 Expires = session.IsPersistent
-                    ? RockDateTime.Now.Add( FormsAuthentication.Timeout )
+                    ? RockDateTime.Now.Add( Rock.Model.PersonSessionService.AuthCookieTimeout )
                     : default
             };
         }
@@ -976,7 +976,7 @@ namespace Rock.Security
         [Obsolete( "Use PersonSessionService.StartComponentSession + RockContext.SaveChanges + PersonSessionService.SetAuthCookie( session, requestContext ) instead." )]
         public static void SetAuthCookie( string userName, bool isPersisted, bool isImpersonated, bool isTwoFactorAuthenticated )
         {
-            var authCookie = GetAuthCookie( userName, isPersisted, isImpersonated, isTwoFactorAuthenticated, FormsAuthentication.Timeout );
+            var authCookie = GetAuthCookie( userName, isPersisted, isImpersonated, isTwoFactorAuthenticated, Rock.Model.PersonSessionService.AuthCookieTimeout );
             RockPage.AddOrUpdateCookie( authCookie );
 
             // If cookie is for a more generic domain, we need to store that domain so that we can expire it correctly
@@ -987,7 +987,7 @@ namespace Rock.Security
             }
 
             var domainCookie =
-                new HttpCookie( $"{FormsAuthentication.FormsCookieName}_DOMAIN", authCookie.Domain )
+                new HttpCookie( $"{Rock.Model.PersonSessionService.AuthCookieName}_DOMAIN", authCookie.Domain )
                 {
                     HttpOnly = true,
                     Domain = authCookie.Domain,
@@ -1036,7 +1036,7 @@ namespace Rock.Security
         {
             ExpireUnsecuredPersonIdentifierCookie();
 
-            var domainCookieName = $"{FormsAuthentication.FormsCookieName}_DOMAIN";
+            var domainCookieName = $"{Rock.Model.PersonSessionService.AuthCookieName}_DOMAIN";
             var domainCookie = HttpContext.Current.Request.Cookies[domainCookieName];
 
             if ( domainCookie != null )
@@ -1094,7 +1094,7 @@ namespace Rock.Security
             // For browsers to recognize SameSite=none the Secure tag is required, but it doesn't hurt to add it for all samesite settings.
             string sameSiteCookieValue = $";SameSite={sameSiteCookieSetting}{secureSetting}";
 
-            var httpCookie = new HttpCookie( FormsAuthentication.FormsCookieName, value )
+            var httpCookie = new HttpCookie( Rock.Model.PersonSessionService.AuthCookieName, value )
             {
                 Domain = domain.IsNotNullOrWhiteSpace() ? domain : FormsAuthentication.CookieDomain,
                 HttpOnly = true,

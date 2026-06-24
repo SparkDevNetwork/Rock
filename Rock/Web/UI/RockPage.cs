@@ -945,16 +945,7 @@ namespace Rock.Web.UI
                         new PersonSessionService( signOutRockContext ).SignOut( RequestContext );
                     }
 
-                    var site = _pageCache.Layout.Site;
-
-                    if ( site.LoginPageId.HasValue )
-                    {
-                        site.RedirectToLoginPage( true );
-                    }
-                    else
-                    {
-                        FormsAuthentication.RedirectToLoginPage();
-                    }
+                    _pageCache.Layout.Site.RedirectToLoginPage( true );
                 }
 
                 // Check if there is a ROCK_PERSONALDEVICE_ADDRESS cookie, link person to device

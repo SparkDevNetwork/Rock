@@ -473,7 +473,7 @@ namespace Rock.Security.ExternalAuthentication
                 "https://accounts.google.com/o/oauth2/auth?response_type=code&client_id={0}&redirect_uri={1}&state={2}&scope=https://www.googleapis.com/auth/userinfo.email+https://www.googleapis.com/auth/userinfo.profile",
                 GetAttributeValue( "ClientID" ),
                 HttpUtility.UrlEncode( externalProviderReturnUrl ),
-                HttpUtility.UrlEncode( successfulAuthenticationRedirectUrl ?? FormsAuthentication.DefaultUrl ) ) );
+                HttpUtility.UrlEncode( successfulAuthenticationRedirectUrl ?? Rock.Web.RockPageHelper.FallbackLoginReturnUrl ) ) );
         }
 
         /// <inheritdoc/>

@@ -569,15 +569,7 @@ namespace RockWeb.Blocks.Fundraising
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnLoginToComment_Click( object sender, EventArgs e )
         {
-            var site = RockPage.Layout.Site;
-            if ( site.LoginPageId.HasValue )
-            {
-                site.RedirectToLoginPage( true );
-            }
-            else
-            {
-                System.Web.Security.FormsAuthentication.RedirectToLoginPage();
-            }
+            RockPage.Layout.Site.RedirectToLoginPage( true );
         }
 
         #endregion

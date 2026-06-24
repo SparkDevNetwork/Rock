@@ -641,12 +641,29 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public string GetLoginUrlWithReturnUrl()
         {
+            var context = HttpContext.Current;
+
+            // When the site does not define its own login page, fall back to the
+            // globally configured login URL rather than returning nothing.
             if ( LoginPageId is null )
             {
-                return string.Empty;
+                var fallbackLoginUrl = RockPageHelper.FallbackLoginUrl;
+
+                if ( context == null )
+                {
+                    return fallbackLoginUrl;
+                }
+
+                // Strip the rckipid token so the user logs in as a real user
+                // rather than being re-impersonated via the token after the
+                // redirect (matches the configured-login-page path below).
+                var fallbackReturnUrl = context.Request.QueryString["returnUrl"] ??
+                    context.Server.UrlEncode( PersonToken.RemoveRockMagicToken( context.Request.RawUrl ) );
+
+                var separator = fallbackLoginUrl.Contains( "?" ) ? "&" : "?";
+                return $"{fallbackLoginUrl}{separator}returnurl={fallbackReturnUrl}";
             }
 
-            var context = HttpContext.Current;
             var pageReference = LoginPageReference;
 
             if ( context != null )
@@ -679,8 +696,10 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var pageReference = LoginPageReference;
-                context.Response.Redirect( pageReference.BuildUrl(), false );
+                var url = LoginPageId is null
+                    ? RockPageHelper.FallbackLoginUrl
+                    : LoginPageReference.BuildUrl();
+                context.Response.Redirect( url, false );
             }
 
             context.ApplicationInstance.CompleteRequest();

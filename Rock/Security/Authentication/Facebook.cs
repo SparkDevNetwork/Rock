@@ -551,7 +551,7 @@ namespace Rock.Security.ExternalAuthentication
                 "https://www.facebook.com/dialog/oauth?client_id={0}&redirect_uri={1}&state={2}&scope=public_profile,email" + scopeUserFriends,
                 GetAttributeValue( "AppID" ),
                 HttpUtility.UrlEncode( externalProviderReturnUrl ),
-                HttpUtility.UrlEncode( successfulAuthenticationRedirectUrl ?? FormsAuthentication.DefaultUrl ) ) );
+                HttpUtility.UrlEncode( successfulAuthenticationRedirectUrl ?? Rock.Web.RockPageHelper.FallbackLoginReturnUrl ) ) );
         }
 
         /// <inheritdoc/>

@@ -1735,7 +1735,7 @@ public class PersonSessionServiceTests
 
     /// <summary>
     /// A cookie at or past the half-life (default 15 days for the 30-day
-    /// FormsAuthentication.Timeout) triggers a reissue: the response gets a
+    /// PersonSessionService.AuthCookieTimeout) triggers a reissue: the response gets a
     /// fresh <c>Set-Cookie</c> with a new <c>iat</c>, the same <c>sid</c>,
     /// and a refreshed <c>Expires</c>. <see cref="PersonSession.IssuedDateTime"/>
     /// is left untouched.

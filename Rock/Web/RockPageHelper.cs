@@ -48,6 +48,45 @@ namespace Rock.Web
 
         #endregion
 
+        #region Login Fallback Settings
+
+        /// <summary>
+        /// The fallback login page URL, used only when a <see cref="Rock.Model.Site"/>
+        /// does not define its own login page (the authoritative source is
+        /// <c>Site.LoginPageId</c>).
+        /// </summary>
+        /// <remarks>
+        /// The single seam for the fallback login URL, so the value has one place
+        /// to change.
+        /// </remarks>
+        internal static string FallbackLoginUrl
+        {
+#if WEBFORMS
+            get => System.Web.Security.FormsAuthentication.LoginUrl;
+#else
+            get => "Login";
+#endif
+        }
+
+        /// <summary>
+        /// The fallback URL a user is returned to after a successful login when
+        /// the request did not supply an explicit return URL.
+        /// </summary>
+        /// <remarks>
+        /// The single seam for the fallback return URL, so the value has one place
+        /// to change.
+        /// </remarks>
+        internal static string FallbackLoginReturnUrl
+        {
+#if WEBFORMS
+            get => System.Web.Security.FormsAuthentication.DefaultUrl;
+#else
+            get => "page/12";
+#endif
+        }
+
+        #endregion Login Fallback Settings
+
         /// <summary>
         /// Adds configuration specific to the Rock Page to the observability
         /// activity.
@@ -391,7 +430,7 @@ Rock.settings.initialize({{
         internal static string GetFormsLoginPage()
         {
             var current = System.Web.HttpContext.Current;
-            var loginComponents = System.Web.Security.FormsAuthentication.LoginUrl.Split( '?' );
+            var loginComponents = FallbackLoginUrl.Split( '?' );
             var loginUrl = loginComponents[0];
 
             var queryString = loginComponents.Length > 1

@@ -441,20 +441,10 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             {
                 // Admin's session expired between rendering the Impersonate
                 // button and clicking it. Fall through to the platform's
-                // standard not-authenticated path: redirect to login. Use
-                // the site's configured login page when one is set; fall
-                // back to FormsAuthentication's default otherwise. Mirrors
-                // the pattern other blocks use (e.g.
-                // AttendanceSelfEntry.btnLogin_Click).
-                var site = RockPage.Layout.Site;
-                if ( site.LoginPageId.HasValue )
-                {
-                    site.RedirectToLoginPage( true );
-                }
-                else
-                {
-                    System.Web.Security.FormsAuthentication.RedirectToLoginPage();
-                }
+                // standard not-authenticated path: redirect to the site's
+                // login page. RedirectToLoginPage falls back to the configured
+                // login URL when the site has no login page of its own.
+                RockPage.Layout.Site.RedirectToLoginPage( true );
                 return;
             }
 

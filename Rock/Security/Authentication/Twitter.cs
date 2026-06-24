@@ -108,7 +108,7 @@ namespace Rock.Security.ExternalAuthentication
         /// <returns></returns>
         public override Uri GenerateLoginUrl( HttpRequest request )
         {
-            _returnUrl = FormsAuthentication.DefaultUrl;
+            _returnUrl = Rock.Web.RockPageHelper.FallbackLoginReturnUrl;
             if ( !string.IsNullOrWhiteSpace( request.QueryString.ToString() ) )
             {
                 _returnUrl = HttpUtility.UrlDecode( request.UrlProxySafe().GetLeftPart( UriPartial.Authority ) + request.QueryString["returnurl"] );
