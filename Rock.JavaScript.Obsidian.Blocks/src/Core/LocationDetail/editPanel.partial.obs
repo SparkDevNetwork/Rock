@@ -184,8 +184,23 @@
         return props.options.printerDeviceOptions ?? [];
     });
 
+    /*
+        6/24/2026 - MSE
+
+        Whether this is an existing location and whether it had a name are
+        captured once from the originally loaded values rather than the live
+        edit values. Otherwise, temporarily clearing the Name field while
+        editing an existing named location would reclassify it as an
+        address-only location and hide the other named-location fields
+        (including the Name field itself).
+
+        Reason: https://github.com/SparkDevNetwork/Rock/issues/6895
+    */
+    const isExistingLocation = !!props.modelValue?.bag?.idKey;
+    const hadNameWhenEditingBegan = !isNullOrWhiteSpace(props.modelValue?.bag?.name);
+
     const areNamedLocationFeaturesEnabled = computed((): boolean => {
-        return !(props.options.isPersonIdAvailable || (props.modelValue?.bag?.idKey && isNullOrWhiteSpace(props.modelValue?.bag?.name)));
+        return !(props.options.isPersonIdAvailable || (isExistingLocation && !hadNameWhenEditingBegan));
     });
 
     const standardizationResults = computed((): string => {
