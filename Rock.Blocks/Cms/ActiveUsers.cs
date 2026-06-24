@@ -169,7 +169,7 @@ namespace Rock.Blocks.Cms
         /// <param name="siteId">The identifier of the site to scope page-view matches to.</param>
         /// <param name="pageViewCount">The maximum number of recent page titles to include per user. <c>0</c> skips title fetching.</param>
         /// <returns>The ordered list of <see cref="ActiveUserBag"/> entries to display.</returns>
-        private List<ActiveUserBag> GetActiveUsers( int siteId, int pageViewCount )
+        internal List<ActiveUserBag> GetActiveUsers( int siteId, int pageViewCount )
         {
             var currentPersonId = RequestContext.CurrentPerson?.Id;
 

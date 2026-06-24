@@ -38,7 +38,7 @@ namespace Rock.Tests.Integration.Security;
 /// Full integration tests for the <see cref="PersonSession"/> entity. These
 /// verify behavior that depends on the real save pipeline firing the
 /// <c>PersonSession.SaveHook</c>; plain-POCO assertions live in
-/// <c>Rock.Tests.Security.PersonSessionTests</c>.
+/// <c>Rock.Tests.Model.PersonSessionTests</c>.
 /// </summary>
 [TestClass]
 public class PersonSessionTests : DatabaseTestsBase

@@ -19,7 +19,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Enums.Security;
 using Rock.Model;
 
-namespace Rock.Tests.Security;
+namespace Rock.Tests.Model;
 
 /// <summary>
 /// Plain unit tests for the <see cref="PersonSession"/> entity. Anything that

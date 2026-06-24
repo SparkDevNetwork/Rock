@@ -25,7 +25,6 @@ using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
 using Rock.Tests.Shared.TestFramework;
-using Rock.Tests.Shared.Utility;
 
 namespace Rock.Tests.Jobs
 {
@@ -177,7 +176,7 @@ namespace Rock.Tests.Jobs
 
             Assert.IsNotNull( method, "GetPeopleWhoHaveSiteLogins was not found via reflection." );
 
-            return ( List<int> ) method.Invoke( job, new object[] { enabled, periodInDays, rockContext } );
+            return ( List<int> ) method.Invoke( job, [enabled, periodInDays, rockContext] );
         }
     }
 }
