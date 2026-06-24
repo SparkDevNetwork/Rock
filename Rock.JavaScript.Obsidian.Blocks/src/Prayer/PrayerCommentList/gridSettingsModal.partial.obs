@@ -8,9 +8,16 @@
 
         <div class="row">
             <div class="col-md-6">
+                <SlidingDateRangePicker v-model="dateRange"
+                                        label="Date Range" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
                 <CategoryPicker v-model="category"
-                                    label="Category"
-                                    :entityTypeGuid="EntityType.PrayerRequest" />
+                                label="Category"
+                                :entityTypeGuid="EntityType.PrayerRequest" />
             </div>
         </div>
     </Modal>
@@ -20,16 +27,23 @@
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { ref, PropType, watch } from "vue";
     import { GridSettingsOptions } from "./types.partial";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
 
     const props = defineProps({
         modelValue: {
             type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        defaultSlidingDateRange: {
+            type: Object as PropType<SlidingDateRange>,
             required: true
         },
 
@@ -45,12 +59,14 @@
         (e: "close"): void;
     }>();
 
-    const category =  ref<ListItemBag | null | undefined>(props.modelValue.category ?? null);
+    const category = ref<ListItemBag | null | undefined>(props.modelValue.category ?? null);
+    const dateRange = ref<SlidingDateRange | null>(props.modelValue.dateRange ?? props.defaultSlidingDateRange);
     const isVisible = useVModelPassthrough(props, "visible", emit);
 
     function onSave(): void {
         const value: GridSettingsOptions = {
             category: category.value,
+            dateRange: dateRange.value,
         };
 
         if (!deepEqual(value, props.modelValue, true)) {
@@ -62,6 +78,7 @@
 
     watch(() => props.modelValue, () => {
         category.value = props.modelValue.category;
+        dateRange.value = props.modelValue.dateRange ?? props.defaultSlidingDateRange;
     });
 
     watch(isVisible, () => {
