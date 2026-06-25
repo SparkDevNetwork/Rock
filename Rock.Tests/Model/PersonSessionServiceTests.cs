@@ -2749,6 +2749,75 @@ public class PersonSessionServiceTests
         Assert.IsNull( requestContext.PersonSession );
     }
 
+    /// <summary>
+    /// Signing out an authenticated request that also carries the unsecured
+    /// (check-in self-identification) cookie clears that cookie host-only in
+    /// addition to the auth cookie, matching the legacy "full reset on
+    /// sign-out" behavior.
+    /// </summary>
+    [TestMethod]
+    public void SignOut_ClearsUnsecuredPersonIdentifierCookie_WhenPresent()
+    {
+        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        var rockContext = scope.App.CreateRockContext();
+
+        var session = new PersonSession
+        {
+            Id = 11,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 100,
+            CreationSource = PersonSessionCreationSource.Component,
+            IsActive = true,
+            IsPersistent = true,
+        };
+        rockContext.Set<PersonSession>().Add( session );
+
+        var response = new TrackingResponseContext();
+        var cookies = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase )
+        {
+            [Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER] = Guid.NewGuid().ToString(),
+        };
+        var requestContext = BuildRequestContext( cookies, response );
+        requestContext.SetPersonSession( session );
+
+        var service = new PersonSessionService( rockContext );
+        service.SignOut( requestContext );
+
+        var unsecuredRemoval = response.RemovedCookies.SingleOrDefault( c => c.Name == Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
+        Assert.IsNotNull( unsecuredRemoval, "The unsecured person identifier cookie should be cleared on sign-out." );
+        Assert.IsNull( unsecuredRemoval.Domain, "The unsecured cookie is host-only, so it must be cleared host-only." );
+
+        Assert.IsTrue( response.RemovedCookies.Any( c => c.Name == PersonSessionService.AuthCookieName ),
+            "The auth cookie should also be cleared." );
+    }
+
+    /// <summary>
+    /// Signing out an anonymous request (no <see cref="PersonSession"/>) that
+    /// carries the unsecured cookie still clears that cookie. This is the
+    /// shared check-in device case: a self-identified (never authenticated)
+    /// person hits a sign-out path, and the unsecured identity must be
+    /// forgotten even though there is no auth session to invalidate.
+    /// </summary>
+    [TestMethod]
+    public void SignOut_AnonymousRequestWithUnsecuredCookie_StillClearsIt()
+    {
+        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        var rockContext = scope.App.CreateRockContext();
+
+        var response = new TrackingResponseContext();
+        var cookies = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase )
+        {
+            [Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER] = Guid.NewGuid().ToString(),
+        };
+        var requestContext = BuildRequestContext( cookies, response );
+
+        var service = new PersonSessionService( rockContext );
+        service.SignOut( requestContext );
+
+        Assert.HasCount( 1, response.RemovedCookies, "Only the unsecured cookie should be cleared when no auth session is present." );
+        Assert.AreEqual( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER, response.RemovedCookies[0].Name );
+    }
+
     #endregion SignOut
 
     #region MarkExpiredSessionsInactive (Rock Cleanup)

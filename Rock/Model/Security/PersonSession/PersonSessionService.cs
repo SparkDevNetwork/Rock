@@ -1414,10 +1414,11 @@ public partial class PersonSessionService
     }
 
     /// <summary>
-    /// Signs the current request out of its <see cref="PersonSession"/>. Marks
-    /// the session inactive, clears the <c>.ROCK</c> cookie, and detaches the
-    /// session from <paramref name="requestContext"/> so the remainder of this
-    /// request observes the anonymous state without re-resolving from the
+    /// Signs the current request out of its <see cref="PersonSession"/>. Clears
+    /// the unsecured (check-in self-identification) person identifier cookie,
+    /// marks the session inactive, clears the <c>.ROCK</c> cookie, and detaches
+    /// the session from <paramref name="requestContext"/> so the remainder of
+    /// this request observes the anonymous state without re-resolving from the
     /// cookie. The post-condition "this request is anonymous" holds whether or
     /// not a session was attached.
     /// </summary>
@@ -1438,10 +1439,19 @@ public partial class PersonSessionService
             throw new ArgumentNullException( nameof( requestContext ) );
         }
 
+        // Clear the unsecured (check-in self-identification) cookie first, and
+        // unconditionally — a person can be "anonymous" (no PersonSession) yet
+        // still recognized by check-in flows via this cookie, so sign-out must
+        // forget that identity too. This is especially important for shared
+        // check-in devices, and mirrors the legacy Authorization.SignOut, which
+        // expired this cookie before any session work.
+        ExpireUnsecuredPersonIdentifierCookie( requestContext );
+
         var currentSession = requestContext.PersonSession;
         if ( currentSession == null )
         {
-            // Already anonymous; nothing to sign out.
+            // No authenticated session to sign out; the unsecured identity, if
+            // any, has already been cleared above.
             return;
         }
 
@@ -1568,6 +1578,37 @@ public partial class PersonSessionService
                 Domain = issuedDomain,
             } );
         }
+    }
+
+    /// <summary>
+    /// Expires the unsecured person identifier cookie
+    /// (<see cref="Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER"/>) when it
+    /// is present on the request. This cookie is not an authentication
+    /// credential — it records a <c>PersonAlias.Guid</c> so check-in
+    /// self-service flows can recognize a person who never logged in. Sign-out
+    /// clears it so a "full reset on sign-out" forgets that identity too,
+    /// matching legacy <c>Authorization.SignOut</c>.
+    /// </summary>
+    /// <remarks>
+    /// The cookie is written host-only by <c>Authorization.SetUnsecurePersonIdentifier</c>
+    /// (no <c>Domain</c>), so it is cleared host-only. The presence check
+    /// mirrors the legacy guard and avoids emitting a needless <c>Set-Cookie</c>
+    /// on every sign-out.
+    /// </remarks>
+    /// <param name="requestContext">The current <see cref="RockRequestContext"/>.</param>
+    private static void ExpireUnsecuredPersonIdentifierCookie( RockRequestContext requestContext )
+    {
+        var unsecuredIdentifier = requestContext.GetCookieValue( Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
+        if ( unsecuredIdentifier.IsNullOrWhiteSpace() )
+        {
+            return;
+        }
+
+        requestContext.Response.RemoveCookie( new BrowserCookie
+        {
+            Name = Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER,
+            Path = "/",
+        } );
     }
 
     /// <summary>
