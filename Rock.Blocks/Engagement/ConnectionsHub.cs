@@ -3469,6 +3469,15 @@ namespace Rock.Blocks.Engagement
                 .Where( a => a.ConnectionRequestId == connectionRequest.Id )
                 .ToList();
 
+            // These activities all belong to the loaded Connection Request, which is their parent
+            // authority. Set the navigation property so the per-activity edit/delete authorization
+            // check resolves against the loaded request (with its authorization chain) instead of
+            // falling back to the global default under the no-tracking query.
+            foreach ( var activity in connectionRequestActivities )
+            {
+                activity.ConnectionRequest = connectionRequest;
+            }
+
             var entries = new List<ActivityEntryBag>();
 
             entries.AddRange( connectionRequestActivities.Select( a => new ActivityEntryBag
@@ -3485,7 +3494,11 @@ namespace Rock.Blocks.Engagement
                     ActivityTypeGuid = a.ConnectionActivityType?.Guid.ToString(),
                     ActivityTypeName = a.ConnectionActivityType?.Name,
                     IsSystemActivityType = a.ConnectionActivityType != null && a.ConnectionActivityType.ConnectionTypeId == null,
-                    ConnectorPersonAliasGuid = a.ConnectorPersonAlias?.Guid.ToString()
+                    ConnectorPersonAliasGuid = a.ConnectorPersonAlias?.Guid.ToString(),
+
+                    // Use the same authorization the UpdateActivity/DeleteActivity actions enforce so
+                    // edit and delete are only offered when the server will actually allow them.
+                    CanEdit = CanCurrentPersonEditActivity( a )
                 }
             } ) );
 
@@ -3533,7 +3546,12 @@ namespace Rock.Blocks.Engagement
                         ConnectionRequestIdKey = IdHasher.Instance.GetHash( a.ConnectionRequestId ),
                         ConnectionOpportunityIdKey = IdHasher.Instance.GetHash( a.ConnectionOpportunityId ),
                         ConnectionOpportunityName = a.ConnectionOpportunityName,
-                        ConnectionRequestStatus = a.ConnectionStatusName
+                        ConnectionRequestStatus = a.ConnectionStatusName,
+
+                        // Activities surfaced from the requester's other requests are shown for
+                        // historical context only; they are edited and deleted from their own
+                        // request, so no edit/delete actions are offered here.
+                        CanEdit = false
                     }
                 } ) );
             }
@@ -5510,15 +5528,61 @@ WHERE 1 = 1" );
         }
 
         /// <summary>
+        /// Determines whether the current person owns the specified Connection Request Activity,
+        /// meaning they either created it or are its assigned connector. Activity owners are
+        /// permitted to edit or delete their own activity even when they do not hold explicit
+        /// edit authorization on the parent Connection Request (for example, a connector who is
+        /// not a Rock administrator). This mirrors the behavior of the legacy Connection Request
+        /// Detail block, which allowed activity editing for the creator or connector.
+        /// </summary>
+        /// <param name="activity">The Connection Request Activity to evaluate.</param>
+        /// <returns><c>true</c> if the current person created the activity or is its connector; otherwise <c>false</c>.</returns>
+        private bool IsCurrentPersonActivityOwner( ConnectionRequestActivity activity )
+        {
+            var currentPerson = RequestContext.CurrentPerson;
+            if ( currentPerson == null || activity == null )
+            {
+                return false;
+            }
+
+            var isActivityCreator = activity.CreatedByPersonAlias?.PersonId == currentPerson.Id;
+            var isActivityConnector = activity.ConnectorPersonAlias?.PersonId == currentPerson.Id;
+
+            return isActivityCreator || isActivityConnector;
+        }
+
+        /// <summary>
+        /// Determines whether the current person is authorized to edit or delete the specified
+        /// Connection Request Activity. This is the single authorization check shared by the
+        /// <see cref="UpdateActivity"/> and <see cref="DeleteActivity"/> block actions and by the
+        /// activity feed when deciding whether to surface the edit and delete actions, so the UI
+        /// never offers an action the server would reject. The current person may modify an activity
+        /// when they own it (creator or connector) or hold edit authorization on the activity, which
+        /// is inherited from the parent Connection Request.
+        /// </summary>
+        /// <param name="activity">The Connection Request Activity to evaluate. Its <see cref="ConnectionRequestActivity.ConnectionRequest"/> must be loaded so the inherited authorization resolves correctly.</param>
+        /// <returns><c>true</c> if the current person may edit or delete the activity; otherwise <c>false</c>.</returns>
+        private bool CanCurrentPersonEditActivity( ConnectionRequestActivity activity )
+        {
+            if ( activity == null )
+            {
+                return false;
+            }
+
+            return IsCurrentPersonActivityOwner( activity )
+                || activity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+        }
+
+        /// <summary>
         /// Updates an existing Connection Request Activity's note, connector, and activity type.
         /// The activity type may only be changed if it is not a system activity type.
         /// Returns an updated activity entry bag to refresh the activity in the detail panel
         /// without a full page reload.
         /// </summary>
         /// <remarks>
-        /// Edit authorization is checked both at the Connection Request level via
-        /// <see cref="CanEditSpecifiedConnectionRequests"/> and at the activity level via Rock's
-        /// standard authorization check, requiring both to pass before any changes are applied.
+        /// Edit authorization is checked at the Connection Request level via
+        /// <see cref="CanEditSpecifiedConnectionRequests"/> and at the activity level via
+        /// <see cref="CanCurrentPersonEditActivity"/>, requiring both to pass before any changes are applied.
         /// </remarks>
         /// <param name="bag">A bag containing the Activity IdKey, updated note, connector Person Alias GUID, activity type GUID, and the associated Connection Request IdKeys.</param>
         /// <param name="connectionTypeIdKey">An optional Connection Type IdKey used to resolve the Connection Type, in addition to the standard page parameter resolution.</param>
@@ -5547,7 +5611,7 @@ WHERE 1 = 1" );
                 return ActionBadRequest( $"{ConnectionRequestActivity.FriendlyTypeName} not found." );
             }
 
-            if ( !activity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !CanCurrentPersonEditActivity( activity ) )
             {
                 return ActionBadRequest( "You are not authorized to edit this Activity." );
             }
@@ -5588,7 +5652,11 @@ WHERE 1 = 1" );
                     ActivityTypeGuid = activityType.Guid.ToString(),
                     ActivityTypeName = activityType.Name,
                     IsSystemActivityType = activityType.ConnectionTypeId == null,
-                    ConnectorPersonAliasGuid = connectorPersonAlias?.Guid.ToString()
+                    ConnectorPersonAliasGuid = connectorPersonAlias?.Guid.ToString(),
+
+                    // Carry the edit/delete authorization on the refreshed entry so the feed keeps
+                    // showing the actions after an edit, matching what GetActivityEntries returns.
+                    CanEdit = CanCurrentPersonEditActivity( activity )
                 }
             };
 
@@ -6015,7 +6083,7 @@ WHERE 1 = 1" );
                 return ActionBadRequest( $"{ConnectionRequestActivity.FriendlyTypeName} not found." );
             }
 
-            if ( !activity.ConnectionRequest.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !CanCurrentPersonEditActivity( activity ) )
             {
                 return ActionBadRequest( "You are not authorized to delete this activity." );
             }
