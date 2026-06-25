@@ -375,9 +375,9 @@
             reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== templateAttribute.value?.key);
         }
         else {
-            if (templateAttribute.value?.key && !reservedKeyNames.value.some(k => k === templateAttribute.value?.key)) {
-                reservedKeyNames.value.push(templateAttribute.value.key);
-            }
+            // Rebuild from the authoritative attribute list so a cancelled key
+            // change cannot leave a phantom key reserved or drop the real key.
+            reservedKeyNames.value = templateAttributes.value.map(k => k.key!);
         }
     });
 

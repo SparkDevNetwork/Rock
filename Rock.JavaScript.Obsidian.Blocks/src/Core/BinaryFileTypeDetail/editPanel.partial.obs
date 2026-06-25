@@ -344,9 +344,9 @@
             reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== binaryFileTypeAttribute.value?.key);
         }
         else {
-            if (binaryFileTypeAttribute.value?.key && !reservedKeyNames.value.some(k => k === binaryFileTypeAttribute.value?.key)) {
-                reservedKeyNames.value.push(binaryFileTypeAttribute.value.key);
-            }
+            // Rebuild from the authoritative attribute list so a cancelled key
+            // change cannot leave a phantom key reserved or drop the real key.
+            reservedKeyNames.value = binaryFileTypeAttributes.value.map(k => k.key!);
         }
     });
 

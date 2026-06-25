@@ -298,9 +298,10 @@
             itemAttributesReservedKeyNames.value = itemAttributesReservedKeyNames.value.filter(k => k !== itemAttribute.value?.key);
         }
         else {
-            if (itemAttribute.value?.key && !itemAttributesReservedKeyNames.value.some(k => k === itemAttribute.value?.key)) {
-                itemAttributesReservedKeyNames.value.push(itemAttribute.value.key);
-            }
+            // Rebuild from the authoritative attribute list so a cancelled key
+            // change cannot leave a phantom edited key reserved or drop the real
+            // sibling key. Saves have already been committed to itemAttributes.
+            itemAttributesReservedKeyNames.value = itemAttributes.value.map(k => k.key!);
         }
     });
 
@@ -424,9 +425,10 @@
             channelAttributesReservedKeyNames.value = channelAttributesReservedKeyNames.value.filter(k => k !== channelAttribute.value?.key);
         }
         else {
-            if (channelAttribute.value?.key && !channelAttributesReservedKeyNames.value.some(k => k === channelAttribute.value?.key)) {
-                channelAttributesReservedKeyNames.value.push(channelAttribute.value.key);
-            }
+            // Rebuild from the authoritative attribute list so a cancelled key
+            // change cannot leave a phantom edited key reserved or drop the real
+            // sibling key. Saves have already been committed to channelAttributes.
+            channelAttributesReservedKeyNames.value = channelAttributes.value.map(k => k.key!);
         }
     });
 
