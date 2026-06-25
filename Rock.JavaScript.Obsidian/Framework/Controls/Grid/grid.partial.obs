@@ -1428,7 +1428,8 @@ Most styles are redundent from groupedPanel.obs */
             return await alert(result.errorMessage || "Unable to create communication.");
         }
 
-        const finalUrl = makeUrlRedirectSafe(url.replace("{CommunicationId}", `${result.data}`));
+        // See Spec: 260625-grid-communicate-url-placeholder-encoding.md
+        const finalUrl = makeUrlRedirectSafe(url.replace("((CommunicationId))", `${result.data}`));
 
         window.location.href = finalUrl;
     }

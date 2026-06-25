@@ -473,14 +473,16 @@ namespace Rock.Obsidian.UI
 
                     if ( communicationPage.IsAuthorized( Security.Authorization.VIEW, block.RequestContext.CurrentPerson ) )
                     {
-                        pageRef.Parameters.AddOrReplace( "CommunicationId", "{CommunicationId}" );
+                        // See Spec:260625-grid-communicate-url-placeholder-encoding.md
+                        pageRef.Parameters.AddOrReplace( "CommunicationId", "((CommunicationId))" );
                         return pageRef.BuildUrl();
                     }
                 }
             }
             else if ( IsAuthorizedForRoute( block.RequestContext, "/Communication/{CommunicationId}" ) )
             {
-                return "/Communication/{CommunicationId}";
+                // See Spec:260625-grid-communicate-url-placeholder-encoding.md
+                return "/Communication/((CommunicationId))";
             }
 
             return null;

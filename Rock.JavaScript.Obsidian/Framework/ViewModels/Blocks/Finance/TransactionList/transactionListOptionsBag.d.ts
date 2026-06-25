@@ -71,9 +71,7 @@ export type TransactionListOptionsBag = {
     /** Gets or sets a value indicating whether the block is in a Person context. */
     isPersonContext: boolean;
 
-    /**
-     * Gets whether the person filter is visible.
-     */
+    /** Gets whether the person filter is visible. */
     isPersonFilterVisible: boolean;
 
     /**
