@@ -1028,50 +1028,41 @@ namespace Rock.Security
         }
 
         /// <summary>
-        /// Signs a user out of rock by deleting the appropriate forms authentication cookies
+        /// Signs the current user out of Rock.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// 6/25/26 - DH
+        ///
+        /// This obsolete method now proxies to
+        /// <see cref="Rock.Model.PersonSessionService.SignOut(Rock.Net.RockRequestContext)"/>,
+        /// the single sign-out seam under the PersonSession model. That seam
+        /// performs a superset of the original behavior: it clears the unsecured
+        /// person identifier cookie and the <c>.ROCK</c> cookie (at its issued
+        /// scope) AND invalidates the <c>PersonSession</c> server-side — the last
+        /// of which the original forms-authentication body never did.
+        ///
+        /// It requires an ambient <see cref="Rock.Net.RockRequestContext"/>. When
+        /// none is available (e.g. called off a non-web thread) it throws rather
+        /// than silently performing a partial, cookie-only sign-out that would
+        /// leave the server-side session active. There are no in-core callers,
+        /// and any call without a request context is a caller bug, so a clear
+        /// exception is preferable to a misleading success.
+        ///
+        /// Reason: Bridge the obsolete static sign-out to the PersonSession seam.
+        /// </para>
+        /// </remarks>
+        /// <exception cref="InvalidOperationException">Thrown when there is no active request context to sign out of.</exception>
         [RockObsolete( "20.0" )]
         [Obsolete( "Use PersonSessionService.SignOut( requestContext ) instead." )]
         public static void SignOut()
         {
-            ExpireUnsecuredPersonIdentifierCookie();
+            var requestContext = Rock.Net.RockRequestContextAccessor.Current
+                ?? throw new InvalidOperationException( "Authorization.SignOut() requires an active request context. Use PersonSessionService.SignOut( requestContext ) instead." );
 
-            var domainCookieName = $"{Rock.Model.PersonSessionService.AuthCookieName}_DOMAIN";
-            var domainCookie = HttpContext.Current.Request.Cookies[domainCookieName];
+            using var rockContext = new RockContext();
 
-            if ( domainCookie != null )
-            {
-                var authCookie = GetAuthCookie( domainCookie.Value, null );
-                authCookie.Expires = RockDateTime.SystemDateTime.AddDays( -1d );
-                RockPage.AddOrUpdateCookie( authCookie );
-
-                domainCookie = new HttpCookie( domainCookieName )
-                {
-                    HttpOnly = true,
-                    Domain = authCookie.Domain,
-                    Path = FormsAuthentication.FormsCookiePath,
-                    Secure = FormsAuthentication.RequireSSL,
-                    Expires = RockDateTime.SystemDateTime.AddDays( -1d )
-                };
-
-                RockPage.AddOrUpdateCookie( domainCookie );
-            }
-            else
-            {
-                FormsAuthentication.SignOut();
-            }
-        }
-
-        /// <summary>
-        /// Expires the Unsecured Person Identifier Cookie
-        /// </summary>
-        /// <returns></returns>
-        private static void ExpireUnsecuredPersonIdentifierCookie()
-        {
-            if ( HttpContext.Current.Request.Cookies.AllKeys.Contains( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER ) )
-            {
-                RockPage.AddOrUpdateCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER, null, RockDateTime.SystemDateTime.AddDays( -1d ) );
-            }
+            new PersonSessionService( rockContext ).SignOut( requestContext );
         }
 
         /// <summary>
