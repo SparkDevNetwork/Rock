@@ -1441,11 +1441,12 @@ public partial class PersonSessionService
 
         // Clear the unsecured (check-in self-identification) cookie first, and
         // unconditionally — a person can be "anonymous" (no PersonSession) yet
-        // still recognized by check-in flows via this cookie, so sign-out must
-        // forget that identity too. This is especially important for shared
-        // check-in devices, and mirrors the legacy Authorization.SignOut, which
-        // expired this cookie before any session work.
+        // still recognized by legacy check-in flows via this cookie, so
+        // sign-out must forget that identity too.
         ExpireUnsecuredPersonIdentifierCookie( requestContext );
+
+        // Clear the authentication cookie from the browser.
+        ExpireAuthCookie( requestContext );
 
         var currentSession = requestContext.PersonSession;
         if ( currentSession == null )
@@ -1466,8 +1467,6 @@ public partial class PersonSessionService
             trackedSession.IsActive = false;
             ( Context as RockContext ).SaveChanges();
         }
-
-        ExpireAuthCookie( requestContext );
 
         // Detach so downstream code in the same request observes the anonymous
         // state without re-resolving from the (now-expired) cookie.

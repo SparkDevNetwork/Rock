@@ -2729,12 +2729,14 @@ public class PersonSessionServiceTests
 
     /// <summary>
     /// Signing out a request that has no current <see cref="PersonSession"/>
-    /// (already anonymous) is a silent no-op: no cookie is removed and the
-    /// context stays anonymous. Defensive regression against the seam doing
-    /// work when there is nothing to sign out.
+    /// still clears the authentication cookie — sign-out always clears identity
+    /// cookies (matching the legacy behavior) — but performs no server-side
+    /// session invalidation because there is no session to invalidate. The
+    /// unsecured cookie is not on this request, so only the auth cookie is
+    /// removed (host-only, since no domain breadcrumb is present).
     /// </summary>
     [TestMethod]
-    public void SignOut_IsNoOp_WhenNoPersonSessionIsAttached()
+    public void SignOut_WithNoPersonSession_ClearsAuthCookieWithoutInvalidatingSession()
     {
         using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
         var rockContext = scope.App.CreateRockContext();
@@ -2745,7 +2747,9 @@ public class PersonSessionServiceTests
         var service = new PersonSessionService( rockContext );
         service.SignOut( requestContext );
 
-        Assert.IsEmpty( response.RemovedCookies, "No cookie should be removed when there is no session to sign out." );
+        Assert.HasCount( 1, response.RemovedCookies, "The auth cookie is cleared even when no session is attached." );
+        Assert.AreEqual( PersonSessionService.AuthCookieName, response.RemovedCookies[0].Name );
+        Assert.IsNull( response.RemovedCookies[0].Domain, "No breadcrumb present, so the auth cookie is cleared host-only." );
         Assert.IsNull( requestContext.PersonSession );
     }
 
@@ -2796,7 +2800,8 @@ public class PersonSessionServiceTests
     /// carries the unsecured cookie still clears that cookie. This is the
     /// shared check-in device case: a self-identified (never authenticated)
     /// person hits a sign-out path, and the unsecured identity must be
-    /// forgotten even though there is no auth session to invalidate.
+    /// forgotten even though there is no auth session to invalidate. The auth
+    /// cookie is also cleared (sign-out clears identity cookies unconditionally).
     /// </summary>
     [TestMethod]
     public void SignOut_AnonymousRequestWithUnsecuredCookie_StillClearsIt()
@@ -2814,8 +2819,12 @@ public class PersonSessionServiceTests
         var service = new PersonSessionService( rockContext );
         service.SignOut( requestContext );
 
-        Assert.HasCount( 1, response.RemovedCookies, "Only the unsecured cookie should be cleared when no auth session is present." );
-        Assert.AreEqual( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER, response.RemovedCookies[0].Name );
+        // Both the unsecured identity cookie and the auth cookie are cleared.
+        Assert.HasCount( 2, response.RemovedCookies );
+        Assert.IsTrue( response.RemovedCookies.Any( c => c.Name == Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER ),
+            "The unsecured person identifier cookie should be cleared even on an anonymous request." );
+        Assert.IsTrue( response.RemovedCookies.Any( c => c.Name == PersonSessionService.AuthCookieName ),
+            "The auth cookie is cleared unconditionally on sign-out." );
     }
 
     #endregion SignOut
