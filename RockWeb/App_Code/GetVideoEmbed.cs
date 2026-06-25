@@ -18,9 +18,14 @@ using System;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.SessionState;
+
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 
 namespace RockWeb
 {
@@ -56,8 +61,7 @@ namespace RockWeb
             }
             var output = "";
 
-            var currentUser = UserLoginService.GetCurrentUser();
-            Person currentPerson = currentUser != null ? currentUser.Person : null;
+            var currentPerson = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson;
             rockContext = new RockContext();
             binaryFileTypeService = new BinaryFileTypeService( rockContext );
 

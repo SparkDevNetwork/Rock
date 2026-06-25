@@ -19,12 +19,15 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Web;
+
+using Microsoft.Extensions.DependencyInjection;
 
 using OfficeOpenXml;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Utility
@@ -93,8 +96,10 @@ namespace Rock.Utility
         public static ExcelPackage CreateNewFile( DataSet sqlResults = null, string title = null )
         {
             var excel = new ExcelPackage();
+            var currentPerson = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson;
+
             excel.Workbook.Properties.Title = title;
-            excel.Workbook.Properties.Author = UserLoginService.GetCurrentUser()?.Person?.FullName ?? "Rock";
+            excel.Workbook.Properties.Author = currentPerson?.FullName ?? "Rock";
 
             // Create the worksheet(s)
             foreach ( DataTable data in sqlResults.Tables )

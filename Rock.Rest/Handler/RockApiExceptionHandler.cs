@@ -19,8 +19,12 @@ using System.Linq;
 using System.Web.Http.ExceptionHandling;
 using System.Web.Http.Results;
 
+using Microsoft.Extensions.DependencyInjection;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 
 namespace Rock.Rest
 {
@@ -48,10 +52,10 @@ namespace Rock.Rest
         public override void Handle( ExceptionHandlerContext context )
         {
             // check to see if the user is an admin, if so allow them to view the error details
-            var userLogin = Rock.Model.UserLoginService.GetCurrentUser();
+            var currentPersonId = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson?.Id;
             GroupService service = new GroupService( new RockContext() );
             Group adminGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS ) );
-            context.RequestContext.IncludeErrorDetail = userLogin != null && adminGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).Count() > 0;
+            context.RequestContext.IncludeErrorDetail = currentPersonId.HasValue && adminGroup.Members.Count( m => m.PersonId == currentPersonId.Value ) > 0;
 
             ExceptionResult result = context.Result as ExceptionResult;
 

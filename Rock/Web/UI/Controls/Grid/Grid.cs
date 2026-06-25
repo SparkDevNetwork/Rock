@@ -29,13 +29,17 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using OfficeOpenXml;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Core.Grid;
 using Rock.Lava;
+using Rock.Net;
 using Rock.Utility;
 using Rock.Web.Cache;
 
@@ -2225,16 +2229,9 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 excel.Workbook.Properties.Title = title;
 
                 // Add author info.
-                var userLogin = Rock.Model.UserLoginService.GetCurrentUser();
+                var currentPerson = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson;
 
-                if ( userLogin != null )
-                {
-                    excel.Workbook.Properties.Author = userLogin.Person.FullName;
-                }
-                else
-                {
-                    excel.Workbook.Properties.Author = "Rock";
-                }
+                excel.Workbook.Properties.Author = currentPerson?.FullName ?? "Rock";
 
                 // Add the page that created this.
                 excel.Workbook.Properties.SetCustomPropertyValue( "Source", this.Page.Request.UrlProxySafe().OriginalString );

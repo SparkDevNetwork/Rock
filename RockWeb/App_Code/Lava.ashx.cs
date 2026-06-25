@@ -24,7 +24,11 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock;
+using Rock.Configuration;
+using Rock.Net;
 using Rock.Web.Cache;
 using Newtonsoft.Json;
 using Rock.Utility;
@@ -56,14 +60,14 @@ public class LavaHandler : IHttpHandler
                 string lava = api.GetAttributeValue( "Template" );
                 string enabledLavaCommands = api.GetAttributeValue( "EnabledLavaCommands" );
                 string contentType = api.GetAttributeValue( "ResponseContentType" );
-                var currentUser = Rock.Model.UserLoginService.GetCurrentUser();
+                var currentPerson = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson;
 
-                if ( currentUser != null )
+                if ( currentPerson != null )
                 {
-                    mergeFields.AddOrReplace( "CurrentPerson", currentUser.Person );
+                    mergeFields.AddOrReplace( "CurrentPerson", currentPerson );
                 }
 
-                string response = lava.ResolveMergeFields( mergeFields, currentUser != null ? currentUser.Person : null, enabledLavaCommands ).Trim();
+                string response = lava.ResolveMergeFields( mergeFields, currentPerson, enabledLavaCommands ).Trim();
 
                 context.Response.Write( response );
                 context.Response.ContentType = contentType.IsNotNullOrWhiteSpace() ? contentType : "text/plain";

@@ -24,6 +24,7 @@ using System.Web.Cors;
 
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin;
 using Microsoft.Owin.Cors;
 
@@ -34,7 +35,8 @@ using Owin;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Model;
+using Rock.Configuration;
+using Rock.Net;
 using Rock.Web.Cache;
 using Rock.Web.HttpModules;
 
@@ -138,11 +140,11 @@ namespace Rock.RealTime.AspNet
             // Check if we have a logged in person, if so don't check for visitor.
             if ( claimsPrincipal.Identity?.Name.IsNotNullOrWhiteSpace() == true )
             {
-                var user = UserLoginService.GetCurrentUser();
+                var currentPersonId = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson?.Id;
 
-                if ( user != null )
+                if ( currentPersonId.HasValue )
                 {
-                    var identity = new ClaimsIdentity( new Claim[] { new Claim( "rock:person", user.PersonId.Value.ToString() ) } );
+                    var identity = new ClaimsIdentity( new Claim[] { new Claim( "rock:person", currentPersonId.Value.ToString() ) } );
 
                     claimsPrincipal.AddIdentity( identity );
 

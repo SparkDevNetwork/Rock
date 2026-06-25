@@ -1080,12 +1080,8 @@ namespace RockWeb
 
             try
             {
-                var user = UserLoginService.GetCurrentUser();
-                if ( user != null && user.Person != null )
-                {
-                    person = user.Person;
-                    personAlias = user.Person.PrimaryAlias;
-                }
+                person = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson;
+                personAlias = person?.PrimaryAlias;
             }
             catch
             {
@@ -1377,11 +1373,8 @@ namespace RockWeb
                 siteId = sid != null ? int.Parse( sid.ToString() ) : ( int? ) null;
                 try
                 {
-                    var user = UserLoginService.GetCurrentUser();
-                    if ( user != null && user.Person != null )
-                    {
-                        personAlias = user.Person.PrimaryAlias;
-                    }
+                    var person = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson;
+                    personAlias = person?.PrimaryAlias;
                 }
                 catch
                 {

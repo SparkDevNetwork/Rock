@@ -23,9 +23,13 @@ using System.Data.Entity;
 using System.IO;
 using System.Linq;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -60,8 +64,7 @@ namespace Rock.Badge.Component
                 noteTypes = Array.ConvertAll( GetAttributeValue( badge, "NoteTypes" ).Split( ',' ), s => new Guid( s ) ).ToList();
             }
 
-            var currentUser = UserLoginService.GetCurrentUser();
-            int? currentPersonId = currentUser != null ? currentUser.PersonId : null;
+            var currentPersonId = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson?.Id;
 
             // check for alert note
             var alertNotesExist = new NoteService( new RockContext() ).Queryable().AsNoTracking()
