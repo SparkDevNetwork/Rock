@@ -4619,12 +4619,12 @@ Sys.Application.add_load(function () {
                 ?? throw new InvalidOperationException( "Request information was incomplete: no RockRequestContext was attached during Application_BeginRequest." );
 
             // FormsAuthenticationModule has now resolved the principal, so
-            // refresh CurrentUser on the shared context. This stays in
+            // refresh the identity on the shared context. This stays in
             // place during the transition period; once
             // PersonSessionService.ResolveSessionForRequest in
             // Application_BeginRequest is the authoritative resolver,
-            // CurrentUser will already be set when we get here.
-            RequestContext.CurrentUser = CurrentUser;
+            // the identity will already be set when we get here.
+            RequestContext.SetCurrentIdentity( CurrentPerson, CurrentUser );
 
             // Hand the page to the response context so any buffered
             // page-coupled output (breadcrumbs, html elements, titles)

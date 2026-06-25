@@ -117,7 +117,7 @@ namespace Rock.Net
         /// <value>
         /// The current user.
         /// </value>
-        public virtual UserLogin CurrentUser { get; internal set; }
+        public virtual UserLogin CurrentUser { get; private set; }
 
         /// <summary>
         /// Gets the current person.
@@ -125,7 +125,15 @@ namespace Rock.Net
         /// <value>
         /// The current person.
         /// </value>
-        public virtual Person CurrentPerson => CurrentUser?.Person;
+        /// <remarks>
+        /// Set together with <see cref="CurrentUser"/> via
+        /// <see cref="SetCurrentIdentity(Person, UserLogin)"/>. It is stored
+        /// rather than derived from <c>CurrentUser?.Person</c> so it can
+        /// represent a person with no backing <see cref="UserLogin"/> (e.g. an
+        /// impersonation or user-token session) and to avoid walking the
+        /// property tree on every access.
+        /// </remarks>
+        public virtual Person CurrentPerson { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="PersonSession"/> resolved for the current
@@ -409,6 +417,7 @@ namespace Rock.Net
             Response = response;
 
             CurrentUser = currentUser;
+            CurrentPerson = currentUser?.Person;
 
             RequestUri = request.UrlProxySafe();
             RootUrlPath = GetRootUrlPath( RequestUri );
@@ -488,6 +497,7 @@ namespace Rock.Net
             Response = response;
 
             CurrentUser = currentUser;
+            CurrentPerson = currentUser?.Person;
 
             RequestUri = request.RequestUri != null ? request.UrlProxySafe() : null;
             RootUrlPath = GetRootUrlPath( RequestUri );
@@ -627,23 +637,32 @@ namespace Rock.Net
         }
 
         /// <summary>
-        /// Sets the resolved <see cref="CurrentUser"/> for this request.
+        /// Sets the resolved identity (<see cref="CurrentPerson"/> and
+        /// <see cref="CurrentUser"/>) for this request. Both are set together
+        /// so they cannot drift out of sync.
         /// </summary>
         /// <remarks>
-        /// Exists so callers outside the <c>Rock</c> assembly (notably
-        /// <c>RockWeb</c>'s <c>Application_BeginRequest</c>, which cannot
-        /// be granted <c>InternalsVisibleTo</c> access because its
-        /// assembly name is generated at runtime) can update
-        /// <see cref="CurrentUser"/> once the authentication pipeline has
-        /// resolved the principal. In-assembly callers (<c>RockPage</c>,
-        /// <c>ServiceScopeHandler</c>) continue to assign the property
-        /// directly.
+        /// The two values are supplied independently because the current
+        /// person is not always the current user's person: an impersonation or
+        /// user-token session has a current person but no backing
+        /// <see cref="UserLogin"/>, while a session-less bearer request (JWT)
+        /// has a current user whose person is the current person. Callers pass
+        /// the authoritative person for their authentication path.
+        ///
+        /// Exists as a method (rather than property setters) so callers outside
+        /// the <c>Rock</c> assembly — notably <c>RockWeb</c>'s
+        /// <c>Application_BeginRequest</c>, which cannot be granted
+        /// <c>InternalsVisibleTo</c> because its assembly name is generated at
+        /// runtime — can set the identity once the authentication pipeline has
+        /// resolved it.
         /// </remarks>
-        /// <param name="userLogin">The resolved <see cref="UserLogin"/>, or <c>null</c> for an anonymous request.</param>
+        /// <param name="currentPerson">The resolved <see cref="Person"/>, or <c>null</c> for an anonymous request.</param>
+        /// <param name="currentUser">The resolved <see cref="UserLogin"/>, or <c>null</c> when the person has no backing user login (impersonation / user-token) or the request is anonymous.</param>
         [RockInternal( "20.0", true )]
-        public void SetCurrentUser( UserLogin userLogin )
+        public void SetCurrentIdentity( Person currentPerson, UserLogin currentUser )
         {
-            CurrentUser = userLogin;
+            CurrentPerson = currentPerson;
+            CurrentUser = currentUser;
         }
 
         /// <summary>
@@ -651,7 +670,7 @@ namespace Rock.Net
         /// </summary>
         /// <remarks>
         /// Exists for the same cross-assembly reason as
-        /// <see cref="SetCurrentUser(UserLogin)"/>: <c>RockWeb</c>'s
+        /// <see cref="SetCurrentIdentity(Person, UserLogin)"/>: <c>RockWeb</c>'s
         /// <c>Application_BeginRequest</c> and
         /// <c>Application_PostAuthenticateRequest</c> hooks need to write
         /// the session resolved by <c>PersonSessionService</c> onto the

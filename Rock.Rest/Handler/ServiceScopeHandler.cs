@@ -54,7 +54,6 @@ namespace Rock.Rest.Handler
             try
             {
                 var accessor = scope.ServiceProvider.GetRequiredService<IRockRequestContextAccessor>();
-                var rockContext = scope.ServiceProvider.GetRequiredService<RockContext>();
 
                 request.Properties["RockServiceProvider"] = scope.ServiceProvider;
 
@@ -66,8 +65,11 @@ namespace Rock.Rest.Handler
                 var rockRequestContext = accessor.RockRequestContext
                     ?? throw new InvalidOperationException( "Request information was incomplete: no RockRequestContext was attached during Application_BeginRequest." );
 
-                rockRequestContext.CurrentUser = UserLoginService.GetCurrentUser( false, rockContext );
-
+                // CurrentUser / CurrentPerson are already resolved on this
+                // context by PersonSessionService.ResolveSessionForRequest in
+                // Application_BeginRequest (cookie auth) or by AuthenticateAttribute
+                // later in the pipeline (apikey / JWT / OIDC), so there is no
+                // need to re-resolve them here.
                 if ( rockRequestContext.IsClientForbidden() )
                 {
                     return request.CreateResponse( HttpStatusCode.Forbidden );

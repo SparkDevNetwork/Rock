@@ -276,7 +276,9 @@ namespace Rock.Rest.Filters
 
             if ( requestContext != null )
             {
-                requestContext.CurrentUser = user;
+                // These authentication paths (apikey / JWT / OIDC) are backed
+                // by a UserLogin, so the current person is that user's person.
+                requestContext.SetCurrentIdentity( user?.Person, user );
             }
         }
 

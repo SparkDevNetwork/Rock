@@ -632,47 +632,60 @@ namespace RockWeb
             // later in the pipeline), or no cookie at all.
             try
             {
-                using ( var rockContext = new Rock.Data.RockContext() )
+                // This RockContext is intentionally NOT disposed. The resolved
+                // PersonSession / UserLogin / PersonAlias.Person must remain
+                // usable (including lazy navigation) for the rest of the
+                // request, and the request context holds references to those
+                // entities. Rock already leaves most per-request RockContexts
+                // undisposed, so this does not introduce a new leak. This
+                // should be switched to the request-scoped DI RockContext once
+                // Application_BeginRequest owns a DI scope.
+                var rockContext = new Rock.Data.RockContext();
+
+                var personSession = new PersonSessionService( rockContext ).ResolveSessionForRequest( rockRequestContext );
+
+                // Stash the resolved session on the request context so
+                // downstream callers (blocks, MeetsRequirement checks,
+                // SignalR hubs, etc.) read the same instance for the
+                // duration of the request. Null is legitimate for
+                // anonymous requests and is handled by consumers.
+                rockRequestContext.SetPersonSession( personSession );
+
+                // Resolve the identity for every session. CurrentPerson comes
+                // from the session's person and CurrentUser from its UserLogin,
+                // set together. Impersonation and UserToken sessions have no
+                // backing UserLogin but still carry a PersonAlias, so
+                // CurrentPerson is resolved for them too. Null propagation makes
+                // this a clean no-op (anonymous) when there is no session.
+                rockRequestContext.SetCurrentIdentity( personSession?.PersonAlias?.Person, personSession?.UserLogin );
+
+                // Only set the principal when the session has a backing
+                // UserLogin. Sessions without one (Impersonation / UserToken)
+                // do not set a principal here.
+                if ( personSession?.UserLogin != null )
                 {
-                    var personSession = new PersonSessionService( rockContext ).ResolveSessionForRequest( rockRequestContext );
+                    var identity = new System.Security.Principal.GenericIdentity( personSession.UserLogin.UserName );
+                    Context.User = new System.Security.Principal.GenericPrincipal( identity, null );
+                }
 
-                    // Stash the resolved session on the request context so
-                    // downstream callers (blocks, MeetsRequirement checks,
-                    // SignalR hubs, etc.) read the same instance for the
-                    // duration of the request. Null is legitimate for
-                    // anonymous requests and is handled by consumers.
-                    rockRequestContext.SetPersonSession( personSession );
-
-                    // Only set the principal when the session has a
-                    // backing UserLogin. Sessions without one (such as
-                    // Impersonation and UserToken flows) do not set a
-                    // principal here.
-                    if ( personSession != null && personSession.UserLogin != null )
+                // Activity tracking. This is the canonical fire site
+                // for UpdatePersonSessionLastActivity — every request
+                // that resolves a PersonSession ticks activity here,
+                // regardless of whether it is a WebForms page, an
+                // Obsidian block action, a REST call, a mobile cookie
+                // request, or a TV cookie request. The bus task itself
+                // applies the per-session throttle so this call is
+                // cheap on hot paths. SignalR is intentionally excluded
+                // (long-lived hub traffic does not flow through
+                // Application_BeginRequest in a way that would
+                // legitimately advance activity).
+                if ( personSession != null )
+                {
+                    new Rock.Tasks.UpdatePersonSessionLastActivity.Message
                     {
-                        var identity = new System.Security.Principal.GenericIdentity( personSession.UserLogin.UserName );
-                        Context.User = new System.Security.Principal.GenericPrincipal( identity, null );
-                        rockRequestContext.SetCurrentUser( personSession.UserLogin );
-                    }
-
-                    // Activity tracking. This is the canonical fire site
-                    // for UpdatePersonSessionLastActivity — every request
-                    // that resolves a PersonSession ticks activity here,
-                    // regardless of whether it is a WebForms page, an
-                    // Obsidian block action, a REST call, a mobile cookie
-                    // request, or a TV cookie request. The bus task itself
-                    // applies the per-session throttle so this call is
-                    // cheap on hot paths. SignalR is intentionally excluded
-                    // (long-lived hub traffic does not flow through
-                    // Application_BeginRequest in a way that would
-                    // legitimately advance activity).
-                    if ( personSession != null )
-                    {
-                        new Rock.Tasks.UpdatePersonSessionLastActivity.Message
-                        {
-                            PersonSessionId = personSession.Id,
-                            LastActivityDateTime = RockDateTime.Now,
-                        }.SendIfNeeded();
-                    }
+                        PersonSessionId = personSession.Id,
+                        LastActivityDateTime = RockDateTime.Now,
+                    }.SendIfNeeded();
                 }
             }
             catch ( Exception ex )
@@ -750,7 +763,12 @@ namespace RockWeb
 
                         var identity = new System.Security.Principal.GenericIdentity( upgradedSession.UserLogin.UserName );
                         Context.User = new System.Security.Principal.GenericPrincipal( identity, null );
-                        rockRequestContext.SetCurrentUser( upgradedSession.UserLogin );
+
+                        // Legacy upgrades are always backed by a UserLogin, so
+                        // the current person is that user's person. (Resolved
+                        // here while this context is still open; the WebForms
+                        // page handler re-binds it on its own context.)
+                        rockRequestContext.SetCurrentIdentity( upgradedSession.UserLogin.Person, upgradedSession.UserLogin );
                     }
                 }
             }

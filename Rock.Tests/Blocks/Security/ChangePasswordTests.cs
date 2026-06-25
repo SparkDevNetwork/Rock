@@ -193,9 +193,9 @@ public class ChangePasswordTests
 
         var requestContext = new RockRequestContext( new NullRockResponseContext() )
         {
-            CurrentUser = currentUser,
             PersonSession = session,
         };
+        requestContext.SetCurrentIdentity( currentUser?.Person, currentUser );
 
         return new ChangePassword
         {

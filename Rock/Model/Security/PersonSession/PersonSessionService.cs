@@ -1371,7 +1371,13 @@ public partial class PersonSessionService
             return null;
         }
 
-        var session = Get( payload.SessionGuid );
+        // Eager-load UserLogin and the session's person. UserLogin.Person is
+        // intentionally not included: EF relationship fixup resolves it from
+        // the already-loaded PersonAlias.Person (same person id) without a
+        // second query. These are loaded up front because an authenticated
+        // request virtually always needs the current person/user.
+        var session = Queryable( "UserLogin,PersonAlias.Person" )
+            .FirstOrDefault( s => s.Guid == payload.SessionGuid );
 
         if ( session == null
             || !session.IsActive
