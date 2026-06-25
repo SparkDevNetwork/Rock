@@ -294,6 +294,13 @@ namespace Rock.Blocks.Crm
                 }
             }
 
+            // Redirect server-side so a single-result search never paints the (empty) grid first.
+            // RedirectUrl is still returned on the bag as a client-side fallback.
+            if ( options.RedirectUrl.IsNotNullOrWhiteSpace() )
+            {
+                RequestContext.Response.RedirectToUrl( options.RedirectUrl );
+            }
+
             return options;
         }
 
