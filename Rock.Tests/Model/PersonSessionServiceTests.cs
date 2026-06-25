@@ -1932,6 +1932,92 @@ public class PersonSessionServiceTests
             $"Expires {expires.Value:o} should be in window [{expectedLow:o}, {expectedHigh:o}]." );
     }
 
+    /// <summary>
+    /// A host-only session (no shared domain resolved) writes only the auth
+    /// cookie and NO <c>.ROCK_DOMAIN</c> breadcrumb. The breadcrumb's absence
+    /// is the signal that tells sign-out to clear the cookie host-only, so it
+    /// is important that host-only issuance never emits one.
+    /// </summary>
+    [TestMethod]
+    public void SetAuthCookie_HostOnlySession_WritesNoDomainBreadcrumb()
+    {
+        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        var rockContext = scope.App.CreateRockContext();
+        var service = new PersonSessionService( rockContext );
+
+        var session = new PersonSession
+        {
+            Id = 1,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 100,
+            CreationSource = PersonSessionCreationSource.Component,
+            IsActive = true,
+            IsPersistent = true,
+        };
+
+        var response = new TrackingResponseContext();
+
+        // BuildRequestContext mocks RequestUri as null, so GetCookieDomain
+        // resolves to host-only (no breadcrumb expected).
+        var requestContext = BuildRequestContext( cookieValue: null, response );
+
+        service.SetAuthCookie( session, requestContext );
+
+        Assert.HasCount( 1, response.AddedCookies );
+        Assert.AreEqual( PersonSessionService.AuthCookieName, response.AddedCookies[0].Name );
+        Assert.IsFalse(
+            response.AddedCookies.Any( c => c.Name == PersonSessionService.AuthCookieDomainName ),
+            "A host-only session must not emit a domain breadcrumb cookie." );
+    }
+
+    /// <summary>
+    /// When the auth cookie is issued for a shared domain (the request host
+    /// matches a <c>DOMAINS_SHARING_LOGINS</c> entry), the auth cookie is scoped
+    /// to that domain AND a <c>.ROCK_DOMAIN</c> breadcrumb is written recording
+    /// the same domain, scoped to it, sharing the auth cookie's expiration. This
+    /// is the end-to-end issuance path that sign-out relies on to delete the
+    /// cookie at its exact scope.
+    /// </summary>
+    [TestMethod]
+    public void SetAuthCookie_SharedDomain_WritesDomainBreadcrumbAndScopesAuthCookie()
+    {
+        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        var rockContext = scope.App.CreateRockContext();
+
+        // Seed the DOMAINS_SHARING_LOGINS defined type with "xyz.org" so
+        // GetCookieDomain resolves a real shared domain for an admin.xyz.org
+        // request (the cache reads through the same mocked database).
+        SeedSharedLoginDomain( rockContext, definedTypeId: 5000, definedValueId: 5001, domain: "xyz.org" );
+
+        var service = new PersonSessionService( rockContext );
+
+        var session = new PersonSession
+        {
+            Id = 1,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 100,
+            CreationSource = PersonSessionCreationSource.Component,
+            IsActive = true,
+            IsPersistent = true,
+        };
+
+        var response = new TrackingResponseContext();
+        var requestContext = BuildRequestContext( cookieValue: null, response, host: "admin.xyz.org" );
+
+        service.SetAuthCookie( session, requestContext );
+
+        // The auth cookie is scoped to the shared domain (leading dot, per the
+        // GetCookieDomain rule).
+        var authCookie = response.AddedCookies.Single( c => c.Name == PersonSessionService.AuthCookieName );
+        Assert.AreEqual( ".xyz.org", authCookie.Domain, "The auth cookie should be scoped to the shared domain." );
+
+        // ...and the breadcrumb companion records that exact domain.
+        var breadcrumb = response.AddedCookies.Single( c => c.Name == PersonSessionService.AuthCookieDomainName );
+        Assert.AreEqual( ".xyz.org", breadcrumb.Value, "The breadcrumb value records the issued domain." );
+        Assert.AreEqual( ".xyz.org", breadcrumb.Domain, "The breadcrumb must be scoped to the same domain it records." );
+        Assert.AreEqual( authCookie.Expires, breadcrumb.Expires, "The breadcrumb shares the auth cookie's expiration." );
+    }
+
     #endregion ResolveSessionForRequest — happy path + reissue
 
     #region ProcessImpersonationToken matrix
@@ -2578,8 +2664,66 @@ public class PersonSessionServiceTests
         service.SignOut( requestContext );
 
         Assert.IsFalse( session.IsActive, "The current session should be marked inactive on sign-out." );
+
+        // No .ROCK_DOMAIN breadcrumb on the request => the auth cookie was
+        // issued host-only, so exactly one cookie is removed (host-only Domain).
         Assert.HasCount( 1, response.RemovedCookies );
         Assert.AreEqual( PersonSessionService.AuthCookieName, response.RemovedCookies[0].Name );
+        Assert.IsNull( response.RemovedCookies[0].Domain, "Absent breadcrumb means the cookie is cleared host-only (null Domain)." );
+        Assert.IsNull( requestContext.PersonSession, "The session should be detached from the request context on sign-out." );
+    }
+
+    /// <summary>
+    /// When a <c>.ROCK_DOMAIN</c> breadcrumb is present on the request, sign-out
+    /// clears the auth cookie at the recorded shared domain (so the deletion
+    /// matches the scope it was issued under) AND clears the breadcrumb itself
+    /// at that same domain so it does not linger. This preserves the legacy
+    /// domain-shared sign-out behavior.
+    /// </summary>
+    [TestMethod]
+    public void SignOut_WithDomainBreadcrumb_ClearsAuthCookieAndBreadcrumbAtRecordedDomain()
+    {
+        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        var rockContext = scope.App.CreateRockContext();
+
+        var session = new PersonSession
+        {
+            Id = 11,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 100,
+            CreationSource = PersonSessionCreationSource.Component,
+            IsActive = true,
+            IsPersistent = true,
+        };
+        rockContext.Set<PersonSession>().Add( session );
+
+        var response = new TrackingResponseContext();
+
+        // Seed the breadcrumb the issuance step would have written for a
+        // shared-domain login. The .ROCK value itself is irrelevant to SignOut
+        // (it locates the session via the request context, not the cookie).
+        var cookies = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase )
+        {
+            [PersonSessionService.AuthCookieName] = "irrelevant",
+            [PersonSessionService.AuthCookieDomainName] = ".xyz.org",
+        };
+        var requestContext = BuildRequestContext( cookies, response );
+        requestContext.SetPersonSession( session );
+
+        var service = new PersonSessionService( rockContext );
+        service.SignOut( requestContext );
+
+        Assert.IsFalse( session.IsActive, "The current session should be marked inactive on sign-out." );
+        Assert.HasCount( 2, response.RemovedCookies, "Both the auth cookie and its breadcrumb should be cleared." );
+
+        var authRemoval = response.RemovedCookies.SingleOrDefault( c => c.Name == PersonSessionService.AuthCookieName );
+        Assert.IsNotNull( authRemoval, "The auth cookie should be among the removed cookies." );
+        Assert.AreEqual( ".xyz.org", authRemoval.Domain, "The auth cookie must be cleared at the recorded shared domain." );
+
+        var breadcrumbRemoval = response.RemovedCookies.SingleOrDefault( c => c.Name == PersonSessionService.AuthCookieDomainName );
+        Assert.IsNotNull( breadcrumbRemoval, "The breadcrumb companion should be among the removed cookies." );
+        Assert.AreEqual( ".xyz.org", breadcrumbRemoval.Domain, "The breadcrumb must be cleared at its own matching domain." );
+
         Assert.IsNull( requestContext.PersonSession, "The session should be detached from the request context on sign-out." );
     }
 
@@ -2961,9 +3105,8 @@ public class PersonSessionServiceTests
     /// <see cref="TrackingResponseContext"/> so the test can inspect cookie
     /// writes / removes after the call.
     /// </summary>
-    private static RockRequestContext BuildRequestContext( string cookieValue, IRockResponseContext response )
+    private static RockRequestContext BuildRequestContext( string cookieValue, IRockResponseContext response, string host = null )
     {
-        var headers = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
         var cookies = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
 
         if ( cookieValue.IsNotNullOrWhiteSpace() )
@@ -2971,9 +3114,28 @@ public class PersonSessionServiceTests
             cookies[PersonSessionService.AuthCookieName] = cookieValue;
         }
 
+        return BuildRequestContext( cookies, response, host );
+    }
+
+    /// <summary>
+    /// Builds a <see cref="RockRequestContext"/> backed by a Moq <see cref="IRequest"/>
+    /// that surfaces the supplied <paramref name="cookies"/> on the request.
+    /// Lets a test seed arbitrary request cookies (e.g. the
+    /// <c>.ROCK_DOMAIN</c> breadcrumb) so cookie-clearing behavior can be
+    /// asserted. When <paramref name="host"/> is supplied the request reports a
+    /// matching URL so domain resolution (<c>GetCookieDomain</c>) can run; when
+    /// null the request URI is null (host-only). The response is the
+    /// caller-supplied <see cref="TrackingResponseContext"/> so the test can
+    /// inspect cookie writes / removes after the call.
+    /// </summary>
+    private static RockRequestContext BuildRequestContext( IDictionary<string, string> cookies, IRockResponseContext response, string host = null )
+    {
+        var headers = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
+        var requestUri = host.IsNotNullOrWhiteSpace() ? new Uri( $"https://{host}/" ) : ( Uri ) null;
+
         var requestMock = new Mock<IRequest>( MockBehavior.Strict );
         requestMock.SetupGet( r => r.RemoteAddress ).Returns( IPAddress.Loopback );
-        requestMock.SetupGet( r => r.RequestUri ).Returns( ( Uri ) null );
+        requestMock.SetupGet( r => r.RequestUri ).Returns( requestUri );
         requestMock.SetupGet( r => r.Method ).Returns( "GET" );
         requestMock.SetupGet( r => r.QueryString ).Returns( [] );
         requestMock.SetupGet( r => r.RouteData ).Returns( new Dictionary<string, object>() );
@@ -3001,6 +3163,37 @@ public class PersonSessionServiceTests
         person.Aliases.Add( alias );
         rockContext.Set<Person>().Add( person );
         rockContext.Set<PersonAlias>().Add( alias );
+    }
+
+    /// <summary>
+    /// Seeds the <c>DOMAINS_SHARING_LOGINS</c> defined type with a single
+    /// shared-domain value into the mocked context so
+    /// <c>GetCookieDomain</c> resolves <paramref name="domain"/> for a matching
+    /// request host. The defined-type cache reads through the same mocked
+    /// database, and the cache is cleared when the scope is disposed, so this
+    /// does not leak into other tests.
+    /// </summary>
+    private static void SeedSharedLoginDomain( RockContext rockContext, int definedTypeId, int definedValueId, string domain )
+    {
+        var definedType = new DefinedType
+        {
+            Id = definedTypeId,
+            Guid = new Guid( Rock.SystemGuid.DefinedType.DOMAINS_SHARING_LOGINS ),
+            Name = "Domains Sharing Logins",
+            IsActive = true,
+        };
+
+        var definedValue = new DefinedValue
+        {
+            Id = definedValueId,
+            Guid = Guid.NewGuid(),
+            DefinedTypeId = definedTypeId,
+            Value = domain,
+            IsActive = true,
+        };
+
+        rockContext.Set<DefinedType>().Add( definedType );
+        rockContext.Set<DefinedValue>().Add( definedValue );
     }
 
     /// <summary>

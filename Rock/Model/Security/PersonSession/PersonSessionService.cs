@@ -82,6 +82,21 @@ public partial class PersonSessionService
     }
 
     /// <summary>
+    /// The name of the companion "breadcrumb" cookie that records the
+    /// <c>Domain</c> the auth cookie (<see cref="AuthCookieName"/>) was issued
+    /// under, so sign-out can delete the auth cookie at that exact scope.
+    /// </summary>
+    /// <remarks>
+    /// A browser never sends a cookie's <c>Domain</c> attribute back to the
+    /// server, and a cookie can only be expired by re-stating a matching
+    /// (name, domain, path). When the auth cookie is issued for a shared
+    /// (cross-subdomain) domain, this companion stores that domain so the
+    /// deletion on sign-out matches even if the <c>DOMAINS_SHARING_LOGINS</c>
+    /// defined type changes in between.
+    /// </remarks>
+    internal static string AuthCookieDomainName => $"{AuthCookieName}_DOMAIN";
+
+    /// <summary>
     /// The configured auth cookie timeout, used as the upper bound on the
     /// browser-side <c>Expires</c> attribute under the
     /// <c>MIN( PersonSession.ExpiresDateTime ?? MaxValue, Now + Timeout )</c>
@@ -1260,6 +1275,10 @@ public partial class PersonSessionService
 
         var cookieValue = GetCookieValue( session );
 
+        // Computed once so the breadcrumb companion records the exact same
+        // domain the auth cookie is issued under (see ExpireAuthCookie).
+        var cookieDomain = GetCookieDomain( requestContext );
+
         var cookie = new BrowserCookie
         {
             Name = AuthCookieName,
@@ -1267,7 +1286,7 @@ public partial class PersonSessionService
             Path = "/",
             HttpOnly = true,
             IsEssential = true,
-            Domain = GetCookieDomain( requestContext ),
+            Domain = cookieDomain,
         };
 
         if ( session.IsPersistent )
@@ -1280,6 +1299,39 @@ public partial class PersonSessionService
         }
 
         requestContext.Response.AddCookie( cookie );
+
+        // Record the domain (only when shared / non-host-only) so sign-out can
+        // delete the auth cookie at this exact scope without recomputing it.
+        WriteAuthCookieDomainBreadcrumb( requestContext, cookieDomain, cookie.Expires );
+    }
+
+    /// <summary>
+    /// Writes the companion breadcrumb cookie (<see cref="AuthCookieDomainName"/>)
+    /// recording the <paramref name="cookieDomain"/> the auth cookie was issued
+    /// under. No-ops when <paramref name="cookieDomain"/> is empty: a host-only
+    /// auth cookie needs no breadcrumb, and that absence is exactly what tells
+    /// <see cref="ExpireAuthCookie(RockRequestContext)"/> to clear host-only.
+    /// </summary>
+    /// <param name="requestContext">The current <see cref="RockRequestContext"/>.</param>
+    /// <param name="cookieDomain">The <c>Domain</c> the auth cookie was issued under, or <c>null</c>/empty for a host-only cookie.</param>
+    /// <param name="expires">The auth cookie's expiration, so the breadcrumb shares its lifetime (<c>null</c> for a session cookie).</param>
+    private static void WriteAuthCookieDomainBreadcrumb( RockRequestContext requestContext, string cookieDomain, DateTime? expires )
+    {
+        if ( cookieDomain.IsNullOrWhiteSpace() )
+        {
+            return;
+        }
+
+        requestContext.Response.AddCookie( new BrowserCookie
+        {
+            Name = AuthCookieDomainName,
+            Value = cookieDomain,
+            Path = "/",
+            HttpOnly = true,
+            IsEssential = true,
+            Domain = cookieDomain,
+            Expires = expires,
+        } );
     }
 
     /// <summary>
@@ -1473,18 +1525,49 @@ public partial class PersonSessionService
     }
 
     /// <summary>
-    /// Removes the <c>.ROCK</c> cookie from the client via
-    /// <paramref name="requestContext"/>. Used when the resolved session is
-    /// rejected (inactive, expired, kill-switch fire).
+    /// Removes the <c>.ROCK</c> auth cookie from the client via
+    /// <paramref name="requestContext"/>. Used on explicit sign-out and when a
+    /// resolved session is rejected (inactive, expired, kill-switch fire).
     /// </summary>
+    /// <remarks>
+    /// The <c>Domain</c> used for the deletion comes from the
+    /// <see cref="AuthCookieDomainName"/> breadcrumb written at issuance, not
+    /// from recomputing <see cref="GetCookieDomain(RockRequestContext)"/>. A
+    /// browser only deletes a cookie when the replacement's (name, domain,
+    /// path) match and it never sends the <c>Domain</c> back, so re-stating the
+    /// recorded domain is the only reliable way to clear a shared-domain
+    /// cookie. Reading the breadcrumb instead of recomputing keeps the deletion
+    /// correct even if <c>DOMAINS_SHARING_LOGINS</c> changed between issuance
+    /// and now; when no breadcrumb is present the auth cookie was issued
+    /// host-only, so it is cleared host-only (the domain is never recomputed
+    /// here).
+    /// </remarks>
     private static void ExpireAuthCookie( RockRequestContext requestContext )
     {
+        // The breadcrumb value (when present) is the exact Domain the auth
+        // cookie was issued under. Its absence means the auth cookie was issued
+        // host-only, so clear it host-only (Domain = null) — never recompute.
+        var issuedDomain = requestContext.GetCookieValue( AuthCookieDomainName );
+        var clearDomain = issuedDomain.IsNotNullOrWhiteSpace() ? issuedDomain : null;
+
         requestContext.Response.RemoveCookie( new BrowserCookie
         {
             Name = AuthCookieName,
             Path = "/",
-            Domain = GetCookieDomain( requestContext ),
+            Domain = clearDomain,
         } );
+
+        // Clear the breadcrumb companion too, at its own matching Domain, so it
+        // does not linger after the auth cookie is gone.
+        if ( issuedDomain.IsNotNullOrWhiteSpace() )
+        {
+            requestContext.Response.RemoveCookie( new BrowserCookie
+            {
+                Name = AuthCookieDomainName,
+                Path = "/",
+                Domain = issuedDomain,
+            } );
+        }
     }
 
     /// <summary>
