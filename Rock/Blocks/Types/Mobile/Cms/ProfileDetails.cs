@@ -515,7 +515,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         [BlockAction]
         public object UpdateProfile( MobilePerson profile )
         {
-            var user = UserLoginService.GetCurrentUser( false );
+            var user = RequestContext.CurrentUser;
 
             if ( user == null )
             {
