@@ -642,9 +642,9 @@
             reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== stepAttribute.value?.key);
         }
         else {
-            if (stepAttribute.value?.key && !reservedKeyNames.value.some(k => k === stepAttribute.value?.key)) {
-                reservedKeyNames.value.push(stepAttribute.value.key);
-            }
+            // Rebuild from the authoritative attribute list so a cancelled key
+            // change cannot leave a phantom key reserved or drop the real key.
+            reservedKeyNames.value = stepAttributes.value.map(a => a.attribute?.key).filter((k): k is string => !!k);
         }
     });
 
