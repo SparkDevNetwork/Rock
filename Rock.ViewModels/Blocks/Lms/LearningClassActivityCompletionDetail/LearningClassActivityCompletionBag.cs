@@ -137,6 +137,22 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassActivityCompletionDetail
         public int? PointsEarned { get; set; }
 
         /// <summary>
+        /// Indicates whether a retake has been assigned for this completion.
+        /// </summary>
+        /// <remarks>
+        /// As an input on the facilitator grading save it carries the facilitator's Assign Retake choice;
+        /// as an output on the student workspace it reports that a retake was assigned automatically.
+        /// Either way, the prior completion is deleted and the activity returns to a not-yet-completed state.
+        /// </remarks>
+        public bool IsRetakeAssigned { get; set; }
+
+        /// <summary>
+        /// Gets or sets the warning message describing an automatically assigned retake, shown to
+        /// the student in the workspace when <see cref="IsRetakeAssigned"/> is set on the response.
+        /// </summary>
+        public string RetakeMessage { get; set; }
+
+        /// <summary>
         /// Gets or sets whether the activity requires a facilitator to grade/score it.
         /// </summary>
         public bool RequiresScoring { get; set; }

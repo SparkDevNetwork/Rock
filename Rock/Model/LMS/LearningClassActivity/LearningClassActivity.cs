@@ -159,6 +159,17 @@ namespace Rock.Model
         public int Points { get; set; }
 
         /// <summary>
+        /// Gets or sets the minimum score a student must earn on this activity to avoid being assigned a retake.
+        /// A null value disables retakes for the activity.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Int32"/> score threshold below which a retake is assigned, or <c>null</c> when
+        /// retakes are disabled.
+        /// </value>
+        [DataMember]
+        public int? RetakeThreshold { get; set; }
+
+        /// <summary>
         /// Indicates whether or not this activity allows students to comment.
         /// </summary>
         /// <value>

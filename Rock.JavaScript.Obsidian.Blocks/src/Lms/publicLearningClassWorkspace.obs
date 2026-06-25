@@ -23,7 +23,7 @@
                 </ul>
             </div>
 
-            <NotificationBox v-if="classCompletionDate" class="text-center" alertType="default">{{ studentCompletionText }}</NotificationBox>
+            <NotificationBox v-if="classCompletionDate && isClassCompletedAndGraded" class="text-center" alertType="default">{{ studentCompletionText }}</NotificationBox>
 
             <div class="content-page-section" v-if="selectedContentTab">
                 <div class="content-page-container">
@@ -277,6 +277,10 @@
 
                             </div>
 
+                            <NotificationBox v-if="retakeWarning" alertType="warning">
+                                {{ retakeWarning }}
+                            </NotificationBox>
+
                             <activityTypeComponent :activityBag="viewingCompletionBag.classActivityBag"
                                                    :completionBag="viewingCompletionBag"
                                                    :screenToShow="screenToShow"
@@ -335,6 +339,7 @@
 
     const blockError = ref("");
     const errorMessage = ref("");
+    const retakeWarning = ref("");
 
     const backButtonClicked = ref(false);
     const headerHtml = config.headerHtml ?? "";
@@ -428,7 +433,7 @@
     const hasIncompleteActivities = computed(() => activities.value.some(a => !isCompleted(a)));
 
     /** Considered complete if there are no activities that are incomplete or require scoring */
-    const isClassCompletedAndGraded = computed(() => !activities.value.some(a => !isCompleted(a) || a.requiresScoring));
+    const isClassCompletedAndGraded = computed(() => areAllActivitiesCompleteAndGraded());
 
     /** The container classes used for the Show All/Show Less button (notifications). */
     const notificationsOverflowContainerClass = computed(() => isViewingAllNotifications.value === true ? "show-less" : "show-all");
@@ -501,8 +506,9 @@
     function getInitialActivitySelection(): LearningClassActivityCompletionBag {
         const params = new URLSearchParams(window.location.search);
 
-        // First see if everything is completed, if so show the completed screen.
-        if (activities.value.every(a => a.completedDate)) {
+        // First see if everything is completed and graded, if so show the completed screen.
+        // A submitted-but-ungraded activity (requiresScoring) holds the success screen back.
+        if (areAllActivitiesCompleteAndGraded()) {
             showCompletedScreen.value = true;
             return {} as LearningClassActivityCompletionBag;
         }
@@ -551,6 +557,15 @@
 
     function isCompleted(activity: LearningClassActivityCompletionBag): boolean {
         return activity.isCompleted;
+    }
+
+    /**
+     * Whether every activity is completed and none still awaits grading. This is the single gate
+     * for the success screen and the completion banner. It is a function rather than a computed so
+     * it can be called during setup (before computeds initialize) as well as from reactive contexts.
+     */
+    function areAllActivitiesCompleteAndGraded(): boolean {
+        return activities.value.every(a => isCompleted(a) && !a.requiresScoring);
     }
 
     function getBadgeText(activity: LearningClassActivityCompletionBag): string | undefined {
@@ -795,6 +810,11 @@
             await completedPromiseSource.promise;
         }
 
+        // A just-assigned retake keeps the student on the current activity to retry.
+        if (retakeWarning.value) {
+            return;
+        }
+
         const currentIndex = activities.value.findIndex(a => a.learningClassActivityIdKey === viewingCompletionBag.value.learningClassActivityIdKey);
         let nextAvailableActivity = activities.value
             ?.find((a, i) => i > currentIndex && a.isAvailable && !a.completedDate);
@@ -808,7 +828,7 @@
         if (nextAvailableActivity) {
             viewingCompletionBag.value = nextAvailableActivity;
         }
-        else if (activities.value.every(a => a.completedDate)) {
+        else if (areAllActivitiesCompleteAndGraded()) {
             showCompletedScreen.value = true;
         }
     }
@@ -824,6 +844,7 @@
     async function onCompleted(wasSuccessful: boolean): Promise<boolean> {
         completedPromiseSource.resolve(undefined);
         completedPromiseSource = new PromiseCompletionSource<void>();
+        retakeWarning.value = "";
 
         if (wasSuccessful) {
             var result = await invokeBlockAction<LearningClassActivityCompletionBag>("CompleteActivity", {
@@ -841,6 +862,15 @@
                     // It's possible the another available activity was selected between submission and response.
                     if (viewingCompletionBag.value.learningClassActivityIdKey === result.data.learningClassActivityIdKey) {
                         viewingCompletionBag.value = result.data;
+                    }
+
+                    // Auto-assigned retake: the submission was reset to a fresh attempt. Stay on this
+                    // activity and show the warning; do not advance or unlock the next activity.
+                    if (result.data.isRetakeAssigned) {
+                        retakeWarning.value = result.data.retakeMessage ?? "A retake has been assigned. Please complete the activity again to receive credit.";
+                        activityTypeComponent.value = defineAsyncComponent(async () => await import(componentUrl.value));
+                        completedPromiseSource.resolve();
+                        return true;
                     }
 
                     // If there's a subsequent activity and it becomes available upon completion of the previous
@@ -916,6 +946,9 @@
             return;
         }
 
+        // Clear any retake warning when moving to a different activity.
+        retakeWarning.value = "";
+
         const previousSelectedIndex = activities.value.findIndex(a => a.learningClassActivityIdKey === previousIdKey);
 
         // Update the current selection before moving to the new selection.
@@ -956,8 +989,11 @@
     const tab = queryParams.has("tab") ? queryParams.get("tab") : "";
 
     // If this is not academic calendar mode then we only have access to the Activities tab.
+    // When an activity is linked directly (e.g. from a notification email), default to the
+    // Activities tab so the linked activity is shown rather than the Class Overview.
+    const defaultTab = queryParams.has("activity") ? activitiesTab.value : overviewTab.value;
     const selectedTab = isAcademicCalendarMode.value === true ?
-        ref(tabs.value.find(t => t.toLowerCase() === tab?.toLowerCase()) ?? overviewTab.value) :
+        ref(tabs.value.find(t => t.toLowerCase() === tab?.toLowerCase()) ?? defaultTab) :
         activitiesTab;
 
     // Listen for the browser back button click and update the selected tab if necessary.

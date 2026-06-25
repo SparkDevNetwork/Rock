@@ -145,6 +145,7 @@ namespace Rock.Model
             target.LearningClassId = source.LearningClassId;
             target.Order = source.Order;
             target.Points = source.Points;
+            target.RetakeThreshold = source.RetakeThreshold;
             target.SendNotificationCommunication = source.SendNotificationCommunication;
             target.TaskBinaryFileId = source.TaskBinaryFileId;
             target.CreatedDateTime = source.CreatedDateTime;

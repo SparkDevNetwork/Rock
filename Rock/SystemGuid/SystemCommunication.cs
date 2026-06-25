@@ -261,6 +261,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string LEARNING_ANNOUNCEMENT_NOTIFICATIONS = "8824EE58-CB4C-47E8-BB86-1944C64C6C95";
 
+        /// <summary>
+        /// Gets the template guid for the Learning Activity Retake Required system communication.
+        /// </summary>
+        public const string LEARNING_ACTIVITY_RETAKE_REQUIRED = "9E2B7C14-5A3D-4F86-B0E1-7C4A2D9F6B38";
+
         #endregion
 
         /// <summary>

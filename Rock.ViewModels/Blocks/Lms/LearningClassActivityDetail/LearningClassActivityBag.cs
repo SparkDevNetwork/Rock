@@ -172,6 +172,12 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassActivityDetail
         public int Points { get; set; }
 
         /// <summary>
+        /// Gets or sets the minimum score a student must earn on this activity to avoid being assigned a retake.
+        /// A null value disables retakes for the activity.
+        /// </summary>
+        public int? RetakeThreshold { get; set; }
+
+        /// <summary>
         /// Indicates whether or not this activity sends a notification.
         /// </summary>
         public bool SendNotificationCommunication { get; set; }

@@ -105,6 +105,11 @@
             valueBuilder.addTextValue("Points", pointsText);
         }
 
+        const retakeThreshold = props.modelValue?.retakeThreshold;
+        if (retakeThreshold != null) {
+            valueBuilder.addTextValue("Retake Threshold", retakeThreshold.toString());
+        }
+
         const dueDateDescription = props.modelValue?.dueDateDescription ?? "";
         if (dueDateDescription.length > 0) {
             valueBuilder.addTextValue("Due Date", dueDateDescription);
