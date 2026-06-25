@@ -34,6 +34,13 @@ export type CardEntryBag = {
     /** Gets or sets the list of file attachments associated with this card entry. */
     attachments?: ListItemBag[] | null;
 
+    /**
+     * Gets or sets whether the current person is permitted to edit or delete this entry.
+     * Populated for Activity entries so the UI only offers edit and delete actions when the
+     * server will actually allow them, matching the authorization enforced by the block actions.
+     */
+    canEdit: boolean;
+
     /** Gets or sets the encrypted identifier key of the connection opportunity associated with this entry. */
     connectionOpportunityIdKey?: string | null;
 
