@@ -55,39 +55,45 @@
         {{ config.error }}
     </NotificationBox>
 
-    <div v-else class="block-content-main chat-container styled-scroll" ref="chatContainer">
-        <div class="sessions-column">
-            <SessionList :sessions="sessions"
-                         :sessionIdKey="sessionIdKey"
-                         @selectSession="onSelectSession"
-                         @deleteSession="onDeleteSession" />
+    <div v-else class="block-content-main chat-container chat-bot styled-scroll" ref="chatContainer">
 
-            <RockButton btnType="info"
+        <div class="sessions-column">
+
+            <RockButton btnType="primary"
                         autoDisable
                         @click="onNewSession">
+                <i class="ti ti-circle-plus"></i>
                 New Session
             </RockButton>
+
+            <SessionList :sessions="sessions"
+                        :sessionIdKey="sessionIdKey"
+                        @selectSession="onSelectSession"
+                        @deleteSession="onDeleteSession" />
+
+
         </div>
 
         <div class="conversation-container">
             <MessageList :messages="messages"
-                         :liveMessage="liveMessage"
-                         :isSending="isSending"
-                         :isDebugEnabled="isDebugEnabled"
-                         :bottomPadding="messageContainerPadding"
-                         @showMessageDebug="onShowMessageDebug" />
+                        :liveMessage="liveMessage"
+                        :isSending="isSending"
+                        :isDebugEnabled="isDebugEnabled"
+                        :bottomPadding="messageContainerPadding"
+                        @showMessageDebug="onShowMessageDebug" />
 
             <FooterActions v-model:message="message"
-                           :sortedAnchors="sortedAnchors"
-                           :isDebugAllowed="config.isDebugAllowed"
-                           :isDebugEnabled="isDebugEnabled"
-                           :isSendDisabled="isSendDisabled"
-                           @deleteAnchor="onDeleteAnchor"
-                           @toggleDebug="onToggleDebugClick"
-                           @clearMessages="onClearMessages"
-                           @submit="onSubmit"
-                           @updateBottomPadding="messageContainerPadding = $event" />
+                        :sortedAnchors="sortedAnchors"
+                        :isDebugAllowed="config.isDebugAllowed"
+                        :isDebugEnabled="isDebugEnabled"
+                        :isSendDisabled="isSendDisabled"
+                        @deleteAnchor="onDeleteAnchor"
+                        @toggleDebug="onToggleDebugClick"
+                        @clearMessages="onClearMessages"
+                        @submit="onSubmit"
+                        @updateBottomPadding="messageContainerPadding = $event" />
         </div>
+
     </div>
 
     <DebugView v-model="isMessageDebugVisible"
@@ -127,6 +133,8 @@
 
     const chatContainer = ref<HTMLDivElement>();
     const sessionsContainer = ref<HTMLDivElement>();
+    // The scrolling element for the message list. This is the .conversation-container,
+    // which owns the scroll, the scroll-fade "is-scrolled" class, and auto-scroll.
     const messagesContainer = ref<HTMLDivElement>();
 
     const message = ref("");
@@ -176,6 +184,22 @@
 
     // #region Functions
 
+    /**
+     * Toggles the top fade mask on the message list based on scroll position.
+     * The top fade should only appear once the user has scrolled away from the
+     * top, so the "is-scrolled" class is added when scrolled and removed at the top.
+     */
+    function updateScrollFade(): void {
+        const container = messagesContainer.value;
+
+        if (!container) {
+            return;
+        }
+
+        const isScrolledFromTop = container.scrollTop > 8;
+        container.classList.toggle("is-scrolled", isScrolledFromTop);
+    }
+
     function updateSessionDate(): void {
         const session = sessions.find(s => s.idKey === sessionIdKey.value);
 
@@ -199,7 +223,8 @@
                 return -1;
             }
 
-            return da.toMilliseconds() - db.toMilliseconds();
+            // Sort newest first so the most recent session is at the top of the list.
+            return db.toMilliseconds() - da.toMilliseconds();
         });
     }
 
@@ -224,9 +249,10 @@
         nextTick(() => {
             const storageKey = "Rock.AI.ChatBot.DockedChat";
             const dockedPanel = dockedChatContainer.value?.closest(".docked-panel-container");
-            const messagesContainer = dockedChatContainer.value?.querySelector(".messages-container");
+            // The conversation container is the scroll element, so read its scroll position.
+            const scrollContainer = dockedChatContainer.value?.querySelector(".conversation-container");
 
-            if (!isDockedMode || !dockedPanel || !messagesContainer || !isDockedChatOpen.value) {
+            if (!isDockedMode || !dockedPanel || !scrollContainer || !isDockedChatOpen.value) {
                 sessionStorage.removeItem(storageKey);
                 return;
             }
@@ -235,7 +261,7 @@
                 content: dockedPanel.outerHTML,
                 width: document.body.style.getPropertyValue("--docked-panel-push-width"),
                 top: window.getComputedStyle(dockedPanel).getPropertyValue("--top-header-height"),
-                scrollTop: messagesContainer.scrollTop,
+                scrollTop: scrollContainer.scrollTop,
             };
 
             sessionStorage.setItem(storageKey, JSON.stringify(data));
@@ -449,8 +475,8 @@
             sessionIdKey.value = result.data.idKey ?? "";
             messages.splice(0, messages.length);
             anchors.splice(0, anchors.length);
-            sessions.push(result.data);
-            nextTick(() => sessionsContainer.value?.scrollTo(0, sessionsContainer.value.scrollHeight));
+            sessions.unshift(result.data);
+            nextTick(() => sessionsContainer.value?.scrollTo(0, 0));
             saveSessionData();
         }
         else {
@@ -469,7 +495,7 @@
             const index = sessions.findIndex(s => s.idKey === session.idKey);
             if (index !== -1) {
                 sessions.splice(index, 1);
-                await onSelectSession(sessions[sessions.length - 1].idKey ?? "");
+                await onSelectSession(sessions[0].idKey ?? "");
             }
         }
         else {
@@ -524,6 +550,10 @@
     // animates if it isn't supposed to.
     restoreSessionData();
 
+    // Sort the sessions provided by the server so the list starts in newest-first
+    // order on initial load, rather than waiting for the first session action.
+    updateSessionOrder();
+
     watch([isDockedMode, isDockedChatOpen, dockedChatWidth], () => {
         saveSessionData();
     });
@@ -533,44 +563,54 @@
             return;
         }
 
-        messagesContainer.value = dockedChatContainer.value?.querySelector(".messages-container") ?? undefined;
+        messagesContainer.value = dockedChatContainer.value?.querySelector(".conversation-container") ?? undefined;
     });
 
     watch(messagesContainer, (_, oldValue) => {
         oldValue?.removeEventListener("scroll", saveSessionData);
+        oldValue?.removeEventListener("scroll", updateScrollFade);
+
+        // Toggle the top fade mask whenever the message list is scrolled. This
+        // runs in both docked and non-docked modes so the fade stays in sync.
+        messagesContainer.value?.addEventListener("scroll", updateScrollFade, { passive: true });
 
         if (!isDockedMode) {
             // Force scroll bar to be at the bottom on initial load so that it
             // shows the most recent messages.
             messagesContainer.value?.scrollTo(0, messagesContainer.value.scrollHeight);
+            updateScrollFade();
             return;
         }
 
         messagesContainer.value?.scrollTo(0, previousDockedScrollTop ?? messagesContainer.value.scrollHeight);
 
         messagesContainer.value?.addEventListener("scroll", saveSessionData);
+        updateScrollFade();
     });
 
     onMounted(() => {
         if (isDockedMode.value) {
-            messagesContainer.value = dockedChatContainer.value?.querySelector(".messages-container") ?? undefined;
+            messagesContainer.value = dockedChatContainer.value?.querySelector(".conversation-container") ?? undefined;
 
             // Try to restore the scroll position.
             messagesContainer.value?.scrollTo(0, previousDockedScrollTop ?? messagesContainer.value.scrollHeight);
         }
         else {
-            messagesContainer.value = chatContainer.value?.querySelector(".messages-container") ?? undefined;
+            messagesContainer.value = chatContainer.value?.querySelector(".conversation-container") ?? undefined;
             sessionsContainer.value = chatContainer.value?.querySelector(".sessions-container") ?? undefined;
 
             // Force scroll bar to be at the bottom on initial load so that it
             // shows the most recent messages.
             messagesContainer.value?.scrollTo(0, messagesContainer.value.scrollHeight);
-            sessionsContainer.value?.scrollTo(0, sessionsContainer.value.scrollHeight);
+
+            // The session list is sorted newest first, so show the top of the list.
+            sessionsContainer.value?.scrollTo(0, 0);
         }
     });
 
     onBeforeUnmount(() => {
         messagesContainer.value?.removeEventListener("scroll", saveSessionData);
+        messagesContainer.value?.removeEventListener("scroll", updateScrollFade);
     });
 
     isDebugEnabled.value = config.value.isDebugAllowed === true && localStorage.getItem("Rock.AI.ChatBot.DebugEnabled") === "true";
