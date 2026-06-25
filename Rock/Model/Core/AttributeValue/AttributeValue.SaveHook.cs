@@ -83,6 +83,12 @@ namespace Rock.Model
                         }
                     }
 
+                    // If this is a BinaryFile backed field type, run special
+                    // processing to handle marking the BinaryFile as not
+                    // temporary. We intentionally do not check
+                    // BinaryFileFieldType nor LabelFieldType because those
+                    // operate as pickers to an existing file rather than being the
+                    // source of the file itself.
                     if ( field != null && (
                         field is Field.Types.FileFieldType ||
                         field is Field.Types.ImageFieldType ||
@@ -166,7 +172,20 @@ namespace Rock.Model
                     }
                 }
 
-                PostSaveDeleteUnreferencedBinaryFile();
+                // If this is a BinaryFile backed field type, run special
+                // processing to handle deleting the BinaryFile if this is
+                // the last attribute value referencing it. We intentionally do
+                // not check BinaryFileFieldType nor LabelFieldType because those
+                // operate as pickers to an existing file rather than being the
+                // source of the file itself.
+                var field = AttributeCache.Get( Entity.AttributeId )?.FieldType.Field;
+                if ( field != null && (
+                    field is Field.Types.FileFieldType ||
+                    field is Field.Types.ImageFieldType ||
+                    field is Field.Types.BackgroundCheckFieldType ) )
+                {
+                    PostSaveDeleteUnreferencedBinaryFile();
+                }
 
                 // Previously we were doing this here:
                 //     UPDATE [AttributeValue] SET ValueAsDateTime = ...
