@@ -31,4 +31,10 @@ export type GetEmailConfigurationResponseBag = {
 
     /** Gets or sets the communication templates that can be selected for the email communication. */
     communicationTemplates?: CommunicationTemplateBag[] | null;
+
+    /** Gets or sets the default From Address for the sender (the current person). */
+    fromEmail?: string | null;
+
+    /** Gets or sets the default From Name for the sender (the current person). */
+    fromName?: string | null;
 };

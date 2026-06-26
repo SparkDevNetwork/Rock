@@ -6156,7 +6156,10 @@ WHERE 1 = 1" );
             return ActionOk( new GetEmailConfigurationResponseBag
             {
                 CommunicationRecipients = communicationRecipients,
-                CommunicationTemplates = communicationTemplates
+                CommunicationTemplates = communicationTemplates,
+                // Default the sender to the current person so the From fields are not blank when the composer opens.
+                FromName = currentPerson?.FullName,
+                FromEmail = currentPerson?.Email
             } );
         }
 
