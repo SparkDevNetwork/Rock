@@ -16,15 +16,13 @@
 //
 using System;
 using System.Linq;
-using System.Web;
+
+using Microsoft.Extensions.DependencyInjection;
 
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Net;
-using Rock.Security;
-using Rock.Tasks;
-using Rock.Web.UI;
 
 namespace Rock.Model
 {
@@ -36,94 +34,21 @@ namespace Rock.Model
         /// </summary>
         /// <param name="userIsOnline">A <see cref="System.Boolean"/> value that returns the logged in user if <c>true</c>; otherwise can return the impersonated user</param>
         /// <returns>The current <see cref="Rock.Model.UserLogin"/></returns>
+        [Obsolete( "Use RockRequestContext.PersonSession instead." )]
+        [RockObsolete( "20.0" )]
         public static UserLogin GetCurrentUser( bool userIsOnline )
         {
-            // Don't wrap in using since we are returning an object that needs
-            // its navigation properties to work.
-            return GetCurrentUser( userIsOnline, new RockContext() );
-        }
+            var personSession = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.PersonSession;
 
-        /// <summary>
-        /// NOTE: This does much more then is sounds like! It returns the <see cref="Rock.Model.UserLogin"/> of the user who is currently logged in,
-        /// but it also updates their last activity date, and will sign them out if they are not confirmed or are locked out.
-        /// </summary>
-        /// <param name="userIsOnline">A <see cref="System.Boolean"/> value that returns the logged in user if <c>true</c>; otherwise can return the impersonated user</param>
-        /// <param name="rockContext">The database context to use when accessing the database.</param>
-        /// <returns>The current <see cref="Rock.Model.UserLogin"/></returns>
-        internal static UserLogin GetCurrentUser( bool userIsOnline, RockContext rockContext )
-        {
-            string userName = UserLogin.GetCurrentUserName();
-
-            if ( userName.IsNullOrWhiteSpace() )
+            if ( personSession?.UserLogin == null )
             {
                 return null;
             }
 
-            if ( userName.StartsWith( "rckipid=" ) )
-            {
-                // This shouldn't happen and can safely be removed in the future.
-                // Leaving this here for now to help identify any remaining cases
-                // where this might happen.
-                throw new InvalidOperationException( "Unexpected rckipid token encountered while getting the current user." );
-            }
-            else
-            {
-                var userLoginService = new UserLoginService( rockContext );
-                UserLogin user = userLoginService.GetByUserName( userName );
-
-                if ( user != null && userIsOnline )
-                {
-                    // Save last activity date.
-                    if ( ( user.IsConfirmed ?? true ) && !( user.IsLockedOut ?? false ) )
-                    {
-                        if ( HttpContext.Current != null && HttpContext.Current.Session != null )
-                        {
-                            HttpContext.Current.Session["RockUserId"] = user.Id;
-                        }
-
-                        FireUpdatePersonSessionLastActivityIfPresent();
-                    }
-                    else
-                    {
-                        // The user is either not confirmed or is locked out, so
-                        // sign them out. RequestContext is resolved from the
-                        // ambient accessor since this method runs outside a
-                        // block; when absent there is no session to sign out.
-                        var requestContext = RockRequestContextAccessor.Current;
-                        if ( requestContext != null )
-                        {
-                            new PersonSessionService( rockContext ).SignOut( requestContext );
-                        }
-
-                        return null;
-                    }
-                }
-
-                return user;
-            }
-        }
-
-        /// <summary>
-        /// Fires the new <see cref="UpdatePersonSessionLastActivity"/> bus
-        /// task against the <see cref="PersonSession"/> resolved on the
-        /// current request, when one is present. No-op for anonymous
-        /// requests, API-key requests, bearer-token requests, and
-        /// server-side jobs.
-        /// </summary>
-        private static void FireUpdatePersonSessionLastActivityIfPresent()
-        {
-            var personSession = RockRequestContextAccessor.Current?.PersonSession;
-
-            if ( personSession == null )
-            {
-                return;
-            }
-
-            new UpdatePersonSessionLastActivity.Message
-            {
-                PersonSessionId = personSession.Id,
-                LastActivityDateTime = RockDateTime.Now,
-            }.SendIfNeeded();
+            // Don't wrap in using since we are returning an object that needs
+            // its navigation properties to work.
+            return new UserLoginService( new RockContext() )
+                .Get( personSession.UserLogin.Id );
         }
 
         /// <summary>

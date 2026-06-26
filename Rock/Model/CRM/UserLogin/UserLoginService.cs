@@ -153,6 +153,8 @@ namespace Rock.Model
         #region Static Methods
 
         /// <inheritdoc cref="GetCurrentUser(bool)"/>
+        [Obsolete( "Use RockRequestContext.PersonSession instead." )]
+        [RockObsolete( "20.0" )]
         public static UserLogin GetCurrentUser()
         {
             return GetCurrentUser( true );

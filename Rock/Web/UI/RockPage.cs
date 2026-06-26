@@ -314,54 +314,7 @@ namespace Rock.Web.UI
         /// <value>
         /// The <see cref="Rock.Model.UserLogin"/> of the currently logged in user.
         /// </value>
-        public Rock.Model.UserLogin CurrentUser
-        {
-            get
-            {
-                if ( _CurrentUser != null )
-                {
-                    return _CurrentUser;
-                }
-
-                if ( Context.Items.Contains( "CurrentUser" ) )
-                {
-                    _CurrentUser = Context.Items["CurrentUser"] as Rock.Model.UserLogin;
-                }
-
-                if ( _CurrentUser == null )
-                {
-                    _CurrentUser = Rock.Model.UserLoginService.GetCurrentUser();
-                    if ( _CurrentUser != null )
-                    {
-                        Context.AddOrReplaceItem( "CurrentUser", _CurrentUser );
-                    }
-                }
-
-                if ( _CurrentUser != null && _CurrentUser.Person != null && _currentPerson == null )
-                {
-                    CurrentPerson = _CurrentUser.Person;
-                }
-
-                return _CurrentUser;
-            }
-
-            private set
-            {
-                Context.Items.Remove( "CurrentUser" );
-                _CurrentUser = value;
-
-                if ( _CurrentUser != null )
-                {
-                    Context.AddOrReplaceItem( "CurrentUser", _CurrentUser );
-                    CurrentPerson = _CurrentUser.Person;
-                }
-                else
-                {
-                    CurrentPerson = null;
-                }
-            }
-        }
-        private Rock.Model.UserLogin _CurrentUser;
+        public Rock.Model.UserLogin CurrentUser => RequestContext?.CurrentUser;
 
         /// <summary>
         /// Publicly gets the current <see cref="Rock.Model.Person"/>.  This is either the currently logged in user, or if the user
@@ -371,38 +324,7 @@ namespace Rock.Web.UI
         /// <value>
         /// A <see cref="Rock.Model.Person"/> representing the currently logged in person or impersonated person.
         /// </value>
-        public Person CurrentPerson
-        {
-            get
-            {
-                if ( _currentPerson != null )
-                {
-                    return _currentPerson;
-                }
-
-                if ( _currentPerson == null && Context.Items.Contains( "CurrentPerson" ) )
-                {
-                    _currentPerson = Context.Items["CurrentPerson"] as Person;
-                    return _currentPerson;
-                }
-
-                return null;
-            }
-
-            private set
-            {
-                Context.Items.Remove( "CurrentPerson" );
-
-                _currentPerson = value;
-                if ( _currentPerson != null )
-                {
-                    Context.AddOrReplaceItem( "CurrentPerson", value );
-                }
-
-                _currentPersonAlias = null;
-            }
-        }
-        private Person _currentPerson;
+        public Person CurrentPerson => RequestContext?.CurrentPerson;
 
         /// <summary>
         /// The Person ID of the currently logged in user.  Returns null if there is not a user logged in
@@ -411,20 +333,7 @@ namespace Rock.Web.UI
         /// A <see cref="System.Int32" /> representing the PersonId of the <see cref="Rock.Model.Person"/>
         /// who is logged in as the current user. If a user is not logged in.
         /// </value>
-        public int? CurrentPersonId
-        {
-            get
-            {
-                if ( CurrentPerson != null )
-                {
-                    return CurrentPerson.Id;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-        }
+        public int? CurrentPersonId => CurrentPerson?.Id;
 
         /// <summary>
         /// Gets the current person alias.
@@ -432,25 +341,7 @@ namespace Rock.Web.UI
         /// <value>
         /// The current person alias.
         /// </value>
-        public PersonAlias CurrentPersonAlias
-        {
-            get
-            {
-                if ( _currentPersonAlias != null )
-                {
-                    return _currentPersonAlias;
-                }
-
-                if ( _currentPerson != null )
-                {
-                    _currentPersonAlias = _currentPerson.PrimaryAlias;
-                    return _currentPersonAlias;
-                }
-
-                return null;
-            }
-        }
-        private PersonAlias _currentPersonAlias = null;
+        public PersonAlias CurrentPersonAlias => CurrentPerson?.PrimaryAlias;
 
         /// <summary>
         /// Gets the current person alias identifier.
@@ -458,20 +349,7 @@ namespace Rock.Web.UI
         /// <value>
         /// The current person alias identifier.
         /// </value>
-        public int? CurrentPersonAliasId
-        {
-            get
-            {
-                if ( CurrentPersonAlias != null )
-                {
-                    return CurrentPersonAlias.Id;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-        }
+        public int? CurrentPersonAliasId => CurrentPerson?.PrimaryAliasId;
 
         /// <summary>
         /// Gets the all the <see cref="Rock.Web.UI.RockBlock">RockBlocks</see> on the Page.
@@ -772,6 +650,17 @@ namespace Rock.Web.UI
             ConvertLegacyContextCookiesToJSON();
 #pragma warning restore 618
 
+            // If the request has an authorized session then update the last
+            // activity.
+            if ( RequestContext.PersonSession != null )
+            {
+                new UpdatePersonSessionLastActivity.Message
+                {
+                    PersonSessionId = RequestContext.PersonSession.Id,
+                    LastActivityDateTime = RockDateTime.Now,
+                }.SendIfNeeded();
+            }
+
             if ( _pageCache != null )
             {
                 try
@@ -866,13 +755,9 @@ namespace Rock.Web.UI
                     {
                         _pageCache.Layout.Site.RedirectToDefaultPage();
                     }
-                    return;
                 }
-                else
-                {
-                    CurrentPerson = null;
-                    CurrentUser = null;
-                }
+
+                return;
             }
 
             var rockContext = new RockContext();
@@ -886,36 +771,19 @@ namespace Rock.Web.UI
 
             // Get current user/person info
             Page.Trace.Warn( "Getting CurrentUser" );
-            Rock.Model.UserLogin user = CurrentUser;
+            Rock.Model.UserLogin user = RequestContext.CurrentUser;
 
             // If there is a logged in user, see if it has an associated Person Record.  If so, set the UserName to
             // the person's full name (which is then cached in the Session state for future page requests)
             if ( user != null )
             {
                 Page.Trace.Warn( "Setting CurrentPerson" );
-                UserName = user.UserName;
-                int? personId = user.PersonId;
 
-                if ( personId.HasValue )
-                {
-                    string personNameKey = "PersonName_" + personId.Value.ToString();
-                    if ( Session[personNameKey] != null )
-                    {
-                        UserName = Session[personNameKey].ToString();
-                    }
-                    else
-                    {
-                        Rock.Model.PersonService personService = new Model.PersonService( rockContext );
-                        Rock.Model.Person person = personService.Get( personId.Value );
-                        if ( person != null )
-                        {
-                            UserName = person.FullName;
-                            CurrentPerson = person;
-                        }
-
-                        Session[personNameKey] = UserName;
-                    }
-                }
+                // Keep the UserName display value populated for any (possibly
+                // plugin) consumers of this property. CurrentPerson is already
+                // resolved on the request context, so this needs no extra query
+                // or Session cache as the legacy code did.
+                UserName = CurrentPerson?.FullName ?? user.UserName;
 
                 // check that they aren't required to change their password
                 if ( user.IsPasswordChangeRequired == true && Site.ChangePasswordPageReference != null )

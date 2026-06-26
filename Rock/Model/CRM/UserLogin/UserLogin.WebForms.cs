@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Security.Principal;
 using System.Threading;
@@ -87,6 +88,8 @@ namespace Rock.Model
         /// Returns the UserName of the user that is currently logged in.
         /// </summary>
         /// <returns>A <see cref="System.String"/> representing the UserName of the user that is currently logged in.</returns>
+        [Obsolete( "Use RockRequestContext.CurrentUser instead." )]
+        [RockObsolete( "20.0" )]
         public static string GetCurrentUserName()
         {
             if ( HostingEnvironment.IsHosted )

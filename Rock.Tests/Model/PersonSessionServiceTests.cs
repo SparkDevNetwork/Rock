@@ -1685,6 +1685,192 @@ public class PersonSessionServiceTests
         Assert.HasCount( 1, response.RemovedCookies );
     }
 
+    /// <summary>
+    /// A session whose <see cref="UserLogin"/> has been locked out is rejected:
+    /// resolution returns null, the session is marked inactive, and the auth
+    /// cookie is cleared. (Replaces the locked-out sign-out that the obsolete
+    /// <c>UserLoginService.GetCurrentUser</c> used to perform.)
+    /// </summary>
+    [TestMethod]
+    public void ResolveSessionForRequest_LockedOutUserLogin_SignsOutAndReturnsNull()
+    {
+        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        var rockContext = scope.App.CreateRockContext();
+        var service = new PersonSessionService( rockContext );
+
+        // ResolveSessionForRequest reaches the security-settings (kill-switch)
+        // check, which needs the Text FieldType available to persist settings.
+        rockContext.Set<FieldType>().Add( new FieldType { Id = 1, Guid = SystemGuid.FieldType.TEXT.AsGuid() } );
+
+        var userLogin = new UserLogin
+        {
+            Id = 50,
+            UserName = "locked",
+            PersonId = 100,
+            IsConfirmed = true,
+            IsLockedOut = true,
+        };
+        var session = new PersonSession
+        {
+            Id = 1,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 200,
+            UserLoginId = 50,
+            UserLogin = userLogin,
+            CreationSource = PersonSessionCreationSource.Component,
+            IsActive = true,
+            IsPersistent = false,
+        };
+        rockContext.Set<UserLogin>().Add( userLogin );
+        rockContext.Set<PersonSession>().Add( session );
+
+        var cookieValue = service.GetCookieValue( session );
+        var response = new TrackingResponseContext();
+        var requestContext = BuildRequestContext( cookieValue, response );
+
+        var result = service.ResolveSessionForRequest( requestContext );
+
+        Assert.IsNull( result );
+        Assert.IsFalse( session.IsActive, "A locked-out login's session must be marked inactive." );
+        Assert.IsTrue( response.RemovedCookies.Any( c => c.Name == PersonSessionService.AuthCookieName ),
+            "The auth cookie must be cleared for a locked-out login." );
+    }
+
+    /// <summary>
+    /// A session whose <see cref="UserLogin"/> is no longer confirmed is
+    /// rejected the same way a locked-out login is.
+    /// </summary>
+    [TestMethod]
+    public void ResolveSessionForRequest_UnconfirmedUserLogin_SignsOutAndReturnsNull()
+    {
+        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        var rockContext = scope.App.CreateRockContext();
+        var service = new PersonSessionService( rockContext );
+
+        // ResolveSessionForRequest reaches the security-settings (kill-switch)
+        // check, which needs the Text FieldType available to persist settings.
+        rockContext.Set<FieldType>().Add( new FieldType { Id = 1, Guid = SystemGuid.FieldType.TEXT.AsGuid() } );
+
+        var userLogin = new UserLogin
+        {
+            Id = 51,
+            UserName = "unconfirmed",
+            PersonId = 100,
+            IsConfirmed = false,
+            IsLockedOut = false,
+        };
+        var session = new PersonSession
+        {
+            Id = 1,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 200,
+            UserLoginId = 51,
+            UserLogin = userLogin,
+            CreationSource = PersonSessionCreationSource.Component,
+            IsActive = true,
+            IsPersistent = false,
+        };
+        rockContext.Set<UserLogin>().Add( userLogin );
+        rockContext.Set<PersonSession>().Add( session );
+
+        var cookieValue = service.GetCookieValue( session );
+        var response = new TrackingResponseContext();
+        var requestContext = BuildRequestContext( cookieValue, response );
+
+        var result = service.ResolveSessionForRequest( requestContext );
+
+        Assert.IsNull( result );
+        Assert.IsFalse( session.IsActive, "An unconfirmed login's session must be marked inactive." );
+        Assert.IsTrue( response.RemovedCookies.Any( c => c.Name == PersonSessionService.AuthCookieName ),
+            "The auth cookie must be cleared for an unconfirmed login." );
+    }
+
+    /// <summary>
+    /// A session backed by a confirmed, non-locked-out <see cref="UserLogin"/>
+    /// resolves normally (regression guard for the locked-out / unconfirmed
+    /// check above).
+    /// </summary>
+    [TestMethod]
+    public void ResolveSessionForRequest_ConfirmedActiveUserLogin_ReturnsSession()
+    {
+        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        var rockContext = scope.App.CreateRockContext();
+        var service = new PersonSessionService( rockContext );
+
+        // ResolveSessionForRequest reaches the security-settings (kill-switch)
+        // check, which needs the Text FieldType available to persist settings.
+        rockContext.Set<FieldType>().Add( new FieldType { Id = 1, Guid = SystemGuid.FieldType.TEXT.AsGuid() } );
+
+        var userLogin = new UserLogin
+        {
+            Id = 52,
+            UserName = "good",
+            PersonId = 100,
+            IsConfirmed = true,
+            IsLockedOut = false,
+        };
+        var session = new PersonSession
+        {
+            Id = 1,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 200,
+            UserLoginId = 52,
+            UserLogin = userLogin,
+            CreationSource = PersonSessionCreationSource.Component,
+            IsActive = true,
+            IsPersistent = false,
+        };
+        rockContext.Set<UserLogin>().Add( userLogin );
+        rockContext.Set<PersonSession>().Add( session );
+
+        var cookieValue = service.GetCookieValue( session );
+        var response = new TrackingResponseContext();
+        var requestContext = BuildRequestContext( cookieValue, response );
+
+        var result = service.ResolveSessionForRequest( requestContext );
+
+        Assert.IsNotNull( result, "A confirmed, non-locked-out login should resolve normally." );
+        Assert.IsTrue( session.IsActive, "The session should remain active." );
+    }
+
+    /// <summary>
+    /// A session with no backing <see cref="UserLogin"/> (e.g. an impersonation
+    /// or user-token session) is not subject to the locked-out / unconfirmed
+    /// check and resolves normally.
+    /// </summary>
+    [TestMethod]
+    public void ResolveSessionForRequest_SessionWithoutUserLogin_ResolvesNormally()
+    {
+        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        var rockContext = scope.App.CreateRockContext();
+        var service = new PersonSessionService( rockContext );
+
+        // ResolveSessionForRequest reaches the security-settings (kill-switch)
+        // check, which needs the Text FieldType available to persist settings.
+        rockContext.Set<FieldType>().Add( new FieldType { Id = 1, Guid = SystemGuid.FieldType.TEXT.AsGuid() } );
+
+        var session = new PersonSession
+        {
+            Id = 1,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 200,
+            UserLoginId = null,
+            CreationSource = PersonSessionCreationSource.Impersonation,
+            IsActive = true,
+            IsPersistent = false,
+        };
+        rockContext.Set<PersonSession>().Add( session );
+
+        var cookieValue = service.GetCookieValue( session );
+        var response = new TrackingResponseContext();
+        var requestContext = BuildRequestContext( cookieValue, response );
+
+        var result = service.ResolveSessionForRequest( requestContext );
+
+        Assert.IsNotNull( result, "A session without a UserLogin should not be rejected by the locked-out check." );
+        Assert.IsTrue( session.IsActive );
+    }
+
     #endregion ResolveSessionForRequest — absent / undecodable / inactive
 
     #region ResolveSessionForRequest — happy path + reissue

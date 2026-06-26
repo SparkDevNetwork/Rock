@@ -23,7 +23,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 
+using Rock.Configuration;
+using Rock.Net;
 using Rock.RealTime.AspNet;
 
 namespace Rock.RealTime
@@ -77,7 +80,32 @@ namespace Rock.RealTime
             var state = GetConnectionState<EngineConnectionState>( connectionIdentifier );
 
             var requestWrapper = new SignalRRequestWrapper( ( realTimeHub as RealTimeHub ).Context.Request );
-            state.Request = new Net.RockRequestContext( requestWrapper, new Net.NullRockResponseContext(), Model.UserLoginService.GetCurrentUser( false ) );
+
+            // Capture the connecting request's identity for the long-running
+            // SignalR connection. The Person and UserLogin are reloaded on a
+            // short-lived (disposed) RockContext so we are not holding a context
+            // open for the lifetime of the connection. Navigation properties on
+            // these entities will not lazy-load later (the context is gone), but
+            // the connection only needs the already-resolved identity. Using
+            // CurrentPerson (not just CurrentUser) preserves the effective person
+            // for impersonation / user-token sessions, which have no UserLogin.
+            var originalRequestContext = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext;
+            var requestContext = new Net.RockRequestContext( requestWrapper, new Net.NullRockResponseContext(), null );
+
+            var currentPersonId = originalRequestContext?.CurrentPerson?.Id;
+            var currentUserId = originalRequestContext?.CurrentUser?.Id;
+
+            if ( currentPersonId.HasValue || currentUserId.HasValue )
+            {
+                using ( var rockContext = new Rock.Data.RockContext() )
+                {
+                    var person = currentPersonId.HasValue ? new Model.PersonService( rockContext ).Get( currentPersonId.Value ) : null;
+                    var userLogin = currentUserId.HasValue ? new Model.UserLoginService( rockContext ).Get( currentUserId.Value ) : null;
+                    requestContext.SetCurrentIdentity( person, userLogin );
+                }
+            }
+
+            state.Request = requestContext;
 
             return base.ClientConnectedAsync( realTimeHub, connectionIdentifier );
         }

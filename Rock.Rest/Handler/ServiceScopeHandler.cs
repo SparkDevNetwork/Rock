@@ -75,6 +75,21 @@ namespace Rock.Rest.Handler
                     return request.CreateResponse( HttpStatusCode.Forbidden );
                 }
 
+                // Tick session activity for cookie-authenticated REST requests.
+                // This is the API-pipeline counterpart to RockPage firing it for
+                // page requests; Application_BeginRequest intentionally does not
+                // fire it (it runs for static assets too). Apikey/JWT requests
+                // have no PersonSession resolved at this point (AuthenticateAttribute
+                // sets and ticks those later), so this only fires for cookie auth.
+                if ( rockRequestContext.PersonSession != null )
+                {
+                    new Rock.Tasks.UpdatePersonSessionLastActivity.Message
+                    {
+                        PersonSessionId = rockRequestContext.PersonSession.Id,
+                        LastActivityDateTime = Rock.RockDateTime.Now,
+                    }.SendIfNeeded();
+                }
+
                 var responseMessage = await base.SendAsync( request, cancellationToken );
 
                 // If we are using a PushStreamContent, we need to wrap it so

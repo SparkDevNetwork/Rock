@@ -658,6 +658,8 @@ namespace RockWeb
                 // CurrentPerson is resolved for them too. Null propagation makes
                 // this a clean no-op (anonymous) when there is no session.
                 rockRequestContext.SetCurrentIdentity( personSession?.PersonAlias?.Person, personSession?.UserLogin );
+                Context.Items["CurrentPerson"] = personSession?.PersonAlias?.Person;
+                Context.Items["CurrentUser"] = personSession?.UserLogin;
 
                 // Only set the principal when the session has a backing
                 // UserLogin. Sessions without one (Impersonation / UserToken)
@@ -668,25 +670,13 @@ namespace RockWeb
                     Context.User = new System.Security.Principal.GenericPrincipal( identity, null );
                 }
 
-                // Activity tracking. This is the canonical fire site
-                // for UpdatePersonSessionLastActivity — every request
-                // that resolves a PersonSession ticks activity here,
-                // regardless of whether it is a WebForms page, an
-                // Obsidian block action, a REST call, a mobile cookie
-                // request, or a TV cookie request. The bus task itself
-                // applies the per-session throttle so this call is
-                // cheap on hot paths. SignalR is intentionally excluded
-                // (long-lived hub traffic does not flow through
-                // Application_BeginRequest in a way that would
-                // legitimately advance activity).
-                if ( personSession != null )
-                {
-                    new Rock.Tasks.UpdatePersonSessionLastActivity.Message
-                    {
-                        PersonSessionId = personSession.Id,
-                        LastActivityDateTime = RockDateTime.Now,
-                    }.SendIfNeeded();
-                }
+                // NOTE: Activity tracking (UpdatePersonSessionLastActivity) is
+                // intentionally NOT fired here. Application_BeginRequest runs for
+                // every request — including the 70+ static asset requests a
+                // single page load can generate — so firing here would massively
+                // over-count. Activity is instead ticked at the request entry
+                // points that represent real usage: RockPage (page requests) and
+                // the REST pipeline (ServiceScopeHandler / AuthenticateAttribute).
             }
             catch ( Exception ex )
             {

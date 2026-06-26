@@ -829,6 +829,21 @@ Pre-merge developer sweeps, not user-facing scenarios. Perform these once the im
 - [ ] **`RockRequestContext.CurrentPerson` should source from `PersonSession`.** Today `CurrentPerson` is computed as `CurrentUser?.Person` (where `CurrentUser` is the resolved `UserLogin`). Under the PersonSession model this returns null for `UserToken` and any other session type that has no concrete `UserLogin`, even though the session's `PersonAlias` clearly identifies a person. Update `CurrentPerson` to prefer `PersonSession?.PersonAlias?.Person` and fall back to `CurrentUser?.Person` only when no session is attached. Once that lands, `ApiControllerBase.GetPerson` (already simplified to read `RockRequestContext.CurrentPerson` in Phase 12) and any other read-side caller automatically pick up the correct person for `UserToken` sessions without further changes.
 - [ ] Look at combining the PersonSessionService...Tests.cs files into one. This is our pattern, but discuss if this is a bad idea (file size growth).
 
+### Identity-resolution refactor (RockPage proxy / activity gating / locked-out)
+
+Added for the change that made `RockPage.CurrentUser`/`CurrentPerson` (and `CurrentPersonId`/`CurrentPersonAlias`/`CurrentPersonAliasId`) proxy `RockRequestContext`, moved the `Context.Items["CurrentPerson"]`/`["CurrentUser"]` population into `Application_BeginRequest`, relocated `UpdatePersonSessionLastActivity` firing off `BeginRequest`, moved the locked-out / unconfirmed sign-out into `ResolveSessionForRequest`, decoupled `RockRequestContext.CurrentPerson` from `CurrentUser` (now set together via `SetCurrentIdentity`), and deprecated `UserLoginService.GetCurrentUser*` / `UserLogin.GetCurrentUserName`.
+
+- [ ] **Audit stamping (ambient CurrentPerson):** save a record from a WebForms block while logged in; confirm `CreatedByPersonAliasId` / `ModifiedByPersonAliasId` are stamped (these read `HttpContext.Items["CurrentPerson"]`, now populated in `BeginRequest` instead of by `RockPage`). Repeat while impersonating — audit columns should reflect the impersonated person.
+- [ ] **Lava `CurrentPerson` on WebForms:** a Lava block/shortcode (e.g. `{{ CurrentPerson.FullName }}`) renders the correct person on a page load, and the impersonated person while impersonating.
+- [ ] **Locked-out eviction:** with an active logged-in session, mark the `UserLogin` locked out; the next request signs the user out (cookie cleared, redirected) — verify on a WebForms page **and** a cookie-authenticated REST/mobile request (this check moved into `ResolveSessionForRequest`, so it now applies to all request types).
+- [ ] **Unconfirmed eviction:** same as above with `UserLogin.IsConfirmed = false`.
+- [ ] **Activity gating (no over-count):** load a page that pulls many static assets; confirm `PersonSession.LastActivityDateTime` advances once per real page load and NOT per static asset (activity is no longer fired from `BeginRequest`).
+- [ ] **Activity on API:** a cookie-authenticated REST / Obsidian block action advances `LastActivityDateTime` (fired from `ServiceScopeHandler`); an apikey request advances it (fired from `AuthenticateAttribute`); confirm a single request does not double-count.
+- [ ] **SignalR under impersonation:** connect a real-time hub while impersonating; the hub should see the impersonated person (the SignalR `RockRequestContext` now captures `CurrentPerson`, not just `CurrentUser`).
+- [ ] **SignalR detached identity:** confirm hub / real-time code reads only scalar identity (`CurrentPerson.Id`, names) — the SignalR `RockRequestContext` is built from entities loaded on an already-disposed `RockContext`, so navigation properties will not lazy-load. (Audit current RealTime engine usage of `CurrentUser`/`CurrentPerson`.)
+- [ ] **`RockPage.UserName`:** any page or plugin that reads `RockPage.UserName` still shows the person's full name (it is now repopulated from `CurrentPerson?.FullName`).
+- [ ] **`?Logout` control-flow:** logging out via `?Logout` clears the session/cookies and the next request is anonymous, for both an anonymous-viewable page and a non-anonymous page (re-verify given the OnInit early-return restructure).
+
 ---
 
 ## Appendix A — Touch-point quick reference

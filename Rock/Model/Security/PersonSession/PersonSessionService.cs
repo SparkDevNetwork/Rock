@@ -16,7 +16,6 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Linq;
@@ -1405,6 +1404,18 @@ public partial class PersonSessionService
             return null;
         }
 
+        // If the session is attached to a UserLogin record that has been marked
+        // as locked out, or is no longer confirmed, then log the individual out.
+        // The session is passed explicitly because it has not yet been attached
+        // to the request context at this point in resolution, so the parameterless
+        // overload would not know which session to mark inactive.
+        if ( session.UserLogin != null && ( session.UserLogin.IsConfirmed != true || session.UserLogin.IsLockedOut == true ) )
+        {
+            SignOut( requestContext, session );
+
+            return null;
+        }
+
         // Reissue triggers (any one fires reissue). Reissue MUST NOT touch
         // PersonSession.IssuedDateTime — only the cookie's iat changes.
         var halfLife = TimeSpan.FromTicks( AuthCookieTimeout.Ticks / 2 );
@@ -1445,6 +1456,24 @@ public partial class PersonSessionService
             throw new ArgumentNullException( nameof( requestContext ) );
         }
 
+        SignOut( requestContext, requestContext.PersonSession );
+    }
+
+    /// <summary>
+    /// Signs the supplied <paramref name="personSession"/> out of the request:
+    /// clears the unsecured and <c>.ROCK</c> cookies, marks the session
+    /// inactive, and detaches the session and identity from
+    /// <paramref name="requestContext"/>. Split from the public
+    /// <see cref="SignOut(RockRequestContext)"/> so callers that have already
+    /// resolved a session but have not yet attached it to the request context
+    /// (notably <see cref="ResolveSessionForRequest(RockRequestContext)"/> when
+    /// it rejects a locked-out / unconfirmed login) can pass that session
+    /// explicitly and have it marked inactive.
+    /// </summary>
+    /// <param name="requestContext">The current <see cref="RockRequestContext"/>.</param>
+    /// <param name="personSession">The session to sign out, or <c>null</c> when the request is anonymous (cookies are still cleared).</param>
+    private void SignOut( RockRequestContext requestContext, PersonSession personSession )
+    {
         // Clear the unsecured (check-in self-identification) cookie first, and
         // unconditionally — a person can be "anonymous" (no PersonSession) yet
         // still recognized by legacy check-in flows via this cookie, so
@@ -1454,29 +1483,27 @@ public partial class PersonSessionService
         // Clear the authentication cookie from the browser.
         ExpireAuthCookie( requestContext );
 
-        var currentSession = requestContext.PersonSession;
-        if ( currentSession == null )
+        // Mark the session inactive when one was supplied. Reload it on this
+        // service's RockContext so the IsActive flip + SaveHook run against a
+        // tracked entity (the supplied instance may have been resolved on a
+        // different, possibly disposed, context). Mirrors the reload pattern in
+        // EndImpersonationAndRestore.
+        if ( personSession != null )
         {
-            // No authenticated session to sign out; the unsecured identity, if
-            // any, has already been cleared above.
-            return;
+            var trackedSession = Get( personSession.Guid );
+            if ( trackedSession != null )
+            {
+                // SaveHook stamps InactiveDateTime when IsActive flips false.
+                trackedSession.IsActive = false;
+                ( Context as RockContext ).SaveChanges();
+            }
         }
 
-        // Reload the session on this service's RockContext so the IsActive
-        // flip + SaveHook run against a tracked entity (the context-attached
-        // instance may have been resolved on a different, possibly disposed,
-        // context). Mirrors the reload pattern in EndImpersonationAndRestore.
-        var trackedSession = Get( currentSession.Guid );
-        if ( trackedSession != null )
-        {
-            // SaveHook stamps InactiveDateTime when IsActive flips false.
-            trackedSession.IsActive = false;
-            ( Context as RockContext ).SaveChanges();
-        }
-
-        // Detach so downstream code in the same request observes the anonymous
-        // state without re-resolving from the (now-expired) cookie.
+        // Detach the session and clear the resolved identity so downstream code
+        // in the same request observes the anonymous state without re-resolving
+        // from the (now-expired) cookie.
         requestContext.SetPersonSession( null );
+        requestContext.SetCurrentIdentity( null, null );
     }
 
     /// <summary>
