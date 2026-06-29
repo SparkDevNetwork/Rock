@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -6321,9 +6321,9 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "E3981034-6A58-48CB-85ED-F9900AA99934" )]
         public IActionResult GroupMemberRequirementCardGetConfig( [FromBody] GroupMemberRequirementCardGetConfigOptionsBag options )
         {
-            if ( options.GroupRequirementGuid.IsEmpty() || options.GroupMemberRequirementGuid.IsEmpty() )
+            if ( options.GroupRequirementGuid.IsEmpty() )
             {
-                return BadRequest( "GroupRequirementGuid and GroupMemberRequirementGuid are required." );
+                return BadRequest( "GroupRequirementGuid is required." );
             }
 
             using ( var rockContext = new RockContext() )
@@ -6332,7 +6332,7 @@ namespace Rock.Rest.v2
                 var groupRequirement = new GroupRequirementService( rockContext ).Get( options.GroupRequirementGuid );
                 var groupMemberRequirement = new GroupMemberRequirementService( rockContext ).Get( options.GroupMemberRequirementGuid );
 
-                if ( groupMemberRequirement == null || groupRequirement == null )
+                if ( groupRequirement == null )
                 {
                     return NotFound();
                 }
@@ -6403,7 +6403,7 @@ namespace Rock.Rest.v2
                     };
                 }
 
-                if ( groupMemberRequirement.WasOverridden )
+                if ( groupMemberRequirement?.WasOverridden == true )
                 {
                     results.IsOverridden = true;
                     results.OverriddenBy = groupMemberRequirement.OverriddenByPersonAlias.Person.FullName;
@@ -6877,7 +6877,7 @@ namespace Rock.Rest.v2
                                 MeetsGroupRequirement = requirementStatus.MeetsGroupRequirement,
                                 GroupRequirementGuid = requirementStatus.GroupRequirement.Guid,
                                 GroupRequirementTypeGuid = requirementStatus.GroupRequirement.GroupRequirementType.Guid,
-                                GroupMemberRequirementGuid = groupMemberRequirement.Guid,
+                                GroupMemberRequirementGuid = groupMemberRequirement?.Guid ?? Guid.Empty,
                                 GroupMemberRequirementDueDate = requirementStatus.RequirementDueDate?.ToShortDateString(),
                                 CanOverride = leaderCanOverride || hasPermissionToOverride
                             };
