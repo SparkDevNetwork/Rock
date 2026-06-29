@@ -18,6 +18,8 @@
 using System.Collections.Generic;
 using System.IO;
 
+using Rock.Configuration;
+using Rock.Data;
 using Rock.Lava.Blocks.Internal;
 
 namespace Rock.Lava.Blocks
@@ -53,35 +55,63 @@ namespace Rock.Lava.Blocks
         public override void OnRender( ILavaRenderContext context, TextWriter result )
         {
             var settings = GetAttributesFromMarkup( _blockPropertiesMarkup, context );
+            var enableContextIsolation = settings["enablecontextisolation"].AsBoolean();
+            RockContext rockContext;
+            RockContext originalRockContext = null;
 
-            // Create a new Rock Context and set it into the Lava context
-            var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
-            var transactionResult = new DbTransactionResult();
-
-            context.SetInternalField( "rock_dbtransaction", transactionResult );
-
-            // Create transaction (ReadCommitted is the default Isolation Level.)
-            using ( var dbContextTransaction = rockContext.Database.BeginTransaction() )
+            // If context isolation has been enabled then always create a new
+            // database context and set it into the Lava context (this will be
+            // restored later). Otherwise try to get the existing context
+            // already configured in the Lava context.
+            if ( enableContextIsolation )
             {
-                // Render the inner content of the block.
-                string output;
+                originalRockContext = context?.GetInternalField( LavaHelper.RockContextFieldKey, null ) as RockContext;
 
-                using ( TextWriter innerContentWriter = new StringWriter() )
+                rockContext = RockApp.Current.CreateRockContext();
+                context.SetInternalField( LavaHelper.RockContextFieldKey, rockContext );
+            }
+            else
+            {
+                rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+            }
+
+            try
+            {
+                var transactionResult = new DbTransactionResult();
+
+                context.SetInternalField( "rock_dbtransaction", transactionResult );
+
+                // Create transaction (ReadCommitted is the default Isolation Level.)
+                using ( var dbContextTransaction = rockContext.Database.BeginTransaction() )
                 {
-                    base.OnRender( context, innerContentWriter );
-                    output = innerContentWriter.ToString();
+                    // Render the inner content of the block.
+                    string output;
+
+                    using ( TextWriter innerContentWriter = new StringWriter() )
+                    {
+                        base.OnRender( context, innerContentWriter );
+                        output = innerContentWriter.ToString();
+                    }
+
+                    context.SetMergeField( "TransactionResult", transactionResult );
+
+                    if ( transactionResult.Success == false || settings["forcerollback"].AsBoolean() )
+                    {
+                        dbContextTransaction.Rollback();
+                    }
+                    else
+                    {
+                        dbContextTransaction.Commit();
+                        result.Write( output );
+                    }
                 }
-
-                context.SetMergeField( "TransactionResult", transactionResult );
-
-                if ( transactionResult.Success == false || settings["forcerollback"].AsBoolean() )
+            }
+            finally
+            {
+                if ( enableContextIsolation )
                 {
-                    dbContextTransaction.Rollback();
-                }
-                else
-                {
-                    dbContextTransaction.Commit();
-                    result.Write( output );
+                    // Restore the original RockContext in the Lava context
+                    context.SetInternalField( LavaHelper.RockContextFieldKey, originalRockContext );
                 }
             }
         }
@@ -97,6 +127,7 @@ namespace Rock.Lava.Blocks
             // Create default settings
             var settings = LavaElementAttributes.NewFromMarkup( markup, context );
 
+            settings.AddOrIgnore( "enablecontextisolation", "false" );
             settings.AddOrIgnore( "forcerollback", "false" );
 
             return settings;
