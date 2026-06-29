@@ -190,7 +190,7 @@ namespace Rock.Model
                     field is Field.Types.ImageFieldType ||
                     field is Field.Types.BackgroundCheckFieldType ) )
                 {
-                    PostSaveDeleteUnreferencedBinaryFile();
+                    PostSaveDeleteUnreferencedBinaryFile( field is Field.Types.BackgroundCheckFieldType );
                 }
 
                 // Previously we were doing this here:
@@ -234,7 +234,8 @@ namespace Rock.Model
             /// </summary>
             /// <remarks>This helps prevent orphaned binary files and ensures that unused files are
             /// removed from storage.</remarks>
-            private void PostSaveDeleteUnreferencedBinaryFile()
+            /// <param name="useContainsSearch">If true, the deletion task will use a contains search for the Guid rather than an equals search.</param>
+            private void PostSaveDeleteUnreferencedBinaryFile( bool useContainsSearch )
             {
                 Guid? newBinaryFileGuid = null;
                 Guid? oldBinaryFileGuid = null;
@@ -261,7 +262,8 @@ namespace Rock.Model
                     {
                         var deleteBinaryFileAttributeMsg = new DeleteBinaryFileAttribute.Message()
                         {
-                            BinaryFileGuid = oldBinaryFileGuid.Value
+                            BinaryFileGuid = oldBinaryFileGuid.Value,
+                            UseContainsSearch = useContainsSearch,
                         };
 
                         deleteBinaryFileAttributeMsg.Send();
