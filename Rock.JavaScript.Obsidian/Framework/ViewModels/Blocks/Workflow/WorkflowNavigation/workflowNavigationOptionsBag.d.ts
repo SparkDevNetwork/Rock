@@ -23,6 +23,10 @@
 
 /** The additional configuration options for the Workflow Navigation block. */
 export type WorkflowNavigationOptionsBag = {
-    /** Gets or sets a value indicating whether the current person has block-level Edit authorization. */
+    /**
+     * Gets or sets a value indicating whether the current person has
+     * block-level Edit authorization, which allows managing every workflow
+     * type regardless of the per-type permissions.
+     */
     isBlockEditAuthorized: boolean;
 };

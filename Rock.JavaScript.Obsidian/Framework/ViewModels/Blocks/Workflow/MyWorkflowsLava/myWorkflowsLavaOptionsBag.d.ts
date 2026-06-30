@@ -21,5 +21,6 @@
 // </copyright>
 //
 
+/** The additional configuration options for the My Workflows Lava block. */
 export type MyWorkflowsLavaOptionsBag = {
 };

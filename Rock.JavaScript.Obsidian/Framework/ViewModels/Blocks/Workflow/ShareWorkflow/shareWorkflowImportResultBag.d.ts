@@ -26,6 +26,9 @@ export type ShareWorkflowImportResultBag = {
     /** Gets or sets a value indicating whether the import completed successfully. */
     isSuccess: boolean;
 
-    /** Gets or sets the messages produced during the import. */
+    /**
+     * Gets or sets the messages produced during the import, describing what was
+     * (or would be) created or updated.
+     */
     messages?: string[] | null;
 };

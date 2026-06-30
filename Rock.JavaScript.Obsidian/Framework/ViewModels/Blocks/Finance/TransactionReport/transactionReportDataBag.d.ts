@@ -23,7 +23,10 @@
 
 import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
 
-/** The transaction data returned for the current filter selections. */
+/**
+ * The transaction data returned for the current filter selections, both on initial load and
+ * when the individual applies a new filter.
+ */
 export type TransactionReportDataBag = {
     /** Gets or sets the grid data describing the transactions that match the current filter. */
     gridData?: GridDataBag | null;

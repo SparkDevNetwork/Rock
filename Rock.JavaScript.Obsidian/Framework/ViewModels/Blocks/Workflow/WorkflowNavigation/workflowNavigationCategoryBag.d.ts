@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-import { WorkflowNavigationWorkflowTypeBag } from "./workflowNavigationWorkflowTypeBag";
+import { WorkflowNavigationWorkflowTypeBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowNavigation/workflowNavigationWorkflowTypeBag";
 
 /**
  * Represents a single workflow category node in the navigation tree,

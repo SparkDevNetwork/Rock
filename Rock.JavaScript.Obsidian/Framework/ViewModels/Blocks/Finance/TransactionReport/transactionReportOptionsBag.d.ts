@@ -21,25 +21,38 @@
 // </copyright>
 //
 
-import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
 import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-/** The configuration and display options for the Transaction Report block. */
+/**
+ * The configuration and display options for the Transaction Report block. These values are
+ * set once when the block initializes and do not change as the individual adjusts the filter.
+ */
 export type TransactionReportOptionsBag = {
     /** Gets or sets the label shown on the account filter picker. */
     accountLabel?: string | null;
 
-    /** Gets or sets the accounts configured as the viewable whitelist for the block. These pre-select the account filter on first load. An empty list means the block is not restricted to specific accounts. */
+    /**
+     * Gets or sets the accounts configured as the viewable whitelist for the block. These pre-select
+     * the account filter on first load. An empty list means the block is not restricted to specific
+     * accounts and all accounts the person contributed to are shown.
+     */
     accounts?: ListItemBag[] | null;
 
     /** Gets or sets the organization currency formatting details used to render amounts on the client. */
     currencyInfo?: CurrencyInfoBag | null;
 
-    /** Gets or sets the default lower (start) date applied to the date range filter on first load. */
+    /**
+     * Gets or sets the default lower (start) date applied to the date range filter on first load,
+     * formatted as an ISO date string.
+     */
     defaultLowerDate?: string | null;
 
-    /** Gets or sets the default upper (end) date applied to the date range filter on first load. */
+    /**
+     * Gets or sets the default upper (end) date applied to the date range filter on first load,
+     * formatted as an ISO date string.
+     */
     defaultUpperDate?: string | null;
 
     /** Gets or sets the message shown in the grid when no transactions match the current filter. */
@@ -54,6 +67,9 @@ export type TransactionReportOptionsBag = {
     /** Gets or sets a value indicating whether the transaction code column is shown in the grid. */
     showTransactionCode: boolean;
 
-    /** Gets or sets the label used to describe the transactions (e.g. "Gifts"). */
+    /**
+     * Gets or sets the singular label used to describe a transaction (e.g. "Gift"). Used as the
+     * grid item term, which the grid pluralizes for its row-count message.
+     */
     transactionLabel?: string | null;
 };

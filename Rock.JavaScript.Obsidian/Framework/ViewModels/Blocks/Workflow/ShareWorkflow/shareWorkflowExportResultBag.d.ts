@@ -21,7 +21,10 @@
 // </copyright>
 //
 
-/** The result of exporting a workflow type for download. */
+/**
+ * The result of exporting a workflow type, containing the serialized content
+ * the browser should download.
+ */
 export type ShareWorkflowExportResultBag = {
     /** Gets or sets the suggested file name for the downloaded export. */
     fileName?: string | null;

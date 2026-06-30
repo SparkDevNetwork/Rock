@@ -21,23 +21,35 @@
 // </copyright>
 //
 
-/** A single entity that will be included when a workflow type is exported. */
+/**
+ * A single entity that will be included when a workflow type is exported,
+ * shown as a row in the export preview grid.
+ */
 export type ShareWorkflowPreviewEntityBag = {
     /** Gets or sets the unique identifier of the entity, used as the grid row key. */
     guid?: string | null;
 
-    /** Gets or sets a value indicating whether the entity is critical to the export. */
+    /**
+     * Gets or sets a value indicating whether the entity is critical to the export,
+     * meaning the export cannot complete without it.
+     */
     isCritical: boolean;
 
-    /** Gets or sets a value indicating whether the entity will be assigned a new unique identifier when imported. */
+    /**
+     * Gets or sets a value indicating whether the entity will be assigned a new
+     * unique identifier when it is imported.
+     */
     isNewGuid: boolean;
 
     /** Gets or sets the friendly name used to identify the entity to the user. */
     name?: string | null;
 
-    /** Gets or sets the reference paths describing how this entity is reached from the root workflow type. */
+    /**
+     * Gets or sets the reference paths that describe how this entity is reached
+     * from the root workflow type being exported.
+     */
     paths?: string[] | null;
 
-    /** Gets or sets the short entity type name. */
+    /** Gets or sets the short entity type name (for example, "WorkflowActivityType"). */
     shortType?: string | null;
 };

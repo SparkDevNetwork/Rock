@@ -23,6 +23,9 @@
 
 /** The initialization data for the Contribution Statement Generator block. */
 export type ContributionStatementGeneratorBag = {
-    /** Gets or sets the rendered HTML document for the contribution statement. This is null when no statement is available for the requested period. */
+    /**
+     * Gets or sets the rendered HTML document for the contribution statement.
+     * This is null when no statement is available for the requested period.
+     */
     statementHtml?: string | null;
 };

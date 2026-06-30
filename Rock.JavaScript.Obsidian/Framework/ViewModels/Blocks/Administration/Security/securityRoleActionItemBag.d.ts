@@ -21,7 +21,10 @@
 // </copyright>
 //
 
-/** An action that may be granted to a role being added. */
+/**
+ * An action that may be granted to a role being added, along with whether
+ * it should be selected by default in the Add Role form.
+ */
 export type SecurityRoleActionItemBag = {
     /** Gets or sets the action key (e.g. "View", "Edit", "Administrate"). */
     action?: string | null;

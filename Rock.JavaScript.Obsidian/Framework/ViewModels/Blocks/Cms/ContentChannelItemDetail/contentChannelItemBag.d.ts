@@ -159,6 +159,7 @@ export type ContentChannelItemBag = {
     /** Gets or sets the structured editor tool-set Guid; null uses the system default. */
     structuredContentToolValueGuid?: Guid | null;
 
+    /** The title of the content channel item. */
     title?: string | null;
 
     /** Gets or sets the URL slug rows. Persisted for existing items; staged (Id == 0) for new items, written inside Save. */

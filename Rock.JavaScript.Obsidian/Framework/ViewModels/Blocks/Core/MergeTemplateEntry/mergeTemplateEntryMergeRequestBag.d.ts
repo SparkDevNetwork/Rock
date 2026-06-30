@@ -23,9 +23,15 @@
 
 import { Guid } from "@Obsidian/Types";
 
-/** The information sent when generating a merge document or requesting the Lava merge fields help for the selected template. */
+/**
+ * The information sent when generating a merge document or requesting the
+ * Lava merge fields help for the selected template.
+ */
 export type MergeTemplateEntryMergeRequestBag = {
-    /** Gets or sets a value indicating whether family members should be combined into a single row (for example, "Ted & Cindy Decker"). */
+    /**
+     * Gets or sets a value indicating whether family members should be combined
+     * into a single row (for example, "Ted &amp; Cindy Decker").
+     */
     isCombineFamilyMembers: boolean;
 
     /** Gets or sets the unique identifier of the selected merge template. */

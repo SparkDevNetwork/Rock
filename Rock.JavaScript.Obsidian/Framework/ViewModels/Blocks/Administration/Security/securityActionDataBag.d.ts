@@ -23,12 +23,19 @@
 
 import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
 
-/** The permission data for a single security action. */
+/**
+ * The permission data for a single security action. Returned both during
+ * initialization and after any change so the grids can refresh.
+ */
 export type SecurityActionDataBag = {
     /** Gets or sets the rules defined directly on this entity for the action. */
     itemRules?: GridDataBag | null;
 
-    /** Gets or sets the warning shown when no "All Users" rule applies. */
+    /**
+     * Gets or sets the warning shown when no "All Users" rule applies,
+     * describing whether non-matching people are allowed or denied by default.
+     * A null value indicates the warning should not be shown.
+     */
     noMatchMessage?: string | null;
 
     /** Gets or sets the rules inherited from parent authorities for the action. */

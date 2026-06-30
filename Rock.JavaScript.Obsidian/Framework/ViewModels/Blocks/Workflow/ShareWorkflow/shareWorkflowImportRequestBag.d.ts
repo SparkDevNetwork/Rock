@@ -28,9 +28,15 @@ export type ShareWorkflowImportRequestBag = {
     /** Gets or sets the category that the imported workflow type should be placed in. */
     category?: ListItemBag | null;
 
-    /** Gets or sets the uploaded file to import. The value is the binary file unique identifier. */
+    /**
+     * Gets or sets the uploaded file to import. The value is the binary file
+     * unique identifier produced by the file uploader.
+     */
     file?: ListItemBag | null;
 
-    /** Gets or sets a value indicating whether the import should only be tested without saving. */
+    /**
+     * Gets or sets a value indicating whether the import should only be tested.
+     * When true, no changes are saved to the database.
+     */
     isTestOnly: boolean;
 };

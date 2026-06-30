@@ -25,24 +25,40 @@ import { WorkflowLaunchItemBag } from "@Obsidian/ViewModels/Blocks/Workflow/Work
 
 /** The runtime data for the Workflow Launch block. */
 export type WorkflowLaunchBag = {
-    /** Gets or sets the pluralized friendly name of the entity type contained in the entity set (for example, "People"). */
+    /**
+     * Gets or sets the pluralized friendly name of the entity type contained in the
+     * entity set (for example, "People").
+     */
     entityTypeName?: string | null;
 
-    /** Gets or sets the error message to display when the entity set is missing or invalid. When set, the launcher UI is hidden. */
+    /**
+     * Gets or sets the error message to display when the entity set is missing or
+     * invalid. When set, the launcher UI is hidden.
+     */
     errorMessage?: string | null;
 
-    /** Gets or sets a value indicating whether workflows have already been launched (for example, via the bypass-confirm page parameter). */
+    /**
+     * Gets or sets a value indicating whether workflows have already been launched (for
+     * example, via the bypass-confirm page parameter).
+     */
     hasLaunched: boolean;
 
     /** Gets or sets the preview items, limited to the configured maximum number to show. */
     items?: WorkflowLaunchItemBag[] | null;
 
-    /** Gets or sets the name of the workflow type when the selection is locked (a single configured type or a workflow type page parameter). Null when the individual chooses the type. */
+    /**
+     * Gets or sets the name of the workflow type when the selection is locked (a single
+     * configured type or a workflow type page parameter). Null when the individual
+     * chooses the type.
+     */
     lockedWorkflowTypeName?: string | null;
 
     /** Gets or sets the success message shown after workflows have been launched. */
     successMessage?: string | null;
 
-    /** Gets or sets the total number of items in the entity set, used to build the "...and N more" summary. */
+    /**
+     * Gets or sets the total number of items in the entity set, used to build the
+     * "...and N more" summary.
+     */
     totalItemCount: number;
 };

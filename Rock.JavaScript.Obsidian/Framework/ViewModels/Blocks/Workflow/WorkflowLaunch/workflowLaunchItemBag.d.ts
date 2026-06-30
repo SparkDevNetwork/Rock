@@ -23,7 +23,10 @@
 
 /** A single entity preview item shown in the Workflow Launch block. */
 export type WorkflowLaunchItemBag = {
-    /** Gets or sets the optional secondary line of text (for example, the related group name or an "EntityType Id: N" description). */
+    /**
+     * Gets or sets the optional secondary line of text (for example, the related
+     * group name or an "EntityType Id: N" description).
+     */
     subText?: string | null;
 
     /** Gets or sets the primary line of text identifying the entity. */

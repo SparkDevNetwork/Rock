@@ -25,6 +25,10 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The initialization state for the Share Workflow block. */
 export type ShareWorkflowBag = {
-    /** Gets or sets the workflow type to pre-select when the block loads. */
+    /**
+     * Gets or sets the workflow type to pre-select when the block loads,
+     * resolved from the page parameter. null when no workflow type
+     * was supplied or it could not be found.
+     */
     initialWorkflowType?: ListItemBag | null;
 };

@@ -29,6 +29,10 @@ export type AddRoleRequestBag = {
     /** Gets or sets the action currently being viewed, used to refresh the grids. */
     currentAction?: string | null;
 
-    /** Gets or sets the selected role value. */
+    /**
+     * Gets or sets the selected role value. Negative values represent the
+     * special roles (-1 All Users, -2 All Authenticated Users,
+     * -3 All Un-Authenticated Users); any other value is a security role group id.
+     */
     roleValue?: string | null;
 };

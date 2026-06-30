@@ -23,6 +23,9 @@
 
 /** The result returned when saving the giving-automation configuration. */
 export type SaveConfigurationResponseBag = {
-    /** Gets or sets a value indicating whether the save was held back because the transaction filters changed and the user has not yet confirmed the resulting full recomputation. */
+    /**
+     * Gets or sets a value indicating whether the save was held back because the transaction filters
+     * changed and the user has not yet confirmed the resulting full recomputation.
+     */
     isFilterChangeConfirmationRequired: boolean;
 };

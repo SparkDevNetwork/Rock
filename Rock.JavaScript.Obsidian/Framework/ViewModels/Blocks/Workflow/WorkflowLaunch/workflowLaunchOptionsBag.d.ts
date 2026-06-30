@@ -25,7 +25,10 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The configuration-derived options for the Workflow Launch block. */
 export type WorkflowLaunchOptionsBag = {
-    /** Gets or sets a value indicating whether the individual may launch another workflow after one has already been launched. */
+    /**
+     * Gets or sets a value indicating whether the individual may launch another
+     * workflow after one has already been launched.
+     */
     allowMultipleWorkflowLaunches: boolean;
 
     /** Gets or sets the CSS class for the icon shown before the panel title. */
@@ -34,6 +37,9 @@ export type WorkflowLaunchOptionsBag = {
     /** Gets or sets the title to display in the block panel header. */
     panelTitle?: string | null;
 
-    /** Gets or sets the workflow types to choose from when two or more are configured. Empty when a picker (any type) or a single locked type is used instead. */
+    /**
+     * Gets or sets the workflow types to choose from when two or more are configured.
+     * Empty when a picker (any type) or a single locked type is used instead.
+     */
     workflowTypeOptions?: ListItemBag[] | null;
 };

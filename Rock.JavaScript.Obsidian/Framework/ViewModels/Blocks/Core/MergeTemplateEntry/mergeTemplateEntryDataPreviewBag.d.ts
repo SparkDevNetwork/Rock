@@ -24,7 +24,10 @@
 import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
 import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
 
-/** A small preview of the data rows that will be merged, expressed as a grid definition (the columns) and grid data (the rows). */
+/**
+ * A small preview of the data rows that will be merged, expressed as a grid
+ * definition (the columns) and grid data (the rows).
+ */
 export type MergeTemplateEntryDataPreviewBag = {
     /** Gets or sets the grid data that contains the preview rows. */
     gridData?: GridDataBag | null;

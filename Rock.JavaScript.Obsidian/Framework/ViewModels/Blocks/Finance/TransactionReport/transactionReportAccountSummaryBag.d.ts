@@ -21,7 +21,10 @@
 // </copyright>
 //
 
-/** An account name paired with an amount, used for per-account breakdowns and totals. */
+/**
+ * An account name paired with an amount. Used both for a transaction's per-account breakdown
+ * in the grid and for the aggregated per-account totals shown in the summary.
+ */
 export type TransactionReportAccountSummaryBag = {
     /** Gets or sets the amount associated with the account. */
     amount: number;

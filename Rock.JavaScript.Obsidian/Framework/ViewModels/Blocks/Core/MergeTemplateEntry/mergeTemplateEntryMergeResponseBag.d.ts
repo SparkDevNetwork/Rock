@@ -23,15 +23,29 @@
 
 /** The result of a merge document request. */
 export type MergeTemplateEntryMergeResponseBag = {
-    /** Gets or sets the URL the browser should navigate to in order to download the generated document. This is empty when the merge did not succeed. */
+    /**
+     * Gets or sets the URL the browser should navigate to in order to download
+     * the generated document. This is empty when the merge did not succeed.
+     */
     downloadUrl?: string | null;
 
-    /** Gets or sets additional technical detail about a merge failure (for example, the exception message). */
+    /**
+     * Gets or sets additional technical detail about a merge failure
+     * (for example, the exception message).
+     */
     errorDetails?: string | null;
 
-    /** Gets or sets a user-facing message describing why the merge failed, or null when the merge succeeded. */
+    /**
+     * Gets or sets a user-facing message describing why the merge failed,
+     * or null when the merge succeeded.
+     */
     errorMessage?: string | null;
 
-    /** Gets or sets a value indicating whether the error should be shown as a danger (rather than warning) notification. This is true for template configuration failures (the template or its type could not be loaded) and false for runtime merge errors, matching the legacy block. */
+    /**
+     * Gets or sets a value indicating whether the error should be shown as a
+     * danger (rather than warning) notification. This is true for
+     * template configuration failures (the template or its type could not be
+     * loaded) and false for runtime merge errors, matching the legacy block.
+     */
     isErrorDanger: boolean;
 };

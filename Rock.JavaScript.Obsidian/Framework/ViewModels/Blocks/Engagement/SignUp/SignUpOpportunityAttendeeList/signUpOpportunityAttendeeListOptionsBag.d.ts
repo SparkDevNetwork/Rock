@@ -23,10 +23,16 @@
 
 /** The additional configuration options for the Sign-Up Opportunity Attendee List block. */
 export type SignUpOpportunityAttendeeListOptionsBag = {
-    /** Gets or sets the name of the project's campus, displayed as a panel label. */
+    /**
+     * Gets or sets the name of the project's campus, displayed as a panel label.
+     * When null or empty the campus label is hidden.
+     */
     campusName?: string | null;
 
-    /** Gets or sets the error message that prevents the block from being displayed. */
+    /**
+     * Gets or sets the error message that prevents the block from being displayed.
+     * When set, the summary panel and grid are hidden and only this message is shown.
+     */
     errorMessage?: string | null;
 
     /** Gets or sets the friendly text describing the opportunity's schedule. */
@@ -35,16 +41,27 @@ export type SignUpOpportunityAttendeeListOptionsBag = {
     /** Gets or sets the name of the project's group type, displayed as a panel label. */
     groupTypeName?: string | null;
 
-    /** Gets or sets a value indicating whether the project (group) is inactive. */
+    /**
+     * Gets or sets a value indicating whether the project (group) is inactive, in
+     * which case an "Inactive" label is displayed on the panel.
+     */
     isGroupInactive: boolean;
 
     /** Gets or sets the display name of the opportunity's location. */
     locationName?: string | null;
 
-    /** Gets or sets the display name of this sign-up opportunity. */
+    /**
+     * Gets or sets the display name of this sign-up opportunity. This is the schedule
+     * configuration name when provided, falling back to the project (group) name, with
+     * the schedule name appended when the schedule is a named schedule.
+     */
     opportunityName?: string | null;
 
-    /** Gets or sets the prefix applied to person preference keys. */
+    /**
+     * Gets or sets the prefix applied to person preference keys so that grid filters
+     * are remembered per opportunity rather than shared across every opportunity
+     * viewed on this page.
+     */
     preferenceKeyPrefix?: string | null;
 
     /** Gets or sets the name of the project (group), used as the export file name. */
@@ -53,7 +70,10 @@ export type SignUpOpportunityAttendeeListOptionsBag = {
     /** Gets or sets the desired attendee capacity configured for this opportunity. */
     slotsDesired?: number | null;
 
-    /** Gets or sets the count of slots currently filled for this opportunity. */
+    /**
+     * Gets or sets the count of slots currently filled for this opportunity. Deceased
+     * individuals are excluded from the count.
+     */
     slotsFilled: number;
 
     /** Gets or sets the maximum attendee capacity configured for this opportunity. */

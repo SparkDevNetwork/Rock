@@ -29,7 +29,10 @@ export type SecurityInitializationBag = {
     /** Gets or sets the permission data for the initially selected action. */
     actionData?: SecurityActionDataBag | null;
 
-    /** Gets or sets the security actions (tabs) supported by the secured entity, ordered for display. */
+    /**
+     * Gets or sets the security actions (tabs) supported by the secured
+     * entity, ordered for display.
+     */
     actions?: SecurityActionBag[] | null;
 
     /** Gets or sets the action that should be selected when the block first loads. */

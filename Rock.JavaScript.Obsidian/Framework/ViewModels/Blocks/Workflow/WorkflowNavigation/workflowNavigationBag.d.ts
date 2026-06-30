@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-import { WorkflowNavigationCategoryBag } from "./workflowNavigationCategoryBag";
+import { WorkflowNavigationCategoryBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowNavigation/workflowNavigationCategoryBag";
 
 /** The root data required to render the Workflow Navigation block. */
 export type WorkflowNavigationBag = {

@@ -23,12 +23,21 @@
 
 /** The filter selections sent to the server when requesting transaction data. */
 export type TransactionReportFilterBag = {
-    /** Gets or sets the unique identifiers of the accounts to filter by. An empty list includes all accounts. */
+    /**
+     * Gets or sets the unique identifiers of the accounts to filter by. An empty list includes
+     * transactions for all accounts.
+     */
     accountGuids?: string[] | null;
 
-    /** Gets or sets the inclusive lower bound of the transaction date range. An empty value means no lower bound. */
+    /**
+     * Gets or sets the inclusive lower bound of the transaction date range. An empty value
+     * means there is no lower bound.
+     */
     lowerDate?: string | null;
 
-    /** Gets or sets the upper bound of the transaction date range. An empty value means no upper bound. */
+    /**
+     * Gets or sets the upper bound of the transaction date range. An empty value means there
+     * is no upper bound.
+     */
     upperDate?: string | null;
 };

@@ -23,15 +23,24 @@
 
 /** The state used to render the Merge Template Entry block. */
 export type MergeTemplateEntryBag = {
-    /** Gets or sets a value indicating whether the "Combine Family Members" option should be shown. This is only relevant for Person and Group Member entity sets. */
+    /**
+     * Gets or sets a value indicating whether the "Combine Family Members" option
+     * should be shown. This is only relevant for Person and Group Member entity sets.
+     */
     isCombineFamilyMembersVisible: boolean;
 
-    /** Gets or sets a value indicating whether the merge entry panel should be shown. This is false when no entity set was provided or it could not be found. */
+    /**
+     * Gets or sets a value indicating whether the merge entry panel should be shown.
+     * This is false when no entity set was provided or it could not be found.
+     */
     isEntryPanelVisible: boolean;
 
     /** Gets or sets the number of rows that will be merged. */
     recordCount: number;
 
-    /** Gets or sets a warning message to display in place of the entry panel (for example, when the requested merge records could not be found). */
+    /**
+     * Gets or sets a warning message to display in place of the entry panel
+     * (for example, when the requested merge records could not be found).
+     */
     warningMessage?: string | null;
 };

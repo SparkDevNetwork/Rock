@@ -25,6 +25,9 @@ import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOw
 
 /** The configuration options for the Merge Template Entry block. */
 export type MergeTemplateEntryOptionsBag = {
-    /** Gets or sets which merge templates the picker is allowed to show (personal, global, or both). */
+    /**
+     * Gets or sets which merge templates the picker is allowed to show
+     * (personal, global, or both).
+     */
     mergeTemplateOwnership: MergeTemplateOwnership;
 };

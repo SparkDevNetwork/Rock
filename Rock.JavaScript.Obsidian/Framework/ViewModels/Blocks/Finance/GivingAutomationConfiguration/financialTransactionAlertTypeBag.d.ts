@@ -92,7 +92,7 @@ export type FinancialTransactionAlertTypeBag = {
     /** Gets or sets the number of days between triggering the same alert. */
     repeatPreventionDuration?: number | null;
 
-    /** Gets or sets the days of the week (as DayOfWeek numbers) on which this alert runs. */
+    /** Gets or sets the days of the week (as System.DayOfWeek numbers) on which this alert runs. */
     runDays?: string[] | null;
 
     /** Gets or sets the optional workflow type launched when the alert is matched. */

@@ -25,6 +25,10 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The configuration options for the Security block. */
 export type SecurityOptionsBag = {
-    /** Gets or sets the roles that may be added to the permission list. */
+    /**
+     * Gets or sets the roles that may be added to the permission list. This
+     * includes the special roles (All Users, All Authenticated Users, All
+     * Un-Authenticated Users) followed by the configured security roles.
+     */
     roles?: ListItemBag[] | null;
 };

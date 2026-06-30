@@ -26,10 +26,16 @@
  * information needed to render its launch and manage links.
  */
 export type WorkflowNavigationWorkflowTypeBag = {
-    /** Gets or sets a value indicating whether the current person is authorized to manage (edit) workflows of this type. */
+    /**
+     * Gets or sets a value indicating whether the current person is
+     * authorized to manage (edit) workflows of this type.
+     */
     canManage: boolean;
 
-    /** Gets or sets a value indicating whether the current person is authorized to view the list of workflows of this type. */
+    /**
+     * Gets or sets a value indicating whether the current person is
+     * authorized to view the list of workflows of this type.
+     */
     canViewList: boolean;
 
     /** Gets or sets the CSS class used for the workflow type's icon. */
@@ -38,7 +44,11 @@ export type WorkflowNavigationWorkflowTypeBag = {
     /** Gets or sets the encoded identifier key of the workflow type. */
     idKey?: string | null;
 
-    /** Gets or sets a value indicating whether a new workflow of this type can be launched. */
+    /**
+     * Gets or sets a value indicating whether a new workflow of this type
+     * can be launched. This is true only when the type is active and
+     * has at least one active entry form.
+     */
     isLaunchEnabled: boolean;
 
     /** Gets or sets the name of the workflow type. */
