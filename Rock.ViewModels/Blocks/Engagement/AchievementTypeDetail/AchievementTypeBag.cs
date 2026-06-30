@@ -72,11 +72,6 @@ namespace Rock.ViewModels.Blocks.Engagement.AchievementTypeDetail
         public ListItemBag AlternateImageBinaryFile { get; set; }
 
         /// <summary>
-        /// Gets or sets the attempts.
-        /// </summary>
-        public List<ListItemBag> Attempts { get; set; }
-
-        /// <summary>
         /// Gets or sets the available prerequisites.
         /// </summary>
         /// <value>
