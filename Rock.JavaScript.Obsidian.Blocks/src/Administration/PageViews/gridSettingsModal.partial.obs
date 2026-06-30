@@ -1,0 +1,118 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Filters"
+           saveText="Apply"
+           @save="onSave">
+
+        <SlidingDateRangePicker v-model="dateRange"
+                                label="Date Range" />
+
+        <DropDownList v-model="loginStatus"
+                      label="Login Status"
+                      :items="loginStatusItems"
+                      :showBlankItem="false" />
+
+        <TextBox v-model="urlContains"
+                 label="URL Contains"
+                 :isClearable="true" />
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { nextTick, PropType, ref, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        defaultSlidingDateRange: {
+            type: Object as PropType<SlidingDateRange>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const loginStatusItems: ListItemBag[] = [
+        { value: "true", text: "Logged In" },
+        { value: "false", text: "Not Logged In" },
+        { value: "", text: "Both" }
+    ];
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const dateRange = ref<SlidingDateRange | null>(props.modelValue.dateRange ?? props.defaultSlidingDateRange);
+    const loginStatus = ref(props.modelValue.loginStatus);
+    const urlContains = ref(props.modelValue.urlContains);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the save button is clicked.
+     */
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            dateRange: dateRange.value,
+            loginStatus: loginStatus.value,
+            urlContains: urlContains.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        dateRange.value = props.modelValue.dateRange ?? props.defaultSlidingDateRange;
+        loginStatus.value = props.modelValue.loginStatus;
+        urlContains.value = props.modelValue.urlContains;
+    });
+
+    watch(dateRange, () => {
+        nextTick(() => {
+            if (!dateRange.value) {
+                dateRange.value = props.defaultSlidingDateRange;
+            }
+        });
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+
+    // #endregion Watchers
+</script>
