@@ -13,29 +13,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+//
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 
-using Rock;
-using Rock.Data;
+using Rock.Attribute;
 using Rock.Model;
+using Rock.ViewModels.Blocks;
+using Rock.ViewModels.Blocks.Finance.BenevolenceRequestStatementLava;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using System.Data.Entity;
-using Rock.Security;
 
-namespace RockWeb.Blocks.Finance
+namespace Rock.Blocks.Finance
 {
+    /// <summary>
+    /// Displays a Lava based statement for a single benevolence request.
+    /// </summary>
     [DisplayName( "Benevolence Request Statement Lava" )]
     [Category( "Finance" )]
     [Description( "Block for displaying a Lava based Benevolence Request detail." )]
+
+    #region Block Attributes
 
     [CodeEditorField( "Lava Template",
         Description = "The Lava template to use for the Benevolence Request statement.",
@@ -53,7 +51,7 @@ namespace RockWeb.Blocks.Finance
         <div class=""pull-left"">
             <img src=""{{ 'Global' | Attribute:'PublicApplicationRoot' }}{{ 'Global' | Attribute:'EmailHeaderLogo' }}"" width=""100px"" />
         </div>
-        
+
         <div class=""pull-left margin-l-md margin-t-sm"">
             <strong>{{ 'Global' | Attribute:'OrganizationName' }}</strong><br />
             {{ 'Global' | Attribute:'OrganizationAddress' }}<br />
@@ -108,7 +106,7 @@ namespace RockWeb.Blocks.Finance
     <div class=""col-xs-4"">
         <div class=""clearfix"">
             <div class=""pull-right"">
-                <a href=""#"" class=""btn btn-primary hidden-print"" onClick=""window.print();""><i class=""ti ti-printer""></i> Print Request</a> 
+                <a href=""#"" class=""btn btn-primary hidden-print"" onClick=""window.print();""><i class=""ti ti-printer""></i> Print Request</a>
             </div>
         </div>
     </div>
@@ -146,21 +144,21 @@ namespace RockWeb.Blocks.Finance
     </div>
 </div>
 
-        
+
 {%if Request.BenevolenceResults != empty %}
     <div class=""row"">
         <div class=""col-xs-12"">
             <hr style=""opacity: .5;"" />
-            
+
             <h4 class=""margin-t-md margin-b-md"">Results List</h4>
-            
+
             <table class=""table table-bordered table-striped table-condensed"">
                 <tr>
                     <th>Type</th>
                     <th>Amount</th>
                     <th>Details</th>
                 </tr>
-            
+
                 {% for result in Request.BenevolenceResults %}
                     <tr>
                         <td>{{ result.ResultTypeValue.Value }}</td>
@@ -168,89 +166,77 @@ namespace RockWeb.Blocks.Finance
                         <td>{{ result.ResultSummary }}</td>
                     </tr>
                 {% endfor %}
-            
+
             </table>
         </div>
     </div>
 {% endif %}",
-        Order = 2 )]
+        Order = 0,
+        Key = AttributeKey.LavaTemplate )]
 
+    #endregion Block Attributes
+
+    [Rock.SystemGuid.EntityTypeGuid( "23830585-B0F7-41FD-A3B7-E9B0C8D47A13" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "D645CF3D-B84B-4A4F-9FC0-62BB94B1258B" )]
     [Rock.SystemGuid.BlockTypeGuid( "C2D8FCA3-BC8F-44FF-85AA-440BF41CEF5D" )]
-    public partial class BenevolenceRequestStatementLava : Rock.Web.UI.RockBlock
+    public class BenevolenceRequestStatementLava : RockBlockType
     {
-        #region Base Control Methods
+        #region Keys
 
-        // Overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
-
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
+        private static class AttributeKey
         {
-            base.OnInit( e );
-
-            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
-            this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upnlContent );
+            public const string LavaTemplate = "LavaTemplate";
         }
 
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
-        /// </summary>
-        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnLoad( EventArgs e )
+        private static class PageParameterKey
         {
-            if ( !Page.IsPostBack )
-            {
-                DisplayResults();
-            }
-
-            base.OnLoad( e );
+            public const string BenevolenceRequestId = "BenevolenceRequestId";
         }
 
-        #endregion
-
-        #region Events
-
-        // handlers called by the controls on your block
-
-        /// <summary>
-        /// Handles the BlockUpdated event of the control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
-        {
-            DisplayResults();
-        }
-
-        #endregion
+        #endregion Keys
 
         #region Methods
 
-        private void DisplayResults()
+        /// <inheritdoc/>
+        public override object GetObsidianBlockInitialization()
         {
-            RockContext rockContext = new RockContext();
-            var benevolenceRequestService = new BenevolenceRequestService( rockContext );
-            var benevolenceRequest = benevolenceRequestService
-                                       .GetQueryableByKey(
-                                           PageParameter( "BenevolenceRequestId" ),
-                                           !PageCache.Layout.Site.DisablePredictableIds
-                                       )
-                                       .FirstOrDefault();
+            var box = new CustomBlockBox<BenevolenceRequestStatementLavaBag, BenevolenceRequestStatementLavaOptionsBag>();
 
-            if ( benevolenceRequest != null )
+            box.Bag = new BenevolenceRequestStatementLavaBag
             {
-                var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "Request", benevolenceRequest );
+                Content = RenderLavaContent()
+            };
 
-                var template = GetAttributeValue( "LavaTemplate" );
+            box.Options = new BenevolenceRequestStatementLavaOptionsBag();
 
-                lResults.Text = template.ResolveMergeFields( mergeFields );
-            }
+            return box;
         }
 
-        #endregion
+        /// <summary>
+        /// Resolves the configured Lava template for the requested benevolence request.
+        /// </summary>
+        /// <returns>The rendered HTML content string.</returns>
+        private string RenderLavaContent()
+        {
+            var benevolenceRequest = new BenevolenceRequestService( RockContext )
+                .Get( PageParameter( PageParameterKey.BenevolenceRequestId ), !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( benevolenceRequest == null )
+            {
+                return "<div class=\"alert alert-warning\">The requested benevolence request was not found.</div>";
+            }
+
+            // Load attributes so the template can iterate Request.AttributeValues.
+            benevolenceRequest.LoadAttributes( RockContext );
+
+            var mergeFields = RequestContext.GetCommonMergeFields();
+            mergeFields.Add( "Request", benevolenceRequest );
+
+            var template = GetAttributeValue( AttributeKey.LavaTemplate );
+
+            return template.ResolveMergeFields( mergeFields );
+        }
+
+        #endregion Methods
     }
 }
