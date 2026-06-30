@@ -1,0 +1,162 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel class="panel-workflowitem"
+           :hasCollapse="true"
+           v-model="isExpanded"
+           :title="category.name ?? ''"
+           :titleIconCssClass="categoryIconCssClass">
+        <ul v-if="category.workflowTypes && category.workflowTypes.length > 0" class="list-group">
+            <li v-for="(workflowType, index) in category.workflowTypes"
+                :key="workflowType.idKey ?? index"
+                class="list-group-item clickable">
+                <component :is="workflowType.isLaunchEnabled ? 'a' : 'span'"
+                           :href="getLaunchHref(workflowType)">
+                    <i v-if="workflowType.iconCssClass" :class="[workflowType.iconCssClass, 'ti-fw']"></i>
+                    {{ workflowType.name }}
+                </component>
+                <a v-if="showManage(workflowType)"
+                   class="pull-right"
+                   :href="getManageHref(workflowType)">
+                    <i class="ti ti-list"></i>
+                </a>
+            </li>
+        </ul>
+
+        <WorkflowCategoryPanel v-for="(childCategory, index) in category.childCategories ?? []"
+                               :key="keyFor(childCategory, index)"
+                               :category="childCategory"
+                               :isExpanded="expandedChildKey === keyFor(childCategory, index)"
+                               @update:isExpanded="setChildExpanded(keyFor(childCategory, index), $event)" />
+    </Panel>
+</template>
+
+<style scoped>
+/* Larger, full-color title and icon, like the legacy <h3> heading. */
+:deep(.panel-workflowitem .panel-title) {
+    display: flex;
+    align-items: center;
+    font-size: var(--font-size-h3);
+}
+
+:deep(.panel-workflowitem .panel-title) i {
+    margin-right: var(--spacing-small);
+    font-size: var(--font-size-h2);
+    color: inherit;
+}
+
+/* Trim header padding so its height matches WebForms despite the taller collapse button. */
+:deep(.panel-workflowitem.panel-flex > .panel-header) {
+    padding: 18px 30px;
+}
+
+/* Remove the flex title inset so the icon aligns with WebForms. */
+:deep(.panel-workflowitem.panel-flex > .panel-header > .panel-title) {
+    padding-left: 0;
+}
+
+/* The collapse button is icon-only here; drop its boxy hover background. */
+:deep(.panel-workflowitem.panel-flex > .panel-header .panel-header-actions .btn-panel-action:hover) {
+    background-color: transparent;
+}
+
+/* Drop the workflow list's bottom margin when no child-category panels follow it. */
+:deep(.panel-workflowitem .list-group:last-child) {
+    margin-bottom: 0;
+}
+
+/*
+    A launchable label renders as a block <a> that gets its padding from the
+    theme's "li > a" rule, but a non-launchable label renders as a bare <span>.
+    Give that span the same box model so it aligns with the links on both axes.
+    Scoped to rows whose <li> padding is zeroed by the theme's :has(> a) rule, so
+    span-only rows (which keep their <li> padding) aren't double-padded.
+*/
+:deep(.panel-workflowitem .list-group-item:has(> a) > span) {
+    display: block;
+    padding: var(--spacing-small) var(--spacing-medium);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { WorkflowNavigationBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowNavigation/workflowNavigationBag";
+    import { WorkflowNavigationOptionsBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowNavigation/workflowNavigationOptionsBag";
+    import { WorkflowNavigationCategoryBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowNavigation/workflowNavigationCategoryBag";
+    import { WorkflowNavigationWorkflowTypeBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowNavigation/workflowNavigationWorkflowTypeBag";
+    import { NavigationUrlKey } from "./types.partial";
+    import { useCategoryAccordion } from "./utils.partial";
+
+    /*
+        This component renders its own child categories recursively. It refers to
+        itself by name (set here) rather than importing its own file, which would
+        create a circular dependency the bundler warns about on every build.
+    */
+    defineOptions({
+        name: "WorkflowCategoryPanel"
+    });
+
+    const props = defineProps({
+        category: {
+            type: Object as PropType<WorkflowNavigationCategoryBag>,
+            required: true
+        },
+
+        /** True when this category's panel is expanded. Controlled by the parent so only one sibling is open at a time. */
+        isExpanded: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits(["update:isExpanded"]);
+
+    // #region Values
+
+    const config = useConfigurationValues<CustomBlockBox<WorkflowNavigationBag, WorkflowNavigationOptionsBag>>();
+
+    /** This panel's expanded state, passed through to/from the parent so only one sibling is open at a time. */
+    const isExpanded = useVModelPassthrough(props, "isExpanded", emit);
+
+    /** Single-open accordion state for this category's child categories. */
+    const { expandedKey: expandedChildKey, keyFor, setExpanded: setChildExpanded } = useCategoryAccordion();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** The category's icon class, with fixed-width spacing, or undefined when no icon is set. */
+    const categoryIconCssClass = computed<string | undefined>(() => {
+        return props.category.iconCssClass ? `${props.category.iconCssClass} ti-fw` : undefined;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** Builds a navigation URL for a workflow type by substituting its key into the configured template. */
+    function buildWorkflowTypeUrl(navigationUrlKey: string, workflowType: WorkflowNavigationWorkflowTypeBag): string | undefined {
+        const template = config.navigationUrls?.[navigationUrlKey];
+        return template ? template.replace("((WorkflowTypeKey))", workflowType.idKey ?? "") : undefined;
+    }
+
+    /** Gets the Entry page URL for launching a new workflow, or undefined when launching is not enabled. */
+    function getLaunchHref(workflowType: WorkflowNavigationWorkflowTypeBag): string | undefined {
+        return workflowType.isLaunchEnabled ? buildWorkflowTypeUrl(NavigationUrlKey.EntryPage, workflowType) : undefined;
+    }
+
+    /** Gets the Manage page URL for the workflow type. */
+    function getManageHref(workflowType: WorkflowNavigationWorkflowTypeBag): string | undefined {
+        return buildWorkflowTypeUrl(NavigationUrlKey.ManagePage, workflowType);
+    }
+
+    /** Determines whether the manage link should be shown for the workflow type. */
+    function showManage(workflowType: WorkflowNavigationWorkflowTypeBag): boolean {
+        return !!(workflowType.canManage || workflowType.canViewList || config.options?.isBlockEditAuthorized);
+    }
+
+    // #endregion Functions
+</script>

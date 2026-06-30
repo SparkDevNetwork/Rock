@@ -1,0 +1,49 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="Workflow Entry">
+        <NotificationBox v-if="!hasCategories" alertType="info">
+            There are no workflows available.
+        </NotificationBox>
+        <div v-else class="panel-group">
+            <WorkflowCategoryPanel v-for="(category, index) in categories"
+                                   :key="keyFor(category, index)"
+                                   :category="category"
+                                   :isExpanded="expandedKey === keyFor(category, index)"
+                                   @update:isExpanded="setExpanded(keyFor(category, index), $event)" />
+        </div>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { WorkflowNavigationBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowNavigation/workflowNavigationBag";
+    import { WorkflowNavigationOptionsBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowNavigation/workflowNavigationOptionsBag";
+    import { WorkflowNavigationCategoryBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowNavigation/workflowNavigationCategoryBag";
+    import WorkflowCategoryPanel from "./WorkflowNavigation/workflowCategoryPanel.partial.obs";
+    import { useCategoryAccordion } from "./WorkflowNavigation/utils.partial";
+
+    // #region Values
+
+    const config = useConfigurationValues<CustomBlockBox<WorkflowNavigationBag, WorkflowNavigationOptionsBag>>();
+
+    /** Single-open accordion state for the top-level categories. */
+    const { expandedKey, keyFor, setExpanded } = useCategoryAccordion();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** The top-level workflow categories to display. */
+    const categories = computed<WorkflowNavigationCategoryBag[]>(() => config.bag?.categories ?? []);
+
+    /** Whether there are any categories to display. */
+    const hasCategories = computed<boolean>(() => categories.value.length > 0);
+
+    // #endregion Computed Values
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>
