@@ -53,6 +53,13 @@ namespace Rock.ViewModels.Blocks.Crm.PersonSearch
         public bool IsEnvelopeNumberColumnVisible { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the highlight indicators column is visible.
+        /// This is only visible when one or more highlight data views are configured; otherwise the empty
+        /// column would reserve grid space and force the Person cell to wrap.
+        /// </summary>
+        public bool IsHighlightIndicatorsColumnVisible { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the search duration should be displayed below the grid.
         /// </summary>
         public bool IsPerformanceShown { get; set; }

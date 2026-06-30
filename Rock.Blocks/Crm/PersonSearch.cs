@@ -256,6 +256,7 @@ namespace Rock.Blocks.Crm
                 IsGenderColumnVisible = GetAttributeValue( AttributeKey.ShowGender ).AsBoolean(),
                 IsSpouseColumnVisible = GetAttributeValue( AttributeKey.ShowSpouse ).AsBoolean(),
                 IsEnvelopeNumberColumnVisible = GetIsEnvelopeNumberColumnVisible(),
+                IsHighlightIndicatorsColumnVisible = DataViewGuids.Any(),
                 IsPerformanceShown = GetAttributeValue( AttributeKey.ShowPerformance ).AsBoolean()
             };
 
@@ -407,7 +408,7 @@ namespace Rock.Blocks.Crm
                 .AddField( "id", p => p.Id )
                 .AddTextField( "idKey", p => p.IdKey )
                 .AddTextField( "personHtml", p => BuildPersonHtml( p ) )
-                .AddTextField( "indicatorsHtml", p => BuildIndicatorsHtml( p ) )
+                .AddField( "indicators", p => p.DataViewIcons )
                 .AddTextField( "fullNameReversed", p => p.FullNameReversed )
                 .AddDateTimeField( "birthDate", p => p.BirthDate )
                 .AddField( "age", p => p.Age )
@@ -626,37 +627,6 @@ namespace Rock.Blocks.Crm
         }
 
         /// <summary>
-        /// Builds the highlight indicator icon HTML for the configured data views.
-        /// </summary>
-        /// <param name="person">The person row.</param>
-        /// <returns>The HTML markup for the indicators cell, or an empty string when there are none.</returns>
-        private string BuildIndicatorsHtml( PersonSearchResult person )
-        {
-            if ( person.DataViewIcons == null || !person.DataViewIcons.Any() )
-            {
-                return string.Empty;
-            }
-
-            var sb = new StringBuilder();
-
-            foreach ( var icon in person.DataViewIcons )
-            {
-                if ( icon.IconCssClass.IsNotNullOrWhiteSpace() )
-                {
-                    var tooltip = $"{person.NickName} meets the conditions of the {icon.DataViewName} data view.";
-                    sb.AppendLine( $"<i style=\"color:{icon.HighlightColor}\" class=\"ti-3x ti-fw {icon.IconCssClass}\" data-toggle=\"tooltip\" title=\"{tooltip.EncodeHtml()}\"></i>" );
-                }
-                else
-                {
-                    // Render a blank placeholder so every person's icons stay aligned in the same column.
-                    sb.AppendLine( "<span style=\"display:block;\" class=\"ti-3x ti-fw\">&nbsp;</span>" );
-                }
-            }
-
-            return $"<div class=\"d-flex align-items-end\">{sb}</div>";
-        }
-
-        /// <summary>
         /// Determines whether a person row should be styled as inactive.
         /// </summary>
         /// <param name="person">The person row.</param>
@@ -687,12 +657,12 @@ namespace Rock.Blocks.Crm
                 .Where( d => DataViewGuids.Contains( d.Guid ) )
                 .ToList()
                 .Where( d => d.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
-                .Select( d => new DataViewIconResult
+                .Select( d => new
                 {
                     DataViewId = d.Id,
                     DataViewName = d.Name,
-                    IconCssClass = d.IconCssClass,
-                    HighlightColor = d.HighlightColor
+                    d.IconCssClass,
+                    d.HighlightColor
                 } )
                 .ToList();
 
@@ -724,12 +694,16 @@ namespace Rock.Blocks.Crm
 
                 // Emit an icon for every data view; one the person isn't in becomes a blank placeholder so columns align.
                 person.DataViewIcons = orderedDataViews
-                    .Select( dv => new DataViewIconResult
+                    .Select( dv =>
                     {
-                        DataViewId = dv.DataViewId,
-                        DataViewName = dv.DataViewName,
-                        IconCssClass = personDataViewIds.Contains( dv.DataViewId ) ? dv.IconCssClass : string.Empty,
-                        HighlightColor = personDataViewIds.Contains( dv.DataViewId ) ? dv.HighlightColor : string.Empty
+                        var isMatch = personDataViewIds.Contains( dv.DataViewId );
+
+                        return new PersonSearchIndicatorBag
+                        {
+                            IconCssClass = isMatch ? dv.IconCssClass : string.Empty,
+                            HighlightColor = isMatch ? dv.HighlightColor : string.Empty,
+                            Tooltip = isMatch ? $"{person.NickName} meets the conditions of the {dv.DataViewName} data view." : string.Empty
+                        };
                     } )
                     .ToList();
             }
@@ -1104,7 +1078,7 @@ namespace Rock.Blocks.Crm
             /// <summary>
             /// Gets or sets the highlight indicator icons for the configured data views.
             /// </summary>
-            public List<DataViewIconResult> DataViewIcons { get; set; }
+            public List<PersonSearchIndicatorBag> DataViewIcons { get; set; }
         }
 
         /// <summary>
@@ -1121,32 +1095,6 @@ namespace Rock.Blocks.Crm
             /// Gets or sets the formatted number.
             /// </summary>
             public string Number { get; set; }
-        }
-
-        /// <summary>
-        /// Minimal icon information for a persisted data view that defines an icon CSS class and optional highlight color.
-        /// </summary>
-        public class DataViewIconResult
-        {
-            /// <summary>
-            /// Gets or sets the icon CSS class defined by the data view.
-            /// </summary>
-            public string IconCssClass { get; set; }
-
-            /// <summary>
-            /// Gets or sets the highlight color defined by the data view.
-            /// </summary>
-            public string HighlightColor { get; set; }
-
-            /// <summary>
-            /// Gets or sets the Id of the data view the icon comes from.
-            /// </summary>
-            public int DataViewId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the name of the data view the icon comes from.
-            /// </summary>
-            public string DataViewName { get; set; }
         }
 
         #endregion Helper Classes

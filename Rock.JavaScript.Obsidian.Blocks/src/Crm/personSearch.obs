@@ -15,7 +15,7 @@
           itemTerm="Person"
           emptyDataText="No People Found"
           stickyHeader
-          :isTitleHidden="false"
+          :isTitleHidden="true"
           liveUpdates
           :rowClass="getRowClass"
           :showLaunchWorkflow="true"
@@ -29,26 +29,37 @@
         <HtmlColumn name="person"
                     title="Person"
                     field="personHtml"
+                    width="20%"
                     :disableSort="false"
                     :sortValue="getPersonNameValue"
                     :filter="textValueFilter"
                     :filterValue="getPersonNameValue"
                     :quickFilterValue="getPersonNameValue"
-                    :exportValue="getPersonNameValue"
-                    visiblePriority="xs" />
+                    :exportValue="getPersonNameValue" />
 
-        <HtmlColumn name="indicators"
-                    field="indicatorsHtml"
-                    itemClass="flex-column"
-                    :excludeFromExport="true"
-                    visiblePriority="xs" />
+        <Column v-if="config.options?.isHighlightIndicatorsColumnVisible"
+                name="indicators"
+                itemClass="justify-content-center"
+                :excludeFromExport="true">
+            <template #format="{ row }">
+                <div class="d-flex align-items-center justify-content-center">
+                    <template v-for="(indicator, index) in getIndicators(row)" :key="index">
+                        <i v-if="indicator.iconCssClass"
+                           v-tooltip="indicator.tooltip ?? ''"
+                           class="ti-2x ti-fw"
+                           :class="indicator.iconCssClass"
+                           :style="{ color: indicator.highlightColor || undefined }"></i>
+                        <span v-else class="ti-2x ti-fw">&nbsp;</span>
+                    </template>
+                </div>
+            </template>
+        </Column>
 
         <DateColumn v-if="config.options?.isBirthdateColumnVisible"
                     name="birthDate"
                     title="Birthdate"
                     field="birthDate"
-                    :filter="dateValueFilter"
-                    visiblePriority="lg" />
+                    :filter="dateValueFilter" />
 
         <NumberColumn v-if="config.options?.isAgeColumnVisible"
                       name="age"
@@ -56,15 +67,13 @@
                       field="age"
                       headerClass="text-right"
                       itemClass="justify-content-end text-right"
-                      :filter="numberValueFilter"
-                      visiblePriority="lg" />
+                      :filter="numberValueFilter" />
 
         <TextColumn v-if="config.options?.isGenderColumnVisible"
                     name="gender"
                     title="Gender"
                     field="gender"
-                    :filter="pickExistingValueFilter"
-                    visiblePriority="lg" />
+                    :filter="pickExistingValueFilter" />
 
         <TextColumn v-if="config.options?.isSpouseColumnVisible"
                     name="spouseName"
@@ -75,20 +84,17 @@
         <TextColumn name="connectionStatus"
                     title="Connection Status"
                     field="connectionStatus"
-                    :filter="pickExistingValueFilter"
-                    visiblePriority="md" />
+                    :filter="pickExistingValueFilter" />
 
         <TextColumn name="recordStatus"
                     title="Record Status"
                     field="recordStatus"
-                    :filter="pickExistingValueFilter"
-                    visiblePriority="lg" />
+                    :filter="pickExistingValueFilter" />
 
         <TextColumn name="campus"
                     title="Campus"
                     field="campus"
-                    :filter="pickExistingValueFilter"
-                    visiblePriority="md" />
+                    :filter="pickExistingValueFilter" />
 
         <TextColumn v-if="config.options?.isEnvelopeNumberColumnVisible"
                     name="envelopeNumber"
@@ -104,13 +110,15 @@
 
 <script setup lang="ts">
     import { onMounted, reactive, ref } from "vue";
-    import Grid, { SelectColumn, HtmlColumn, TextColumn, NumberColumn, DateColumn, textValueFilter, numberValueFilter, dateValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { Column, SelectColumn, HtmlColumn, TextColumn, NumberColumn, DateColumn, textValueFilter, numberValueFilter, dateValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { asBoolean } from "@Obsidian/Utility/booleanUtils";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PersonSearchOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonSearch/personSearchOptionsBag";
+    import { PersonSearchIndicatorBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonSearch/personSearchIndicatorBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./PersonSearch/types.partial";
 
@@ -153,6 +161,16 @@
      */
     function getPersonNameValue(row: Record<string, unknown>): string {
         return (row.fullNameReversed as string) ?? "";
+    }
+
+    /**
+     * Gets the highlight indicator icons for a row, including the blank placeholders used to keep
+     * each data view's icon aligned in the same position across every row.
+     *
+     * @param row The row containing the indicator data.
+     */
+    function getIndicators(row: Record<string, unknown>): PersonSearchIndicatorBag[] {
+        return (row.indicators as PersonSearchIndicatorBag[]) ?? [];
     }
 
     /**

@@ -46,6 +46,13 @@ export type PersonSearchOptionsBag = {
     /** Gets or sets a value indicating whether the gender column is visible. */
     isGenderColumnVisible: boolean;
 
+    /**
+     * Gets or sets a value indicating whether the highlight indicators column is visible.
+     * This is only visible when one or more highlight data views are configured; otherwise the empty
+     * column would reserve grid space and force the Person cell to wrap.
+     */
+    isHighlightIndicatorsColumnVisible: boolean;
+
     /** Gets or sets a value indicating whether the search duration should be displayed below the grid. */
     isPerformanceShown: boolean;
 
