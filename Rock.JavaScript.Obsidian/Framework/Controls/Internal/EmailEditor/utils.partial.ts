@@ -73,6 +73,7 @@ import {
     VideoComponentAdapter,
     GlobalAdapterOnComponentAddedEvent,
 } from "./types.partial";
+import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
 import { isElement, isHTMLElement, isHTMLTableElement, replaceTagName } from "@Obsidian/Utility/dom";
 import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 import { Enumerable } from "@Obsidian/Utility/linq";
@@ -2117,7 +2118,7 @@ function createComponentAdapter<TProps, TVersion extends string>(
 }
 
 function createTextComponentAdapter(): TextComponentAdapter {
-    const componentVersions = ["v0", "v2-alpha", "v17.3-alpha"] as const;
+    const componentVersions = ["v0", "v2-alpha", "v17.3-alpha", "v19.3"] as const;
     type ComponentVersion = typeof componentVersions[number];
 
     // Local settings should only be used for per-component customization or where there isn't a global alternative.
@@ -2406,6 +2407,35 @@ function createTextComponentAdapter(): TextComponentAdapter {
                 setStylePaddingPx(marginWrapperForTextTd?.style, localProps.marginPx); // Use padding for "margin".
                 setStyleBorder(borderWrapperForTextTd?.style, localProps.border);
                 setStyleBorderRadiusPx(borderWrapperForTextTd?.style, localProps.borderRadiusPx);
+            }
+        },
+
+        /*
+            - Fixes the text component background `bgcolor` attribute. The
+              delegated version above writes it as `rgb()`, which some clients
+              (Outlook) coerce to the wrong color -- a white background renders
+              green -- so it is re-emitted here as hex. Existing text components
+              are repaired on load: the version bump makes migrateComponent
+              re-run this write.
+         */
+        "v19.3": {
+            version: "v19.3",
+
+            createComponentElement(emailDocument: Document): HTMLElement {
+                const componentElement = adapters["v17.3-alpha"].createComponentElement(emailDocument);
+                componentElement.setAttribute("data-version", "v19.3");
+                return componentElement;
+            },
+
+            readLocalProps(componentElement: HTMLElement): TextLocalProps {
+                return adapters["v17.3-alpha"].readLocalProps(componentElement);
+            },
+
+            writeLocalProps(componentElement: HTMLElement, localProps: TextLocalProps): void {
+                adapters["v17.3-alpha"].writeLocalProps(componentElement, localProps);
+
+                const paddingWrapperForTextTd = componentElement.querySelector(".padding-wrapper-for-text > tbody > tr > td") as HTMLTableCellElement | null;
+                setAttributePropertyValue(paddingWrapperForTextTd, "bgcolor", toHexBgcolorAttributeValue(localProps.backgroundColor));
             }
         }
     };
@@ -4134,7 +4164,7 @@ function addOrUpdateMetaTag(emailDocument: Document, name: string, content: stri
 }
 
 function createBodyGlobalAdapter(): BodyGlobalAdapter {
-    const globalVersions = ["v0", "v17.3-alpha", "v18.2", "v19.1"] as const;
+    const globalVersions = ["v0", "v17.3-alpha", "v18.2", "v19.1", "v19.3"] as const;
     type BodyGlobalVersion = (typeof globalVersions)[number];
 
     const attributeValues = {
@@ -4449,6 +4479,32 @@ function createBodyGlobalAdapter(): BodyGlobalAdapter {
                 });
 
                 synchronizeRulesToDom(updatedRules);
+            }
+        },
+
+        /*
+            - Fixes the body background `bgcolor` attribute. The delegated
+              versions above write it as `rgb()`, which some clients (Outlook)
+              coerce to the wrong color -- a white body renders green -- so it is
+              re-emitted here as hex. Existing emails are repaired on load: the
+              version bump makes migrateGlobalProps re-run this write.
+         */
+        "v19.3": {
+            version: "v19.3",
+
+            readGlobalProps(emailDocument: Document): BodyGlobalProps {
+                return adapters["v19.1"].readGlobalProps(emailDocument);
+            },
+
+            writeGlobalProps(emailDocument: Document, globalProps: BodyGlobalProps): void {
+                adapters["v19.1"].writeGlobalProps(emailDocument, globalProps);
+
+                addOrUpdateMetaTag(emailDocument, attributeValues.META_NAME_GLOBAL_BODY_VERSION, "v19.3");
+
+                const bgcolorValue = toHexBgcolorAttributeValue(globalProps.backgroundColor);
+                emailDocument.querySelectorAll(`.component:not([data-component-background-color="true"]) .padding-wrapper-for-row`).forEach(element => {
+                    setAttributePropertyValue(element, "bgcolor", bgcolorValue);
+                });
             }
         }
     };
@@ -7073,6 +7129,51 @@ function toBgcolorAttributeValue(backgroundColor: string | null): string | null 
     }
 
     return backgroundColor;
+}
+
+/**
+ * Cache of hex `bgcolor` attribute values keyed by their source color. The same
+ * background color is applied to many elements per migration and recurs across
+ * emails, so this avoids constructing a RockColor for every write.
+ */
+const hexBgcolorAttributeValueByColor = new Map<string, string>();
+
+/**
+ * Converts a CSS color into a hex value the legacy `bgcolor` attribute can render.
+ *
+ * @param backgroundColor The color as stored by the editor. May be a hex value,
+ * a named color, or `rgb()`/`rgba()` notation.
+ * @returns A hex color without an alpha channel, the `transparent` keyword for a
+ * fully transparent color, or the original value when it is null or empty.
+ */
+function toHexBgcolorAttributeValue(backgroundColor: string | null): string | null {
+    if (isNullish(backgroundColor) || backgroundColor === "") {
+        return backgroundColor;
+    }
+
+    const cachedValue = hexBgcolorAttributeValueByColor.get(backgroundColor);
+    if (cachedValue !== undefined) {
+        return cachedValue;
+    }
+
+    /*
+        07/01/26 - JMH
+
+        bgcolor is parsed by the HTML "rules for parsing a legacy colour value",
+        which only understand hex and named colors. An rgb()/rgba() value isn't
+        rejected but silently coerced to the wrong color -- white supplied as
+        rgb(255, 255, 255) renders as dark green in Outlook -- so the color is
+        normalized to hex here. bgcolor has no alpha channel, so a fully
+        transparent color uses the "transparent" keyword instead.
+
+        Reason: Emit only bgcolor-safe values so clients render the intended color.
+    */
+    const color = new RockColor(backgroundColor);
+    const bgcolorValue = color.alpha === 0 ? "transparent" : color.toHex();
+
+    hexBgcolorAttributeValueByColor.set(backgroundColor, bgcolorValue);
+
+    return bgcolorValue;
 }
 
 export const bodyGlobalAdapter = createBodyGlobalAdapter();
