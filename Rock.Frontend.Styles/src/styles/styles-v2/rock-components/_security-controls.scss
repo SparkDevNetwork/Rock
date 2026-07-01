@@ -153,15 +153,19 @@
     .dropdown-menu {
       right:    0;
       left:     auto;
-      @media (max-width: $screen-small) {
+      top:      unset;
+      @media (width < $screen-small) {
         position:           absolute;
         top:                var(--top-header-height); // This variable is not defined, got it from .less like this
         left:               0;
         z-index:            1000;
         background-color:   var(--color-primary);
+        border-bottom:      1px solid var(--color-interface-soft);
 
         & > li > a {
-          color: var(--color-interface-softest);
+          color: var(--base-interface-softest);
+          font-size: var(--font-size-h4);
+          font-weight: var(--font-weight-semibold);
         }
       }
     }
