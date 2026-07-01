@@ -253,7 +253,7 @@
     line-height:      20px;
   }
 
-  @media (max-width: $screen-small) {
+  @media (width < $screen-small) {
     // Dropdowns get custom display when collapsed
     .open .dropdown-menu {
       position:           static;
@@ -263,16 +263,20 @@
       box-shadow:         none;
       margin-top:         0;
       border:             0;
+      border-bottom :     1px solid var(--base-interface-soft);
       > li > a,
       .dropdown-header {
-        padding:          5px 15px 5px 25px;
+        padding:          var(--spacing-tiny) var(--spacing-medium) var(--spacing-tiny) var(--spacing-large);
       }
       > li > a {
-        line-height:      20px;
         &:hover,
         &:focus {
           background-image: none;
+          color: var(--color-interface-stronger);
         }
+      }
+      .divider {
+        background-color:     var(--base-interface-soft);
       }
     }
   }

@@ -9803,7 +9803,7 @@ ul.activeusers {
   padding-bottom: var(--spacing-xsmall);
   line-height: 20px;
 }
-@media (max-width: 768px) {
+@media (width < 768px) {
   .navbar-nav .open .dropdown-menu {
     position: static;
     float: none;
@@ -9812,16 +9812,18 @@ ul.activeusers {
     box-shadow: none;
     margin-top: 0;
     border: 0;
+    border-bottom: 1px solid var(--base-interface-soft);
   }
   .navbar-nav .open .dropdown-menu > li > a,
   .navbar-nav .open .dropdown-menu .dropdown-header {
-    padding: 5px 15px 5px 25px;
-  }
-  .navbar-nav .open .dropdown-menu > li > a {
-    line-height: 20px;
+    padding: var(--spacing-tiny) var(--spacing-medium) var(--spacing-tiny) var(--spacing-large);
   }
   .navbar-nav .open .dropdown-menu > li > a:hover, .navbar-nav .open .dropdown-menu > li > a:focus {
     background-image: none;
+    color: var(--color-interface-stronger);
+  }
+  .navbar-nav .open .dropdown-menu .divider {
+    background-color: var(--base-interface-soft);
   }
 }
 @media (min-width: 768px) {
@@ -12812,17 +12814,21 @@ div.aspNetDisabled {
 .loginstatus > li .dropdown-menu {
   right: 0;
   left: auto;
+  top: unset;
 }
-@media (max-width: 768px) {
+@media (width < 768px) {
   .loginstatus > li .dropdown-menu {
     position: absolute;
     top: var(--top-header-height);
     left: 0;
     z-index: 1000;
     background-color: var(--color-primary);
+    border-bottom: 1px solid var(--color-interface-soft);
   }
   .loginstatus > li .dropdown-menu > li > a {
-    color: var(--color-interface-softest);
+    color: var(--base-interface-softest);
+    font-size: var(--font-size-h4);
+    font-weight: var(--font-weight-semibold);
   }
 }
 
@@ -33416,7 +33422,7 @@ body.navbar-side-open {
     background-color: var(--color-primary);
   }
   .rock-top-header .loginstatus > li .dropdown-menu > li > a {
-    color: var(--color-interface-softest);
+    color: var(--base-interface-softest);
   }
 }
 .rock-top-header .header-content {
@@ -33491,7 +33497,7 @@ body.navbar-side-open {
   align-items: center;
   justify-content: space-between;
   flex: 1 1 auto;
-  font-size: 24px;
+  font-size: var(--font-size-h4);
   font-weight: var(--font-weight-semibold);
   line-height: 1;
   color: var(--base-interface-softer);
