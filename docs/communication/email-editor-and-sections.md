@@ -1,11 +1,12 @@
 ---
 title: Email Editor and Sections
-last_updated: 2026-05-01
+last_updated: 2026-07-01
 related_files:
   - Rock/Model/Communication/EmailSection/EmailSection.cs
   - Rock/Model/Communication/EmailSection/EmailSection.Logic.cs
   - Rock/Model/Communication/CommunicationTemplate/CommunicationTemplate.cs
   - Rock/Model/Communication/Snippet/Snippet.cs
+  - Rock.JavaScript.Obsidian/Framework/Controls/Internal/EmailEditor/utils.partial.ts
 ---
 
 # Email Editor and Sections
@@ -61,6 +62,8 @@ The Lava engine renders all of this at send time: merge fields (`{{ Person.FullN
 
 **Templates can be filtered by category in the Wizard.** Categories help admins find the right starting point quickly. New categories are configuration.
 
+**The editor stores content as versioned HTML and upgrades it on open.** The Obsidian email editor persists each component and the body as versioned HTML; opening an email migrates older content to the latest version in place (`migrateComponent` / `migrateGlobalProps` in `Rock.JavaScript.Obsidian/Framework/Controls/Internal/EmailEditor/utils.partial.ts`). A released version is never edited: a fix or format change ships as a new version that delegates to the prior one and re-applies the correction on top, and the version bump is what triggers the migration. Practical effect: content saved under an older version is upgraded the next time that email is opened and saved, not retroactively. This is the mechanism to reach for when the editor needs to change how it serializes existing content.
+
 ## Common Scenarios
 
 **"Build a hero-banner section for major announcements."** Email Section Designer (or Email Section Detail). Compose the HTML / Lava with a placeholder for the announcement text. Save as a section. Admins composing announcement emails drag it in.
@@ -96,6 +99,10 @@ Multi-author safety. Cross-user edits required explicit authorization, not defau
 ### Lava-rendered at send time
 
 Per-recipient personalization is the standard merge-field pipeline. Compose-time rendering would freeze the merge fields.
+
+### Versioned adapters, migrated on load
+
+The Obsidian editor round-trips emails through HTML, so the serialized shape is a contract. Each component and global-style adapter is versioned, and opening an email runs the migration to the latest version. Released versions are immutable ("Don't modify a specific version once released", `utils.partial.ts:2689`); a correction ships as a new version that delegates to the prior version and applies the fix on top. Because the version bump drives the migration, the same mechanism that formats new content also repairs already-saved emails when they are next opened.
 
 ## Considered but Rejected
 
@@ -141,6 +148,14 @@ Rejected. Multi-author teams need scoping by default; authorization can grant cr
 - **Section / Snippet management:** Email Section Designer, Snippet Detail/List.
 - **Template management:** Communication Template Detail/List.
 
+### Email editor content migration (Obsidian)
+
+The drag-and-drop editor lives in `Rock.JavaScript.Obsidian/Framework/Controls/Internal/EmailEditor/`. Content is serialized as versioned HTML and upgraded on load:
+
+- Components are versioned per element (`data-version`); `migrateComponent` (`utils.partial.ts:2078`) upgrades a component by delegating reads to its stored version and writes to the latest.
+- Body-level styles are versioned with a meta tag; `migrateGlobalProps` (`utils.partial.ts:6246`) does the same for global body properties.
+- Per-version corrections use their own helpers rather than editing shared ones. For example, the latest versions normalize `bgcolor` through `toHexBgcolorAttributeValue` (`utils.partial.ts:7149`), while the earlier `toBgcolorAttributeValue` (`utils.partial.ts:7119`) is retained unchanged so released versions still serialize exactly as before.
+
 ### Related Docs
 
 - [docs/communication/bulk-vs-system-vs-flow.md](bulk-vs-system-vs-flow.md) for when to use which construct.
@@ -148,6 +163,7 @@ Rejected. Multi-author teams need scoping by default; authorization can grant cr
 
 ## Recent Impactful Changes
 
+- **2026-07-01** ([commit `8413d99fc0`](https://github.com/SparkDevNetwork/Rock/commit/8413d99fc0)). Email body and text component backgrounds no longer render green in some clients (such as Outlook); the `bgcolor` attribute is written as hex instead of `rgb()` (Fixes #6889).
 - **2026-04-16** ([commit `8205e8dbdf`](https://github.com/SparkDevNetwork/Rock/commit/8205e8dbdf)). Email editor section action menu now correctly shows Edit and Delete only for sections the current person created (Fixes #6777).
 - **2025-08-25** ([commit `f344809bbd`](https://github.com/SparkDevNetwork/Rock/commit/f344809bbd)). Structured Editor (used by the email composer) supports inline file attachments.
 - **2025-08-13** ([commit `5c39d14cd4`](https://github.com/SparkDevNetwork/Rock/commit/5c39d14cd4)). Fixed images uploaded into the content editor for various LMS parts (same Structured Editor surface) being incorrectly removed by the Rock Cleanup job.
