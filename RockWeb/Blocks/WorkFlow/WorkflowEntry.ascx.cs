@@ -2092,11 +2092,26 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( matchedPerson != null )
             {
+                // Capture the matched person's real name before the editor overwrites it. See issue #6834.
+                var originalFirstName = matchedPerson.FirstName;
+                var originalNickName = matchedPerson.NickName;
+
                 // If we are using a matched person let the PersonEditor which PersonId we are editing
                 personEditor.SetPersonId( matchedPerson.Id );
 
                 // if a match was found, update that person
                 personEditor.UpdatePerson( matchedPerson, rockContext );
+
+                // If the submitted first name is actually the matched person's nick name, the submitter is
+                // referring to them by their nickname. Preserve the real first name rather than overwriting
+                // it with the nickname (which would also cause the nick name to be blanked on the next save).
+                // This mirrors the guard in Rock/Workflow/WorkflowPersonEntryProcessor.cs. See issue #6834.
+                if ( originalNickName.IsNotNullOrWhiteSpace() && personEditor.FirstName.Equals( originalNickName, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    matchedPerson.FirstName = originalFirstName;
+                    matchedPerson.NickName = originalNickName;
+                }
+
                 return matchedPerson;
             }
             else
