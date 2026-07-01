@@ -507,7 +507,7 @@ body.navbar-side-open {
           background-color: var(--color-primary);
 
           & > li > a {
-            color: var(--color-interface-softest);
+            color: var(--base-interface-softest);
           }
         }
       }
@@ -679,7 +679,7 @@ a.rock-bookmark {
         align-items: center;
         justify-content: space-between;
         flex: 1 1 auto;
-        font-size: 24px;
+        font-size: var(--font-size-h4);
         font-weight: var(--font-weight-semibold);
         line-height: 1;
         color: var(--base-interface-softer);
