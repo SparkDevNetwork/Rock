@@ -330,7 +330,7 @@ namespace Rock.Blocks.Fundraising
                 return items;
             }
 
-            // Bullk load the individual fundraising goal and toggle for public contribution requests
+            // Bulk load the individual fundraising goal and toggle for public contribution requests
             Helper.LoadFilteredAttributes( typeof( GroupMember ), items.Select( i => i.GroupMember ).Cast<IHasAttributes>().ToList(), RockContext,
                 a => a.Key == FundraisingAttributeKey.IndividualFundraisingGoal
                     || a.Key == FundraisingAttributeKey.DisablePublicContributionRequests );
