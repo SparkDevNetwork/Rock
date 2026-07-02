@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Rock.Model
@@ -23,6 +24,21 @@ namespace Rock.Model
         internal IQueryable<CommunicationFlowInstanceCommunication> GetByCommunicationFlowInstance( int communicationFlowInstanceId )
         {
             return Queryable().Where( cfic => cfic.CommunicationFlowInstanceId == communicationFlowInstanceId );
+        }
+
+        /// <summary>
+        /// Returns the subset of the specified flow communication identifiers that have associated
+        /// performance data, meaning at least one of their communications has already been sent.
+        /// </summary>
+        /// <param name="communicationFlowCommunicationIds">The flow communication identifiers to check.</param>
+        /// <returns>The identifiers that have at least one sent communication.</returns>
+        internal List<int> GetIdsWithSentCommunications( IEnumerable<int> communicationFlowCommunicationIds )
+        {
+            return Queryable()
+                .Where( cfic => communicationFlowCommunicationIds.Contains( cfic.CommunicationFlowCommunicationId ) && cfic.Communication.SendDateTime.HasValue )
+                .Select( cfic => cfic.CommunicationFlowCommunicationId )
+                .Distinct()
+                .ToList();
         }
     }
 }
