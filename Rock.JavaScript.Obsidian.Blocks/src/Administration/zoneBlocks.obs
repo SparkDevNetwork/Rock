@@ -1,0 +1,342 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="!canAdministrate" alertType="danger">
+        You are not authorized to edit these blocks.
+    </NotificationBox>
+
+    <template v-else>
+        <ul class="nav nav-pills margin-b-md">
+            <li v-for="tab in locationTabs"
+                :key="tab.location"
+                :class="{ active: selectedLocation === tab.location }">
+                <a href="#" @click.prevent="onSelectLocation(tab.location)">{{ tab.label }}</a>
+            </li>
+        </ul>
+
+        <Grid light
+              v-show="!isEditing"
+              class="zone-blocks-grid"
+              :data="gridSources[selectedLocation]"
+              :expectedRowCount="expectedRowCount"
+              keyField="idKey"
+              itemTerm="Block"
+              :onAddItem="() => onAddBlock(selectedLocation)"
+              @selectItem="(key) => onEditBlock(selectedLocation, key)">
+            <ReorderColumn @orderChanged="(row, beforeRow) => onReorder(selectedLocation, row, beforeRow)" />
+
+            <TextColumn name="name"
+                        title="Name"
+                        field="name"
+                        width="25%" />
+
+            <TextColumn name="blockTypeName"
+                        title="Type"
+                        field="blockTypeName"
+                        width="25%" />
+
+            <TextColumn name="blockTypeCategory"
+                        title="Category"
+                        field="blockTypeCategory" />
+
+            <DeleteColumn @click="(key) => onDeleteBlock(selectedLocation, key)" />
+        </Grid>
+
+        <EditBlockPanel v-if="isEditing"
+                        :editBag="editBag"
+                        :blockTypes="config.options?.blockTypes ?? []"
+                        :commonBlockTypes="config.options?.commonBlockTypes ?? []"
+                        :onSave="onSaveBlock"
+                        @cancel="onCancelEdit" />
+    </template>
+</template>
+
+<style scoped>
+/* Flat border (no drop shadow) so the grid reads as a bordered panel. overflow:hidden
+   clips the cells' backgrounds to the rounded corners so the border shows cleanly on
+   every corner; the drag-reorder mirror is position:fixed, so it is unaffected. */
+.zone-blocks-grid {
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-medium);
+    overflow: hidden;
+    margin-bottom: 0;
+}
+
+/* Light grids still tag even rows with grid-row-even, so re-apply zebra striping by
+   painting the even rows the same shade the core grid-striped rule uses. */
+.zone-blocks-grid :deep(.grid-row.grid-row-even .grid-cell) {
+    background-color: var(--color-interface-softer);
+}
+
+/* Re-apply the row hover highlight using the same token the core grid-hover rule uses.
+   Placed after the zebra rule so a hovered row overrides its stripe, matching the core
+   grid behavior. */
+.zone-blocks-grid :deep(.grid-row:hover .grid-cell) {
+    background-color: var(--color-info-soft);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, onMounted, reactive, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Grid, { DeleteColumn, ReorderColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import EditBlockPanel from "./ZoneBlocks/editBlockPanel.partial.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { BlockLocation } from "@Obsidian/Enums/Cms/blockLocation";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { ZoneBlocksBag } from "@Obsidian/ViewModels/Blocks/Administration/ZoneBlocks/zoneBlocksBag";
+    import { ZoneBlocksOptionsBag } from "@Obsidian/ViewModels/Blocks/Administration/ZoneBlocks/zoneBlocksOptionsBag";
+    import { ZoneBlocksSaveBlockBag } from "@Obsidian/ViewModels/Blocks/Administration/ZoneBlocks/zoneBlocksSaveBlockBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+
+    // #region Types
+
+    type BlockLocationTab = {
+        label: string;
+        location: BlockLocation;
+    };
+
+    type BlockRow = {
+        idKey?: string | null;
+        name?: string | null;
+        blockTypeValue?: string | null;
+    };
+
+    // #endregion Types
+
+    const config = useConfigurationValues<CustomBlockBox<ZoneBlocksBag, ZoneBlocksOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const selectedLocation = ref<BlockLocation>(BlockLocation.Page);
+
+    /** The grid data promise for each scope, keyed by BlockLocation. */
+    const gridSources = reactive<Record<number, Promise<GridDataBag>>>({});
+
+    /** The most recently loaded rows for each scope, used to populate the edit form. */
+    const gridRows: Record<number, BlockRow[]> = {};
+
+    /** Whether the add/edit form is shown in place of the block grid. */
+    const isEditing = ref(false);
+    const editBag = ref<ZoneBlocksSaveBlockBag>({
+        idKey: "",
+        location: BlockLocation.Page,
+        name: "",
+        blockTypeValue: ""
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const canAdministrate = computed((): boolean => {
+        return config.bag?.canAdministrate === true;
+    });
+
+    const locationTabs = computed((): BlockLocationTab[] => {
+        return [
+            { label: "Page", location: BlockLocation.Page },
+            { label: `Layout (${config.bag?.layoutName ?? ""})`, location: BlockLocation.Layout },
+            { label: "Site", location: BlockLocation.Site }
+        ];
+    });
+
+    /**
+     * The row count the grid uses to size its loading skeleton. Uses the current block count of
+     * the selected scope (provided by the server) so the skeleton matches the content instead of
+     * rendering the framework default of 50 rows, which flashed the modal to the full height of
+     * the screen before collapsing back to the content.
+     */
+    const expectedRowCount = computed((): number => {
+        switch (selectedLocation.value) {
+            case BlockLocation.Layout:
+                return config.bag?.layoutBlockCount ?? 0;
+            case BlockLocation.Site:
+                return config.bag?.siteBlockCount ?? 0;
+            default:
+                return config.bag?.pageBlockCount ?? 0;
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Switches to the given scope's tab. While adding a new block the form stays open and is
+     * retargeted to the selected scope, so the pill acts as the "add to" context. Otherwise
+     * (viewing the grid, or editing an existing block, which cannot change scope) it shows the
+     * selected scope's grid.
+     */
+    function onSelectLocation(location: BlockLocation): void {
+        selectedLocation.value = location;
+
+        if (isEditing.value && !editBag.value.idKey) {
+            editBag.value = { ...editBag.value, location };
+        }
+        else {
+            isEditing.value = false;
+        }
+    }
+
+    /**
+     * Shows the form to add a new block to the given scope.
+     */
+    function onAddBlock(location: BlockLocation): void {
+        editBag.value = {
+            idKey: "",
+            location,
+            name: "",
+            blockTypeValue: config.options?.defaultBlockTypeValue ?? ""
+        };
+        isEditing.value = true;
+    }
+
+    /**
+     * Shows the form to edit the selected block in the given scope.
+     */
+    function onEditBlock(location: BlockLocation, key: string): void {
+        const row = gridRows[location]?.find(r => r.idKey === key);
+
+        editBag.value = {
+            idKey: key,
+            location,
+            name: row?.name ?? "",
+            blockTypeValue: row?.blockTypeValue ?? ""
+        };
+        isEditing.value = true;
+    }
+
+    /**
+     * Saves the block from the form, then refreshes the affected scope's grid.
+     */
+    async function onSaveBlock(bag: ZoneBlocksSaveBlockBag): Promise<void> {
+        const result = await invokeBlockAction("SaveBlock", { bag });
+
+        if (result.isSuccess) {
+            isEditing.value = false;
+            markPageUpdated();
+            reloadGrid(bag.location);
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to save the block.");
+        }
+    }
+
+    /**
+     * Closes the add/edit form without saving, returning to the block grid.
+     */
+    function onCancelEdit(): void {
+        isEditing.value = false;
+    }
+
+    /**
+     * Deletes the selected block after confirmation, then refreshes the scope's grid.
+     */
+    async function onDeleteBlock(location: BlockLocation, key: string): Promise<void> {
+        if (!await confirm("Are you sure you want to delete this block?")) {
+            return;
+        }
+
+        const result = await invokeBlockAction("DeleteBlock", { key });
+
+        if (result.isSuccess) {
+            markPageUpdated();
+            reloadGrid(location);
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to delete the block.");
+        }
+    }
+
+    /**
+     * Persists the new order of a block within its scope.
+     */
+    async function onReorder(location: BlockLocation, row: Record<string, unknown>, beforeRow: Record<string, unknown> | null): Promise<boolean> {
+        const result = await invokeBlockAction("ReorderBlock", {
+            location,
+            key: row["idKey"],
+            beforeKey: beforeRow?.["idKey"] ?? null
+        });
+
+        if (result.isSuccess) {
+            markPageUpdated();
+        }
+
+        return result.isSuccess;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Loads the blocks for a scope and caches the rows for the edit form.
+     */
+    async function fetchGridData(location: BlockLocation): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetBlockGridData", { location });
+
+        if (result.isSuccess && result.data) {
+            gridRows[location] = (result.data.rows ?? []) as BlockRow[];
+            return result.data;
+        }
+
+        throw new Error(result.errorMessage ?? "Unable to load the blocks for this zone.");
+    }
+
+    /**
+     * Refreshes the grid for a scope by requesting fresh data.
+     */
+    function reloadGrid(location: BlockLocation): void {
+        gridSources[location] = fetchGridData(location);
+    }
+
+    /**
+     * Flags the hosting Dialog so the underlying page reloads when the modal is closed, letting the
+     * block changes take effect. This is a no-op when the block is not hosted in the Dialog layout.
+     */
+    function markPageUpdated(): void {
+        const closeMessageField = document.querySelector<HTMLInputElement>(".modal-close-message");
+
+        if (closeMessageField) {
+            closeMessageField.value = "PAGE_UPDATED";
+        }
+    }
+
+    /**
+     * Sets the hosting Dialog header to the zone name. Only runs inside the Dialog layout iframe.
+     */
+    function applyDialogTitle(): void {
+        const dialogBody = document.getElementById("dialog");
+
+        if (!dialogBody) {
+            return;
+        }
+
+        const titleElement = dialogBody.querySelector<HTMLElement>(".modal-header .modal-title");
+
+        if (titleElement) {
+            titleElement.textContent = `${config.bag?.zoneName ?? ""} Zone`;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        applyDialogTitle();
+    });
+
+    // #endregion Lifecycle Hooks
+
+    // Eagerly load each scope's grid so every tab is ready as soon as it is shown.
+    if (canAdministrate.value) {
+        for (const tab of locationTabs.value) {
+            reloadGrid(tab.location);
+        }
+    }
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>
