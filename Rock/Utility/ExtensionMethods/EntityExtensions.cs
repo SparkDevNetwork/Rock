@@ -120,7 +120,7 @@ namespace Rock
         /// <param name="itemKey">The key that identifies the item to be moved.</param>
         /// <param name="beforeItemKey">The key that identifies the item it should be placed before.</param>
         /// <returns><c>true</c> if the reorder operation was successful or <c>false</c> if one of the items could not be found.</returns>
-        internal static bool ReorderEntity<TEntity>( this List<TEntity> entities, string itemKey, string beforeItemKey )
+        public static bool ReorderEntity<TEntity>( this List<TEntity> entities, string itemKey, string beforeItemKey )
             where TEntity : IEntity
         {
             if ( itemKey.IsNullOrWhiteSpace() )
