@@ -204,7 +204,7 @@ namespace Rock.Blocks.Administration
         #region Block Actions
 
         /// <summary>
-        /// Gets the page information for the add/edit modal.
+        /// Gets the page information for the add/edit form.
         /// </summary>
         /// <param name="key">The identifier of the page to edit, or empty to add a new child page.</param>
         /// <returns>A <see cref="PageBag"/> that represents the page being added or edited.</returns>

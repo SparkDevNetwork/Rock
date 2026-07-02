@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-/** The information needed to add or edit a child page in the add/edit modal. */
+/** The information needed to add or edit a child page in the add/edit form. */
 export type PageBag = {
     /** Gets or sets the identifier key of the page. Empty when adding a new page. */
     idKey?: string | null;

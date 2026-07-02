@@ -40,7 +40,7 @@ namespace Rock.ViewModels.Blocks.Administration.Pages
 
         /// <summary>
         /// Gets or sets the layouts available for the page's site, used to populate the
-        /// layout drop down list in the add/edit modal. Each value is a Layout's Guid.
+        /// layout drop down list in the add/edit form. Each value is a Layout's Guid.
         /// </summary>
         public List<ListItemBag> Layouts { get; set; }
 

@@ -18,7 +18,7 @@
 namespace Rock.ViewModels.Blocks.Administration.Pages
 {
     /// <summary>
-    /// The information needed to add or edit a child page in the add/edit modal.
+    /// The information needed to add or edit a child page in the add/edit form.
     /// </summary>
     public class PageBag
     {

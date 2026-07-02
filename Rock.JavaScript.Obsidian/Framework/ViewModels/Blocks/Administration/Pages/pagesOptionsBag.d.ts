@@ -39,7 +39,7 @@ export type PagesOptionsBag = {
 
     /**
      * Gets or sets the layouts available for the page's site, used to populate the
-     * layout drop down list in the add/edit modal. Each value is a Layout's Guid.
+     * layout drop down list in the add/edit form. Each value is a Layout's Guid.
      */
     layouts?: ListItemBag[] | null;
 

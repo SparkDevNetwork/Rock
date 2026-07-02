@@ -4,68 +4,60 @@
         {{ config.options?.authorizationMessage }}
     </NotificationBox>
 
-    <Grid v-else
-          class="pages-grid"
-          :definition="config.gridDefinition ?? undefined"
-          :data="gridDataSource"
-          :expectedRowCount="config.expectedRowCount ?? undefined"
-          keyField="idKey"
-          itemTerm="Page"
-          light
-          :entityTypeGuid="EntityType.Page"
-          liveUpdates
-          :showLaunchWorkflow="false"
-          :showMergeTemplate="false"
-          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
-          @selectItem="onSelectItem">
+    <template v-else>
+        <Grid v-show="!isEditing"
+              class="pages-grid"
+              :definition="config.gridDefinition ?? undefined"
+              :data="gridDataSource"
+              :expectedRowCount="config.expectedRowCount ?? undefined"
+              keyField="idKey"
+              itemTerm="Page"
+              light
+              :entityTypeGuid="EntityType.Page"
+              liveUpdates
+              :showLaunchWorkflow="false"
+              :showMergeTemplate="false"
+              :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+              @selectItem="onSelectItem">
 
-        <ReorderColumn @orderChanged="onOrderChanged" />
+            <ReorderColumn @orderChanged="onOrderChanged" />
 
-        <TextColumn name="id"
-                    title="Id"
-                    field="id"
-                    visiblePriority="xs" />
+            <TextColumn name="id"
+                        title="Id"
+                        field="id"
+                        visiblePriority="xs" />
 
-        <Column name="name"
-                title="Name"
-                field="internalName"
-                visiblePriority="xs">
-            <template #format="{ row }">
-                <a :href="row.pageUrl" target="_parent" @click.stop>{{ row.internalName }}</a>
-            </template>
-        </Column>
+            <Column name="name"
+                    title="Name"
+                    field="internalName"
+                    visiblePriority="xs">
+                <template #format="{ row }">
+                    <a :href="row.pageUrl" target="_parent" @click.stop>{{ row.internalName }}</a>
+                </template>
+            </Column>
 
-        <TextColumn name="layout"
-                    title="Layout"
-                    field="layout"
-                    visiblePriority="xs" />
+            <TextColumn name="layout"
+                        title="Layout"
+                        field="layout"
+                        visiblePriority="xs" />
 
-        <ButtonColumn name="copy"
-                      title="Copy"
-                      iconClass="ti ti-copy"
-                      tooltip="Copy"
-                      :onClick="onCopyClick"
-                      visiblePriority="xs" />
+            <ButtonColumn name="copy"
+                          title="Copy"
+                          iconClass="ti ti-copy"
+                          tooltip="Copy"
+                          :onClick="onCopyClick"
+                          visiblePriority="xs" />
 
-        <DeleteColumn v-if="config.isDeleteEnabled" disableConfirmation @click="onDeleteClick" />
-    </Grid>
+            <DeleteColumn v-if="config.isDeleteEnabled" disableConfirmation @click="onDeleteClick" />
+        </Grid>
 
-    <Modal v-model="isModalOpen"
-           :title="modalTitle"
-           :saveText="modalSaveText"
-           @save="onSaveItem">
-        <fieldset>
-            <TextBox v-model="internalName"
-                     label="Internal Name"
-                     :maxLength="100"
-                     rules="required" />
-
-            <DropDownList v-model="layout"
-                          label="Layout"
-                          :items="config.options?.layouts ?? []"
-                          :showBlankItem="false" />
-        </fieldset>
-    </Modal>
+        <EditPagePanel v-if="isEditing"
+                       :key="editBag.idKey ?? ''"
+                       :editBag="editBag"
+                       :layouts="config.options?.layouts ?? []"
+                       :onSave="onSavePage"
+                       @cancel="onCancelEdit" />
+    </template>
 
     <Modal v-model="isDeleteModalOpen"
            title="Are you sure?"
@@ -104,16 +96,15 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, onMounted, reactive, ref } from "vue";
+    import { onMounted, reactive, ref } from "vue";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { ButtonColumn, Column, DeleteColumn, ReorderColumn, TextColumn } from "@Obsidian/Controls/grid";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import TextBox from "@Obsidian/Controls/textBox.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import InlineCheckBox from "@Obsidian/Controls/checkBox.obs";
+    import EditPagePanel from "./Pages/editPagePanel.partial.obs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { PagesOptionsBag } from "@Obsidian/ViewModels/Blocks/Administration/Pages/pagesOptionsBag";
@@ -127,64 +118,24 @@
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
-    const isModalOpen = ref(false);
-    const idKey = ref("");
-    const internalName = ref("");
-    const layout = ref("");
+    /** Whether the add/edit form is shown in place of the page grid. */
+    const isEditing = ref(false);
+    const editBag = ref<PageBag>({
+        idKey: "",
+        internalName: "",
+        layout: ""
+    });
 
     const isDeleteModalOpen = ref(false);
     const deleteKey = ref("");
     const deleteInteractions = ref(true);
 
-    // #endregion
-
-    // #region Computed Values
-
-    const modalTitle = computed((): string => {
-        return idKey.value ? "Edit Child Page" : "Add Child Page";
-    });
-
-    const modalSaveText = computed((): string => {
-        return idKey.value ? "Save" : "Add";
-    });
-
-    // #endregion
-
-    // #region Functions
-
-    /**
-     * Called when the grid is requesting the row data be loaded.
-     */
-    async function loadGridData(): Promise<GridDataBag> {
-        const result = await invokeBlockAction<GridDataBag>("GetGridData");
-
-        if (result.isSuccess && result.data) {
-            gridData = reactive(result.data);
-            return gridData;
-        }
-        else {
-            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
-        }
-    }
-
-    /**
-     * Flags the host page to reload when the modal is closed. The Child Pages modal's
-     * "Done" button reads this hidden field and reloads the page that opened the modal.
-     */
-    function markPageUpdated(): void {
-        const field = document.querySelector<HTMLInputElement>(".modal-close-message");
-
-        if (field) {
-            field.value = "PAGE_UPDATED";
-        }
-    }
-
-    // #endregion
+    // #endregion Values
 
     // #region Event Handlers
 
     /**
-     * Called when a row is selected to open the add/edit modal.
+     * Called when a row is selected to show the add/edit form in place of the grid.
      *
      * @param key The key of the row that was selected, or empty to add a new page.
      */
@@ -192,11 +143,8 @@
         const result = await invokeBlockAction<PageBag>("Edit", { key });
 
         if (result.isSuccess && result.data) {
-            idKey.value = result.data.idKey ?? "";
-            internalName.value = result.data.internalName ?? "";
-            layout.value = result.data.layout ?? "";
-
-            isModalOpen.value = true;
+            editBag.value = result.data;
+            isEditing.value = true;
         }
         else {
             await alert(result.errorMessage ?? "Unable to open the page for editing.");
@@ -211,25 +159,28 @@
     }
 
     /**
-     * Saves the page from the add/edit modal.
+     * Saves the page from the add/edit form, then returns to the grid.
+     *
+     * @param bag The page details from the add/edit form.
      */
-    async function onSaveItem(): Promise<void> {
-        const bag: PageBag = {
-            idKey: idKey.value,
-            internalName: internalName.value,
-            layout: layout.value
-        };
-
+    async function onSavePage(bag: PageBag): Promise<void> {
         const result = await invokeBlockAction("Save", { bag });
 
         if (result.isSuccess) {
-            isModalOpen.value = false;
+            isEditing.value = false;
             markPageUpdated();
             gridDataSource.value = loadGridData();
         }
         else {
             await alert(result.errorMessage ?? "Unable to save the page.");
         }
+    }
+
+    /**
+     * Closes the add/edit form without saving, returning to the page grid.
+     */
+    function onCancelEdit(): void {
+        isEditing.value = false;
     }
 
     /**
@@ -305,7 +256,40 @@
         return result.isSuccess;
     }
 
-    // #endregion
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Flags the host page to reload when the modal is closed. The Child Pages modal's
+     * "Done" button reads this hidden field and reloads the page that opened the modal.
+     */
+    function markPageUpdated(): void {
+        const field = document.querySelector<HTMLInputElement>(".modal-close-message");
+
+        if (field) {
+            field.value = "PAGE_UPDATED";
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
 
     /*
         6/17/26 - MSE
@@ -344,6 +328,8 @@
             header.appendChild(subtitle);
         }
     });
+
+    // #endregion Lifecycle Hooks
 
     onConfigurationValuesChanged(useReloadBlock());
 
