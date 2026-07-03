@@ -17,6 +17,7 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { NumberRangeModelValue } from "@Obsidian/Types/Controls/numberRangeBox";
+import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
 
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage",
@@ -30,8 +31,7 @@ export const ViewMode = {
 
 export const PreferenceKey = {
     ShowImages: "show-images",
-    FilterDateRangeLower: "filter-date-range-lower",
-    FilterDateRangeUpper: "filter-date-range-upper",
+    FilterDateRange: "filter-date-range",
     FilterAmountRangeFrom: "filter-amount-range-from",
     FilterAmountRangeTo: "filter-amount-range-to",
     FilterCurrencyType: "filter-currency-type",
@@ -52,8 +52,7 @@ export type AccountSummary = {
 };
 
 export type GridSettingsOptions = {
-    dateRangeLower?: string | null;
-    dateRangeUpper?: string | null;
+    dateRange?: SlidingDateRange | null;
     amountRange?: NumberRangeModelValue;
     currencyType?: ListItemBag | null;
     creditCardType?: ListItemBag | null;

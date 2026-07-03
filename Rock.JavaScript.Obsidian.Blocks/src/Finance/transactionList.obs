@@ -10,7 +10,6 @@
           :customActions="customActions"
           :showMergeTemplate="isTransactionEntityActionEnabled"
           :showLaunchWorkflow="isTransactionEntityActionEnabled"
-          liveUpdates
           :gridSettings="config.options?.areFiltersVisible ?? false"
           :gridSettingsActive="hasSettingsFilters"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
@@ -221,6 +220,7 @@
     <GridSettingsModal :modelValue="gridSettings"
                        @update:modelValue="onGridSettingsApply"
                        v-model:visible="isGridSettingsVisible"
+                       :defaultSlidingDateRange="defaultSlidingDateRange"
                        :isForeignKeyFilterVisible="config.options?.showForeignKeyColumn ?? false"
                        :isAccountFilterVisible="!config.options?.accountConfigured"
                        :isActiveAccountsOnlyFilter="config.options?.isActiveAccountsOnlyFilter ?? false"
@@ -266,6 +266,7 @@
     import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
     import { computed, reactive, ref } from "vue";
     import { AccountSummary, GridSettingsOptions, NavigationUrlKey, PreferenceKey, ViewMode } from "./TransactionList/types.partial";
+    import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
     import { toCurrencyOrNull, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import GridSettingsModal from "./TransactionList/gridSettingsModal.partial.obs";
     import ReassignTransactionsModal from "./TransactionList/reassignTransactionsModal.partial.obs";
@@ -282,6 +283,15 @@
     // Browser bus message published when transactions are moved to another batch. Sibling blocks
     // (e.g. Batch Detail) subscribe to this same string to refresh their batch totals.
     const transactionsMovedMessage = "finance.transactionList.transactionsMoved";
+
+    // Default to the last 6 months when the individual has no saved date range, so the grid stays
+    // bounded rather than loading the entire transaction history. Kept in sync with the server-side
+    // default in TransactionList.cs.
+    const defaultSlidingDateRange: SlidingDateRange = {
+        rangeType: RangeType.Last,
+        timeUnit: TimeUnit.Month,
+        timeValue: 6
+    };
 
     // #region Values
 
@@ -360,8 +370,7 @@
 
     const hasSettingsFilters = computed((): boolean => {
         const s = gridSettings.value;
-        return !!s.dateRangeLower
-            || !!s.dateRangeUpper
+        return !!s.dateRange
             || !!s.amountRange?.lower
             || !!s.amountRange?.upper
             || !!s.currencyType?.value
@@ -395,8 +404,7 @@
         };
 
         return {
-            dateRangeLower: preferences.getValue(key(PreferenceKey.FilterDateRangeLower)) || null,
-            dateRangeUpper: preferences.getValue(key(PreferenceKey.FilterDateRangeUpper)) || null,
+            dateRange: parseSlidingDateRangeString(preferences.getValue(key(PreferenceKey.FilterDateRange))) ?? defaultSlidingDateRange,
             amountRange: {
                 lower: toNumberOrNull(preferences.getValue(key(PreferenceKey.FilterAmountRangeFrom))),
                 upper: toNumberOrNull(preferences.getValue(key(PreferenceKey.FilterAmountRangeTo)))
@@ -539,8 +547,7 @@
     function persistFilterPreferences(settings: GridSettingsOptions): void {
         const key = (baseKey: string): string => `${viewMode.value}-${baseKey}`;
 
-        preferences.setValue(key(PreferenceKey.FilterDateRangeLower), settings.dateRangeLower ?? "");
-        preferences.setValue(key(PreferenceKey.FilterDateRangeUpper), settings.dateRangeUpper ?? "");
+        preferences.setValue(key(PreferenceKey.FilterDateRange), settings.dateRange ? slidingDateRangeToString(settings.dateRange) : "");
         preferences.setValue(key(PreferenceKey.FilterAmountRangeFrom), settings.amountRange?.lower?.toString() ?? "");
         preferences.setValue(key(PreferenceKey.FilterAmountRangeTo), settings.amountRange?.upper?.toString() ?? "");
         preferences.setValue(key(PreferenceKey.FilterCurrencyType), JSON.stringify(settings.currencyType ?? null));
