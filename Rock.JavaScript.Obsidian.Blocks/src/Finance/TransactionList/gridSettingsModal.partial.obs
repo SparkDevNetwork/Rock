@@ -9,7 +9,9 @@
                 <div class="row">
                     <div class="col-md-6">
                         <SlidingDateRangePicker v-model="dateRange"
-                                                label="Date Range" />
+                                                label="Date Range"
+                                                rules="required"
+                                                :isRangeClearable="false" />
                     </div>
                 </div>
                 <div class="row">
