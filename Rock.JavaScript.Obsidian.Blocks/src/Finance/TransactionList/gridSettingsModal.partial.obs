@@ -8,9 +8,10 @@
             <div>
                 <div class="row">
                     <div class="col-md-6">
-                        <DateRangePicker v-model="dateRange"
-                                         label="Date Range"
-                                         :disallowPastDateSelection="false" />
+                        <SlidingDateRangePicker v-model="dateRange"
+                                                label="Date Range"
+                                                rules="required"
+                                                :isRangeClearable="false" />
                     </div>
                 </div>
                 <div class="row">
@@ -108,19 +109,19 @@
 </template>
 
 <script setup lang="ts">
-    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
-    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NumberRangeBox from "@Obsidian/Controls/numberRangeBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { PropType, ref, watch } from "vue";
+    import { nextTick, PropType, ref, watch } from "vue";
     import { GridSettingsOptions } from "./types.partial";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
@@ -128,6 +129,11 @@
     const props = defineProps({
         modelValue: {
             type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        defaultSlidingDateRange: {
+            type: Object as PropType<SlidingDateRange>,
             required: true
         },
 
@@ -167,10 +173,7 @@
 
     const isVisible = useVModelPassthrough(props, "visible", emit);
 
-    const dateRange = ref<DateRangeParts | undefined>({
-        lowerValue: props.modelValue.dateRangeLower ?? undefined,
-        upperValue: props.modelValue.dateRangeUpper ?? undefined
-    });
+    const dateRange = ref<SlidingDateRange | null>(props.modelValue.dateRange ?? props.defaultSlidingDateRange);
     const amountRange = ref(props.modelValue.amountRange);
     const currencyType = ref(props.modelValue.currencyType ?? null);
     const creditCardType = ref(props.modelValue.creditCardType ?? null);
@@ -188,8 +191,7 @@
 
     function onSave(): void {
         const value: GridSettingsOptions = {
-            dateRangeLower: dateRange.value?.lowerValue ?? null,
-            dateRangeUpper: dateRange.value?.upperValue ?? null,
+            dateRange: dateRange.value,
             amountRange: amountRange.value,
             currencyType: currencyType.value,
             creditCardType: creditCardType.value,
@@ -214,10 +216,7 @@
     // #region Watchers
 
     watch(() => props.modelValue, () => {
-        dateRange.value = {
-            lowerValue: props.modelValue.dateRangeLower ?? undefined,
-            upperValue: props.modelValue.dateRangeUpper ?? undefined
-        };
+        dateRange.value = props.modelValue.dateRange ?? props.defaultSlidingDateRange;
         amountRange.value = props.modelValue.amountRange;
         currencyType.value = props.modelValue.currencyType ?? null;
         creditCardType.value = props.modelValue.creditCardType ?? null;
@@ -228,6 +227,15 @@
         account.value = props.modelValue.account as ListItemBag;
         campusOfBatch.value = props.modelValue.campusOfBatch as ListItemBag;
         campusOfAccount.value = props.modelValue.campusOfAccount as ListItemBag;
+    });
+
+    // The date range is required; if the user clears it, fall back to the default range.
+    watch(dateRange, () => {
+        nextTick(() => {
+            if (!dateRange.value) {
+                dateRange.value = props.defaultSlidingDateRange;
+            }
+        });
     });
 
     watch(isVisible, () => {

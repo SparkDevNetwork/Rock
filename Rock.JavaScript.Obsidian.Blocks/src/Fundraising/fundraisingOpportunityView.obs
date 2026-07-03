@@ -1,0 +1,134 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="box.errorMessage" :alertType="AlertType.Warning">
+        {{ box.errorMessage }}
+    </NotificationBox>
+
+    <div v-else class="row">
+
+        <!-- Left Sidebar -->
+        <div class="col-md-4">
+            <img v-if="box.photoUrl" :src="box.photoUrl" :class="box.imageCssClass ?? undefined" />
+
+            <RockButton v-if="box.isDonateToParticipantVisible"
+                        btnType="primary"
+                        class="btn-block margin-t-md"
+                        @click="onDonateToParticipant">
+                {{ box.donateToParticipantButtonText }}
+            </RockButton>
+
+            <RockButton v-if="box.isLeaderToolboxVisible"
+                        btnType="primary"
+                        class="btn-block margin-t-sm"
+                        @click="onLeaderToolbox">
+                Leader Toolbox
+            </RockButton>
+
+            <div v-html="box.sidebarHtml"></div>
+        </div>
+
+        <!-- Main -->
+        <div class="col-md-8 margin-b-md">
+            <div v-html="box.summaryHtml"></div>
+
+            <div v-if="box.isParticipantActionsVisible" v-html="box.participantActionsHtml"></div>
+
+            <br />
+
+            <!-- Tabs. The tab bar is only shown when there is more than one tab to switch
+                 between, matching the original behavior; a lone tab renders its panel directly. -->
+            <TabbedContent v-if="tabs.length > 1" :tabs="tabs" lazyLoad>
+                <template #tabpane="{ item }">
+                    <DetailsTab v-if="item === detailsTabName" />
+                    <UpdatesTab v-else-if="item === updatesTabName" />
+                    <CommentsTab v-else-if="item === commentsTabName" />
+                </template>
+            </TabbedContent>
+            <template v-else-if="tabs.length === 1">
+                <DetailsTab v-if="tabs[0] === detailsTabName" />
+                <UpdatesTab v-else-if="tabs[0] === updatesTabName" />
+                <CommentsTab v-else-if="tabs[0] === commentsTabName" />
+            </template>
+        </div>
+
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import { useConfigurationValues, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
+    import DetailsTab from "./fundraisingOpportunityView/detailsTab.partial.obs";
+    import UpdatesTab from "./fundraisingOpportunityView/updatesTab.partial.obs";
+    import CommentsTab from "./fundraisingOpportunityView/commentsTab.partial.obs";
+    import { NavigationUrlKey, TabName } from "./fundraisingOpportunityView/types.partial";
+    import { FundraisingOpportunityViewInitializationBox } from "@Obsidian/ViewModels/Blocks/Fundraising/FundraisingOpportunityView/fundraisingOpportunityViewInitializationBox";
+
+    // #region Values
+
+    const box = ref(useConfigurationValues<FundraisingOpportunityViewInitializationBox>());
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** The actual tab string used for the Details tab (dynamic label or fallback). */
+    const detailsTabName = computed((): string => box.value.detailsTabLabel ?? TabName.Details);
+
+    /** The actual tab string used for the Updates tab (dynamic label or fallback). */
+    const updatesTabName = computed((): string => box.value.updatesTabLabel ?? TabName.Updates);
+
+    /** The actual tab string used for the Comments tab (dynamic label or fallback). */
+    const commentsTabName = computed((): string => box.value.commentsTabLabel ?? TabName.Comments);
+
+    /**
+     * The tabs available to the viewer, in display order. Mirrors the original block:
+     * Details first (always), then Updates (when an update content channel exists), then
+     * Comments (when commenting is enabled). Each tab uses its dynamic label as the tab
+     * string so it displays correctly in the tab bar.
+     */
+    const tabs = computed((): string[] => {
+        const result: string[] = [detailsTabName.value];
+
+        if (box.value.isUpdatesTabVisible) {
+            result.push(updatesTabName.value);
+        }
+
+        if (box.value.isCommentsTabVisible) {
+            result.push(commentsTabName.value);
+        }
+
+        return result;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Navigates to the donation page for the opportunity.
+     */
+    function onDonateToParticipant(): void {
+        const url = box.value.navigationUrls?.[NavigationUrlKey.DonationPage];
+        if (url) {
+            window.location.href = url;
+        }
+    }
+
+    /**
+     * Navigates to the leader toolbox page for the opportunity.
+     */
+    function onLeaderToolbox(): void {
+        const url = box.value.navigationUrls?.[NavigationUrlKey.LeaderToolboxPage];
+        if (url) {
+            window.location.href = url;
+        }
+    }
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #endregion Event Handlers
+</script>

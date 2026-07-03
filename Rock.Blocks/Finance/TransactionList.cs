@@ -25,12 +25,14 @@ using RestSharp.Extensions;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Controls;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.TransactionList;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Core.Grid;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -54,6 +56,7 @@ namespace Rock.Blocks.Finance
     #region Block Attributes
 
     [LinkedPage( "Detail Page",
+        Description = "The page used to view or edit transaction details.",
         IsRequired = false,
         Order = 0,
         Key = AttributeKey.DetailPage )]
@@ -101,6 +104,7 @@ namespace Rock.Blocks.Finance
         Key = AttributeKey.DefaultTransactionView )]
 
     [LinkedPage( "Batch Page",
+        Description = "The page used to view batch details.",
         IsRequired = false,
         Order = 7,
         Key = AttributeKey.BatchPage )]
@@ -231,8 +235,7 @@ namespace Rock.Blocks.Finance
 
             public const string ShowImages = "show-images";
 
-            public const string FilterDateRangeLower = "filter-date-range-lower";
-            public const string FilterDateRangeUpper = "filter-date-range-upper";
+            public const string FilterDateRange = "filter-date-range";
             public const string FilterAmountRangeFrom = "filter-amount-range-from";
             public const string FilterAmountRangeTo = "filter-amount-range-to";
             public const string FilterCurrencyType = "filter-currency-type";
@@ -301,9 +304,41 @@ namespace Rock.Blocks.Finance
         #region Properties
 
         /// <summary>
-        /// Gets a value indicating whether the current user can edit transactions in this block.
+        /// Gets the default transaction date range applied when the user has not chosen one: the
+        /// last 6 months. Keeps the result set bounded so the grid does not load the full history.
         /// </summary>
-        private bool CanEdit => BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+        private static SlidingDateRangeBag DefaultDateRange => new SlidingDateRangeBag
+        {
+            RangeType = SlidingDateRangeType.Last,
+            TimeUnit = TimeUnitType.Month,
+            TimeValue = 6
+        };
+
+        /// <summary>
+        /// Gets a value indicating whether the user-facing filters are available. Filters are only
+        /// shown (and applied) when the list is not already scoped to a specific batch, scheduled
+        /// transaction, or registration, since those contexts already bound the result set.
+        /// </summary>
+        private bool AreFiltersVisible => _batch == null && _scheduledTransaction == null && _registration == null;
+
+        /// <summary>
+        /// Gets a value indicating whether the current user can edit transactions in this block.
+        /// A user may be granted edit either through the block itself or, when scoped to a batch,
+        /// through the <see cref="FinancialBatch"/> entity's security. Finance roles such as
+        /// "RSR - Finance Administration" receive their transaction-management rights via the batch
+        /// entity's authorization rather than the block, so the batch grant must be honored for the
+        /// Add, Delete, and Move actions to be available to them.
+        /// </summary>
+        private bool CanEdit
+        {
+            get
+            {
+                InitializeContextEntities();
+
+                return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                    || ( _batch != null && _batch.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) );
+            }
+        }
 
         /// <summary>
         /// Gets a value indicating whether the current user is authorized to filter the list by a
@@ -401,11 +436,16 @@ namespace Rock.Blocks.Finance
         /// <param name="key">The base preference key from <see cref="PreferenceKey"/>.</param>
         private string FilterPreference( string key ) => PersonPreferences.GetValue( $"{CurrentViewMode}-{key}" );
 
-        /// <summary>Gets the lower bound of the transaction date filter.</summary>
-        private DateTime? FilterDateRangeLower => FilterPreference( PreferenceKey.FilterDateRangeLower ).AsDateTime();
-
-        /// <summary>Gets the upper bound of the transaction date filter.</summary>
-        private DateTime? FilterDateRangeUpper => FilterPreference( PreferenceKey.FilterDateRangeUpper ).AsDateTime();
+        /// <summary>
+        /// Gets the resolved transaction date range from the sliding date range preference for the
+        /// current view mode, falling back to <see cref="DefaultDateRange"/> (the last 6 months)
+        /// when no valid range has been selected. This filter is required so that the grid payload
+        /// stays bounded rather than attempting to load the entire transaction history.
+        /// </summary>
+        private DateRange FilterDateRange => FilterPreference( PreferenceKey.FilterDateRange )
+            .ToSlidingDateRangeBagOrNull()
+            .Validate( DefaultDateRange )
+            .ActualDateRange;
 
         /// <summary>Gets the minimum transaction amount filter.</summary>
         private decimal? FilterAmountRangeFrom => FilterPreference( PreferenceKey.FilterAmountRangeFrom ).AsDecimalOrNull();
@@ -473,7 +513,7 @@ namespace Rock.Blocks.Finance
         {
             // Filters are only available when the list is not already scoped to a
             // specific batch, scheduled transaction, or registration.
-            var areFiltersVisible = _batch == null && _scheduledTransaction == null && _registration == null;
+            var areFiltersVisible = AreFiltersVisible;
 
             var currencyInfo = new RockCurrencyCodeInfo();
 
@@ -905,19 +945,21 @@ namespace Rock.Blocks.Finance
                 query = query.Where( r => r.SourceTypeValueId.HasValue && sourceTypeIds.Contains( r.SourceTypeValueId.Value ) );
             }
 
-            // Date range — strip time before comparing so a date-only upper bound is inclusive.
-            var dateRangeLower = FilterDateRangeLower;
-            if ( dateRangeLower.HasValue )
+            if ( AreFiltersVisible )
             {
-                var startOfDay = dateRangeLower.Value.Date;
-                query = query.Where( r => r.TransactionDateTime >= startOfDay );
-            }
+                var dateRange = FilterDateRange;
 
-            var dateRangeUpper = FilterDateRangeUpper;
-            if ( dateRangeUpper.HasValue )
-            {
-                var startOfNextDay = dateRangeUpper.Value.Date.AddDays( 1 );
-                query = query.Where( r => r.TransactionDateTime < startOfNextDay );
+                if ( dateRange?.Start.HasValue == true )
+                {
+                    var start = dateRange.Start.Value;
+                    query = query.Where( r => r.TransactionDateTime >= start );
+                }
+
+                if ( dateRange?.End.HasValue == true )
+                {
+                    var end = dateRange.End.Value;
+                    query = query.Where( r => r.TransactionDateTime <= end );
+                }
             }
 
             // Amount range.
