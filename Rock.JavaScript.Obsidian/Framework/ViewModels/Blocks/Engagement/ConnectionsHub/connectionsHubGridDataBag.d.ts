@@ -21,21 +21,22 @@
 // </copyright>
 //
 
-import { ConnectionRequestDetailBox } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestDetailBox";
+import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
 import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
 
-/** Represents the combined response when a connection request is updated, containing both the refreshed grid row data and the updated detail panel payload. */
-export type ConnectionListUpdateBox = {
+/**
+ * Represents the response for the Connections Hub grid data request, containing the grid
+ * row data along with grouping metadata for the connectors present in the result set.
+ */
+export type ConnectionsHubGridDataBag = {
     /**
-     * Gets or sets the grouping metadata for the request's currently assigned connector.
-     * Used by the client to label the connector's group when the connector is not part
-     * of the block-load available groupings list. Null when the request is unassigned.
+     * Gets or sets the grouping metadata for the distinct connectors present in the grid
+     * data. Used by the client to label connector groups whose connector is not part of
+     * the block-load available groupings list (e.g. a connector who is not a member of
+     * any connector group).
      */
-    connectorGroupingField?: GroupingFieldBag | null;
+    connectorGroupings?: GroupingFieldBag[] | null;
 
-    /** Gets or sets the updated detail panel payload for the connection request. */
-    detailBox?: ConnectionRequestDetailBox | null;
-
-    /** Gets or sets the updated grid row data for the affected connection request, keyed by column name. */
-    gridRow?: Record<string, unknown> | null;
+    /** Gets or sets the grid row data for the connection request list. */
+    gridData?: GridDataBag | null;
 };

@@ -512,7 +512,18 @@ namespace Rock.Blocks.Engagement
                 .Select( o => GetGroupingFieldBag( o.Id, "text", o.Name, o.Order, o.IconCssClass ) )
                 .ToList();
 
-            // Connector groupings — all connectors from connector groups plus the current person.
+            /*
+                7/2/26 - CLAUDE
+
+                The connector grouping dimension is keyed by PersonId, not PersonAliasId. A
+                request's ConnectorPersonAliasId is not necessarily the person's primary alias
+                (e.g. after a person merge), so alias-based keys could split one person into
+                multiple groups and cause the grouped panel to fall back to a raw IdKey label.
+                Every code path that emits a connectorGrouping key must use PersonId.
+
+                Reason: Connector grouping keys must be person-based to stay consistent across aliases.
+            */
+            // Connector groupings: all connectors from connector groups plus the current person.
             // Exclude inactive and archived connector groups. A global query filter sets the
             // ConnectorGroup navigation to null for archived groups, so guard against null as well.
             // Also exclude inactive/archived group members so they do not appear as connectors.
@@ -521,18 +532,17 @@ namespace Rock.Blocks.Engagement
                 .SelectMany( o => o.ConnectionOpportunityConnectorGroups )
                 .Where( g => g.ConnectorGroup != null && g.ConnectorGroup.IsActive && !g.ConnectorGroup.IsArchived )
                 .SelectMany( g => g.ConnectorGroup.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && !m.IsArchived ) )
-                .Where( m => m.Person.PrimaryAlias != null )
-                .DistinctBy( m => m.Person.PrimaryAlias.Id )
-                .Select( m => GetGroupingFieldBag( m.Person.PrimaryAlias.Id, "person", m.Person.FullName, null, null, m.Person.PhotoUrl ) )
+                .DistinctBy( m => m.PersonId )
+                .Select( m => GetGroupingFieldBag( m.Person.Id, "person", m.Person.FullName, null, null, m.Person.PhotoUrl ) )
                 .ToList();
 
             // Add current person if not already in the list.
-            if ( RequestContext.CurrentPerson?.PrimaryAlias != null )
+            if ( RequestContext.CurrentPerson != null )
             {
-                var currentAliasId = RequestContext.CurrentPerson.PrimaryAlias.Id;
-                if ( !connectorGroupings.Any( g => g.Key == GetGroupingKey( currentAliasId ) ) )
+                var currentPersonId = RequestContext.CurrentPerson.Id;
+                if ( !connectorGroupings.Any( g => g.Key == GetGroupingKey( currentPersonId ) ) )
                 {
-                    connectorGroupings.Add( GetGroupingFieldBag( currentAliasId, "person", RequestContext.CurrentPerson.FullName, null, null, RequestContext.CurrentPerson.PhotoUrl ) );
+                    connectorGroupings.Add( GetGroupingFieldBag( currentPersonId, "person", RequestContext.CurrentPerson.FullName, null, null, RequestContext.CurrentPerson.PhotoUrl ) );
                 }
             }
 
@@ -2767,6 +2777,14 @@ namespace Rock.Blocks.Engagement
 
             box.GridRow = GetConnectionRequestGridRow( connectionRequest );
 
+            // Include the connector's grouping metadata so the client can label the
+            // group even when the connector is not in the block-load groupings list.
+            if ( connectionRequest.ConnectorPersonAlias != null )
+            {
+                var connectorPerson = connectionRequest.ConnectorPersonAlias.Person;
+                box.ConnectorGroupingField = GetGroupingFieldBag( connectorPerson.Id, "person", connectorPerson.FullName, null, null, connectorPerson.PhotoUrl );
+            }
+
             if ( includeRequestDetails )
             {
                 box.DetailBox = GetConnectionRequestDetailBox( connectionRequest );
@@ -2870,7 +2888,7 @@ namespace Rock.Blocks.Engagement
                 ConnectionRequest = connectionRequest,
                 ConnectionRequestId = connectionRequest.Id,
                 Order = connectionRequest.Order,
-                ConnectorGrouping = GetGroupingKey( connectionRequest.ConnectorPersonAliasId ),
+                ConnectorGrouping = GetGroupingKey( connectionRequest.ConnectorPersonAlias?.PersonId ),
                 OpportunityGrouping = GetGroupingKey( connectionRequest.ConnectionOpportunityId ),
                 CampusGrouping = GetGroupingKey( connectionRequest.CampusId ),
                 StatusGrouping = GetGroupingKey( connectionRequest.ConnectionStatusId ),
@@ -4360,7 +4378,7 @@ WHERE 1 = 1" );
                 request.DueStatus = dueStatus;
                 request.ConnectorDetails = connectorItem;
 
-                request.ConnectorGrouping = GetGroupingKey( row.ConnectorPersonAliasId );
+                request.ConnectorGrouping = GetGroupingKey( row.ConnectorPersonId );
                 request.OpportunityGrouping = GetGroupingKey( row.ConnectionOpportunityId );
                 request.CampusGrouping = GetGroupingKey( row.CampusId );
                 request.StatusGrouping = GetGroupingKey( row.ConnectionStatusId );
@@ -4404,7 +4422,27 @@ WHERE 1 = 1" );
             }
 
             var gridDataBag = GetGridBuilder().Build( connectionRequests );
-            return ActionOk( gridDataBag );
+
+            /*
+                7/2/26 - CLAUDE
+
+                The block-load connector groupings only cover connector group members plus the
+                current person, but a request's connector can be anyone (e.g. a person with edit
+                rights can assign themselves without being in a connector group). Return the
+                distinct connectors present in this result set so the client can label those
+                groups instead of falling back to a raw IdKey.
+
+                Reason: Grid data must carry grouping metadata for connectors outside the connector groups.
+            */
+            var connectorGroupings = connectorByPersonId
+                .Select( kvp => GetGroupingFieldBag( kvp.Key, "person", kvp.Value.FullName, null, null, kvp.Value.PhotoUrl ) )
+                .ToList();
+
+            return ActionOk( new ConnectionsHubGridDataBag
+            {
+                GridData = gridDataBag,
+                ConnectorGroupings = connectorGroupings
+            } );
         }
 
         /// <summary>
@@ -4804,6 +4842,7 @@ WHERE 1 = 1" );
 
             List<ConnectionListGridUpdateBag> gridUpdateBags = new List<ConnectionListGridUpdateBag>();
             ListItemBag connectorItem = null;
+            GroupingFieldBag connectorGroupingField = null;
 
             if ( newConnectorPersonAlias != null )
             {
@@ -4812,6 +4851,10 @@ WHERE 1 = 1" );
                     Value = newConnectorPersonAlias.Person.IdKey,
                     Text = newConnectorPersonAlias.Person.FullName
                 };
+
+                // Include the connector's grouping metadata so the client can label the
+                // group even when the connector is not in the block-load groupings list.
+                connectorGroupingField = GetGroupingFieldBag( newConnectorPersonAlias.PersonId, "person", newConnectorPersonAlias.Person.FullName, null, null, newConnectorPersonAlias.Person.PhotoUrl );
             }
             else
             {
@@ -4830,8 +4873,9 @@ WHERE 1 = 1" );
                 gridUpdateBags.Add( new ConnectionListGridUpdateBag
                 {
                     IdKey = connectionRequest.IdKey,
-                    ConnectorGrouping = GetGroupingKey( newConnectorPersonAlias?.Id ),
-                    ConnectorDetails = connectorItem
+                    ConnectorGrouping = GetGroupingKey( newConnectorPersonAlias?.PersonId ),
+                    ConnectorDetails = connectorItem,
+                    ConnectorGroupingField = connectorGroupingField
                 } );
             }
 
@@ -6278,10 +6322,15 @@ WHERE 1 = 1" );
             }
 
             // If we are assigning a new Connector Person then set the connectorItem for the grid row update.
+            GroupingFieldBag connectorGroupingField = null;
             if ( newConnectorPerson != null )
             {
                 connectorItem.Value = newConnectorPerson.IdKey;
                 connectorItem.Text = newConnectorPerson.FullName;
+
+                // Include the connector's grouping metadata so the client can label the
+                // group even when the connector is not in the block-load groupings list.
+                connectorGroupingField = GetGroupingFieldBag( newConnectorPerson.Id, "person", newConnectorPerson.FullName, null, null, newConnectorPerson.PhotoUrl );
             }
 
             foreach ( var connectionRequest in connectionRequests )
@@ -6388,8 +6437,9 @@ WHERE 1 = 1" );
                 // If the ConnectorOption is not equal to current then we need to update the connector data.
                 if ( bag.ConnectorOption != "current" )
                 {
-                    gridUpdateBag.ConnectorGrouping = GetGroupingKey( connectorPersonAliasId );
+                    gridUpdateBag.ConnectorGrouping = GetGroupingKey( newConnectorPerson?.Id );
                     gridUpdateBag.ConnectorDetails = connectorItem;
+                    gridUpdateBag.ConnectorGroupingField = connectorGroupingField;
                 }
 
                 gridUpdateBags.Add( gridUpdateBag );

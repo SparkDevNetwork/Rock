@@ -1077,6 +1077,7 @@ i.disabled {
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
     import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
@@ -1160,6 +1161,7 @@ i.disabled {
     import { removeCurrentUrlQueryParams } from "@Obsidian/Utility/url";
     import { ConnectionRequestDetailBox } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestDetailBox";
     import { ConnectionListUpdateBox } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionListUpdateBox";
+    import { ConnectionsHubGridDataBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubGridDataBag";
     import { TransferConnectionRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/transferConnectionRequestBag";
     import TransferConnectionRequestModal from "./ConnectionsHub/transferConnectionRequestModal.partial.obs";
     import { TransferConnectionRequestDetailsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/transferConnectionRequestDetailsBag";
@@ -1320,6 +1322,13 @@ i.disabled {
     const isDetailActionDropdownOpen = ref<boolean>(false);
     // Holds the raw grid data returned from the server
     const gridData = ref<GridDataBag>();
+
+    /**
+     * Grouping metadata for connectors discovered from grid data and row updates
+     * that are not part of the block-load connector groupings, e.g. a connector
+     * who is not a member of any connector group. Keyed by grouping key.
+     */
+    const supplementalConnectorGroupings = ref<Record<string, GroupingFieldBag>>({});
     const requestListErrorMessage = ref<string>("");
     const areRequestsLoading = ref<boolean>(true);
     const isSnapshotVisible = ref<boolean>(false);
@@ -1624,6 +1633,22 @@ i.disabled {
                 ...bag,
                 gridData: { rows: [] }
             }));
+        }
+
+        // Union in connectors discovered from grid data and row updates that are
+        // not part of the block-load connector groupings. Without this the grouped
+        // panel would fall back to showing the raw grouping key as the group label.
+        const connectorGroups = result["connectorGrouping"];
+        if (connectorGroups) {
+            const knownKeys = new Set(connectorGroups.map(g => g.key));
+            for (const bag of Object.values(supplementalConnectorGroupings.value)) {
+                if (bag.key && !knownKeys.has(bag.key)) {
+                    connectorGroups.push({
+                        ...bag,
+                        gridData: { rows: [] }
+                    });
+                }
+            }
         }
 
         return result;
@@ -3283,10 +3308,11 @@ i.disabled {
     async function loadGridData(): Promise<void> {
         gridData.value = undefined;
         areRequestsLoading.value = true;
-        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+        const result = await invokeBlockAction<ConnectionsHubGridDataBag>("GetGridData");
 
-        if (result.isSuccess && result.data) {
-            gridData.value = reactive(result.data);
+        if (result.isSuccess && result.data?.gridData) {
+            gridData.value = reactive(result.data.gridData);
+            mergeConnectorGroupings(result.data.connectorGroupings);
         }
         else {
             requestListErrorMessage.value = result.errorMessage ?? "Error loading grid data.";
@@ -3479,6 +3505,33 @@ i.disabled {
         connectionRequestUpdateBag.value = {} as ConnectionRequestUpdateBag;
         isNoteRequired.value = false;
         flyoutAnchorEl.value = null;
+    }
+
+    /**
+     * Merges connector grouping metadata returned by block actions into the
+     * supplemental groupings map so connectors that are missing from the
+     * block-load groupings list still render with a labeled group.
+     *
+     * @param bags The connector grouping bags to merge. Null entries are skipped.
+     */
+    function mergeConnectorGroupings(bags: (GroupingFieldBag | null | undefined)[] | null | undefined): void {
+        if (!bags) {
+            return;
+        }
+
+        let hasNewEntries = false;
+        const merged = { ...supplementalConnectorGroupings.value };
+
+        for (const bag of bags) {
+            if (bag?.key && !merged[bag.key]) {
+                merged[bag.key] = bag;
+                hasNewEntries = true;
+            }
+        }
+
+        if (hasNewEntries) {
+            supplementalConnectorGroupings.value = merged;
+        }
     }
 
     function syncGridData(gridRow: Record<string, unknown>): void {
@@ -4109,6 +4162,8 @@ i.disabled {
                     syncGridData(result.data.gridRow);
                 }
 
+                mergeConnectorGroupings([result.data.connectorGroupingField]);
+
                 dockedPanelDetailsBox.value = result.data.detailBox;
 
                 connectionRequestDockedPanelRef.value?.setEditMode(false);
@@ -4199,6 +4254,8 @@ i.disabled {
                     }
                 }
 
+                mergeConnectorGroupings(result.data.map(u => u.connectorGroupingField));
+
                 // Need to validate the updated rows still meet server filter requirements.
                 applyServerFilters();
 
@@ -4245,6 +4302,8 @@ i.disabled {
                     syncGridData(result.data.gridRow);
                 }
 
+                mergeConnectorGroupings([result.data.connectorGroupingField]);
+
                 dockedPanelDetailsBox.value = result.data.detailBox;
 
                 isTransferModalVisible.value = false;
@@ -4282,6 +4341,8 @@ i.disabled {
                 if (result.data.gridRow) {
                     syncGridData(result.data.gridRow);
                 }
+
+                mergeConnectorGroupings([result.data.connectorGroupingField]);
 
                 isAddConnectionRequestModalVisible.value = false;
                 return;
@@ -4344,6 +4405,8 @@ i.disabled {
                 row.connectorGrouping = updateBag.connectorGrouping;
                 row.connectorDetails = updateBag.connectorDetails;
             }
+
+            mergeConnectorGroupings(result.data.map(u => u.connectorGroupingField));
 
             // Need to validate the updated rows still meet server filter requirements.
             applyServerFilters();
