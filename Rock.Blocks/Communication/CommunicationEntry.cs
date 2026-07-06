@@ -843,6 +843,11 @@ namespace Rock.Blocks.Communication
                     testRecipient.AdditionalMergeValuesJson = communication.Recipients.First().AdditionalMergeValuesJson;
                 }
 
+                // A test is delivered to the current person rather than the list, so detach the list
+                // to bypass the transport's list-membership check.
+                testCommunication.ListGroup = null;
+                testCommunication.ListGroupId = null;
+
                 testRecipient.Status = CommunicationRecipientStatus.Pending;
                 testRecipient.PersonAliasId = primaryAliasId.Value;
                 testRecipient.MediumEntityTypeId = EntityTypeCache.GetId( bag.MediumEntityTypeGuid );
