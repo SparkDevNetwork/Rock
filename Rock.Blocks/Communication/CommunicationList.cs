@@ -304,7 +304,6 @@ SELECT counts.*
     , pReviewer.[LastName] AS [ReviewerPersonLastName]
     , pReviewer.[SuffixValueId] AS [ReviewerPersonSuffixValueId]
     , pReviewer.[RecordTypeValueId] AS [ReviewerRecordTypeValueId]
-    , CAST(CASE WHEN (c.[Segments] IS NOT NULL AND RTRIM(c.[Segments]) <> '') OR ct.[Version] = 0 THEN 1 ELSE 0 END AS BIT) AS [IsLegacyCommunication]
 FROM (
     SELECT
         c.[Id] AS [CommunicationId]
@@ -427,11 +426,16 @@ WHERE (@RecipientCountLower IS NULL OR counts.[RecipientCount] >= @RecipientCoun
 
             if ( communicationTemplateIds.Any() )
             {
-                var authorizedCommunicationTemplateIds = new CommunicationTemplateService( RockContext )
+                var currentPerson = GetCurrentPerson();
+
+                var authorizedCommunicationTemplates = new CommunicationTemplateService( RockContext )
                     .Queryable()
                     .Where( ct => communicationTemplateIds.Contains( ct.Id ) )
                     .ToList()
-                    .Where( ct => ct.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
+                    .Where( ct => ct.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                    .ToList();
+
+                var authorizedCommunicationTemplateIds = authorizedCommunicationTemplates
                     .Select( ct => ct.Id )
                     .ToList();
 
@@ -441,6 +445,29 @@ WHERE (@RecipientCountLower IS NULL OR counts.[RecipientCount] >= @RecipientCoun
                         || authorizedCommunicationTemplateIds.Contains( r.CommunicationTemplateId.Value )
                     )
                     .ToList();
+
+                /*
+                    07/02/26 - JMH
+
+                    A communication opens in the legacy WebForms detail page only when it uses a Legacy-version
+                    email-wizard template - one whose message was authored for the drag-and-drop email editor and
+                    is compatible only with the WebForms editor. Template version alone is not enough (the simple
+                    editor uses Legacy-version templates too and is edited in Obsidian), so the template must also
+                    support the email wizard. SupportsEmailWizard() parses the template message, so it is evaluated
+                    only for Legacy-version templates, once per template.
+
+                    Reason: Route only true WebForms-wizard communications to the legacy detail page.
+                */
+                var webFormsWizardTemplateIds = new HashSet<int>(
+                    authorizedCommunicationTemplates
+                        .Where( ct => ct.Version == CommunicationTemplateVersion.Legacy && GetSupportsEmailWizard( ct ) )
+                        .Select( ct => ct.Id ) );
+
+                foreach ( var communicationRow in communicationRows )
+                {
+                    communicationRow.IsLegacyCommunication = communicationRow.CommunicationTemplateId.HasValue
+                        && webFormsWizardTemplateIds.Contains( communicationRow.CommunicationTemplateId.Value );
+                }
             }
 
             var systemCommunicationIds = communicationRows
@@ -564,6 +591,28 @@ WHERE (@RecipientCountLower IS NULL OR counts.[RecipientCount] >= @RecipientCoun
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Determines whether a communication template's message supports the email wizard, caching the result.
+        /// </summary>
+        /// <param name="communicationTemplate">The communication template to check.</param>
+        /// <returns><see langword="true"/> if the template supports the email wizard; otherwise, <see langword="false"/>.</returns>
+        private bool GetSupportsEmailWizard( CommunicationTemplate communicationTemplate )
+        {
+            /*
+                07/02/26 - JMH
+
+                SupportsEmailWizard() resolves the Lava in the template's full message HTML and parses the result
+                just to detect a dropzone element. Any database-querying Lava in the template runs on each call, so
+                the result is cached per person (the Lava can reference the current person) and per template version.
+                This mirrors the caching in the Communication Entry Wizard block.
+
+                Reason: Avoid re-resolving the template's Lava on every page load.
+            */
+            var cacheKey = $"{nameof( CommunicationList )}:SupportsEmailWizard:{GetCurrentPerson()?.Id ?? 0}:{communicationTemplate.Id}:{communicationTemplate.ModifiedDateTime?.Ticks ?? 0}";
+
+            return ( bool ) RockCache.GetOrAddExisting( cacheKey, null, () => communicationTemplate.SupportsEmailWizard(), TimeSpan.FromMinutes( 10 ) );
         }
 
         /// <summary>
