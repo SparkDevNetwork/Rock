@@ -122,6 +122,7 @@
 
         <Column name="amtMeasures"
                 title="Amt Measures"
+                sortField="amountCurrentMedian"
                 headerClass="title-right"
                 itemClass="justify-content-end text-right"
                 width="200px"
@@ -133,6 +134,7 @@
 
         <Column name="freqMeasures"
                 title="Freq Measures"
+                sortField="frequencyCurrentMean"
                 headerClass="title-right"
                 itemClass="justify-content-end text-right"
                 width="150px"
