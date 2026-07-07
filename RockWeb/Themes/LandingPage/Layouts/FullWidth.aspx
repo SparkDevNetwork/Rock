@@ -10,19 +10,20 @@
     <Rock:Lava ID="HeaderImage" runat="server">
         {%- assign headerImageId = CurrentPage | Attribute:'HeaderImage','Id' -%}
         {%- if headerImageId != '' -%}
-        <div class="hero has-fade" style="background-image:url('{{ headerImageId | ImageUrl }}&maxWidth=2500');"></div>
+            <div class="hero has-fade" style="background-image:url('{{ headerImageId | ImageUrl }}&maxWidth=2500');">
         {%- else -%}
-        <div class="hero has-fade" style="background-image:url('https://source.unsplash.com/mvxrY7z7gtM/2500x1800');"></div>
+            <div class="hero has-fade" style="background-image:url('https://images.unsplash.com/photo-1521127021408-f33c67dfcb76?fm=jpg&q=60&w=2500');">
         {%- endif -%}
     </Rock:Lava>
 
-    <div class="container d-flex flex-column" style="min-height: 80vh;">
-        <div class="row my-auto">
-            <div class="col-lg-5 col-md-10 col-sm-12 py-5 text-white my-auto text-center text-lg-left mx-auto ml-lg-0 mr-lg-auto">
-                <Rock:Zone Name="Headline" CssClass="zone-headline" runat="server" />
-            </div>
-            <div class="col-lg-5 col-md-8 col-sm-12 py-5 mx-auto ml-lg-auto mr-lg-0">
-                <Rock:Zone Name="Workflow" CssClass="zone-workflow" runat="server" />
+        <div class="container d-flex flex-column" style="min-height: 80vh;">
+            <div class="row my-auto">
+                <div class="col-lg-5 col-md-10 col-sm-12 py-5 text-white my-auto text-center text-lg-left mx-auto ml-lg-0 mr-lg-auto">
+                    <Rock:Zone Name="Headline" CssClass="zone-headline" runat="server" />
+                </div>
+                <div class="col-lg-5 col-md-8 col-sm-12 py-5 mx-auto ml-lg-auto mr-lg-0">
+                    <Rock:Zone Name="Workflow" CssClass="zone-workflow" runat="server" />
+                </div>
             </div>
         </div>
     </div>
@@ -58,14 +59,15 @@
     <Rock:Lava ID="SecondaryImage" runat="server">
         {%- assign secondaryImageId = CurrentPage | Attribute:'SecondaryImage','Id' -%}
         {%- if secondaryImageId != '' -%}
-        <div class="secondary-hero py-5" style="background: linear-gradient(90deg, var(--secondary-hero-overlay-color, rgba(0,0,0,0)), var(--secondary-hero-overlay-color, rgba(0,0,0,0))),url('{{ secondaryImageId | ImageUrl: '', 'rootUrl' }}&maxWidth=2500') center center; background-size: cover;"></div>
+        <div class="secondary-hero py-5" style="background: linear-gradient(90deg, var(--secondary-hero-overlay-color, rgba(0,0,0,0)), var(--secondary-hero-overlay-color, rgba(0,0,0,0))),url('{{ secondaryImageId | ImageUrl: '', 'rootUrl' }}&maxWidth=2500') center center; background-size: cover;">
         {%- else -%}
-        <div class="secondary-hero py-5" style="background: linear-gradient(90deg, var(--secondary-hero-overlay-color, rgba(0,0,0,0)), var(--secondary-hero-overlay-color, rgba(0,0,0,0))),url('https://images.unsplash.com/photo-1520512533001-af75c194690b?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=d23a0082e9aa3caa886db02d419bdd3d&auto=format&fit=crop&w=2500&q=80&auto=enhance') center center; background-size: cover;"></div>
+        <div class="secondary-hero py-5" style="background: linear-gradient(90deg, var(--secondary-hero-overlay-color, rgba(0,0,0,0)), var(--secondary-hero-overlay-color, rgba(0,0,0,0))),url('https://images.unsplash.com/photo-1520512533001-af75c194690b?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=d23a0082e9aa3caa886db02d419bdd3d&auto=format&fit=crop&w=2500&q=80&auto=enhance') center center; background-size: cover;">
         {%- endif -%}
     </Rock:Lava>
-    <div class="container d-flex flex-column" style="height: 95vh; max-height: 563px;">
-        <div class="row my-auto">
-            <Rock:Zone Name="Secondary Hero" CssClass="col-lg-4 col-md-8 col-sm-12 py-5 mr-auto text-left" runat="server" />
+        <div class="container d-flex flex-column" style="height: 95vh; max-height: 563px;">
+            <div class="row my-auto">
+                <Rock:Zone Name="Secondary Hero" CssClass="col-lg-4 col-md-8 col-sm-12 py-5 mr-auto text-left" runat="server" />
+            </div>
         </div>
     </div>
 
