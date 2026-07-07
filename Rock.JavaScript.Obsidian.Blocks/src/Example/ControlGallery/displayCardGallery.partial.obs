@@ -11,6 +11,7 @@
                      :primaryActions="primaryActions"
                      :secondaryActions="secondaryActions"
                      :title="title"
+                     :isExpanded="simulateExpandedSlot"
                      :onClick="simulateNotClickable ? undefined : onClick">
 
             <template v-if="simulateActionsSlot" #actions>
@@ -24,6 +25,12 @@
             <template v-if="simulateDescriptionSlot" #description>
                 <div>
                     <i class="ti ti-clock"></i> {{ description }}
+                </div>
+            </template>
+
+            <template v-if="simulateExpandedSlot" #expanded>
+                <div>
+                    <i class="ti ti-info-circle"></i> Expanded content revealed in accordion mode.
                 </div>
             </template>
 
@@ -156,6 +163,10 @@
             text: "Description Slot"
         },
         {
+            value: "expanded",
+            text: "Expanded Slot"
+        },
+        {
             value: "notClickable",
             text: "Not Clickable"
         }
@@ -167,10 +178,13 @@
 
     const simulateDescriptionSlot = computed((): boolean => simulateValues.value.includes("description"));
 
+    const simulateExpandedSlot = computed((): boolean => simulateValues.value.includes("expanded"));
+
     const anySlotsSimulated = computed((): boolean => {
         return simulateActionsSlot.value
             || simulatePrependSlot.value
-            || simulateDescriptionSlot.value;
+            || simulateDescriptionSlot.value
+            || simulateExpandedSlot.value;
     });
 
     const simulateNotClickable = computed((): boolean => simulateValues.value.includes("notClickable"));
@@ -185,7 +199,8 @@
              description="${description.value}"
              :primaryActions="${JSON.stringify(primaryActions.value, null, 2).replace(/\n/g, "\n                   ").replace(/"/g, "'")}"
              :secondaryActions="${JSON.stringify(secondaryActions.value, null, 2).replace(/\n/g, "\n                   ").replace(/"/g, "'")}"
-             title="${title.value}"${!simulateNotClickable.value ? `
+             title="${title.value}"${simulateExpandedSlot.value ? `
+             :isExpanded="true"` : ""}${!simulateNotClickable.value ? `
              @click="onClick"` : ""}${anySlotsSimulated.value ? `>${simulateActionsSlot.value ? `
     <template #actions>
         <RockButton :btnType="BtnType.Link" @click.stop="onSubscribe">
@@ -197,6 +212,9 @@
     </template>` : ""}${simulateDescriptionSlot.value ? `
     <template #description>
         <i class="ti ti-clock"></i> ${description.value}
+    </template>` : ""}${simulateExpandedSlot.value ? `
+    <template #expanded>
+        <i class="ti ti-info-circle"></i> Expanded content revealed in accordion mode.
     </template>` : ""}
 </DisplayCard>` : " />"}`;
     });
