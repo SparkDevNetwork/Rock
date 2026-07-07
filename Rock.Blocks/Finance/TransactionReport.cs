@@ -229,6 +229,7 @@ namespace Rock.Blocks.Finance
         private GridBuilder<TransactionReportRow> GetGridBuilder()
         {
             return new GridBuilder<TransactionReportRow>()
+                .WithLaunchWorkflow( this )
                 .AddField( "id", r => r.Id )
                 .AddDateTimeField( "transactionDateTime", r => r.TransactionDateTime )
                 .AddTextField( "currencyType", r => r.CurrencyType )
