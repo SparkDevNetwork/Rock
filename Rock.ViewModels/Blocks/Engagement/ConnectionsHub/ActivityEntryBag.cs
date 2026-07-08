@@ -108,6 +108,13 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public string ConnectorPersonAliasGuid { get; set; }
 
         /// <summary>
+        /// Gets or sets whether the current person is permitted to edit or delete this entry.
+        /// Populated for Activity entries so the UI only offers edit and delete actions when the
+        /// server will actually allow them, matching the authorization enforced by the block actions.
+        /// </summary>
+        public bool CanEdit { get; set; }
+
+        /// <summary>
         /// Gets or sets the encrypted identifier key of the connection opportunity associated with this entry.
         /// </summary>
         public string ConnectionOpportunityIdKey { get; set; }

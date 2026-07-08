@@ -408,7 +408,7 @@ namespace RockWeb.Blocks.Security.Oidc
             var authClient = GetAuthClient();
             IDictionary<string, string> clientAllowedClaims = null;
 
-            IEnumerable<string> clientAllowedScopes = null;
+            List<string> clientAllowedScopes = null;
             using ( var rockContext = new RockContext() )
             {
                 clientAllowedScopes = RockIdentityHelper.NarrowRequestedScopesToApprovedScopes( rockContext, authClient, requestedScopes ).ToList();
@@ -419,6 +419,15 @@ namespace RockWeb.Blocks.Security.Oidc
             {
                 // TODO: Error
                 return;
+            }
+
+            // This is a hack since we don't store the grant_types during DCR
+            // to know if the client supports refresh tokens. So we'll just
+            // assume that if the client is asking for the mcp:invoke scope,
+            // then they support refresh tokens.
+            if ( clientAllowedScopes.Contains( "mcp:invoke" ) && !clientAllowedScopes.Contains( "offline_access" ) )
+            {
+                clientAllowedScopes.Add( "offline_access" );
             }
 
             // Create a new ClaimsIdentity containing the claims that

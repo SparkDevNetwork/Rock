@@ -32,8 +32,13 @@ namespace Rock.Badge.Component
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Geofenced By Group" )]
 
-    [GroupTypeField( "Group Type", "The type of group to use.", true )]
-    [TextField( "Badge Color", "The color of the badge (#ffffff).", true, "#0ab4dd" )]
+    [GroupTypeField( "Group Type",
+        Description = "The type of group to use.",
+        IsRequired = true )]
+    [TextField( "Badge Color",
+        Description = "The color of the badge (#ffffff).",
+        IsRequired = true,
+        DefaultValue = "#0ab4dd" )]
     [Rock.SystemGuid.EntityTypeGuid( "CD6477C8-F567-4313-980E-CC63D46EAE84")]
     public class GeofencedByGroup : BadgeComponent
     {

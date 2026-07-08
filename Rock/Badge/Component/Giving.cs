@@ -35,9 +35,19 @@ namespace Rock.Badge.Component
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Giving" )]
 
-    [AccountsField( "Accounts", "The accounts to limit this to, or leave blank to include all accounts", false, order: 1 )]
-    [DecimalField( "Minimum Amount", "The minimum contribution amount", required: false, order: 2 )]
-    [SlidingDateRangeField( "Date Range", "The date range in which the contributions were made.", defaultValue: "Last|6|Month||", required: false, order: 3 )]
+    [AccountsField( "Accounts",
+        Description = "The accounts to limit this to, or leave blank to include all accounts",
+        IsRequired = false,
+        Order = 1 )]
+    [DecimalField( "Minimum Amount",
+        Description = "The minimum contribution amount",
+        IsRequired = false,
+        Order = 2 )]
+    [SlidingDateRangeField( "Date Range",
+        Description = "The date range in which the contributions were made.",
+        DefaultValue = "Last|6|Month||",
+        IsRequired = false,
+        Order = 3 )]
     [CodeEditorField( "Lava Template",
         Description = "The lava template to use for the badge display",
         EditorMode = CodeEditorMode.Lava,

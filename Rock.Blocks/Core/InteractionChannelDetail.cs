@@ -77,6 +77,9 @@ namespace Rock.Blocks.Core
             <dl><dt>Component Cache Duration</dt><dd>{{ InteractionChannel.ComponentCacheDuration }}<dd/></dl>
         </div>
     {% endif %}
+    <div class='col-md-6'>
+        <dl><dt>Enable Component Daily Counts</dt><dd>{% if InteractionChannel.EnableComponentDailyCounts %}Yes{% else %}No{% endif %}<dd/></dl>
+    </div>
 </div>
 ",
        Order = 0 )]
@@ -217,6 +220,7 @@ namespace Rock.Blocks.Core
                 ComponentCacheDuration = entity.ComponentCacheDuration,
                 ComponentDetailTemplate = entity.ComponentDetailTemplate,
                 ComponentListTemplate = entity.ComponentListTemplate,
+                EnableComponentDailyCounts = entity.EnableComponentDailyCounts,
                 EngagementStrength = entity.EngagementStrength,
                 InteractionCustom1Label = entity.InteractionCustom1Label,
                 InteractionCustom2Label = entity.InteractionCustom2Label,
@@ -295,6 +299,9 @@ namespace Rock.Blocks.Core
 
             box.IfValidProperty( nameof( box.Bag.ComponentListTemplate ),
                 () => entity.ComponentListTemplate = box.Bag.ComponentListTemplate );
+
+            box.IfValidProperty( nameof( box.Bag.EnableComponentDailyCounts ),
+                () => entity.EnableComponentDailyCounts = box.Bag.EnableComponentDailyCounts );
 
             box.IfValidProperty( nameof( box.Bag.EngagementStrength ),
                 () => entity.EngagementStrength = box.Bag.EngagementStrength );

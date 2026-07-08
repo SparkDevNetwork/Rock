@@ -54,6 +54,13 @@ export type InteractionChannelBag = {
      */
     content?: string | null;
 
+    /**
+     * Gets or sets a value indicating whether the Rock Cleanup job should populate
+     * per-component daily aggregate rows in InteractionComponentDailyCount
+     * for components belonging to this channel.
+     */
+    enableComponentDailyCounts: boolean;
+
     /** Gets or sets the engagement strength. */
     engagementStrength?: number | null;
 

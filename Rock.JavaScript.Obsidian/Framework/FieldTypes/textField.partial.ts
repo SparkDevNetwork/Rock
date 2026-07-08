@@ -36,6 +36,9 @@ export const enum ConfigurationKey {
 
     /** Contains "True" if the text field should allow HTML content. */
     AllowHtml = "allowhtml",
+
+    /** Contains "True" if the text field should allow Lava content. */
+    AllowLava = "allowlava",
 }
 
 // The configuration component can be quite large, so load it only as needed.

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,8 +34,15 @@ namespace Rock.Follow.Event
     [Export( typeof( EventComponent ) )]
     [ExportMetadata( "ComponentName", "PersonFirstAttendedGroupType" )]
 
-    [GroupTypeField( "Group Type", "The group type to evaluate if person has just attended for the first time", true, order: 0 )]
-    [IntegerField( "Max Days Back", "Maximum number of days back to consider", false, 30, "", 1)]
+    [GroupTypeField( "Group Type",
+        Description = "The group type to evaluate if person has just attended for the first time",
+        IsRequired = true,
+        Order = 0 )]
+    [IntegerField( "Max Days Back",
+        Description = "Maximum number of days back to consider",
+        IsRequired = false,
+        DefaultIntegerValue = 30,
+        Order = 1 )]
     [Rock.SystemGuid.EntityTypeGuid( "F74232DD-62B6-4F04-BF5F-9E5CF159CD8B")]
     public class PersonFirstAttendedGroupType : EventComponent
     {

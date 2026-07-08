@@ -1,0 +1,253 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Edit Family"
+           saveText="Save"
+           isNarrow
+           :isSaveButtonDisabled="isLoading"
+           saveAutoDisable
+           saveAutoLoading
+           saveLoadingText="Saving..."
+           :onSave="onSave">
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <LoadingIndicator v-if="isLoading" />
+
+        <ContentSectionContainer v-else class="rapid-attendance-entry-edit-family" :sidebar="false">
+            <div v-if="hasMoved" class="well">
+                <RockLabel>Previous Address</RockLabel>
+                <div v-html="addressFormatted"></div>
+            </div>
+
+            <ContentSection light disableCollapse>
+                <div class="address-fields">
+                    <div class="address-header">
+                        <RockLabel>Address</RockLabel>
+
+                        <RockButton v-if="!hasMoved && address.street1"
+                                    :btnType="BtnType.Link"
+                                    :btnSize="BtnSize.ExtraSmall"
+                                    :disabled="isSaving"
+                                    @click="onMovedClick">
+                            <i class="ti ti-truck"></i> Moved To New Address
+                        </RockButton>
+                    </div>
+
+                    <AddressControl v-model="address" label="" :disabled="isSaving" :rules="hasMoved ? 'required' : ''" />
+
+                    <div class="flags">
+                        <InlineCheckBox v-model="isMailingLocation" label="Mailing Address" :disabled="isSaving" />
+                        <InlineCheckBox v-model="isPhysicalLocation" label="Physical Address" :disabled="isSaving" />
+                    </div>
+                </div>
+            </ContentSection>
+
+            <ContentSection v-if="Object.keys(attributes).length > 0"
+                            title="Family Attributes"
+                            icon="ti ti-binary-tree-2"
+                            disableCollapse>
+                <AttributeValuesContainer v-model="attributeValues"
+                                          :attributes="attributes"
+                                          isEditMode
+                                          :disabled="isSaving"
+                                          :numberOfColumns="1"
+                                          :showCategoryLabel="false" />
+            </ContentSection>
+        </ContentSectionContainer>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AddressControl from "@Obsidian/Controls/addressControl.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { Guid } from "@Obsidian/Types";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { RapidAttendanceEntryEditFamilyBag } from "@Obsidian/ViewModels/Blocks/CheckIn/RapidAttendanceEntry/rapidAttendanceEntryEditFamilyBag";
+    import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        /** Whether the modal is visible. */
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        /** The family being edited. */
+        familyGuid: {
+            type: String as PropType<Guid | null>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void,
+        (e: "saved"): void
+    }>();
+
+    // #region Values
+
+    const isVisible = ref(props.modelValue);
+    const isLoading = ref(false);
+    const isSaving = ref(false);
+    const errorMessage = ref("");
+
+    const address = ref<AddressControlBag>({});
+    const isMailingLocation = ref(true);
+    const isPhysicalLocation = ref(true);
+
+    /** The prior address, captured when the operator marks the family as moved. */
+    const previousAddress = ref<AddressControlBag | null>(null);
+
+    /** The family's home address as formatted HTML, shown as the Previous Address after a move. */
+    const addressFormatted = ref("");
+
+    const attributes = ref<Record<string, PublicAttributeBag>>({});
+    const attributeValues = ref<Record<string, string>>({});
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * Whether the family has been marked as moved, so a previous address is
+     * kept.
+     */
+    const hasMoved = computed((): boolean => previousAddress.value != null);
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * A fully-keyed empty address. AddressControl only syncs the keys it is
+     * given, so a partial object would leave the other fields stale.
+     */
+    function blankAddress(): AddressControlBag {
+        return { street1: "", street2: "", city: "", state: "", postalCode: "", country: "", locality: "" };
+    }
+
+    /** Loads the family's editable address, location flags, and attributes. */
+    async function load(): Promise<void> {
+        // Clean slate on each open so a cancelled edit doesn't linger.
+        errorMessage.value = "";
+        previousAddress.value = null;
+        address.value = blankAddress();
+        addressFormatted.value = "";
+        isMailingLocation.value = true;
+        isPhysicalLocation.value = true;
+        attributes.value = {};
+        attributeValues.value = {};
+
+        if (!props.familyGuid) {
+            return;
+        }
+
+        isLoading.value = true;
+
+        const response = await invokeBlockAction<RapidAttendanceEntryEditFamilyBag>("GetFamilyForEdit", {
+            familyGuid: props.familyGuid
+        });
+
+        isLoading.value = false;
+
+        if (!response.isSuccess || !response.data) {
+            errorMessage.value = response.errorMessage || "Unable to load the family.";
+            return;
+        }
+
+        address.value = { ...blankAddress(), ...response.data.address };
+        addressFormatted.value = response.data.addressFormatted ?? "";
+        isMailingLocation.value = response.data.isMailingLocation;
+        isPhysicalLocation.value = response.data.isPhysicalLocation;
+        attributes.value = response.data.attributes ?? {};
+        attributeValues.value = response.data.attributeValues ?? {};
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Stashes the current address as the prior one and clears it for the new
+     * entry.
+     */
+    function onMovedClick(): void {
+        if (!address.value.street1) {
+            return;
+        }
+
+        previousAddress.value = { ...address.value };
+        address.value = { ...blankAddress(), state: address.value.state, country: address.value.country };
+        isMailingLocation.value = true;
+    }
+
+    /** Saves the edited family, then notifies the parent and closes. */
+    async function onSave(): Promise<void> {
+        if (!props.familyGuid) {
+            return;
+        }
+
+        errorMessage.value = "";
+        isSaving.value = true;
+
+        try {
+            const bag: RapidAttendanceEntryEditFamilyBag = {
+                familyGuid: props.familyGuid,
+                address: address.value,
+                isMailingLocation: isMailingLocation.value,
+                isPhysicalLocation: isPhysicalLocation.value,
+                previousAddress: previousAddress.value,
+                attributeValues: attributeValues.value
+            };
+
+            const response = await invokeBlockAction("SaveFamily", { bag });
+
+            if (!response.isSuccess) {
+                errorMessage.value = response.errorMessage || "Unable to save the family.";
+                return;
+            }
+
+            emit("saved");
+            isVisible.value = false;
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // Load fresh each time the modal opens so a prior Cancel doesn't leak in.
+    watch(() => props.modelValue, async (value) => {
+        isVisible.value = value;
+
+        if (value) {
+            await load();
+        }
+    });
+
+    watch(isVisible, (value) => {
+        emit("update:modelValue", value);
+    });
+
+    // #endregion Watchers
+</script>

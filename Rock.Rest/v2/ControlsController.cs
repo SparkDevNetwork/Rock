@@ -6321,9 +6321,9 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "E3981034-6A58-48CB-85ED-F9900AA99934" )]
         public IActionResult GroupMemberRequirementCardGetConfig( [FromBody] GroupMemberRequirementCardGetConfigOptionsBag options )
         {
-            if ( options.GroupRequirementGuid.IsEmpty() || options.GroupMemberRequirementGuid.IsEmpty() )
+            if ( options.GroupRequirementGuid.IsEmpty() )
             {
-                return BadRequest( "GroupRequirementGuid and GroupMemberRequirementGuid are required." );
+                return BadRequest( "GroupRequirementGuid is required." );
             }
 
             using ( var rockContext = new RockContext() )
@@ -6332,7 +6332,7 @@ namespace Rock.Rest.v2
                 var groupRequirement = new GroupRequirementService( rockContext ).Get( options.GroupRequirementGuid );
                 var groupMemberRequirement = new GroupMemberRequirementService( rockContext ).Get( options.GroupMemberRequirementGuid );
 
-                if ( groupMemberRequirement == null || groupRequirement == null )
+                if ( groupRequirement == null )
                 {
                     return NotFound();
                 }
@@ -6403,7 +6403,7 @@ namespace Rock.Rest.v2
                     };
                 }
 
-                if ( groupMemberRequirement.WasOverridden )
+                if ( groupMemberRequirement?.WasOverridden == true )
                 {
                     results.IsOverridden = true;
                     results.OverriddenBy = groupMemberRequirement.OverriddenByPersonAlias.Person.FullName;
@@ -6877,7 +6877,7 @@ namespace Rock.Rest.v2
                                 MeetsGroupRequirement = requirementStatus.MeetsGroupRequirement,
                                 GroupRequirementGuid = requirementStatus.GroupRequirement.Guid,
                                 GroupRequirementTypeGuid = requirementStatus.GroupRequirement.GroupRequirementType.Guid,
-                                GroupMemberRequirementGuid = groupMemberRequirement.Guid,
+                                GroupMemberRequirementGuid = groupMemberRequirement?.Guid ?? Guid.Empty,
                                 GroupMemberRequirementDueDate = requirementStatus.RequirementDueDate?.ToShortDateString(),
                                 CanOverride = leaderCanOverride || hasPermissionToOverride
                             };
@@ -7723,16 +7723,25 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "LocationItemPickerGetActiveChildren" )]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<TreeItemBag> ) )]
         [Rock.SystemGuid.RestActionGuid( "E57312EC-92A7-464C-AA7E-5320DDFAEF3D" )]
         public IActionResult LocationItemPickerGetActiveChildren( [FromBody] LocationItemPickerGetActiveChildrenOptionsBag options )
         {
+            var isReadAllowed = IsCurrentPersonAuthorized( Authorization.EXECUTE_READ );
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            // If they were granted access to the API endpoint or if they were
+            // granted access via the security grant, then allow them to get a
+            // list of named locations.
+            if ( !isReadAllowed && grant?.IsAccessGranted( LocationItemPickerSecurityGrantRule.AccessInstance, Authorization.VIEW ) != true )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var locationService = new LocationService( rockContext );
-                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
                 var locationNameList = LocationItemPickerGetChildrenInternal(
                     options.Guid,
@@ -8370,7 +8379,7 @@ namespace Rock.Rest.v2
                 WriteInteraction = options.PlayerOptions.WriteInteraction
             };
 
-            playerOptions.UpdateValuesFromMedia( null, options.MediaElementGuid, options.AutoResumeInDays, options.CombinePlayStatisticsInDays, RockRequestContext.CurrentPerson, RockRequestContext.CurrentVisitorId );
+            playerOptions.UpdateValuesFromMedia( null, options.MediaElementGuid, options.AutoResumeInDays ?? 0, options.CombinePlayStatisticsInDays ?? 0, RockRequestContext.CurrentPerson, RockRequestContext.CurrentVisitorId );
 
             return Ok( playerOptions );
         }
@@ -10637,6 +10646,26 @@ namespace Rock.Rest.v2
             {
                 if ( isAnonymous )
                 {
+                    /*
+                        06/16/26 - JMH
+
+                        Saving anonymously creates a Database (username/password) login. If Database
+                        authentication is not active, that login can never be used to sign in, so refuse
+                        rather than create an orphaned, unusable credential. The Registration Entry UI
+                        hides this case; this enforces it for callers that bypass the UI.
+
+                        Reason: Prevent unusable Database logins on Passwordless-only sites.
+                    */
+                    if ( AuthenticationContainer.GetComponent( SystemGuid.EntityType.AUTHENTICATION_DATABASE )?.IsActive != true )
+                    {
+                        return new SaveFinancialAccountFormSaveAccountResultBag
+                        {
+                            Title = "Cannot Save Account",
+                            Detail = "Saving a payment method requires an account login, which is not available on this site.",
+                            IsSuccess = false
+                        };
+                    }
+
                     if ( options.Username.IsNullOrWhiteSpace() || options.Password.IsNullOrWhiteSpace() )
                     {
                         return new SaveFinancialAccountFormSaveAccountResultBag

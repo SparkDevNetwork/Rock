@@ -62,13 +62,6 @@
     </Modal>
 </template>
 
-<style>
-/* The block surfaces requirement status inside its own UI; the global
-   "Group has requirements" badge is redundant chrome. */
-.rockbadge[data-original-title="Group has requirements."] {
-    display: none;
-}
-</style>
 
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useReloadBlock } from "@Obsidian/Utility/block";

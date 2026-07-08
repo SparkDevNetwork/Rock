@@ -334,7 +334,7 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection v-if="groupTypeOptions.isOverallScheduleStackVisible || groupTypeOptions.isSchedulingEnabled"
+        <ContentSection v-if="isMeetingAndSchedulingSectionVisible"
                         title="Meeting &amp; Scheduling Details" icon="ti ti-calendar-month">
 
             <ContentStack v-if="groupTypeOptions.isOverallScheduleStackVisible"
@@ -530,17 +530,6 @@
     </ContentSectionContainer>
 </template>
 
-<style scoped>
-.static-compact :deep(.form-group.static-control .form-control-static) {
-    padding: 0;
-    min-height: 0;
-}
-
-.relationship-matrix > :nth-child(n+7) {
-    margin-top: 0.75rem;
-}
-</style>
-
 <script setup lang="ts">
     import { combineFlagValues, extractFlagValues, formatPercent, formatTimeValue, inheritOverrideToRadioValue, intToPercent, nullableInt, parseTimeString, percentToInt, radioValueToInheritOverride, scrollNotificationIntoView, useInvokeGroupDetailBlockAction } from "./utils.partial";
     import { ScheduleCoordinatorNotificationType, ScheduleCoordinatorNotificationTypeDescription } from "@Obsidian/Enums/Group/scheduleCoordinatorNotificationType";
@@ -557,6 +546,7 @@
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { ParentGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/parentGroupBag";
     import { ScheduleType, ScheduleTypeDescription } from "@Obsidian/Enums/Group/scheduleType";
+    import { GroupLocationPickerMode } from "@Obsidian/Enums/Group/groupLocationPickerMode";
     import { GroupSyncBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupSyncBag";
     import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
@@ -825,6 +815,23 @@
             || isTrailblazerMode                                                           // Require Signed Document (trailblazerField)
             || (options.isGroupSpecificRecordSourceVisible === true && isTrailblazerMode)  // Member Record Source
             || props.isCurrentPersonGroupAdministrator === true;                           // Enable as Security Role
+    });
+
+    /**
+     * Whether the Meeting & Scheduling section has any visible child. The
+     * section wraps three independently-gated children, so the whole section is
+     * hidden when none of them would render. Mirrors the per-child conditions in
+     * the template — keep this in sync with those gates. Notably, the Locations
+     * panel is driven by LocationSelectionMode alone, independent of scheduling,
+     * matching the WebForms "Meeting Details" panel.
+     */
+    const isMeetingAndSchedulingSectionVisible = computed((): boolean => {
+        const options = props.groupTypeOptions;
+
+        return options.isOverallScheduleStackVisible === true                  // Overall Group Schedule stack
+            || options.locationSelectionMode !== GroupLocationPickerMode.None  // Locations panel
+            || options.isSchedulingEnabled === true                            // Member Scheduling & Check-in stack
+            || options.isCheckInRequirementsVisible === true;                  // Member Scheduling & Check-in stack
     });
 
     /**

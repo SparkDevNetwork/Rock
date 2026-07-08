@@ -21,7 +21,6 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.Cms.StructuredContent;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Lms;
@@ -31,8 +30,8 @@ using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Lms.LearningClassActivityCompletionDetail;
 using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;
+using Rock.ViewModels.Blocks.Lms.LearningClassActivityCompletionDetail;
 using Rock.ViewModels.Blocks.Lms.LearningClassActivityDetail;
 using Rock.ViewModels.Blocks.Lms.LearningGradingSystemScaleDetail;
 using Rock.ViewModels.Utility;
@@ -314,7 +313,8 @@ namespace Rock.Blocks.Lms
                 IsStudentCommentingEnabled = entity.LearningClassActivity.IsStudentCommentingEnabled,
                 Name = entity.LearningClassActivity.Name,
                 Order = entity.LearningClassActivity.Order,
-                Points = entity.LearningClassActivity.Points
+                Points = entity.LearningClassActivity.Points,
+                RetakeThreshold = entity.LearningClassActivity.RetakeThreshold
             };
 
             var completionData = entity.ActivityComponentCompletionJson.FromJsonOrNull<Dictionary<string, string>>()
@@ -663,6 +663,25 @@ namespace Rock.Blocks.Lms
             }
 
             var isNew = entity.Id == 0;
+
+            // Manual path: the facilitator chose to assign a retake while grading. Reset the activity
+            // to a not-yet-completed state. The entered grade is intentionally discarded with the
+            // deleted completion.
+            if ( box.Bag.IsRetakeAssigned )
+            {
+                var completionService = new LearningClassActivityCompletionService( RockContext );
+
+                // Build the notification before the completion is deleted, but send it only after the
+                // retake is committed, so a failed save never produces a "Retake Required" message.
+                var retakeNotification = completionService.PrepareRetakeRequiredNotification( entity );
+
+                completionService.AssignRetake( entity );
+                RockContext.SaveChanges();
+
+                retakeNotification?.Send();
+
+                return ActionOk( ParentPageUrl() );
+            }
 
             RockContext.SaveChanges();
 

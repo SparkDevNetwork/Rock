@@ -39,7 +39,13 @@ namespace Rock.Badge.Component
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Alert Note" )]
 
-    [NoteTypeField( "Note Types", "The note types you want to look for alerts on.", true, "Rock.Model.Person", "", "", true, Rock.SystemGuid.NoteType.PERSON_TIMELINE_NOTE, order: 0 )]
+    [NoteTypeField( "Note Types",
+        Description = "The note types you want to look for alerts on.",
+        AllowMultiple = true,
+        EntityType = typeof( Rock.Model.Person ),
+        IsRequired = true,
+        DefaultValue = SystemGuid.NoteType.PERSON_TIMELINE_NOTE,
+        Order = 0 )]
     [CodeEditorField( "Badge Content",
         Description = "",
         EditorMode = CodeEditorMode.Lava,

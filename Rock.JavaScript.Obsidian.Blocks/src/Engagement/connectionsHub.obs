@@ -11,9 +11,10 @@
                              :btnSize="BtnSize.ExtraSmall" />
                 <div class="slicer-content-right">
                     <DropDownList v-if="!isMyConnectionsView"
-                                  v-model="areOnlyMyRequestsVisible"
-                                  :items="requestToggleItems"
-                                  :showBlankItem="false" />
+                                  v-model="selectedConnector"
+                                  :items="staticConnectionTypeOptions?.connectorKeyItems ?? []"
+                                  blankValue="All Requests"
+                                  enhanceForLongLists />
                     <DropDownList v-else-if="!selectedOpportunity"
                                   v-model="selectedType"
                                   :items="box.options?.connectionTypeItems ?? []"
@@ -759,7 +760,7 @@
     </ReminderModal>
 
     <AssignRequestModal v-model:visible="isAssignRequestModalVisible"
-                        :connectorItems="bulkConnectionTypeOptions?.allPossibleConnectors ?? []"
+                        :connectorItems="bulkConnectionTypeOptions?.connectorAliasItems ?? []"
                         :requestDetails="requestDetailsForModal"
                         :viewOptions="viewOptions"
                         :isSaving="isModalSaving"
@@ -787,7 +788,7 @@
                         @close="onModalErrorMessageDismissed"
                         @deleteRequests="deleteRequestsFromModal" />
     <ActivityModal v-model:visible="isActivityModalVisible"
-                   :connectorItems="activeActionConnectionTypeOptions?.allPossibleConnectors ?? []"
+                   :connectorItems="activeActionConnectionTypeOptions?.connectorAliasItems ?? []"
                    :requestDetails="requestDetailsForModal"
                    :connectionActivities="connectionActivityItems ?? []"
                    :viewOptions="viewOptions"
@@ -826,6 +827,8 @@
     <SendEmailModal v-model:visible="isSendEmailModalVisible"
                     :communicationRecipients="communicationRecipients"
                     :communicationTemplates="communicationTemplates"
+                    :fromName="emailFromName"
+                    :fromEmail="emailFromEmail"
                     @onSuccessfulSend="refreshActivityEntries(dockedPanelDetailsBox?.entity?.connectionRequestIdKey)" />
     <ViewOptionsModal :modelValue="viewOptionsForModal"
                       @update:modelValue="onViewOptionsUpdate"
@@ -1074,6 +1077,7 @@ i.disabled {
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
     import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
@@ -1157,6 +1161,7 @@ i.disabled {
     import { removeCurrentUrlQueryParams } from "@Obsidian/Utility/url";
     import { ConnectionRequestDetailBox } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestDetailBox";
     import { ConnectionListUpdateBox } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionListUpdateBox";
+    import { ConnectionsHubGridDataBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubGridDataBag";
     import { TransferConnectionRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/transferConnectionRequestBag";
     import TransferConnectionRequestModal from "./ConnectionsHub/transferConnectionRequestModal.partial.obs";
     import { TransferConnectionRequestDetailsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/transferConnectionRequestDetailsBag";
@@ -1295,24 +1300,9 @@ i.disabled {
 
     // Context Slicer configuration
     const selectedCampus = ref<ListItemBag | null>(null);
-    const areOnlyMyRequestsVisible = ref<string>(isNullOrWhiteSpace(preferences.getValue(PreferenceKey.AreOnlyMyRequestsVisible)) ? "true" : preferences.getValue(PreferenceKey.AreOnlyMyRequestsVisible));
+    const selectedConnector = ref<string>(isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedConnector)) ? (store.state.currentPerson?.idKey ?? "") : preferences.getValue(PreferenceKey.SelectedConnector));
     const internalSelectedType = ref(preferences.getValue(PreferenceKey.FilterConnectionType));
     const internalSelectedOpportunity = ref(box.options?.connectionOpportunityGuidFromPageParameter ?? preferences.getValue(getConnectionFilterKey(PreferenceKey.ConnectionmOpportunityFilterConnectionTypeIdKey)));
-    const internalSelectedConnector = ref<ListItemBag | null | undefined>(box.options?.selectedConnector);
-    const requestToggleItems = ref<ListItemBag[]>([
-        {
-            text: "My Requests",
-            value: "true"
-        },
-        {
-            text: "All Requests",
-            value: "false"
-        }
-    ]);
-    if (internalSelectedConnector.value?.value && !isNullOrWhiteSpace(internalSelectedConnector.value.value)) {
-        requestToggleItems.value.push(internalSelectedConnector.value);
-        areOnlyMyRequestsVisible.value = internalSelectedConnector.value.value;
-    }
 
     // Add Connection Request Configuration
     const newConnectionRequest = ref<ValidPropertiesBox<ConnectionRequestBag>>({ bag: { connectionOpportunityGuid: internalSelectedOpportunity.value, campusGuid: selectedCampus.value?.value } as ConnectionRequestBag });
@@ -1332,6 +1322,13 @@ i.disabled {
     const isDetailActionDropdownOpen = ref<boolean>(false);
     // Holds the raw grid data returned from the server
     const gridData = ref<GridDataBag>();
+
+    /**
+     * Grouping metadata for connectors discovered from grid data and row updates
+     * that are not part of the block-load connector groupings, e.g. a connector
+     * who is not a member of any connector group. Keyed by grouping key.
+     */
+    const supplementalConnectorGroupings = ref<Record<string, GroupingFieldBag>>({});
     const requestListErrorMessage = ref<string>("");
     const areRequestsLoading = ref<boolean>(true);
     const isSnapshotVisible = ref<boolean>(false);
@@ -1382,6 +1379,8 @@ i.disabled {
     const smsFromSystemPhoneNumbers = ref<ListItemBag[]>([]);
     const smsSnippets = ref<ListItemBag[]>([]);
     const communicationTemplates = ref<CommunicationTemplateBag[]>([]);
+    const emailFromName = ref<string>("");
+    const emailFromEmail = ref<string>("");
 
     // Flyout Configuration
     const isFlyoutOpen = ref(false);
@@ -1636,6 +1635,22 @@ i.disabled {
             }));
         }
 
+        // Union in connectors discovered from grid data and row updates that are
+        // not part of the block-load connector groupings. Without this the grouped
+        // panel would fall back to showing the raw grouping key as the group label.
+        const connectorGroups = result["connectorGrouping"];
+        if (connectorGroups) {
+            const knownKeys = new Set(connectorGroups.map(g => g.key));
+            for (const bag of Object.values(supplementalConnectorGroupings.value)) {
+                if (bag.key && !knownKeys.has(bag.key)) {
+                    connectorGroups.push({
+                        ...bag,
+                        gridData: { rows: [] }
+                    });
+                }
+            }
+        }
+
         return result;
     });
 
@@ -1714,7 +1729,7 @@ i.disabled {
             .filter(v => inScopeGridDataToShowValues.value.has(v)),
     }));
 
-    const skeletonCount = computed<number>(() => selectedGrouping.value === "connectorGrouping" && asBoolean(areOnlyMyRequestsVisible.value) ? 1 : 3);
+    const skeletonCount = computed<number>(() => selectedGrouping.value === "connectorGrouping" && !isNullOrWhiteSpace(selectedConnector.value) && selectedConnector.value !== "All Requests" ? 1 : 3);
 
     const allSelectedKeys = computed(() => Object.values(selectedKeys.value).flat());
     const allSelectedKeySet = computed(() => new Set(allSelectedKeys.value));
@@ -2064,19 +2079,15 @@ i.disabled {
         }
 
         // Connector filter
-        if (areOnlyMyRequestsVisible.value !== "false") {
+        if (!isNullOrWhiteSpace(selectedConnector.value) && selectedConnector.value !== "All Requests") {
             const connectorValue = row["connectorDetails"] as ListItemBag | undefined;
 
             if (!connectorValue || typeof connectorValue !== "object") {
                 return false;
             }
 
-            if (areOnlyMyRequestsVisible.value === "true" && currentPerson.value?.idKey === connectorValue?.value) {
-                return true;
-            }
-
-            // Check against the selected connector defined when the block was loaded.
-            return connectorValue?.value === box.options?.selectedConnectorIdKey;
+            // Check against the selected connector filter.
+            return connectorValue?.value === selectedConnector.value;
         }
 
         // Campus Filter
@@ -3297,10 +3308,11 @@ i.disabled {
     async function loadGridData(): Promise<void> {
         gridData.value = undefined;
         areRequestsLoading.value = true;
-        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+        const result = await invokeBlockAction<ConnectionsHubGridDataBag>("GetGridData");
 
-        if (result.isSuccess && result.data) {
-            gridData.value = reactive(result.data);
+        if (result.isSuccess && result.data?.gridData) {
+            gridData.value = reactive(result.data.gridData);
+            mergeConnectorGroupings(result.data.connectorGroupings);
         }
         else {
             requestListErrorMessage.value = result.errorMessage ?? "Error loading grid data.";
@@ -3495,6 +3507,33 @@ i.disabled {
         flyoutAnchorEl.value = null;
     }
 
+    /**
+     * Merges connector grouping metadata returned by block actions into the
+     * supplemental groupings map so connectors that are missing from the
+     * block-load groupings list still render with a labeled group.
+     *
+     * @param bags The connector grouping bags to merge. Null entries are skipped.
+     */
+    function mergeConnectorGroupings(bags: (GroupingFieldBag | null | undefined)[] | null | undefined): void {
+        if (!bags) {
+            return;
+        }
+
+        let hasNewEntries = false;
+        const merged = { ...supplementalConnectorGroupings.value };
+
+        for (const bag of bags) {
+            if (bag?.key && !merged[bag.key]) {
+                merged[bag.key] = bag;
+                hasNewEntries = true;
+            }
+        }
+
+        if (hasNewEntries) {
+            supplementalConnectorGroupings.value = merged;
+        }
+    }
+
     function syncGridData(gridRow: Record<string, unknown>): void {
         if (!gridRow) {
             return;
@@ -3579,6 +3618,9 @@ i.disabled {
         if (result.isSuccess && result.data?.communicationRecipients?.length) {
             communicationRecipients.value = result.data.communicationRecipients;
             communicationTemplates.value = result.data.communicationTemplates ?? [];
+            // Set the default sender values before opening so the modal can seed its From fields on the open edge.
+            emailFromName.value = result.data.fromName ?? "";
+            emailFromEmail.value = result.data.fromEmail ?? "";
             isSendEmailModalVisible.value = true;
         }
         else {
@@ -3586,7 +3628,9 @@ i.disabled {
             // TODO - Show error message to user
             communicationRecipients.value = null;
             communicationTemplates.value = [];
-            isSendEmailModalVisible.value = true;
+            emailFromName.value = "";
+            emailFromEmail.value = "";
+            isSendEmailModalVisible.value = false;
         }
     }
 
@@ -4118,6 +4162,8 @@ i.disabled {
                     syncGridData(result.data.gridRow);
                 }
 
+                mergeConnectorGroupings([result.data.connectorGroupingField]);
+
                 dockedPanelDetailsBox.value = result.data.detailBox;
 
                 connectionRequestDockedPanelRef.value?.setEditMode(false);
@@ -4208,6 +4254,8 @@ i.disabled {
                     }
                 }
 
+                mergeConnectorGroupings(result.data.map(u => u.connectorGroupingField));
+
                 // Need to validate the updated rows still meet server filter requirements.
                 applyServerFilters();
 
@@ -4254,6 +4302,8 @@ i.disabled {
                     syncGridData(result.data.gridRow);
                 }
 
+                mergeConnectorGroupings([result.data.connectorGroupingField]);
+
                 dockedPanelDetailsBox.value = result.data.detailBox;
 
                 isTransferModalVisible.value = false;
@@ -4291,6 +4341,8 @@ i.disabled {
                 if (result.data.gridRow) {
                     syncGridData(result.data.gridRow);
                 }
+
+                mergeConnectorGroupings([result.data.connectorGroupingField]);
 
                 isAddConnectionRequestModalVisible.value = false;
                 return;
@@ -4353,6 +4405,8 @@ i.disabled {
                 row.connectorGrouping = updateBag.connectorGrouping;
                 row.connectorDetails = updateBag.connectorDetails;
             }
+
+            mergeConnectorGroupings(result.data.map(u => u.connectorGroupingField));
 
             // Need to validate the updated rows still meet server filter requirements.
             applyServerFilters();
@@ -4436,6 +4490,12 @@ i.disabled {
     }
 
     async function getConnectionRequestDetails(requestIdKey: string): Promise<void> {
+        // Explicitly enter the loading state before fetching. We cannot rely on the docked
+        // panel's detailsBox watch to do this, because when the previous request errored the
+        // details box is already undefined, so re-assigning undefined below is not a reference
+        // change and the watch never fires to show the loading skeleton.
+        connectionRequestDockedPanelRef.value?.setIsLoading(true);
+
         dockedPanelDetailsBox.value = undefined;
 
         const result = await invokeBlockAction<ConnectionRequestDetailBox>("GetConnectionRequestDetails", { connectionRequestIdKey: requestIdKey });
@@ -4531,21 +4591,10 @@ i.disabled {
         }
     });
 
-    watch(areOnlyMyRequestsVisible, async () => {
-        // This prevents saving a "Selected Connector" as this person prefernce
-        if (areOnlyMyRequestsVisible.value !== "true" && areOnlyMyRequestsVisible.value !== "false") {
-            return;
-        }
+    watch(selectedConnector, async () => {
+        preferences.setValue(PreferenceKey.SelectedConnector, selectedConnector.value);
 
-        preferences.setValue(PreferenceKey.AreOnlyMyRequestsVisible, areOnlyMyRequestsVisible.value);
-
-        const connectorIndex = requestToggleItems.value.findIndex(i => i.value !== "true" && i.value !== "false");
-        if (connectorIndex !== -1) {
-            // Clears the selected connector person preference, removes their item from the dropdown, and clears the query param.
-            preferences.setValue(PreferenceKey.SelectedConnector, "");
-            requestToggleItems.value.splice(connectorIndex, 1);
-            removeCurrentUrlQueryParams("Connector");
-        }
+        removeCurrentUrlQueryParams("Connector");
 
         await preferences.save();
 

@@ -1,0 +1,267 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSection title="Person Details" icon="ti ti-user-circle" disableCollapse>
+        <ContentStack>
+            <div class="rapid-attendance-entry-person-nav">
+                <span class="rapid-attendance-entry-person-nav-label">View Details For</span>
+
+                <TabbedBar :modelValue="selectedPersonGuid ?? ''"
+                           :tabs="personTabs"
+                           type="pills"
+                           allowPillWrapping
+                           @update:modelValue="onPersonSelected">
+                    <template #tab="{ tab }">
+                        <span class="rapid-attendance-entry-person-tab">
+                            <img :src="photoUrlFor(tab as ListItemBag) ?? ''"
+                                 class="rapid-attendance-entry-person-tab-avatar"
+                                 alt="" />
+                            {{ (tab as ListItemBag).text }}
+                        </span>
+                    </template>
+                </TabbedBar>
+            </div>
+        </ContentStack>
+
+        <ContentStack v-if="headerHtml">
+            <div class="rapid-attendance-entry-person-header-row">
+                <div class="rapid-attendance-entry-person-header" v-html="headerHtml"></div>
+
+                <RockButton :btnType="BtnType.Default"
+                            :btnSize="BtnSize.Small"
+                            title="Edit Person"
+                            @click="onEditPersonClick">
+                    <i class="ti ti-pencil"></i>
+                </RockButton>
+            </div>
+        </ContentStack>
+
+        <ContentStack v-if="hasPersonInputSections">
+            <div v-if="workflowItems && workflowItems.length" class="rapid-attendance-entry-person-section">
+                <h5 class="rapid-attendance-entry-person-subheader">
+                    <i class="ti ti-list-check"></i>
+                    {{ workflowListTitle || "Workflows" }}
+                </h5>
+
+                <CheckBoxList v-model="input.workflowTypeGuids"
+                              :items="workflowItems"
+                              :repeatColumns="2" />
+            </div>
+
+            <div v-if="connectionOpportunityItems && connectionOpportunityItems.length" class="rapid-attendance-entry-person-section">
+                <h5 class="rapid-attendance-entry-person-subheader">
+                    <i class="ti ti-plug"></i>
+                    {{ connectionOpportunitiesListTitle || "Connection Opportunities" }}
+                </h5>
+
+                <CheckBoxList v-model="input.connectionOpportunityGuids"
+                              :items="connectionOpportunityItems"
+                              :repeatColumns="2" />
+            </div>
+
+            <div v-if="noteTypeItems && noteTypeItems.length" class="rapid-attendance-entry-person-section">
+                <h5 class="rapid-attendance-entry-person-subheader">
+                    <i class="ti ti-note"></i>
+                    Notes
+                </h5>
+
+                <DropDownList v-if="noteTypeItems.length > 1"
+                              v-model="input.noteTypeGuid"
+                              label="Note Type"
+                              inputClasses="input-width-lg"
+                              :items="noteTypeItems"
+                              :showBlankItem="false" />
+
+                <TextBox v-model="input.noteText"
+                         textMode="multiline"
+                         :rows="4"
+                         :disabled="!input.noteTypeGuid" />
+            </div>
+
+            <div v-if="prayerOptions" class="rapid-attendance-entry-person-section">
+                <h5 class="rapid-attendance-entry-person-subheader">
+                    <i class="ti ti-pray"></i>
+                    Prayer Request
+                </h5>
+
+                <CategoryPicker v-if="prayerOptions.isCategoryPickerShown"
+                                v-model="input.prayerCategory"
+                                label="Category"
+                                :entityTypeGuid="EntityType.PrayerRequest" />
+
+                <TextBox v-model="input.prayerText"
+                         textMode="multiline"
+                         :rows="4" />
+
+                <div v-if="hasPrayerFlags" class="rapid-attendance-entry-prayer-flags">
+                    <InlineCheckBox v-if="prayerOptions.isUrgentFlagShown"
+                                    v-model="input.isUrgent"
+                                    label="Urgent" />
+
+                    <InlineCheckBox v-if="prayerOptions.isPublicFlagShown"
+                                    v-model="input.isPublic"
+                                    label="Public" />
+                </div>
+            </div>
+        </ContentStack>
+    </ContentSection>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, watch } from "vue";
+    import { PersonInputState } from "./types.partial";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { Guid } from "@Obsidian/Types";
+    import { RapidAttendanceEntryPersonBag } from "@Obsidian/ViewModels/Blocks/CheckIn/RapidAttendanceEntry/rapidAttendanceEntryPersonBag";
+    import { RapidAttendanceEntryPrayerOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/RapidAttendanceEntry/rapidAttendanceEntryPrayerOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        /** The family members offered as navigation pills. */
+        members: {
+            type: Array as PropType<RapidAttendanceEntryPersonBag[]>,
+            default: () => []
+        },
+
+        /** The guid of the person whose details are shown. */
+        selectedPersonGuid: {
+            type: String as PropType<Guid | null>,
+            default: null
+        },
+
+        /** The rendered personal summary for the selected person. */
+        headerHtml: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /**
+         * The selected person's entries. Mutated in place; the parent owns
+         * the per-person map.
+         */
+        input: {
+            type: Object as PropType<PersonInputState>,
+            required: true
+        },
+
+        /** The label displayed above the workflow checkbox list. */
+        workflowListTitle: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** The workflows offered as checkboxes. Empty hides the section. */
+        workflowItems: {
+            type: Array as PropType<ListItemBag[] | null>,
+            default: null
+        },
+
+        /** The note types offered in the Note section. Empty hides the section. */
+        noteTypeItems: {
+            type: Array as PropType<ListItemBag[] | null>,
+            default: null
+        },
+
+        /** The label displayed above the Connection Opportunities checkbox list. */
+        connectionOpportunitiesListTitle: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /**
+         * The connection opportunities offered as checkboxes. Empty hides
+         * the section.
+         */
+        connectionOpportunityItems: {
+            type: Array as PropType<ListItemBag[] | null>,
+            default: null
+        },
+
+        /** The prayer request configuration. Null hides the section. */
+        prayerOptions: {
+            type: Object as PropType<RapidAttendanceEntryPrayerOptionsBag | null>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:selectedPersonGuid", personGuid: Guid): void,
+        (e: "editPerson"): void
+    }>();
+
+    // #region Computed Values
+
+    /** Whether any per-person input group (workflows, connections, notes, prayer) is configured. */
+    const hasPersonInputSections = computed((): boolean =>
+        !!(
+            props.workflowItems?.length
+            || props.connectionOpportunityItems?.length
+            || props.noteTypeItems?.length
+            || props.prayerOptions
+        )
+    );
+
+    /** The family members as tab items for the person navigation. */
+    const personTabs = computed((): ListItemBag[] =>
+        props.members.map(m => ({ value: m.personGuid, text: m.nickName }))
+    );
+
+    /** Whether any prayer flags are shown for the selected person. */
+    const hasPrayerFlags = computed((): boolean =>
+        !!(
+            props.prayerOptions
+            && (
+                props.prayerOptions.isPublicFlagShown
+                || props.prayerOptions.isUrgentFlagShown
+            )
+        )
+    );
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /** Selects the tab's person for detail viewing. */
+    function onPersonSelected(personGuid: string): void {
+        if (personGuid !== props.selectedPersonGuid) {
+            emit("update:selectedPersonGuid", personGuid);
+        }
+    }
+
+    /** Asks the parent to open the edit-person flow for the selected individual. */
+    function onEditPersonClick(): void {
+        emit("editPerson");
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /** The photo URL for the given person tab, shown as the tab avatar. */
+    function photoUrlFor(tab: ListItemBag): string | null | undefined {
+        return props.members.find(m => m.personGuid === tab.value)?.photoUrl;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // Clearing the note type empties the note, matching the disabled input.
+    watch(() => props.input.noteTypeGuid, () => {
+        if (!props.input.noteTypeGuid) {
+            props.input.noteText = "";
+        }
+    });
+
+    // #endregion Watchers
+</script>

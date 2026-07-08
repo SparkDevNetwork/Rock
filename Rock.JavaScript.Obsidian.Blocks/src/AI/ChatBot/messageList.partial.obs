@@ -1,5 +1,5 @@
 <template>
-    <div class="well messages-container"
+    <div class="messages-container"
          ref="messagesContainer"
          :style="{ paddingBottom: bottomPadding + 'px' }">
         <div v-for="(message, index) in messages"
@@ -46,7 +46,7 @@
              :class="getMessageClass(liveMessage)">
             <div v-if="liveMessage.tool" class="message-preamble">
                 {{ liveMessage.tool }}
-                <span class="ti ti-loader fa fa-spin"></span>
+                <span class="ti ti-loader ti-spin"></span>
             </div>
 
             <div v-else class="message-text" v-html="parseMarkdown(liveMessage.message ?? '')"></div>
@@ -54,7 +54,7 @@
 
         <div v-else-if="isSending"
              class="message-thinking">
-            <span class="ti ti-loader fa fa-spin"></span>
+            <span class="ti ti-loader ti-spin"></span>
         </div>
     </div>
 </template>

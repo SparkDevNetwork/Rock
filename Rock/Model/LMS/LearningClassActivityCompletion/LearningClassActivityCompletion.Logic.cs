@@ -193,6 +193,17 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Determines whether the earned score is below the activity's configured Retake Threshold.
+        /// A null threshold (retakes disabled) or an as-yet-unscored completion returns false, so a
+        /// retake is never warranted until there is a final score to compare.
+        /// </summary>
+        [NotAudited]
+        internal bool IsScoreBelowRetakeThreshold =>
+            LearningClassActivity?.RetakeThreshold != null
+            && PointsEarned.HasValue
+            && PointsEarned.Value < LearningClassActivity.RetakeThreshold.Value;
+
+        /// <summary>
         /// Gets the parent authority.
         /// </summary>
         /// <value>

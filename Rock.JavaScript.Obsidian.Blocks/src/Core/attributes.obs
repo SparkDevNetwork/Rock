@@ -581,9 +581,10 @@
             usedKeyNames.value = usedKeyNames.value.filter(k => k !== editableAttribute.value?.key);
         }
         else {
-            if (editableAttribute.value?.key && !usedKeyNames.value.some(k => k === editableAttribute.value?.key)) {
-                usedKeyNames.value.push(editableAttribute.value.key);
-            }
+            // Rebuild from the authoritative grid rows so a cancelled key change
+            // cannot leave a phantom edited key reserved or drop the real sibling
+            // key. Saves have already been committed to gridData.rows.
+            usedKeyNames.value = (gridData?.rows ?? []).map(attr => attr.key);
         }
     });
 

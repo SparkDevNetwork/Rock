@@ -31,7 +31,6 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks.Communication.SmsPipelineDetail;
 using Rock.ViewModels.Utility;
-using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Communication
@@ -48,7 +47,7 @@ namespace Rock.Blocks.Communication
 
     [Rock.SystemGuid.EntityTypeGuid( "B4ECD5B6-6F61-4B49-8FF2-C4F03C5A9F4F" )]
     [Rock.SystemGuid.BlockTypeGuid( "44C32EB7-4DA3-4577-AC41-E3517442E269" )]
-    public class SmsPipelineDetail : RockBlockType, IBreadCrumbBlock
+    public class SmsPipelineDetail : RockBlockType
     {
         #region Keys
 
@@ -865,39 +864,5 @@ namespace Rock.Blocks.Communication
         }
 
         #endregion Block Actions
-
-        #region IBreadCrumbBlock
-
-        /// <inheritdoc/>
-        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
-        {
-            var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
-            var entityKey = pageReference.GetPageParameter( PageParameterKey.SmsPipelineId );
-            var arePredictableIdsEnabled = !PageCache.Layout.Site.DisablePredictableIds;
-
-            if ( entityKey.IsNullOrWhiteSpace() || entityKey == "0" )
-            {
-                return new BreadCrumbResult
-                {
-                    BreadCrumbs = new List<IBreadCrumb>
-                    {
-                        new BreadCrumbLink( "New SMS Pipeline", breadCrumbPageRef )
-                    }
-                };
-            }
-
-            var title = new SmsPipelineService( RockContext )
-                .GetSelect( entityKey, p => p.Name, arePredictableIdsEnabled );
-
-            return new BreadCrumbResult
-            {
-                BreadCrumbs = new List<IBreadCrumb>
-                {
-                    new BreadCrumbLink( title ?? "New SMS Pipeline", breadCrumbPageRef )
-                }
-            };
-        }
-
-        #endregion IBreadCrumbBlock
     }
 }

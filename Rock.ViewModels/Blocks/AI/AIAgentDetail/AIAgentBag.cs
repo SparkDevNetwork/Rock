@@ -43,7 +43,7 @@ namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
         /// when a new user message is added. This only applies to persisted
         /// sessions.
         /// </summary>
-        public int AutoSummarizeThreshold { get; set; }
+        public int? AutoSummarizeThreshold { get; set; }
 
         /// <summary>
         /// The binary file that contains the image to use as the avatar to

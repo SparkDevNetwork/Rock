@@ -43,8 +43,8 @@ namespace Rock.Blocks.Types.Mobile.Events
     #region Block Attributes
 
     [GroupCategoryField( "Communication List Categories",
-        allowMultiple: true,
-        groupTypeGuid: Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST,
+        AllowMultiple = true,
+        GroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST,
         Description = "Select the categories of the communication lists to display, or select none to show all that the user is authorized to view.",
         IsRequired = false,
         Key = AttributeKeys.CommunicationListCategories,

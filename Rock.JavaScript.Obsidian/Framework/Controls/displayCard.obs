@@ -3,86 +3,190 @@
     <div class="displaycard"
          :class="{
             'is-hovering': isHovering,
-            'clickable': !!props.onClick
+            'is-selected': isSelected,
+            'clickable': !!props.onClick,
+            'is-compact': isCompact
         }"
          @mouseenter="isHovering = true"
          @mouseleave="isHovering = false"
          @click="onMainClick">
-        <slot name="prepend" />
+        <div class="displaycard-main">
+            <slot name="prepend" />
 
-        <div v-if="badgeText" class="displaycard-badge">
-            <Badge :badgeType="badgeType === 'default' ? undefined : badgeType">{{ badgeText }}</Badge>
-        </div>
-
-        <div class="displaycard-heading">
-            <div v-if="iconCssClass" class="displaycard-heading-icon">
-                <HighlightLabel :labelType="internalIconLabelType" :iconCssClass="`${iconCssClass}`" :customClass="internalIconLabelCustomClass" />
+            <div v-if="badgeText" class="displaycard-badge">
+                <Badge :badgeType="badgeType === 'default' ? undefined : badgeType">{{ badgeText }}</Badge>
             </div>
 
-            <div v-if="title || description || $slots.description" class="displaycard-heading-text">
-                <h5 v-if="title" class="displaycard-heading-text-title">
-                    <a v-if="titleUrl" :href="titleUrl" @click.stop>{{ title }}</a>
-                    <template v-else>{{ title }}</template>
-                </h5>
-                <small v-if="description || $slots.description" class="displaycard-heading-text-description">
-                    <slot name="description">
-                        {{ description }}
-                    </slot>
-                </small>
+            <div class="displaycard-heading">
+                <div v-if="iconCssClass"
+                     class="displaycard-heading-icon"
+                     :class="iconStyle === 'tile' ? `displaycard-heading-icon-tile displaycard-heading-icon-tile-${internalIconLabelType}` : ''">
+                    <i v-if="iconStyle === 'tile'" :class="`${iconCssClass}`"></i>
+                    <HighlightLabel v-else :labelType="internalIconLabelType" :iconCssClass="`${iconCssClass}`" :customClass="internalIconLabelCustomClass" />
+                </div>
+
+                <div v-if="title || description || $slots.description" class="displaycard-heading-text">
+                    <h5 v-if="title" v-tooltip.overflow="title" class="displaycard-heading-text-title">
+                        <a v-if="titleUrl" :href="titleUrl" @click.stop>{{ title }}</a>
+                        <template v-else>{{ title }}</template>
+                    </h5>
+                    <small v-if="description || $slots.description" v-tooltip.overflow="description" class="displaycard-heading-text-description">
+                        <slot name="description">
+                            {{ description }}
+                        </slot>
+                    </small>
+                </div>
+            </div>
+
+            <div v-if="$slots.middleSection" class="displaycard-content">
+                <slot name="middleSection" />
+            </div>
+
+            <div v-if="$slots.rightMiddleSection" class="displaycard-content">
+                <slot name="rightMiddleSection" />
+            </div>
+
+            <div v-if="asideIconCssClass || aside || $slots.aside" class="displaycard-aside">
+                <slot name="aside">
+                    <i v-if="asideIconCssClass" v-tooltip="aside" :class="`${asideIconCssClass}`"></i>
+                    <small v-if="aside" v-tooltip.overflow="aside">{{ aside }}</small>
+                </slot>
+            </div>
+
+            <div v-if="primaryActions?.length || secondaryActions?.length || $slots.actions" class="displaycard-actions">
+                <slot name="actions">
+                    <div v-if="primaryActions?.length" class="displaycard-primary-actions">
+                        <template v-for="action in primaryActions" :key="`${action.title}${action.iconCssClass}`">
+                            <RockButton v-if="action.iconCssClass"
+                                        isSquare btnSize="sm"
+                                        :btnType="action.type"
+                                        :title="action.title"
+                                        :tooltip="action.title"
+                                        :disabled="action.disabled"
+                                        @click.stop="action.handler">
+                                <i :class="action.iconCssClass"></i>
+                            </RockButton>
+
+                            <RockButton v-else btnSize="sm"
+                                        :btnType="action.type"
+                                        :title="action.title"
+                                        :tooltip="action.title"
+                                        :disabled="action.disabled"
+                                        @click.stop="action.handler">
+                                {{ action.title }}
+                            </RockButton>
+                        </template>
+                    </div>
+
+                    <div v-if="secondaryActions?.length" class="displaycard-secondary-actions">
+                        <DropDownMenu align="right"
+                                      :items="secondaryActions"
+                                      @click.stop
+                                      @mouseenter="isHovering = false"
+                                      @mouseleave="isHovering = true" />
+                    </div>
+                </slot>
             </div>
         </div>
 
-        <div v-if="$slots.middleSection" class="displaycard-content">
-            <slot name="middleSection" />
-        </div>
-
-        <div v-if="$slots.rightMiddleSection" class="displaycard-content">
-            <slot name="rightMiddleSection" />
-        </div>
-
-        <div v-if="asideIconCssClass || aside || $slots.aside" class="displaycard-aside">
-            <slot name="aside">
-                <i v-if="asideIconCssClass" :class="`${asideIconCssClass}`"></i>
-                <small v-if="aside">{{ aside }}</small>
-            </slot>
-        </div>
-
-        <div v-if="primaryActions?.length || secondaryActions?.length || $slots.actions" class="displaycard-actions">
-            <slot name="actions">
-                <div v-if="primaryActions?.length" class="displaycard-primary-actions">
-                    <template v-for="action in primaryActions" :key="`${action.title}${action.iconCssClass}`">
-                        <RockButton v-if="action.iconCssClass"
-                                    isSquare btnSize="sm"
-                                    :btnType="action.type"
-                                    :title="action.title"
-                                    :tooltip="action.title"
-                                    :disabled="action.disabled"
-                                    @click.stop="action.handler">
-                            <i :class="action.iconCssClass"></i>
-                        </RockButton>
-
-                        <RockButton v-else btnSize="sm"
-                                    :btnType="action.type"
-                                    :title="action.title"
-                                    :tooltip="action.title"
-                                    :disabled="action.disabled"
-                                    @click.stop="action.handler">
-                            {{ action.title }}
-                        </RockButton>
-                    </template>
-                </div>
-
-                <div v-if="secondaryActions?.length" class="displaycard-secondary-actions">
-                    <DropDownMenu align="right"
-                                  :items="secondaryActions"
-                                  @click.stop
-                                  @mouseenter="isHovering = false"
-                                  @mouseleave="isHovering = true" />
-                </div>
-            </slot>
-        </div>
+        <TransitionVerticalCollapse v-if="$slots.expanded">
+            <div v-show="isExpanded" class="displaycard-expanded" @click.stop>
+                <slot name="expanded" />
+            </div>
+        </TransitionVerticalCollapse>
     </div>
 </template>
+
+<style scoped>
+/* The card is a vertical wrapper: the heading/content/actions row lives in
+   .displaycard-main and the accordion region spans the full width beneath it.
+   Padding moves to .displaycard-main so the expanded band runs edge to edge. */
+.displaycard {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+}
+
+.displaycard-main {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-large);
+    padding: var(--spacing-large);
+}
+
+/* Opt-in (iconStyle="tile") icon tile: a soft, rounded square holding the icon
+   glyph, tinted by iconLabelType. The per-type classes set the tile's fg/bg via
+   custom properties; an unmapped type falls back to neutral interface colors. */
+.displaycard-heading-icon-tile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--rounded-small);
+    background-color: var(--icon-tile-bg, var(--color-interface-softer));
+    color: var(--icon-tile-fg, var(--color-interface-strong));
+}
+
+.displaycard-heading-icon-tile i {
+    font-size: var(--font-size-h5);
+    line-height: 1;
+}
+
+.displaycard-heading-icon-tile-primary {
+    --icon-tile-bg: var(--color-primary-soft);
+    --icon-tile-fg: var(--color-primary);
+}
+
+.displaycard-heading-icon-tile-info {
+    --icon-tile-bg: var(--color-info-soft);
+    --icon-tile-fg: var(--color-info-strong);
+}
+
+.displaycard-heading-icon-tile-success {
+    --icon-tile-bg: var(--color-success-soft);
+    --icon-tile-fg: var(--color-success-strong);
+}
+
+.displaycard-heading-icon-tile-warning {
+    --icon-tile-bg: var(--color-warning-soft);
+    --icon-tile-fg: var(--color-warning-strong);
+}
+
+.displaycard-heading-icon-tile-danger {
+    --icon-tile-bg: var(--color-danger-soft);
+    --icon-tile-fg: var(--color-danger-strong);
+}
+
+/* A selected card holds the soft-info tint persistently, the same treatment the
+   clickable hover state applies, so a chosen card stays visually distinct. The
+   expanded band keeps its own surface below, so the tint reads as a highlighted
+   header above white content. */
+.displaycard.is-selected {
+    background-color: var(--color-info-soft);
+}
+
+/* An opaque surface keeps the band distinct from the selected/hover header tint.
+   Spacing is left to the slot content so the expanded region is not opinionated. */
+.displaycard-expanded {
+    background-color: var(--color-interface-softer);
+    border-bottom-left-radius: var(--rounded-xsmall);
+    border-bottom-right-radius: var(--rounded-xsmall);
+}
+
+/* Bootstrap's xs tier (below the small breakpoint) stacks the row and tightens
+   its spacing; the active breakpoint comes from useBreakpointHelper. */
+.displaycard.is-compact .displaycard-main {
+    flex-direction: column;
+    height: auto;
+    padding: var(--spacing-medium);
+    gap: var(--spacing-medium);
+}
+</style>
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
@@ -90,8 +194,11 @@
     import DropDownMenu from "./dropDownMenu.obs";
     import HighlightLabel from "./highlightLabel.obs";
     import RockButton from "./rockButton.obs";
+    import TransitionVerticalCollapse from "./transitionVerticalCollapse.obs";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
     import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+    import { useBreakpointHelper } from "@Obsidian/Utility/breakpointHelper";
 
     const highlightLabelTypes = ["default", "primary", "success", "info", "warning", "danger", "type", "campus", "custom"] as const;
     type HighlightLabelType = (typeof highlightLabelTypes)[number];
@@ -128,6 +235,16 @@
             default: "info" as const
         },
 
+        /**
+         * How the leading icon is rendered. "label" (default) draws it as a
+         * HighlightLabel badge, preserving existing consumers. "tile" draws it
+         * as a soft, rounded icon tile colored by <c>iconLabelType</c>.
+         */
+        iconStyle: {
+            type: String as PropType<"label" | "tile">,
+            default: "label" as const
+        },
+
         iconTitleAndDescMinWidth: {
             type: String as PropType<string>,
             required: false,
@@ -137,6 +254,24 @@
         description: {
             type: String as PropType<string | null | undefined>,
             required: false
+        },
+
+        /**
+         * When true, the content of the <c>expanded</c> slot is revealed below
+         * the card's main row (accordion mode). Defaults to collapsed.
+         */
+        isExpanded: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * When true, the card carries a persistent soft-info tint to mark it
+         * as chosen. Defaults to unselected so existing consumers are unaffected.
+         */
+        isSelected: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         minWidth: {
@@ -184,6 +319,8 @@
 
     const isHovering = ref<boolean>(false);
 
+    const breakpoint = useBreakpointHelper();
+
     // #endregion Values
 
     // #region Computed Values
@@ -211,6 +348,9 @@
             return props.iconLabelType as string ?? undefined;
         }
     });
+
+    // Bootstrap's xs tier (below the small breakpoint) drives the compact layout.
+    const isCompact = computed<boolean>(() => breakpoint.value.isXs);
 
     // #endregion Computed Values
 

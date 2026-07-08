@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.Groups
 
                 if ( group == null && GetAttributeValue( "EnablePassingGroupId" ).AsBoolean( true ) )
                 {
-                    int? groupId = PageParameter( "GroupId" ).AsIntegerOrNull();
+                    int? groupId = PageParameter( "GroupId" ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( "GroupId" ) );
                     if ( groupId.HasValue )
                     {
                         group = groupService.Queryable( "GroupType,GroupType.Roles" ).Where( g => g.Id == groupId ).FirstOrDefault();

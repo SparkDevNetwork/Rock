@@ -42,7 +42,7 @@ namespace Rock.Blocks.Types.Mobile.Core
     #region Block Attributes
 
     [ComponentField( "Rock.Search.SearchContainer, Rock",
-        Name = "Search Component",
+        "Search Component",
         Description = "The search component to use when performing searches.",
         IsRequired = true,
         Key = AttributeKey.SearchComponent,

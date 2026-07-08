@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Groups
                 // get group from url
                 if ( !string.IsNullOrWhiteSpace( PageParameter( "GroupId" ) ) )
                 {
-                    int groupId = PageParameter( "GroupId" ).AsInteger();
+                    int groupId = PageParameter( "GroupId" ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( "GroupId" ) ) ?? 0;
                     group = new GroupService( rockContext ).Queryable().Where( g => g.Id == groupId ).FirstOrDefault();
                 }
                 else if ( !string.IsNullOrWhiteSpace( PageParameter( "GroupGuid" ) ) )

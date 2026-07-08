@@ -7,11 +7,13 @@
     </div>
 
     <PromoRotator v-else-if="isRotatorStyle && config.promos"
-                  :promos="config.promos" />
+                  :promos="config.promos"
+                  @promoClick="onPromoClick" />
 
     <CardList v-else
               :title="panelTitle"
-              :promos="config.promos ?? []" />
+              :promos="config.promos ?? []"
+              @promoClick="onPromoClick" />
 </template>
 
 <script setup lang="ts">
@@ -20,6 +22,7 @@
     import { PromoListInitializationBox } from "@Obsidian/ViewModels/Blocks/Store/PromoList/promoListInitializationBox";
     import PromoRotator from "./PromoList/promoRotator.partial.obs";
     import CardList from "./PromoList/cardList.partial.obs";
+    import { NavigationUrlKey } from "./PromoList/types.partial";
 
     // #region Values
 
@@ -36,6 +39,22 @@
     const panelTitle = computed((): string => config.panelTitle ?? "");
 
     // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Navigates to the configured detail page for the clicked promo, substituting its
+     * PackageId into the "((Key))" placeholder. No-op when no detail page is configured.
+     */
+    function onPromoClick(packageId: number): void {
+        if (!config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            return;
+        }
+
+        window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", packageId.toString());
+    }
+
+    // #endregion Event Handlers
 
     onConfigurationValuesChanged(useReloadBlock());
 </script>

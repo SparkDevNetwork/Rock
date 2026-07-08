@@ -147,7 +147,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Saves the slug using the given contentChannelId if the contentChannelItemId is 0 (not saved) in order to guarantee the slug is unique for that channel.
+        /// Saves the slug using the given contentChannelId to guarantee the slug is unique for that channel,
+        /// which also works when the item is unsaved (contentChannelItemId of 0) or not yet committed.
         /// </summary>
         /// <param name="contentChannelItemId">The content channel item identifier.</param>
         /// <param name="contentChannelId">The content channel identifier.</param>
@@ -156,16 +157,21 @@ namespace Rock.Model
         /// <returns></returns>
         public ContentChannelItemSlug SaveSlug( int contentChannelItemId, int contentChannelId, string slug, int? contentChannelItemSlugId )
         {
-            string uniqueSlug;
+            /*
+                6/10/26 - MSE
 
-            if ( contentChannelItemId == 0 )
-            {
-                uniqueSlug = this.GetUniqueSlugForContentChannel( slug, contentChannelId, contentChannelItemSlugId );
-            }
-            else
-            {
-                uniqueSlug = this.GetUniqueContentSlug( slug, contentChannelItemSlugId, contentChannelItemId );
-            }
+                The caller-supplied content channel id now scopes the uniqueness
+                check for saved items too, not only unsaved ones. The previous
+                else branch derived the channel through ContentChannelItemCache,
+                which loads on its own context: inside a wrapped transaction a
+                just-inserted item is not yet visible there, the lookup returned
+                null, and the check silently degraded to global scope, renaming
+                slugs that only collided across channels.
+
+                Reason: The cache cannot see an uncommitted item; the caller
+                already knows the channel.
+            */
+            var uniqueSlug = this.GetUniqueSlugForContentChannel( slug, contentChannelId, contentChannelItemSlugId );
 
             return SaveSlug( contentChannelItemId, contentChannelItemSlugId, uniqueSlug );
         }

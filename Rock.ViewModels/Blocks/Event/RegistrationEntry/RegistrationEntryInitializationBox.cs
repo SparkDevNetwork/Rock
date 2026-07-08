@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -387,6 +387,14 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <c>true</c> if the save account option should be available; otherwise, <c>false</c>.
         /// </value>
         public bool EnableSaveAccount { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether Database (username/password) authentication is enabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if Database authentication is enabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsDatabaseAuthEnabled { get; set; }
 
         /// <summary>
         /// Gets or sets the saved accounts that can be offered to use for payment.

@@ -18,15 +18,18 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Controls;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Prayer.PrayerCommentList;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -54,7 +57,7 @@ namespace Rock.Blocks.Prayer
         Key = AttributeKey.PrayerRequestCategory )]
     [Rock.SystemGuid.EntityTypeGuid( "b2f1b644-836d-46a6-86c9-8fbb26d96ea7" )]
     [Rock.SystemGuid.BlockTypeGuid( "3f997da7-ac42-41c9-97f1-2069bb9d9e5c" )]
-    [CustomizedGrid]
+    [CustomizedGrid( CustomColumnMessage = "Custom columns can access the prayer request through the 'Row' merge field (for example, {{ Row.RequestedByPersonAlias.Person.FullName }} for the requester or {{ Row.Text }} for the request). The request and its requester are pre-loaded, so they resolve without additional queries; referencing other related entities (such as Row.Category or Row.Campus) will run a database query for each row." )]
     public class PrayerCommentList : RockListBlockType<PrayerCommentList.PrayerCommentData>
     {
         #region Keys
@@ -80,8 +83,9 @@ namespace Rock.Blocks.Prayer
 
         #region Properties
 
-        protected string FilterDateRange => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterDateRange );
+        private SlidingDateRangeBag FilterDateRange => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterDateRange )
+            .ToSlidingDateRangeBagOrNull();
 
         protected ListItemBag FilterCategory => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.FilterCategory )
@@ -97,7 +101,6 @@ namespace Rock.Blocks.Prayer
             var box = new ListBlockBox<PrayerCommentListOptionsBag>();
             var builder = GetGridBuilder();
 
-            box.IsAddEnabled = GetIsAddEnabled();
             box.IsDeleteEnabled = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
@@ -119,15 +122,6 @@ namespace Rock.Blocks.Prayer
         }
 
         /// <summary>
-        /// Determines if the add button should be enabled in the grid.
-        /// <summary>
-        /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
-        private bool GetIsAddEnabled()
-        {
-            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
-        }
-
-        /// <summary>
         /// Gets the box navigation URLs required for the page to operate.
         /// </summary>
         /// <returns>A dictionary of key names and URL values.</returns>
@@ -144,16 +138,46 @@ namespace Rock.Blocks.Prayer
         {
             var prayerCommentQry = GetCommentDataQueryable( rockContext );
             var prayerRequestIdsQry = prayerCommentQry.Select( a => a.EntityId );
-            var prayerRequests = new PrayerRequestService( rockContext ).Queryable().Where( a => prayerRequestIdsQry.Contains( a.Id ) ).ToList();
+
+            /*
+                6/24/26 - MSE
+
+                The requester (RequestedByPersonAlias.Person) is eager-loaded here, within the
+                single set-based query that already loads the related prayer requests, so that a
+                custom Lava column referencing {{ Row.RequestedByPersonAlias.Person.FullName }}
+                resolves from memory instead of lazy-loading a person for every row.
+
+                Reason: Prevent an N+1 query when a custom column displays the requester.
+                https://github.com/SparkDevNetwork/Rock/issues/6896
+            */
+            var prayerRequests = new PrayerRequestService( rockContext ).Queryable()
+                .Include( a => a.RequestedByPersonAlias.Person )
+                .Where( a => prayerRequestIdsQry.Contains( a.Id ) )
+                .ToList();
+
+            // Build a lookup so each comment can be matched to its prayer request
+            // in a single pass instead of scanning the full list once per row.
+            var prayerRequestsById = prayerRequests.ToDictionary( a => a.Id );
+
             var prayerComments = prayerCommentQry.AsEnumerable()
-               .Select( b => new PrayerCommentData
+               .Select( b =>
                {
-                   IdKey = b.IdKey,
-                   CreatedDateTime = b.CreatedDateTime,
-                   CreatedBy = b.CreatedByPersonAlias != null ? b.CreatedByPersonAlias.Person : null,
-                   IsSystem = b.IsSystem,
-                   Text = b.Text,
-                   PrayerRequestIdKey = prayerRequests.Where( a => a.Id == b.EntityId ).Select( a => a.IdKey ).FirstOrDefault()
+                   PrayerRequest prayerRequest = null;
+
+                   if ( b.EntityId.HasValue )
+                   {
+                       prayerRequestsById.TryGetValue( b.EntityId.Value, out prayerRequest );
+                   }
+
+                   return new PrayerCommentData
+                   {
+                       IdKey = b.IdKey,
+                       CreatedDateTime = b.CreatedDateTime,
+                       CreatedBy = b.CreatedByPersonAlias != null ? b.CreatedByPersonAlias.Person : null,
+                       IsSystem = b.IsSystem,
+                       Text = b.Text,
+                       PrayerRequest = prayerRequest
+                   };
                } );
 
             return prayerComments.AsQueryable();
@@ -177,29 +201,46 @@ namespace Rock.Blocks.Prayer
             var noteTypeService = new NoteTypeService( rockContext );
             var noteType = noteTypeService.Get( Rock.SystemGuid.NoteType.PRAYER_COMMENT.AsGuid() );
 
+            var noteTypeId = noteType?.Id ?? 0;
+
             // Get the prayer comments that meet any one of the conditions below:
             //  1. Note is approved
             //  2. NoteType doesn't require approvals
             //  3. Note was created by the viewer.
             var qry = new NoteService( rockContext )
-                .GetByNoteTypeId( noteType.Id )
+                .GetByNoteTypeId( noteTypeId )
                 .AreViewableBy( GetCurrentPerson()?.Id );
 
             if ( categoryFilter != null )
             {
-                // if filtered by category, only show comments for prayer requests in that category or any of its descendant categories
-                var categoryService = new CategoryService( rockContext );
-                var categories = new CategoryService( rockContext ).GetAllDescendents( categoryFilter.Guid ).Select( a => a.Id ).ToList();
+                // If filtered by category, only show comments for prayer requests in that
+                // category or any of its descendant categories. Match on CategoryId using
+                // the cached category's Id to avoid a Guid-based join to the Category table.
+                var categoryIds = new CategoryService( rockContext )
+                    .GetAllDescendents( categoryFilter.Guid )
+                    .Select( a => a.Id )
+                    .ToList();
+                categoryIds.Add( categoryFilter.Id );
 
-                var prayerRequestQry = new PrayerRequestService( rockContext ).Queryable().Where( a => a.CategoryId.HasValue &&
-                    ( a.Category.Guid == categoryFilter.Guid || categories.Contains( a.CategoryId.Value ) ) )
+                var prayerRequestQry = new PrayerRequestService( rockContext ).Queryable()
+                    .Where( a => a.CategoryId.HasValue && categoryIds.Contains( a.CategoryId.Value ) )
                     .Select( a => a.Id );
 
                 qry = qry.Where( a => a.EntityId.HasValue && prayerRequestQry.Contains( a.EntityId.Value ) );
             }
 
 
-            var dateRange = RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( FilterDateRange, RockDateTime.Now );
+            // Default to the last 3 months so the grid never materializes an unbounded
+            // number of rows, since comments accumulate over time. The individual can
+            // widen the range from the grid settings.
+            var defaultDateRange = new SlidingDateRangeBag
+            {
+                RangeType = SlidingDateRangeType.Last,
+                TimeUnit = TimeUnitType.Month,
+                TimeValue = 3
+            };
+
+            var dateRange = FilterDateRange.Validate( defaultDateRange ).ActualDateRange;
 
             // Filter by Date Range
             if ( dateRange.Start.HasValue )
@@ -209,9 +250,7 @@ namespace Rock.Blocks.Prayer
 
             if ( dateRange.End.HasValue )
             {
-                // Add one day in order to include everything up to the end of the selected datetime.
-                var endDate = dateRange.End.Value.AddDays( 1 );
-                qry = qry.Where( r => r.CreatedDateTime.HasValue && r.CreatedDateTime < endDate );
+                qry = qry.Where( r => r.CreatedDateTime.HasValue && r.CreatedDateTime < dateRange.End.Value );
             }
 
             return qry;
@@ -220,14 +259,32 @@ namespace Rock.Blocks.Prayer
         /// <inheritdoc/>
         protected override GridBuilder<PrayerCommentData> GetGridBuilder()
         {
+            var gridOptions = new GridBuilderGridOptions<PrayerCommentData>
+            {
+                /*
+                    6/24/26 - MSE
+
+                    The prayer request is exposed as the "Row" merge object for custom Lava
+                    columns. Because the request entities (and the requester person) are loaded
+                    set-based in GetListQueryable, scalar fields and
+                    {{ Row.RequestedByPersonAlias.Person.FullName }} resolve without an
+                    additional database call per row. Navigating any other relationship (for
+                    example Row.Category or Row.Campus) is not pre-loaded and will run a query
+                    per row.
+
+                    Reason: https://github.com/SparkDevNetwork/Rock/issues/6896
+                */
+                LavaObject = row => row.PrayerRequest
+            };
+
             return new GridBuilder<PrayerCommentData>()
-                .WithBlock( this )
+                .WithBlock( this, gridOptions )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddPersonField( "createdBy", a => a.CreatedBy )
                 .AddTextField( "text", a => a.Text )
                 .AddDateTimeField( "time", a => a.CreatedDateTime )
                 .AddField( "isSystem", a => a.IsSystem )
-                .AddField( "prayerRequestIdKey", a => a.PrayerRequestIdKey );
+                .AddField( "prayerRequestIdKey", a => a.PrayerRequest?.IdKey );
 
         }
 
@@ -286,12 +343,15 @@ namespace Rock.Blocks.Prayer
             public string IdKey { get; set; }
 
             /// <summary>
-            /// Gets or sets the Prayer Request Id Key.
+            /// Gets or sets the prayer request that this comment is attached to.
+            /// This is exposed to custom Lava columns as the "Row" merge field so
+            /// that administrators can display request details (e.g. the requester
+            /// name) without an additional database call per row.
             /// </summary>
             /// <value>
-            /// The Prayer Request Id Key.
+            /// The <see cref="Rock.Model.PrayerRequest"/> the comment is attached to.
             /// </value>
-            public string PrayerRequestIdKey { get; set; }
+            public PrayerRequest PrayerRequest { get; set; }
 
             /// <summary>
             /// Gets or sets the Created By.

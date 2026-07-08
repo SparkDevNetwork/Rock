@@ -36,8 +36,12 @@ namespace Rock.Reporting.DataSelect.PrayerRequest
     [Description( "Show person's name as an optional link that navigates to the person's record" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person Name" )]
-    [BooleanField( "Show As Link", "", true )]
-    [CustomRadioListField( "Display Order", "", "0^FirstName LastName,1^LastName&#44; FirstName", true, "0" )]
+    [BooleanField( "Show As Link",
+        DefaultBooleanValue = true )]
+    [CustomRadioListField( "Display Order",
+        ListSource = "0^FirstName LastName,1^LastName&#44; FirstName",
+        IsRequired = true,
+        DefaultValue = "0" )]
     [Rock.SystemGuid.EntityTypeGuid( "1EEC14BE-330E-4F94-9198-E33886DEEA55" )]
     public class PersonLinkSelect : DataSelectComponent, IRecipientDataSelect
     {

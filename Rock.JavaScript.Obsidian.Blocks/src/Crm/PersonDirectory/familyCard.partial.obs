@@ -1,0 +1,41 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="row directory-family padding-v-lg">
+        <div class="col-sm-3 margin-b-md">
+            <strong>{{ family.name }}</strong>
+            <div v-if="options.isAddressShown && family.formattedHtmlAddress" v-html="family.formattedHtmlAddress"></div>
+        </div>
+        <div class="col-sm-9">
+            <PersonCard v-for="(member, index) in family.members ?? []"
+                        :key="member.idKey ?? index"
+                        :person="member"
+                        :options="options"
+                        :profileUrlTemplate="profileUrlTemplate" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import PersonCard from "./personCard.partial.obs";
+    import { PersonDirectoryOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDirectory/personDirectoryOptionsBag";
+    import { PersonDirectoryFamilyBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDirectory/personDirectoryFamilyBag";
+
+    defineProps({
+        family: {
+            type: Object as PropType<PersonDirectoryFamilyBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<PersonDirectoryOptionsBag>,
+            required: true
+        },
+
+        /** The person profile page URL with the "((Key))" placeholder, or empty if linking is disabled. */
+        profileUrlTemplate: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+</script>

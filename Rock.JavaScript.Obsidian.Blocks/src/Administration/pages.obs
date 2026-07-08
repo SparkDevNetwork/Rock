@@ -1,0 +1,337 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="!config.options?.isBlockVisible" alertType="warning">
+        {{ config.options?.authorizationMessage }}
+    </NotificationBox>
+
+    <template v-else>
+        <Grid v-show="!isEditing"
+              class="pages-grid"
+              :definition="config.gridDefinition ?? undefined"
+              :data="gridDataSource"
+              :expectedRowCount="config.expectedRowCount ?? undefined"
+              keyField="idKey"
+              itemTerm="Page"
+              light
+              :entityTypeGuid="EntityType.Page"
+              liveUpdates
+              :showLaunchWorkflow="false"
+              :showMergeTemplate="false"
+              :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+              @selectItem="onSelectItem">
+
+            <ReorderColumn @orderChanged="onOrderChanged" />
+
+            <TextColumn name="id"
+                        title="Id"
+                        field="id"
+                        visiblePriority="xs" />
+
+            <Column name="name"
+                    title="Name"
+                    field="internalName"
+                    visiblePriority="xs">
+                <template #format="{ row }">
+                    <a :href="row.pageUrl" target="_parent" @click.stop>{{ row.internalName }}</a>
+                </template>
+            </Column>
+
+            <TextColumn name="layout"
+                        title="Layout"
+                        field="layout"
+                        visiblePriority="xs" />
+
+            <ButtonColumn name="copy"
+                          title="Copy"
+                          iconClass="ti ti-copy"
+                          tooltip="Copy"
+                          :onClick="onCopyClick"
+                          visiblePriority="xs" />
+
+            <DeleteColumn v-if="config.isDeleteEnabled" disableConfirmation @click="onDeleteClick" />
+        </Grid>
+
+        <EditPagePanel v-if="isEditing"
+                       :key="editBag.idKey ?? ''"
+                       :editBag="editBag"
+                       :layouts="config.options?.layouts ?? []"
+                       :onSave="onSavePage"
+                       @cancel="onCancelEdit" />
+    </template>
+
+    <Modal v-model="isDeleteModalOpen"
+           title="Are you sure?"
+           saveText="Delete"
+           @save="onConfirmDelete">
+
+        <p>Are you sure you want to delete this page?</p>
+
+        <InlineCheckBox v-model="deleteInteractions"
+                        label="Delete any interactions for this page" />
+    </Modal>
+</template>
+
+<style scoped>
+/* Flat border (no drop shadow) so the grid reads as a bordered panel. overflow:hidden
+   clips the cells' backgrounds to the rounded corners so the border shows cleanly on
+   every corner; the drag-reorder mirror is position:fixed, so it is unaffected. */
+.pages-grid {
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-medium);
+    overflow: hidden;
+}
+
+/* Light grids still tag even rows with grid-row-even, so re-apply zebra striping by
+   painting the even rows the same shade the core grid-striped rule uses. */
+.pages-grid :deep(.grid-row.grid-row-even .grid-cell) {
+    background-color: var(--color-interface-softer);
+}
+
+/* Re-apply the row hover highlight using the same token the core grid-hover rule uses.
+   Placed after the zebra rule so a hovered row overrides its stripe, matching the core
+   grid behavior. */
+.pages-grid :deep(.grid-row:hover .grid-cell) {
+    background-color: var(--color-info-soft);
+}
+</style>
+
+<script setup lang="ts">
+    import { onMounted, reactive, ref } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { ButtonColumn, Column, DeleteColumn, ReorderColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import InlineCheckBox from "@Obsidian/Controls/checkBox.obs";
+    import EditPagePanel from "./Pages/editPagePanel.partial.obs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PagesOptionsBag } from "@Obsidian/ViewModels/Blocks/Administration/Pages/pagesOptionsBag";
+    import { PageBag } from "@Obsidian/ViewModels/Blocks/Administration/Pages/pageBag";
+
+    const config = useConfigurationValues<ListBlockBox<PagesOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    /** Whether the add/edit form is shown in place of the page grid. */
+    const isEditing = ref(false);
+    const editBag = ref<PageBag>({
+        idKey: "",
+        internalName: "",
+        layout: ""
+    });
+
+    const isDeleteModalOpen = ref(false);
+    const deleteKey = ref("");
+    const deleteInteractions = ref(true);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row is selected to show the add/edit form in place of the grid.
+     *
+     * @param key The key of the row that was selected, or empty to add a new page.
+     */
+    async function onSelectItem(key: string): Promise<void> {
+        const result = await invokeBlockAction<PageBag>("Edit", { key });
+
+        if (result.isSuccess && result.data) {
+            editBag.value = result.data;
+            isEditing.value = true;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to open the page for editing.");
+        }
+    }
+
+    /**
+     * Called when the add button has been clicked.
+     */
+    async function onAddItem(): Promise<void> {
+        await onSelectItem("");
+    }
+
+    /**
+     * Saves the page from the add/edit form, then returns to the grid.
+     *
+     * @param bag The page details from the add/edit form.
+     */
+    async function onSavePage(bag: PageBag): Promise<void> {
+        const result = await invokeBlockAction("Save", { bag });
+
+        if (result.isSuccess) {
+            isEditing.value = false;
+            markPageUpdated();
+            gridDataSource.value = loadGridData();
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to save the page.");
+        }
+    }
+
+    /**
+     * Closes the add/edit form without saving, returning to the page grid.
+     */
+    function onCancelEdit(): void {
+        isEditing.value = false;
+    }
+
+    /**
+     * Called when a row's delete button is clicked to open the delete confirmation modal.
+     *
+     * @param key The key of the row to delete.
+     */
+    function onDeleteClick(key: string): void {
+        deleteKey.value = key;
+        deleteInteractions.value = true;
+        isDeleteModalOpen.value = true;
+    }
+
+    /**
+     * Deletes the page once the delete confirmation modal is confirmed.
+     */
+    async function onConfirmDelete(): Promise<void> {
+        const result = await invokeBlockAction("Delete", {
+            key: deleteKey.value,
+            deleteInteractions: deleteInteractions.value
+        });
+
+        if (result.isSuccess) {
+            isDeleteModalOpen.value = false;
+            markPageUpdated();
+            gridDataSource.value = loadGridData();
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to delete the page.");
+        }
+    }
+
+    /**
+     * Copies the page and all of its child pages after confirmation.
+     *
+     * @param key The key of the row to copy.
+     */
+    async function onCopyClick(key: string): Promise<void> {
+        const confirmed = await confirm("Do you wish to copy this page and all child pages?");
+
+        if (!confirmed) {
+            return;
+        }
+
+        const result = await invokeBlockAction("Copy", { key });
+
+        if (result.isSuccess) {
+            markPageUpdated();
+            gridDataSource.value = loadGridData();
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to copy the page.");
+        }
+    }
+
+    /**
+     * Called when a row has been dragged to a new position.
+     *
+     * @param item The item that was moved to a new position.
+     * @param beforeItem The item that the moved item was dropped before.
+     * @returns `true` if the operation succeeded; otherwise `false`.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const result = await invokeBlockAction<string>("ReorderItem", {
+            key: item["idKey"],
+            beforeKey: beforeItem?.["idKey"] ?? null
+        });
+
+        if (result.isSuccess) {
+            markPageUpdated();
+        }
+
+        return result.isSuccess;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Flags the host page to reload when the modal is closed. The Child Pages modal's
+     * "Done" button reads this hidden field and reloads the page that opened the modal.
+     */
+    function markPageUpdated(): void {
+        const field = document.querySelector<HTMLInputElement>(".modal-close-message");
+
+        if (field) {
+            field.value = "PAGE_UPDATED";
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    /*
+        6/17/26 - MSE
+
+        This block runs inside the admin "Child Pages" iframe modal (opened via
+        Rock.controls.modal.show). Two interactions reach into the surrounding Dialog
+        layout chrome from inside the iframe document:
+
+        - markPageUpdated() sets the layout's hidden ".modal-close-message" field so the
+          modal's "Done" button reloads the host page after a change (modal.js reloads the
+          host when the close message is "PAGE_UPDATED").
+        - onMounted injects a "parent page" link into the modal header so the individual can
+          navigate up one level, the link the host expects in the dialog subtitle.
+
+        Reason: Preserve the Child Pages modal's host-reload and parent-page-link behavior.
+    */
+    onMounted(() => {
+        const parentPageUrl = config.options?.parentPageUrl;
+
+        if (!parentPageUrl || window.parent === window) {
+            return;
+        }
+
+        const header = document.querySelector(".modal-header");
+
+        if (header && !header.querySelector(".js-parent-page-link")) {
+            const subtitle = document.createElement("small");
+            subtitle.className = "js-parent-page-link";
+
+            const link = document.createElement("a");
+            link.href = parentPageUrl;
+            link.target = "_parent";
+            link.textContent = "parent page";
+
+            subtitle.appendChild(link);
+            header.appendChild(subtitle);
+        }
+    });
+
+    // #endregion Lifecycle Hooks
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    gridDataSource.value = loadGridData();
+</script>

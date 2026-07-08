@@ -3,7 +3,7 @@
     <Grid v-if="config"
           :definition="config?.gridDefinition ?? undefined"
           :data="gridDataSource"
-          keyField="id"
+          keyField="idKey"
           :itemTerm="config?.options?.contentItemName + ' Item'"
           :entityTypeGuid="EntityType.ContentChannelItem"
           stickyHeader
@@ -378,7 +378,7 @@
 
         if (result.isSuccess) {
             if (gridData && gridData.rows) {
-                const index = gridData.rows.findIndex(r => r["id"] === key);
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
 
                 if (index !== -1) {
                     gridData.rows?.splice(index, 1);
@@ -425,7 +425,7 @@
         isLoading.value = true;
 
         const result = await invokeBlockAction<string>("UpdateContentLibraryItem", {
-            key: currentRow.value?.id ?? 0
+            key: currentRow.value?.idKey ?? ""
         });
 
         isLoading.value = false;
@@ -450,7 +450,7 @@
         isLoading.value = true;
 
         const result = await invokeBlockAction<string>("ReDownloadContentLibraryItem", {
-            key: currentRow.value?.id ?? 0
+            key: currentRow.value?.idKey ?? ""
         });
 
         isLoading.value = false;
@@ -475,7 +475,7 @@
         isLoading.value = true;
 
         const result = await invokeBlockAction<string>("UploadContentLibraryItem", {
-            key: currentRow.value?.id ?? 0
+            key: currentRow.value?.idKey ?? ""
         });
 
         isLoading.value = false;

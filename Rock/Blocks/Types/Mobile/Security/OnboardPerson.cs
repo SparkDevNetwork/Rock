@@ -137,22 +137,22 @@ namespace Rock.Blocks.Types.Mobile.Security
         Key = AttributeKeys.DisplayCampusStatuses,
         Order = 1 )]
 
-    [CampusField( name: "Online Campus",
-        description: "The campus to pick for the user if they press the 'Online Campus' button.",
-        required: false,
-        includeInactive: false,
-        category: AttributeCategories.Campus,
-        key: AttributeKeys.OnlineCampus,
-        order: 2,
+    [CampusField( "Online Campus",
+        Description = "The campus to pick for the user if they press the 'Online Campus' button.",
+        IsRequired = false,
+        IncludeInactive = false,
+        Category = AttributeCategories.Campus,
+        Key = AttributeKeys.OnlineCampus,
+        Order = 2,
         ForceVisible = true )]
 
-    [CampusField( name: "Do Not Attend Campus",
-        description: "The campus to pick for the user if they press the 'Do Not Attend' button.",
-        required: false,
-        includeInactive: false,
-        category: AttributeCategories.Campus,
-        key: AttributeKeys.DoNotAttendCampus,
-        order: 3,
+    [CampusField( "Do Not Attend Campus",
+        Description = "The campus to pick for the user if they press the 'Do Not Attend' button.",
+        IsRequired = false,
+        IncludeInactive = false,
+        Category = AttributeCategories.Campus,
+        Key = AttributeKeys.DoNotAttendCampus,
+        Order = 3,
         ForceVisible = true )]
 
     #endregion

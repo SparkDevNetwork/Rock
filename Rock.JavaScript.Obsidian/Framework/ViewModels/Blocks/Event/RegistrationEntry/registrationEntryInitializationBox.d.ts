@@ -116,6 +116,9 @@ export type RegistrationEntryInitializationBox = {
     /** Gets or sets the instructions HTML. */
     instructionsHtml?: string | null;
 
+    /** Gets or sets a value indicating whether Database (username/password) authentication is enabled. */
+    isDatabaseAuthEnabled: boolean;
+
     /** Gets a value indicating whether or not this is an existing registration. */
     isExistingRegistration: boolean;
 

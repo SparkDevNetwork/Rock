@@ -16,6 +16,7 @@
 //
 using System;
 
+using Rock.Attribute;
 using Rock.Web.Cache;
 
 namespace Rock.Security
@@ -24,10 +25,18 @@ namespace Rock.Security
     /// This is a special use exception that is thrown from within the PostSave
     /// hook on AttributeValue. Do not use it for anything else.
     /// </summary>
-    internal class AttributeValueValidationException : Exception
+    [RockInternal( "19.2", keepInternalForever: true )]
+    public class AttributeValueValidationException : Exception
     {
         private readonly string _capturedTrace;
 
+        /// <summary>
+        /// Creates a new instance of <see cref="AttributeValueValidationException"/>.
+        /// </summary>
+        /// <param name="attributeCache">The attribute cache that identifies the attribute that caused the validation failure.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="reason">The reason for the exception.</param>
+        /// <param name="capturedTrace">The captured stack trace.</param>
         public AttributeValueValidationException( AttributeCache attributeCache, int entityId, string reason, string capturedTrace )
             : base( GetExceptionMessage( attributeCache, entityId, reason ) )
         {

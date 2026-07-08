@@ -889,6 +889,10 @@ function buildAttributeColumns(columns: ColumnDefinition[], node: VNode): void {
     const filterValue = getVNodeProp<FilterValueFunction>(node, "filterValue")
         ?? ((r, c) => c.field ? String(r[c.field]) : undefined);
 
+    // Attribute columns historically hid on small screens ("md"). Honor an
+    // explicit override so a block can keep them visible at every width.
+    const visiblePriority = getVNodeProp<"xs" | "sm" | "md" | "lg" | "xl">(node, "visiblePriority") ?? "md";
+
     if (!attributes) {
         return;
     }
@@ -912,7 +916,7 @@ function buildAttributeColumns(columns: ColumnDefinition[], node: VNode): void {
             skeletonComponent,
             hideOnScreen: false,
             excludeFromExport: false,
-            visiblePriority: "md",
+            visiblePriority,
             width: {
                 value: 10,
                 unitType: "%"

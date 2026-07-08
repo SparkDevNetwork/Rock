@@ -72,9 +72,6 @@ export type ConnectionsHubOptionsBag = {
      * Populated with a single entry in standard mode and with one entry per active Connection Type in My Connections mode.
      * This allows the client to adjust its behavior and available UI actions based on the Connection Type that owns
      * the currently selected request or opportunity.
-     * TODO - Migrate remaining consumers off the flat per-Type fields on this bag (ConnectionStatuses, RequestSourceItems,
-     * IsSequentialStatusMode, AllPossibleConnectors, ConnectionActivities, WorkflowItems, ConnectionOpportunities) so they
-     * can be removed.
      */
     connectionTypeOptionsByIdKey?: Record<string, ConnectionTypeOptionsBag> | null;
 
@@ -101,12 +98,6 @@ export type ConnectionsHubOptionsBag = {
 
     /** Gets or sets a value indicating whether the current view is the "My Connections" view. */
     isMyConnectionsView: boolean;
-
-    /** Gets or sets the currently selected connector used to filter the request list. */
-    selectedConnector?: ListItemBag | null;
-
-    /** Gets or sets the person id key for the selected connector */
-    selectedConnectorIdKey?: string | null;
 
     /** Gets or sets the title to display for the Connections Hub block. */
     title?: string | null;

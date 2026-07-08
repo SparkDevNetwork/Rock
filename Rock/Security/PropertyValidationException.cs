@@ -24,6 +24,8 @@ namespace Rock.Security
     /// </summary>
     public class PropertyValidationException : Exception
     {
+        private string _capturedTrace;
+
         /// <summary>
         /// The name of the property that contained the invalid value.
         /// </summary>
@@ -65,5 +67,18 @@ namespace Rock.Security
                 ? type.BaseType
                 : type;
         }
+
+        /// <summary>
+        /// Sets the stack trace that should be used for this exception. This is
+        /// used when the exception will be logged instead of thrown.
+        /// </summary>
+        /// <param name="capturedTrace">The captured stack trace at the time the exception was created. This is used to preserve the original stack trace when logging the exception.</param>
+        internal void SetStackTrace( string capturedTrace )
+        {
+            _capturedTrace = capturedTrace;
+        }
+
+        /// <inheritdoc/>
+        public override string StackTrace => _capturedTrace ?? base.StackTrace;
     }
 }

@@ -1,0 +1,233 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockForm @submit="onFormSubmit">
+        <fieldset>
+            <legend>{{ title }}</legend>
+
+            <TextBox v-model="name"
+                     label="Name"
+                     rules="required"
+                     cssClass="input-large" />
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <DropDownList v-model="blockTypeValue"
+                                  label="Type"
+                                  :items="blockTypes"
+                                  :grouped="true"
+                                  enhanceForLongLists
+                                  rules="required"
+                                  @open="isTypePickerOpen = true"
+                                  @update:modelValue="autoFillName" />
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label">Common Block Types</label>
+                        <div>
+                            <RockButton v-for="(commonBlockType, index) in commonBlockTypes"
+                                        :key="commonBlockType.value ?? index"
+                                        :btnType="BtnType.Default"
+                                        :btnSize="BtnSize.ExtraSmall"
+                                        type="button"
+                                        class="mb-1 mr-1"
+                                        @click="onCommonBlockTypeClick(commonBlockType)">
+                                {{ commonBlockType.text }}
+                            </RockButton>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="actions">
+            <RockButton :btnType="BtnType.Primary" type="submit">Save</RockButton>
+            <RockButton :btnType="BtnType.Link" type="button" @click="onCancel">Cancel</RockButton>
+        </div>
+
+        <div v-if="isTypePickerOpen" class="type-picker-spacer" aria-hidden="true"></div>
+    </RockForm>
+</template>
+
+<style scoped>
+/* This form sits in an iframe modal that auto-sizes to its content, but the Type dropdown's
+   enhanced popup floats as an overlay that does not grow that content, so it gets clipped or
+   flips upward. Once the dropdown has been opened we reserve extra height here so the modal
+   grows tall enough for the popup to open downward. The height is kept for the rest of the
+   session to avoid a collapse flicker on the dropdown's rapid close. */
+.type-picker-spacer {
+    height: 12rem;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, onMounted, PropType, ref, watch } from "vue";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BlockLocation } from "@Obsidian/Enums/Cms/blockLocation";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ZoneBlocksSaveBlockBag } from "@Obsidian/ViewModels/Blocks/Administration/ZoneBlocks/zoneBlocksSaveBlockBag";
+
+    const props = defineProps({
+        editBag: {
+            type: Object as PropType<ZoneBlocksSaveBlockBag>,
+            required: true
+        },
+
+        blockTypes: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        commonBlockTypes: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        /** Called with the block details when the form is submitted. A function prop rather than
+            an emit so its promise flows back through RockForm's submit handler, holding the
+            form's double-submit guard until the save round trip completes. */
+        onSave: {
+            type: Function as PropType<((bag: ZoneBlocksSaveBlockBag) => void | PromiseLike<void>)>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "cancel"): void;
+    }>();
+
+    // #region Values
+
+    const name = ref(props.editBag.name ?? "");
+    const blockTypeValue = ref(props.editBag.blockTypeValue ?? "");
+
+    // The DropDownList emits an update while normalizing its initial value on mount; this guard
+    // keeps that emit from auto-filling the name so the field starts empty for a new block.
+    let isReady = false;
+
+    // Whether the user has typed their own block name. Once they have, the name is no longer
+    // derived from the block type. A block being edited already has a name, so that counts as
+    // user content and its name is left alone.
+    let hasUserEditedName = (props.editBag.name ?? "").trim() !== "";
+
+    // The last name written by auto-fill, so a change to any other value is recognized as a
+    // user edit rather than one of our own writes.
+    let lastAutoFilledName = "";
+
+    /** Whether the Type dropdown has been opened. Reserves height (see the picker spacer in the
+        template) so its popup opens downward inside the auto-sizing modal instead of flipping up. */
+    const isTypePickerOpen = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const title = computed((): string => {
+        const action = props.editBag.idKey ? "Edit" : "Add";
+
+        return `${action} ${scopeName(props.editBag.location)} Block`;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Selects a common block type as the block type and fills the name from it.
+     */
+    function onCommonBlockTypeClick(commonBlockType: ListItemBag): void {
+        blockTypeValue.value = commonBlockType.value ?? "";
+        autoFillName();
+    }
+
+    /**
+     * Passes the block details to the parent's save handler, returning its promise so RockForm
+     * blocks repeat submits until the save round trip completes.
+     */
+    async function onFormSubmit(): Promise<void> {
+        await props.onSave({
+            idKey: props.editBag.idKey,
+            location: props.editBag.location,
+            name: name.value,
+            blockTypeValue: blockTypeValue.value
+        });
+    }
+
+    /**
+     * Emits a request to close the form without saving.
+     */
+    function onCancel(): void {
+        emit("cancel");
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Gets the display name of a block scope for the form heading.
+     */
+    function scopeName(location: BlockLocation): string {
+        switch (location) {
+            case BlockLocation.Layout:
+                return "Layout";
+            case BlockLocation.Site:
+                return "Site";
+            default:
+                return "Page";
+        }
+    }
+
+    /**
+     * Derives the name from the selected block type. This runs on every type change until the
+     * user types their own name, after which it stops so their input is never overwritten.
+     */
+    function autoFillName(): void {
+        // Ignore the DropDownList's initial value-normalization emit on mount.
+        if (!isReady) {
+            return;
+        }
+
+        // Once the user has entered their own name, stop deriving it from the block type.
+        if (hasUserEditedName) {
+            return;
+        }
+
+        const item = props.blockTypes.find(bt => bt.value === blockTypeValue.value)
+            ?? props.commonBlockTypes.find(bt => bt.value === blockTypeValue.value);
+        const derivedName = (item?.text ?? "").replace(" \u{1F389}", "").trim();
+
+        // Remember what we set so the watcher does not mistake this write for a user edit.
+        lastAutoFilledName = derivedName;
+        name.value = derivedName;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // A change to the name that is not one we auto-filled means the user typed their own name;
+    // from then on the name is left as the user entered it.
+    watch(name, (newName) => {
+        if (newName !== lastAutoFilledName) {
+            hasUserEditedName = true;
+        }
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(async () => {
+        // Wait for the initial block type value to settle before allowing auto-fill, so the name
+        // stays empty for a new block instead of being populated from the default type.
+        await nextTick();
+        isReady = true;
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

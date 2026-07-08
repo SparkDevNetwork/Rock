@@ -178,19 +178,6 @@
                        :defaultSlidingDateRange="defaultSlidingDateRange" />
 </template>
 
-<style scoped>
-.communication-list-grid-header-button-filters {
-    background-color: var(--color-interface-softer);
-}
-
-.communication-list-grid-cell-recipients {
-    font-size: var(--font-size-small);
-}
-
-.communication-list-grid-cell-label {
-    display: block;
-}
-</style>
 
 <script setup lang="ts">
     import { computed, reactive, ref, watch } from "vue";

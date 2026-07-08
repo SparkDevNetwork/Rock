@@ -53,11 +53,7 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
 
-            if ( new Service<ConnectionRequestWorkflow>( Context ).Queryable().Any( a => a.ConnectionWorkflowId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", ConnectionWorkflow.FriendlyTypeName, ConnectionRequestWorkflow.FriendlyTypeName );
-                return false;
-            }
+            // ignoring ConnectionRequestWorkflow,ConnectionWorkflowId
             return true;
         }
     }

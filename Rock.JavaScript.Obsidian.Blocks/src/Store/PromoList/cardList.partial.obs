@@ -7,7 +7,7 @@
                      :key="promo.packageId"
                      class="col-lg-3 col-sm-4 col-xs-6 mb-4">
                     <div class="packagesummary">
-                        <a :href="promo.detailPageUrl ?? ''">
+                        <a @click.prevent="emit('promoClick', promo.packageId)">
                             <div class="packagesummary-image">
                                 <img class="img-responsive"
                                      :src="promo.packageIconUrl ?? ''" />
@@ -39,6 +39,23 @@
 </template>
 
 <style scoped>
+/*
+    These styles are copied from blocks-store.scss because the PromoList block is used on the RockRMS site
+    which does not currently include blocks-store.scss. If the RockRMS site is updated to include blocks-store.scss, these styles should be removed from this file.
+*/
+.packagesummary {
+    position: relative;
+    max-width: 282px;
+    height: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    cursor: pointer;
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-medium);
+    overflow: clip;
+}
+
 .packagesummary a {
     display: block;
     color: inherit;
@@ -56,6 +73,37 @@
     object-fit: cover;
     object-position: center;
 }
+
+.packagesummary .packagesummary-body {
+    padding: var(--spacing-medium);
+    background-color: var(--color-interface-softest);
+}
+
+.packagesummary .packagesummary-body h2 {
+    margin: 0;
+    overflow: hidden;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.3em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.packagesummary .packagesummary-body .vendor {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.packagesummary-footer {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 16px;
+    background-color: var(--color-interface-softest);
+    border-top: 1px solid var(--color-interface-soft);
+}
 </style>
 
 <script setup lang="ts">
@@ -65,6 +113,10 @@
     defineProps<{
         promos: PromoBag[];
         title: string;
+    }>();
+
+    const emit = defineEmits<{
+        (e: "promoClick", packageId: number): void;
     }>();
 
     // #region Functions

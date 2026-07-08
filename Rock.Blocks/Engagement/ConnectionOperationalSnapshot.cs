@@ -55,7 +55,7 @@ namespace Rock.Blocks.Engagement
     [SystemGuid.BlockTypeGuid( "B5FAF2A4-8195-4972-AA09-F65615939EA8" )]
 
     public class ConnectionOperationalSnapshot : RockBlockType
-    {   
+    {
         #region Keys
 
         private static class AttributeKey
@@ -116,6 +116,43 @@ namespace Rock.Blocks.Engagement
                 }
 
                 return _connectionTypeQuery;
+            }
+        }
+
+        private HashSet<int> _selfAssignedOpportunityIds = null;
+        /// <summary>
+        /// Gets the identifiers of opportunities within the connection type for which the current person is a connector.
+        /// Empty unless the connection type has request security enabled.
+        /// </summary>
+        private HashSet<int> SelfAssignedOpportunityIds
+        {
+            get
+            {
+                if ( _selfAssignedOpportunityIds == null )
+                {
+                    var personId = GetCurrentPerson()?.Id;
+
+                    if ( ConnectionType?.EnableRequestSecurity != true || !personId.HasValue )
+                    {
+                        _selfAssignedOpportunityIds = new HashSet<int>();
+                    }
+                    else
+                    {
+                        var connectionTypeId = ConnectionType.Id;
+
+                        _selfAssignedOpportunityIds = new ConnectionRequestService( RockContext )
+                            .Queryable()
+                            .Where( cr =>
+                                cr.ConnectionOpportunity.ConnectionTypeId == connectionTypeId
+                                && cr.ConnectorPersonAlias.PersonId == personId.Value
+                            )
+                            .Select( cr => cr.ConnectionOpportunityId )
+                            .Distinct()
+                            .ToHashSet();
+                    }
+                }
+
+                return _selfAssignedOpportunityIds;
             }
         }
 
@@ -268,12 +305,28 @@ namespace Rock.Blocks.Engagement
 
         private List<IdKeyListItemBag> GetConnectionOpportunities()
         {
+            var currentPerson = GetCurrentPerson();
+
+            // Ensure the connection type is tracked by EF so it'll get wired up
+            // to each opportunity for the inherited security checks below.
+            if ( ConnectionType == null )
+            {
+                return new List<IdKeyListItemBag>();
+            }
+
             return ConnectionTypeQuery
+                // Don't add .AsNoTracking() here or the type won't get wired up to the opportunities.
                 .SelectMany( ct => ct.ConnectionOpportunities )
                 .Where( co => co.IsActive )
                 .OrderBy( co => co.Order )
                 .ThenBy( co => co.PublicName )
                 .ToList()
+                // Only include opportunities that the current person is authorized to view.
+                .Where( co =>
+                    co.IsAuthorized( Authorization.VIEW, currentPerson )
+                    || co.IsAuthorized( Authorization.EDIT, currentPerson )
+                    || SelfAssignedOpportunityIds.Contains( co.Id )
+                )
                 .Select( co => new IdKeyListItemBag
                 {
                     // Use IdKeys instead of guid so they can be used as page parameters when navigating to the Connections Hub
@@ -406,7 +459,7 @@ namespace Rock.Blocks.Engagement
 
             return new RequestTimelineBag
             {
-                 UpcomingFollowUps = upcomingFollowUps
+                UpcomingFollowUps = upcomingFollowUps
             };
         }
 

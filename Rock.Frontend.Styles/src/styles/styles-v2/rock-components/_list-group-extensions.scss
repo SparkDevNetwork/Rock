@@ -30,3 +30,38 @@ li.list-group-item:hover {
 }
 
 // ==================== END BASE STYLE ==========================
+
+
+// ============================= NAV LINK =============================
+// Icon-prefixed navigation links used in sidebar panels (e.g. Related Settings,
+// Group Tools). Always pair with Bootstrap's .list-group-item:
+//   class="list-group-item nav-link"
+
+.list-group-item {
+    &.nav-link {
+        border: none;
+        border-radius: var(--rounded-small);
+        background-color: transparent;
+        color: var(--color-interface-strong);
+        font-weight: var(--font-weight-semibold);
+        padding: var(--spacing-xsmall) var(--spacing-small);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-tiny);
+        margin-top: var(--spacing-tiny);
+
+        &:hover {
+            background-color: var(--color-interface-softer);
+            color: var(--color-interface-strong);
+            text-decoration: none;
+        }
+
+        // ContentSection backgrounds are already --color-interface-softer, so step
+        // up to --color-interface-soft on hover so the highlight is still visible.
+        .contentsection &:hover {
+            background-color: var(--color-interface-soft);
+        }
+    }
+}
+
+// ==================== END NAV LINK ==========================

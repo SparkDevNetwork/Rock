@@ -12,68 +12,10 @@
         <div v-if="hasBody" class="location-card-body">
             <div v-if="polygonLabel" class="font-italic text-interface-medium">{{ polygonLabel }}</div>
             <div v-if="modelValue.address" class="location-card-address">{{ modelValue.address }}</div>
-            <div v-if="modelValue.scheduleText" class="mt-1 text-interface-medium">{{ modelValue.scheduleText }}</div>
+            <div v-if="modelValue.scheduleText" class="location-card-schedule">{{ modelValue.scheduleText }}</div>
         </div>
     </component>
 </template>
-
-<style scoped>
-.location-card {
-    display: block;
-    color: inherit;
-    border: 1px solid var(--color-interface-soft);
-    overflow: hidden;
-}
-
-.location-card-map-wrap {
-    position: relative;
-}
-
-.location-card + .location-card {
-    margin-top: var(--spacing-small);
-}
-
-/* pointer-events:none ensures clicks bubble up to the wrapping anchor
-   instead of being intercepted by Google Maps internal handlers.
-   gestureHandling:"none" disables user gestures but does not stop event
-   bubbling. */
-.location-card-map {
-    background: var(--color-interface-softer);
-    pointer-events: none;
-}
-
-.location-card-expand {
-    position: absolute;
-    bottom: var(--spacing-xsmall);
-    right: var(--spacing-xsmall);
-    background: var(--color-interface-softest);
-    padding: var(--spacing-xsmall);
-    border-radius: var(--rounded-small);
-    opacity: 0;
-    transition: opacity 0.15s ease-in-out;
-    pointer-events: none;
-    line-height: 1;
-    box-shadow: rgba(0, 0, 0, 0.2) 0 1px 4px -1px;
-}
-
-/* Hover overlay is desktop-only. Touch devices skip the visual overlay
-   and rely on the entire card being a navigable anchor (tap anywhere
-   navigates). */
-@media (hover: hover) {
-    .location-card:hover .location-card-expand {
-        opacity: 1;
-    }
-}
-
-.location-card-body {
-    padding: var(--spacing-small) var(--spacing-medium);
-}
-
-.location-card-address {
-    white-space: pre-line;
-    color: var(--color-interface-strong);
-}
-</style>
 
 <script setup lang="ts">
     /// <reference types="google.maps" />
@@ -206,7 +148,7 @@
         // teardownMap can reach it on unmount.
         const newMap = new google.maps.Map(mapContainer.value, {
             center,
-            zoom: 16,
+            zoom: 14,
             disableDefaultUI: true,
             gestureHandling: "none",
             keyboardShortcuts: false,

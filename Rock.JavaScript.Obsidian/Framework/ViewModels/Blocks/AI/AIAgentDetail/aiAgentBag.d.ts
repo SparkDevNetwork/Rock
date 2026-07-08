@@ -50,7 +50,7 @@ export type AIAgentBag = {
      * when a new user message is added. This only applies to persisted
      * sessions.
      */
-    autoSummarizeThreshold: number;
+    autoSummarizeThreshold?: number | null;
 
     /**
      * The binary file that contains the image to use as the avatar to

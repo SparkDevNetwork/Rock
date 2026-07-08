@@ -264,7 +264,7 @@ namespace RockWeb.Blocks.Core
             var scheduleIdString = Request.QueryString["ScheduleId"];
             if ( scheduleIdString != null )
             {
-                var scheduleId = scheduleIdString.AsInteger();
+                var scheduleId = scheduleIdString.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( scheduleIdString ) ?? 0;
 
                 // if there is a query parameter, ensure that the Schedule Context cookie is set (and has an updated expiration)
                 // note, the Schedule Context might already match due to the query parameter, but has a different cookie context, so we still need to ensure the cookie context is updated

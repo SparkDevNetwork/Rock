@@ -27,5 +27,17 @@ namespace Rock.ViewModels.Blocks.CheckIn.CheckInKiosk
         /// Determines if the location is currently open or closed.
         /// </summary>
         public bool IsOpen { get; set; }
+
+        /// <summary>
+        /// The maximum number of people that can be checked into this location
+        /// automatically before it is considered full.
+        /// </summary>
+        public int? SoftRoomThreshold { get; set; }
+
+        /// <summary>
+        /// The maximum number of people that can be checked into this location
+        /// using an override before it is considered at limit.
+        /// </summary>
+        public int? FirmRoomThreshold { get; set; }
     }
 }

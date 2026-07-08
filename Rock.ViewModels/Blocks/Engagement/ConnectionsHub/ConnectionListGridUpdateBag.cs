@@ -19,6 +19,7 @@ using System;
 
 using Rock.Enums.Connection;
 using Rock.Model;
+using Rock.ViewModels.Core.Grid;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
@@ -77,6 +78,14 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// Gets or sets the currently assigned connector as a list item.
         /// </summary>
         public ListItemBag ConnectorDetails { get; set; }
+
+        /// <summary>
+        /// Gets or sets the grouping metadata for the currently assigned connector. Used by
+        /// the client to label the connector's group when the connector is not part of the
+        /// block-load available groupings list. Null when the connector was not changed or
+        /// the request is unassigned.
+        /// </summary>
+        public GroupingFieldBag ConnectorGroupingField { get; set; }
 
         /// <summary>
         /// Gets or sets the follow-up date for this request when it is in the Future Follow-up state.

@@ -14,7 +14,12 @@
                     <span v-if="location.isOpen" class="label label-success">Open</span>
                     <span v-else class="label label-danger">Closed</span>
                     <span class="title">{{ location.name }}</span>
-                    <span class="subtitle">{{ location.currentCount }}</span>
+                    <span class="subtitle">
+                        <span class="label label-default">
+                            <span class="badge">{{ location.currentCount }}</span>
+                            {{ getLocationRange(location) }}
+                        </span>
+                    </span>
                 </RockButton>
             </div>
         </MainPanel>
@@ -65,6 +70,8 @@
         name: string;
         isOpen: boolean;
         currentCount: number;
+        softThreshold?: number;
+        firmThreshold?: number;
     };
 
     const props = defineProps({
@@ -116,7 +123,9 @@
                 isOpen: location.isOpen,
                 currentCount: props.supervisorData.counts.attendance
                     ?.filter(a => a.locationId === location.id)
-                    .length ?? 0
+                    .length ?? 0,
+                softThreshold: location.softRoomThreshold ?? undefined,
+                firmThreshold: location.firmRoomThreshold ?? undefined,
             });
         }
 
@@ -136,6 +145,21 @@
         const actions: KioskButton[] = [];
 
         emit("updateActions", actions);
+    }
+
+    function getLocationRange(location: LocationData): string {
+        if (location.softThreshold === undefined && location.firmThreshold === undefined) {
+            return "";
+        }
+        else if (location.softThreshold === undefined) {
+            return ` of ${location.firmThreshold}`;
+        }
+        else if (location.firmThreshold === undefined) {
+            return ` of ${location.softThreshold}`;
+        }
+        else {
+            return ` of ${location.softThreshold}-${location.firmThreshold}`;
+        }
     }
 
     async function onLocationClick(location: LocationData): Promise<void> {

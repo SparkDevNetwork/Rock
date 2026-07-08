@@ -25,7 +25,7 @@
 </script>
 
 <script setup lang="ts">
-    import { computed, nextTick, onMounted, PropType, ref, watch } from "vue";
+    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
     import { newGuid } from "@Obsidian/Utility/guid";
@@ -280,6 +280,14 @@
 
         if (props.editor === "ace") {
             await loadAce();
+
+            // The element can be removed (component unmounted or re-rendered)
+            // while the editor library loads; bail so ace.edit doesn't throw on
+            // a missing element.
+            if (!document.getElementById(codeEditorId.value)) {
+                return;
+            }
+
             editor = window.ace.edit(codeEditorId.value);
             editor.setTheme(`ace/theme/${themeName.value}`);
             editor.getSession().setMode(`ace/mode/${modeName.value}`);
@@ -319,6 +327,14 @@
         }
         else if (props.editor === "monaco") {
             await loadMonaco();
+
+            // The element can be removed (component unmounted or re-rendered)
+            // while the editor library loads; bail so monaco.editor.create
+            // doesn't throw on a missing element.
+            if (!editorWrapper.value) {
+                return;
+            }
+
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             editor = window.monaco.editor.create(editorWrapper.value, {
@@ -345,5 +361,18 @@
     }
 
     onMounted(initialize);
+
+    onBeforeUnmount(() => {
+        if (editor) {
+            if ("dispose" in editor && typeof editor.dispose === "function") {
+                editor.dispose();
+            }
+            else if ("destroy" in editor && typeof editor.destroy === "function") {
+                editor.destroy();
+            }
+        }
+
+        observer?.disconnect();
+    });
 
 </script>

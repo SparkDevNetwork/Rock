@@ -368,7 +368,9 @@
 
     // #region Conversation Values
 
-    const conversations = ref<ConversationBag[]>(box.conversations ?? []);
+    // Conversations are loaded via the ReloadConversations block action on mount, not from the
+    // initialization box, so this starts empty.
+    const conversations = ref<ConversationBag[]>([]);
     const selectedConversation = ref<ConversationBag | null>(null);
     const conversationHasFocus = ref<boolean>(false);
     const openDropdownIndex = ref<number | null>(null);
@@ -383,7 +385,9 @@
     const isSuccessNotificationBoxVisible = ref<boolean>(false);
     const errorNotificationText = ref<string>(box.errorMessage ?? "");
     const successNotificationBoxMessage = ref<string>("");
-    const areConversationsLoading = ref<boolean>(false);
+    // Starts true because the conversation list is fetched on mount; this avoids a flash of the
+    // empty state before the initial load completes.
+    const areConversationsLoading = ref<boolean>(true);
     const isConversationLoading = ref<boolean>(false);
 
     // #endregion
@@ -1057,6 +1061,10 @@
 
     onMounted(() => {
         document.addEventListener("click", handleClickOutside);
+
+        // Load the conversation list now that the block has mounted, rather than during page
+        // initialization, to keep the heavy query off the synchronous page render path.
+        reloadConversations();
     });
 
     onUnmounted(() => {

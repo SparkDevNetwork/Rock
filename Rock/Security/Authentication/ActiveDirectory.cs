@@ -31,9 +31,22 @@ namespace Rock.Security.Authentication
     [Description( "Active Directory Authentication Provider" )]
     [Export( typeof( AuthenticationComponent ) )]
     [ExportMetadata( "ComponentName", "Active Directory" )]
-    [TextField( "Server", "The Active Directory server name", true, "", "Server", 0 )]
-    [TextField( "Domain", "The network domain that users belongs to", true, "", "Server", 1 )]
-    [BooleanField( "Allow Change Password", "Set to true to allow user to change their Active Directory user password from the Rock system", false, "Server" )]
+    [TextField( "Server",
+        Description = "The Active Directory server name",
+        IsRequired = true,
+        DefaultValue = "",
+        Category = "Server",
+        Order = 0 )]
+    [TextField( "Domain",
+        Description = "The network domain that users belongs to",
+        IsRequired = true,
+        DefaultValue = "",
+        Category = "Server",
+        Order = 1 )]
+    [BooleanField( "Allow Change Password",
+        Description = "Set to true to allow user to change their Active Directory user password from the Rock system",
+        DefaultBooleanValue = false,
+        Category = "Server" )]
     [Rock.SystemGuid.EntityTypeGuid( "8057ABAB-6AAC-4872-A11F-AC0D52AB40F6" )]
     public class ActiveDirectory : AuthenticationComponent, ICredentialAuthentication
     {

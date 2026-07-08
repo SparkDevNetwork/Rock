@@ -1,0 +1,124 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DisplayCard v-if="!isConfigured"
+                 class="store-header-config-card"
+                 title="Rock Shop Configuration Needed"
+                 description="The Rock Shop is not yet configured for your server. Please complete the configuration to enable showing pricing and the installation of plugins."
+                 iconCssClass="ti ti-alert-triangle"
+                 iconLabelType="warning">
+        <template #actions>
+            <RockButton :btnType="BtnType.Warning" btnSize="sm" @click="navigateToConfiguration">
+                Configure Rock Shop
+            </RockButton>
+        </template>
+    </DisplayCard>
+
+    <div v-else-if="organization">
+        <DisplayCard class="store-header-config-card"
+                     :title="organization.name">
+            <template v-if="organization.logoUrl" #prepend>
+                <img :src="organization.logoUrl"
+                     :alt="organization.name ?? ''"
+                     class="store-header-logo img-responsive border border-gray-400 rounded" />
+            </template>
+
+            <template #description>
+                <small class="text-muted">{{ location }}</small>
+            </template>
+            <template #actions>
+                <div class="d-flex gap-4">
+                    <p class="m-0"><strong>Weekend Attendance:</strong></p>
+                    <p class="text-muted m-0">{{ formattedAttendance }}</p>
+                </div>
+            </template>
+        </DisplayCard>
+    </div>
+</template>
+
+<style scoped>
+.store-header-config-card {
+    margin-bottom: var(--spacing-large);
+}
+
+.store-header-config-card :deep(.displaycard-heading-text-description) {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+}
+
+.store-header-config-card :deep(.displaycard-heading-text) {
+    gap: 0;
+}
+
+.store-header-config-card :deep(.displaycard-heading-text-title) {
+    font-size: var(--font-size-h4);
+}
+
+.store-header-logo {
+    width: 50px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { StoreHeaderInitializationBox } from "@Obsidian/ViewModels/Blocks/Store/StoreHeader/storeHeaderInitializationBox";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+
+    // #region Types
+
+    const enum NavigationUrlKey {
+        LinkOrganizationPage = "LinkOrganizationPage"
+    }
+
+    // #endregion Types
+
+    // #region Values
+
+    const config = useConfigurationValues<StoreHeaderInitializationBox>();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isConfigured = computed((): boolean => config.isConfigured ?? false);
+
+    const organization = computed(() => config.organization ?? null);
+
+    const location = computed((): string => {
+        const locationParts = [organization.value?.city, organization.value?.state]
+            .filter(part => !!part);
+
+        return locationParts.join(", ");
+    });
+
+    const formattedAttendance = computed((): string => {
+        return asFormattedString(organization.value?.averageWeeklyAttendance ?? null, 0);
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Navigates to the Link Organization page so the user can configure the Rock Shop.
+     */
+    function navigateToConfiguration(): void {
+        const url = config.navigationUrls?.[NavigationUrlKey.LinkOrganizationPage];
+
+        if (url) {
+            window.location.href = url;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    // #endregion Functions
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

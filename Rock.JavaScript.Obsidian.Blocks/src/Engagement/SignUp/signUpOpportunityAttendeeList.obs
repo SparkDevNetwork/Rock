@@ -1,0 +1,517 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.options?.errorMessage" :alertType="AlertType.Warning">
+        {{ config.options.errorMessage }}
+    </NotificationBox>
+
+    <template v-else>
+        <Panel :title="config.options?.opportunityName ?? ''" type="block">
+            <template #headerActions>
+                <HighlightLabel v-if="config.options?.groupTypeName" labelType="default">{{ config.options.groupTypeName }}</HighlightLabel>
+                <HighlightLabel v-if="config.options?.campusName" labelType="campus">{{ config.options.campusName }}</HighlightLabel>
+                <HighlightLabel v-if="config.options?.isGroupInactive" labelType="danger">Inactive</HighlightLabel>
+            </template>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <RockLabel>Location</RockLabel>
+                        <div>{{ config.options?.locationName }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <RockLabel>Schedule</RockLabel>
+                        <div>{{ config.options?.friendlySchedule }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <RockLabel>Configured Slots</RockLabel>
+                        <div>{{ configuredSlotsText }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <RockLabel>Slots Filled</RockLabel>
+                        <div>
+                            <Badge :badgeType="slotsFilledBadgeType">{{ slotsFilledText }}</Badge>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Panel>
+
+        <Grid :definition="config.gridDefinition ?? undefined"
+              :data="gridDataSource"
+              keyField="idKey"
+              personKeyField="personIdKey"
+              itemTerm="Attendee"
+              title="Attendees"
+              :exportTitle="config.options?.projectName ?? undefined"
+              :entityTypeGuid="EntityType.GroupMemberAssignment"
+              stickyHeader
+              liveUpdates
+              markInactiveRows
+              :rowClass="getRowClass"
+              gridSettings
+              :gridSettingsActive="hasSettingsFilters"
+              @gridSettingsClick="onGridSettingsClick"
+              :showLaunchWorkflow="false"
+              :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+              @selectItem="onSelectItem">
+
+            <SelectColumn />
+
+            <Column name="person"
+                    title="Name"
+                    field="person"
+                    :filter="textValueFilter"
+                    :filterValue="getNameFilterValue"
+                    :quickFilterValue="getNameFilterValue"
+                    :sortValue="getNameFilterValue"
+                    :excludeFromExport="true"
+                    visiblePriority="xs"
+                    width="30%">
+                <template #format="{ row }">
+                    <div class="d-flex flex-fill align-items-center">
+                        <i v-if="row.hasUnmetGroupRequirements"
+                           class="ti ti-alert-triangle text-warning mr-2"
+                           :title="getUnmetRequirementsTitle(row)"></i>
+                        <PersonAvatar :personIdKey="row.personIdKey" :photoUrl="photoUrl(row)" photoSize="xs" marginRight="sm" enableHoverInfo />
+                        <span class="mr-1">{{ row.fullName }}</span>
+                        <span v-if="row.signalMarkup" class="mr-1" v-html="row.signalMarkup"></span>
+                        <span v-if="row.note"
+                              :ref="(el) => addTooltip(el as Element)"
+                              data-toggle="tooltip"
+                              data-placement="top"
+                              :data-original-title="row.note">
+                            <i class="ti ti-file-type-txt text-info"></i>
+                        </span>
+                    </div>
+                </template>
+            </Column>
+
+            <TextColumn name="roleName"
+                        title="Role"
+                        field="roleName"
+                        :filter="pickExistingValueFilter"
+                        visiblePriority="xs" />
+
+            <TextColumn name="memberStatus"
+                        title="Member Status"
+                        field="memberStatus"
+                        :filter="pickExistingValueFilter"
+                        visiblePriority="xs" />
+
+            <Column name="exportFullNameReversed"
+                    title="Name"
+                    field="exportFullNameReversed"
+                    :hideOnScreen="true" />
+
+            <Column name="note"
+                    title="Note"
+                    field="note"
+                    :hideOnScreen="true" />
+
+            <Column name="nickName"
+                    title="Nick Name"
+                    field="nickName"
+                    :hideOnScreen="true" />
+
+            <Column name="lastName"
+                    title="Last Name"
+                    field="lastName"
+                    :hideOnScreen="true" />
+
+            <DateColumn name="birthDate"
+                        title="Birth Date"
+                        field="birthDate"
+                        :hideOnScreen="true" />
+
+            <Column name="age"
+                    title="Age"
+                    field="age"
+                    :hideOnScreen="true" />
+
+            <Column name="email"
+                    title="Email"
+                    field="email"
+                    :hideOnScreen="true" />
+
+            <Column name="recordStatus"
+                    title="Record Status"
+                    field="recordStatus"
+                    :hideOnScreen="true" />
+
+            <Column name="gender"
+                    title="Gender"
+                    field="gender"
+                    :hideOnScreen="true" />
+
+            <Column name="isDeceased"
+                    title="Is Deceased"
+                    field="isDeceased"
+                    :hideOnScreen="true" />
+
+            <Column name="homePhone"
+                    title="Home Phone"
+                    field="homePhone"
+                    :hideOnScreen="true" />
+
+            <Column name="cellPhone"
+                    title="Cell Phone"
+                    field="cellPhone"
+                    :hideOnScreen="true" />
+
+            <Column name="homeAddress"
+                    title="Home Address"
+                    field="homeAddress"
+                    :hideOnScreen="true" />
+
+            <Column name="latitude"
+                    title="Latitude"
+                    field="latitude"
+                    :hideOnScreen="true" />
+
+            <Column name="longitude"
+                    title="Longitude"
+                    field="longitude"
+                    :hideOnScreen="true" />
+
+            <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+
+            <ButtonColumn v-if="config.navigationUrls?.[NavigationUrlKey.PersonProfilePage]"
+                          name="user"
+                          iconClass="ti ti-user"
+                          :excludeFromExport="true"
+                          visiblePriority="md"
+                          @click="onPersonClick" />
+
+            <DeleteColumn v-if="config.isDeleteEnabled"
+                          :rowDisabled="isDeleteRowDisabled"
+                          disableConfirmation
+                          @click="onDeleteClick" />
+        </Grid>
+
+        <GridSettingsModal v-model="gridSettings" v-model:visible="isGridSettingsVisible" />
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { computed, reactive, ref, watch } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { AttributeColumns, ButtonColumn, Column, DateColumn, DeleteColumn, SelectColumn, TextColumn, pickExistingValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
+    import Badge from "@Obsidian/Controls/badge.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { SignUpOpportunityAttendeeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpOpportunityAttendeeList/signUpOpportunityAttendeeListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import GridSettingsModal from "./SignUpOpportunityAttendeeList/gridSettingsModal.partial.obs";
+    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./SignUpOpportunityAttendeeList/types.partial";
+
+    const config = useConfigurationValues<ListBlockBox<SignUpOpportunityAttendeeListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const slotsFilled = ref(config.options?.slotsFilled ?? 0);
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        campus: safeParseJson<ListItemBag>(preferences.getValue(makePreferenceKey(PreferenceKey.FilterCampus))) ?? null,
+        genders: (preferences.getValue(makePreferenceKey(PreferenceKey.FilterGender)) || "").split("|").filter(g => g !== "")
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.campus?.value || (gridSettings.value.genders?.length ?? 0) > 0;
+    });
+
+    /** The configured slots displayed as "minimum | desired | maximum". */
+    const configuredSlotsText = computed((): string => {
+        const minimum = config.options?.slotsMinimum ?? 0;
+        const desired = config.options?.slotsDesired ?? 0;
+        const maximum = config.options?.slotsMaximum ?? 0;
+
+        return `${minimum.toLocaleString()} | ${desired.toLocaleString()} | ${maximum.toLocaleString()}`;
+    });
+
+    /** The slots filled count formatted for display. */
+    const slotsFilledText = computed((): string => {
+        return slotsFilled.value.toLocaleString();
+    });
+
+    /** The badge type conveying how the filled slots compare to the configured capacities. */
+    const slotsFilledBadgeType = computed((): BadgeType => {
+        const minimum = config.options?.slotsMinimum ?? 0;
+        const desired = config.options?.slotsDesired ?? 0;
+        const maximum = config.options?.slotsMaximum ?? 0;
+        const filled = slotsFilled.value;
+
+        if (filled <= 0) {
+            return BadgeType.Danger;
+        }
+
+        if (maximum > 0 && filled > maximum) {
+            return BadgeType.Critical;
+        }
+
+        if (filled < minimum) {
+            return BadgeType.Danger;
+        }
+
+        if (filled < desired) {
+            return BadgeType.Warning;
+        }
+
+        return BadgeType.Success;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Builds the person preference key for this opportunity.
+     *
+     * @param key The base preference key.
+     */
+    function makePreferenceKey(key: string): string {
+        return `${config.options?.preferenceKeyPrefix ?? ""}${key}`;
+    }
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Gets the filter value text to use for the name column.
+     *
+     * @param row The row to be filtered.
+     */
+    function getNameFilterValue(row: Record<string, unknown>): string {
+        return row["fullName"] as string;
+    }
+
+    /**
+     * Adds the Bootstrap tooltip behavior to the note icon element. Obsidian
+     * grids do not initialize `data-toggle="tooltip"` elements automatically,
+     * so each note icon must be activated as it is mounted.
+     *
+     * @param noteElement The note icon element to attach the tooltip to.
+     */
+    function addTooltip(noteElement: Element | null): void {
+        if (noteElement) {
+            tooltip(noteElement);
+        }
+    }
+
+    /**
+     * Gets the tooltip describing the group requirements the row's group member
+     * does not yet meet.
+     *
+     * @param row The row whose unmet requirements are described.
+     */
+    function getUnmetRequirementsTitle(row: Record<string, unknown>): string {
+        const names = (row["unmetGroupRequirements"] as string[] | null) ?? [];
+
+        return `Unmet Group Requirements: ${names.join(", ")}`;
+    }
+
+    /**
+     * Gets the URL for the avatar of the name column.
+     *
+     * @param row The row whose photo URL is returned.
+     */
+    function photoUrl(row: Record<string, unknown>): string {
+        if (!row["person"]) {
+            return "";
+        }
+
+        const value = row["person"] as PersonFieldBag;
+
+        if (!value || typeof value !== "object") {
+            return "";
+        }
+
+        return value.photoUrl ?? "";
+    }
+
+    /**
+     * Gets the CSS classes that convey the state of the row's individual.
+     *
+     * @param row The row whose CSS classes are returned.
+     */
+    function getRowClass(row: Record<string, unknown>): string {
+        const classes: string[] = [];
+
+        if (row["isDeceased"] === true) {
+            classes.push("is-deceased");
+        }
+
+        if (row["isMemberInactive"] === true) {
+            classes.push("is-inactive");
+        }
+
+        return classes.join(" ");
+    }
+
+    /**
+     * Determines if the delete button should be disabled for the specified row.
+     * Rows whose role is managed by group sync cannot be deleted here.
+     *
+     * @param row The row to be checked.
+     */
+    function isDeleteRowDisabled(row: Record<string, unknown>): boolean {
+        return row["isDeleteDisabled"] === true;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        const detailUrl = config.navigationUrls?.[NavigationUrlKey.GroupMemberDetailPage];
+
+        if (!detailUrl) {
+            return;
+        }
+
+        const groupMemberIdKey = gridData?.rows?.find(r => r["idKey"] === key)?.["groupMemberIdKey"] as string;
+
+        if (groupMemberIdKey) {
+            window.location.href = detailUrl.replace("((Key))", groupMemberIdKey);
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the individual.
+     */
+    function onAddItem(): void {
+        const detailUrl = config.navigationUrls?.[NavigationUrlKey.GroupMemberDetailPage];
+
+        if (detailUrl) {
+            window.location.href = detailUrl.replace("((Key))", "0");
+        }
+    }
+
+    /**
+     * Called when the person profile button has been clicked by the individual.
+     *
+     * @param key The key of the row that was clicked.
+     */
+    function onPersonClick(key: string): void {
+        const profileUrl = config.navigationUrls?.[NavigationUrlKey.PersonProfilePage];
+
+        if (!profileUrl) {
+            return;
+        }
+
+        const personIdKey = gridData?.rows?.find(r => r["idKey"] === key)?.["personIdKey"] as string;
+
+        if (personIdKey) {
+            window.location.href = profileUrl.replace("((Key))", personIdKey);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual.
+     *
+     * @param key The key of the row to be deleted.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const row = gridData?.rows?.find(r => r["idKey"] === key);
+        const actionName = row?.["isArchiveExpected"] === true ? "archive" : "delete";
+
+        const isConfirmed = await confirm(`Are you sure you want to ${actionName} this group member?`);
+
+        if (!isConfirmed) {
+            return;
+        }
+
+        const result = await invokeBlockAction<number>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+
+            if (typeof result.data === "number") {
+                slotsFilled.value = result.data;
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete attendee.");
+        }
+    }
+
+    /**
+     * Called when the grid settings icon is clicked, displays the block filters.
+     */
+    function onGridSettingsClick(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        preferences.setValue(makePreferenceKey(PreferenceKey.FilterCampus), gridSettings.value.campus?.value ? JSON.stringify(gridSettings.value.campus) : "");
+        preferences.setValue(makePreferenceKey(PreferenceKey.FilterGender), (gridSettings.value.genders ?? []).join("|"));
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    if (!config.options?.errorMessage) {
+        gridDataSource.value = loadGridData();
+    }
+</script>

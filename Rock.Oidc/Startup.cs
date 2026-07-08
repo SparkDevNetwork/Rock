@@ -16,8 +16,10 @@
 
 using System;
 
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Owin;
+using Microsoft.Owin.BuilderProperties;
 
 using Owin;
 
@@ -74,6 +76,10 @@ namespace Rock.Oidc
                 return;
             }
 
+            var appName = new AppProperties( app.Properties ).AppName;
+            var legacyProvider = DataProtectionProvider.Create( appName );
+            var dataProtectionProvider = new RockEncryptionDataProtectionProvider( legacyProvider );
+
             app.UseOpenIdConnectServer( options =>
             {
                 options.Provider = new AuthorizationProvider();
@@ -99,6 +105,8 @@ namespace Rock.Oidc
                 options.ApplicationCanDisplayErrors = System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment;
                 options.AllowInsecureHttp = !isSecure || System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment;
 
+                options.DataProtectionProvider = dataProtectionProvider;
+
                 var rockSigningCredentials = new RockOidcSigningCredentials( rockOidcSettings );
 
                 foreach ( var key in rockSigningCredentials.SigningKeys )
@@ -107,7 +115,10 @@ namespace Rock.Oidc
                 }
             } );
 
-            app.UseOAuthValidation();
+            app.UseOAuthValidation( options =>
+            {
+                options.DataProtectionProvider = dataProtectionProvider;
+            } );
 
             app.Use<DynamicRegistrationMiddleware>();
         }

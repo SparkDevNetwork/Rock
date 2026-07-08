@@ -115,6 +115,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<Person>( Context ).Queryable().Any( a => a.PreferredServiceTimeScheduleId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, Person.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<PersonalizationSegment>( Context ).Queryable().Any( a => a.PersistedScheduleId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, PersonalizationSegment.FriendlyTypeName );

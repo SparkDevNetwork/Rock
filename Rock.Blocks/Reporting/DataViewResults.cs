@@ -104,18 +104,19 @@ namespace Rock.Blocks.Reporting
         }
 
         /// <summary>
-        /// The fixed pixel widths applied to dynamic columns by value type. Text columns
-        /// get the most room so values such as email addresses fit on a single line, while
-        /// the compact value types use a narrower width. The grid keeps every cell on one
-        /// line and truncates the overflow with an ellipsis, so these widths control how
-        /// much of each value is shown before truncation.
+        /// The relative widths applied to dynamic columns by value type, expressed as percentages.
+        /// Percentages let the columns grow to fill the available width, so a data view with only a
+        /// few columns does not leave a large empty gap on the right, and shrink (down to the grid's
+        /// minimum cell width, after which the grid scrolls) when there are many columns. Text columns
+        /// are the widest so values such as email addresses have room; the compact value types are
+        /// narrower.
         /// </summary>
         private static class ColumnWidth
         {
-            public const string Boolean = "100px";
-            public const string Date = "150px";
-            public const string Number = "120px";
-            public const string Text = "300px";
+            public const string Boolean = "8%";
+            public const string Date = "10%";
+            public const string Number = "10%";
+            public const string Text = "20%";
         }
 
         #endregion Keys
@@ -260,14 +261,15 @@ namespace Rock.Blocks.Reporting
                 var underlyingType = Nullable.GetUnderlyingType( propertyInfo.PropertyType ) ?? propertyInfo.PropertyType;
                 var isDateKeyField = IsDateKeyField( propertyInfo );
 
-                // Resolve the value to a grid column type. Plain (non-currency) numbers are
-                // rendered as raw text so the grid does not add thousands separators. An Id
-                // such as 12345 would otherwise display as "12,345". They are still sized like
-                // a number, and currency keeps its numeric formatting.
+                // Resolve the value to a grid column type. Plain (non-currency) numbers keep the
+                // number column type so the grid sorts and filters them numerically, but the block
+                // renders that type with a text cell on the client so they display without thousands
+                // separators. An Id such as 12345 therefore shows as "12345" rather than "12,345",
+                // matching the legacy grid, while still sorting and filtering as a number. Currency
+                // keeps its own numeric formatting.
                 var columnType = isDateKeyField ? ColumnType.Date : GetColumnType( propertyInfo );
                 var isPlainNumberField = columnType == ColumnType.Number;
                 var columnWidth = GetColumnWidth( columnType );
-                var displayColumnType = isPlainNumberField ? ColumnType.Text : columnType;
 
                 builder.AddField( fieldName, entity =>
                 {
@@ -301,8 +303,10 @@ namespace Rock.Blocks.Reporting
 
                     if ( isPlainNumberField )
                     {
-                        // Emit the raw digits so the value renders without thousands separators,
-                        // matching the legacy grid. The text column also exports this string as-is.
+                        // Emit the value as a pre-formatted string so it renders without thousands
+                        // separators (and keeps its exact decimal scale), matching the legacy grid.
+                        // The client number column parses this back to a number for numeric sorting
+                        // and filtering, and exports the string as-is.
                         return value.ToString();
                     }
 
@@ -320,7 +324,7 @@ namespace Rock.Blocks.Reporting
 
                 builder.AddDefinitionAction( definition =>
                 {
-                    definition.DynamicFields.Add( CreateDynamicField( fieldName, title, displayColumnType, columnWidth ) );
+                    definition.DynamicFields.Add( CreateDynamicField( fieldName, title, columnType, columnWidth ) );
                 } );
             }
 
@@ -331,8 +335,9 @@ namespace Rock.Blocks.Reporting
                 builder.AddField( "id", entity => entity.Id.ToString() );
                 builder.AddDefinitionAction( definition =>
                 {
-                    // The Id is a number, so render it as raw text (no grouping) but size it like a number.
-                    definition.DynamicFields.Add( CreateDynamicField( "id", "Id", ColumnType.Text, GetColumnWidth( ColumnType.Number ) ) );
+                    // The Id is a number, so it uses the number column type to sort and filter
+                    // numerically; the client renders that type as raw text (no grouping).
+                    definition.DynamicFields.Add( CreateDynamicField( "id", "Id", ColumnType.Number, GetColumnWidth( ColumnType.Number ) ) );
                 } );
             }
 
@@ -364,10 +369,10 @@ namespace Rock.Blocks.Reporting
         }
 
         /// <summary>
-        /// Gets the fixed pixel width to use for a dynamic column based on its value type.
+        /// Gets the relative (percentage) width to use for a dynamic column based on its value type.
         /// </summary>
         /// <param name="columnType">The grid column type identifier.</param>
-        /// <returns>A pixel width string suitable for the dynamic column definition.</returns>
+        /// <returns>A width string suitable for the dynamic column definition.</returns>
         private static string GetColumnWidth( string columnType )
         {
             switch ( columnType )

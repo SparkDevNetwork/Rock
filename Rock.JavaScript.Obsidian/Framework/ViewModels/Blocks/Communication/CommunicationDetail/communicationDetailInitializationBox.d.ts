@@ -41,12 +41,6 @@ export type CommunicationDetailInitializationBox = {
     /** Gets or sets whether the communication detail block should be hidden. */
     isHidden: boolean;
 
-    /**
-     * Gets or sets the URL that redirects a hidden legacy communication to the legacy communication page.
-     * Temporary; remove when the legacy communication entry wizard block and page are removed.
-     */
-    legacyRedirectUrl?: string | null;
-
     /** Gets or sets the message preview for this communication. */
     messagePreview?: CommunicationMessagePreviewBag | null;
 
@@ -61,6 +55,9 @@ export type CommunicationDetailInitializationBox = {
 
     /** Gets or sets the recipient grid configuration options for this communication. */
     recipientGridOptions?: CommunicationRecipientGridOptionsBag | null;
+
+    /** Gets or sets the URL to redirect to on load when the current page cannot edit the communication; empty when it can. */
+    redirectUrl?: string | null;
 
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;

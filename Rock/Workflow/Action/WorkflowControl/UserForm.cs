@@ -27,6 +27,7 @@ using Rock.Enums.Workflow;
 using Rock.Field;
 using Rock.Model;
 using Rock.Net;
+using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Reporting;
@@ -343,7 +344,7 @@ namespace Rock.Workflow.Action
                 : form.Footer.ToStringSafe();
 
             var fields = GetFormFields( form, action, mergeFields, rockContext );
-            var fieldValues = GetFormFieldValues( form, action, rockContext );
+            var fieldValues = GetFormFieldValues( form, action, rockContext, requestContext );
             var personEntryValues = GetPersonEntryValues( action, requestContext.CurrentPerson, rockContext );
             var personEntryConfiguration = GetPersonEntryConfiguration( action, requestContext.CurrentPerson, personEntryValues?.MaritalStatusGuid, mergeFields, rockContext );
 
@@ -751,8 +752,9 @@ namespace Rock.Workflow.Action
         /// <param name="form">The data that describes the form to be displayed.</param>
         /// <param name="action">The action currently being processed.</param>
         /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <param name="requestContext">The context that describes the current request.</param>
         /// <returns>A dictionary of field values with the keys being the attribute unique identifiers.</returns>
-        private static Dictionary<Guid, string> GetFormFieldValues( WorkflowActionFormCache form, WorkflowAction action, RockContext rockContext )
+        private static Dictionary<Guid, string> GetFormFieldValues( WorkflowActionFormCache form, WorkflowAction action, RockContext rockContext, RockRequestContext requestContext )
         {
             var fieldValues = new Dictionary<Guid, string>();
             var activity = action.Activity;
@@ -792,6 +794,17 @@ namespace Rock.Workflow.Action
                 if ( formAttribute.IsReadOnly )
                 {
                     var htmlValue = field.GetCondensedHtmlValue( value, attribute.ConfigurationValues );
+
+                    // If the field is a linkable field then we need to wrap the
+                    // HTML value in the link to the URL. This is only done if
+                    // the label is not hidden to maintain compatability with the
+                    // original block.
+                    if ( !formAttribute.HideLabel && field is ILinkableFieldType linkableField )
+                    {
+                        string url = linkableField.UrlLink( value, attribute.QualifierValues );
+                        url = requestContext.ResolveRockUrl( "~" ).EnsureTrailingForwardslash() + url;
+                        htmlValue = $"<a href='{url}' target='_blank' rel='noopener noreferrer'>{htmlValue}</a>";
+                    }
 
                     fieldValues.Add( attribute.Guid, htmlValue );
                 }
@@ -840,6 +853,36 @@ namespace Rock.Workflow.Action
                     }
 
                     item?.SetPublicAttributeValue( attribute.Key, formFieldValue, null, false );
+
+                    var value = item?.GetAttributeValue( attribute.Key );
+
+                    if ( value.IsNotNullOrWhiteSpace() )
+                    {
+                        var field = attribute.FieldType.Field;
+                        var rules = field.GetValidationRules( attribute.ConfigurationValues );
+
+                        try
+                        {
+                            StringValueValidator.Validate( value, rules, typeof( AttributeValue ), nameof( AttributeValue.Value ) );
+                        }
+                        catch ( PropertyValidationException ex )
+                        {
+                            if ( DbContext.EnableStringValidation )
+                            {
+                                throw new AttributeValueValidationException( attribute, item.Id, ex.Reason, null );
+                            }
+                            else
+                            {
+                                // Captures the full current call stack, all callers
+                                // included so that we get more information about
+                                // where this happened in the log.
+                                var stack = new System.Diagnostics.StackTrace( true ).ToString();
+                                var ex2 = new AttributeValueValidationException( attribute, item.Id, ex.Reason, stack );
+
+                                ExceptionLogService.LogException( ex2, System.Web.HttpContext.Current );
+                            }
+                        }
+                    }
                 }
             }
         }

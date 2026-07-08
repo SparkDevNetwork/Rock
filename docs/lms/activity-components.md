@@ -1,6 +1,8 @@
 ---
 title: LMS Activity Components
-last_updated: 2026-05-01
+last_updated: 2026-06-26
+related_specs:
+  - specs/completed/lms/260623-lms-assessment-retakes.md
 related_files:
   - Rock/Lms/LearningActivityComponent.cs
   - Rock/Lms/LearningActivityContainer.cs
@@ -51,6 +53,8 @@ The activity row references its component class. The component renders its own c
 **Late detection uses submission time.** Pre-fix `ef0c011535` (Fixes #6710, 2026-03-05), an activity submitted before due date but graded after was incorrectly marked late. The fix uses submission timestamp.
 
 **Grading is per-component.** AssessmentComponent has built-in scoring; FileUploadComponent supports manual grading; AcknowledgmentComponent is binary done/not-done.
+
+**Scored components advertise retake support.** Assessment, File Upload, and Point Assessment add `supportsRetake` to the dictionary they return from `GetActivityConfiguration` for `PresentedFor.Configuration` (the key constant is `LearningActivityComponent.BaseConfigurationKey.SupportsRetake`). The activity editor shows the Retake Threshold field only for components that advertise it. All-or-nothing components (Acknowledgment, Content Article, Video Watch) do not: they award the full `Points` value on completion, so there is no partial score for a threshold to gate. The threshold comparison itself lives on the completion, not the component (see [grading-systems.md](grading-systems.md)).
 
 **Custom components handle deployment-specific learning shapes.** A custom "Reflection Journal" component, a custom "Meeting With Mentor" component, etc. Each is one class.
 
@@ -120,6 +124,7 @@ Rejected (since `1c410e56e9`). Files must persist through grading.
 - `RenderConfiguration`, `RenderViewer`, `RenderEditor`
 - `EvaluateCompletion`
 - `GradeCompletion`
+- `GetActivityConfiguration` (per-presentation config dictionary; scored components add `BaseConfigurationKey.SupportsRetake = "true"` for `PresentedFor.Configuration`)
 
 ### Built-in Components
 
@@ -149,6 +154,11 @@ Rejected (since `1c410e56e9`). Files must persist through grading.
 
 ## Recent Impactful Changes
 
+- **2026-06-25** ([commit `7c0fac73aa`](https://github.com/SparkDevNetwork/Rock/commit/7c0fac73aa)). Scored components (Assessment, File Upload, Point Assessment) advertise `supportsRetake`, gating the new per-activity Retake Threshold field in the activity editor.
 - **2026-03-05** ([commit `ef0c011535`](https://github.com/SparkDevNetwork/Rock/commit/ef0c011535)). Activity completion uses submission time, not grade time, for late detection (Fixes #6710).
 - **2025-07-09** ([commit `0a2660ba94`](https://github.com/SparkDevNetwork/Rock/commit/0a2660ba94)). New Content Article Learning Activity component.
 - **2025-06-27** ([commit `1c410e56e9`](https://github.com/SparkDevNetwork/Rock/commit/1c410e56e9)). File-upload activities preserve files until grading completes (Fixes #6359).
+
+## Related Specs
+
+- [LMS Assessment Retakes](../../specs/completed/lms/260623-lms-assessment-retakes.md) (2026-06-23, Jason Hendee)

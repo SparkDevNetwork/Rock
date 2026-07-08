@@ -101,6 +101,22 @@ namespace Rock.Tasks
                 // A new Step can only match this condition if it has a matching "To" State and a "From" State is not specified.
                 if ( message.EntityContextState == EntityContextState.Added || message.EntityContextState == EntityContextState.Modified )
                 {
+                    /*
+                         6/12/2026 - NA
+
+                         A status change trigger should only fire when the Step's status actually
+                         changes. Without this guard, saving unrelated fields (e.g., Start Date) on
+                         a Step whose current status already matches the "To" qualifier would
+                         re-fire the workflow, even when the From qualifier is set to [Any].
+
+                         Reason: Prevent false workflow triggers on non-status edits to Steps (See #6874)
+                    */
+                    if ( message.EntityContextState == EntityContextState.Modified
+                         && message.PreviousStepStatusId.GetValueOrDefault( -1 ) == message.CurrentStepStatusId.GetValueOrDefault( -1 ) )
+                    {
+                        return false;
+                    }
+
                     var settings = new StepWorkflowTrigger.StatusChangeTriggerSettings( trigger.TypeQualifier );
 
                     if ( ( settings.FromStatusId == null || settings.FromStatusId.Value == message.PreviousStepStatusId.GetValueOrDefault( -1 ) )

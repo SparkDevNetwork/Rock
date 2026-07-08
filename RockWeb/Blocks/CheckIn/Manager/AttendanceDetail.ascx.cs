@@ -626,6 +626,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 .Include( a => a.AttendanceCode )
                 .Include( a => a.CheckedOutByPersonAlias.Person )
                 .Include( a => a.PresentByPersonAlias.Person )
+                .Include( a => a.SearchTypeValue )
+                .Include( a => a.SearchResultGroup )
                 .AsNoTracking()
                 .FirstOrDefault();
 
@@ -747,6 +749,113 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 lCheckedOutTime.Visible = false;
                 pnlCheckedOutDetails.Visible = false;
             }
+
+            ShowSearchDetails( rockContext, attendance );
+        }
+
+        /// <summary>
+        /// Shows the search group, search type, and search value that were captured when this check-in was performed,
+        /// along with the adult members (and their mobile phone numbers) of the search result group. This helps staff
+        /// identify and contact whoever performed a check-in when a child is brought by someone other than a parent.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="attendance">The attendance.</param>
+        private void ShowSearchDetails( RockContext rockContext, Attendance attendance )
+        {
+            var hasSearchGroup = attendance.SearchResultGroupId.HasValue;
+            var hasSearchType = attendance.SearchTypeValueId.HasValue;
+            var hasSearchValue = attendance.SearchValue.IsNotNullOrWhiteSpace();
+
+            if ( !hasSearchGroup && !hasSearchType && !hasSearchValue )
+            {
+                pnlSearch.Visible = false;
+                return;
+            }
+
+            pnlSearch.Visible = true;
+
+            if ( hasSearchGroup && attendance.SearchResultGroup != null )
+            {
+                lSearchResultGroupName.Text = attendance.SearchResultGroup.Name;
+
+                rptSearchGroupAdults.DataSource = GetSearchGroupAdults( rockContext, attendance.SearchResultGroupId.Value );
+                rptSearchGroupAdults.DataBind();
+
+                pnlSearchResultGroup.Visible = true;
+            }
+            else
+            {
+                pnlSearchResultGroup.Visible = false;
+            }
+
+            if ( hasSearchType && attendance.SearchTypeValue != null )
+            {
+                lSearchType.Text = attendance.SearchTypeValue.Value;
+                lSearchType.Visible = true;
+            }
+            else
+            {
+                lSearchType.Visible = false;
+            }
+
+            if ( hasSearchValue )
+            {
+                lSearchValue.Text = attendance.SearchValue;
+                lSearchValue.Visible = true;
+            }
+            else
+            {
+                lSearchValue.Visible = false;
+            }
+        }
+
+        /// <summary>
+        /// Gets the adult members of the given search result group, projecting each adult's display name, profile page URL,
+        /// and formatted mobile phone number (if any). The Profile Page block setting is used to build the per-person link.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="searchResultGroupId">The search result group identifier.</param>
+        /// <returns>A list of <see cref="SearchGroupAdult"/> ordered by group order then last name.</returns>
+        private List<SearchGroupAdult> GetSearchGroupAdults( RockContext rockContext, int searchResultGroupId )
+        {
+            var adultRole = GroupTypeRoleCache.Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() );
+            if ( adultRole == null )
+            {
+                return new List<SearchGroupAdult>();
+            }
+
+            var mobilePhoneTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+
+            var adultMembers = new GroupMemberService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Include( gm => gm.Person.PhoneNumbers )
+                .Where( gm => gm.GroupId == searchResultGroupId && gm.GroupRoleId == adultRole.Id )
+                .OrderBy( gm => gm.GroupOrder ?? int.MaxValue )
+                .ThenBy( gm => gm.Person.LastName )
+                .ThenBy( gm => gm.Person.NickName )
+                .ToList();
+
+            return adultMembers
+                .Select( gm =>
+                {
+                    var mobile = mobilePhoneTypeId.HasValue
+                        ? gm.Person.PhoneNumbers?.FirstOrDefault( pn => pn.NumberTypeValueId == mobilePhoneTypeId.Value )
+                        : null;
+
+                    var profileParams = new Dictionary<string, string>
+                    {
+                        { PageParameterKey.PersonGuid, gm.Person.Guid.ToString() }
+                    };
+
+                    return new SearchGroupAdult
+                    {
+                        FullName = gm.Person.FullName,
+                        ProfileUrl = LinkedPageUrl( AttributeKey.PersonProfilePage, profileParams ),
+                        MobileNumberFormatted = mobile?.NumberFormatted ?? string.Empty
+                    };
+                } )
+                .ToList();
         }
 
         #endregion Methods
@@ -761,5 +870,26 @@ namespace RockWeb.Blocks.CheckIn.Manager
         public string CreatedPersonId;
         public string CreatedDateTime;
         public string Description;
+    }
+
+    /// <summary>
+    /// POCO for an adult member of the search result group, used when displaying the family members associated with a check-in.
+    /// </summary>
+    public class SearchGroupAdult
+    {
+        /// <summary>
+        /// Gets or sets the adult's full name.
+        /// </summary>
+        public string FullName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL to the Profile Page block setting, with the adult's Person Guid in the query string.
+        /// </summary>
+        public string ProfileUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the adult's mobile phone number, already formatted for display. Empty when no mobile number is on file.
+        /// </summary>
+        public string MobileNumberFormatted { get; set; }
     }
 }

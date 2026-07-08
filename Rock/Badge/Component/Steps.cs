@@ -33,21 +33,19 @@ namespace Rock.Badge.Component
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Steps" )]
 
-    [StepProgramField(
-        name: "Step Program",
-        description: "The program in which the steps are contained",
-        required: true,
-        order: 1,
-        key: AttributeKey.StepProgram )]
+    [StepProgramField( "Step Program",
+        Description = "The program in which the steps are contained",
+        IsRequired = true,
+        Order = 1,
+        Key = AttributeKey.StepProgram )]
 
-    [BooleanField(
-        name: "Display Mode",
-        trueText: "Condensed",
-        falseText: "Normal",
-        description: "Choose a mode which determines how large the badges will be.",
-        defaultValue: false,
-        order: 2,
-        key: AttributeKey.IsCondensed )]
+    [BooleanField( "Display Mode",
+        TrueText = "Condensed",
+        FalseText = "Normal",
+        Description = "Choose a mode which determines how large the badges will be.",
+        DefaultBooleanValue = false,
+        Order = 2,
+        Key = AttributeKey.IsCondensed )]
 
     [Rock.SystemGuid.EntityTypeGuid( "3246EFE4-76E4-44C9-9DF0-1A7C3EAD4597")]
     public class Steps : BadgeComponent

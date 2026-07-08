@@ -51,6 +51,13 @@ namespace Rock.ViewModels.Blocks.Core.InteractionChannelDetail
         public string ComponentListTemplate { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the Rock Cleanup job should populate
+        /// per-component daily aggregate rows in <c>InteractionComponentDailyCount</c>
+        /// for components belonging to this channel.
+        /// </summary>
+        public bool EnableComponentDailyCounts { get; set; }
+
+        /// <summary>
         /// Gets or sets the engagement strength.
         /// </summary>
         public int? EngagementStrength { get; set; }

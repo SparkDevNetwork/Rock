@@ -265,7 +265,7 @@ namespace Rock.Blocks.Event
             var itemLinks = new List<string>();
             foreach ( var item in items )
             {
-                qryParams["ContentItemId"] = item.Id.ToString();
+                qryParams["ContentItemId"] = item.IdKey;
                 itemLinks.Add( string.Format( $"{this.GetLinkedPageUrl( AttributeKey.ContentItemDetailPage, qryParams )}|{item.Title}|{item.ContentChannelType.Name}" ) );
             }
             return itemLinks.AsDelimited( "," );

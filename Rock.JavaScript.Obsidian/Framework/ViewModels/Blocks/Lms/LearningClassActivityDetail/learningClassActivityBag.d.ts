@@ -131,6 +131,12 @@ export type LearningClassActivityBag = {
     /** Gets or sets the maximum number of points the activity is worth. */
     points: number;
 
+    /**
+     * Gets or sets the minimum score a student must earn on this activity to avoid being assigned a retake.
+     * A null value disables retakes for the activity.
+     */
+    retakeThreshold?: number | null;
+
     /** Indicates whether or not this activity sends a notification. */
     sendNotificationCommunication: boolean;
 

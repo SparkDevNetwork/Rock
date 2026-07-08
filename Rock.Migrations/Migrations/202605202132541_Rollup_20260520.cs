@@ -39,16 +39,16 @@ namespace Rock.Migrations
             // HotFix data-migrations moved to this EF migration (v20/develop):
             // ----------------------------------------------------------------
 
-            // v19.0; 283_MigrationRollupsForV20_0_1.cs)
+            // v20.0; 283_MigrationRollupsForV20_0_1.cs
             JPH_AddExceptionListIndex_20260407_Up();
 
-            // v19.0; 284_RemoveLegacyThemeAndProfilePagesForV20.cs)
+            // v20.0; 284_RemoveLegacyThemeAndProfilePagesForV20.cs
             NA_RemoveLegacyThemeAndProfilePagesForV20_Up();
 
-            // v19.0; 285_ConvertContributionStatementLava_Blocks_to_ContributionStatementGenerator.cs
+            // v20.0; 285_ConvertContributionStatementLava_Blocks_to_ContributionStatementGenerator.cs
             NA_ConvertContributionStatementLavaBlocksToContributionStatementGeneratorUp();
 
-            // v19.0; 286_ConnectionsBoardAndGridUpdates.cs
+            // v20.0; 286_ConnectionsBoardAndGridUpdates.cs
             UpdateBlockAndAttributeNamingUp();
             DeleteRedundantBoardPageAttributesUp();
             RemoveLegacyConnectionRequestBoardUp();

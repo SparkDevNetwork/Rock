@@ -658,7 +658,7 @@ DELETE [AV]
             }
 
             int familyId;
-            var expectedStreet = "1234 Elm Street";
+            var expectedStreet = "1234 Elm St";
             var expectedCity = "Nowhere";
             var expectedState = "AZ";
             var expectedPostalCode = "12345";
@@ -857,7 +857,7 @@ DELETE [AV]
                 Assert.AreEqual( homeLocationTypeId, deckerFamily.GroupLocations.First().GroupLocationTypeValueId );
             }
 
-            var expectedStreet = "1234 Elm Street";
+            var expectedStreet = "1234 Elm St";
             var expectedCity = "Nowhere";
             var expectedState = "AZ";
             var expectedPostalCode = "12345";

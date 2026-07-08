@@ -11,7 +11,7 @@
                   :data="mainGridData"
                   @addItem="onAddMainClick">
                 <ReorderColumn @orderChanged="onMainOrderChanged" />
-                <TextColumn name="name" field="name" title="Name" />
+                <TextColumn name="name" field="name" />
                 <DeleteColumn :onClick="onDeleteMainClick" />
             </Grid>
         </div>
@@ -29,7 +29,7 @@
                   :data="overflowGridData"
                   @addItem="onAddOverflowClick">
                 <ReorderColumn @orderChanged="onOverflowOrderChanged" />
-                <TextColumn name="name" field="name" title="Name" />
+                <TextColumn name="name" field="name" />
                 <DeleteColumn :onClick="onDeleteOverflowClick" />
             </Grid>
         </div>

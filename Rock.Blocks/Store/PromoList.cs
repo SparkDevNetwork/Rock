@@ -160,7 +160,7 @@ namespace Rock.Blocks.Store
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "PackageId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, PageParameterKey.PackageId, "((Key))" )
             };
         }
 
@@ -194,8 +194,6 @@ namespace Rock.Blocks.Store
                 return new List<PromoBag>();
             }
 
-            var detailPageUrl = this.GetLinkedPageUrl( AttributeKey.DetailPage, PageParameterKey.PackageId, "{0}" );
-
             return promos.Select( p => new PromoBag
             {
                 PackageId = p.PackageId,
@@ -206,8 +204,7 @@ namespace Rock.Blocks.Store
                 PackageIconUrl = p.PackageIconBinaryFile?.ImageUrl is string iconUrl
                     ? $"{iconUrl}&h=140&w=280&mode=crop&scale=both"
                     : null,
-                ImageLargeUrl = p.ImageLarge?.ImageUrl,
-                DetailPageUrl = string.Format( detailPageUrl, p.PackageId )
+                ImageLargeUrl = p.ImageLarge?.ImageUrl
             } ).ToList();
         }
 

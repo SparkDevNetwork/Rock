@@ -22,12 +22,19 @@
 //
 
 import { Guid } from "@Obsidian/Types";
+import { FormListCategoryBag } from "@Obsidian/ViewModels/Blocks/WorkFlow/FormBuilder/FormList/formListCategoryBag";
 import { FormListItemBag } from "@Obsidian/ViewModels/Blocks/WorkFlow/FormBuilder/FormList/formListItemBag";
 
 /** Represents the data for the Form List block. */
 export type FormListBag = {
     /** Gets or sets a value indicating whether the current user can add a new category. */
     canAddNewCategory: boolean;
+
+    /**
+     * Gets or sets the workflow form categories paired with their IdKey, so the block can
+     * resolve the selected category from the IdKey carried in the page parameter.
+     */
+    categories?: FormListCategoryBag[] | null;
 
     /**
      * Gets or sets the error message. A non-empty value indicates that

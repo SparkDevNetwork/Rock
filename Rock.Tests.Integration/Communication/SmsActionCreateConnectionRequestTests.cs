@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -147,7 +147,7 @@ namespace Rock.Tests.Integration.Communication
                 createdRequestId = AssertConnectionRequestCreated( fromPerson, OpportunityGuid, out var request );
                 Assert.AreEqual( ConnectionState.Active, request.ConnectionState, "Newly created request should be Active." );
                 Assert.AreEqual( request.ConnectionOpportunity.ConnectionTypeId, request.ConnectionTypeId, "ConnectionTypeId should follow the opportunity's parent type." );
-                Assert.IsTrue( request.ConnectionStatusId > 0, "Status should fall back to the type's default when none is configured." );
+                Assert.IsGreaterThan( 0, request.ConnectionStatusId, "Status should fall back to the type's default when none is configured." );
             }
             finally
             {

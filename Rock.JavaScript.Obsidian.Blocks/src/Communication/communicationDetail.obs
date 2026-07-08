@@ -177,10 +177,10 @@
 
     const config = useConfigurationValues<CommunicationDetailInitializationBox>();
 
-    // The block is hidden for a legacy communication this page cannot render;
-    // redirect to the legacy page, which can.
-    if (config.legacyRedirectUrl) {
-        window.location.href = makeUrlRedirectSafe(config.legacyRedirectUrl);
+    // The block is hidden for a communication this page cannot edit;
+    // redirect to the page that can (the legacy wizard page or the simple communication page).
+    if (config.redirectUrl) {
+        window.location.href = makeUrlRedirectSafe(config.redirectUrl);
     }
 
     const securityGrant = getSecurityGrant(config.securityGrantToken);
