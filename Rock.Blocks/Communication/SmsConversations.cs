@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
+using Rock;
 using Rock.Attribute;
 using Rock.Core.NotificationMessageTypes;
 using Rock.Data;
@@ -453,7 +454,7 @@ namespace Rock.Blocks.Communication
                                 SMSMessage = smsMessage,
                                 IsOutbound = r.IsOutbound,
                                 OutboundSenderFullName = r.OutboundSenderFullName,
-                                CreatedDateTime = r.CreatedDateTime,
+                                CreatedDateTime = r.CreatedDateTime?.ToRockDateTimeOffset(),
                             }
                         }
                         } );
@@ -749,7 +750,7 @@ namespace Rock.Blocks.Communication
                             SMSMessage = response.SMSMessage,
                             IsOutbound = response.IsOutbound,
                             OutboundSenderFullName = response.OutboundSenderFullName,
-                            CreatedDateTime = response.CreatedDateTime,
+                            CreatedDateTime = response.CreatedDateTime?.ToRockDateTimeOffset(),
                             AttachmentUrls = attachmentUrls,
                         } );
                     }
