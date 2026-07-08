@@ -875,7 +875,7 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO AttributeQualifier ([IsSystem], [AttributeId], [Key], [Value], [Guid])
-    VALUES (1, @ColorAttributeId, 'selectiontype', 'Color Picker', '19BAC142-F565-42FA-8D95-B2757701709A');
+    VALUES (1, @ColorAttributeId, 'selectiontype', 'Color Picker', NEWID() );
 END" );
         }
         private void JE_TablerIconReplaceInAttributeDefaultValues_Up()
