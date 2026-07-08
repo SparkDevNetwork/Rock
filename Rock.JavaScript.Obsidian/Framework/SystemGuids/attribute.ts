@@ -105,6 +105,12 @@ export const Attribute = {
     DefinedTypeCurrencyTypeIconcssclass: "CB1E9401-E1FD-4DBB-B15F-4E6994602723",
     /** The Financial Frequency DefinedType &gt; Interval Days DefinedValue Attribute Guid */
     DefinedTypeFinancialFrequencyIntervalDays: "E18CB1D2-08A9-4D12-BCEA-33369193C869",
+    /**
+     * The "Default Component Daily Counts" attribute on the "Interaction Mediums" defined type.
+     * Controls whether newly created Rock.Model.InteractionChannel records of a
+     * given medium default to having EnableComponentDailyCounts = true.
+     */
+    DefinedTypeInteractionMediumDefaultComponentDailyCount: "813B4E21-D77F-45E8-B702-120EE7C90451",
     /** The Template DefinedType &gt; Icon DefinedValue Attribute Guid */
     DefinedTypeTemplateIcon: "831403EB-262E-4BC5-8B5E-F16153493BF5",
     /** The Template DefinedType &gt; TemplateBlock DefinedValue Attribute Guid */

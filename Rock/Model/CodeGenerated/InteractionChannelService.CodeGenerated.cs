@@ -154,6 +154,7 @@ namespace Rock.Model
             target.ComponentDetailTemplate = source.ComponentDetailTemplate;
             target.ComponentEntityTypeId = source.ComponentEntityTypeId;
             target.ComponentListTemplate = source.ComponentListTemplate;
+            target.EnableComponentDailyCounts = source.EnableComponentDailyCounts;
             target.EngagementStrength = source.EngagementStrength;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
