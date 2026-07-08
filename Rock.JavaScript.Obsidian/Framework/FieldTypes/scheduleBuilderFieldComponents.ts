@@ -41,6 +41,8 @@ export const EditComponent = defineComponent({
 
     props: getFieldEditorProps(),
 
+    emits: ["update:modelValue"],
+
     setup(props, { emit }) {
         const attrs = useAttrs();
         const internalValue = ref<ScheduleBuilderEditValueBag>(getEmptyValue());
