@@ -568,11 +568,11 @@ namespace Rock.Blocks.Communication
                     box.MediumOptions = communicationData.MediumOptions;
                     box.IsCommunicationListSelectionEnabled = this.IsCommunicationListSelectionEnabled;
 
-                    // Offer list selection only for a fresh communication. One that
-                    // arrives already linked to a list (launched from a list) keeps
-                    // its locked read-only summary instead of the picker.
-                    var isLaunchedFromCommunicationList = box.Communication?.CommunicationListGroupGuid.HasValue == true;
-                    if ( box.IsCommunicationListSelectionEnabled && !isLaunchedFromCommunicationList )
+                    // The Full-mode selector defaults to the communication's current list, so the
+                    // groups are always sent when the feature is on (even for a communication that
+                    // already carries a list). Without them the dropdown has no option matching the
+                    // loaded list and collapses its selection to the "Manual Recipient List" sentinel.
+                    if ( box.IsCommunicationListSelectionEnabled )
                     {
                         box.CommunicationListGroups = GetCommunicationListGroupBags( rockContext, currentPerson );
                     }

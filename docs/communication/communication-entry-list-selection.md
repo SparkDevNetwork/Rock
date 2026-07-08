@@ -77,7 +77,7 @@ The selector is one Communication List dropdown with "Manual Recipient List" as 
 - `Enable Communication List Selection` `BooleanField`, default off, at [CommunicationEntry.cs:165](Rock.Blocks/Communication/CommunicationEntry.cs:165). Key constant at [:244](Rock.Blocks/Communication/CommunicationEntry.cs:244), read via the `IsCommunicationListSelectionEnabled` getter at [:525](Rock.Blocks/Communication/CommunicationEntry.cs:525).
 
 ### Initialization box
-- `IsCommunicationListSelectionEnabled` and `CommunicationListGroups` (`List<ListItemBag>`) on [CommunicationEntryInitializationBox.cs](Rock.ViewModels/Blocks/Communication/CommunicationEntry/CommunicationEntryInitializationBox.cs). Populated at [CommunicationEntry.cs:569](Rock.Blocks/Communication/CommunicationEntry.cs:569); the list is filled only when the setting is on and the block was not launched from a list ([:575](Rock.Blocks/Communication/CommunicationEntry.cs:575)).
+- `IsCommunicationListSelectionEnabled` and `CommunicationListGroups` (`List<ListItemBag>`) on [CommunicationEntryInitializationBox.cs](Rock.ViewModels/Blocks/Communication/CommunicationEntry/CommunicationEntryInitializationBox.cs). Populated at [CommunicationEntry.cs:569](Rock.Blocks/Communication/CommunicationEntry.cs:569); the list is filled whenever the setting is on, including for a communication that already carries a list, so the Full-mode selector can default to the loaded list rather than collapsing to the "Manual Recipient List" sentinel ([:575](Rock.Blocks/Communication/CommunicationEntry.cs:575)).
 - `GetCommunicationListGroupBags` ([:1660](Rock.Blocks/Communication/CommunicationEntry.cs:1660)) returns the `VIEW`-authorized active Communication List groups, ported from the wizard.
 
 ### Block actions
