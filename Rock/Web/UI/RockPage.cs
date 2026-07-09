@@ -2035,13 +2035,6 @@ namespace Rock.Web.UI
         {
             base.OnLoadComplete( e );
 
-            // Set the title displayed in the browser on the base page.
-            string pageTitle = BrowserTitle ?? string.Empty;
-            string siteTitle = _pageCache.Layout.Site.Name;
-            string seperator = pageTitle.Trim() != string.Empty && siteTitle.Trim() != string.Empty ? " | " : "";
-
-            base.Title = pageTitle + seperator + siteTitle;
-
             // Make the last breadcrumb on this page the only one active. This
             // takes care of any late additions to the breadcrumbs by Lava or
             // Obsidian blocks.
@@ -2064,6 +2057,22 @@ namespace Rock.Web.UI
                     ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-obsidian-page-timings", script, true );
                 }
             }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Page.PreRenderComplete" /> event after
+        /// the page's registered asynchronous tasks have completed.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> that contains the event data.</param>
+        protected override void OnPreRenderComplete( EventArgs e )
+        {
+            base.OnPreRenderComplete( e );
+
+            string pageTitle = BrowserTitle ?? string.Empty;
+            string siteTitle = _pageCache.Layout.Site.Name;
+            string seperator = pageTitle.Trim() != string.Empty && siteTitle.Trim() != string.Empty ? " | " : "";
+
+            base.Title = pageTitle + seperator + siteTitle;
         }
 
         /// <summary>
