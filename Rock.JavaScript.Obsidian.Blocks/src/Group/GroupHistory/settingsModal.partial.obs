@@ -1,0 +1,70 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Group History Settings"
+           saveText="Save"
+           @save="onSave">
+
+        <CheckBox v-model="isGroupMemberHistoryIncluded"
+                  label="Include Group Member History"
+                  help="When enabled, member changes - such as joins, role updates, and removals - appear alongside group history in the timeline." />
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "update:visible", value: boolean): void;
+    }>();
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const isGroupMemberHistoryIncluded = ref(props.modelValue);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the save button is clicked. Publishes the new setting value
+     * and closes the modal.
+     */
+    function onSave(): void {
+        if (isGroupMemberHistoryIncluded.value !== props.modelValue) {
+            emit("update:modelValue", isGroupMemberHistoryIncluded.value);
+        }
+
+        isVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(isVisible, () => {
+        // Discard any unsaved edits whenever the modal is opened or closed.
+        isGroupMemberHistoryIncluded.value = props.modelValue;
+    });
+
+    // #endregion Watchers
+</script>
