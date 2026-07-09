@@ -594,6 +594,13 @@ namespace Rock.Blocks.Crm.PersonDetail
                 return ActionOk( new List<FinancialPledge>() );
             }
 
+            var person = new PersonService( RockContext ).Get( personId.Value );
+
+            if ( person == null )
+            {
+                return ActionOk( new List<FinancialPledge>() );
+            }
+
             var pledgeService = new FinancialPledgeService( RockContext );
             var pledgesQry = pledgeService.Queryable( "Account, PersonAlias.Person" );
 
@@ -602,7 +609,9 @@ namespace Rock.Blocks.Crm.PersonDetail
                 return ActionBadRequest( "Pledges query returned null" );
             }
 
-            pledgesQry = pledgesQry.Where( p => p.PersonAlias.PersonId == personId.Value );
+            // Get the pledges for the person or all the members in the person's giving group (Family)
+            // so that pledges are shared across the giving unit when "Combine Giving With" is set.
+            pledgesQry = pledgesQry.Where( p => p.PersonAlias.Person.GivingId == person.GivingId );
 
             var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
             if ( accountGuids.Any() )
@@ -681,12 +690,22 @@ namespace Rock.Blocks.Crm.PersonDetail
                 return ActionOk( new List<ContributionStatementBag>() );
             }
 
+            var person = new PersonService( RockContext ).Get( personId.Value );
+
+            if ( person == null )
+            {
+                return ActionOk( new List<ContributionStatementBag>() );
+            }
+
             var numberOfYears = GetAttributeValue( AttributeKey.MaxYearsToDisplay ).AsInteger();
 
             var financialTransactionDetailService = new FinancialTransactionDetailService( RockContext );
+
+            // Get the person alias Ids for the person or all the members in the person's giving group (Family)
+            // so that contributions are shared across the giving unit when "Combine Giving With" is set.
             var personAliasIds = new PersonAliasService( RockContext )
                 .Queryable()
-                .Where( a => a.PersonId == personId.Value )
+                .Where( a => a.Person.GivingId == person.GivingId )
                 .Select( a => a.Id )
                 .ToList();
 

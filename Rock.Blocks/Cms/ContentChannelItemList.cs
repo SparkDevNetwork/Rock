@@ -222,8 +222,8 @@ namespace Rock.Blocks.Cms
             var box = new ListBlockBox<ContentChannelItemListOptionsBag>();
             var builder = GetGridBuilder();
 
-            box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = GetIsAddEnabled();
+            box.IsAddEnabled = GetIsAddDeleteEnabled();
+            box.IsDeleteEnabled = GetIsAddDeleteEnabled();
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -279,14 +279,25 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
-        /// Determines if the add button should be enabled in the grid.
-        /// <summary>
-        /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
-        private bool GetIsAddEnabled()
+        /// Determines if the add and delete buttons should be enabled in the grid.
+        /// </summary>
+        /// <returns>A boolean value that indicates if the add and delete buttons should be enabled.</returns>
+        private bool GetIsAddDeleteEnabled()
         {
-            var entity = new ContentChannelItem();
+            /*
+                7/9/2026 - MSE
 
-            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+                Authorization must be checked against the content channel rather than a new
+                ContentChannelItem instance. A new instance has no ContentChannel assigned, so its
+                ParentAuthority falls back to the ContentChannelItem entity-type security, which
+                ignores EDIT access granted on the specific channel. This matches the behavior of
+                the legacy WebForms block.
+
+                Reason: A person granted EDIT access on a content channel could not manage its items. (Fixes #6914)
+            */
+            var contentChannel = GetContentChannel();
+
+            return contentChannel != null && contentChannel.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         /// <summary>
