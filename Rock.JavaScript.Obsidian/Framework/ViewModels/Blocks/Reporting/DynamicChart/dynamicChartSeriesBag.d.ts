@@ -31,5 +31,5 @@ export type DynamicChartSeriesBag = {
      * chart labels. A null entry indicates the series has no value for
      * that label.
      */
-    values?: number | null[] | null;
+    values?: (number | null)[] | null;
 };

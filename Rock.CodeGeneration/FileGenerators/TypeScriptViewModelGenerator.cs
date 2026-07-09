@@ -514,6 +514,20 @@ namespace Rock.CodeGeneration.FileGenerators
         }
 
         /// <summary>
+        /// Wraps an array/collection element type in parentheses when it is a
+        /// union type so that the "[]" suffix binds to the whole union. Without
+        /// this, a nullable element such as "number | null" would produce the
+        /// invalid "number | null[]" (parsed as "number | (null[])") instead of
+        /// the intended "(number | null)[]".
+        /// </summary>
+        /// <param name="itemType">The TypeScript type of the array element.</param>
+        /// <returns>The element type, parenthesized when it is a union.</returns>
+        private static string WrapArrayItemType( string itemType )
+        {
+            return itemType.Contains( "|" ) ? $"({itemType})" : itemType;
+        }
+
+        /// <summary>
         /// Gets the TypeScript definition type of the type.
         /// </summary>
         /// <param name="type">The type.</param>
@@ -582,7 +596,7 @@ namespace Rock.CodeGeneration.FileGenerators
             {
                 var (itemType, itemImports) = GetTypeScriptType( type.GetElementType(), true );
 
-                tsType = $"{itemType}[]";
+                tsType = $"{WrapArrayItemType( itemType )}[]";
                 imports.AddRange( itemImports );
                 isNullable = isNullable || !isRequired;
             }
@@ -604,7 +618,7 @@ namespace Rock.CodeGeneration.FileGenerators
                 {
                     var (itemType, itemImports) = GetTypeScriptType( type.GenericTypeArguments[0], true );
 
-                    tsType = $"{itemType}[]";
+                    tsType = $"{WrapArrayItemType( itemType )}[]";
                     imports.AddRange( itemImports );
                     isNullable = isNullable || !isRequired;
                 }
