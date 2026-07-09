@@ -1,0 +1,169 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="bag"
+         ref="containerRef"
+         class="card card-profile card-profile-bio card-profile-bio-condensed"
+         :class="{ deceased: bag.isDeceased }">
+        <div class="profile-image profile-image-sm">
+            <div class="fluid-crop">
+                <img :src="bag.photoUrl ?? ''" alt="" class="img-profile">
+            </div>
+        </div>
+
+        <div class="profile-data">
+            <div v-if="bag.accountProtectionProfileText"
+                 class="protection-profile"
+                 :class="{ 'is-hovered': isProtectionProfileHovered }">
+                <span class="profile-label">Protection Profile: {{ bag.accountProtectionProfileText }}</span>
+                <i class="ti ti-fw ti-lock"
+                   @mouseover="isProtectionProfileHovered = true"
+                   @mouseout="isProtectionProfileHovered = false"></i>
+            </div>
+
+            <div v-if="familyMembers.length > 0"
+                 ref="familyDropdownRef"
+                 class="dropdown dropdown-family"
+                 :class="{ open: isFamilyDropdownShown }">
+                <a href="#"
+                   class="profile-toggle"
+                   aria-haspopup="true"
+                   :aria-expanded="isFamilyDropdownShown"
+                   @click.prevent="onFamilyDropdownToggleClick">
+                    <h1 class="person-name" :class="{ 'is-business': bag.isBusiness }">{{ bag.personName }}</h1>
+                    <i class="ti ti-chevron-down ml-2"></i>
+                </a>
+                <ul class="dropdown-menu">
+                    <li v-for="member in familyMembers" :key="member.personIdKey ?? ''">
+                        <a :href="buildPersonProfileUrl(member.personIdKey ?? '')">
+                            <img :src="member.photoUrl ?? ''" alt="" class="avatar">
+                            <span class="name">{{ member.fullName }}</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <h1 v-else class="person-name" :class="{ 'is-business': bag.isBusiness }">{{ bag.personName }}</h1>
+
+            <div class="rockbadge-container rockbadge-xs mt-2" v-html="badgeHtml"></div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { popover } from "@Obsidian/Utility/popover";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { BioSummaryBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/BioSummary/bioSummaryBag";
+    import { BioSummaryOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/BioSummary/bioSummaryOptionsBag";
+    import { FamilyMemberBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/BioSummary/familyMemberBag";
+
+    const config = useConfigurationValues<CustomBlockBox<BioSummaryBag, BioSummaryOptionsBag>>();
+
+    // #region Values
+
+    const bag = config.bag;
+    const familyMembers: FamilyMemberBag[] = bag?.familyMembers ?? [];
+    const containerRef = ref<HTMLElement | null>(null);
+    const familyDropdownRef = ref<HTMLElement | null>(null);
+    const isFamilyDropdownShown = ref(false);
+    const isProtectionProfileHovered = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const badgeHtml = computed((): string => {
+        return bag?.badges?.map(b => b.html ?? "").join("") ?? "";
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Toggles the family drop-down when its name header is clicked.
+     */
+    function onFamilyDropdownToggleClick(): void {
+        isFamilyDropdownShown.value = !isFamilyDropdownShown.value;
+    }
+
+    /**
+     * Closes the family drop-down when a click lands outside of it.
+     *
+     * @param event The document click event.
+     */
+    function onDocumentClick(event: MouseEvent): void {
+        if (familyDropdownRef.value && !familyDropdownRef.value.contains(event.target as Node)) {
+            isFamilyDropdownShown.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Builds the profile page URL for a person, preserving any profile subpage
+     * route in the current URL so member links stay on the same subpage (for
+     * example, "/Person/42/extended-attributes" links members to their own
+     * extended attributes subpage).
+     *
+     * @param personIdKey The IdKey identifier of the person to link to.
+     *
+     * @returns The person profile URL.
+     */
+    function buildPersonProfileUrl(personIdKey: string): string {
+        const path = window.location.pathname;
+        const personSegment = "/person/";
+        const segmentIndex = path.toLowerCase().indexOf(personSegment);
+
+        if (segmentIndex >= 0) {
+            const applicationRoot = path.substring(0, segmentIndex);
+            const remainder = path.substring(segmentIndex + personSegment.length);
+            const subpageIndex = remainder.indexOf("/");
+            const subpageRoute = subpageIndex >= 0 ? remainder.substring(subpageIndex) : "";
+
+            return `${applicationRoot}/Person/${personIdKey}${subpageRoute}`;
+        }
+
+        return `/Person/${personIdKey}`;
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        document.addEventListener("click", onDocumentClick);
+    });
+
+    onUnmounted(() => {
+        document.removeEventListener("click", onDocumentClick);
+    });
+
+    // #endregion Lifecycle Hooks
+
+    const badgeScript = bag?.badges?.map(b => b.javaScript ?? "").join("") ?? "";
+
+    if (badgeScript !== "") {
+        // Add the script on the next tick to ensure the HTML has been rendered.
+        nextTick(() => {
+            const scriptNode = document.createElement("script");
+            scriptNode.type = "text/javascript";
+            scriptNode.appendChild(document.createTextNode(badgeScript));
+            document.body.appendChild(scriptNode);
+        });
+    }
+
+    nextTick(() => {
+        if (!containerRef.value) {
+            return;
+        }
+
+        tooltip(Array.from(containerRef.value.querySelectorAll(".rockbadge[data-toggle=\"tooltip\"]")), { html: true, sanitize: false });
+        popover(Array.from(containerRef.value.querySelectorAll(".rockbadge[data-toggle=\"popover\"]")));
+    });
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>
