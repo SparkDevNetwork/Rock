@@ -1,0 +1,311 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="config.isVisible" ref="containerRef" class="card card-profile card-profile-bio" :class="{ deceased: config.isDeceased }">
+        <PhotoLightbox :photoUrl="config.photoUrl ?? ''" :personName="config.fullName ?? ''" />
+
+        <div class="bio-data">
+            <div class="card-section position-relative">
+                <div v-if="config.accountProtectionProfileText"
+                     class="protection-profile"
+                     :class="{ 'is-hovered': isProtectionProfileHovered }">
+                    <span class="profile-label">Protection Profile: {{ config.accountProtectionProfileText }}</span>
+                    <i class="ti ti-fw ti-lock"
+                       @mouseover="isProtectionProfileHovered = true"
+                       @mouseout="isProtectionProfileHovered = false"></i>
+                </div>
+
+                <h1 v-if="config.isBusiness">{{ config.lastName }}</h1>
+                <template v-else>
+                    <h1 class="person-name">{{ nameText }} <small v-if="config.firstName" class="person-first-name">{{ config.firstName }}</small></h1>
+                    <span v-if="config.previousNames" class="previous-names">(Previous Names: {{ config.previousNames }})</span>
+                </template>
+
+                <div class="d-flex flex-wrap justify-content-center align-items-center gap mt-3">
+                    <div v-if="badgesHtml"
+                         class="rockbadge-container d-flex flex-wrap justify-content-center align-items-center gap"
+                         v-html="badgesHtml"></div>
+                    <button v-if="config.isFollowingVisible"
+                            type="button"
+                            class="btn btn-default btn-xs btn-follow"
+                            :class="{ 'is-followed': following.isFollowed }"
+                            :disabled="isFollowingInFlight"
+                            @click="onToggleFollowingClick">
+                        <template v-if="following.isFollowed">
+                            <span class="text">Following</span> <span class="font-weight-normal">{{ following.followerCount }}</span>
+                        </template>
+                        <template v-else>
+                            <span class="text">Follow</span> <span v-if="following.followerCount > 0" class="font-weight-normal">{{ following.followerCount }}</span>
+                        </template>
+                    </button>
+                </div>
+
+                <div class="profile-actions">
+                    <div v-if="config.smsUrl" class="action-container">
+                        <a :href="config.smsUrl"
+                           class="btn btn-default btn-go btn-square stretched-link"
+                           title="Send a SMS"
+                           aria-label="Send a SMS"><i class="ti ti-message"></i></a>
+                        <span>Text</span>
+                    </div>
+                    <div v-if="config.emailUrl" class="action-container">
+                        <a :href="config.emailUrl"
+                           class="btn btn-default btn-go btn-square stretched-link"
+                           :title="config.emailButtonTooltip ?? undefined"
+                           :aria-label="config.emailButtonTooltip ?? undefined"><i class="ti ti-mail"></i></a>
+                        <span>Email</span>
+                    </div>
+                    <ActionsDropDown :vCardUrl="config.vCardUrl ?? ''"
+                                     :isImpersonateVisible="config.isImpersonateVisible"
+                                     :isImpersonateEnabled="config.isImpersonateEnabled"
+                                     :customActionsHtml="config.customActionsHtml"
+                                     :workflowActions="config.workflowActions ?? []"
+                                     @impersonate="onImpersonate" />
+                    <div v-if="config.isEditVisible" class="action-container">
+                        <a :href="config.editPersonUrl ?? undefined"
+                           accesskey="I"
+                           data-shortcut-key="e"
+                           title="Alt+I"
+                           class="btn btn-default btn-go btn-square stretched-link"
+                           aria-label="Edit Person"><i class="ti ti-pencil"></i></a>
+                        <span>Edit</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-section">
+                <dl class="reversed-label">
+                    <dt title="Gender">{{ config.genderText }}</dt>
+                    <dd class="d-none">Gender</dd>
+
+                    <template v-if="config.raceEthnicityText">
+                        <dt :title="config.raceEthnicityLabel ?? undefined">{{ config.raceEthnicityText }}</dt>
+                        <dd class="d-none">{{ config.raceEthnicityLabel }}</dd>
+                    </template>
+
+                    <template v-if="config.ageText != null">
+                        <dt>{{ config.ageText }}</dt>
+                        <dd>{{ config.birthDateText }}</dd>
+                    </template>
+                    <template v-else-if="config.birthDateText">
+                        <dt>{{ config.birthDateText }}</dt>
+                        <dd>Birthdate</dd>
+                    </template>
+
+                    <template v-if="config.anniversaryText">
+                        <dt>{{ maritalStatusAndAnniversaryText }}</dt>
+                        <dd>{{ config.anniversaryDateText }}</dd>
+                    </template>
+                    <template v-else-if="config.maritalStatusText">
+                        <dt>{{ config.maritalStatusText }}</dt>
+                        <dd class="d-none">Marital Status</dd>
+                    </template>
+
+                    <dt v-if="config.gradeText">{{ config.gradeText }}</dt>
+
+                    <template v-if="config.graduationText">
+                        <dt v-if="config.hasGraduated">{{ config.graduationText }}</dt>
+                        <dd v-else>{{ config.graduationText }}</dd>
+                        <dd class="d-none">Graduation</dd>
+                    </template>
+                </dl>
+            </div>
+
+            <div v-if="hasContactInformation" class="card-section">
+                <PhoneNumberSection v-if="config.phoneNumbers && config.phoneNumbers.length > 0"
+                                    :phoneNumbers="config.phoneNumbers"
+                                    :isCallOriginationAvailable="config.isCallOriginationAvailable"
+                                    :isCallOriginationEnabled="config.isCallOriginationEnabled"
+                                    :currentPersonGuid="config.currentPersonGuid"
+                                    :currentPersonFullName="config.currentPersonFullName" />
+
+                <span v-html="config.emailTagHtml"></span>
+            </div>
+
+            <div v-if="config.socialLinks && config.socialLinks.length > 0" class="card-section py-0">
+                <div class="d-flex flex-wrap justify-content-center">
+                    <a v-for="(socialLink, index) in config.socialLinks"
+                       :key="index"
+                       :href="socialLink.url ?? undefined"
+                       class="text-link p-2"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       :title="socialLink.name ?? undefined"
+                       :aria-label="socialLink.name ?? undefined">
+                        <i :class="socialLink.iconCssClass ?? ''"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div v-if="config.customContentHtml" class="card-section">
+                <div class="col-sm-9 col-md-10 text-center sm-text-left">
+                    <div v-html="config.customContentHtml"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, reactive, ref } from "vue";
+    import ActionsDropDown from "./Bio/actionsDropDown.partial.obs";
+    import PhoneNumberSection from "./Bio/phoneNumberSection.partial.obs";
+    import PhotoLightbox from "./Bio/photoLightbox.partial.obs";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { addQuickReturn } from "@Obsidian/Utility/page";
+    import { popover } from "@Obsidian/Utility/popover";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { BioFollowingBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/Bio/bioFollowingBag";
+    import { BioInitializationBox } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/Bio/bioInitializationBox";
+
+    const config = useConfigurationValues<BioInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const containerRef = ref<HTMLElement | null>(null);
+    const isProtectionProfileHovered = ref(false);
+    const isFollowingInFlight = ref(false);
+    const isImpersonateInFlight = ref(false);
+
+    const following = reactive({
+        isFollowed: config.following?.isFollowed ?? false,
+        followerCount: config.following?.followerCount ?? 0
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const nameText = computed((): string => {
+        let name = "";
+
+        if (config.formalTitle) {
+            name += `${config.formalTitle} `;
+        }
+
+        name += config.nickName ?? "";
+
+        if (config.middleName) {
+            name += ` ${config.middleName}`;
+        }
+
+        name += ` ${config.lastName ?? ""}`;
+
+        if (config.suffix) {
+            name += ` ${config.suffix}`;
+        }
+
+        return name;
+    });
+
+    const badgesHtml = computed((): string => {
+        return config.badges?.map(b => b.html ?? "").join("") ?? "";
+    });
+
+    const maritalStatusAndAnniversaryText = computed((): string => {
+        return [config.maritalStatusText, config.anniversaryText]
+            .filter(t => t)
+            .join(" ");
+    });
+
+    const hasContactInformation = computed((): boolean => {
+        return (config.phoneNumbers?.length ?? 0) > 0 || !!config.emailTagHtml;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when the follow button has been clicked.
+     */
+    async function onToggleFollowingClick(): Promise<void> {
+        if (isFollowingInFlight.value) {
+            return;
+        }
+
+        isFollowingInFlight.value = true;
+
+        try {
+            const result = await invokeBlockAction<BioFollowingBag>("ToggleFollowing", {
+                personIdKey: config.personIdKey
+            });
+
+            if (result.isSuccess && result.data) {
+                following.isFollowed = result.data.isFollowed;
+                following.followerCount = result.data.followerCount;
+            }
+            else {
+                await alert(result.errorMessage || "Unable to update following.");
+            }
+        }
+        finally {
+            isFollowingInFlight.value = false;
+        }
+    }
+
+    /**
+     * Event handler for when the Impersonate action has been clicked.
+     */
+    async function onImpersonate(): Promise<void> {
+        if (isImpersonateInFlight.value) {
+            return;
+        }
+
+        isImpersonateInFlight.value = true;
+
+        try {
+            const result = await invokeBlockAction<string>("GetImpersonationUrl", {
+                personIdKey: config.personIdKey
+            });
+
+            if (result.isSuccess && result.data) {
+                // The browser is navigating to the impersonation URL, so the
+                // flag is intentionally left set to keep the action disabled
+                // until the page unloads.
+                window.location.href = result.data;
+            }
+            else {
+                isImpersonateInFlight.value = false;
+                await alert(result.errorMessage || "Unable to impersonate this person.");
+            }
+        }
+        catch {
+            isImpersonateInFlight.value = false;
+            await alert("Unable to impersonate this person.");
+        }
+    }
+
+    // #endregion Event Handlers
+
+    if (config.isVisible && config.fullName) {
+        addQuickReturn(config.fullName, "People", 10);
+    }
+
+    const badgeScript = (config.badges ?? []).map(b => b.javaScript ?? "").join("");
+
+    if (badgeScript !== "") {
+        // Add the script on the next tick to ensure the HTML has been rendered.
+        nextTick(() => {
+            const scriptNode = document.createElement("script");
+            scriptNode.type = "text/javascript";
+            scriptNode.appendChild(document.createTextNode(badgeScript));
+            document.body.appendChild(scriptNode);
+        });
+    }
+
+    nextTick(() => {
+        if (!containerRef.value) {
+            return;
+        }
+
+        tooltip(Array.from(containerRef.value.querySelectorAll(".rockbadge[data-toggle=\"tooltip\"]")), { html: true, sanitize: false });
+        popover(Array.from(containerRef.value.querySelectorAll(".rockbadge[data-toggle=\"popover\"]")));
+
+        // The email tag HTML from the server includes email preference icons
+        // that expect Bootstrap tooltips. WebForms initialized these globally
+        // at page load, which happens before this block mounts.
+        tooltip(Array.from(containerRef.value.querySelectorAll(".email-status [data-toggle=\"tooltip\"]")));
+    });
+</script>

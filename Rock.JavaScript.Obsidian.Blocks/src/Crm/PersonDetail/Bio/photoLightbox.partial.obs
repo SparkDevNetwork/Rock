@@ -1,0 +1,108 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div id="profile-image" class="img-card-top profile-squish">
+        <div class="fluid-crop">
+            <a href="#" @click.prevent="onPhotoClick">
+                <img :src="photoUrl" alt="" class="img-profile">
+            </a>
+        </div>
+    </div>
+
+    <Teleport to="body">
+        <div v-if="isLightboxShown" class="bio-photo-lightbox" @click="onLightboxClick">
+            <img :src="photoUrl" :alt="personName">
+        </div>
+    </Teleport>
+</template>
+
+<style scoped>
+.bio-photo-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 1060;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.7);
+    cursor: zoom-out;
+}
+
+.bio-photo-lightbox img {
+    max-width: 90vw;
+    max-height: 90vh;
+}
+</style>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+
+    defineProps({
+        photoUrl: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        personName: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    // #region Values
+
+    const isLightboxShown = ref(false);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when the profile photo has been clicked.
+     */
+    function onPhotoClick(): void {
+        isLightboxShown.value = true;
+    }
+
+    /**
+     * Event handler for when the enlarged photo overlay has been clicked.
+     */
+    function onLightboxClick(): void {
+        isLightboxShown.value = false;
+    }
+
+    /**
+     * Event handler for when a key is pressed while the overlay is shown.
+     *
+     * @param event The current event.
+     */
+    function onDocumentKeyDown(event: KeyboardEvent): void {
+        if (event.key === "Escape") {
+            isLightboxShown.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // Watch for the overlay being opened or closed and add/remove the event
+    // handler that closes it with the Escape key.
+    watch(isLightboxShown, () => {
+        if (isLightboxShown.value) {
+            document.addEventListener("keydown", onDocumentKeyDown);
+        }
+        else {
+            document.removeEventListener("keydown", onDocumentKeyDown);
+        }
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onUnmounted(() => {
+        document.removeEventListener("keydown", onDocumentKeyDown);
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

@@ -2158,6 +2158,24 @@ namespace Rock.Web.UI
                         }
                     */
 
+                    /*
+                        7/6/2026 - MSE
+
+                        The WebForms Person Bio block set this session value in its click
+                        handler, but the Obsidian version starts impersonation from a
+                        block action where session state is unavailable. Setting it here,
+                        while the request is still authenticated as the original user,
+                        keeps the admin bar "Restore" button and elevated page rights
+                        working. If the request is already impersonated, the existing
+                        value is kept so Restore returns to the original user.
+
+                        Reason: Support the impersonation Restore button for the new Obsidian Bio block.
+                    */
+                    if ( string.IsNullOrEmpty( impersonatedPersonKeyIdentity ) && CurrentUser != null )
+                    {
+                        Session["ImpersonatedByUser"] = CurrentUser;
+                    }
+
                     Authorization.SignOut();
 
                     /*
