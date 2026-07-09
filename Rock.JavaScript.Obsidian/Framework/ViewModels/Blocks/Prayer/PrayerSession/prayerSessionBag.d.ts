@@ -23,16 +23,30 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/** The initial data for the Prayer Session block's welcome step. */
 export type PrayerSessionBag = {
-    /** Gets or sets the active prayer categories available for selection, each labeled with its current request count. */
+    /**
+     * Gets or sets the active prayer categories available for selection, each
+     * labeled with its current request count.
+     */
     categories?: ListItemBag[] | null;
 
-    /** Gets or sets the category values that should be pre-selected from the person's saved preferences. */
-    selectedCategoryValues?: string[] | null;
+    /**
+     * Gets or sets a value indicating whether any active prayer categories
+     * exist. When false the block shows a "no active prayer requests"
+     * message instead of the welcome step.
+     */
+    hasActiveCategories: boolean;
 
-    /** Gets or sets the campus that should be pre-selected from the person's saved preferences. */
+    /**
+     * Gets or sets the campus that should be pre-selected from the person's
+     * saved preferences.
+     */
     selectedCampus?: ListItemBag | null;
 
-    /** Gets or sets a value indicating whether any active prayer categories exist. */
-    hasActiveCategories: boolean;
+    /**
+     * Gets or sets the category values that should be pre-selected from the
+     * person's saved preferences.
+     */
+    selectedCategoryValues?: string[] | null;
 };

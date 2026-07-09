@@ -21,7 +21,11 @@
 // </copyright>
 //
 
+/** The response returned when a prayer session is started. */
 export type PrayerSessionStartResponseBag = {
-    /** Gets or sets the ordered identifiers of the prayer requests that make up the session. */
+    /**
+     * Gets or sets the ordered identifiers of the prayer requests that make up
+     * the session. The order reflects urgency first and then least-prayed-for.
+     */
     prayerRequestKeys?: string[] | null;
 };

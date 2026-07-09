@@ -21,19 +21,36 @@
 // </copyright>
 //
 
+/**
+ * The configuration options for the Prayer Session block that rarely change
+ * during the lifetime of the block.
+ */
 export type PrayerSessionOptionsBag = {
-    /** Gets or sets the HTML to display on the welcome (choose categories) step. */
-    welcomeIntroductionText?: string | null;
+    /**
+     * Gets or sets a value indicating whether the current person may add
+     * comments. Anonymous visitors can pray but cannot comment.
+     */
+    canAddComments: boolean;
 
-    /** Gets or sets a value indicating whether the campus picker should be shown on the welcome step. */
+    /**
+     * Gets or sets a value indicating whether the campus picker should be shown
+     * on the welcome step. The picker additionally hides itself when there is
+     * only one active campus.
+     */
     isCampusPickerVisible: boolean;
 
-    /** Gets or sets a value indicating whether prayer team members may flag a request as inappropriate. */
+    /**
+     * Gets or sets a value indicating whether prayer team members may flag a
+     * request as inappropriate.
+     */
     isCommunityFlaggingEnabled: boolean;
 
-    /** Gets or sets the URL of the current person's avatar, shown beside the comment entry box. */
+    /**
+     * Gets or sets the URL of the current person's avatar, shown beside the
+     * comment entry box.
+     */
     personAvatarUrl?: string | null;
 
-    /** Gets or sets a value indicating whether the current person may add comments. */
-    canAddComments: boolean;
+    /** Gets or sets the HTML to display on the welcome (choose categories) step. */
+    welcomeIntroductionText?: string | null;
 };

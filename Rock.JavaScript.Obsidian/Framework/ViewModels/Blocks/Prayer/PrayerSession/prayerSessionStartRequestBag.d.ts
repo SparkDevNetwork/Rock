@@ -21,10 +21,11 @@
 // </copyright>
 //
 
+/** The request sent to start a new prayer session. */
 export type PrayerSessionStartRequestBag = {
-    /** Gets or sets the selected category values to include in the session. */
-    categoryValues?: string[] | null;
-
     /** Gets or sets the selected campus value used to filter the session, if any. */
     campusValue?: string | null;
+
+    /** Gets or sets the selected category values to include in the session. */
+    categoryValues?: string[] | null;
 };

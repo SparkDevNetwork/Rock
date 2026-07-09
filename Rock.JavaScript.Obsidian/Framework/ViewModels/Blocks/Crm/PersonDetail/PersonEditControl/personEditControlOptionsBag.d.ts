@@ -26,6 +26,10 @@
  * Person Edit block.
  */
 export type PersonEditControlOptionsBag = {
-    /** Gets or sets the URL of the person edit page. This is populated only when a person is in context and the current user is authorized to edit; otherwise it is null and no edit control is shown. */
+    /**
+     * Gets or sets the URL of the person edit page. This is populated only
+     * when a person is in context and the current user is authorized to
+     * edit; otherwise it is null and no edit control is shown.
+     */
     editPageUrl?: string | null;
 };

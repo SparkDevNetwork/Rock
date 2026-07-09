@@ -24,37 +24,44 @@
 import { NoteBag } from "@Obsidian/ViewModels/Controls/noteBag";
 import { NoteTypeBag } from "@Obsidian/ViewModels/Controls/noteTypeBag";
 
+/** The details of a single prayer request displayed during a prayer session. */
 export type PrayerSessionRequestBag = {
-    /** Gets or sets the identifier of the prayer request. */
-    idKey?: string | null;
+    /**
+     * Gets or sets the disclaimer to show when the request text may have been
+     * modified by an AI automation, or null when it should be hidden.
+     */
+    aiDisclaimer?: string | null;
 
-    /** Gets or sets the resolved HTML describing the person who made the request. */
-    personHtml?: string | null;
+    /** Gets or sets a value indicating whether comments are allowed on the request. */
+    allowComments: boolean;
 
-    /** Gets or sets the resolved HTML describing the prayer request details. */
-    prayerHtml?: string | null;
-
-    /** Gets or sets the campus name to display, or null when there is a single active campus. */
+    /**
+     * Gets or sets the campus name to display, or null when there is a
+     * single active campus and the campus label should be hidden.
+     */
     campusName?: string | null;
 
     /** Gets or sets the category name to display. */
     categoryName?: string | null;
 
+    /** Gets or sets the identifier of the prayer request. */
+    idKey?: string | null;
+
     /** Gets or sets a value indicating whether the request is marked urgent. */
     isUrgent: boolean;
-
-    /** Gets or sets the display text for the total number of team prayers. */
-    prayerCountText?: string | null;
-
-    /** Gets or sets the disclaimer to show when the request text may have been modified by an AI automation. */
-    aiDisclaimer?: string | null;
-
-    /** Gets or sets a value indicating whether comments are allowed on the request. */
-    allowComments: boolean;
 
     /** Gets or sets the comments currently associated with the request. */
     notes?: NoteBag[] | null;
 
     /** Gets or sets the note types available for commenting. */
     noteTypes?: NoteTypeBag[] | null;
+
+    /** Gets or sets the resolved HTML describing the person who made the request. */
+    personHtml?: string | null;
+
+    /** Gets or sets the display text for the total number of team prayers. */
+    prayerCountText?: string | null;
+
+    /** Gets or sets the resolved HTML describing the prayer request details. */
+    prayerHtml?: string | null;
 };
