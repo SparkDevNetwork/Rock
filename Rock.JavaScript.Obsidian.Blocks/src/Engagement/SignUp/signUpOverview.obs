@@ -1,0 +1,382 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Opportunity"
+          title="Sign-Up Overview"
+          :exportTitle="config.options?.exportFileName ?? undefined"
+          :customActions="customActions"
+          :showLaunchWorkflow="false"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="onGridSettingsClick"
+          @selectItem="onSelectItem">
+
+        <SelectColumn />
+
+        <TextColumn name="projectName"
+                    title="Project Name"
+                    field="projectName"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <Column name="friendlySchedule"
+                title="Schedule"
+                field="friendlySchedule"
+                :filter="dateValueFilter"
+                :filterValue="getScheduleFilterValue"
+                :sortValue="getScheduleSortValue"
+                visiblePriority="xs" />
+
+        <NumberColumn name="leaderCount"
+                      title="Leader Count"
+                      field="leaderCount"
+                      :filter="numberValueFilter"
+                      visiblePriority="sm" />
+
+        <Column name="participantCount"
+                title="Participant Count"
+                field="participantCount"
+                :filter="numberValueFilter"
+                :exportValue="getParticipantCountExportValue"
+                visiblePriority="sm">
+            <template #format="{ row }">
+                <span :class="'badge badge-' + row.participantCountBadgeType">{{ row.participantCount }}</span>
+            </template>
+        </Column>
+
+        <ButtonColumn v-if="config.navigationUrls?.[NavigationUrlKey.SignUpOpportunityAttendeeListPage]"
+                      name="__attendeeList"
+                      tooltip="Attendee List"
+                      iconClass="ti ti-users"
+                      :excludeFromExport="true"
+                      visiblePriority="md"
+                      @click="onAttendeeListClick" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled"
+                      :rowDisabled="isDeleteRowDisabled"
+                      :additionalMessage="getDeleteAdditionalMessage"
+                      @click="onDeleteClick" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :signUpProjectGroupTypeGuids="config.options?.signUpProjectGroupTypeGuids ?? []" />
+</template>
+
+<script setup lang="ts">
+    import { computed, reactive, ref, watch } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import Grid, { ButtonColumn, Column, DeleteColumn, NumberColumn, SelectColumn, TextColumn, dateValueFilter, numberValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
+    import { GridAction, IGridState } from "@Obsidian/Types/Controls/grid";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { SignUpOverviewOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpOverview/signUpOverviewOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import GridSettingsModal from "./SignUpOverview/gridSettingsModal.partial.obs";
+    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./SignUpOverview/types.partial";
+
+    const config = useConfigurationValues<ListBlockBox<SignUpOverviewOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        dateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterDateRange)),
+        parentGroup: safeParseJson<ListItemBag>(preferences.getValue(PreferenceKey.FilterParentGroup)) ?? null,
+        slotsAvailableComparisonType: preferences.getValue(PreferenceKey.FilterSlotsAvailableComparisonType) || null,
+        slotsAvailableComparisonValue: toNumberOrNull(preferences.getValue(PreferenceKey.FilterSlotsAvailableComparisonValue))
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        const isSlotsAvailableFiltering = !!gridSettings.value.slotsAvailableComparisonType
+            && gridSettings.value.slotsAvailableComparisonValue != null;
+
+        return !!gridSettings.value.dateRange
+            || !!gridSettings.value.parentGroup?.value
+            || isSlotsAvailableFiltering;
+    });
+
+    /** The custom actions supported by this grid. */
+    const customActions = computed((): GridAction[] => {
+        return [
+            {
+                title: "Email Leaders",
+                tooltip: "Email the leaders of the selected schedules, or of every schedule in the list when none are selected.",
+                iconCssClass: "ti ti-mail-star",
+                handler: onEmailLeadersClick
+            },
+            {
+                title: "Email All Participants",
+                tooltip: "Email all participants of the selected schedules, or of every schedule in the list when none are selected.",
+                iconCssClass: "ti ti-mail",
+                handler: onEmailAllParticipantsClick
+            }
+        ];
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Gets the value to filter the schedule column by: the date portion of the
+     * opportunity's next or last start date time, so the date filter compares
+     * whole days rather than exact times.
+     *
+     * @param row The row to be filtered.
+     */
+    function getScheduleFilterValue(row: Record<string, unknown>): string | undefined {
+        const value = row["nextOrLastStartDateTime"];
+
+        if (typeof value !== "string") {
+            return undefined;
+        }
+
+        return RockDateTime.parseISO(value)?.date.toISOString();
+    }
+
+    /**
+     * Gets the value to sort the schedule column by: the opportunity's next
+     * or last start date time rather than its friendly display text.
+     *
+     * @param row The row to be sorted.
+     */
+    function getScheduleSortValue(row: Record<string, unknown>): string {
+        return (row["nextOrLastStartDateTime"] as string) ?? "";
+    }
+
+    /**
+     * Gets the value to use for the participant count column when exporting:
+     * the raw count rather than the badge markup.
+     *
+     * @param row The row to be exported.
+     */
+    function getParticipantCountExportValue(row: Record<string, unknown>): number | undefined {
+        return row["participantCount"] as number;
+    }
+
+    /**
+     * Determines if the delete button should be disabled for the specified
+     * row. Only individuals authorized to edit or schedule the project group
+     * may delete its opportunities.
+     *
+     * @param row The row to be checked.
+     */
+    function isDeleteRowDisabled(row: Record<string, unknown>): boolean {
+        return row["isDeleteDisabled"] === true;
+    }
+
+    /**
+     * Gets the additional delete confirmation message warning that the
+     * opportunity's participants are removed with it.
+     *
+     * @param row The row to be deleted.
+     */
+    function getDeleteAdditionalMessage(row: Record<string, unknown>): string | null {
+        const participantCount = row["participantCount"] as number;
+
+        if (!participantCount || participantCount <= 0) {
+            return null;
+        }
+
+        const participantLabel = participantCount > 1 ? "participants" : "participant";
+
+        return `This opportunity has ${participantCount.toLocaleString()} ${participantLabel}; deleting it will also remove all participants.`;
+    }
+
+    /**
+     * Creates a bulk communication addressed to the participants of the
+     * selected opportunities (everyone in the list when nothing is selected)
+     * and navigates to the communication page.
+     *
+     * @param state The state object that describes the grid.
+     * @param shouldOnlyEmailLeaders Whether to address only the leaders of the selected opportunities.
+     */
+    async function createParticipantCommunication(state: IGridState, shouldOnlyEmailLeaders: boolean): Promise<void> {
+        let keys = [...state.selectedKeys];
+
+        // With no selection the server emails everyone in the list, but it
+        // can only apply the grid-settings filters. When client-side filters
+        // are active, send the visible rows' keys so the recipients match
+        // what the individual sees.
+        if (keys.length === 0 && state.isFiltered) {
+            keys = state.filteredRows
+                .map(row => state.getRowKey(row))
+                .filter((key): key is string => !!key);
+
+            if (keys.length === 0) {
+                await alert("No opportunities match the current filters.");
+                return;
+            }
+        }
+
+        const result = await invokeBlockAction<string>("CreateParticipantCommunication", {
+            keys,
+            shouldOnlyEmailLeaders,
+            pageUrl: window.location.href
+        });
+
+        if (result.isSuccess && result.data) {
+            window.location.href = result.data;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to create the communication.");
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual, navigates to the
+     * project detail page.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        const detailUrl = config.navigationUrls?.[NavigationUrlKey.ProjectDetailPage];
+
+        if (!detailUrl) {
+            return;
+        }
+
+        const groupIdKey = gridData?.rows?.find(r => r["idKey"] === key)?.["groupIdKey"] as string;
+
+        if (groupIdKey) {
+            window.location.href = detailUrl.replace("((GroupId))", groupIdKey);
+        }
+    }
+
+    /**
+     * Called when a row's attendee list button has been clicked by the
+     * individual, navigates to the opportunity's attendee list page.
+     *
+     * @param key The key of the row that was clicked.
+     */
+    function onAttendeeListClick(key: string): void {
+        const attendeeListUrl = config.navigationUrls?.[NavigationUrlKey.SignUpOpportunityAttendeeListPage];
+
+        if (!attendeeListUrl) {
+            return;
+        }
+
+        const row = gridData?.rows?.find(r => r["idKey"] === key);
+        const groupIdKey = row?.["groupIdKey"] as string;
+        const locationIdKey = row?.["locationIdKey"] as string;
+        const scheduleIdKey = row?.["scheduleIdKey"] as string;
+
+        if (groupIdKey && locationIdKey && scheduleIdKey) {
+            window.location.href = attendeeListUrl
+                .replace("((GroupId))", groupIdKey)
+                .replace("((LocationId))", locationIdKey)
+                .replace("((ScheduleId))", scheduleIdKey);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual.
+     * The grid's built-in confirmation has already been approved.
+     *
+     * @param key The key of the row to be deleted.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete the opportunity.");
+        }
+    }
+
+    /**
+     * Called when the "Email Leaders" action has been clicked.
+     *
+     * @param state The state object that describes the grid.
+     */
+    async function onEmailLeadersClick(state: IGridState): Promise<void> {
+        await createParticipantCommunication(state, true);
+    }
+
+    /**
+     * Called when the "Email All Participants" action has been clicked.
+     *
+     * @param state The state object that describes the grid.
+     */
+    async function onEmailAllParticipantsClick(state: IGridState): Promise<void> {
+        await createParticipantCommunication(state, false);
+    }
+
+    /**
+     * Called when the grid settings icon is clicked, displays the block
+     * filters.
+     */
+    function onGridSettingsClick(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterDateRange, gridSettings.value.dateRange ? slidingDateRangeToString(gridSettings.value.dateRange) : "");
+        preferences.setValue(PreferenceKey.FilterParentGroup, gridSettings.value.parentGroup?.value ? JSON.stringify(gridSettings.value.parentGroup) : "");
+        preferences.setValue(PreferenceKey.FilterSlotsAvailableComparisonType, gridSettings.value.slotsAvailableComparisonType ?? "");
+        preferences.setValue(PreferenceKey.FilterSlotsAvailableComparisonValue, gridSettings.value.slotsAvailableComparisonValue != null ? gridSettings.value.slotsAvailableComparisonValue.toString() : "");
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion Watchers
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    gridDataSource.value = loadGridData();
+</script>
