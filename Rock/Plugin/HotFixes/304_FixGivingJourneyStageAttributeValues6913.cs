@@ -24,7 +24,7 @@ namespace Rock.Plugin.HotFixes
     /// attributes so the option list matches the <c>GivingJourneyStage</c> enum. Fix for issue #6913.
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 304, "20.0" )]
+    [MigrationNumber( 304, "19.3" )]
     public class FixGivingJourneyStageAttributeValues6913 : Migration
     {
         /// <summary>
