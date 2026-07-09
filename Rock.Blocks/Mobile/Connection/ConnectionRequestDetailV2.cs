@@ -218,6 +218,13 @@ namespace Rock.Blocks.Mobile.Connection
             var connectionType = connectionRequest.ConnectionOpportunity.ConnectionType;
             var canEdit = CanEditConnectionRequest( connectionRequest, out _ );
 
+            // When the type enforces sequential statuses, a request may only move
+            // forward through the status order: statuses ordered before the
+            // current one are shown disabled in the picker so they cannot be
+            // selected. Web parity (ConnectionsHub GetConnectionRequestDetailOptions).
+            var isSequentialStatusMode = connectionType.IsSequentialStatusEnforced;
+            var currentStatusOrder = connectionRequest.ConnectionStatus?.Order ?? 0;
+
             var options = new GetEditOptionsResponseBag
             {
                 CanEdit = canEdit,
@@ -232,7 +239,7 @@ namespace Rock.Blocks.Mobile.Connection
                         Order = s.Order,
                         IsNoteRequiredOnCompletion = s.IsNoteRequiredOnCompletion,
                         IsDefault = s.IsDefault,
-                        IsDisabled = false
+                        IsDisabled = isSequentialStatusMode && s.Order < currentStatusOrder
                     } )
                     .ToList(),
                 States = GetSelectableStates( connectionType ),
@@ -250,7 +257,7 @@ namespace Rock.Blocks.Mobile.Connection
                 AreCelebrationsEnabled = connectionType.EnabledFeatures.HasFlag( EnabledFeatureFlags.Celebration ),
                 IsFutureFollowUpEnabled = connectionType.EnableFutureFollowup,
                 RequiresPlacementGroupToConnect = connectionType.RequiresPlacementGroupToConnect,
-                IsSequentialStatusMode = false
+                IsSequentialStatusMode = isSequentialStatusMode
             };
 
             return ActionOk( options );
@@ -567,6 +574,17 @@ namespace Rock.Blocks.Mobile.Connection
             if ( newStatus == null )
             {
                 return ActionBadRequest( "Invalid connection status." );
+            }
+
+            // When the type enforces sequential statuses, the request may only
+            // move forward through the status order. The shell already disables
+            // out-of-order options in the picker; this guards the mutation so a
+            // stale or crafted client cannot move a request backward.
+            if ( connectionRequest.ConnectionOpportunity.ConnectionType.IsSequentialStatusEnforced
+                && connectionRequest.ConnectionStatus != null
+                && newStatus.Order < connectionRequest.ConnectionStatus.Order )
+            {
+                return ActionBadRequest( "This connection type requires statuses to be completed in order." );
             }
 
             // The web enforces the note requirement against the CURRENT status
