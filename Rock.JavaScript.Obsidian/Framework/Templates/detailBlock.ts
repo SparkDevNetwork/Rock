@@ -665,6 +665,18 @@ export default defineComponent({
                 }
 
                 if (result !== true) {
+                    /*
+                        7/8/26 - MSE
+
+                        A declined auto-edit load (commonly a view-only
+                        individual) falls back to the read-only view rather than
+                        leaving the hidden panel blank.
+                    */
+                    if (isAutoEditMode.value) {
+                        isAutoEditMode.value = false;
+                        isPanelVisible.value = true;
+                    }
+
                     return false;
                 }
             }
