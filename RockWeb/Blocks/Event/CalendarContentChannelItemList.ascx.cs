@@ -675,6 +675,12 @@ namespace RockWeb.Blocks.Event
                 if ( !string.IsNullOrEmpty( contentItemIdKey ) )
                 {
                     qryParams[PageParameterKey.ContentItemId] = contentItemIdKey;
+
+                    // Open an existing item in edit mode, matching the historical
+                    // WebForms behavior now that the Obsidian detail page defaults
+                    // to view mode. The add path (contentItemId 0) resolves no key
+                    // here, so a new item still opens in add mode.
+                    qryParams["autoEdit"] = "true";
                 }
 
                 if ( contentChannelId.HasValue )

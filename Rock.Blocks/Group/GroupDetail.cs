@@ -4430,7 +4430,13 @@ namespace Rock.Blocks.Group
                 .Select( c => new GroupLinkageBag
                 {
                     Name = c.Title,
-                    Url = this.GetLinkedPageUrl( AttributeKey.ContentItemPage, "ContentItemId", c.IdKey )
+                    // Open the content item in edit mode, matching the WebForms
+                    // behavior for items selected from an event linkage.
+                    Url = this.GetLinkedPageUrl( AttributeKey.ContentItemPage, new Dictionary<string, string>
+                    {
+                        { "ContentItemId", c.IdKey },
+                        { "autoEdit", "true" }
+                    } )
                 } )
                 .Where( l => l.Url.IsNotNullOrWhiteSpace() )
                 .ToList();

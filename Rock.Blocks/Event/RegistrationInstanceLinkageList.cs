@@ -273,7 +273,10 @@ namespace Rock.Blocks.Event
                 {
                     var qryParams = new Dictionary<string, string>
                     {
-                        { PageParameterKey.ContentItemId, contentItem.IdKey }
+                        { PageParameterKey.ContentItemId, contentItem.IdKey },
+                        // Open the content item in edit mode, matching the WebForms
+                        // behavior for items selected from an event linkage.
+                        { "autoEdit", "true" }
                     };
 
                     var contentItemUrl = this.GetLinkedPageUrl( AttributeKey.ContentItemDetailPage, qryParams );
