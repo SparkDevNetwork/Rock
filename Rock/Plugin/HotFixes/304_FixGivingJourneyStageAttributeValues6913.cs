@@ -1,0 +1,73 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+using System;
+
+namespace Rock.Plugin.HotFixes
+{
+    /// <summary>
+    /// Corrects the "values" qualifier on the Current/Previous Giving Journey Stage person
+    /// attributes so the option list matches the <c>GivingJourneyStage</c> enum. Fix for issue #6913.
+    /// </summary>
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 304, "20.0" )]
+    public class FixGivingJourneyStageAttributeValues6913 : Migration
+    {
+        /// <summary>
+        /// The Guid of the "values" AttributeQualifier row for the CurrentJourneyGivingStage person attribute.
+        /// </summary>
+        private const string CurrentGivingJourneyStageValuesQualifierGuid = "1A9213FC-B567-4793-AF57-89F4C443FF02";
+
+        /// <summary>
+        /// The Guid of the "values" AttributeQualifier row for the PreviousJourneyGivingStage person attribute.
+        /// </summary>
+        private const string PreviousGivingJourneyStageValuesQualifierGuid = "4B61627F-3B3A-4150-9F79-01CB023439FC";
+
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            /*
+                7/8/26 - ME
+
+                The giving automation overhaul (commit 16c48bfd304ae3d28d8326699988d4911d3c2061)
+                changed the GivingJourneyStage enum ordering (2 = Consistent, 3 = Occasional) but did
+                not update the "values" qualifier on the CurrentJourneyGivingStage and
+                PreviousJourneyGivingStage person attributes, so Lava renders options 2 and 3 swapped.
+                This corrects those two qualifier rows, guarded on the known-bad string so a value an
+                administrator has customized is left untouched.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/6913
+            */
+            Sql( $@"
+UPDATE [AttributeQualifier]
+SET [Value] = '0^Non-Giver, 1^New Giver, 2^Consistent Giver, 3^Occasional Giver, 4^Lapsed Giver, 5^Former Giver'
+WHERE [Guid] IN ( '{CurrentGivingJourneyStageValuesQualifierGuid}', '{PreviousGivingJourneyStageValuesQualifierGuid}' )
+    AND [Value] = '0^Non-Giver, 1^New Giver, 2^Occasional Giver, 3^Consistent Giver, 4^Lapsed Giver, 5^Former Giver';
+" );
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            //
+        }
+    }
+}
