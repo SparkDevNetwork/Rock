@@ -28,8 +28,11 @@
 .flyout {
     border: 1px solid var(--color-interface-soft);
     border-radius: var(--rounded-large);
-    /* TODO - UI Team needs to look at width */
     width: 400px;
+    /* Never wider than the viewport (less an 8px gutter each side, matching the flyoutGap
+       used when positioning). updatePosition() also clamps the flyout horizontally so it
+       stays fully on screen for any anchor position. */
+    max-width: calc(100vw - 16px);
     box-shadow: var(--box-shadow-strong);
     overflow: hidden;
 }
@@ -122,10 +125,18 @@
             );
         }
 
+        // Right-align to the anchor, then clamp so the flyout stays fully on screen. It grows
+        // leftward from the anchor's right edge, so on a narrow viewport - or with a left-of-center
+        // anchor - it would otherwise run off the left edge. The CSS max-width keeps its width
+        // within the viewport so this clamp always has room to place it.
+        const preferredRightOffset = viewportWidth - anchorRect.right;
+        const maxRightOffset = Math.max(flyoutGap, viewportWidth - flyoutRect.width - flyoutGap);
+        const right = Math.min(Math.max(preferredRightOffset, flyoutGap), maxRightOffset);
+
         style.value = {
             position: "fixed",
             top: `${top}px`,
-            right: `${viewportWidth - anchorRect.right}px`,
+            right: `${right}px`,
             zIndex: "1060" // Needs to be above 1050 because the flyout can appear in the docked panel.
         };
     }

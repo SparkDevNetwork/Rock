@@ -2,7 +2,8 @@
 <template>
     <ContextSlicer title="Filters"
                    class="mb-spacing-lg"
-                   showCampus>
+                   showCampus
+                   isContentWrapped>
         <template #default>
             <DropDownList v-model="areOnlyMyRequestsVisible"
                           :items="requestToggleItems"
@@ -31,12 +32,13 @@
                       :isAutoCollapseEnabled="isAutoCollapseEnabled"
                       :headerSecondaryActions="secondaryActions">
         <template #selectedActionToolbar>
-            <div class="left-actions d-flex align-items-center gap-spacing-md">
+            <div ref="toolbarElement" class="left-actions d-flex align-items-center gap-spacing-md">
                 <div class="d-flex align-items-center gap-spacing-tiny">
                     <RockLabel class="text-info-strong mb-0">Selected</RockLabel>
                     <Badge class="font-weight-semibold bg-info-strong">{{ allSelectedKeys.length }}</Badge>
                 </div>
                 <div class="d-flex align-items-center gap-spacing-xs">
+                    <!-- Primary actions are always shown as buttons in both layouts. -->
                     <RockButton class="activity-btn" @click="showAssignRequestModal" :disabled="!canEditConnectionRequests">
                         <i class="ti ti-user-circle"></i>
                         <span class="activity-btn-label">Assign</span>
@@ -51,72 +53,81 @@
                             <span class="activity-btn-label">Change Status</span>
                         </template>
                     </RockButton>
-                    <RockButton @click="showLaunchWorkflowModal()" class="activity-btn">
-                        <i class="ti ti-settings-cog"></i>
-                        <span class="activity-btn-label">Launch Workflow</span>
-                    </RockButton>
-                    <RockButton class="activity-btn" @click="showChangeStateModal(ConnectionState.Connected)" :disabled="!canEditConnectionRequests">
-                        <i class="ti ti-circle-check"></i>
-                        <span class="activity-btn-label">Complete</span>
-                    </RockButton>
-                    <div v-if="canEditConnectionRequests" class="dropdown">
+
+                    <!-- Left-hand secondary actions: buttons on wide screens, folded into the overflow menu when compact. -->
+                    <template v-if="!isToolbarCompact">
+                        <RockButton v-for="action in primaryToolbarActions"
+                                    :key="action.key"
+                                    class="activity-btn"
+                                    :disabled="isToolbarActionDisabled(action)"
+                                    @click="action.handler()">
+                            <i :class="action.iconCssClass"></i>
+                            <span class="activity-btn-label">{{ action.label }}</span>
+                        </RockButton>
+                    </template>
+
+                    <!--
+                        A single overflow menu. On wide screens it holds only the edit-only state
+                        changes; when the toolbar collapses (isToolbarCompact) the secondary
+                        actions fold in above them.
+                    -->
+                    <div v-if="isToolbarOverflowMenuShown" class="dropdown">
                         <i class="ti ti-dots-vertical cursor-pointer" data-toggle="dropdown"></i>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <button type="button"
-                                        @click="showChangeStateModal(ConnectionState.Active)"
-                                        class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                    <i class="ti ti-user pr-spacing-sm text-interface-medium"></i>Set as Active
-                                </button>
-                            </li>
-                            <li>
-                                <button type="button"
-                                        @click="showChangeStateModal(ConnectionState.Inactive)"
-                                        class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                    <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
-                                </button>
-                            </li>
-                            <li v-if="box.options?.isFutureFollowUpEnabled">
-                                <button type="button"
-                                        @click="showChangeStateModal(ConnectionState.FutureFollowUp)"
-                                        class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                    <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
-                                </button>
-                            </li>
-                            <li>
-                                <button type="button"
-                                        @click="showDeleteRequestModal()"
-                                        class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold text-danger">
-                                    <i class="ti ti-trash pr-spacing-sm text-danger"></i>Delete
-                                </button>
-                            </li>
+                        <ul class="dropdown-menu" :class="{ 'dropdown-menu-right': isToolbarCompact }">
+                            <template v-if="isToolbarCompact">
+                                <li v-for="action in foldedToolbarActions"
+                                    :key="action.key"
+                                    :class="{ disabled: isToolbarActionDisabled(action) }">
+                                    <button type="button"
+                                            :disabled="isToolbarActionDisabled(action)"
+                                            @click="action.handler()"
+                                            class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold"
+                                            :class="{ 'text-danger': action.isDanger }">
+                                        <i :class="getToolbarMenuIconClass(action)"></i>{{ action.label }}
+                                    </button>
+                                </li>
+                                <li v-if="canEditConnectionRequests" class="divider"></li>
+                            </template>
+                            <template v-if="canEditConnectionRequests">
+                                <li v-for="action in stateToolbarActions" :key="action.key">
+                                    <button type="button"
+                                            @click="action.handler()"
+                                            class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold"
+                                            :class="{ 'text-danger': action.isDanger }">
+                                        <i :class="getToolbarMenuIconClass(action)"></i>{{ action.label }}
+                                    </button>
+                                </li>
+                            </template>
                         </ul>
                     </div>
                 </div>
             </div>
             <div class="right-actions d-flex align-items-center gap-spacing-md">
-                <div class="pl-spacing-md d-flex align-items-center gap-spacing-xs">
-                    <RockButton @click="showSMSModal()" class="activity-btn">
-                        <i class="ti ti-message-circle-plus"></i>
-                        <span class="activity-btn-label">SMS</span>
-                    </RockButton>
-                    <RockButton @click="showEmailModal()" class="activity-btn">
-                        <i class="ti ti-mail-plus"></i>
-                        <span class="activity-btn-label">Email</span>
-                    </RockButton>
-                </div>
-                <div class="border-left-divider pl-spacing-md d-flex align-items-center gap-spacing-md">
-                    <RockButton class="activity-btn" @click="showAddActivityModal()" :disabled="!canEditConnectionRequests">
-                        <i class="ti ti-activity"></i>
-                        <span class="activity-btn-label">Add Activity</span>
-                    </RockButton>
-                    <RockButton class="activity-btn" @click="showBulkTransferModal()" :disabled="!canEditConnectionRequests">
-                        <i class="ti ti-switch-3"></i>
-                        <span class="activity-btn-label">Transfer</span>
-                    </RockButton>
-                    <div class="d-flex align-items-center gap-spacing-sm">
-                        <i class="ti ti-x cursor-pointer" @click="clearAllSelections"></i>
+                <!-- Right-hand secondary actions: buttons on wide screens, folded into the overflow menu when compact. -->
+                <template v-if="!isToolbarCompact">
+                    <div class="pl-spacing-md d-flex align-items-center gap-spacing-xs">
+                        <RockButton v-for="action in communicationToolbarActions"
+                                    :key="action.key"
+                                    class="activity-btn"
+                                    :disabled="isToolbarActionDisabled(action)"
+                                    @click="action.handler()">
+                            <i :class="action.iconCssClass"></i>
+                            <span class="activity-btn-label">{{ action.label }}</span>
+                        </RockButton>
                     </div>
+                    <div class="border-left-divider pl-spacing-md d-flex align-items-center gap-spacing-md">
+                        <RockButton v-for="action in managementToolbarActions"
+                                    :key="action.key"
+                                    class="activity-btn"
+                                    :disabled="isToolbarActionDisabled(action)"
+                                    @click="action.handler()">
+                            <i :class="action.iconCssClass"></i>
+                            <span class="activity-btn-label">{{ action.label }}</span>
+                        </RockButton>
+                    </div>
+                </template>
+                <div class="d-flex align-items-center gap-spacing-sm">
+                    <i class="ti ti-x cursor-pointer" @click="clearAllSelections"></i>
                 </div>
             </div>
         </template>
@@ -705,7 +716,7 @@
     }
 }
 
-@media (max-width: 1125px) {
+@media (max-width: 1190px) {
     .left-actions .activity-btn-label {
         display: none;
     }
@@ -719,7 +730,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { computed, reactive, ref, watch } from "vue";
+    import { computed, onBeforeUnmount, reactive, ref, watch } from "vue";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
     import { GridDataToShowItemBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/gridDataToShowItemBag";
@@ -1070,6 +1081,130 @@
 
     const allSelectedKeys = computed(() => Object.values(selectedKeys.value).flat());
     const hasAnySelectedKeys = computed(() => allSelectedKeys.value.length > 0);
+
+    // #region Selected-Row Action Toolbar
+
+    /**
+     * Describes one action in the selected-row toolbar. The same definition renders as
+     * a toolbar button on wide screens and as an overflow-menu item when the toolbar
+     * collapses, so each action exists in the DOM exactly once.
+     */
+    type SelectedRowAction = {
+        /** Stable key for v-for. */
+        key: string;
+        /** Button label, menu text, and tooltip. */
+        label: string;
+        /** Tabler icon CSS class, e.g. "ti ti-mail-plus". */
+        iconCssClass: string;
+        /** Invoked when the action is clicked. */
+        handler: () => void;
+        /** When true, the action is disabled unless the user can edit connection requests. */
+        requiresEditPermission?: boolean;
+        /** When true, the action is styled as destructive. */
+        isDanger?: boolean;
+    };
+
+    /*
+        The toolbar folds its secondary actions into a single overflow menu once it is too
+        narrow to show them all as buttons. Its width is measured directly with a
+        ResizeObserver rather than a viewport media query, so the collapse tracks the space
+        the toolbar actually has - which shrinks when the docked request panel is open or the
+        block sits in a narrow column - not the window size. This mirrors the docked panel's
+        own width-driven button collapse. Each action is still rendered exactly once, as a
+        button (wide) or a menu item (compact).
+    */
+
+    /** Width (px) below which the secondary actions collapse into the overflow menu. */
+    const toolbarCompactWidthThreshold = 700;
+
+    /** The toolbar container's measured width; 0 until the first measurement, which reads as wide. */
+    const toolbarPixelWidth = ref<number>(0);
+
+    /** Element ref on the toolbar content, used to locate and measure its container. */
+    const toolbarElement = ref<HTMLElement | null>(null);
+
+    /** True when the toolbar is too narrow to show every secondary action as a button. */
+    const isToolbarCompact = computed<boolean>(() => toolbarPixelWidth.value > 0 && toolbarPixelWidth.value < toolbarCompactWidthThreshold);
+
+    // Measures the toolbar's actual rendered width. The .action-toolbar container is sized by
+    // the panel, not by the buttons inside it, so collapsing the content cannot feed back and
+    // change the measured width (which would otherwise loop).
+    const toolbarResizeObserver = new ResizeObserver(entries => {
+        for (const entry of entries) {
+            toolbarPixelWidth.value = entry.contentRect.width;
+        }
+    });
+
+    // The toolbar only renders while rows are selected, so (re-)attach the observer to its
+    // container whenever the content mounts or unmounts.
+    watch(toolbarElement, (element) => {
+        toolbarResizeObserver.disconnect();
+
+        const container = element?.closest(".action-toolbar");
+        if (container) {
+            toolbarResizeObserver.observe(container);
+        }
+    });
+
+    onBeforeUnmount(() => toolbarResizeObserver.disconnect());
+
+    /** Left-hand secondary actions - buttons on wide screens, folded into the menu when compact. */
+    const primaryToolbarActions: SelectedRowAction[] = [
+        { key: "launchWorkflow", label: "Launch Workflow", iconCssClass: "ti ti-settings-cog", handler: () => showLaunchWorkflowModal() },
+        { key: "complete", label: "Complete", iconCssClass: "ti ti-circle-check", handler: () => showChangeStateModal(ConnectionState.Connected), requiresEditPermission: true },
+    ];
+
+    /** Communication actions - buttons on the right of the wide toolbar, folded into the menu when compact. */
+    const communicationToolbarActions: SelectedRowAction[] = [
+        { key: "sms", label: "SMS", iconCssClass: "ti ti-message-circle-plus", handler: () => showSMSModal() },
+        { key: "email", label: "Email", iconCssClass: "ti ti-mail-plus", handler: () => showEmailModal() },
+    ];
+
+    /** Management actions - buttons on the right of the wide toolbar, folded into the menu when compact. */
+    const managementToolbarActions: SelectedRowAction[] = [
+        { key: "addActivity", label: "Add Activity", iconCssClass: "ti ti-activity", handler: () => showAddActivityModal(), requiresEditPermission: true },
+        { key: "transfer", label: "Transfer", iconCssClass: "ti ti-switch-3", handler: () => showBulkTransferModal(), requiresEditPermission: true },
+    ];
+
+    /** State-change actions - always shown in the overflow menu (edit-only) in both layouts. */
+    const stateToolbarActions = computed<SelectedRowAction[]>(() => {
+        const actions: SelectedRowAction[] = [
+            { key: "setActive", label: "Set as Active", iconCssClass: "ti ti-user", handler: () => showChangeStateModal(ConnectionState.Active), requiresEditPermission: true },
+            { key: "setInactive", label: "Set as Inactive", iconCssClass: "ti ti-user-off", handler: () => showChangeStateModal(ConnectionState.Inactive), requiresEditPermission: true },
+        ];
+
+        // Future follow-up is only a valid state when the connection type enables it.
+        if (box.options?.isFutureFollowUpEnabled) {
+            actions.push({ key: "futureFollowUp", label: "Set as Future Follow-Up", iconCssClass: "ti ti-calendar", handler: () => showChangeStateModal(ConnectionState.FutureFollowUp), requiresEditPermission: true });
+        }
+
+        actions.push({ key: "delete", label: "Delete", iconCssClass: "ti ti-trash", handler: () => showDeleteRequestModal(), requiresEditPermission: true, isDanger: true });
+
+        return actions;
+    });
+
+    /** Every secondary action that folds into the overflow menu when the toolbar is compact. */
+    const foldedToolbarActions = computed<SelectedRowAction[]>(() => [
+        ...primaryToolbarActions,
+        ...communicationToolbarActions,
+        ...managementToolbarActions,
+    ]);
+
+    /** The overflow menu is shown when compact (it holds the folded actions) or when the user can edit (it holds the state changes). */
+    const isToolbarOverflowMenuShown = computed<boolean>(() => isToolbarCompact.value || canEditConnectionRequests.value);
+
+    /** True when an action needs edit permission the current user does not have. */
+    function isToolbarActionDisabled(action: SelectedRowAction): boolean {
+        return !!action.requiresEditPermission && !canEditConnectionRequests.value;
+    }
+
+    /** Builds the icon class for an overflow-menu item, tinting destructive actions red. */
+    function getToolbarMenuIconClass(action: SelectedRowAction): string {
+        const colorClass = action.isDanger ? "text-danger" : "text-interface-medium";
+        return `${action.iconCssClass} pr-spacing-sm ${colorClass}`;
+    }
+
+    // #endregion Selected-Row Action Toolbar
 
     const selectedRequestDetails = computed((): BulkRequestViewBag[] => {
         if (!gridData.value?.rows?.length) {
