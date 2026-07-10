@@ -22,7 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.Common.Mobile.Blocks.Connection.ConnectionTypeListV2;
+using Rock.Common.Mobile.Blocks.Connection.ConnectionTypeList;
 using Rock.Common.Mobile.ViewModel;
 using Rock.Data;
 using Rock.Model;
@@ -41,7 +41,7 @@ namespace Rock.Blocks.Mobile.Connection
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockBlockType" />
 
-    [DisplayName( "Connection Type List V2" )]
+    [DisplayName( "Connection Type List" )]
     [Category( "Mobile > Connection" )]
     [Description( "Displays the list of connection types with request count summaries." )]
     [IconCssClass( "ti ti-list" )]
@@ -55,11 +55,17 @@ namespace Rock.Blocks.Mobile.Connection
         Key = AttributeKey.DetailPage,
         Order = 0 )]
 
+    [LinkedPage( "Add Connection Request Page",
+        Description = "Page that hosts the Add Connection Request block, opened by the floating Add button. No page parameters are passed, so the Add block starts at its Type step. When empty, the floating button is not shown.",
+        IsRequired = false,
+        Key = AttributeKey.AddPage,
+        Order = 1 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "88E9C088-5CCE-41F9-B99E-C3B03E123316" )]
     [Rock.SystemGuid.BlockTypeGuid( "A7FF3F7F-AC1D-4C07-A1E1-FBDE8F689F6A" )]
-    public class ConnectionTypeListV2 : RockBlockType
+    public class ConnectionTypeList : RockBlockType
     {
         #region Keys
 
@@ -69,6 +75,7 @@ namespace Rock.Blocks.Mobile.Connection
         private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
+            public const string AddPage = "AddPage";
         }
 
         #endregion
@@ -95,10 +102,11 @@ namespace Rock.Blocks.Mobile.Connection
                 } )
                 .ToList();
 
-            return new Rock.Common.Mobile.Blocks.Connection.ConnectionTypeListV2.Configuration
+            return new Rock.Common.Mobile.Blocks.Connection.ConnectionTypeList.Configuration
             {
                 Campuses = campuses,
-                DetailPageGuid = GetAttributeValue( AttributeKey.DetailPage ).AsGuidOrNull()
+                DetailPageGuid = GetAttributeValue( AttributeKey.DetailPage ).AsGuidOrNull(),
+                AddPageGuid = GetAttributeValue( AttributeKey.AddPage ).AsGuidOrNull()
             };
         }
 

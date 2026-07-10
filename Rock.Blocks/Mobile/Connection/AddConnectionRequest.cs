@@ -22,7 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.Common.Mobile.Blocks.Connection.AddConnectionRequestV2;
+using Rock.Common.Mobile.Blocks.Connection.AddConnectionRequest;
 using Rock.Common.Mobile.ViewModel;
 using Rock.Data;
 using Rock.Mobile;
@@ -33,7 +33,7 @@ using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 
-using Detail = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetailV2;
+using Detail = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail;
 using MobileConnectionState = Rock.Common.Mobile.Enums.ConnectionState;
 
 using ConnectionState = Rock.Model.ConnectionState;
@@ -50,7 +50,7 @@ namespace Rock.Blocks.Mobile.Connection
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockBlockType" />
 
-    [DisplayName( "Add Connection Request V2" )]
+    [DisplayName( "Add Connection Request" )]
     [Category( "Mobile > Connection" )]
     [Description( "Creates a new connection request through a multi-step wizard." )]
     [IconCssClass( "ti ti-plus" )]
@@ -69,7 +69,7 @@ namespace Rock.Blocks.Mobile.Connection
 
     [Rock.SystemGuid.EntityTypeGuid( "553609B0-49E3-4E52-9D63-7F10C03D249E" )]
     [Rock.SystemGuid.BlockTypeGuid( "5A198A75-177C-4A2A-8558-BFB5A4EFCB30" )]
-    public class AddConnectionRequestV2 : RockBlockType
+    public class AddConnectionRequest : RockBlockType
     {
         #region Keys
 
@@ -108,7 +108,7 @@ namespace Rock.Blocks.Mobile.Connection
         /// <inheritdoc/>
         public override object GetMobileConfigurationValues()
         {
-            return new Rock.Common.Mobile.Blocks.Connection.AddConnectionRequestV2.Configuration
+            return new Rock.Common.Mobile.Blocks.Connection.AddConnectionRequest.Configuration
             {
                 PostSaveAction = GetPostSaveAction()
             };

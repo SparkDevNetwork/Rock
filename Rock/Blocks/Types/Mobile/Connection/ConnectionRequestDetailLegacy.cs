@@ -24,7 +24,7 @@ using System.Threading.Tasks;
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
 using Rock.Common.Mobile;
-using Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail;
+using Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetailLegacy;
 using Rock.Common.Mobile.Enums;
 using Rock.Core.NotificationMessageTypes;
 using Rock.Data;
@@ -47,7 +47,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockBlockType" />
 
-    [DisplayName( "Connection Request Detail" )]
+    [DisplayName( "Connection Request Detail (Legacy)" )]
     [Category( "Mobile > Connection" )]
     [Description( "Displays the details of the given connection request for editing state, status, etc." )]
     [IconCssClass( "ti ti-id" )]
@@ -111,12 +111,12 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL )]
-    public class ConnectionRequestDetail : RockBlockType
+    public class ConnectionRequestDetailLegacy : RockBlockType
     {
         #region Block Attributes
 
         /// <summary>
-        /// The block setting attribute keys for the <see cref="ConnectionRequestDetail"/> block.
+        /// The block setting attribute keys for the <see cref="ConnectionRequestDetailLegacy"/> block.
         /// </summary>
         private static class AttributeKey
         {
@@ -195,7 +195,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <inheritdoc/>
         public override object GetMobileConfigurationValues()
         {
-            return new Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail.Configuration
+            return new Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetailLegacy.Configuration
             {
                 PersonProfilePageGuid = PersonProfilePageGuid,
                 GroupDetailPageGuid = GroupDetailPageGuid,
@@ -1822,7 +1822,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     return requestActivityBag.Error;
                 }
 
-                return ActionOk( new Common.Mobile.Blocks.Connection.ConnectionRequestDetail.ActivityOptionsViewModel
+                return ActionOk( new Common.Mobile.Blocks.Connection.ConnectionRequestDetailLegacy.ActivityOptionsViewModel
                 {
                     ActivityTypes = requestActivityBag.ActivityTypes,
                     Connectors = requestActivityBag.Connectors
@@ -1871,7 +1871,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     }
                 }
 
-                return ActionOk( new Common.Mobile.Blocks.Connection.ConnectionRequestDetail.ConnectionRequestActivityDetailBag
+                return ActionOk( new Common.Mobile.Blocks.Connection.ConnectionRequestDetailLegacy.ConnectionRequestActivityDetailBag
                 {
                     ActivityOptions = new ActivityOptionsViewModel
                     {

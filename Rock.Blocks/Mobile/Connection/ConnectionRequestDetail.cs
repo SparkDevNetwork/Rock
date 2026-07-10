@@ -24,7 +24,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 using Rock.Attribute;
-using Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetailV2;
+using Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail;
 using Rock.Common.Mobile.ViewModel;
 using Rock.Data;
 using Rock.Enums.Connection;
@@ -36,10 +36,10 @@ using Rock.Web.Cache;
 
 using MobileConnectionState = Rock.Common.Mobile.Enums.ConnectionState;
 using MobileDueStatus = Rock.Common.Mobile.Enums.DueStatus;
-using MobileGroupMemberStatus = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetailV2.GroupMemberStatus;
-using MobileMeetsGroupRequirement = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetailV2.MeetsGroupRequirement;
-using MobileActivityEntryType = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetailV2.ActivityEntryType;
-using MobileSystemUpdateType = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetailV2.SystemUpdateType;
+using MobileGroupMemberStatus = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail.GroupMemberStatus;
+using MobileMeetsGroupRequirement = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail.MeetsGroupRequirement;
+using MobileActivityEntryType = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail.ActivityEntryType;
+using MobileSystemUpdateType = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail.SystemUpdateType;
 
 using ConnectionState = Rock.Model.ConnectionState;
 using GroupMemberStatus = Rock.Model.GroupMemberStatus;
@@ -57,7 +57,7 @@ namespace Rock.Blocks.Mobile.Connection
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockBlockType" />
 
-    [DisplayName( "Connection Request Detail V2" )]
+    [DisplayName( "Connection Request Detail" )]
     [Category( "Mobile > Connection" )]
     [Description( "Displays a single connection request for viewing and editing." )]
     [IconCssClass( "ti ti-id" )]
@@ -93,7 +93,7 @@ namespace Rock.Blocks.Mobile.Connection
 
     [Rock.SystemGuid.EntityTypeGuid( "8B53B246-526F-4B3E-AF5B-4C36763E9DC9" )]
     [Rock.SystemGuid.BlockTypeGuid( "74DDC1A2-2025-4072-8F47-DF7A5A76CF83" )]
-    public class ConnectionRequestDetailV2 : RockBlockType
+    public class ConnectionRequestDetail : RockBlockType
     {
         #region Keys
 
@@ -134,7 +134,7 @@ namespace Rock.Blocks.Mobile.Connection
 
             var reminderPageGuid = GetAttributeValue( AttributeKey.ReminderPage ).AsGuidOrNull();
 
-            return new Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetailV2.Configuration
+            return new Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail.Configuration
             {
                 Campuses = campuses,
                 PersonProfilePageGuid = GetAttributeValue( AttributeKey.PersonProfilePage ).AsGuidOrNull(),
@@ -424,7 +424,7 @@ namespace Rock.Blocks.Mobile.Connection
             // crafted or buggy client cannot persist Connected and bypass the
             // placement-group, group-requirement, group-member, and activity
             // handling that TryMarkRequestConnected performs (web parity with
-            // AddConnectionRequestV2, which likewise refuses Connected).
+            // AddConnectionRequest, which likewise refuses Connected).
             var newState = ( ConnectionState ) ( int ) request.State;
 
             if ( newState == ConnectionState.Connected )

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,7 +23,7 @@ using System.Linq;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Common.Mobile.Blocks.Connection.ConnectionRequestListV2;
+using Rock.Common.Mobile.Blocks.Connection.ConnectionRequestList;
 using Rock.Common.Mobile.ViewModel;
 using Rock.Constants;
 using Rock.Data;
@@ -48,7 +48,7 @@ namespace Rock.Blocks.Mobile.Connection
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockBlockType" />
 
-    [DisplayName( "Connection Request List V2" )]
+    [DisplayName( "Connection Request List" )]
     [Category( "Mobile > Connection" )]
     [Description( "Displays the connection requests of a single connection opportunity with search, filtering, sorting and infinite-scroll paging." )]
     [IconCssClass( "ti ti-list-details" )]
@@ -62,7 +62,7 @@ namespace Rock.Blocks.Mobile.Connection
         Key = AttributeKey.DetailPage,
         Order = 0 )]
 
-    [LinkedPage( "Add Page",
+    [LinkedPage( "Add Connection Request Page",
         Description = "Page that hosts the Add Connection Request block, opened by the floating Add button. The current ConnectionOpportunity IdKey is passed as a page parameter so the Add block prefills and locks the Type and Opportunity. When empty, the floating button is not shown.",
         IsRequired = false,
         Key = AttributeKey.AddPage,
@@ -79,7 +79,7 @@ namespace Rock.Blocks.Mobile.Connection
 
     [Rock.SystemGuid.EntityTypeGuid( "CC91A1ED-7FB0-43B3-A8B4-A050DBF6BA6D" )]
     [Rock.SystemGuid.BlockTypeGuid( "117ADAF8-8173-4A88-8C88-2C97F88985DC" )]
-    public class ConnectionRequestListV2 : RockBlockType
+    public class ConnectionRequestList : RockBlockType
     {
         #region Keys
 
@@ -127,7 +127,7 @@ namespace Rock.Blocks.Mobile.Connection
                 } )
                 .ToList();
 
-            return new Rock.Common.Mobile.Blocks.Connection.ConnectionRequestListV2.Configuration
+            return new Rock.Common.Mobile.Blocks.Connection.ConnectionRequestList.Configuration
             {
                 Campuses = campuses,
                 DetailPageGuid = GetAttributeValue( AttributeKey.DetailPage ).AsGuidOrNull(),

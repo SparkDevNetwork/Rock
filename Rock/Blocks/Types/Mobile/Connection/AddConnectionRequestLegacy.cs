@@ -28,9 +28,9 @@ using System.Linq;
 using Rock.ClientService.Connection.ConnectionOpportunity;
 using Rock.Model.Connection.ConnectionOpportunity.Options;
 using Rock.Security;
-using Rock.Common.Mobile.Blocks.Connection.AddConnectionRequest;
+using Rock.Common.Mobile.Blocks.Connection.AddConnectionRequestLegacy;
 using Rock.Web.Cache;
-using Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail;
+using Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetailLegacy;
 using GroupMemberStatus = Rock.Model.GroupMemberStatus;
 using System.Data.Entity;
 using Rock.Utility;
@@ -42,7 +42,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockBlockType" />
 
-    [DisplayName( "Add Connection Request" )]
+    [DisplayName( "Add Connection Request (Legacy)" )]
     [Category( "Mobile > Connection" )]
     [Description( "Allows an individual to create and add a new Connection Request." )]
     [IconCssClass( "ti ti-plus" )]
@@ -81,7 +81,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONNECTION_ADD_CONNECTION_REQUEST )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CONNECTION_ADD_CONNECTION_REQUEST )]
-    public class AddConnectionRequest : RockBlockType
+    public class AddConnectionRequestLegacy : RockBlockType
     {
         #region Keys
 
@@ -107,7 +107,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         }
 
         /// <summary>
-        /// The attribute keys for the <see cref="AddConnectionRequest"/> block.
+        /// The attribute keys for the <see cref="AddConnectionRequestLegacy"/> block.
         /// </summary>
         public static class AttributeKey
         {

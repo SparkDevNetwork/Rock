@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,7 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.Common.Mobile.Blocks.Connection.ConnectionOpportunityListV2;
+using Rock.Common.Mobile.Blocks.Connection.ConnectionOpportunityList;
 using Rock.Common.Mobile.ViewModel;
 using Rock.Constants;
 using Rock.Data;
@@ -44,7 +44,7 @@ namespace Rock.Blocks.Mobile.Connection
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockBlockType" />
 
-    [DisplayName( "Connection Opportunity List V2" )]
+    [DisplayName( "Connection Opportunity List" )]
     [Category( "Mobile > Connection" )]
     [Description( "Displays the opportunities of a connection type with request count summaries and type metrics." )]
     [IconCssClass( "ti ti-list" )]
@@ -58,11 +58,17 @@ namespace Rock.Blocks.Mobile.Connection
         Key = AttributeKey.DetailPage,
         Order = 0 )]
 
+    [LinkedPage( "Add Connection Request Page",
+        Description = "Page that hosts the Add Connection Request block, opened by the floating Add button. No page parameters are passed, so the Add block starts at its Type step. When empty, the floating button is not shown.",
+        IsRequired = false,
+        Key = AttributeKey.AddPage,
+        Order = 1 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "8DD07282-8470-426C-8F89-7390599DB37F" )]
     [Rock.SystemGuid.BlockTypeGuid( "039AB104-FDFE-4BB0-944A-2C02F4C1D73A" )]
-    public class ConnectionOpportunityListV2 : RockBlockType
+    public class ConnectionOpportunityList : RockBlockType
     {
         #region Keys
 
@@ -72,6 +78,7 @@ namespace Rock.Blocks.Mobile.Connection
         private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
+            public const string AddPage = "AddPage";
         }
 
         #endregion
@@ -98,10 +105,11 @@ namespace Rock.Blocks.Mobile.Connection
                 } )
                 .ToList();
 
-            return new Rock.Common.Mobile.Blocks.Connection.ConnectionOpportunityListV2.Configuration
+            return new Rock.Common.Mobile.Blocks.Connection.ConnectionOpportunityList.Configuration
             {
                 Campuses = campuses,
-                DetailPageGuid = GetAttributeValue( AttributeKey.DetailPage ).AsGuidOrNull()
+                DetailPageGuid = GetAttributeValue( AttributeKey.DetailPage ).AsGuidOrNull(),
+                AddPageGuid = GetAttributeValue( AttributeKey.AddPage ).AsGuidOrNull()
             };
         }
 

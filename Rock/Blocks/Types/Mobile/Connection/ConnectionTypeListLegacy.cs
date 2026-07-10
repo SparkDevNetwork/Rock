@@ -35,7 +35,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockBlockType" />
 
-    [DisplayName( "Connection Type List" )]
+    [DisplayName( "Connection Type List (Legacy)" )]
     [Category( "Mobile > Connection" )]
     [Description( "Displays the list of connection types." )]
     [IconCssClass( "ti ti-list" )]
@@ -74,12 +74,12 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONNECTION_CONNECTION_TYPE_LIST_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CONNECTION_CONNECTION_TYPE_LIST )]
-    public class ConnectionTypeList : RockBlockType
+    public class ConnectionTypeListLegacy : RockBlockType
     {
         #region Block Attributes
 
         /// <summary>
-        /// The block setting attribute keys for the <see cref="ConnectionTypeList"/> block.
+        /// The block setting attribute keys for the <see cref="ConnectionTypeListLegacy"/> block.
         /// </summary>
         private static class AttributeKey
         {

@@ -33,7 +33,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockBlockType" />
 
-    [DisplayName( "Connection Request List" )]
+    [DisplayName( "Connection Request List (Legacy)" )]
     [Category( "Mobile > Connection" )]
     [Description( "Displays the list of connection requests for a single opportunity." )]
     [IconCssClass( "ti ti-list" )]
@@ -76,12 +76,12 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONNECTION_CONNECTION_REQUEST_LIST_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CONNECTION_CONNECTION_REQUEST_LIST )]
-    public class ConnectionRequestList : RockBlockType
+    public class ConnectionRequestListLegacy : RockBlockType
     {
         #region Block Attributes
 
         /// <summary>
-        /// The block setting attribute keys for the <see cref="ConnectionRequestList"/> block.
+        /// The block setting attribute keys for the <see cref="ConnectionRequestListLegacy"/> block.
         /// </summary>
         private static class AttributeKey
         {
