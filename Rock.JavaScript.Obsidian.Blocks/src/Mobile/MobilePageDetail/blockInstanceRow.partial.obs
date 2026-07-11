@@ -1,0 +1,234 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DisplayCard :class="{ 'is-pending': isPending }"
+                 :iconCssClass="props.block.iconCssClass || 'ti ti-box'"
+                 iconLabelType="default"
+                 :isReorderable="!isPending"
+                 :title="block.name"
+                 :description="block.typeName">
+
+        <template #aside>
+            <div class="block-status-indicators">
+                <i v-for="indicator in statusIndicators"
+                   :key="indicator.key"
+                   v-tooltip="indicator.title"
+                   :class="[indicator.iconCssClass, { 'is-active': indicator.isActive }]"
+                   class="block-status-indicator"></i>
+            </div>
+        </template>
+
+        <template #actions>
+            <div class="block-instance-actions">
+
+                <RockButton v-for="(action, index) in (block.customActions ?? [])"
+                            :key="index"
+                            isSquare
+                            btnSize="sm"
+                            btnType="default"
+                            :title="action.tooltip ?? undefined"
+                            :tooltip="action.tooltip ?? undefined"
+                            @click.stop="onCustomActionClick(action)">
+                    <i :class="action.iconCssClass"></i>
+                </RockButton>
+
+                <!--
+                    When no custom actions exist, render a placeholder to keep the
+                    indicators aligned with each other.
+                -->
+                <div class="btn-square btn-sm" v-if="!hasCustomActions"></div>
+
+                <RockButton isSquare
+                            btnSize="sm"
+                            btnType="default"
+                            title="Block Settings"
+                            tooltip="Block Settings"
+                            @click.stop="onSettingsClick">
+                    <i class="ti ti-settings"></i>
+                </RockButton>
+
+                <RockButton isSquare
+                            btnSize="sm"
+                            btnType="default"
+                            title="Security"
+                            tooltip="Security"
+                            @click.stop="onSecurityClick">
+                    <i class="ti ti-lock"></i>
+                </RockButton>
+
+                <RockButton isSquare
+                            btnSize="sm"
+                            btnType="danger"
+                            title="Delete"
+                            tooltip="Delete"
+                            @click.stop="$emit('delete')">
+                    <i class="ti ti-x"></i>
+                </RockButton>
+            </div>
+        </template>
+    </DisplayCard>
+</template>
+
+<style scoped>
+.block-reorder {
+    cursor: grab;
+}
+
+.block-reorder:active {
+    cursor: grabbing;
+}
+
+.block-status-indicators {
+    padding: 0 var(--spacing-small);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-small);
+}
+
+@media (max-width: 1199px) {
+    .block-status-indicators {
+        display: none;
+    }
+}
+
+.block-status-indicator {
+    font-size: var(--font-size-regular);
+    color: var(--color-info-soft);
+}
+
+.block-status-indicator.is-active {
+    color: var(--color-info-strong);
+    opacity: 1;
+}
+
+.block-instance-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+}
+
+.is-pending {
+    opacity: 0.3;
+    pointer-events: none;
+}
+</style>
+
+<script lang="ts">
+    declare global {
+        // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-explicit-any
+        var Rock: any;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    declare function $(element: any): any;
+</script>
+
+<script setup lang="ts">
+    // #region Types
+
+    import { computed, PropType } from "vue";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+    import { showSecurity } from "@Obsidian/Utility/dialogs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { MobilePageBlockBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobilePageDetail/mobilePageBlockBag";
+    import { MobilePageBlockActionBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobilePageDetail/mobilePageBlockActionBag";
+
+    type StatusIndicator = {
+        key: string;
+        iconCssClass: string;
+        isActive: boolean;
+        title: string;
+    };
+
+    const props = defineProps({
+        block: {
+            type: Object as PropType<MobilePageBlockBag>,
+            required: true
+        },
+
+        isPending: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "delete"): void;
+        (e: "customAction", action: MobilePageBlockActionBag): void;
+        (e: "refresh"): void;
+    }>();
+
+    // #endregion Types
+
+    // #region Computed Values
+
+    const hasCustomActions = computed((): boolean => {
+        return (props.block.customActions?.length ?? 0) > 0;
+    });
+
+    /**
+     * The five status indicators shown on the card. Lava folds the server and
+     * client flags into a single flame; the remaining icons map one-to-one to
+     * their settings.
+     */
+    const statusIndicators = computed((): StatusIndicator[] => {
+        return [
+            {
+                key: "lava",
+                iconCssClass: "ti ti-flame",
+                isActive: props.block.processLavaOnServer || props.block.processLavaOnClient,
+                title: "Lava Processing"
+            },
+            {
+                key: "cache",
+                iconCssClass: "ti ti-database",
+                isActive: props.block.cacheDuration > 0,
+                title: "Output Caching"
+            },
+            {
+                key: "phone",
+                iconCssClass: "ti ti-device-mobile",
+                isActive: props.block.showOnPhone,
+                title: "Show on Phone"
+            },
+            {
+                key: "tablet",
+                iconCssClass: "ti ti-device-ipad",
+                isActive: props.block.showOnTablet,
+                title: "Show on Tablet"
+            },
+            {
+                key: "network",
+                iconCssClass: "ti ti-wifi",
+                isActive: props.block.requiresNetwork,
+                title: "Requires Network"
+            }
+        ];
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onCustomActionClick(action: MobilePageBlockActionBag): void {
+        emit("customAction", action);
+    }
+
+    function onSecurityClick(): void {
+        if (!props.block.idKey) {
+            return;
+        }
+        showSecurity(EntityType.Block, props.block.idKey, props.block.name ?? "Block");
+    }
+
+    function onSettingsClick(): void {
+        Rock.controls.modal.show(undefined, `/BlockProperties/${props.block.id}?t=Block Properties`);
+
+        $("#modal-popup").one("hidden.bs.modal", () => {
+            emit("refresh");
+        });
+    }
+
+    // #endregion Event Handlers
+</script>
