@@ -1,0 +1,319 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning" v-text="blockError" />
+
+    <NotificationBox v-if="errorMessage" alertType="danger" v-text="errorMessage" />
+
+    <div v-if="!blockError" class="mobile-page-detail">
+        <Panel v-if="panelMode == DetailPanelMode.View" :hasTitle="false">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <h6 class="font-weight-semibold m-0">{{ options.applicationName }}</h6>
+                    <RockLabel v-if="lastDeployText" class="label label-success m-0" :title="lastDeployTooltip || undefined">{{ lastDeployText }}</RockLabel>
+                    <RockLabel v-else class="label label-warning m-0">Not Deployed</RockLabel>
+                </div>
+                <div class="d-flex gap-3">
+                    <div class="page-picker">
+                        <DropDownList v-model="selectedPageKey"
+                                      :items="pageItems"
+                                      :showBlankItem="false"
+                                      soft="true"
+                                      @update:modelValue="onPageChanged" />
+                    </div>
+                    <RockButton v-if="options.canDeploy"
+                                btnType="default"
+                                :isLoading="isDeploying"
+                                loadingText="Deploying..."
+                                @click="onDeployClick"><i class="ti ti-upload"></i> Upload</RockButton>
+                </div>
+            </div>
+
+        </Panel>
+
+        <DetailBlock v-model:mode="panelMode"
+                     :name="pageDetailBag?.internalName ?? 'Page'"
+                     titleIconCssClass="ti ti-file-description"
+                     :showExperienceMode="panelMode === DetailPanelMode.Edit || panelMode === DetailPanelMode.Add"
+                     :entityKey="pageDetailBag?.idKey ?? ''"
+                     :entityTypeGuid="EntityType.Page"
+                     entityTypeName="Page"
+                     :isEditVisible="config.isEditable"
+                     :isSecurityHidden="false"
+                     :isAuditHidden="true"
+                     @cancelEdit="onCancelEdit"
+                     @edit="onEdit"
+                     @save="onSave">
+
+            <template #headerActions>
+                <template v-if="panelMode == DetailPanelMode.View">
+                    <HighlightLabel v-if="isInternalWebPage" labelType="info" :tooltip="internalWebPageTooltip">Internal Web Page</HighlightLabel>
+                    <HighlightLabel v-if="isExternalWebPage" labelType="info" :tooltip="externalWebPageTooltip">External Web Page</HighlightLabel>
+                    <CopyButton :value="pageDetailBag?.guid ?? ''" :btnSize="BtnSize.ExtraSmall"><i class="ti ti-clipboard"></i> Copy GUID</CopyButton>
+                </template>
+            </template>
+
+            <template #view>
+                <ViewPanel :modelValue="pageDetailBag" :layoutDetailPageUrl="layoutDetailPageUrl" />
+            </template>
+
+            <template #edit>
+                <EditPanel v-model="editBag" :options="options" />
+            </template>
+        </DetailBlock>
+
+        <BlocksPanel v-if="isNativePage && panelMode === DetailPanelMode.View && config.isEditable && !isNewPage"></BlocksPanel>
+    </div>
+</template>
+
+<style scoped>
+/*
+    The styles-v2 design system hides icons in block panel titles by default
+    (.panel-block .panel-title i { display: none; }). Re-enable it for this
+    block by scoping to our own wrapper with higher specificity. :deep() lets
+    the selector cross into the DetailBlock / Panel component internals.
+*/
+.mobile-page-detail :deep(.panel-block .panel-title i) {
+    display: inline;
+}
+
+.page-picker {
+    min-width: 200px;
+}
+</style>
+
+<script setup lang="ts">
+    // #region Types
+
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { MobilePageType } from "@Obsidian/Enums/Cms/mobilePageType";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { MobilePageBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobilePageDetail/mobilePageBag";
+    import { MobilePageDeployResponseBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobilePageDetail/mobilePageDeployResponseBag";
+    import { MobilePageDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobilePageDetail/mobilePageDetailOptionsBag";
+    import ViewPanel from "./MobilePageDetail/viewPanel.partial.obs";
+    import EditPanel from "./MobilePageDetail/editPanel.partial.obs";
+    import { NavigationUrlKey } from "./MobilePageDetail/types.partial";
+    import CopyButton from "@Obsidian/Controls/copyButton.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { MobilePageDetailsBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobilePageDetail/mobilePageDetailsBag";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import BlocksPanel from "./MobilePageDetail/blocksPanel.partial.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+
+
+    // #endregion Types
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const config = useConfigurationValues<DetailBlockBox<MobilePageBag, MobilePageDetailOptionsBag>>();
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const pageDetailBag = ref(config.entity?.details);
+
+    const panelMode = ref<DetailPanelMode>(!pageDetailBag.value?.idKey ? DetailPanelMode.Add : DetailPanelMode.View);
+
+    const editBag = ref<ValidPropertiesBox<MobilePageDetailsBag>>({
+        bag: {} as MobilePageDetailsBag
+    });
+
+    const selectedPageKey = ref(pageDetailBag.value?.idKey ?? "");
+
+    const pageItems = ref<ListItemBag[]>(config.options?.pageItems ?? []);
+
+    const isDeploying = ref(false);
+
+    const lastDeployText = ref(config.options?.lastDeployText ?? "");
+    const lastDeployTooltip = ref(config.options?.lastDeployTooltip ?? "");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isNativePage = computed((): boolean => {
+        return pageDetailBag.value?.pageType === MobilePageType.NativePage;
+    });
+
+    const isNewPage = computed((): boolean => {
+        return !pageDetailBag.value?.idKey;
+    });
+
+    const isInternalWebPage = computed((): boolean => {
+        return pageDetailBag.value?.pageType === MobilePageType.InternalWebPage;
+    });
+
+    const isExternalWebPage = computed((): boolean => {
+        return pageDetailBag.value?.pageType === MobilePageType.ExternalWebPage;
+    });
+
+    const internalWebPageTooltip = computed((): string => {
+        return `This page will open ${pageDetailBag.value?.webPageUrl ?? ""} in an internal browser window.`;
+    });
+
+    const externalWebPageTooltip = computed((): string => {
+        return `This page will open ${pageDetailBag.value?.webPageUrl ?? ""} in an external browser application.`;
+    });
+
+    const layoutDetailPageUrl = computed((): string | null => {
+        return config.navigationUrls?.[NavigationUrlKey.LayoutDetailPage] ?? null;
+    });
+
+    const options = computed((): MobilePageDetailOptionsBag => {
+        return config.options ?? {
+            canDeploy: false,
+        };
+    });
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the Edit button being clicked.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+    async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<ValidPropertiesBox<MobilePageDetailsBag>>("Edit", { key: pageDetailBag.value?.idKey });
+
+        if (!result.isSuccess || !result.data) {
+            return false;
+        }
+
+        editBag.value = result.data;
+        return true;
+    }
+
+    /**
+     * Event handler for the panel's Save event.
+     *
+     * @returns true to leave edit mode, false to stay, or a redirect URL.
+     */
+    async function onSave(): Promise<boolean | string> {
+        const result = await invokeBlockAction<MobilePageBag | string>("Save", { box: editBag.value });
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage ?? "An error occurred while trying to save this page.";
+            return false;
+        }
+
+        errorMessage.value = "";
+
+        if (result.statusCode === 201 && typeof result.data === "string") {
+            return result.data;
+        }
+
+        // Any other string response is unexpected; stay in edit mode.
+        if (typeof result.data !== "object") {
+            return false;
+        }
+
+        pageDetailBag.value = result.data.details;
+        selectedPageKey.value = pageDetailBag.value?.idKey ?? "";
+
+        // Keep the page picker in sync by refreshing the display text when an
+        // existing page's internal name changed.
+        const idKey = pageDetailBag.value?.idKey;
+        const internalName = pageDetailBag.value?.internalName ?? "";
+
+        if (idKey) {
+            const existingItem = pageItems.value.find(i => i.value === idKey);
+
+            if (existingItem) {
+                existingItem.text = internalName;
+            }
+            else {
+                pageItems.value = [...pageItems.value, { value: idKey, text: internalName }];
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     *
+     * @returns true to leave edit mode, false to stay, or a redirect URL.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (isNewPage.value) {
+            return config.navigationUrls?.[NavigationUrlKey.ParentPage] ?? true;
+        }
+
+        return true;
+    }
+
+    /**
+     * Event handler for the page picker dropdown changing. Navigates to the
+     * detail block for the selected page.
+     *
+     * @param value The IdKey of the page that was selected.
+     */
+    function onPageChanged(value: string | string[]): void {
+        const key = Array.isArray(value) ? value[0] : value;
+        const url = config.navigationUrls?.[NavigationUrlKey.PageDetailPage];
+
+        if (!url || !key || key === pageDetailBag.value?.idKey) {
+            return;
+        }
+
+        window.location.href = url.replace("((Key))", key);
+    }
+
+    /**
+     * Confirms with the user, triggers an asynchronous build of the mobile
+     * application package, and patches the deploy label on success. On failure
+     * the label is left untouched and an error message is surfaced.
+     */
+    async function onDeployClick(): Promise<void> {
+        const confirmed = await confirm("Are you sure you wish to replace the current package and deploy a new one?");
+
+        if (!confirmed) {
+            return;
+        }
+
+        errorMessage.value = "";
+        isDeploying.value = true;
+
+        try {
+            const result = await invokeBlockAction<MobilePageDeployResponseBag>("Deploy");
+
+            if (result.isSuccess && result.data) {
+                lastDeployText.value = result.data.lastDeployText ?? "";
+                lastDeployTooltip.value = result.data.lastDeployTooltip ?? "";
+            }
+            else {
+                errorMessage.value = result.errorMessage ?? "Unable to deploy the application.";
+            }
+        }
+        finally {
+            isDeploying.value = false;
+        }
+    }
+    // #endregion Event Handlers
+
+    // Surface any server-provided error condition.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified page could not be viewed.";
+    }
+
+    if (isNewPage.value) {
+        onEdit();
+    }
+</script>

@@ -7,9 +7,13 @@
             'clickable': !!props.onClick,
             'is-compact': isCompact
         }"
-         @mouseenter="isHovering = true"
-         @mouseleave="isHovering = false"
+         @mouseenter="onMouseEnter"
+         @mouseleave="onMouseLeave"
          @click="onMainClick">
+
+        <div v-if="isReorderable" class="displaycard-reorder reorder-handle" title="Drag to reorder">
+            <i class="ti ti-grip-vertical"></i>
+        </div>
         <div class="displaycard-main">
             <slot name="prepend" />
 
@@ -186,6 +190,14 @@
     padding: var(--spacing-medium);
     gap: var(--spacing-medium);
 }
+
+.displaycard-reorder {
+    cursor: grab;
+}
+
+.displaycard-reorder:active {
+    cursor: grabbing;
+}
 </style>
 
 <script setup lang="ts">
@@ -249,6 +261,20 @@
             type: String as PropType<string>,
             required: false,
             default: "150px" as const
+        },
+
+        /**
+         * Whether this card shows a drag grip so it can be reordered. Off by
+         * default.
+         *
+         * Reordering requires BOTH props: this one, which renders the grip on
+         * the card, AND <c>isReorderable</c> on the enclosing
+         * <DisplayCardContainer>, which wires up the drag and emits the
+         * reorder event.
+         */
+        isReorderable: {
+            type: Boolean,
+            default: false
         },
 
         description: {
@@ -364,6 +390,18 @@
     function onMainClick(): void {
         if (props.onClick) {
             props.onClick();
+        }
+    }
+
+    function onMouseEnter(): void {
+        if (props.onClick) {
+            isHovering.value = true;
+        }
+    }
+
+    function onMouseLeave(): void {
+        if (props.onClick) {
+            isHovering.value = false;
         }
     }
 
