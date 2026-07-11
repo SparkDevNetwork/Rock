@@ -1,0 +1,197 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Communication"
+          title="Communication Queue"
+          :entityTypeGuid="EntityType.Communication"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          :showMergeTemplate="false"
+          :showLaunchWorkflow="true"
+          @gridSettingsClick="isGridSettingsVisible = true"
+          @selectItem="onSelectItem">
+
+        <DateTimeColumn name="sendDateTime"
+                        title="Send Date / Time"
+                        field="sendDateTime"
+                        :filter="dateValueFilter" />
+
+        <PersonColumn name="sender"
+                      title="Sender"
+                      field="sender"
+                      :hideAvatar="true"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getSenderFilterValue"
+                      :quickFilterValue="getSenderFilterValue" />
+
+        <TextColumn name="subject"
+                    title="Subject"
+                    field="subject"
+                    :filter="textValueFilter" />
+
+        <Column name="status"
+                title="Status"
+                field="status"
+                :filter="pickExistingValueFilter"
+                :filterValue="getStatusFilterValue"
+                :quickFilterValue="getStatusFilterValue"
+                :exportValue="getStatusFilterValue">
+            <template #format="{ row }">
+                {{ CommunicationStatusDescription[row.status] }}
+            </template>
+        </Column>
+
+        <NumberColumn name="pendingRecipientCount"
+                      title="Pending Recipients"
+                      field="pendingRecipientCount"
+                      :filter="numberValueFilter" />
+
+        <Column name="communicationType"
+                title="Type"
+                field="communicationType"
+                :filter="pickExistingValueFilter"
+                :filterValue="getCommunicationTypeFilterValue"
+                :quickFilterValue="getCommunicationTypeFilterValue"
+                :exportValue="getCommunicationTypeFilterValue">
+            <template #format="{ row }">
+                <span :class="'label label-' + (row.communicationType === CommunicationType.SMS ? 'success' : 'info')">
+                    {{ CommunicationTypeDescription[row.communicationType] }}
+                </span>
+            </template>
+        </Column>
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible" />
+</template>
+
+<script setup lang="ts">
+    import Grid, { Column, DateTimeColumn, NumberColumn, PersonColumn, TextColumn, dateValueFilter, numberValueFilter, pickExistingValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
+    import { computed, reactive, ref, watch } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { CommunicationType, CommunicationTypeDescription } from "@Obsidian/Enums/Communication/communicationType";
+    import { CommunicationStatus, CommunicationStatusDescription } from "@Obsidian/Enums/Communication/communicationStatus";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { CommunicationQueueOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationQueue/communicationQueueOptionsBag";
+    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./CommunicationQueue/types.partial";
+    import GridSettingsModal from "./CommunicationQueue/gridSettingsModal.partial.obs";
+
+    const config = useConfigurationValues<ListBlockBox<CommunicationQueueOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        showFutureCommunications: asBooleanOrNull(preferences.getValue(PreferenceKey.FilterShowFutureCommunications)) ?? false,
+        showPendingApproval: asBooleanOrNull(preferences.getValue(PreferenceKey.FilterShowPendingApproval)) ?? false,
+        communicationTypes: preferences.getValue(PreferenceKey.FilterCommunicationTypes)?.split(",").filter(t => t) ?? []
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return gridSettings.value.showFutureCommunications
+            || gridSettings.value.showPendingApproval
+            || gridSettings.value.communicationTypes.length > 0;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Gets the searchable text value for the "Sender" person column.
+     *
+     * @param row The grid row.
+     */
+    function getSenderFilterValue(row: Record<string, unknown>): string {
+        const person = row["sender"] as PersonFieldBag | null | undefined;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+     * Gets the text value for the "Status" column for searching/filtering.
+     *
+     * @param row The grid row.
+     */
+    function getStatusFilterValue(row: Record<string, unknown>): string {
+        const status = row["status"] as CommunicationStatus | null | undefined;
+        return status == null ? "" : (CommunicationStatusDescription[status] ?? "");
+    }
+
+    /**
+     * Gets the text value for the "Type" column for searching/filtering.
+     *
+     * @param row The grid row.
+     */
+    function getCommunicationTypeFilterValue(row: Record<string, unknown>): string {
+        const type = row["communicationType"] as CommunicationType | null | undefined;
+        return type == null ? "" : (CommunicationTypeDescription[type] ?? "");
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterShowFutureCommunications, asTrueOrFalseString(gridSettings.value.showFutureCommunications));
+        preferences.setValue(PreferenceKey.FilterShowPendingApproval, asTrueOrFalseString(gridSettings.value.showPendingApproval));
+        preferences.setValue(PreferenceKey.FilterCommunicationTypes, gridSettings.value.communicationTypes.join(","));
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion Watchers
+
+    gridDataSource.value = loadGridData();
+</script>
