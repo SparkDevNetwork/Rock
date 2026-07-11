@@ -210,6 +210,19 @@
     .group-label {
         display: none;
     }
+
+    /*
+        Board view (type="block") pins the header to a fixed height of 56px. Once the
+        header snaps below 610px and the actions wrap onto their own row, that fixed
+        height clips the wrapped content, because the panel hides vertical overflow in
+        worksurface mode. Let the header grow to fit while keeping 56px as the minimum
+        so the single-row bar height is unchanged. Scoped to .panel-block so only board
+        view is affected.
+    */
+    .panel-block > .grouped-grid-panel-header {
+        height: auto;
+        min-height: 56px;
+    }
 }
 
 /*
