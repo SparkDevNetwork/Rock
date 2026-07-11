@@ -9,7 +9,7 @@
          class="contextslicer">
         <div class="contextslicer-title">{{ props.title }}</div>
 
-        <div class="contextslicer-content">
+        <div class="contextslicer-content" :class="{ 'content-wrapped': isContentWrapped }">
             <slot />
 
             <CampusContextPicker v-if="showCampus"
@@ -48,6 +48,10 @@
     display: flex;
     gap: var(--spacing-medium);
     align-items: center;
+}
+
+.content-wrapped {
+    flex-wrap: wrap;
 }
 
 .contextslicer > .contextslicer-content .form-control {
@@ -103,6 +107,11 @@
             type: [String, Array] as PropType<Guid | Guid[] | undefined>,
             required: false
         },
+
+        isContentWrapped: {
+            type: Boolean as PropType<boolean>,
+            required: false
+        }
     });
 
     const isCampusPickerVisible = ref<boolean>(props.showCampus);

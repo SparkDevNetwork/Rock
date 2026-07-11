@@ -21,10 +21,12 @@
                     </div>
                 </template>
                 <template #headerActions>
-                    <slot name="headerActions" v-bind="{ groupRows: group.gridData.rows }" />
-                    <HighlightLabel v-if="getIsCountMessageVisible(group)">
-                        {{ getCountMessage(group.key, group.gridData.rows) }}
-                    </HighlightLabel>
+                    <div class="section-header-actions">
+                        <slot name="headerActions" v-bind="{ groupRows: group.gridData.rows }" />
+                        <HighlightLabel v-if="getIsCountMessageVisible(group)">
+                            {{ getCountMessage(group.key, group.gridData.rows) }}
+                        </HighlightLabel>
+                    </div>
                 </template>
                 <ContentStack>
                     <slot name="grid" v-bind="{ group, setGridRef }" />
@@ -33,6 +35,14 @@
         </template>
     </ContentSectionContainer>
 </template>
+
+<style scoped>
+/* Let a group's header actions wrap onto a new line when they no longer fit, so a
+   long slotted action set plus the count label does not overflow on narrow screens. */
+.section-header-actions {
+    flex-wrap: wrap;
+}
+</style>
 
 <script setup lang="ts">
     import { ref, watch, PropType, ComponentPublicInstance, Ref } from "vue";
