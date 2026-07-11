@@ -1,0 +1,35 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="message || heading" :alertType="alertType" :heading="heading">
+        {{ message }}
+    </NotificationBox>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { GroupSimpleRegisterConfirmBag } from "@Obsidian/ViewModels/Blocks/Group/GroupSimpleRegisterConfirm/groupSimpleRegisterConfirmBag";
+
+    const config = useConfigurationValues<GroupSimpleRegisterConfirmBag>();
+
+    /*
+        7/10/26 - MSE
+
+        This block activates a group member as a side effect of server-side
+        initialization. We intentionally do NOT wire up
+        onConfigurationValuesChanged(useReloadBlock()) here: an auto-reload would
+        re-run that write every time an admin edits a block setting. The content is
+        a one-time result of the initial request, so no reload is wanted.
+
+        Reason: Avoid re-running the status update on block-setting changes.
+    */
+
+    // #region Values
+
+    const message = ref(config?.message ?? "");
+    const heading = ref(config?.heading ?? "");
+    const alertType = ref(config?.alertType ?? "danger");
+
+    // #endregion Values
+</script>
