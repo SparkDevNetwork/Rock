@@ -25,9 +25,15 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Contains the settings that can be edited for the Communication Settings block. */
 export type CommunicationSettingsBag = {
-    /** Gets or sets the unique identifier of the system communication used for approval notification emails. */
+    /**
+     * Gets or sets the unique identifier of the system communication used
+     * for approval notification emails.
+     */
     approvalEmailTemplate?: string | null;
 
-    /** Gets or sets the system communications available for selection as the approval notification template. */
+    /**
+     * Gets or sets the system communications available for selection as the
+     * approval notification template.
+     */
     approvalEmailTemplateOptions?: ListItemBag[] | null;
 };

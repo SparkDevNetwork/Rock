@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-import { CalendarTypesCalendarBag } from "./calendarTypesCalendarBag";
+import { CalendarTypesCalendarBag } from "@Obsidian/ViewModels/Blocks/Event/CalendarTypes/calendarTypesCalendarBag";
 
 /** The initial state for the Calendar Types block. */
 export type CalendarTypesBag = {

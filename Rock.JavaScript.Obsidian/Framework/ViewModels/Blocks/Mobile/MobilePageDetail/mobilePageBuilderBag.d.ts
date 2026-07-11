@@ -32,9 +32,13 @@ export type MobilePageBuilderBag = {
     /** Gets or sets the block types shown in the palette (left column). */
     blockTypes?: MobilePageBlockTypeBag[] | null;
 
+    /**
+     * Gets or sets the error message produced when the layout's phone or
+     * tablet XAML could not be parsed. When set, Rock.ViewModels.Blocks.Mobile.MobilePageDetail.MobilePageBuilderBag.Zones will be
+     * empty since zone parsing stops at the first layout that fails to parse.
+     */
+    zoneErrorMessage?: string | null;
+
     /** Gets or sets the layout zones and their placed blocks (right column). */
     zones?: MobilePageZoneBag[] | null;
-
-    /** Gets or sets the error message produced when the layout's phone or tablet XAML could not be parsed. When set, zones will be empty since zone parsing stops at the first layout that fails to parse. */
-    zoneErrorMessage?: string | null;
 };
