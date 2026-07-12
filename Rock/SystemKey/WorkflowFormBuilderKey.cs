@@ -38,7 +38,7 @@ namespace Rock.SystemKey
         /// initiator or the person entry form.
         /// </summary>
         /// <remarks>
-        /// Attribute field type is <see cref="Rock.Field.Types.PersonFieldType"/>.
+        /// Attribute field type is <c>PersonFieldType</c>.
         /// </remarks>
         public const string Person = "Person";
 
@@ -47,7 +47,7 @@ namespace Rock.SystemKey
         /// entry form.
         /// </summary>
         /// <remarks>
-        /// Attribute field type is <see cref="Rock.Field.Types.PersonFieldType"/>.
+        /// Attribute field type is <c>PersonFieldType</c>.
         /// </remarks>
         public const string Spouse = "Spouse";
 
@@ -56,7 +56,7 @@ namespace Rock.SystemKey
         /// entry form.
         /// </summary>
         /// <remarks>
-        /// Attribute field type is <see cref="Rock.Field.Types.GroupFieldType"/>.
+        /// Attribute field type is <c>GroupFieldType</c>.
         /// </remarks>
         public const string Family = "Family";
     }

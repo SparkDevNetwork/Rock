@@ -95,11 +95,11 @@ namespace Rock.Utility
                 var workflowAttributes = dvWorkflow.Attributes["WorkflowAttributes"];
                 if ( workflowAttributes != null )
                 {
-                    var keyValueField = workflowAttributes.FieldType.Field as KeyValueListFieldType;
-                    if ( keyValueField != null )
+                    if ( workflowAttributes.FieldType.Guid == SystemGuid.FieldType.KEY_VALUE_LIST.AsGuid() )
                     {
-                        workflowAttributesSettings = keyValueField.GetValuesFromString( null,
-                            dvWorkflow.GetAttributeValue( "WorkflowAttributes" ), workflowAttributes.QualifierValues,
+                        workflowAttributesSettings = Field.Helper.GetKeyValueListValuesFromString(
+                            dvWorkflow.GetAttributeValue( "WorkflowAttributes" ),
+                            workflowAttributes.ConfigurationValues,
                             false );
                     }
                 }

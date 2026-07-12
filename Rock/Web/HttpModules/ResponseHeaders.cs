@@ -122,11 +122,9 @@ namespace Rock.Web.HttpModules
                 if ( headersAttribute != null )
                 {
                     var field = headersAttribute.FieldType.Field;
-                    if ( field is Rock.Field.Types.KeyValueListFieldType )
+                    if ( headersAttribute.FieldType.Guid == SystemGuid.FieldType.KEY_VALUE_LIST.AsGuid() )
                     {
-                        var keyValueField = ( Rock.Field.Types.KeyValueListFieldType ) field;
-
-                        Headers = keyValueField.GetValuesFromString( null, headerValues, headersAttribute.QualifierValues, false );
+                        Headers = Field.Helper.GetKeyValueListValuesFromString( headerValues, headersAttribute.ConfigurationValues, false );
                     }
                 }
             }

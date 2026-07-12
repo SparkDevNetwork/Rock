@@ -78,7 +78,7 @@ namespace Rock.Jobs
         {
             get
             {
-                return new Field.Types.KeyValueListFieldType().GetValuesFromString( null, GetAttributeValue( AttributeKey.BlockTypeGuidReplacementPairs ), null, false )
+                return Field.Helper.GetKeyValueListValuesFromString( GetAttributeValue( AttributeKey.BlockTypeGuidReplacementPairs ), null, false )
                     // Calling Guid?.Value intentionally on the next line so that exceptions are thrown if the field value is invalid.
                     .ToDictionary( kvp => kvp.Key.AsGuidOrNull().Value, kvp => kvp.Value.ToString().AsGuidOrNull().Value );
             }

@@ -85,7 +85,7 @@ namespace Rock.Jobs
             var contentChannelId = new ContentChannelService( rockContext ).GetId( contentChannelGuid.Value );
             var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable().Where( i => i.ContentChannelId == contentChannelId ).ToList();
 
-            var attributeLinks = new Field.Types.KeyValueListFieldType().GetValuesFromString( null, GetAttributeValue( AttributeKey.AttributeLinks ), null, false );
+            var attributeLinks = Field.Helper.GetKeyValueListValuesFromString( GetAttributeValue( AttributeKey.AttributeLinks ), null, false );
             var itemMergeFields = new Dictionary<string, object>( Lava.LavaHelper.GetCommonMergeFields( null ) );
             var jobResultStringBuilder = new StringBuilder();
             var totalItems = contentChannelItems.Count();

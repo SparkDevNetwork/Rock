@@ -211,9 +211,9 @@ namespace Rock.Communication.SmsActions
             {
                 if ( workflowAttributes.FieldType.Field is KeyValueListFieldType keyValueField )
                 {
-                    workflowAttributesSettings = keyValueField.GetValuesFromString( null,
+                    workflowAttributesSettings = Field.Helper.GetKeyValueListValuesFromString(
                         GetAttributeValue( action, AttributeKey.WorkflowAttributes ),
-                        workflowAttributes.QualifierValues,
+                        workflowAttributes.ConfigurationValues,
                         false );
                 }
             }

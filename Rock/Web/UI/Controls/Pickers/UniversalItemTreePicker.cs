@@ -20,7 +20,7 @@ namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// This is a special use tree item picker for use with
-    /// <see cref="Rock.Field.Types.UniversalItemTreePickerFieldType"/>.
+    /// <c>UniversalItemTreePickerFieldType</c>.
     /// </summary>
     internal sealed class UniversalItemTreePicker : ItemPicker
     {

@@ -41,7 +41,7 @@ namespace Rock.Attribute
         public GroupTypeGroupFieldAttribute( string name = "", string description = "", string groupPickerLabel = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( SystemGuid.FieldType.GROUP_TYPE_GROUP.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
-            FieldConfigurationValues.Add( Rock.Field.Types.GroupTypeGroupFieldType.CONFIG_GROUP_PICKER_LABEL, new Field.ConfigurationValue( groupPickerLabel ) );
+            FieldConfigurationValues.Add( "groupPickerLabel", new Field.ConfigurationValue( groupPickerLabel ) );
         }
 
         /// <summary>
@@ -63,13 +63,13 @@ namespace Rock.Attribute
         {
             get
             {
-                if(FieldConfigurationValues.ContainsKey( Rock.Field.Types.GroupTypeGroupFieldType.CONFIG_GROUP_PICKER_LABEL ) )
+                if(FieldConfigurationValues.ContainsKey( "groupPickerLabel" ) )
                 {
-                    return FieldConfigurationValues[Rock.Field.Types.GroupTypeGroupFieldType.CONFIG_GROUP_PICKER_LABEL].Value;
+                    return FieldConfigurationValues["groupPickerLabel"].Value;
                 }
                 return string.Empty;
             }
-            set => FieldConfigurationValues[Rock.Field.Types.GroupTypeGroupFieldType.CONFIG_GROUP_PICKER_LABEL] = new Field.ConfigurationValue( value );
+            set => FieldConfigurationValues["groupPickerLabel"] = new Field.ConfigurationValue( value );
         }
     }
 }

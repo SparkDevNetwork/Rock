@@ -2220,11 +2220,9 @@ namespace Rock.Lava
                     }
 
                     // check if attribute is a key value list and return a collection of key/value pairs
-                    if ( field is Rock.Field.Types.KeyValueListFieldType )
+                    if ( attribute.FieldType.Guid == SystemGuid.FieldType.KEY_VALUE_LIST.AsGuid() )
                     {
-                        var keyValueField = ( Rock.Field.Types.KeyValueListFieldType ) field;
-
-                        return keyValueField.GetValuesFromString( null, rawValue, attribute.QualifierValues, false );
+                        return Field.Helper.GetKeyValueListValuesFromString( rawValue, attribute.ConfigurationValues, false );
                     }
 
                     if ( qualifier.Equals( "Object", StringComparison.OrdinalIgnoreCase ) && field is Rock.Field.ICachedEntitiesFieldType )

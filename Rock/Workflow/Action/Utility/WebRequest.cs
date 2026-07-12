@@ -118,7 +118,7 @@ namespace Rock.Workflow.Action
             string url = GetAttributeValue( action, URL ).ResolveMergeFields( mergeFields );
 
             var parametersValue = GetAttributeValue( action, PARAMETERS );
-            var parameterList = new Field.Types.KeyValueListFieldType().GetValuesFromString( null, parametersValue, null, false );
+            var parameterList = Field.Helper.GetKeyValueListValuesFromString( parametersValue, null, false );
             var parameters = new Dictionary<string, object>();
             foreach ( var p in parameterList )
             {
@@ -128,7 +128,7 @@ namespace Rock.Workflow.Action
             }
 
             var headersValue = GetAttributeValue( action, HEADERS );
-            var headerList = new Field.Types.KeyValueListFieldType().GetValuesFromString( null, headersValue, null, false );
+            var headerList = Field.Helper.GetKeyValueListValuesFromString( headersValue, null, false );
             var headers = new Dictionary<string, object>();
             foreach ( var p in headerList )
             {
