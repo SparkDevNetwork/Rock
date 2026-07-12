@@ -35,7 +35,7 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         public CodeEditorFieldAttribute( string name )
-            : base( name, fieldTypeClass: typeof( Rock.Field.Types.CodeEditorFieldType ).FullName )
+            : base( SystemGuid.FieldType.CODE_EDITOR.AsGuid(), name: name )
         {
             EditorMode = CodeEditorMode.Text;
             EditorHeight = 200;
@@ -57,7 +57,7 @@ namespace Rock.Attribute
         [RockObsolete( "18.1" )]
         [Obsolete( "Use the constructor that only takes name as a parameter." )]
         public CodeEditorFieldAttribute( string name, string description = "", CodeEditorMode mode = CodeEditorMode.Text, CodeEditorTheme theme = CodeEditorTheme.Rock, int height = 200, bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.CodeEditorFieldType ).FullName )
+            : base( SystemGuid.FieldType.CODE_EDITOR.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             EditorMode = mode;
             EditorTheme = theme;

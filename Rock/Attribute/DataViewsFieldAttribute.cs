@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 using Rock.Field.Types;
 
 namespace Rock.Attribute
@@ -37,10 +39,21 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public DataViewsFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string entityTypeName = "", string category = "", int order = 0, string key = null ) :
-            base( name, description, required, defaultValue, category, order, key, typeof( DataViewsFieldType ).FullName )
+            base( SystemGuid.FieldType.DATAVIEWS.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             EntityTypeName = entityTypeName;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DataViewsFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public DataViewsFieldAttribute( string name )
+            : base( SystemGuid.FieldType.DATAVIEWS.AsGuid(), name )
+        {
         }
 
         /// <summary>

@@ -34,8 +34,29 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public StepProgramFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.StepProgramFieldType ).FullName )
+            : base( SystemGuid.FieldType.STEP_PROGRAM.AsGuid(), name )
+        {
+            Category = category;
+            DefaultValue = defaultValue;
+            Description = description;
+            IsRequired = required;
+            Order = order;
+
+            if ( key.IsNotNullOrWhiteSpace() )
+            {
+                Key = key;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StepProgramFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public StepProgramFieldAttribute( string name )
+            : base( SystemGuid.FieldType.STEP_PROGRAM.AsGuid(), name )
         {
         }
     }

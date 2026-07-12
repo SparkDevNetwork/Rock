@@ -27,7 +27,6 @@ namespace Rock.Attribute
         private const string VALUES_KEY = "values";
         private const string ENHANCED_SELECTION_KEY = "enhancedselection";
 
-
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomEnhancedListFieldAttribute"/> class.
         /// </summary>
@@ -39,8 +38,10 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public CustomEnhancedListFieldAttribute( string name, string description, string listSource, bool required = false, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SelectMultiFieldType ).FullName)
+            : base( SystemGuid.FieldType.MULTI_SELECT.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             FieldConfigurationValues.Add( VALUES_KEY, new Field.ConfigurationValue( listSource ) );
             FieldConfigurationValues.Add( ENHANCED_SELECTION_KEY, new Field.ConfigurationValue( "True" ) );
@@ -51,9 +52,10 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         public CustomEnhancedListFieldAttribute( string name )
-            : base( name, "", false, "", "", 0, null, typeof( Rock.Field.Types.SelectMultiFieldType ).FullName)
+            : base( SystemGuid.FieldType.MULTI_SELECT.AsGuid(), name )
         {
-            FieldConfigurationValues.Add( ENHANCED_SELECTION_KEY, new Field.ConfigurationValue( "True" ) );
+            IsRequired = false;
+            IsEnhanced = true;
         }
 
         /// <summary>
@@ -73,6 +75,15 @@ namespace Rock.Attribute
             {
                 FieldConfigurationValues.AddOrReplace( VALUES_KEY, new Field.ConfigurationValue( value ) );
             }
+        }
+
+        /// <summary>
+        /// Determines whether this list will use the enhanced dropdown value picker.
+        /// </summary>
+        public bool IsEnhanced
+        {
+            get => FieldConfigurationValues.GetValueOrNull( ENHANCED_SELECTION_KEY ).AsBoolean();
+            set => FieldConfigurationValues.AddOrReplace( ENHANCED_SELECTION_KEY, new Field.ConfigurationValue( value.ToString() ) );
         }
     }
 }

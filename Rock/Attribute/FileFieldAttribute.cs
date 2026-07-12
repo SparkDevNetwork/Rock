@@ -37,11 +37,43 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes only binaryFileTypeGuid and name parameters." )]
+        [RockObsolete( "20.0" )]
         public FileFieldAttribute( string binaryFileTypeGuid, string name = "Binary File", string description = "", bool required = true, string defaultBinaryFileGuid = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultBinaryFileGuid, category, order, key, typeof( Rock.Field.Types.FileFieldType ).FullName )
+            : base( SystemGuid.FieldType.FILE.AsGuid(), name, description, required, defaultBinaryFileGuid, category, order, key )
         {
             var configValue = new Field.ConfigurationValue( binaryFileTypeGuid );
             FieldConfigurationValues.Add( BINARY_FILE_TYPE, configValue );
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="binaryFileTypeGuid">The guid of the type of files</param>
+        /// <param name="name">The name.</param>
+        /// <remarks>
+        /// This is essentially a temporary constructor. Once the constructor
+        /// takes multiple parameters is removed, this constructor can be marked
+        /// as obsolete and a new constructor that takes only a name parameter
+        /// can be added to match the pattern of all other field attributes.
+        /// We can't go directly to a single name parameter because it would
+        /// conflict with the original constructor that takes the binary file
+        /// type guid as the first parameter.
+        /// </remarks>
+        public FileFieldAttribute( string binaryFileTypeGuid, string name )
+            : base( SystemGuid.FieldType.FILE.AsGuid(), name )
+        {
+            BinaryFileTypeGuid = binaryFileTypeGuid;
+        }
+
+        /// <summary>
+        /// The unique identifier of the BinaryFileType that should be used to
+        /// store the uploaded file.
+        /// </summary>
+        public string BinaryFileTypeGuid
+        {
+            get => FieldConfigurationValues.GetValueOrNull( BINARY_FILE_TYPE );
+            set => FieldConfigurationValues.AddOrReplace( BINARY_FILE_TYPE, new Field.ConfigurationValue( value ) );
         }
     }
 }

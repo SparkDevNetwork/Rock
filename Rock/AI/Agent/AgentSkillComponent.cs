@@ -88,7 +88,7 @@ namespace Rock.AI.Agent
             // attributes.
             foreach ( var fieldTypeAttribute in fieldTypeAttributes )
             {
-                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
+                var fieldTypeCache = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid );
                 if ( fieldTypeCache == null || fieldTypeCache.Field == null )
                 {
                     continue;
@@ -188,7 +188,7 @@ namespace Rock.AI.Agent
             // the client can present them with standard logic.
             foreach ( var fieldTypeAttribute in fieldTypeAttributes )
             {
-                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
+                var fieldTypeCache = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid );
                 if ( fieldTypeCache == null || fieldTypeCache.Field == null )
                 {
                     continue;
@@ -255,7 +255,7 @@ namespace Rock.AI.Agent
             // each of the field type attributes defined on this instance.
             foreach ( var fieldTypeAttribute in fieldTypeAttributes )
             {
-                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
+                var fieldTypeCache = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid );
                 if ( fieldTypeCache == null || fieldTypeCache.Field == null )
                 {
                     continue;
@@ -297,7 +297,7 @@ namespace Rock.AI.Agent
             // each of the field type attributes defined on this instance.
             foreach ( var fieldTypeAttribute in fieldTypeAttributes )
             {
-                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
+                var fieldTypeCache = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid );
                 if ( fieldTypeCache == null || fieldTypeCache.Field == null )
                 {
                     continue;
@@ -328,10 +328,10 @@ namespace Rock.AI.Agent
                 .GetCustomAttributes( true )
                 .Where( a => typeof( FieldAttribute ).IsAssignableFrom( a.GetType() ) )
                 .Cast<FieldAttribute>()
-                .Where( fa => fa.FieldTypeClass != "Rock.Field.Types.FileFieldType"
-                    && fa.FieldTypeClass != "Rock.Field.Types.ImageFieldType"
-                    && fa.FieldTypeClass != "Rock.Field.Types.BackgroundCheckFieldType"
-                    && fa.FieldTypeClass != "Rock.Field.Types.StructureContentEditorFieldType" )
+                .Where( fa => fa.FieldTypeGuid != SystemGuid.FieldType.FILE.AsGuid()
+                    && fa.FieldTypeGuid != SystemGuid.FieldType.IMAGE.AsGuid()
+                    && fa.FieldTypeGuid != SystemGuid.FieldType.BACKGROUNDCHECK.AsGuid()
+                    && fa.FieldTypeGuid != SystemGuid.FieldType.STRUCTURE_CONTENT_EDITOR.AsGuid() )
                 .OrderBy( a => a.Order )
                 .ToList();
         }

@@ -40,8 +40,29 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public GroupTypesFieldAttribute( string name, string description = "", bool required = true, string defaultGroupTypeGuids = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultGroupTypeGuids, category, order, key, typeof( Rock.Field.Types.GroupTypesFieldType ).FullName )
+            : base( SystemGuid.FieldType.GROUP_TYPES.AsGuid(), name )
+        {
+            Category = category;
+            DefaultValue = defaultGroupTypeGuids;
+            Description = description;
+            IsRequired = required;
+            Order = order;
+
+            if ( key.IsNotNullOrWhiteSpace() )
+            {
+                Key = key;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupTypesFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public GroupTypesFieldAttribute( string name )
+            : base( SystemGuid.FieldType.GROUP_TYPES.AsGuid(), name )
         {
         }
 

@@ -44,12 +44,25 @@ namespace Rock.Attribute
         /// <param name="key">The key.</param>
         /// <param name="numberOfRows">The number of rows.</param>
         /// <param name="allowHtml">if set to <c>true</c> [allow HTML].</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public MemoFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", 
             int order = 0, string key = null, int numberOfRows = 3, bool allowHtml = false )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.MemoFieldType ).FullName)
+            : base( SystemGuid.FieldType.MEMO.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             NumberOfRows = numberOfRows;
             AllowHtml = allowHtml;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TextFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public MemoFieldAttribute( string name )
+            : base( SystemGuid.FieldType.MEMO.AsGuid(), name )
+        {
+            NumberOfRows = 3;
+            AllowHtml = false;
         }
 
         /// <summary>

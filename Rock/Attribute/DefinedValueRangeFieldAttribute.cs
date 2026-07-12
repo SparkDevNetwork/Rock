@@ -40,8 +40,45 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public DefinedValueRangeFieldAttribute( string definedTypeGuid, string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.DefinedValueRangeFieldType ).FullName )
+            : base( SystemGuid.FieldType.DEFINED_VALUE_RANGE.AsGuid(), name, description, required, defaultValue, category, order, key )
+        {
+            var definedType = RockApp.Current.IsDatabaseAvailable() ? DefinedTypeCache.Get( new Guid( definedTypeGuid ) ) : null;
+            if ( definedType != null )
+            {
+                var definedTypeConfigValue = new Field.ConfigurationValue( definedType.Id.ToString() );
+                FieldConfigurationValues.Add( DEFINED_TYPE_KEY, definedTypeConfigValue );
+
+                if ( string.IsNullOrWhiteSpace( Name ) )
+                {
+                    Name = definedType.Name;
+                }
+
+                if ( string.IsNullOrWhiteSpace( Key ) )
+                {
+                    Key = Name.Replace( " ", string.Empty );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefinedValueRangeFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <remarks>
+        /// This is essentially a temporary constructor. Once the constructor
+        /// takes multiple parameters is removed, this constructor can be marked
+        /// as obsolete and a new constructor that takes only a name parameter
+        /// can be added to match the pattern of all other field attributes.
+        /// We can't go directly to a single name parameter because it would
+        /// conflict with the original constructor that takes the defined type
+        /// guid as the first parameter.
+        /// </remarks>
+        public DefinedValueRangeFieldAttribute( string definedTypeGuid, string name )
+            : base( SystemGuid.FieldType.DEFINED_VALUE_RANGE.AsGuid(), name )
         {
             var definedType = RockApp.Current.IsDatabaseAvailable() ? DefinedTypeCache.Get( new Guid( definedTypeGuid ) ) : null;
             if ( definedType != null )

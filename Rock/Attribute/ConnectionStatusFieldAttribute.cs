@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Attribute
 {
     /// <summary>
@@ -34,11 +36,12 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public ConnectionStatusFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.ConnectionStatusFieldType ).FullName )
+            : base( SystemGuid.FieldType.CONNECTION_STATUS.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
-            var includeInactiveConfigValue = new Field.ConfigurationValue( "False" );
-            FieldConfigurationValues.Add( INCLUDE_INACTIVE_KEY, includeInactiveConfigValue );
+            IncludeInactive = false;
         }
 
         /// <summary>
@@ -52,11 +55,31 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public ConnectionStatusFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", bool includeInactive = false, string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.ConnectionStatusFieldType ).FullName )
+            : base( SystemGuid.FieldType.CONNECTION_STATUS.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
-            var includeInactiveConfigValue = new Field.ConfigurationValue( includeInactive.ToString() );
-            FieldConfigurationValues.Add( INCLUDE_INACTIVE_KEY, includeInactiveConfigValue );
+            IncludeInactive = includeInactive;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectionStatusFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public ConnectionStatusFieldAttribute( string name )
+            : base( SystemGuid.FieldType.CONNECTION_STATUS.AsGuid(), name )
+        {
+            IncludeInactive = false;
+        }
+
+        /// <summary>
+        /// Determines if inactive connection statuses are included.
+        /// </summary>
+        public bool IncludeInactive
+        {
+            get => FieldConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBoolean();
+            set => FieldConfigurationValues.AddOrReplace( INCLUDE_INACTIVE_KEY, new Field.ConfigurationValue( value.ToString() ) );
         }
     }
 }

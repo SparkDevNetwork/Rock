@@ -34,8 +34,19 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public BinaryFileTypeFieldAttribute( string name = "Binary File Type", string description = "", bool required = true, string defaultBinaryFileTypeGuid = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultBinaryFileTypeGuid, category, order, key, "Rock.Field.Types.BinaryFileTypeFieldType" )
+            : base( SystemGuid.FieldType.BINARY_FILE_TYPE.AsGuid(), name, description, required, defaultBinaryFileTypeGuid, category, order, key )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BinaryFileTypeFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public BinaryFileTypeFieldAttribute( string name )
+            : base( SystemGuid.FieldType.BINARY_FILE_TYPE.AsGuid(), name )
         {
         }
 

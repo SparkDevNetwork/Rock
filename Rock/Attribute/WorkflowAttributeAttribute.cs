@@ -38,13 +38,24 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         /// <param name="fieldTypeClassNames">The field type class names which are used to filter the pickable workflow attributes</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public WorkflowAttributeAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string[] fieldTypeClassNames = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.WorkflowAttributeFieldType ).FullName )
+            : base( SystemGuid.FieldType.WORKFLOW_ATTRIBUTE.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             if ( fieldTypeClassNames != null && fieldTypeClassNames.Length > 0 )
             {
                 FieldTypeClassNames = fieldTypeClassNames;
             }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WorkflowAttributeAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public WorkflowAttributeAttribute( string name )
+            : base( SystemGuid.FieldType.WORKFLOW_ATTRIBUTE.AsGuid(), name )
+        {
         }
 
         /// <summary>

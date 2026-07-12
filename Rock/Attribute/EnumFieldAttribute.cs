@@ -34,9 +34,8 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         public EnumFieldAttribute( string name )
-            : base( name )
+            : base( SystemGuid.FieldType.SINGLE_SELECT.AsGuid(), name )
         {
-            FieldTypeClass = typeof( Rock.Field.Types.SelectSingleFieldType ).FullName;
             FieldConfigurationValues.Add( FIELDTYPE, new Field.ConfigurationValue( "rb" ) );
         }
 
@@ -51,10 +50,23 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public EnumFieldAttribute( string name, string description, Type enumSourceType, bool required = false, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SelectSingleFieldType ).FullName )
+            : base( SystemGuid.FieldType.SINGLE_SELECT.AsGuid(), name )
         {
-            this.EnumSourceType = enumSourceType;
+            Category = category;
+            DefaultValue = defaultValue;
+            Description = description;
+            EnumSourceType = enumSourceType;
+            IsRequired = required;
+            Order = order;
+
+            if ( key.IsNotNullOrWhiteSpace() )
+            {
+                Key = key;
+            }
+
             FieldConfigurationValues.Add( FIELDTYPE, new Field.ConfigurationValue( "rb" ) );
         }
 

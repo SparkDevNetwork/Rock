@@ -28,9 +28,8 @@ namespace Rock.Attribute
         /// Initializes a new instance of the <see cref="AchievementTypeFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
-        public AchievementTypeFieldAttribute( string name ) : base (
-            name,
-            fieldTypeClass: "Rock.Field.Types.AchievementTypeFieldType" )
+        public AchievementTypeFieldAttribute( string name )
+            : base ( SystemGuid.FieldType.ACHIEVEMENT_TYPE.AsGuid(), name )
         {
         }
     }

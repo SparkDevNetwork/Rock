@@ -38,14 +38,27 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public SystemPhoneNumberFieldAttribute( string name, string description = "", bool required = true, bool allowMultiple = false, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SystemPhoneNumberFieldType ).FullName )
+            : base( SystemGuid.FieldType.SYSTEM_PHONE_NUMBER.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             var includeInactiveConfigValue = new Field.ConfigurationValue( "False" );
             FieldConfigurationValues.Add( INCLUDE_INACTIVE_KEY, includeInactiveConfigValue );
 
             var allowMultipleConfigKey = new Field.ConfigurationValue( allowMultiple.ToString() );
             FieldConfigurationValues.Add( ALLOW_MULTIPLE_KEY, allowMultipleConfigKey );
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SystemPhoneNumberFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public SystemPhoneNumberFieldAttribute( string name )
+            : base( SystemGuid.FieldType.SYSTEM_PHONE_NUMBER.AsGuid(), name )
+        {
+            IncludeInactive = false;
+            AllowMultiple = false;
         }
 
         /// <summary>

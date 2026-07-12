@@ -37,8 +37,10 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key. (null means derive from name)</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public BooleanFieldAttribute( string name, string description = "", bool defaultValue = false, string category = "", int order = 0, string key = null )
-            : base( name, description, false, defaultValue.ToTrueFalse(), category, order, key, typeof( Rock.Field.Types.BooleanFieldType ).FullName )
+            : base( SystemGuid.FieldType.BOOLEAN.AsGuid(), name, description, false, defaultValue.ToTrueFalse(), category, order, key )
         {
         }
 
@@ -53,11 +55,23 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public BooleanFieldAttribute( string name, string trueText, string falseText, string description = "", bool defaultValue = false, string category = "", int order = 0, string key = null )
-            : base( name, description, false, defaultValue.ToTrueFalse(), category, order, key, typeof( BooleanFieldType ).FullName )
+            : base( SystemGuid.FieldType.BOOLEAN.AsGuid(), name, description, false, defaultValue.ToTrueFalse(), category, order, key )
         {
             TrueText = trueText;
             FalseText = falseText;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BooleanFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public BooleanFieldAttribute( string name )
+            : base( SystemGuid.FieldType.BOOLEAN.AsGuid(), name )
+        {
+            IsRequired = false;
         }
 
         /// <summary>

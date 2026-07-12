@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
 namespace Rock.Attribute
 {
     /// <summary>
@@ -29,9 +27,8 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         public RangeSliderAttribute( string name )
-            : base( name )
+            : base( SystemGuid.FieldType.RANGE_SLIDER.AsGuid(), name )
         {
-            FieldTypeClass = typeof( Rock.Field.Types.RangeSliderFieldType ).FullName;
         }
 
         /// <summary>

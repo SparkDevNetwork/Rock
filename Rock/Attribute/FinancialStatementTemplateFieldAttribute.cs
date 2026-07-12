@@ -16,8 +16,6 @@
 //
 using System;
 
-using Rock.Field.Types;
-
 namespace Rock.Attribute
 {
     /// <summary>
@@ -31,20 +29,9 @@ namespace Rock.Attribute
         /// Initializes a new instance of the <see cref="FinancialStatementTemplateFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
-        public FinancialStatementTemplateFieldAttribute( string name ) : base( name )
+        public FinancialStatementTemplateFieldAttribute( string name )
+            : base( SystemGuid.FieldType.FINANCIAL_STATEMENT_TEMPLATE.AsGuid(), name )
         {
-        }
-
-        /// <summary>
-        /// Gets or sets the class name of the <see cref="Rock.Field.IFieldType" /> to be used for the attribute.
-        /// </summary>
-        /// <value>
-        /// The field type class.
-        /// </value>
-        public override string FieldTypeClass
-        {
-            get => typeof( FinancialStatementTemplateFieldType ).FullName;
-            set => base.FieldTypeClass = typeof( FinancialStatementTemplateFieldType ).FullName;
         }
     }
 }

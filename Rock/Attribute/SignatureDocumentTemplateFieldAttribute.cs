@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Field.Types;
 using Rock.Model;
 
 namespace Rock.Attribute
@@ -31,9 +30,9 @@ namespace Rock.Attribute
         /// Initializes a new instance of the <see cref="SignatureDocumentTemplateFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
-        public SignatureDocumentTemplateFieldAttribute( string name ) : base( name )
+        public SignatureDocumentTemplateFieldAttribute( string name )
+            : base( "258A4AEF-F555-4AF5-8D5D-2D581A982D1C".AsGuid(), name )
         {
-            FieldTypeClass = typeof( SignatureDocumentTemplateFieldType ).FullName;
         }
 
         /// <summary>

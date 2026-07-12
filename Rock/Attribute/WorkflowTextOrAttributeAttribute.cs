@@ -40,11 +40,13 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         /// <param name="fieldTypeClassNames">The field type class names.</param>
+        [Obsolete( "Use the constructor that takes only the textLabel and attributeLabel parameters." )]
+        [RockObsolete( "20.0" )]
         public WorkflowTextOrAttributeAttribute( string textLabel, string attributeLabel, string description, bool required, string defaultValue, string category, int order, string key, string[] fieldTypeClassNames )
             : this( textLabel, attributeLabel, description, required, defaultValue, category, order, key, fieldTypeClassNames, 1 )
         {
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowAttributeAttribute" /> class.
         /// </summary>
@@ -58,8 +60,10 @@ namespace Rock.Attribute
         /// <param name="key">The key.</param>
         /// <param name="fieldTypeClassNames">The field type class names.</param>
         /// <param name="rows">The rows.</param>
+        [Obsolete( "Use the constructor that takes only the textLabel and attributeLabel parameters." )]
+        [RockObsolete( "20.0" )]
         public WorkflowTextOrAttributeAttribute( string textLabel, string attributeLabel, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string[] fieldTypeClassNames = null, int rows = 1 )
-            : base( textLabel + "|" + attributeLabel, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.WorkflowTextOrAttributeFieldType ).FullName )
+            : base( SystemGuid.FieldType.WORKFLOW_TEXT_OR_ATTRIBUTE.AsGuid(), textLabel + "|" + attributeLabel, description, required, defaultValue, category, order, key )
         {
             if ( fieldTypeClassNames != null && fieldTypeClassNames.Length > 0 )
             {
@@ -72,6 +76,16 @@ namespace Rock.Attribute
                 var rowsConfigValue = new Field.ConfigurationValue( rows.ToString() );
                 FieldConfigurationValues.Add( TEXTBOX_ROWS_KEY, rowsConfigValue );
             }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WorkflowAttributeAttribute" /> class.
+        /// </summary>
+        /// <param name="textLabel">The text label.</param>
+        /// <param name="attributeLabel">The attribute label.</param>
+        public WorkflowTextOrAttributeAttribute( string textLabel, string attributeLabel )
+            : base( SystemGuid.FieldType.WORKFLOW_TEXT_OR_ATTRIBUTE.AsGuid(), textLabel + "|" + attributeLabel )
+        {
         }
 
         /// <summary>
@@ -97,6 +111,25 @@ namespace Rock.Attribute
                 {
                     var flattenedClassNames = value.ToList().AsDelimited( "|" );
                     FieldConfigurationValues.Add( ATTRIBUTE_FIELD_TYPES_KEY, new Field.ConfigurationValue( flattenedClassNames ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// The number of rows that the text box will be configured to display.
+        /// </summary>
+        public int Rows
+        {
+            get => FieldConfigurationValues.GetValueOrNull( TEXTBOX_ROWS_KEY ).AsIntegerOrNull() ?? 1;
+            set
+            {
+                if ( value > 1 )
+                {
+                    FieldConfigurationValues.Add( TEXTBOX_ROWS_KEY, new Field.ConfigurationValue( value.ToString() ) );
+                }
+                else
+                {
+                    FieldConfigurationValues.Remove( TEXTBOX_ROWS_KEY );
                 }
             }
         }

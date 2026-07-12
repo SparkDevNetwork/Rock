@@ -37,11 +37,43 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public BackgroundCheckFieldAttribute( string binaryFileTypeGuid, string name = "Background Check", string description = "", bool required = true, string defaultBinaryFileGuid = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultBinaryFileGuid, category, order, key, "Rock.Field.Types.BackgroundCheckFieldType" )
+            : base( SystemGuid.FieldType.BACKGROUNDCHECK.AsGuid(), name, description, required, defaultBinaryFileGuid, category, order, key )
         {
             var configValue = new Field.ConfigurationValue( binaryFileTypeGuid );
             FieldConfigurationValues.Add( BINARY_FILE_TYPE, configValue );
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BinaryFileFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public BackgroundCheckFieldAttribute( string name )
+            : base( SystemGuid.FieldType.BACKGROUNDCHECK.AsGuid(), name )
+        {
+        }
+
+        /// <summary>
+        /// The unique identifier of the binary file type that will store the
+        /// background check file.
+        /// </summary>
+        public string BinaryFileTypeGuid
+        {
+            get
+            {
+                if ( FieldConfigurationValues.TryGetValue( BINARY_FILE_TYPE, out var configValue ) )
+                {
+                    return configValue.Value;
+                }
+
+                return string.Empty;
+            }
+            set
+            {
+                FieldConfigurationValues[BINARY_FILE_TYPE] = new Field.ConfigurationValue( value );
+            }
         }
     }
 }

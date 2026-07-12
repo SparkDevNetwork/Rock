@@ -33,9 +33,9 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         public CustomDropdownListFieldAttribute( string name )
-            : this( name, string.Empty, string.Empty )
+            : base( SystemGuid.FieldType.SINGLE_SELECT.AsGuid(), name )
         {
-
+            IsEnhanced = false;
         }
 
         /// <summary>
@@ -49,6 +49,8 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public CustomDropdownListFieldAttribute( string name, string description, string listSource, bool required = false, string defaultValue = "", string category = "", int order = 0, string key = null )
             : this( name, description, listSource, false, required, defaultValue, category, order, key )
         {
@@ -66,8 +68,10 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public CustomDropdownListFieldAttribute( string name, string description, string listSource, bool enhanced, bool required, string defaultValue, string category, int order, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SelectSingleFieldType ).FullName )
+            : base( SystemGuid.FieldType.SINGLE_SELECT.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             this.ListSource = listSource;
             this.IsEnhanced = enhanced;

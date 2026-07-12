@@ -38,8 +38,10 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes only mefContainerAssemblyName and name." )]
+        [RockObsolete( "20.0" )]
         public ComponentsFieldAttribute( string mefContainerAssemblyName, string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.ComponentsFieldType ).FullName )
+            : base( SystemGuid.FieldType.COMPONENTS.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             var configValue = new Field.ConfigurationValue( mefContainerAssemblyName );
             FieldConfigurationValues.Add( "container", configValue );
@@ -67,6 +69,35 @@ namespace Rock.Attribute
             {
                 Key = Name.Replace( " ", string.Empty );
             }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ComponentsFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="mefContainerAssemblyName">Name of the mef container assembly.</param>
+        /// <param name="name">The name.</param>
+        /// <remarks>
+        /// This is essentially a temporary constructor. Once the constructor
+        /// takes multiple parameters is removed, this constructor can be marked
+        /// as obsolete and a new constructor that takes only a name parameter
+        /// can be added to match the pattern of all other field attributes.
+        /// We can't go directly to a single name parameter because it would
+        /// conflict with the original constructor that takes the MEF container
+        /// assembly name as the first parameter.
+        /// </remarks>
+        public ComponentsFieldAttribute( string mefContainerAssemblyName, string name )
+            : base( SystemGuid.FieldType.COMPONENTS.AsGuid(), name )
+        {
+            ContainerAssemblyName = mefContainerAssemblyName;
+        }
+
+        /// <summary>
+        /// The fully qualified container name, such as <strong>"Rock.Search.SearchContainer, Rock"</strong>.
+        /// </summary>
+        public string ContainerAssemblyName
+        {
+            get => FieldConfigurationValues.GetValueOrNull( "container" );
+            set => FieldConfigurationValues.AddOrReplace( "container", new Field.ConfigurationValue( value ) );
         }
     }
 }

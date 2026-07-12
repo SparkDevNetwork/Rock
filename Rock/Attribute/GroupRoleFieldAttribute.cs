@@ -39,8 +39,10 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes only a groupTypeGuid and name." )]
+        [RockObsolete( "20.0" )]
         public GroupRoleFieldAttribute( string groupTypeGuid = "", string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.GroupRoleFieldType ).FullName )
+            : base( SystemGuid.FieldType.GROUP_ROLE.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             if ( !string.IsNullOrWhiteSpace( groupTypeGuid ) )
             {
@@ -61,6 +63,63 @@ namespace Rock.Attribute
                                 Key = Name.Replace( " ", string.Empty );
                             }
                         }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefinedValueFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="groupTypeGuid">The group type GUID.</param>
+        /// <param name="name">The name.</param>
+        /// <remarks>
+        /// This is essentially a temporary constructor. Once the constructor
+        /// takes multiple parameters is removed, this constructor can be marked
+        /// as obsolete and a new constructor that takes only a name parameter
+        /// can be added to match the pattern of all other field attributes.
+        /// We can't go directly to a single name parameter because it would
+        /// conflict with the original constructor that takes the group type guid
+        /// as the first parameter.
+        /// </remarks>
+        public GroupRoleFieldAttribute( string groupTypeGuid, string name )
+            : base( SystemGuid.FieldType.GROUP_ROLE.AsGuid(), name )
+        {
+            GroupTypeGuid = groupTypeGuid;
+        }
+
+        /// <summary>
+        /// The unique identifier of the group type that will be used when
+        /// presenting the list of roles to choose from.
+        /// </summary>
+        public string GroupTypeGuid
+        {
+            get
+            {
+                var configValue = FieldConfigurationValues.GetValueOrNull( "grouptype" );
+
+                if ( int.TryParse( configValue, out var id ) && RockApp.Current.IsDatabaseAvailable() )
+                {
+                    var groupType = GroupTypeCache.Get( id );
+
+                    if ( groupType != null )
+                    {
+                        return groupType.Guid.ToString();
+                    }
+                }
+
+                return null;
+            }
+            set
+            {
+                if ( Guid.TryParse( value, out var guid ) && RockApp.Current.IsDatabaseAvailable() )
+                {
+                    var groupType = GroupTypeCache.Get( guid );
+
+                    if ( groupType != null )
+                    {
+                        var configValue = new Field.ConfigurationValue( groupType.Id.ToString() );
+                        FieldConfigurationValues.Add( "grouptype", configValue );
                     }
                 }
             }

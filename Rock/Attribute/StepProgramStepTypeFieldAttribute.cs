@@ -36,10 +36,31 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         /// <param name="defaultStepProgramGuid"></param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public StepProgramStepTypeFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string defaultStepProgramGuid = "" )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.StepProgramStepTypeFieldType ).FullName )
+            : base( SystemGuid.FieldType.STEP_PROGRAM_STEP_TYPE.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
-            FieldConfigurationValues.Add( Rock.Field.Types.StepProgramStepTypeFieldType.ConfigKey.DefaultStepProgramGuid, new Field.ConfigurationValue( defaultStepProgramGuid ) );
+            DefaultStepProgramGuid = defaultStepProgramGuid;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StepProgramStepTypeFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public StepProgramStepTypeFieldAttribute( string name )
+            : base( SystemGuid.FieldType.STEP_PROGRAM_STEP_TYPE.AsGuid(), name )
+        {
+            DefaultStepProgramGuid = string.Empty;
+        }
+
+        /// <summary>
+        /// The default step program unique identifier.
+        /// </summary>
+        public string DefaultStepProgramGuid
+        {
+            get => FieldConfigurationValues.GetValueOrNull( "DefaultStepProgramGuid" );
+            set => FieldConfigurationValues.Add( "DefaultStepProgramGuid", new Field.ConfigurationValue( value ) );
         }
     }
 }

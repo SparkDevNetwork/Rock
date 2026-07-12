@@ -16,8 +16,10 @@
 //
 using System;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Attribute
 {
@@ -44,6 +46,8 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public GroupMemberFieldAttribute( string groupGuid, string name = "", string description = "", bool required = true, bool allowMultiple = false, string defaultValue = "", string category = "", int order = 0, string key = null )
              : this( groupGuid, name, description, required, allowMultiple, false, defaultValue, category, order, key )
         {
@@ -62,14 +66,16 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public GroupMemberFieldAttribute( string groupGuid, string name, string description, bool required, bool allowMultiple, bool enhanced, string defaultValue, string category, int order, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.GroupMemberFieldType ).FullName )
+            : base( SystemGuid.FieldType.GROUP_MEMBER.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
 
             Group group = null;
             using ( var rockContext = new RockContext() )
             {
-                group = new GroupService( rockContext ).Get ( new Guid( groupGuid ) );
+                group = new GroupService( rockContext ).Get( new Guid( groupGuid ) );
             }
 
             if ( group != null )
@@ -93,6 +99,83 @@ namespace Rock.Attribute
                     Key = Name.Replace( " ", string.Empty );
                 }
             }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupMemberFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <remarks>
+        /// This is essentially a temporary constructor. Once the constructor
+        /// takes multiple parameters is removed, this constructor can be marked
+        /// as obsolete and a new constructor that takes only a name parameter
+        /// can be added to match the pattern of all other field attributes.
+        /// We can't go directly to a single name parameter because it would
+        /// conflict with the original constructor that takes the group guid
+        /// as the first parameter.
+        /// </remarks>
+        public GroupMemberFieldAttribute( string groupGuid, string name )
+            : base( SystemGuid.FieldType.GROUP_MEMBER.AsGuid(), name )
+        {
+            AllowMultiple = false;
+            EnhancedSelection = false;
+        }
+
+        /// <summary>
+        /// The unique identifier of the group that should be used when presenting
+        /// the members to pick from.
+        /// </summary>
+        public string GroupGuid
+        {
+            get
+            {
+                var configValue = FieldConfigurationValues.GetValueOrNull( GROUP_KEY );
+
+                if ( int.TryParse( configValue, out var id ) && RockApp.Current.IsDatabaseAvailable() )
+                {
+                    var group = GroupCache.Get( id );
+
+                    if ( group != null )
+                    {
+                        return group.Guid.ToString();
+                    }
+                }
+
+                return null;
+            }
+            set
+            {
+                if ( Guid.TryParse( value, out var guid ) && RockApp.Current.IsDatabaseAvailable() )
+                {
+                    var group = GroupCache.Get( guid );
+
+                    if ( group != null )
+                    {
+                        var configValue = new Field.ConfigurationValue( group.Id.ToString() );
+                        FieldConfigurationValues.Add( GROUP_KEY, configValue );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determines whether multiple group members can be selected.
+        /// </summary>
+        public bool AllowMultiple
+        {
+            get => FieldConfigurationValues.GetValueOrNull( ALLOW_MULTIPLE_KEY ).AsBoolean();
+            set => FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new Field.ConfigurationValue( value.ToString() ) );
+        }
+
+        /// <summary>
+        /// Determines whether the enhanced selection mode should be used
+        /// when selecting group members.
+        /// </summary>
+        public bool EnhancedSelection
+        {
+            get => FieldConfigurationValues.GetValueOrNull( ENHANCED_SELECTION_KEY ).AsBoolean();
+            set => FieldConfigurationValues.AddOrReplace( ENHANCED_SELECTION_KEY, new Field.ConfigurationValue( value.ToString() ) );
         }
     }
 }

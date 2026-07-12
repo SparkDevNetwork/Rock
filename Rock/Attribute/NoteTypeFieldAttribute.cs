@@ -43,15 +43,29 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public NoteTypeFieldAttribute( string name, string description = "", bool allowMultiple = false,
              string entityTypeName = "", string entityTypeQualifierColumn = "", string entityTypeQualifierValue = "",
              bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null ) :
-            base( name, description, required, defaultValue, category, order, key,
-                ( allowMultiple ? typeof( NoteTypesFieldType ).FullName : typeof( NoteTypeFieldType ).FullName ) )
+            base( allowMultiple ? SystemGuid.FieldType.NOTE_TYPES.AsGuid() : SystemGuid.FieldType.NOTE_TYPE.AsGuid(),
+                name, description, required, defaultValue, category, order, key )
         {
             FieldConfigurationValues.Add( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( entityTypeName ) );
             FieldConfigurationValues.Add( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( entityTypeQualifierColumn ) );
             FieldConfigurationValues.Add( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( entityTypeQualifierValue ) );
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CategoryFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public NoteTypeFieldAttribute( string name ) :
+            base( SystemGuid.FieldType.NOTE_TYPE.AsGuid(), name )
+        {
+            EntityTypeName = string.Empty;
+            EntityTypeQualifierColumn = string.Empty;
+            EntityTypeQualifierValue = string.Empty;
         }
 
         /// <summary>
@@ -62,12 +76,12 @@ namespace Rock.Attribute
         /// </value>
         public bool AllowMultiple
         {
-            get => this.FieldTypeClass == typeof( NoteTypesFieldType ).FullName;
-            set => this.FieldTypeClass = value ? typeof( NoteTypesFieldType ).FullName : typeof( NoteTypeFieldType ).FullName;
+            get => this.FieldTypeGuid == SystemGuid.FieldType.NOTE_TYPES.AsGuid();
+            set => this.FieldTypeGuid = value ? SystemGuid.FieldType.NOTE_TYPES.AsGuid() : SystemGuid.FieldType.NOTE_TYPE.AsGuid();
         }
 
         /// <summary>
-        /// Gets or sets the EntityType to limit NoteTypes to
+        /// Gets or sets the EntityType to limit NoteTypes to`
         /// </summary>
         /// <value>
         /// The type of the entity.

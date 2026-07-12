@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,8 +35,19 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public ScheduleBuilderFieldAttribute( string name = "Schedule", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.ScheduleBuilderFieldType ).FullName )
+            : base( SystemGuid.FieldType.SCHEDULE_BUILDER.AsGuid(), name, description, required, defaultValue, category, order, key )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ScheduleBuilderFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public ScheduleBuilderFieldAttribute( string name )
+            : base( SystemGuid.FieldType.SCHEDULE_BUILDER.AsGuid(), name )
         {
         }
     }

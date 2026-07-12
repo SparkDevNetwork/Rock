@@ -36,10 +36,31 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public BlockTemplateFieldAttribute( string name, string description = "", string templateBlockValueGuid = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, "Rock.Field.Types.BlockTemplateFieldType" )
+            : base( SystemGuid.FieldType.BLOCK_TEMPLATE.AsGuid(), name )
         {
+            Category = category;
+            DefaultValue = defaultValue;
+            Description = description;
+            IsRequired = required;
+            Order = order;
             TemplateBlockValueGuid = templateBlockValueGuid;
+
+            if ( key.IsNotNullOrWhiteSpace() )
+            {
+                Key = key;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlockTemplateFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public BlockTemplateFieldAttribute( string name )
+            : base( SystemGuid.FieldType.BLOCK_TEMPLATE, name )
+        {
         }
 
         /// <summary>

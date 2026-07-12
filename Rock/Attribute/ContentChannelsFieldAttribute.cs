@@ -35,8 +35,29 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public ContentChannelsFieldAttribute( string name, string description = "", bool required = true, string defaultChannelGuids = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultChannelGuids, category, order, key, typeof( Rock.Field.Types.ContentChannelsFieldType ).FullName )
+            : base( SystemGuid.FieldType.CONTENT_CHANNELS.AsGuid(), name )
+        {
+            Category = category;
+            DefaultValue = defaultChannelGuids;
+            Description = description;
+            IsRequired = required;
+            Order = order;
+
+            if ( key.IsNotNullOrWhiteSpace() )
+            {
+                Key = key;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContentChannelsFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public ContentChannelsFieldAttribute( string name )
+            : base( SystemGuid.FieldType.CONTENT_CHANNELS.AsGuid(), name )
         {
         }
     }

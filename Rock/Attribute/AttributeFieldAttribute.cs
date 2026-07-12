@@ -38,7 +38,7 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         public AttributeFieldAttribute( string name )
-            : this( "", name )
+            : base( SystemGuid.FieldType.ATTRIBUTE.AsGuid(), name )
         {
         }
 
@@ -54,8 +54,10 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public AttributeFieldAttribute( string entityTypeGuid, string name = "", string description = "", bool required = true, bool allowMultiple = false, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, "Rock.Field.Types.AttributeFieldType" )
+            : base( SystemGuid.FieldType.ATTRIBUTE.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             var entityTypeConfigValue = new Field.ConfigurationValue( entityTypeGuid );
             FieldConfigurationValues.Add( ENTITY_TYPE_KEY, entityTypeConfigValue );
@@ -89,8 +91,10 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public AttributeFieldAttribute( string entityTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string description = "", bool required = true, bool allowMultiple = false, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, "Rock.Field.Types.AttributeFieldType" )
+            : base( SystemGuid.FieldType.ATTRIBUTE.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             var entityTypeConfigValue = new Field.ConfigurationValue( entityTypeGuid );
             FieldConfigurationValues.Add( ENTITY_TYPE_KEY, entityTypeConfigValue );

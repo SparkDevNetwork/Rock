@@ -45,6 +45,8 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         /// <param name="enabledSlidingDateRangeTypes">The enabled sliding date range types. Choose from: 'Previous, Last, Current, Next, Upcoming, DateRange'</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public SlidingDateRangeFieldAttribute( string name, string description, bool required, string defaultValue, string category, int order, string key,
             string enabledSlidingDateRangeTypes )
             : this( name, description, required, defaultValue, category, order, key, enabledSlidingDateRangeTypes, null )
@@ -63,9 +65,11 @@ namespace Rock.Attribute
         /// <param name="key">The key.</param>
         /// <param name="enabledSlidingDateRangeTypes">The enabled sliding date range types. Choose from: 'Previous, Last, Current, Next, Upcoming, DateRange'</param>
         /// <param name="enabledSlidingDateRangeUnits">The enabled sliding date range units.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public SlidingDateRangeFieldAttribute( string name, string description = "", bool required = true, string defaultValue = ",", string category = "", int order = 0, string key = null,
             string enabledSlidingDateRangeTypes = null, string enabledSlidingDateRangeUnits = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SlidingDateRangeFieldType ).FullName )
+            : base( SystemGuid.FieldType.SLIDING_DATE_RANGE.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             if ( enabledSlidingDateRangeTypes != null )
             {
@@ -75,6 +79,15 @@ namespace Rock.Attribute
             {
                 EnabledSlidingDateRangeUnits = enabledSlidingDateRangeUnits;
             }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SlidingDateRangeFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public SlidingDateRangeFieldAttribute( string name )
+            : base( SystemGuid.FieldType.SLIDING_DATE_RANGE.AsGuid(), name )
+        {
         }
 
         /// <summary>
@@ -100,6 +113,5 @@ namespace Rock.Attribute
             get => FieldConfigurationValues.GetValueOrNull( ENABLED_SLIDING_DATE_RANGE_UNITS );
             set => FieldConfigurationValues.AddOrReplace( ENABLED_SLIDING_DATE_RANGE_UNITS, new Field.ConfigurationValue( value ) );
         }
-
     }
 }
