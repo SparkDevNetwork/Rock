@@ -197,10 +197,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var rockContext = new RockContext();
 
-            int groupId = int.MinValue;
-            if ( int.TryParse( PageParameter( "GroupId" ), out groupId ) )
+            var groupId = PageParameter( "GroupId" ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( "GroupId" ) );
+            if ( groupId.HasValue )
             {
-                _group = new GroupService( rockContext ).Get( groupId );
+                _group = new GroupService( rockContext ).Get( groupId.Value );
             }
 
             if ( _group == null )

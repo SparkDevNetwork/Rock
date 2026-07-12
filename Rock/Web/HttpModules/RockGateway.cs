@@ -96,6 +96,10 @@ namespace Rock.Web.HttpModules
             {
                 HandleCssRequest( context );
             }
+            else if ( context.Request.Url.AbsolutePath.Equals( "/.well-known/security.txt", StringComparison.OrdinalIgnoreCase ) )
+            {
+                HandleSecurityTxtRequest( context );
+            }
         }
 
         /// <summary>
@@ -168,6 +172,22 @@ namespace Rock.Web.HttpModules
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Sends the response to a request for the /.well-known/security.txt
+        /// file which provides security contact information and policies.
+        /// </summary>
+        /// <param name="context">The current HTTP context.</param>
+        private static void HandleSecurityTxtRequest( HttpContext context )
+        {
+            context.Response.ContentType = "text/plain";
+            context.Response.Write( """
+                Contact: info@sparkdevnetwork.org
+                Preferred-Languages: en
+                Policy: https://github.com/SparkDevNetwork/Rock/blob/develop/SECURITY.md
+                """ );
+            context.Response.End();
         }
 
         /// <summary>

@@ -296,9 +296,14 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var lGroupName = ( Literal ) e.Row.FindControl( "lGroupName" );
             var lCode = ( Literal ) e.Row.FindControl( "lCode" );
             var lActiveLabel = ( Literal ) e.Row.FindControl( "lActiveLabel" );
+            var lSearchResultGroupName = ( Literal ) e.Row.FindControl( "lSearchResultGroupName" );
             lLocationName.Text = attendanceInfo.LocationNameHtml;
             lGroupName.Text = attendanceInfo.GroupName;
             lCode.Text = attendanceInfo.Code;
+            if ( lSearchResultGroupName != null )
+            {
+                lSearchResultGroupName.Text = attendanceInfo.SearchResultGroupName;
+            }
 
             if ( attendanceInfo.IsActive && lActiveLabel != null )
             {
@@ -668,7 +673,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 PersonAliasService personAliasService = new PersonAliasService( rockContext );
 
                 var attendances = new AttendanceService( rockContext )
-                    .Queryable( "Occurrence.Schedule,Occurrence.Group,Occurrence.Location,AttendanceCode" )
+                    .Queryable( "Occurrence.Schedule,Occurrence.Group,Occurrence.Location,AttendanceCode,SearchResultGroup" )
                     .Where( a =>
                         a.PersonAliasId.HasValue &&
                         personAliasIds.Contains( a.PersonAliasId.Value ) &&
@@ -700,7 +705,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             IsActive = a.IsCurrentlyCheckedIn,
                             Code = a.AttendanceCode != null ? a.AttendanceCode.Code : string.Empty,
                             CheckInByPersonName = checkedInByPerson != null ? checkedInByPerson.FullName : string.Empty,
-                            CheckInByPersonGuid = checkedInByPerson != null ? checkedInByPerson.Guid : ( Guid? ) null
+                            CheckInByPersonGuid = checkedInByPerson != null ? checkedInByPerson.Guid : ( Guid? ) null,
+                            SearchResultGroupName = a.SearchResultGroup != null ? a.SearchResultGroup.Name : string.Empty
                         };
                     } ).ToList();
 
@@ -769,6 +775,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public string CheckInByPersonName { get; set; }
 
             public Guid? CheckInByPersonGuid { get; set; }
+
+            public string SearchResultGroupName { get; set; }
         }
 
         #endregion

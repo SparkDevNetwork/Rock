@@ -37,7 +37,7 @@ namespace Rock.Blocks.CheckIn.Configuration
     [DisplayName( "Check-in Configuration List" )]
     [Category( "Check-in > Configuration" )]
     [Description( "Displays a list of check-in configurations." )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -45,7 +45,7 @@ namespace Rock.Blocks.CheckIn.Configuration
         "Show Classic Label Settings",
         Key = AttributeKey.ShowClassicLabelSettings,
         Description = "Show the page link under Related Settings that allows the configuration of Classic Labels.",
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         Order = 0,
         IsRequired = false )]
 
@@ -56,6 +56,7 @@ namespace Rock.Blocks.CheckIn.Configuration
     public class CheckInConfigurationList : RockBlockType
     {
         #region Keys
+
         private static class AttributeKey
         {
             public const string ShowClassicLabelSettings = "ShowClassicLabelSettings";
@@ -71,10 +72,18 @@ namespace Rock.Blocks.CheckIn.Configuration
             // Related settings URLs:
             public const string NamedLocationsPage = "NamedLocationsPage";
             public const string SchedulesPage = "SchedulesPage";
+
             public const string DevicesPage = "DevicesPage";
             public const string LabelsPage = "LabelsPage";
             public const string ClassicLabelsPage = "ClassicLabelsPage";
             public const string CloudPrintPage = "CloudPrintPage";
+
+            public const string ClassicLabelMergeFields = "ClassicLabelMergeFields";
+            public const string AbilityLevels = "AbilityLevels";
+            public const string SearchType = "SearchType";
+
+            // Public-Facing Docs URLs:
+            public const string CheckInManual = "CheckInManual";
         }
 
         private static class PageParameterKey
@@ -111,8 +120,8 @@ namespace Rock.Blocks.CheckIn.Configuration
                 {
                     _sortyByItems = new List<ListItemBag>
                     {
-                        SortBy.Alphabetical,
-                        SortBy.MostActivity
+                        SortBy.MostActivity,
+                        SortBy.Alphabetical
                     };
                 }
 
@@ -155,7 +164,7 @@ namespace Rock.Blocks.CheckIn.Configuration
                     return sortBy;
                 }
 
-                return SortBy.AlphabeticalValue;
+                return SortBy.MostActivityValue;
             }
         }
 
@@ -174,6 +183,7 @@ namespace Rock.Blocks.CheckIn.Configuration
             }
 
             box.SortByItems = SortByItems;
+            box.SortBy = SortByPreference;
             box.ShowAddCheckInConfigurationButton = CanAdministrate;
             box.ShowClassicLabelSettings = GetAttributeValue( AttributeKey.ShowClassicLabelSettings ).AsBoolean();
             box.CheckInConfigurations = LoadCheckInConfigurations();
@@ -282,21 +292,40 @@ namespace Rock.Blocks.CheckIn.Configuration
             var urls = new Dictionary<string, string>
             {
                 // Per-config URLs:
-                [NavigationUrlKey.AreasAndGroupsPage] = "/admin/checkins/configuration-areas-groups/((Key))",
-                [NavigationUrlKey.ScheduleBuilderPage] = "/admin/checkins/configuration-schedule-builder/((Key))",
-                [NavigationUrlKey.ConfigurationSettingsPage] = "/admin/checkins/configuration-settings/((Key))?autoEdit=true",
+                [NavigationUrlKey.AreasAndGroupsPage] = "/admin/checkin/configuration-areas-groups/((Key))",
+                [NavigationUrlKey.ScheduleBuilderPage] = "/admin/checkin/configuration-schedule-builder/((Key))",
+                [NavigationUrlKey.ConfigurationSettingsPage] = "/admin/checkin/configuration-settings/((Key))",
 
                 // Related settings URLs:
-                [NavigationUrlKey.NamedLocationsPage] = "/admin/checkins/named-locations",
-                [NavigationUrlKey.SchedulesPage] = "/admin/checkins/schedules",
-                [NavigationUrlKey.DevicesPage] = "/admin/checkins/devices",
-                [NavigationUrlKey.LabelsPage] = "/admin/checkins/labels",
-                [NavigationUrlKey.CloudPrintPage] = "/admin/checkins/cloud-print"
+                [NavigationUrlKey.NamedLocationsPage] = "/admin/checkin/named-locations",
+                [NavigationUrlKey.SchedulesPage] = "/admin/checkin/schedules",
+
+                [NavigationUrlKey.DevicesPage] = "/admin/checkin/devices",
+                [NavigationUrlKey.LabelsPage] = "/admin/checkin/labels",
+                [NavigationUrlKey.CloudPrintPage] = "/admin/checkin/cloud-print",
+
+                [NavigationUrlKey.AbilityLevels] = "/admin/checkin/ability-levels",
+                [NavigationUrlKey.SearchType] = "/admin/checkin/search-types",
+
+                // Public-Facing Docs URLs:
+                /*
+                    5/27/2026 - JPH
+
+                    This URL is a Page Short Link managed by the Spark Site. This way, if the actual URL changes in
+                    the future, we can simply update the Short Link to point to the new URL without needing to update
+                    the block's code and redeploy.
+
+                    Reason: Mitigate risks with hard-coding a URL that may change in the future.
+                */
+                [NavigationUrlKey.CheckInManual] = "https://community.rockrms.com/app-check-in-configuration"
             };
 
+            // Label Merge Fields are a Classic Labels concept (next-gen labels use their own field data sources), so
+            // surface both links only when Classic label settings are enabled.
             if ( ShowClassicLabelSettings )
             {
-                urls[NavigationUrlKey.ClassicLabelsPage] = "/admin/checkins/labels-classic";
+                urls[NavigationUrlKey.ClassicLabelsPage] = "/admin/checkin/labels-classic";
+                urls[NavigationUrlKey.ClassicLabelMergeFields] = "/admin/checkin/label-merge-fields";
             }
 
             return urls;

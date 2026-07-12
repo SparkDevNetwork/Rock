@@ -1,0 +1,246 @@
+/* SortableTree control. */
+
+/*----------------------------------------
+    Wrapper (container around the top-level list)
+----------------------------------------*/
+.sortable-tree-wrapper {
+    flex: 1;
+    min-height: 0;
+}
+
+/* During drag, the list wraps itself in a dashed drop-zone border. This
+   pseudo-element adds breathing room below the border so it doesn't crowd
+   the surrounding panel's bottom edge. */
+body.sortable-tree-dragging .sortable-tree-wrapper::after {
+    content: "";
+    display: block;
+    height: var(--spacing-large);
+}
+
+/*----------------------------------------
+    Lists (one level of siblings)
+----------------------------------------*/
+.sortable-tree-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+}
+
+/* Only the final root-level bucket gets bottom breathing room, so stacked
+   group-by buckets don't double up their paddings. */
+.sortable-tree-wrapper > .sortable-tree-list:last-child {
+    padding-bottom: var(--spacing-large);
+}
+
+/* Indents to keep leading icons aligned across depths. */
+.sortable-tree-list.nested {
+    padding: 0;
+    margin-left: 46px;
+}
+
+/* When multiple root-level lists are present, add breathing room between them,
+   matching the gap between rows within a single list. */
+.sortable-tree-wrapper > .sortable-tree-list + .sortable-tree-list {
+    padding-top: var(--spacing-small);
+}
+
+/* The originating list during a drag. Visualizes the legal drop zone. */
+.sortable-tree-list.moving {
+    border: 2px dashed var(--color-interface-soft);
+    padding: var(--spacing-small) var(--spacing-small) var(--spacing-small) 0;
+    border-radius: var(--rounded-medium);
+}
+
+/*----------------------------------------
+    Nodes (single-root wrappers, each containing one row + optional child list)
+----------------------------------------*/
+.sortable-tree-node {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+}
+
+/* Dragula clones the dragged node and tags the clone with .gu-mirror. */
+.sortable-tree-node.gu-mirror {
+    opacity: 70%;
+    rotate: -3deg;
+}
+
+/*----------------------------------------
+    Rows (visible content of a single tree item)
+----------------------------------------*/
+.sortable-tree-row {
+    display: flex;
+    width: 100%;
+    gap: var(--spacing-xsmall);
+    height: 56px;
+}
+
+.sortable-tree-row.inactive {
+    opacity: 50%;
+}
+
+/*----------------------------------------
+    Caret toggle (leading expand/collapse indicator)
+----------------------------------------*/
+.sortable-tree-row-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    visibility: visible;
+    cursor: pointer;
+}
+
+/* Reserves caret-width whitespace so labels stay aligned across nodes that
+   do/don't have children. Mouse interactions are turned off so the empty
+   slot doesn't appear clickable. */
+.sortable-tree-row-toggle.no-nest {
+    visibility: hidden;
+    pointer-events: none;
+    cursor: default;
+}
+
+/*----------------------------------------
+    Drag handle / leading icon
+----------------------------------------*/
+.sortable-tree-row-handle {
+    padding: var(--spacing-small);
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-info-strong);
+    color: var(--color-interface-softest);
+    cursor: grab;
+}
+
+.sortable-tree-row-handle.disabled {
+    cursor: default;
+}
+
+.sortable-tree-row-handle .sortable-tree-row-handle-hover {
+    display: none;
+}
+
+/* Hovering anywhere on the row reveals the drag affordance on the handle, so
+   the draggability signal is visible from the whole row, not just from the
+   handle itself. The cursor still only flips to `grab` when over the handle
+   (since cursor lives on the handle element), so the row hover advertises
+   "this is draggable" and the handle is where the actual grab happens.
+   Gated on `body:not(.sortable-tree-dragging)` so the swap stops the moment
+   a drag begins; during a drag the dedicated drag-state rules below take
+   over and force every visible handle back to the default (type) icon. */
+body:not(.sortable-tree-dragging) .sortable-tree-row:hover .sortable-tree-row-handle-default {
+    display: none;
+}
+
+body:not(.sortable-tree-dragging) .sortable-tree-row:hover .sortable-tree-row-handle-hover {
+    display: inline;
+}
+
+/* Non-draggable handles keep the default icon regardless of the row's hover
+   state. */
+body:not(.sortable-tree-dragging) .sortable-tree-row:hover .sortable-tree-row-handle.disabled .sortable-tree-row-handle-default {
+    display: inline;
+}
+
+body:not(.sortable-tree-dragging) .sortable-tree-row:hover .sortable-tree-row-handle.disabled .sortable-tree-row-handle-hover {
+    display: none;
+}
+
+/* During drag, force every handle's icon to its default glyph so other rows
+   don't appear draggable as the cursor passes over them. */
+body.sortable-tree-dragging .sortable-tree-row-handle-default {
+    display: inline !important;
+}
+
+body.sortable-tree-dragging .sortable-tree-row-handle-hover {
+    display: none !important;
+}
+
+/* The mirror clone (the floating copy of the row being dragged, tagged
+   `.gu-mirror` by the drag library) bucks the rule above so the dragged
+   row continues to show its drag handle icon. */
+body.sortable-tree-dragging .sortable-tree-node.gu-mirror > .sortable-tree-row .sortable-tree-row-handle-default {
+    display: none !important;
+}
+
+body.sortable-tree-dragging .sortable-tree-node.gu-mirror > .sortable-tree-row .sortable-tree-row-handle-hover {
+    display: inline !important;
+}
+
+/* Once a drag starts, force every element on the page to the grabbing cursor
+   so the pointer stays consistent as it moves over rows, handles, panel
+   chrome, etc. The universal selector with !important overrides the per-
+   element cursor rules (`.sortable-tree-row-body` is `pointer`,
+   `.sortable-tree-row-handle.disabled` is `default`, etc.). */
+body.sortable-tree-dragging,
+body.sortable-tree-dragging * {
+    cursor: grabbing !important;
+}
+
+/*----------------------------------------
+    Row body (everything right of the handle)
+----------------------------------------*/
+.sortable-tree-row-body {
+    background-color: var(--color-interface-softest);
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    width: 100%;
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-xsmall);
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.sortable-tree-row.selected .sortable-tree-row-body {
+    border-color: var(--color-info-strong);
+    background-color: var(--color-info-soft);
+}
+
+.sortable-tree-row.selected .sortable-tree-row-title p {
+    font-weight: var(--font-weight-semibold);
+}
+
+/*----------------------------------------
+    Row title (label + on-hover actions + always-visible chevron)
+----------------------------------------*/
+.sortable-tree-row-title {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    align-items: center;
+    gap: var(--spacing-large);
+    padding: var(--spacing-medium);
+    justify-content: space-between;
+}
+
+.sortable-tree-row-title-text {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+}
+
+.sortable-tree-row-title-end {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+}
+
+.sortable-tree-row-actions {
+    display: none;
+    gap: var(--spacing-tiny);
+    align-items: center;
+}
+
+.sortable-tree-row-title:hover .sortable-tree-row-actions {
+    display: flex;
+}
+
+.sortable-tree-row-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

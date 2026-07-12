@@ -1,0 +1,253 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <TreeList v-model="value"
+                  :items="items"
+                  :multiple="multiple"
+                  :disableFolderSelection="disableFolderSelection"
+                  :autoExpand="autoExpand"
+                  :showChildCount="showChildCount"
+                  :enableDeselect="enableDeselect"
+                  :selectFirstByDefault="selectFirstByDefault"
+                  :showSelectChildren="showSelectChildren" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Multiple" v-model="multiple" />
+                    <CheckBox label="Disable Folder Selection" v-model="disableFolderSelection" />
+                    <CheckBox label="Auto Expand" v-model="autoExpand" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Show Child Count" v-model="showChildCount" />
+                    <CheckBox label="Enable Deselect" v-model="enableDeselect" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Select First By Default" v-model="selectFirstByDefault" />
+                    <CheckBox label="Show Select Children" v-model="showSelectChildren" />
+                </div>
+            </div>
+
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        </template>
+
+        <template #props>
+            <table class="table table-striped mb-4">
+                <thead>
+                    <tr>
+                        <th>Prop</th>
+                        <th>Type</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>modelValue</code></td>
+                        <td><code>string[]</code></td>
+                        <td>[]</td>
+                        <td>The <code>v-model</code> array of selected item values.</td>
+                    </tr>
+                    <tr>
+                        <td><code>items</code></td>
+                        <td><code>TreeItemBag[]</code></td>
+                        <td>[]</td>
+                        <td>The list of tree items to display. Ignored when a <code>provider</code> is supplied.</td>
+                    </tr>
+                    <tr>
+                        <td><code>provider</code></td>
+                        <td><code>ITreeItemProvider</code></td>
+                        <td>undefined</td>
+                        <td>An optional provider used to lazy-load root items and children.</td>
+                    </tr>
+                    <tr>
+                        <td><code>multiple</code></td>
+                        <td>Boolean</td>
+                        <td>false</td>
+                        <td>Whether to allow selecting multiple items.</td>
+                    </tr>
+                    <tr>
+                        <td><code>disableFolderSelection</code></td>
+                        <td>Boolean</td>
+                        <td>false</td>
+                        <td>Whether to prevent folder items from being selected.</td>
+                    </tr>
+                    <tr>
+                        <td><code>autoExpand</code></td>
+                        <td>Boolean</td>
+                        <td>false</td>
+                        <td>Whether to automatically expand parents that contain selected descendants.</td>
+                    </tr>
+                    <tr>
+                        <td><code>showChildCount</code></td>
+                        <td>Boolean</td>
+                        <td>false</td>
+                        <td>Whether to show the child count next to folder items that provide one.</td>
+                    </tr>
+                    <tr>
+                        <td><code>initiallyExpanded</code></td>
+                        <td><code>string[]</code></td>
+                        <td>[]</td>
+                        <td>Item values that should be expanded when the tree first loads.</td>
+                    </tr>
+                    <tr>
+                        <td><code>enableDeselect</code></td>
+                        <td>Boolean</td>
+                        <td>false</td>
+                        <td>In single-selection mode, whether clicking the selected item again clears the selection.</td>
+                    </tr>
+                    <tr>
+                        <td><code>selectFirstByDefault</code></td>
+                        <td>Boolean</td>
+                        <td>false</td>
+                        <td>When true, the first selectable item is auto-selected if nothing is selected.</td>
+                    </tr>
+                    <tr>
+                        <td><code>showSelectChildren</code></td>
+                        <td>Boolean</td>
+                        <td>false</td>
+                        <td>Show an icon next to folders that selects all of their descendant items.</td>
+                    </tr>
+                    <tr>
+                        <td><code>isVisible</code></td>
+                        <td>Boolean</td>
+                        <td>null</td>
+                        <td>Used by picker hosts to track the open state and re-scroll to the selection.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import TreeList from "@Obsidian/Controls/treeList.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const value = ref<string[]>([]);
+    const multiple = ref(false);
+    const disableFolderSelection = ref(false);
+    const autoExpand = ref(false);
+    const showChildCount = ref(false);
+    const enableDeselect = ref(false);
+    const selectFirstByDefault = ref(false);
+    const showSelectChildren = ref(false);
+
+    const items = ref<TreeItemBag[]>([
+        {
+            value: "main-campus",
+            text: "Main Campus",
+            iconCssClass: "ti ti-building",
+            isActive: true,
+            isFolder: true,
+            hasChildren: true,
+            childCount: 3,
+            children: [
+                {
+                    value: "auditorium",
+                    text: "Auditorium",
+                    iconCssClass: "ti ti-microphone",
+                    isActive: true,
+                    isFolder: false,
+                    hasChildren: false,
+                    children: []
+                },
+                {
+                    value: "childrens-wing",
+                    text: "Children's Wing",
+                    iconCssClass: "ti ti-door",
+                    isActive: true,
+                    isFolder: true,
+                    hasChildren: true,
+                    childCount: 3,
+                    children: [
+                        {
+                            value: "nursery",
+                            text: "Nursery (0-2)",
+                            iconCssClass: "ti ti-baby-carriage",
+                            isActive: true,
+                            isFolder: false,
+                            hasChildren: false,
+                            children: []
+                        },
+                        {
+                            value: "preschool",
+                            text: "Preschool (3-5)",
+                            iconCssClass: "ti ti-mood-kid",
+                            isActive: true,
+                            isFolder: false,
+                            hasChildren: false,
+                            children: []
+                        },
+                        {
+                            value: "elementary",
+                            text: "Elementary (K-5)",
+                            iconCssClass: "ti ti-school",
+                            isActive: true,
+                            isFolder: false,
+                            hasChildren: false,
+                            children: []
+                        }
+                    ]
+                },
+                {
+                    value: "youth-room",
+                    text: "Youth Room",
+                    iconCssClass: "ti ti-users",
+                    isActive: true,
+                    isFolder: false,
+                    hasChildren: false,
+                    children: []
+                }
+            ]
+        },
+        {
+            value: "south-campus",
+            text: "South Campus",
+            iconCssClass: "ti ti-building",
+            isActive: true,
+            isFolder: true,
+            hasChildren: true,
+            childCount: 2,
+            children: [
+                {
+                    value: "south-sanctuary",
+                    text: "Sanctuary",
+                    iconCssClass: "ti ti-microphone",
+                    isActive: true,
+                    isFolder: false,
+                    hasChildren: false,
+                    children: []
+                },
+                {
+                    value: "south-classroom-a",
+                    text: "Classroom A",
+                    iconCssClass: "ti ti-door",
+                    isActive: true,
+                    isFolder: false,
+                    hasChildren: false,
+                    children: []
+                }
+            ]
+        },
+        {
+            value: "online-campus",
+            text: "Online Campus",
+            iconCssClass: "ti ti-broadcast",
+            isActive: true,
+            isFolder: false,
+            hasChildren: false,
+            children: []
+        }
+    ]);
+
+    const importCode = getSfcControlImportPath("treeList");
+    const exampleCode = computed(() => `<TreeList v-model="value" :items="items"${multiple.value ? " multiple" : ""}${disableFolderSelection.value ? " disableFolderSelection" : ""}${autoExpand.value ? " autoExpand" : ""}${showChildCount.value ? " showChildCount" : ""}${enableDeselect.value ? " enableDeselect" : ""}${selectFirstByDefault.value ? " selectFirstByDefault" : ""}${showSelectChildren.value ? " showSelectChildren" : ""} />`);
+</script>

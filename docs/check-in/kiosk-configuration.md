@@ -1,11 +1,14 @@
 ---
 title: Kiosk Configuration
-last_updated: 2026-05-01
+last_updated: 2026-06-03
+related_specs:
+  - specs/completed/check-in/260506-check-in-areas-and-groups-obsidian-conversion.md
 related_files:
   - Rock/CheckIn/CheckinType.cs
   - Rock/CheckIn/CheckinConfigurationHelper.cs
   - Rock/CheckIn/KioskDevice.cs
   - Rock/CheckIn/LocalDeviceConfiguration.cs
+  - Rock.Blocks/CheckIn/Configuration/CheckInAreasAndGroups.cs
 ---
 
 # Kiosk Configuration
@@ -55,6 +58,8 @@ A kiosk references one CheckinType (the policy) and has its own runtime state (w
 **`KioskDevice.Location` defines the kiosk's physical location.** Used for proximity-based features and reporting on kiosk usage.
 
 **Check-in Schedule Builder is the shared schedule editor.** Configures which schedules are active during check-in for a given CheckinType. Available since the standard schedule infrastructure; configures `ScheduleId` references.
+
+**Areas and groups are configured in the Obsidian "Check-in Areas and Groups" block.** A check-in template's areas (its child check-in group types) and the groups beneath them are edited in a campus-aware, split-pane editor with drag-reorder and up to 5 levels of nesting (`Rock.Blocks/CheckIn/Configuration/CheckInAreasAndGroups.cs`). It replaced the legacy WebForms areas editor, and the check-in configuration pages now sit directly under Admin Tools rather than nested in settings. Every area or group mutation pushes a configuration-refresh notification to connected kiosks (`RefreshConnectedKiosks`) so they reload without an app recycle.
 
 **Configuration changes propagate via cache invalidation.** A change to a CheckinType invalidates the cache; running kiosks pick up the new configuration on next session start.
 
@@ -149,7 +154,7 @@ Rejected. Schedule selection varies per service; configuration must be data-driv
 
 ### Affected Blocks
 
-- **Admin:** Check-in Configuration, CheckinType Detail, Group Type Detail (when the Group Type is a check-in template), KioskDevice configuration UIs.
+- **Admin:** Check-in Configuration (list + settings), **Check-in Areas and Groups** (Obsidian; edits a configuration's areas, group types, and groups), Check-in Schedule Builder, CheckinType Detail, Group Type Detail (when the Group Type is a check-in template), KioskDevice configuration UIs.
 - **Kiosk:** all the kiosk-side blocks (Welcome, Search, Family Select, etc.) consume the configuration.
 
 ### Related Docs
@@ -161,7 +166,12 @@ Rejected. Schedule selection varies per service; configuration must be data-driv
 
 ## Recent Impactful Changes
 
+- **2026-06-02** ([commit `61353768a5`](https://github.com/SparkDevNetwork/Rock/commit/61353768a5)). Replaced the legacy WebForms Check-in Areas editor with the Obsidian "Check-in Areas and Groups" block and moved the check-in configuration pages directly under Admin Tools.
 - **2025-10-24** ([commit `5911d3046b`](https://github.com/SparkDevNetwork/Rock/commit/5911d3046b)). Default Record Source for new Person records during check-in (Fixes #6507).
 - **2025-10-16** ([commit `42659c7705`](https://github.com/SparkDevNetwork/Rock/commit/42659c7705)). New "Display Address on Families" check-in configuration setting: hide, optional, or required.
 - **2025-05-07** ([commit `7bf1e46b97`](https://github.com/SparkDevNetwork/Rock/commit/7bf1e46b97)). Next-Gen Check-in correctly sets the connection status from the check-in template's Default Person Connection Status when adding a new person.
 - **2025-05-08** ([commit `3c27476a73`](https://github.com/SparkDevNetwork/Rock/commit/3c27476a73)). Legacy check-in schedule category exclusions now honored when loading schedules (Fixes #6196).
+
+## Related Specs
+
+- [Check-in Areas and Groups: WebForms to Obsidian Conversion](../../specs/completed/check-in/260506-check-in-areas-and-groups-obsidian-conversion.md) (2026-05-06, Jason Hendee)

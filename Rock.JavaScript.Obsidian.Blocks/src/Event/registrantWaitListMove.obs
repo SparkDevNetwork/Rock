@@ -1,0 +1,382 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="Wait List Confirmation">
+        <NotificationBox :alertType="moveFailed ? 'danger' : 'success'" class="mb-3">
+            <strong>{{ moveFailed ? 'Move Failed ' : 'Wait List Updated ' }}</strong>{{ config.updateMessage }}
+        </NotificationBox>
+        <ContentSection :disableCollapse="true" title="Email" icon="ti ti-mail">
+            <ContentStack>
+                <NotificationBox v-if="sendResultMessage"
+                                 :alertType="emailErrors ? 'warning' : 'success'">{{ sendResultMessage }}</NotificationBox>
+                <DisplayCard v-else
+                             title="Send Email to Individuals?"
+                             description="Would you like to send an email to those whose registrants have been moved off the wait list?">
+                    <template #actions>
+                        <Toggle v-model="showEmail" trueText="Yes" falseText="No" :btnSize="BtnSize.Small" />
+                    </template>
+                </DisplayCard>
+            </ContentStack>
+            <Transition name="slide-down">
+                <div v-if="!moveFailed && showEmail" class="email-stacks">
+                    <ContentStack title="Recipients"
+                                  description="Select the individuals to notify about their wait list transition.">
+                        <div class="recipients">
+                            <div class="d-flex justify-content-between align-items-center pb-3">
+                                <span class="badge p-2 text-normal">
+                                    {{ selectedCount }} of {{ recipients.length }} selected
+                                </span>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <RockButton btnType="link" btnSize="sm" @click="onDeselectAll">Deselect All</RockButton>
+                                    <RockButton btnType="link" btnSize="sm" @click="onSelectAll">Select All</RockButton>
+                                </div>
+                            </div>
+                            <TransitionGroup name="recipient" tag="div" class="recipient-grid">
+                                <template v-for="recipient in visibleRecipients">
+                                    <div v-if="recipient.id"
+                                         :key="recipient.id"
+                                         class="card recipient-card"
+                                         :class="{ 'recipient-selected': recipient.isSelected }"
+                                         style="cursor: pointer;"
+                                         @click="recipient.isSelected = !recipient.isSelected">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div class="recipient-info">
+                                                    <h6 class="card-title mb-1">{{ recipient.registrantName }}</h6>
+                                                    <p class="card-text text-sm mb-3">{{ recipient.email }}</p>
+                                                    <PillList :modelValue="recipient.registeredNames ?? []" label="Registrants" @click.stop />
+                                                </div>
+                                                <CheckBox v-model="recipient.isSelected" label="" @click.prevent.stop />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </TransitionGroup>
+                            <div v-if="recipients.length > maxVisible" class="text-center mt-2">
+                                <RockButton btnType="link" btnSize="sm" @click="isShowingAll = !isShowingAll">
+                                    {{ isShowingAll ? 'Show Less' : `Show All (${recipients.length})` }}
+                                </RockButton>
+                            </div>
+                        </div>
+                    </ContentStack>
+
+                    <ContentStack title="Message"
+                                  description="Customize the email that will be sent to the selected recipients.">
+                        <RockForm @submit="onSendClick">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <TextBox v-model="fromName" label="From Name" rules="required" />
+                                </div>
+                                <div class="col-md-6">
+                                    <TextBox v-model="fromEmail" label="From Email" rules="required|email" />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <TextBox v-model="subject" label="Subject" rules="required" />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label class="control-label required">Message</label>
+                                    <ButtonGroup
+                                                 v-model="previewMode"
+                                                 :items="previewModeItems"
+                                                 :btnSize="BtnSize.ExtraSmall"
+                                                 :selectedBtnType="BtnType.Primary"
+                                                 :unselectedBtnType="BtnType.Default" />
+                                </div>
+                                <CodeEditor v-if="previewMode === 'code'"
+                                            v-model="messageBody"
+                                            mode="lava"
+                                            :editorHeight="500" />
+                                <div v-else
+                                     class="email-preview js-email-preview overflow-auto"
+                                     style="position: relative; height: 500px;">
+                                    <iframe name="emailPreview"
+                                            :srcdoc="previewHtml"
+                                            class="emaileditor-iframe bg-white inset-0 w-100 h-100 js-emailpreview-iframe email-wrapper email-content-desktop styled-scroll"
+                                            frameborder="0"
+                                            border="0"
+                                            cellspacing="0">
+                                    </iframe>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end mt-3">
+                                <RockButton btnType="primary" type="submit" :isLoading="isSending">
+                                    Send
+                                </RockButton>
+                            </div>
+                        </RockForm>
+                    </ContentStack>
+                </div>
+            </Transition>
+        </ContentSection>
+    </Panel>
+</template>
+
+<style scoped>
+.email-stacks {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-large);
+}
+
+.failed {
+    background-color: var(--color-danger-soft);
+    color: var(--color-danger-strong);
+}
+
+.success {
+    background-color: var(--color-success-soft);
+    color: var(--color-success-strong);
+}
+
+.badge {
+    background-color: var(--color-primary);
+    border-radius: var(--rounded-xlarge);
+}
+
+.recipient-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+@media (min-width: 576px) {
+    .recipient-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 992px) {
+    .recipient-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.recipients {
+    background-color: var(--vs-dropdown-bg);
+    border-radius: var(--vs-border-radius);
+    padding: var(--spacing-large);
+    border: 1px solid var(--vs-border-color);
+}
+
+.slide-down-enter-active,
+.slide-down-leave-active {
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.slide-down-enter-from,
+.slide-down-leave-to {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+
+.recipient-enter-active,
+.recipient-leave-active {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.recipient-enter-from,
+.recipient-leave-to {
+    opacity: 0;
+    transform: translateY(-6px);
+}
+
+.recipient-selected {
+    border: 1px solid var(--color-primary);
+}
+
+.recipient-info {
+    min-width: 0;
+    flex: 1;
+    margin-right: 8px;
+}
+
+
+:deep(.displaycard-heading-text-title) {
+    font-size: var(--font-size-h6);
+    font-weight: 600;
+}
+
+:deep(.pill-list-root) {
+    border: none;
+    padding: 0;
+    pointer-events: none;
+}
+
+:deep(.rock-pill-list) {
+    margin-bottom: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { RegistrantWaitListMoveBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrantWaitListMove/registrantWaitListMoveBag";
+    import { RegistrantWaitListMoveEmailBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrantWaitListMove/registrantWaitListMoveEmailBag";
+    import { RegistrantWaitListMoveRecipientBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrantWaitListMove/registrantWaitListMoveRecipientBag";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import PillList from "@Obsidian/Controls/pillList.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+
+    const config = useConfigurationValues<RegistrantWaitListMoveBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const fromName = ref(config.emailBag?.fromName ?? "");
+    const fromEmail = ref(config.emailBag?.fromEmail ?? "");
+    const subject = ref(config.emailBag?.subject ?? "");
+    const messageBody = ref(config.emailBag?.body ?? "");
+    const previewHtml = ref(config.emailBag?.previewHtml ?? "");
+
+    const maxVisible = 6;
+
+    const previewMode = ref<"code" | "preview">("preview");
+    const isMessageBodyChanged = ref(false);
+    const showEmail = ref(false);
+    const isSending = ref(false);
+    const isComplete = ref(false);
+    const sendResultMessage = ref("");
+    const emailErrors = ref(false);
+    const isShowingAll = ref(false);
+    const moveFailed = ref(!config.recipients || config.recipients.length === 0);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const resultIcon = computed(() => moveFailed.value ? "ti ti-x" : "ti ti-check");
+
+    const selectedCount = computed(() => recipients.value.filter(r => r.isSelected).length);
+
+    const previewModeItems = [
+        { text: "Code", value: "code", iconCssClass: "ti ti-code" },
+        { text: "Preview", value: "preview", iconCssClass: "ti ti-device-desktop" },
+    ];
+
+    const visibleRecipients = computed(() =>
+        isShowingAll.value ? recipients.value : recipients.value.slice(0, maxVisible)
+    );
+
+    // #endregion
+
+    const recipients = ref<RegistrantWaitListMoveRecipientBag[]>([...(config.recipients ?? [])]);
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /** Selects all recipients. */
+    function onSelectAll(): void {
+        recipients.value.forEach(r => r.isSelected = true);
+    }
+
+    /** Deselects all recipients. */
+    function onDeselectAll(): void {
+        recipients.value.forEach(r => r.isSelected = false);
+    }
+
+    /**
+     * Invokes the SendEmails block action and switches the block to its
+     * completion state on success.
+     */
+    async function onSendClick(): Promise<void> {
+        const selectedRecipients = recipients.value.filter(r => r.isSelected);
+
+        if (selectedRecipients.length === 0) {
+            await alert("Select at least one recipient before sending.");
+            return;
+        }
+
+        if (!messageBody.value) {
+            await alert("Message body is required.");
+            return;
+        }
+
+        isSending.value = true;
+
+        try {
+            const result = await invokeBlockAction("SendEmails", {
+                request: {
+                    fromName: fromName.value,
+                    fromEmail: fromEmail.value,
+                    subject: subject.value,
+                    body: messageBody.value,
+                    previewHtml: previewHtml.value,
+                    registrationIds: selectedRecipients.map(r => r.id)
+                } as RegistrantWaitListMoveEmailBag
+            });
+
+            if (result.isSuccess) {
+                sendResultMessage.value = result.data as string ?? "Emails sent.";
+                emailErrors.value = (result.data as string ?? "").toLowerCase().includes("error");
+                showEmail.value = false;
+                isComplete.value = true;
+                window.scrollTo(0, 0);
+            }
+            else {
+                await alert(result.errorMessage ?? "Unable to send emails.");
+            }
+        }
+        finally {
+            isSending.value = false;
+        }
+    }
+
+    // #endregion
+
+    /** Marks the message body as dirty whenever it changes. */
+    watch(messageBody, () => {
+        isMessageBodyChanged.value = true;
+    });
+
+    /**
+     * Re-resolves the preview HTML server-side whenever the user switches to
+     * preview mode, but only when the message body has changed since the last
+     * resolution to avoid unnecessary round-trips.
+     */
+    watch(previewMode, async (newValue) => {
+        if (newValue === "code") {
+            return;
+        }
+
+        if (!isMessageBodyChanged.value) {
+            return;
+        }
+
+        if (!messageBody.value) {
+            previewHtml.value = "";
+            isMessageBodyChanged.value = false;
+            return;
+        }
+
+        const result = await invokeBlockAction<string>("ResolvePreview", {
+            messageBody: messageBody.value
+        });
+
+        if (result.isSuccess && result.data != null) {
+            previewHtml.value = result.data;
+            isMessageBodyChanged.value = false;
+        }
+    });
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

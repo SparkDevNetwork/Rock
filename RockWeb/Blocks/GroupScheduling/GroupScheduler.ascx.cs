@@ -453,7 +453,9 @@ btnCopyToClipboard.ClientID );
             if ( this.PageParameter( PageParameterKey.GroupIds ).IsNotNullOrWhiteSpace() || this.PageParameter( PageParameterKey.GroupId ).IsNotNullOrWhiteSpace() )
             {
                 var pageParameterGroupIds = ( this.PageParameter( PageParameterKey.GroupIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
-                var pageParameterGroupId = this.PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+
+                var pageParameterGroupId = new GroupService( new RockContext() )
+                    .GetSelect( this.PageParameter( PageParameterKey.GroupId ), g => ( int? ) g.Id, !PageCache.Layout.Site.DisablePredictableIds );
                 if ( pageParameterGroupId.HasValue )
                 {
                     // Disable the group picker if there is a singular group ID value in the query string AND
@@ -528,7 +530,7 @@ btnCopyToClipboard.ClientID );
             if ( this.PageParameter( PageParameterKey.SelectAllSchedules ).IsNotNullOrWhiteSpace() || this.PageParameter( PageParameterKey.ScheduleId ).IsNotNullOrWhiteSpace() )
             {
                 selectAllSchedules = this.PageParameter( PageParameterKey.SelectAllSchedules ).AsBoolean();
-                selectedIndividualScheduleId = this.PageParameter( PageParameterKey.ScheduleId ).AsIntegerOrNull();
+                selectedIndividualScheduleId = this.PageParameter( PageParameterKey.ScheduleId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( this.PageParameter( PageParameterKey.ScheduleId ) );
             }
             else
             {
@@ -596,7 +598,8 @@ btnCopyToClipboard.ClientID );
 
             gpResourceListAlternateGroup.SetValue( this.GetUrlSettingOrBlockUserPreference( PageParameterKey.AlternateGroupId, UserPreferenceKey.AlternateGroupId ).AsIntegerOrNull() );
 
-            var dataViewId = this.GetUrlSettingOrBlockUserPreference( PageParameterKey.DataViewId, UserPreferenceKey.DataViewId ).AsIntegerOrNull();
+            var dataViewSetting = this.GetUrlSettingOrBlockUserPreference( PageParameterKey.DataViewId, UserPreferenceKey.DataViewId );
+            var dataViewId = dataViewSetting.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( dataViewSetting );
             if ( dataViewId.HasValue )
             {
                 // make sure it is a Person DataView

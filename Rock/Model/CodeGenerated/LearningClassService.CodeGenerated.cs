@@ -193,6 +193,7 @@ namespace Rock.Model
             target.NonLeaderToNonLeaderRelationshipMultiplierOverride = source.NonLeaderToNonLeaderRelationshipMultiplierOverride;
             target.Order = source.Order;
             target.ParentGroupId = source.ParentGroupId;
+            target.PhotoId = source.PhotoId;
             target.RelationshipGrowthEnabledOverride = source.RelationshipGrowthEnabledOverride;
             target.RelationshipStrengthOverride = source.RelationshipStrengthOverride;
             target.ReminderAdditionalDetails = source.ReminderAdditionalDetails;

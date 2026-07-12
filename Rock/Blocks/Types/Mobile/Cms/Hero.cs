@@ -53,14 +53,14 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Order = 1 )]
 
     [FileField( SystemGuid.BinaryFiletype.DEFAULT,
-        Name = "Background Image - Phone",
+        "Background Image - Phone",
         Description = "Recommended size is at least 1024px wide and double the height specified below.",
         IsRequired = true,
         Key = AttributeKeys.BackgroundImagePhone,
         Order = 2 )]
 
     [FileField( SystemGuid.BinaryFiletype.DEFAULT,
-        Name = "Background Image - Tablet",
+        "Background Image - Tablet",
         Description = "Recommended size is at least 2048px wide and double the height specified below.",
         IsRequired = true,
         Key = AttributeKeys.BackgroundImageTablet,

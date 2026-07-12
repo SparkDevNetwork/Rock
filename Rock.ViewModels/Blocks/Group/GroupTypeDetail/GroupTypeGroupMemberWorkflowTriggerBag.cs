@@ -33,11 +33,6 @@ namespace Rock.ViewModels.Blocks.Group.GroupTypeDetail
         public Guid Guid { get; set; }
 
         /// <summary>
-        /// Gets or sets the order of the workflow trigger.
-        /// </summary>
-        public int Order { get; set; }
-
-        /// <summary>
         /// Gets or sets the name of the workflow trigger.
         /// </summary>
         public string Name { get; set; }

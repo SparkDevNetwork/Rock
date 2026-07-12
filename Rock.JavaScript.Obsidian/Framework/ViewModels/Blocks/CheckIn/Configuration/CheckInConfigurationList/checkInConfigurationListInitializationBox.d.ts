@@ -47,6 +47,12 @@ export type CheckInConfigurationListInitializationBox = {
     /** Gets or sets whether to show the page link under related settings that allows the configuration of classic labels. */
     showClassicLabelSettings: boolean;
 
+    /**
+     * Gets or sets the currently effective "sort by" value (the individual's stored preference, or the block
+     * default when none is stored).
+     */
+    sortBy?: string | null;
+
     /** Gets or sets the list of "sort by" items the individual may select. */
     sortByItems?: ListItemBag[] | null;
 };

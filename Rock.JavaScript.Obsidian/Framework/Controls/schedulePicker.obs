@@ -8,7 +8,7 @@
                     disableFolderSelection
                     autoExpand>
 
-        <template #customPickerActions>
+        <template v-if="allowInactiveSelection" #customPickerActions>
             <label class="rock-checkbox-icon">
                 <i :class="['ti', includeInactive ? 'ti-square-check' : 'ti-square']"></i> Show Inactive
                 <span style="display:none"><input type="checkbox" v-model="includeInactive"></span>
@@ -46,6 +46,18 @@
         includeCategoryGuids: {
             type: Array as PropType<Guid[] | null>,
             default: null
+        },
+
+        /**
+         * Controls whether the user can opt into seeing inactive schedules
+         * via the "Show Inactive" toggle. Defaults to `true` to preserve
+         * existing callers. Set to `false` when the consuming form must not
+         * permit inactive schedule selection (e.g., group location schedules
+         * in the Group Detail block).
+         */
+        allowInactiveSelection: {
+            type: Boolean,
+            default: true
         },
     });
 

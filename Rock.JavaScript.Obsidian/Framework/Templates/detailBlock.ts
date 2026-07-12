@@ -80,6 +80,17 @@ export default defineComponent({
             required: false
         },
 
+        /**
+         * Icon CSS class shown before the panel title in view mode. Edit /
+         * Add modes still use their built-in pencil / plus icons. Optional;
+         * leaving it unset (or passing null / undefined) falls back to no
+         * view-mode icon, matching the historical behavior.
+         */
+        titleIconCssClass: {
+            type: String as PropType<string | null>,
+            required: false
+        },
+
         /** The unique identifier of the entity type that this detail block represents. */
         entityTypeGuid: {
             type: String as PropType<Guid>,
@@ -189,6 +200,17 @@ export default defineComponent({
         showLabelsInHeader: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /**
+         * Labels that always render inside the panel header (next to the
+         * title), independent of `labels` and `showLabelsInHeader`. Use this
+         * when only a subset of labels belongs in the header while the rest
+         * stay in the sub-header. Only shown in view mode.
+         */
+        headerLabels: {
+            type: Array as PropType<PanelAction[]>,
+            required: false
         },
 
         /**
@@ -398,7 +420,7 @@ export default defineComponent({
 
                 case DetailPanelMode.View:
                 default:
-                    return "";
+                    return props.titleIconCssClass ?? "";
             }
         });
 
@@ -643,6 +665,18 @@ export default defineComponent({
                 }
 
                 if (result !== true) {
+                    /*
+                        7/8/26 - MSE
+
+                        A declined auto-edit load (commonly a view-only
+                        individual) falls back to the read-only view rather than
+                        leaving the hidden panel blank.
+                    */
+                    if (isAutoEditMode.value) {
+                        isAutoEditMode.value = false;
+                        isPanelVisible.value = true;
+                    }
+
                     return false;
                 }
             }
@@ -965,9 +999,9 @@ export default defineComponent({
         </span>
     </template>
 
-    <template v-if="showLabels && showLabelsInHeader" #panelLabels>
+    <template v-if="(showLabels && showLabelsInHeader) || (!showLabelsInHeader && headerLabels && headerLabels.length)" #panelLabels>
         <div class="label-group">
-            <span v-for="action in labels" :class="getClassForLabelAction(action)" :title="action.tooltip" @click="onActionClick(action, $event)">
+            <span v-for="action in (showLabelsInHeader ? labels : headerLabels)" :class="getClassForLabelAction(action)" :style="action.style" :title="action.tooltip" @click="onActionClick(action, $event)">
                 <i v-if="action.iconCssClass" :class="action.iconCssClass"></i>
                 <template v-if="action.title">{{ action.title }}</template>
             </span>
@@ -977,7 +1011,7 @@ export default defineComponent({
     <template v-if="(showLabels && !showLabelsInHeader) || showTags" #subheaderLeft>
         <div class="d-flex">
             <div v-if="showLabels && !showLabelsInHeader" class="label-group">
-                <span v-for="action in labels" :class="getClassForLabelAction(action)" @click="onActionClick(action, $event)">
+                <span v-for="action in labels" :class="getClassForLabelAction(action)" :style="action.style" :title="action.tooltip" @click="onActionClick(action, $event)">
                     <i v-if="action.iconCssClass" :class="action.iconCssClass"></i>
                     <template v-if="action.title">{{ action.title }}</template>
                 </span>

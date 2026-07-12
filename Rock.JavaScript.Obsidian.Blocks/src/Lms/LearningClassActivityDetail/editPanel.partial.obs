@@ -111,6 +111,15 @@
                            help="This is the total number of points available for this activity."
                            inputClasses="input-width-md" />
             </div>
+
+            <div v-if="supportsRetake" class="col-md-6">
+                <NumberBox v-model="retakeThreshold"
+                           label="Retake Threshold"
+                           :minimumValue="0"
+                           :rules="'lte:' + points"
+                           help="The minimum score a student must earn to avoid being assigned a retake for this activity."
+                           inputClasses="input-width-md" />
+            </div>
         </div>
 
         <!-- Pass the configuration and completion json values to the component. -->
@@ -151,6 +160,7 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import { ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { LearningClassActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassActivityDetail/learningClassActivityBag";
     import { LearningClassActivityDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassActivityDetail/learningClassActivityDetailOptionsBag";
@@ -208,6 +218,7 @@
     const activityComponent = propertyRef(activityBag.value?.activityComponent ?? {} as LearningActivityComponentBag, "ActivityComponent");
 
     const points = propertyRef(isNew ? 10 : activityBag.value?.points ?? 10, "Points");
+    const retakeThreshold = propertyRef(activityBag.value?.retakeThreshold ?? null, "RetakeThreshold");
 
     const activityComponentValue = ref(activityBag.value?.activityComponent?.guid ?? "");
 
@@ -232,11 +243,20 @@
         , activityComponent
         , componentSettings
         , points
+        , retakeThreshold
     ];
 
     // #endregion
 
     // #region Computed Values
+
+    /**
+     * Whether the selected component advertises retake support, which controls whether the
+     * Retake Threshold field is shown. The flag is provided in the component's configuration.
+     */
+    const supportsRetake = computed((): boolean => {
+        return asBoolean(activityComponent.value?.componentConfiguration?.["supportsRetake"]);
+    });
 
     // #endregion
 
@@ -295,6 +315,7 @@
         updateRefValue(activityComponent, props.modelValue.bag?.activityComponent ?? {});
         updateRefValue(componentSettings, props.modelValue.bag?.componentSettings ?? {});
         updateRefValue(points, props.modelValue.bag?.points ?? 0);
+        updateRefValue(retakeThreshold, props.modelValue.bag?.retakeThreshold ?? null);
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -322,6 +343,7 @@
         setPropertiesBoxValue(newValue, "activityComponent", activityComponent.value);
         setPropertiesBoxValue(newValue, "componentSettings", componentSettings.value);
         setPropertiesBoxValue(newValue, "points", points.value);
+        setPropertiesBoxValue(newValue, "retakeThreshold", retakeThreshold.value);
 
         emit("update:modelValue", newValue);
     });

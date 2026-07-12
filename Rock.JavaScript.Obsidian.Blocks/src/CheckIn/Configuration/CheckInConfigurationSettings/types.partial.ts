@@ -17,7 +17,6 @@
 
 export const enum NavigationUrlKey {
     ParentPage = "ParentPage",
-    ScheduleBuilderPage = "ScheduleBuilderPage"
 }
 
 export const enum CheckInType {

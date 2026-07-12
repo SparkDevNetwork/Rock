@@ -1,0 +1,170 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="panelElement">
+        <div v-html="welcomeIntroductionText"></div>
+
+        <NotificationBox v-if="showSelectCategoriesWarning" alertType="danger" heading="I'm Sorry...">
+            Please select at least one prayer category.
+        </NotificationBox>
+
+        <NotificationBox v-if="showNoRequestsForSelection" alertType="warning">
+            There are no active prayer request for the current selection.
+        </NotificationBox>
+
+        <p>Select one or more categories to begin your prayer session:</p>
+
+        <div class="row">
+            <div class="col-md-6">
+                <CheckBoxList v-model="selectionModel" :items="itemsWithSelectAll" />
+            </div>
+            <div class="col-md-6">
+                <CampusPicker v-if="isCampusPickerVisible" v-model="campus" label="Campus" :includeInactive="false" showBlankItem />
+            </div>
+        </div>
+
+        <div class="actions">
+            <RockButton btnType="primary" class="pull-right js-prayer-start" :disabled="isBusy" @click="onStartClick">Start</RockButton>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, onMounted, PropType, ref } from "vue";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PrayerSessionStartRequestBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerSession/prayerSessionStartRequestBag";
+
+    const props = defineProps({
+        welcomeIntroductionText: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        categories: {
+            type: Array as PropType<ListItemBag[]>,
+            default: () => []
+        },
+
+        selectedCategoryValues: {
+            type: Array as PropType<string[]>,
+            default: () => []
+        },
+
+        selectedCampus: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
+        },
+
+        isCampusPickerVisible: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        showNoRequestsForSelection: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        isBusy: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "start", request: PrayerSessionStartRequestBag): void;
+    }>();
+
+    // #region Values
+
+    // Sentinel for the "Select All" row so it never collides with a category Guid.
+    const selectAllValue = "select-all";
+
+    const panelElement = ref<HTMLElement>();
+    const categoryValues = ref<string[]>([...props.selectedCategoryValues]);
+    const campus = ref<ListItemBag | null>(props.selectedCampus);
+    const showSelectCategoriesWarning = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    // The category list prefixed with a "Select All" row. Omitted entirely when
+    // there are no categories so a lone "Select All" is never shown.
+    const itemsWithSelectAll = computed<ListItemBag[]>(() => {
+        if (props.categories.length === 0) {
+            return [];
+        }
+
+        return [{ value: selectAllValue, text: "Select All" }, ...props.categories];
+    });
+
+    // True only when every category is selected. Set-based so stale saved values
+    // can't read as "all selected". Drives the "Select All" row.
+    const isEveryCategorySelected = computed<boolean>(() =>
+        props.categories.length > 0
+        && props.categories.every(c => categoryValues.value.includes(c.value ?? "")));
+
+    // Maps the checkbox list (which includes the "Select All" row) to categoryValues.
+    const selectionModel = computed<string[]>({
+        get() {
+            return isEveryCategorySelected.value
+                ? [selectAllValue, ...categoryValues.value]
+                : [...categoryValues.value];
+        },
+        set(values) {
+            // Snapshot the prior state before mutating categoryValues below.
+            const wasEverySelected = isEveryCategorySelected.value;
+            const isSelectAllChecked = values.includes(selectAllValue);
+
+            if (isSelectAllChecked && !wasEverySelected) {
+                // "Select All" turned on: select every category.
+                categoryValues.value = props.categories.map(c => c.value ?? "");
+            }
+            else if (!isSelectAllChecked && wasEverySelected) {
+                // "Select All" turned off: clear the selection.
+                categoryValues.value = [];
+            }
+            else {
+                // A single category was toggled.
+                categoryValues.value = values.filter(v => v !== selectAllValue);
+            }
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Validates the selection and emits the request to start a session.
+     */
+    function onStartClick(): void {
+        if (categoryValues.value.length === 0) {
+            showSelectCategoriesWarning.value = true;
+            return;
+        }
+
+        showSelectCategoriesWarning.value = false;
+
+        emit("start", {
+            categoryValues: categoryValues.value,
+            campusValue: campus.value?.value ?? null
+        });
+    }
+
+    // #endregion Event Handlers
+
+    // #region Lifecycle Hooks
+
+    // Focus the Start button on render so a new session can be started from the
+    // keyboard, matching the legacy WebForms behavior.
+    onMounted(() => {
+        panelElement.value?.querySelector<HTMLButtonElement>("button.js-prayer-start")?.focus();
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

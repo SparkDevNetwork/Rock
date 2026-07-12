@@ -7,18 +7,30 @@
     <RockBuildTasksAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)\libs\build-tasks\net6.0\Rock.Build.Tasks.dll</RockBuildTasksAssemblyFile>
   </PropertyGroup>
 
-  <!-- Versioning information -->
+  <!-- Versioning and packaging information -->
   <PropertyGroup>
-    <Version>20.0.2</Version>
+    <Version>20.0.5</Version>
     <InformationalVersion>Rock McKinley 20.0</InformationalVersion>
 
     <FileVersion>$(Version)</FileVersion>
     <Description>Rock RMS Core Assembly. Rock RMS is a community supported open-source Church Management System that provides innovative features to churches of all sizes.</Description>
+    <Authors>Spark Development Network</Authors>
     <Company>Spark Development Network</Company>
     <Product>Rock</Product>
     <Copyright>Copyright © Spark Development Network 2011-2026</Copyright>
+    <PackageId Condition="'$(MSBuildProjectName)' == 'Rock' or $(MSBuildProjectName.StartsWith('Rock'))">RockRMS.$(MSBuildProjectName)</PackageId>
+    <PackageIcon>Icon.png</PackageIcon>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/SparkDevNetwork/Rock</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Explicitly include and pack the package icon and license files. -->
+    <None Include="..\Dev Tools\Packaging\Icon.png" Pack="true" PackagePath="\" Visible="False" />
+    <None Include="..\Dev Tools\Packaging\LICENSE.md" Pack="true" PackagePath="\" Visible="False" />
+  </ItemGroup>
+    
   <PropertyGroup>
     <DefineConstants Condition="'$(TargetFramework)' == '' or '$(TargetFramework)' == 'net472'">$(DefineConstants);WEBFORMS</DefineConstants>
     <DefineConstants Condition="'$(TargetFramework)' == '' or '$(TargetFramework)' == 'net472'">$(DefineConstants);REVIEW_WEBFORMS</DefineConstants>

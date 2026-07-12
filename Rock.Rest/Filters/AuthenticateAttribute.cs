@@ -169,8 +169,19 @@ namespace Rock.Rest.Filters
             // If still not successful, check for a JSON Web Token
             if ( TryRetrieveHeader( actionContext, HeaderTokens.JWT, out var jwtString ) )
             {
+                UserLogin userLogin;
+                try
+                {
+                    userLogin = JwtHelper.GetUserLoginByJSONWebToken( new RockContext(), jwtString );
+                }
+                catch ( Microsoft.IdentityModel.Tokens.SecurityTokenMalformedException )
+                {
+                    // Silently ignore this exception. It means the JWT was
+                    // malformed and we will just treat it as an anonymous request.
+                    userLogin = null;
+                }
+
                 // If the JSON Web Token is in the header, we can determine the User from that
-                var userLogin = JwtHelper.GetUserLoginByJSONWebToken( new RockContext(), jwtString );
                 if ( userLogin != null )
                 {
                     var identity = new GenericIdentity( userLogin.UserName );

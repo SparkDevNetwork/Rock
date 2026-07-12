@@ -1,0 +1,606 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
+
+    <NotificationBox v-if="errorMessage" ref="errorMessageElement" alertType="danger" v-html="errorMessage"></NotificationBox>
+
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :titleIconCssClass="panelTitleIconCssClass"
+                 :labels="blockLabels"
+                 :headerLabels="headerLabels"
+                 :entityKey="entityKey"
+                 :entityTypeName="'Group'"
+                 :isAuditHidden="isAuditHidden"
+                 :isBadgesVisible="panelMode !== DetailPanelMode.Add"
+                 :isDeleteVisible="isDeleteVisible"
+                 :isEditVisible="canEdit"
+                 :isFollowVisible="isFollowVisible"
+                 :isSecurityHidden="panelMode === DetailPanelMode.Add || !groupViewBag?.canAdministrate"
+                 :isTagsVisible="isTagListShown"
+                 :showExperienceMode="true"
+                 :footerActions="footerActions"
+                 :footerSecondaryActions="footerSecondaryActions"
+                 @cancelEdit="onCancelEdit"
+                 @delete="onDelete"
+                 @edit="onEdit"
+                 @save="onSave">
+        <template #view>
+            <ViewPanel :modelValue="groupViewBag"
+                       :options="options"
+                       :navigationUrls="config.navigationUrls" />
+        </template>
+
+        <template #edit>
+            <EditPanel v-model="groupEditBag"
+                       :groupTypeOptions="groupTypeOptions"
+                       :allowedGroupTypes="allowedGroupTypes"
+                       :allowedGroupTypesWarning="allowedGroupTypesWarning"
+                       :signatureDocumentTemplates="signatureDocumentTemplates"
+                       :rsvpSystemCommunicationOptions="rsvpSystemCommunicationOptions"
+                       :preventSelectingInactiveCampus="preventSelectingInactiveCampus"
+                       :mapStyleValueGuid="mapStyleValueGuid"
+                       :isLimitedToSecurityRoleGroups="isLimitedToSecurityRoleGroups"
+                       :isCurrentPersonGroupAdministrator="isCurrentPersonGroupAdministrator"
+                       @propertyChanged="baseBlock.onPropertyChanged" />
+        </template>
+    </DetailBlock>
+
+    <CopyModal v-model="isCopyModalVisible"
+               :saveCallback="onCopySave" />
+
+    <Modal v-model="isArchiveChildPromptVisible"
+           title="Archive Child Groups?"
+           saveText="Yes"
+           @save="onArchiveCascade"
+           @closeModal="onArchiveCancel">
+        <p>Would you like to archive this group's children?</p>
+        <template #customButtons>
+            <RockButton btnType="link" @click="onArchiveSingle">No</RockButton>
+        </template>
+    </Modal>
+</template>
+
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useReloadBlock } from "@Obsidian/Utility/block";
+    import { ElevatedSecurityLevel, ElevatedSecurityLevelDescription } from "@Obsidian/Enums/Security/elevatedSecurityLevel";
+    import { RelationshipStrength, RelationshipStrengthDescription } from "@Obsidian/Enums/Group/relationshipStrength";
+    import { GroupDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupDetailOptionsBag";
+    import { CopyGroupRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/copyGroupRequestBag";
+    import { GroupTypeOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupTypeOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { GroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupBag";
+    import { ArchivePromptResult } from "./GroupDetail/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { scrollNotificationIntoView, useInvokeGroupDetailBlockAction } from "./GroupDetail/utils.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { confirm, confirmDelete } from "@Obsidian/Utility/dialogs";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { addQuickReturn } from "@Obsidian/Utility/page";
+    import { computed, ref, watch } from "vue";
+    import { Guid } from "@Obsidian/Types";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import ViewPanel from "./GroupDetail/viewPanel.partial.obs";
+    import EditPanel from "./GroupDetail/editPanel.partial.obs";
+    import CopyModal from "./GroupDetail/copyModal.partial.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    const config = useConfigurationValues<DetailBlockBox<GroupBag, GroupDetailOptionsBag>>();
+    const blockAction = useInvokeGroupDetailBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+    const errorMessageElement = ref<InstanceType<typeof NotificationBox> | null>(null);
+
+    const groupViewBag = ref(config.entity);
+    const groupEditBag = ref<ValidPropertiesBox<GroupBag>>({
+        bag: {} as GroupBag
+    });
+
+    const groupTypeOptions = ref<GroupTypeOptionsBag>({} as GroupTypeOptionsBag);
+
+    let loadedOptionsGroupTypeId: number | null = null;
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: groupEditBag
+    });
+
+    const isCopyModalVisible = ref(false);
+    const isArchiveChildPromptVisible = ref(false);
+    const isArchiving = ref(false);
+    const archiveResolution = ref<((value: ArchivePromptResult) => void) | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const allowedGroupTypes = computed((): ListItemBag[] => config.options?.allowedGroupTypes ?? []);
+    const allowedGroupTypesWarning = computed((): string => config.options?.allowedGroupTypesWarning ?? "");
+    const signatureDocumentTemplates = computed((): ListItemBag[] => config.options?.signatureDocumentTemplates ?? []);
+    const rsvpSystemCommunicationOptions = computed((): ListItemBag[] => config.options?.rsvpSystemCommunicationOptions ?? []);
+    const preventSelectingInactiveCampus = computed((): boolean => config.options?.preventSelectingInactiveCampus ?? false);
+    const mapStyleValueGuid = computed((): Guid | null => config.options?.mapStyleValueGuid ?? null);
+    const isLimitedToSecurityRoleGroups = computed((): boolean => config.options?.isLimitedToSecurityRoleGroups ?? false);
+    const isCurrentPersonGroupAdministrator = computed((): boolean => config.options?.isCurrentPersonGroupAdministrator ?? false);
+
+    const panelName = computed((): string => {
+        return groupViewBag.value?.name ?? "";
+    });
+
+    const panelTitleIconCssClass = computed((): string => {
+        return panelMode.value === DetailPanelMode.Add ? "" : groupViewBag.value?.iconCssClass ?? "";
+    });
+
+    const entityKey = computed((): string => groupViewBag.value?.idKey ?? "");
+
+    const options = computed((): GroupDetailOptionsBag => config.options ?? {} as GroupDetailOptionsBag);
+
+    const canEdit = computed((): boolean => groupViewBag.value?.canEdit === true);
+
+    const isDeleteVisible = computed((): boolean => panelMode.value !== DetailPanelMode.Add && options.value.isDeleteVisible === true);
+
+    const isTagListShown = computed((): boolean => panelMode.value !== DetailPanelMode.Add && options.value.isTagListShown === true);
+
+    const isAuditHidden = computed((): boolean => panelMode.value === DetailPanelMode.Add);
+
+    const isFollowVisible = computed((): boolean => panelMode.value !== DetailPanelMode.Add);
+
+    /**
+     * Labels rendered in the panel sub-header: lifecycle / context chips for
+     * Archived, Inactive, Security Level, Relationship Strength, Chat-Enabled,
+     * and Public. GroupType and Campus render as headerLabels next to the
+     * panel title instead. Hidden in Add mode.
+     */
+    const blockLabels = computed((): PanelAction[] => {
+        const bag = groupViewBag.value;
+        if (!bag || panelMode.value === DetailPanelMode.Add) {
+            return [];
+        }
+
+        const labels: PanelAction[] = [];
+
+        if (bag.isArchived) {
+            labels.push({
+                title: "Archived",
+                type: "danger",
+                iconCssClass: "ti ti-archive"
+            });
+        }
+
+        if (!bag.isActive) {
+            labels.push({
+                title: "Inactive",
+                type: "danger",
+                iconCssClass: "ti ti-bulb"
+            });
+        }
+
+        if (bag.isSecurityRole && bag.elevatedSecurityLevel > ElevatedSecurityLevel.None) {
+            labels.push({
+                title: `Security Level: ${ElevatedSecurityLevelDescription[bag.elevatedSecurityLevel]}`,
+                type: bag.elevatedSecurityLevel === ElevatedSecurityLevel.Extreme ? "danger" : "warning",
+                iconCssClass: "ti ti-shield-lock"
+            });
+        }
+
+        if (bag.relationshipStrength != null && bag.relationshipStrength !== RelationshipStrength.None) {
+            const strengthLabel = RelationshipStrengthDescription[bag.relationshipStrength];
+            if (strengthLabel) {
+                const overrideMark = bag.isOverridingPeerNetwork ? " *" : "";
+                labels.push({
+                    title: `${strengthLabel} Relationships${overrideMark}`,
+                    type: "info",
+                    iconCssClass: "ti ti-affiliate",
+                    tooltip: bag.isOverridingPeerNetwork
+                        ? "Overrides the group type's peer network configuration."
+                        : undefined
+                });
+            }
+        }
+
+        if (bag.isChatEnabled) {
+            labels.push({
+                title: "Chat-Enabled",
+                type: "info",
+                iconCssClass: "ti ti-messages"
+            });
+        }
+
+        labels.push(bag.isPublic
+            ? { title: "Public", type: "default", iconCssClass: "ti ti-world" }
+            : { title: "Private", type: "default", iconCssClass: "ti ti-lock" });
+
+        return labels;
+    });
+
+    /**
+     * Labels rendered next to the panel title. GroupType renders as a
+     * soft-tinted chip using GroupType.GroupTypeColor; Campus uses Rock's
+     * .label-campus outlined style. Hidden in Add mode.
+     */
+    const headerLabels = computed((): PanelAction[] => {
+        const bag = groupViewBag.value;
+        if (!bag || panelMode.value === DetailPanelMode.Add) {
+            return [];
+        }
+
+        const labels: PanelAction[] = [];
+
+        if (bag.groupType?.name) {
+            const groupTypeUrl = bag.groupType.url;
+            const groupTypeColor = bag.groupType.color;
+            labels.push({
+                title: bag.groupType.name,
+                iconCssClass: bag.groupType.iconCssClass ?? undefined,
+                type: "default",
+                style: groupTypeColor
+                    ? `background-color: color-mix(in srgb, ${groupTypeColor} 15%, white); border-color: transparent; color: ${groupTypeColor};`
+                    : undefined,
+                handler: groupTypeUrl
+                    ? () => {
+                        window.location.href = groupTypeUrl;
+                    }
+                    : undefined
+            });
+        }
+
+        if (bag.campusName) {
+            labels.push({ title: bag.campusName, type: "campus" });
+        }
+
+        return labels;
+    });
+
+    /**
+     * Footer secondary actions (right side of the panel footer). Surfaces the
+     * Copy button when ShowCopyButton is enabled and the user has EDIT auth.
+     * Security and Edit are framework-managed.
+     */
+    const footerSecondaryActions = computed((): PanelAction[] => {
+        const actions: PanelAction[] = [];
+
+        if (panelMode.value === DetailPanelMode.View && options.value.isCopyButtonShown) {
+            actions.push({
+                iconCssClass: "ti ti-copy",
+                title: "Copy Group",
+                type: "default",
+                handler: openCopyModal
+            });
+        }
+
+        return actions;
+    });
+
+    /**
+     * Footer primary actions (left side of the panel footer). Surfaces
+     * Archive in view mode when GroupHistory is enabled and the group has at
+     * least one history row; in that case the framework's Delete button is
+     * suppressed via IsDeleteHidden.
+     */
+    const footerActions = computed((): PanelAction[] => {
+        const actions: PanelAction[] = [];
+
+        if (panelMode.value === DetailPanelMode.View && options.value.isArchiveVisible) {
+            actions.push({
+                title: "Archive",
+                type: "link",
+                disabled: isArchiving.value,
+                handler: onArchiveClick
+            });
+        }
+
+        return actions;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Shows the Copy Group modal so the user can pick a copy target.
+     */
+    function openCopyModal(): void {
+        isCopyModalVisible.value = true;
+    }
+
+    /**
+     * Opens the archive-children prompt and awaits the user's choice.
+     */
+    function showArchiveChildPrompt(): Promise<ArchivePromptResult> {
+        return new Promise(resolve => {
+            archiveResolution.value = resolve;
+            isArchiveChildPromptVisible.value = true;
+        });
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Cancel from edit mode. An existing group returns to view mode; Add mode
+     * navigates to the server-computed `addModeCancelUrl`.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        // Canceling an edit of an existing group returns to read-only view.
+        if (groupEditBag.value.bag?.idKey) {
+            return true;
+        }
+
+        // Canceling an Add uses the server-computed destination, which mirrors
+        // the legacy tree-view cancel: a safe returnUrl, otherwise the parent
+        // group (preserving the expanded tree state), otherwise the Group List
+        // page or a cleared page. The server owns this because building the
+        // route-aware URL and validating the returnUrl both require page
+        // context the Vue layer doesn't have. An empty value means there is no
+        // configured destination, so stay put.
+        return options.value.addModeCancelUrl || false;
+    }
+
+    /**
+     * Enters edit mode by fetching the edit bag for the current group.
+     */
+    async function onEdit(): Promise<boolean> {
+        const result = await blockAction.edit(groupViewBag.value?.idKey ?? "");
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            groupTypeOptions.value = result.data.groupTypeOptions ?? {} as GroupTypeOptionsBag;
+            loadedOptionsGroupTypeId = result.data.bag.groupTypeId ?? null;
+            groupEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+
+            return true;
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unable to enter edit mode.";
+        scrollNotificationIntoView(errorMessageElement);
+        return false;
+    }
+
+    /**
+     * Persists the edit bag. On Update (200) the refreshed bag is copied
+     * back into groupViewBag so the View panel reflects the new values; on
+     * Create (201) the server returns a redirect URL.
+     */
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        // Security Role transition guard: prompt before persisting if
+        // isSecurityRole changed in either direction. The server clears the
+        // auth cache on transition so this is never a silent change.
+        const wasSecurityRole = groupViewBag.value?.isSecurityRole === true;
+        const isNowSecurityRole = groupEditBag.value?.bag?.isSecurityRole === true;
+
+        if (wasSecurityRole !== isNowSecurityRole) {
+            const message = isNowSecurityRole
+                ? "This group will be a Security Role, which allows it to grant permissions throughout Rock. Continue?"
+                : "Removing this group's Security Role designation will revoke any permissions granted by it. Continue?";
+
+            const confirmed = await confirm(message);
+            if (!confirmed) {
+                return false;
+            }
+        }
+
+        const result = await blockAction.save(groupEditBag.value);
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "object") {
+                groupViewBag.value = result.data.bag;
+                return true;
+            }
+            else if (typeof result.data === "string") {
+                return result.data;
+            }
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save group.";
+        scrollNotificationIntoView(errorMessageElement);
+        return false;
+    }
+
+    /**
+     * Confirms with the user, then deletes the group and follows the
+     * redirect URL the server returns.
+     */
+    async function onDelete(): Promise<false | string> {
+        errorMessage.value = "";
+
+        const confirmed = await confirmDelete("Group");
+        if (!confirmed) {
+            return false;
+        }
+
+        const result = await blockAction.delete(groupViewBag.value?.idKey ?? "");
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unable to delete the group.";
+        scrollNotificationIntoView(errorMessageElement);
+        return false;
+    }
+
+    /**
+     * Confirms with the user, then archives the group. When the group has
+     * child groups, opens the cascade prompt and routes to either Archive
+     * or ArchiveWithChildren based on the user's choice.
+     */
+    async function onArchiveClick(): Promise<void> {
+        if (isArchiving.value) {
+            return;
+        }
+
+        isArchiving.value = true;
+        errorMessage.value = "";
+
+        try {
+            const confirmed = await confirm("Are you sure you want to archive this group?");
+            if (!confirmed) {
+                return;
+            }
+
+            const cascadeAction = groupViewBag.value?.hasChildGroups
+                ? await showArchiveChildPrompt()
+                : "archive";
+
+            if (!cascadeAction) {
+                return;
+            }
+
+            const key = groupViewBag.value?.idKey ?? "";
+            const result = cascadeAction === "archiveWithChildren"
+                ? await blockAction.archiveWithChildren(key)
+                : await blockAction.archive(key);
+
+            if (result.isSuccess && result.data) {
+                window.location.href = result.data;
+                return;
+            }
+
+            errorMessage.value = result.errorMessage ?? "Unable to archive the group.";
+            scrollNotificationIntoView(errorMessageElement);
+        }
+        finally {
+            isArchiving.value = false;
+        }
+    }
+
+    /**
+     * "Yes" from the archive-children prompt: cascade to descendants.
+     */
+    function onArchiveCascade(): void {
+        isArchiveChildPromptVisible.value = false;
+
+        if (archiveResolution.value) {
+            archiveResolution.value("archiveWithChildren");
+            archiveResolution.value = null;
+        }
+    }
+
+    /**
+     * "No" from the archive-children prompt: archive the parent only.
+     */
+    function onArchiveSingle(): void {
+        isArchiveChildPromptVisible.value = false;
+
+        if (archiveResolution.value) {
+            archiveResolution.value("archive");
+            archiveResolution.value = null;
+        }
+    }
+
+    /**
+     * Archive prompt dismissed via Escape, X, or backdrop click. Resolves
+     * the prompt as a full cancel so neither Archive nor ArchiveWithChildren
+     * fires: dismissing the prompt should not silently archive the parent.
+     */
+    function onArchiveCancel(): void {
+        isArchiveChildPromptVisible.value = false;
+
+        if (archiveResolution.value) {
+            archiveResolution.value(false);
+            archiveResolution.value = null;
+        }
+    }
+
+    /**
+     * Save from the Copy modal. Calls Copy and follows the redirect URL the
+     * server returns to the new group.
+     */
+    async function onCopySave(bag: CopyGroupRequestBag): Promise<void> {
+        errorMessage.value = "";
+
+        const result = await blockAction.copy({
+            ...bag,
+            key: groupViewBag.value?.idKey ?? ""
+        } satisfies CopyGroupRequestBag);
+
+        if (result.isSuccess && result.data) {
+            window.location.href = result.data;
+            return;
+        }
+
+        isCopyModalVisible.value = false;
+        errorMessage.value = result.errorMessage ?? "Unable to copy the group.";
+        scrollNotificationIntoView(errorMessageElement);
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    /**
+     * Reactively fetches GroupTypeOptionsBag whenever the edit bag's
+     * groupTypeId changes. Covers initial Edit (onEdit assigns the bag),
+     * Add-mode group-type pick, and mid-edit group-type swap.
+     *
+     * Two adjacent picks fire two concurrent block actions; the version
+     * counter discards the older response when its result lands after a
+     * newer pick's, so groupTypeOptions always reflects the latest
+     * groupTypeId rather than whichever request returned last.
+     */
+    let groupTypeRequestVersion = 0;
+    watch(() => groupEditBag.value.bag?.groupTypeId, async (newId) => {
+        const version = ++groupTypeRequestVersion;
+
+        if (newId === loadedOptionsGroupTypeId) {
+            return;
+        }
+
+        if (!newId || newId <= 0) {
+            groupTypeOptions.value = {} as GroupTypeOptionsBag;
+            loadedOptionsGroupTypeId = newId ?? null;
+            return;
+        }
+
+        const result = await blockAction.getGroupTypeOptions(newId);
+
+        if (version !== groupTypeRequestVersion) {
+            return;
+        }
+
+        if (result.isSuccess && result.data) {
+            groupTypeOptions.value = result.data;
+            loadedOptionsGroupTypeId = newId;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unable to fetch options for this Group Type.";
+            scrollNotificationIntoView(errorMessageElement);
+        }
+    });
+
+    // #endregion
+
+    // Initial error / Add-mode setup.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified group could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        groupEditBag.value = { bag: config.entity };
+        panelMode.value = DetailPanelMode.Add;
+    }
+
+    // Register the group in the user's "Groups" Quick Return menu.
+    if (panelMode.value === DetailPanelMode.View && groupViewBag.value?.name && groupViewBag.value?.idKey) {
+        addQuickReturn(groupViewBag.value.name, "Groups", 20);
+    }
+</script>

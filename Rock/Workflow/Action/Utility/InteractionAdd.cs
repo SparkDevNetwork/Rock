@@ -35,32 +35,75 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Write to Interactions" )]
 
-    [WorkflowTextOrAttribute( "InteractionChannel Name, Id, or Guid", "Interaction Channel",
-        "The interaction channel to use for writing to interactions. If a Name is entered here, the channel will be automatically created if it doesn't exist. <span class='tip tip-lava'></span>",
-        true, "", "", 0, AttributeKey.InteractionChannel, new string[] { "Rock.Field.Types.InteractionChannelFieldType" } )]
-    [WorkflowTextOrAttribute( "Component Name, Id, or Guid", "Component Name",
-        "The interaction component Identifier. A value must be included here, or the Component Entity Id must be specified. If a Name is entered here, the component will be automatically created if it doesn't exist. <span class='tip tip-lava'></span>",
-        true, "", "", 1, AttributeKey.ComponentName, new string[] { "Rock.Field.Types.TextFieldType" } )]
-    [WorkflowTextOrAttribute( "Component Entity Id", "Component Entity Id",
-        "The interaction component entityId. This is optional. If Component EntityId is known, it will be used to determine the component. Otherwise, it can be looked up using Component Name. <span class='tip tip-lava'></span>",
-        false, "", "", 2, AttributeKey.ComponentEntityId, new string[] { "Rock.Field.Types.IntegerFieldType" } )]
-    [WorkflowTextOrAttribute( "Person Alias Id or Guid", "Person Attribute", "The person for the interaction. Use a Person Alias Id for best performance. <span class='tip tip-lava'></span>",
-        false, "", "", 3, AttributeKey.PersonAttribute, new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [TextField( "Operation", "The name of the operation.", true, "", "", 4, AttributeKey.Operation )]
-    [WorkflowTextOrAttribute( "Interaction Summary", "Interaction Summary",
-        "The interaction summary. <span class='tip tip-lava'></span>",
-        true, "", "", 5, AttributeKey.InteractionSummary, new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" }, rows: 3 )]
-    [WorkflowTextOrAttribute( "Interaction Data", "Interaction Data",
-        "The interaction data. <span class='tip tip-lava'></span>",
-        true, "", "", 6, AttributeKey.InteractionData, new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" }, rows: 3 )]
-    [WorkflowTextOrAttribute( "Interaction Entity Id", "Interaction Entity Id",
-        "The interaction entityId. Optional. The EntityId that the Interaction record should be populated with.<span class='tip tip-lava'></span>",
-        false, "", "", 7, AttributeKey.InteractionEntityId, new string[] { "Rock.Field.Types.IntegerFieldType" } )]
-    [WorkflowTextOrAttribute( "Interaction DateTime", "Interaction DateTime",
-        "An optional date time to use when adding the interaction. <span class='tip tip-lava'></span>",
-        false, "", "", 8, AttributeKey.InteractionDateTime, new string[] { "Rock.Field.Types.DateTimeFieldType", "Rock.Field.Types.DateFieldType" } )]
-    [WorkflowAttribute( "Result Interaction Id", "When set, the created Interaction record's Id will be put into this optional text field attribute.",
-        false, "", "", 9, AttributeKey.ResultInteractionId, new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.IntegerFieldType" } )]
+    [WorkflowTextOrAttribute( "InteractionChannel Name, Id, or Guid",
+        "Interaction Channel",
+        Description = "The interaction channel to use for writing to interactions. If a Name is entered here, the channel will be automatically created if it doesn't exist. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 0,
+        Key = AttributeKey.InteractionChannel,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.InteractionChannelFieldType" } )]
+    [WorkflowTextOrAttribute( "Component Name, Id, or Guid",
+        "Component Name",
+        Description = "The interaction component Identifier. A value must be included here, or the Component Entity Id must be specified. If a Name is entered here, the component will be automatically created if it doesn't exist. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 1,
+        Key = AttributeKey.ComponentName,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [WorkflowTextOrAttribute( "Component Entity Id",
+        "Component Entity Id",
+        Description = "The interaction component entityId. This is optional. If Component EntityId is known, it will be used to determine the component. Otherwise, it can be looked up using Component Name. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKey.ComponentEntityId,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.IntegerFieldType" } )]
+    [WorkflowTextOrAttribute( "Person Alias Id or Guid",
+        "Person Attribute",
+        Description = "The person for the interaction. Use a Person Alias Id for best performance. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 3,
+        Key = AttributeKey.PersonAttribute,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [TextField( "Operation",
+        Description = "The name of the operation.",
+        IsRequired = true,
+        Order = 4,
+        Key = AttributeKey.Operation )]
+    [WorkflowTextOrAttribute( "Interaction Summary",
+        "Interaction Summary",
+        Description = "The interaction summary. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 5,
+        Key = AttributeKey.InteractionSummary,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" },
+        Rows = 3 )]
+    [WorkflowTextOrAttribute( "Interaction Data",
+        "Interaction Data",
+        Description = "The interaction data. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 6,
+        Key = AttributeKey.InteractionData,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" },
+        Rows = 3 )]
+    [WorkflowTextOrAttribute( "Interaction Entity Id",
+        "Interaction Entity Id",
+        Description = "The interaction entityId. Optional. The EntityId that the Interaction record should be populated with.<span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 7,
+        Key = AttributeKey.InteractionEntityId,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.IntegerFieldType" } )]
+    [WorkflowTextOrAttribute( "Interaction DateTime",
+        "Interaction DateTime",
+        Description = "An optional date time to use when adding the interaction. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 8,
+        Key = AttributeKey.InteractionDateTime,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.DateTimeFieldType", "Rock.Field.Types.DateFieldType" } )]
+    [WorkflowAttribute( "Result Interaction Id",
+        Description = "When set, the created Interaction record's Id will be put into this optional text field attribute.",
+        IsRequired = false,
+        Order = 9,
+        Key = AttributeKey.ResultInteractionId,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.IntegerFieldType" } )]
     [Rock.SystemGuid.EntityTypeGuid( "12587805-D8F0-4423-9C4C-3F87D2D4D423")]
     public class InteractionAdd : ActionComponent
     {

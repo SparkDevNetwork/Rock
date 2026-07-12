@@ -34,8 +34,13 @@ namespace Rock.Badge.Component
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "In Group Of Type" )]
 
-    [GroupTypeField( "Group Type", "The type of group to use.", true )]
-    [ColorField( "Badge Color", "The color of the badge (#ffffff).", true, defaultValue: "#0ab4dd" )]
+    [GroupTypeField( "Group Type",
+        Description = "The type of group to use.",
+        IsRequired = true )]
+    [ColorField( "Badge Color",
+        Description = "The color of the badge (#ffffff).",
+        IsRequired = true,
+        DefaultValue = "#0ab4dd" )]
     [Rock.SystemGuid.EntityTypeGuid( "E7CE9210-FE85-4772-9225-E6C721B816BD")]
     public class InGroupOfType : BadgeComponent
     {

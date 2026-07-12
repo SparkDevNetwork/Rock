@@ -29,7 +29,12 @@ namespace Rock.Communication.SmsActions
     /// 
     /// </summary>
     /// <seealso cref="Rock.Extension.Component" />
-    [TextValueFilterField( "Phone Numbers", "The phone numbers that this action will run on.", false, order: 0, category: BaseAttributeCategories.Filters, hideFilterMode: true )]
+    [TextValueFilterField( "Phone Numbers",
+        Description = "The phone numbers that this action will run on.",
+        IsRequired = false,
+        Order = 0,
+        Category = BaseAttributeCategories.Filters,
+        HideFilterMode = true )]
     public abstract class SmsActionComponent : Component
     {
         /// <summary>

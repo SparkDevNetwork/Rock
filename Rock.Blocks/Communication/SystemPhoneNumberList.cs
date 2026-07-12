@@ -73,7 +73,7 @@ namespace Rock.Blocks.Communication
             var builder = GetGridBuilder();
 
             box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = true;
+            box.IsDeleteEnabled = GetIsDeleteEnabled();
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -99,9 +99,36 @@ namespace Rock.Blocks.Communication
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
         private bool GetIsAddEnabled()
         {
-            var entity = new SystemPhoneNumber();
+            // Adding requires block-level Edit rights and a configured detail page to navigate to.
+            return IsBlockEditAuthorized() && IsDetailPageSet();
+        }
 
-            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+        /// <summary>
+        /// Determines if the delete button should be enabled in the grid.
+        /// </summary>
+        /// <returns>A boolean value that indicates if the delete button should be enabled.</returns>
+        private bool GetIsDeleteEnabled()
+        {
+            // Deleting requires block-level Edit rights.
+            return IsBlockEditAuthorized();
+        }
+
+        /// <summary>
+        /// Determines whether the current person has block-level Edit rights.
+        /// </summary>
+        /// <returns><c>true</c> if the current person is authorized to edit at the block level; otherwise, <c>false</c>.</returns>
+        private bool IsBlockEditAuthorized()
+        {
+            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+        }
+
+        /// <summary>
+        /// Determines whether the detail page attribute has a value.
+        /// </summary>
+        /// <returns><c>true</c> if the detail page is set; otherwise, <c>false</c>.</returns>
+        private bool IsDetailPageSet()
+        {
+            return !GetAttributeValue( AttributeKey.SystemPhoneNumberDetailPage ).IsNullOrWhiteSpace();
         }
 
         /// <summary>
@@ -165,7 +192,8 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( $"{SystemPhoneNumber.FriendlyTypeName} not found." );
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            // Match the WebForms behavior: deleting is gated on block-level Edit rights, not entity-level security.
+            if ( !IsBlockEditAuthorized() )
             {
                 return ActionBadRequest( $"Not authorized to delete {SystemPhoneNumber.FriendlyTypeName}." );
             }

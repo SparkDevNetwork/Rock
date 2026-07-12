@@ -27,6 +27,7 @@ using Rock.Enums.Workflow;
 using Rock.Field;
 using Rock.Model;
 using Rock.Net;
+using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Reporting;
@@ -343,7 +344,7 @@ namespace Rock.Workflow.Action
                 : form.Footer.ToStringSafe();
 
             var fields = GetFormFields( form, action, mergeFields, rockContext );
-            var fieldValues = GetFormFieldValues( form, action, rockContext );
+            var fieldValues = GetFormFieldValues( form, action, rockContext, requestContext );
             var personEntryValues = GetPersonEntryValues( action, requestContext.CurrentPerson, rockContext );
             var personEntryConfiguration = GetPersonEntryConfiguration( action, requestContext.CurrentPerson, personEntryValues?.MaritalStatusGuid, mergeFields, rockContext );
 
@@ -751,8 +752,9 @@ namespace Rock.Workflow.Action
         /// <param name="form">The data that describes the form to be displayed.</param>
         /// <param name="action">The action currently being processed.</param>
         /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <param name="requestContext">The context that describes the current request.</param>
         /// <returns>A dictionary of field values with the keys being the attribute unique identifiers.</returns>
-        private static Dictionary<Guid, string> GetFormFieldValues( WorkflowActionFormCache form, WorkflowAction action, RockContext rockContext )
+        private static Dictionary<Guid, string> GetFormFieldValues( WorkflowActionFormCache form, WorkflowAction action, RockContext rockContext, RockRequestContext requestContext )
         {
             var fieldValues = new Dictionary<Guid, string>();
             var activity = action.Activity;
@@ -792,6 +794,17 @@ namespace Rock.Workflow.Action
                 if ( formAttribute.IsReadOnly )
                 {
                     var htmlValue = field.GetCondensedHtmlValue( value, attribute.ConfigurationValues );
+
+                    // If the field is a linkable field then we need to wrap the
+                    // HTML value in the link to the URL. This is only done if
+                    // the label is not hidden to maintain compatability with the
+                    // original block.
+                    if ( !formAttribute.HideLabel && field is ILinkableFieldType linkableField )
+                    {
+                        string url = linkableField.UrlLink( value, attribute.QualifierValues );
+                        url = requestContext.ResolveRockUrl( "~" ).EnsureTrailingForwardslash() + url;
+                        htmlValue = $"<a href='{url}' target='_blank' rel='noopener noreferrer'>{htmlValue}</a>";
+                    }
 
                     fieldValues.Add( attribute.Guid, htmlValue );
                 }
@@ -840,6 +853,36 @@ namespace Rock.Workflow.Action
                     }
 
                     item?.SetPublicAttributeValue( attribute.Key, formFieldValue, null, false );
+
+                    var value = item?.GetAttributeValue( attribute.Key );
+
+                    if ( value.IsNotNullOrWhiteSpace() )
+                    {
+                        var field = attribute.FieldType.Field;
+                        var rules = field.GetValidationRules( attribute.ConfigurationValues );
+
+                        try
+                        {
+                            StringValueValidator.Validate( value, rules, typeof( AttributeValue ), nameof( AttributeValue.Value ) );
+                        }
+                        catch ( PropertyValidationException ex )
+                        {
+                            if ( DbContext.EnableStringValidation )
+                            {
+                                throw new AttributeValueValidationException( attribute, item.Id, ex.Reason, null );
+                            }
+                            else
+                            {
+                                // Captures the full current call stack, all callers
+                                // included so that we get more information about
+                                // where this happened in the log.
+                                var stack = new System.Diagnostics.StackTrace( true ).ToString();
+                                var ex2 = new AttributeValueValidationException( attribute, item.Id, ex.Reason, stack );
+
+                                ExceptionLogService.LogException( ex2, System.Web.HttpContext.Current );
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -1194,6 +1237,182 @@ namespace Rock.Workflow.Action
             {
                 SendFormBuilderNotificationEmail( action, notificationEmailSettings, rockContext, requestContext );
             }
+
+            // Connection Requests run after the emails so a misconfigured
+            // section doesn't block confirmation/notification delivery. The
+            // creation method swallows and logs its own exceptions so this
+            // call is fire-and-continue.
+            var connectionRequestSettings = workflowType.FormBuilderSettings?.ConnectionRequests;
+
+            if ( connectionRequestSettings?.Enabled == true )
+            {
+                CreateFormBuilderConnectionRequest( action, connectionRequestSettings, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Creates a Connection Request when the Form Builder form is
+        /// submitted. Resolves the requestor from the workflow's "Person"
+        /// attribute (the Form Builder Person Entry primary person), walks
+        /// the configured field mappings to populate attributes or append
+        /// to the Comment, and saves. Wrapped in a try/catch so a
+        /// misconfigured section (missing opportunity, deleted attribute,
+        /// etc.) never breaks the rest of the workflow.
+        /// </summary>
+        /// <param name="action">The current workflow action being processed.</param>
+        /// <param name="settings">The Connection Requests settings for this form.</param>
+        /// <param name="rockContext">The database context.</param>
+        private static void CreateFormBuilderConnectionRequest( WorkflowAction action, FormConnectionRequestsSettings settings, RockContext rockContext )
+        {
+            try
+            {
+                if ( settings == null || settings.Enabled == false || !settings.ConnectionOpportunityGuid.HasValue )
+                {
+                    return;
+                }
+
+                var workflow = action.Activity?.Workflow;
+                if ( workflow == null )
+                {
+                    return;
+                }
+
+                // The Person Entry primary person is exposed as the workflow's
+                // "Person" attribute by the Form Builder runtime. Without it
+                // we cannot attach a Connection Request to a requestor, so
+                // skip-and-continue (the editor disables the section when
+                // Person Entry is off, so reaching here is defensive).
+                var personAttributeValue = workflow.GetAttributeValue( "Person" );
+                var personAliasGuid = personAttributeValue.AsGuidOrNull();
+                if ( !personAliasGuid.HasValue )
+                {
+                    return;
+                }
+
+                var personAliasService = new PersonAliasService( rockContext );
+                var requestor = personAliasService.GetPerson( personAliasGuid.Value );
+                if ( requestor == null )
+                {
+                    return;
+                }
+
+                var opportunity = new ConnectionOpportunityService( rockContext ).Get( settings.ConnectionOpportunityGuid.Value );
+                if ( opportunity == null )
+                {
+                    return;
+                }
+
+                // Status: explicit selection wins; fall back to the type's
+                // default status. If neither resolves, skip.
+                ConnectionStatus status = null;
+                if ( settings.ConnectionStatusGuid.HasValue )
+                {
+                    status = new ConnectionStatusService( rockContext ).Get( settings.ConnectionStatusGuid.Value );
+                }
+
+                if ( status == null )
+                {
+                    status = opportunity.ConnectionType?.ConnectionStatuses?.FirstOrDefault( s => s.IsDefault );
+                }
+
+                if ( status == null )
+                {
+                    // No status to attach. Skip-and-continue so the rest of
+                    // the workflow finishes normally.
+                    return;
+                }
+
+                // Source: optional, type-scoped entity. Null means "no source".
+                ConnectionTypeSource source = null;
+                if ( settings.ConnectionSourceValueGuid.HasValue )
+                {
+                    source = new ConnectionTypeSourceService( rockContext ).Get( settings.ConnectionSourceValueGuid.Value );
+                }
+
+                var primaryAliasId = requestor.PrimaryAliasId;
+                var campusId = requestor.PrimaryCampusId;
+
+                var connectionRequest = new ConnectionRequest
+                {
+                    PersonAliasId = primaryAliasId ?? 0,
+                    ConnectionOpportunityId = opportunity.Id,
+                    ConnectionTypeId = opportunity.ConnectionTypeId,
+                    ConnectionStatusId = status.Id,
+                    ConnectionState = ConnectionState.Active,
+                    ConnectorPersonAliasId = opportunity.GetDefaultConnectorPersonAliasId( campusId ),
+                    CampusId = campusId,
+                    ConnectionTypeSourceId = source?.Id
+                };
+
+                // Walk the attribute mappings. Null targets append to Comments
+                // as "{Label}: {Value}"; non-null targets are set via
+                // SetAttributeValue so the value is persisted with the
+                // request.
+                var commentLines = new List<string>();
+                var attributeService = new AttributeService( rockContext );
+
+                if ( settings.AttributeMappings != null && settings.AttributeMappings.Count > 0 )
+                {
+                    // Pre-resolve workflow form-field attributes so we can read
+                    // their values without round-tripping through the action
+                    // for every mapping.
+                    foreach ( var mapping in settings.AttributeMappings )
+                    {
+                        var formAttribute = AttributeCache.Get( mapping.FormAttributeGuid );
+                        if ( formAttribute == null )
+                        {
+                            continue;
+                        }
+
+                        var rawValue = workflow.GetAttributeValue( formAttribute.Key );
+                        if ( rawValue.IsNullOrWhiteSpace() )
+                        {
+                            continue;
+                        }
+
+                        var formattedValue = formAttribute.FieldType?.Field?.FormatValue( null, rawValue, formAttribute.QualifierValues, false ) ?? rawValue;
+
+                        if ( !mapping.TargetAttributeGuid.HasValue )
+                        {
+                            commentLines.Add( $"{formAttribute.Name}: {formattedValue}" );
+                            continue;
+                        }
+
+                        var targetAttribute = AttributeCache.Get( mapping.TargetAttributeGuid.Value );
+                        if ( targetAttribute == null )
+                        {
+                            continue;
+                        }
+
+                        // ConnectionRequest attributes are not yet loaded
+                        // (the entity is brand new), so we use SetAttributeValue
+                        // after SaveChanges below.
+                        connectionRequest.LoadAttributes( rockContext );
+                        connectionRequest.SetAttributeValue( targetAttribute.Key, rawValue );
+                    }
+                }
+
+                if ( commentLines.Count > 0 )
+                {
+                    connectionRequest.Comments = string.Join( Environment.NewLine, commentLines );
+                }
+
+                new ConnectionRequestService( rockContext ).Add( connectionRequest );
+                rockContext.SaveChanges();
+
+                // Persist attribute values after SaveChanges so the request
+                // has an Id to attach them to.
+                if ( connectionRequest.Attributes != null )
+                {
+                    connectionRequest.SaveAttributeValues( rockContext );
+                }
+            }
+            catch ( Exception ex )
+            {
+                // A misconfigured Connection Requests section must never
+                // prevent the workflow from completing. Log and move on.
+                ExceptionLogService.LogException( ex );
+            }
         }
 
         /// <summary>
@@ -1239,6 +1458,27 @@ namespace Rock.Workflow.Action
                 recipientWorkflowAttribute = recipientAttributeGuid.HasValue
                     ? AttributeCache.Get( recipientAttributeGuid.Value )
                     : null;
+
+                /*
+                    5/15/26 - JMH
+
+                    "Both" Recipient mode on the Form Builder Detail block saves
+                    Recipient=Both with no RecipientAttributeGuid (the UI radio
+                    has no explicit attribute pick when the user opts into
+                    sending to both the primary person and their spouse). Fall
+                    back to the workflow's Person Entry "Person" attribute so
+                    the downstream Person/Spouse resolution has a primary
+                    person to work from.
+
+                    Reason: Without this fallback, picking "Both" in the UI
+                    would silently no-op because there is no attribute to
+                    resolve as the primary recipient.
+                */
+                if ( recipientWorkflowAttribute == null
+                    && confirmationEmailSettings.Recipient == FormConfirmationEmailRecipientType.Both )
+                {
+                    recipientWorkflowAttribute = workflow.Attributes.GetValueOrNull( "Person" );
+                }
             }
 
             if ( recipientWorkflowAttribute == null )
@@ -1256,16 +1496,52 @@ namespace Rock.Workflow.Action
 
                 if ( !personAliasGuid.IsEmpty() )
                 {
-                    var recipientPerson = new PersonAliasService( rockContext ).GetPerson( personAliasGuid );
-                    if ( recipientPerson != null && !string.IsNullOrWhiteSpace( recipientPerson.Email ) )
+                    var primaryPerson = new PersonAliasService( rockContext ).GetPerson( personAliasGuid );
+
+                    // The Recipient enum picks which family members ultimately
+                    // receive the e-mail. Person (default) preserves today's
+                    // behavior; Spouse and Both also resolve the spouse from
+                    // the primary person's family with a skip-and-warn fallback
+                    // when no spouse exists.
+                    var recipientType = confirmationEmailSettings.Recipient;
+                    var includePerson = recipientType == FormConfirmationEmailRecipientType.Person
+                        || recipientType == FormConfirmationEmailRecipientType.Both;
+                    var includeSpouse = recipientType == FormConfirmationEmailRecipientType.Spouse
+                        || recipientType == FormConfirmationEmailRecipientType.Both;
+
+                    if ( includePerson && primaryPerson != null && !string.IsNullOrWhiteSpace( primaryPerson.Email ) )
                     {
-                        recipients.Add( new RockEmailMessageRecipient( recipientPerson, mergeFields ) );
+                        recipients.Add( new RockEmailMessageRecipient( primaryPerson, mergeFields ) );
+                    }
+
+                    if ( includeSpouse && primaryPerson != null )
+                    {
+                        var spouse = primaryPerson.GetSpouse( rockContext );
+                        if ( spouse != null && !string.IsNullOrWhiteSpace( spouse.Email ) )
+                        {
+                            recipients.Add( new RockEmailMessageRecipient( spouse, mergeFields ) );
+                        }
+                        else if ( spouse == null )
+                        {
+                            // Make the skip-and-warn behavior visible in the
+                            // workflow log so admins can diagnose "Both" /
+                            // "Spouse" picks that silently fan out to a single
+                            // recipient.
+                            action.AddLogEntry( string.Format( "Confirmation e-mail spouse recipient skipped: '{0}' has no spouse on the family record.", primaryPerson.FullName ) );
+                        }
+                        else
+                        {
+                            action.AddLogEntry( string.Format( "Confirmation e-mail spouse recipient skipped: '{0}' has no e-mail address on file.", spouse.FullName ) );
+                        }
                     }
                 }
             }
             else
             {
                 // If this isn't a Person, assume it is an email address.
+                // The Spouse / Both recipient variants only make sense when a
+                // person is resolvable; for raw e-mail attributes we send to
+                // the configured address as today.
                 string recipientEmailAddress = recipientWorkflowAttributeValue;
                 recipients.Add( RockEmailMessageRecipient.CreateAnonymous( recipientEmailAddress, mergeFields ) );
             }

@@ -46,9 +46,13 @@ namespace Rock.Security.ExternalAuthentication
     [Export( typeof( AuthenticationComponent ) )]
     [ExportMetadata( "ComponentName", "Facebook" )]
 
-    [TextField( "App ID", "The Facebook App ID" )]
-    [TextField( "App Secret", "The Facebook App Secret" )]
-    [BooleanField( "Sync Friends", "Should the person's Facebook friends who are also in Rock be added as a known relationship?", true )]
+    [TextField( "App ID",
+        Description = "The Facebook App ID" )]
+    [TextField( "App Secret",
+        Description = "The Facebook App Secret" )]
+    [BooleanField( "Sync Friends",
+        Description = "Should the person's Facebook friends who are also in Rock be added as a known relationship?",
+        DefaultBooleanValue = true )]
     [Rock.SystemGuid.EntityTypeGuid( "2486AB81-EB35-4788-AECD-F16C5D7362F0")]
     public class Facebook : AuthenticationComponent, IExternalRedirectAuthentication
     {

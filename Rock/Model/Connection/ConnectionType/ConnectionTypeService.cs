@@ -496,6 +496,7 @@ namespace Rock.Model
             var rangeEnd = endDate.Date.AddDays( 1 );
             var campusGuid = options?.CampusGuid;
             var connectionOpportunityGuid = options?.ConnectionOpportunityGuid;
+            var connectorGuid = options?.ConnectorPersonAliasGuid;
 
             var query =
                 from cr in connectionTypeQuery
@@ -506,6 +507,9 @@ namespace Rock.Model
                                 || co.Guid == connectionOpportunityGuid.Value
                             )
                             .SelectMany( co => co.ConnectionRequests )
+                            .Where( cr =>
+                                !connectorGuid.HasValue
+                                || cr.ConnectorPersonAlias.Guid == connectorGuid.Value)
                     )
                 where cr.ModifiedDateTime.HasValue
                     && cr.ModifiedDateTime >= rangeStart
@@ -618,6 +622,201 @@ namespace Rock.Model
                 select new ConnectionRequestCompletionMetricsComparison
                 {
                     ConnectionTypeId = current.ConnectionTypeId,
+
+                    Current = current,
+                    Previous = previous,
+
+                    TimelinessPercentDelta =
+                        current.TimelinessPercent - ( previous != null ? previous.TimelinessPercent : 0 ),
+
+                    AverageResponsivenessDaysDelta =
+                        current.AverageResponsivenessDays - ( previous != null ? previous.AverageResponsivenessDays : 0 ),
+
+                    RequestsCompletedCountDelta =
+                        current.RequestsCompletedCount - ( previous != null ? previous.RequestsCompletedCount : 0 ),
+
+                    AverageCompletionDaysDelta =
+                        current.AverageCompletionDays - ( previous != null ? previous.AverageCompletionDays : 0 )
+                };
+
+            return comparison;
+        }
+
+        /// <summary>
+        /// Retrieves a single aggregated summary of connection request completion metrics across every
+        /// connection type in <paramref name="connectionTypeQuery"/> for the specified date range.
+        /// </summary>
+        /// <remarks>
+        /// <para>Unlike <see cref="GetConnectionRequestCompletionMetricsSummary"/>, which groups by
+        /// <c>ConnectionTypeId</c> and returns one row per type, this method groups by a constant
+        /// so that the result is a single row aggregating across all included types. Use this when
+        /// the caller needs a hub-wide view and does not care about per-type breakdowns.</para>
+        /// <para>The returned query is not executed until enumerated. Filtering by campus, connection
+        /// opportunity, and connector is applied if specified in the <paramref name="options"/>
+        /// parameter.</para>
+        /// </remarks>
+        /// <param name="connectionTypeQuery">An <see cref="IQueryable{T}"/> sequence of connection types to include in the metrics calculation.</param>
+        /// <param name="startDate">The start date of the date range for which to calculate metrics. Only requests modified on or after this
+        /// date are included.</param>
+        /// <param name="endDate">The end date of the date range for which to calculate metrics. Only requests modified before the day after
+        /// this date are included.</param>
+        /// <param name="options">An object containing additional filtering options.</param>
+        /// <returns>An <see cref="IQueryable{T}"/> sequence containing at most one
+        /// <see cref="ConnectionRequestCompletionMetricsSummary"/> representing the aggregated metrics
+        /// across all included connection types. Returns an empty sequence if no connection requests
+        /// match the supplied filters.</returns>
+        internal IQueryable<ConnectionRequestCompletionMetricsSummary> GetConnectionRequestCompletionMetricsAggregateSummary(
+            IQueryable<ConnectionType> connectionTypeQuery,
+            DateTime startDate,
+            DateTime endDate,
+            ConnectionRequestCompletionMetricsQueryOptions options
+        )
+        {
+            var rangeStart = startDate.Date;
+            var rangeEnd = endDate.Date.AddDays( 1 );
+            var campusGuid = options?.CampusGuid;
+            var connectionOpportunityGuid = options?.ConnectionOpportunityGuid;
+            var connectorGuid = options?.ConnectorPersonAliasGuid;
+
+            var query =
+                from cr in connectionTypeQuery
+                    .SelectMany( ct =>
+                        ct.ConnectionOpportunities
+                            .Where( co =>
+                                !connectionOpportunityGuid.HasValue
+                                || co.Guid == connectionOpportunityGuid.Value
+                            )
+                            .SelectMany( co => co.ConnectionRequests )
+                            .Where( cr =>
+                                !connectorGuid.HasValue
+                                || cr.ConnectorPersonAlias.Guid == connectorGuid.Value )
+                    )
+                where cr.ModifiedDateTime.HasValue
+                    && cr.ModifiedDateTime >= rangeStart
+                    && cr.ModifiedDateTime < rangeEnd
+                    && ( !campusGuid.HasValue
+                        || cr.Campus.Guid == campusGuid.Value
+                    )
+                let firstActivityDate =
+                    cr.ConnectionRequestActivities
+                        .OrderBy( a => a.CreatedDateTime )
+                        .Select( a => a.CreatedDateTime )
+                        .FirstOrDefault()
+                // Group by a constant key so that every matching request collapses into a single
+                // group. This yields one aggregated summary row across all connection types rather
+                // than the per-type rows produced by GetConnectionRequestCompletionMetricsSummary.
+                group new
+                {
+                    cr,
+                    firstActivityDate
+                }
+                by 1
+                into g
+                let connectedCount = g.Count( x => x.cr.ConnectionState == ConnectionState.Connected )
+                select new ConnectionRequestCompletionMetricsSummary
+                {
+                    // ConnectionTypeId is not meaningful in the aggregate result. Leave it as the
+                    // default 0 to signal that the row spans multiple connection types.
+                    ConnectionTypeId = 0,
+
+                    RequestsCompletedCount = connectedCount,
+
+                    TimelinessPercent = connectedCount == 0
+                        ? 0
+                        : (
+                            ( decimal ) g.Count( x =>
+                                x.cr.ConnectionState == ConnectionState.Connected
+                                && x.cr.ConnectedDateTime.HasValue
+                                && (
+                                    !x.cr.DueDate.HasValue
+                                    || x.cr.ConnectedDateTime.Value <= x.cr.DueDate.Value
+                                )
+                            )
+                            / connectedCount
+                        ),
+
+                    AverageResponsivenessDays = g
+                        .Where( x =>
+                            x.cr.CreatedDateTime.HasValue
+                            && x.firstActivityDate.HasValue
+                        )
+                        .Select( x => ( decimal ) DbFunctions.DiffDays( x.cr.CreatedDateTime.Value, x.firstActivityDate.Value ) )
+                        .DefaultIfEmpty()
+                        .Average(),
+
+                    AverageCompletionDays = g
+                        .Where( x =>
+                            x.cr.CreatedDateTime.HasValue
+                            && x.cr.ConnectionState == ConnectionState.Connected
+                            && x.cr.ConnectedDateTime.HasValue
+                        )
+                        .Select( x => ( decimal )DbFunctions.DiffDays( x.cr.CreatedDateTime.Value, x.cr.ConnectedDateTime.Value ) )
+                        .DefaultIfEmpty()
+                        .Average()
+                };
+
+            return query;
+        }
+
+        /// <summary>
+        /// Compares aggregated connection request completion metrics for the specified date range with
+        /// the immediately preceding period, summed across every connection type in
+        /// <paramref name="connectionTypeQuery"/>.
+        /// </summary>
+        /// <remarks>
+        /// <para>This is the aggregate counterpart to
+        /// <see cref="GetConnectionRequestCompletionMetricsComparison"/>. It returns at most one
+        /// comparison row representing the entire queryable instead of one row per connection type.
+        /// Use this when the caller's queryable may contain multiple connection types and the caller
+        /// wants a single combined view.</para>
+        /// <para>The previous period is defined as the same length as the current period, immediately
+        /// preceding the specified start date.</para>
+        /// </remarks>
+        /// <param name="connectionTypeQuery">A queryable collection of connection types to include in the comparison.</param>
+        /// <param name="startDate">The start date of the current period for which to calculate metrics. The time component is ignored.</param>
+        /// <param name="endDate">The end date of the current period for which to calculate metrics. The time component is ignored.</param>
+        /// <param name="options">Options that control how the completion metrics are calculated and filtered.</param>
+        /// <returns>An <see cref="IQueryable{T}"/> containing at most one
+        /// <see cref="ConnectionRequestCompletionMetricsComparison"/> with the aggregated current and
+        /// previous period metrics and their deltas.</returns>
+        internal IQueryable<ConnectionRequestCompletionMetricsComparison> GetConnectionRequestCompletionMetricsAggregateComparison(
+            IQueryable<ConnectionType> connectionTypeQuery,
+            DateTime startDate,
+            DateTime endDate,
+            ConnectionRequestCompletionMetricsQueryOptions options
+        )
+        {
+            var rangeLength = ( endDate.Date - startDate.Date ).Days + 1;
+
+            var previousStartDate = startDate.Date.AddDays( -rangeLength );
+            var previousEndDate = startDate.Date.AddDays( -1 );
+
+            var currentPeriodSummary =
+                GetConnectionRequestCompletionMetricsAggregateSummary(
+                    connectionTypeQuery,
+                    startDate,
+                    endDate,
+                    options );
+
+            var previousPeriodSummary =
+                GetConnectionRequestCompletionMetricsAggregateSummary(
+                    connectionTypeQuery,
+                    previousStartDate,
+                    previousEndDate,
+                    options );
+
+            // Both summaries are single-row queries. Join them on a constant so that the previous
+            // row is paired with the current row when present, while still allowing a current-only
+            // result via DefaultIfEmpty when there is no comparable previous data.
+            var comparison =
+                from current in currentPeriodSummary
+                join previous in previousPeriodSummary
+                    on 1 equals 1
+                    into previousJoin
+                from previous in previousJoin.DefaultIfEmpty()
+                select new ConnectionRequestCompletionMetricsComparison
+                {
+                    ConnectionTypeId = 0,
 
                     Current = current,
                     Previous = previous,

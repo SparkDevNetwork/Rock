@@ -36,8 +36,15 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Activate Activity in Other Workflow" )]
 
-    [WorkflowAttribute( "Activity", "The activity that should be activated", true, fieldTypeClassNames: new string[] { "Rock.Field.Types.WorkflowActivityFieldType" } )]
-    [WorkflowTextOrAttribute( "Workflow", "Workflow Attribute", "The ID or Guid of the workflow that should be activated", true, key: "WorkflowReference" )]
+    [WorkflowAttribute( "Activity",
+        Description = "The activity that should be activated",
+        IsRequired = true,
+        FieldTypeClassNames =  new string[] { "Rock.Field.Types.WorkflowActivityFieldType" } )]
+    [WorkflowTextOrAttribute( "Workflow",
+        "Workflow Attribute",
+        Description = "The ID or Guid of the workflow that should be activated",
+        IsRequired = true,
+        Key = "WorkflowReference" )]
     [Rock.SystemGuid.EntityTypeGuid( "DD266CDB-7D60-4312-B727-C2AA95C21128" )]
     public class ActivateOtherActivity : ActionComponent
     {

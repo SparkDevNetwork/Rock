@@ -74,6 +74,8 @@ export const SystemCommunication = {
     KioskInfoUpdate: "BC490DD4-ABBB-7DBA-4A9E-74F07F4B5881",
     /** Gets the template guid for the Learning Activity Notifications system communication. */
     LearningActivityNotifications: "d40a9c32-f179-4e5e-9b0d-ce208c5d1870",
+    /** Gets the template guid for the Learning Activity Retake Required system communication. */
+    LearningActivityRetakeRequired: "9E2B7C14-5A3D-4F86-B0E1-7C4A2D9F6B38",
     /** Gets the template guid for the Learning Class Announcements Notifications system communication. */
     LearningAnnouncementNotifications: "8824EE58-CB4C-47E8-BB86-1944C64C6C95",
     /** Gets the template guid for a Login Confirmation Alert. */

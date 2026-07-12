@@ -37,11 +37,17 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Attribute Set to Group Leader" )]
 
-    [WorkflowAttribute( "Group", "The attribute containing the group to get the leader for.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.GroupFieldType" })]
+    [WorkflowAttribute( "Group",
+        Description = "The attribute containing the group to get the leader for.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.GroupFieldType" })]
 
-    [WorkflowAttribute( "Leader", "The attribute to set to the group leader.", true, "", "", 1, null,
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowAttribute( "Leader",
+        Description = "The attribute to set to the group leader.",
+        IsRequired = true,
+        Order = 1,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType" } )]
 
     [Rock.SystemGuid.EntityTypeGuid( "179BE15E-DA54-4517-BDA9-E3ED339FFC7D")]
     public class SetAttributeToGroupLeader : ActionComponent

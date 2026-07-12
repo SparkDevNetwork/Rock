@@ -5,8 +5,12 @@
                titleIconCssClass="ti ti-message"
                type="block">
 
-            <template v-if="config.mode === Mode.Full && statusLabel" #subheaderRight>
-                <HighlightLabel :labelType="statusLabelCssClass">{{ statusLabel }}</HighlightLabel>
+            <template v-if="(config.mode === Mode.Full && statusLabel) || isRecipientCountShown" #subheaderRight>
+                <HighlightLabel v-if="isRecipientCountShown" labelType="info">
+                    <template v-if="isFetchingListRecipients"><i class="ti ti-rotate-clockwise-2 ti-pulse"></i> Recipients</template>
+                    <template v-else>{{ recipientCountLabel }}</template>
+                </HighlightLabel>
+                <HighlightLabel v-if="config.mode === Mode.Full && statusLabel" :labelType="statusLabelCssClass" :class="{ 'ml-2': isRecipientCountShown }">{{ statusLabel }}</HighlightLabel>
             </template>
 
             <template #default>
@@ -25,6 +29,7 @@
                                    v-model:isBulkCommunication="isBulkCommunication"
                                    v-model:scheduleSendIsoString="scheduleSendIsoString"
                                    v-model:communicationListGroupGuid="communicationListGroupGuid"
+                                   :communicationListRecipients="communicationListRecipients"
                                    v-model:isDuplicatePreventionOptionShown="isDuplicatePreventionOptionShown"
                                    v-model:emailAttachmentBinaryFiles="emailAttachmentBinaryFiles"
                                    v-model:communicationTemplateGuid="communicationTemplateGuid"
@@ -46,6 +51,7 @@
                                  v-model:isBulkCommunication="isBulkCommunication"
                                  v-model:scheduleSendIsoString="scheduleSendIsoString"
                                  v-model:communicationListGroupGuid="communicationListGroupGuid"
+                                 :communicationListRecipients="communicationListRecipients"
                                  v-model:isDuplicatePreventionOptionShown="isDuplicatePreventionOptionShown"
                                  @saved="onSaved"
                                  @sent="onSent" />
@@ -56,6 +62,7 @@
                                               v-model:isBulkCommunication="isBulkCommunication"
                                               v-model:scheduleSendIsoString="scheduleSendIsoString"
                                               v-model:communicationListGroupGuid="communicationListGroupGuid"
+                                              :communicationListRecipients="communicationListRecipients"
                                               @saved="onSaved"
                                               @sent="onSent" />
 
@@ -91,7 +98,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, ref, watch } from "vue";
     import BreakpointObserver from "./CommunicationEntry/breakpointObserver.partial.obs";
     import Email from "./CommunicationEntry/communicationMediumEmail.partial.obs";
     import PushNotification from "./CommunicationEntry/communicationMediumPushNotification.partial.obs";
@@ -106,8 +113,9 @@
     import { CommunicationStatus, CommunicationStatusDescription } from "@Obsidian/Enums/Communication/communicationStatus";
     import { Mode } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mode";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { areEqual } from "@Obsidian/Utility/guid";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { Guid } from "@Obsidian/Types";
     import { CommunicationEntryCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryCommunicationBag";
     import { CommunicationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryInitializationBox";
@@ -117,6 +125,7 @@
 
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();
     const reloadBlock = useReloadBlock();
+    const invokeBlockAction = useInvokeBlockAction();
     const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     defineProps();
@@ -139,6 +148,8 @@
     const communicationGuid = ref<Guid | undefined>(config.communication?.communicationGuid ?? undefined);
     const template = ref<CommunicationEntryCommunicationBag | null | undefined>(config.communication);
     const communicationListGroupGuid = ref<Guid | null | undefined>(config.communication?.communicationListGroupGuid);
+    const communicationListRecipients = ref<CommunicationEntryRecipientBag[]>([]);
+    const isFetchingListRecipients = ref<boolean>(false);
     const isDuplicatePreventionOptionShown = ref<boolean>(config.isDuplicatePreventionOptionShown ?? false);
     const emailAttachmentBinaryFiles = ref<ListItemBag[]>(config.communication?.emailAttachmentBinaryFiles ?? []);
     const communicationTemplateGuid = ref<string>(config.communication?.communicationTemplateGuid ?? "");
@@ -198,6 +209,27 @@
             return "unknown";
         }
     });
+
+    const reachableAudienceCount = computed<number>(() => {
+        const source = communicationListGroupGuid.value ? communicationListRecipients.value : recipients.value;
+
+        if (selectedMedium.value === "email") {
+            return source.filter(r => isBulkCommunication.value ? r.isBulkEmailAllowed : r.isEmailAllowed).length;
+        }
+        else if (selectedMedium.value === "sms") {
+            return source.filter(r => r.isSmsAllowed).length;
+        }
+        else if (selectedMedium.value === "push") {
+            return source.filter(r => r.isPushAllowed).length;
+        }
+        else {
+            return source.length;
+        }
+    });
+
+    const recipientCountLabel = computed<string>(() => `${reachableAudienceCount.value} ${pluralize("Recipient", reachableAudienceCount.value)}`);
+
+    const isRecipientCountShown = computed<boolean>(() => config.mode === Mode.Full && config.isCommunicationListSelectionEnabled === true);
 
     //#endregion
 
@@ -279,6 +311,30 @@
             isViewCommunicationShown.value = value.hasDetailBlockOnCurrentPage;
         }
     }
+
+    //#endregion
+
+    //#region Watchers
+
+    /**
+     * Fetches the communication list's recipients whenever the selected list changes, so every
+     * medium shares one consistent recipient set (and the reachable count derived from it).
+     */
+    watch(communicationListGroupGuid, async (guid) => {
+        if (!guid) {
+            communicationListRecipients.value = [];
+            return;
+        }
+
+        isFetchingListRecipients.value = true;
+        try {
+            const result = await invokeBlockAction<CommunicationEntryRecipientBag[]>("GetCommunicationListRecipients", { communicationListGroupGuid: guid });
+            communicationListRecipients.value = (!result.isError && result.data) ? result.data : [];
+        }
+        finally {
+            isFetchingListRecipients.value = false;
+        }
+    }, { immediate: true });
 
     //#endregion
 

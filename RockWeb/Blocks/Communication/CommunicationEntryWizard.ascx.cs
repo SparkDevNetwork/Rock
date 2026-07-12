@@ -205,7 +205,7 @@ namespace RockWeb.Blocks.Communication
 
         private static class PageParameterKey
         {
-            public const string Communication = "Communication";
+            // Allows Communication Id, Guid, or IdKey values.
             public const string CommunicationId = "CommunicationId";
             public const string Edit = "Edit";
             public const string Person = "Person";
@@ -333,23 +333,7 @@ namespace RockWeb.Blocks.Communication
             RaisePropertyChanged( nameof( IndividualRecipientPersonIds ) );
         }
 
-        private string CommunicationOrCommunicationIdPageParameter
-        {
-            get
-            {
-                var communicationPageParameter = PageParameter( PageParameterKey.Communication );
-
-                if ( communicationPageParameter.IsNotNullOrWhiteSpace() )
-                {
-                    return communicationPageParameter;
-                }
-                else
-                {
-                    // Only allow the CommunicationId to contain an ID, but return it as a string so it can be used as an entity key.
-                    return PageParameter( PageParameterKey.CommunicationId ).AsIntegerOrNull()?.ToString();
-                }
-            }
-        }
+        private string CommunicationIdPageParameter => PageParameter( PageParameterKey.CommunicationId );
 
         private int? _communicationId = null;
         private int? CommunicationId
@@ -359,7 +343,7 @@ namespace RockWeb.Blocks.Communication
                 if ( !_communicationId.HasValue )
                 {
                     var communicationId = new CommunicationService( new RockContext() )
-                        .GetQueryableByKey( CommunicationOrCommunicationIdPageParameter, !this.PageCache.Layout.Site.DisablePredictableIds )
+                        .GetQueryableByKey( CommunicationIdPageParameter, !this.PageCache.Layout.Site.DisablePredictableIds )
                         .Select( c => c.Id )
                         .FirstOrDefault();
 
@@ -571,7 +555,7 @@ function onTaskCompleted( resultData )
                     Dictionary<string, string> qryParams = new Dictionary<string, string>();
                     if ( hfCommunicationId.Value != "0" )
                     {
-                        qryParams.Add( PageParameterKey.Communication, hfCommunicationId.Value );
+                        qryParams.Add( PageParameterKey.CommunicationId, IdHasher.Instance.GetHash( hfCommunicationId.Value.AsInteger() ) );
                     }
 
                     this.NavigateToCurrentPageReference( qryParams );
@@ -3271,7 +3255,7 @@ function onTaskCompleted( resultData )
                     }
                 }
 
-                dynamic result = new { ViewCommunicationUrl = _viewCommunicationTemplateUrl.Replace( _viewCommunicationIdPlaceholder, communication.Id.ToString() ) };
+                dynamic result = new { ViewCommunicationUrl = _viewCommunicationTemplateUrl.Replace( _viewCommunicationIdPlaceholder, communication.IdKey ) };
 
                 progressReporter.StopTask( finalMessage, false, false, result );
             } );
@@ -3297,14 +3281,7 @@ function onTaskCompleted( resultData )
 
             // Store the absolute page URL before the request terminates.
             // Set a placeholder value for the navigation URL, to be replaced using client-side script when the task completed notification is sent.
-            if ( this.CurrentPageReference.Parameters.ContainsKey( PageParameterKey.CommunicationId ) )
-            {
-                this.CurrentPageReference.Parameters.AddOrReplace( PageParameterKey.CommunicationId, _viewCommunicationIdPlaceholder );
-            }
-            else
-            {
-                this.CurrentPageReference.Parameters.AddOrReplace( PageParameterKey.Communication, _viewCommunicationIdPlaceholder );
-            }
+            this.CurrentPageReference.Parameters.AddOrReplace( PageParameterKey.CommunicationId, _viewCommunicationIdPlaceholder );
 
             var uri = new Uri( Request.UrlProxySafe().ToString() );
 
@@ -3411,7 +3388,7 @@ function onTaskCompleted( resultData )
 
             TaskActivityNotificationBox.Text = message;
 
-            CurrentPageReference.Parameters.AddOrReplace( PageParameterKey.CommunicationId, communication.Id.ToString() );
+            CurrentPageReference.Parameters.AddOrReplace( PageParameterKey.CommunicationId, communication.IdKey );
             hlViewCommunication.NavigateUrl = CurrentPageReference.BuildUrl();
 
             // only show the Link if there is a CommunicationDetail block type on this page

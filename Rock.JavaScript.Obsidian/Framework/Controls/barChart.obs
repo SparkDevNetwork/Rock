@@ -1140,8 +1140,16 @@
                         labelColor: (context): TooltipLabelStyle => {
                             const dataset = context.dataset as ExtendedBarDataset;
 
+                            // When a single series uses per-bar colors, `backgroundColor` is an array, so the
+                            // swatch must use the color of the specific bar being hovered (matching the pie chart).
+                            // Fall back to the resolved series color for single-color or unfilled (transparent) bars.
+                            const backgroundColor = dataset.backgroundColor;
+                            const barColor = Array.isArray(backgroundColor)
+                                ? backgroundColor[context.dataIndex]
+                                : undefined;
+
                             return {
-                                backgroundColor: dataset._seriesColor as Color,
+                                backgroundColor: (barColor && barColor !== "transparent" ? barColor : dataset._seriesColor) as Color,
                                 borderColor: "transparent",
                                 borderWidth: 0
                             };

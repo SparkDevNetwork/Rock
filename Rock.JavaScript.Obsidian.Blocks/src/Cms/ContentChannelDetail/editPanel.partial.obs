@@ -524,9 +524,9 @@
             reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== itemAttribute.value?.key);
         }
         else {
-            if (itemAttribute.value?.key && !reservedKeyNames.value.some(k => k === itemAttribute.value?.key)) {
-                reservedKeyNames.value.push(itemAttribute.value.key);
-            }
+            // Rebuild from the authoritative attribute list so a cancelled key
+            // change cannot leave a phantom key reserved or drop the real key.
+            reservedKeyNames.value = itemAttributes.value.map(k => k.key!);
         }
     });
 

@@ -256,6 +256,7 @@ namespace Rock.Attribute
             var categoryService = new CategoryService( rockContext );
 
             var propertyCategories = property.Category.SplitDelimitedValues( false ).ToList();
+            var abbreviatedName = property.Name.Truncate( 100, false );
 
             // Look for an existing attribute record based on the entity, entityQualifierColumn and entityQualifierValue
             var attributeCache = AttributeCache.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true )
@@ -269,9 +270,9 @@ namespace Rock.Attribute
 
                 // Check to see if the existing attribute record needs to be updated
                 if ( attributeCache.Name != property.Name ||
-                    attributeCache.AbbreviatedName != property.Name ||
-                    attributeCache.DefaultValue != property.DefaultValue ||
-                    attributeCache.Description != property.Description ||
+                    attributeCache.AbbreviatedName != abbreviatedName ||
+                    attributeCache.DefaultValue != ( property.DefaultValue ?? string.Empty ) ||
+                    attributeCache.Description != ( property.Description ?? string.Empty ) ||
                     attributeCache.Order != property.Order ||
                     attributeCache.FieldType.Guid != property.FieldTypeGuid ||
                     attributeCache.IsRequired != property.IsRequired )
@@ -280,8 +281,8 @@ namespace Rock.Attribute
                 }
 
                 // Check category
-                else if ( attributeCache.Categories.Select( c => c.Name ).Except( propertyCategories ).Any() ||
-                    propertyCategories.Except( attributeCache.Categories.Select( c => c.Name ) ).Any() )
+                else if ( attributeCache.Categories.Select( c => c.Name ).Except( propertyCategories, StringComparer.OrdinalIgnoreCase ).Any() ||
+                    propertyCategories.Except( attributeCache.Categories.Select( c => c.Name ), StringComparer.OrdinalIgnoreCase ).Any() )
                 {
                     updated = true;
                 }
@@ -341,9 +342,9 @@ namespace Rock.Attribute
 
             // Update the attribute
             attribute.Name = property.Name;
-            attribute.AbbreviatedName = property.Name;
-            attribute.Description = property.Description;
-            attribute.DefaultValue = property.DefaultValue;
+            attribute.AbbreviatedName = abbreviatedName;
+            attribute.Description = property.Description ?? string.Empty;
+            attribute.DefaultValue = property.DefaultValue ?? string.Empty;
             attribute.Order = property.Order;
             attribute.IsRequired = property.IsRequired;
 

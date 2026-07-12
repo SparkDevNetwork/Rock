@@ -1,0 +1,66 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <h3>{{ config.contributionsHeader }}</h3>
+
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Contribution"
+          :showLaunchWorkflow="false"
+          :showMergeTemplate="false"
+          light>
+        <DateColumn name="transactionDateTime"
+                    title="Date"
+                    field="transactionDateTime" />
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name" />
+
+        <TextColumn name="address"
+                    title="Address"
+                    field="address"
+                    width="45%" />
+
+        <CurrencyColumn v-if="config.isAmountColumnVisible"
+                        name="amount"
+                        title="Amount"
+                        field="amount" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import Grid, { CurrencyColumn, DateColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { FundraisingParticipantInitializationBox } from "@Obsidian/ViewModels/Blocks/Fundraising/FundraisingParticipant/fundraisingParticipantInitializationBox";
+
+    // #region Values
+
+    const config = useConfigurationValues<FundraisingParticipantInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetContributionsGridData");
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion Functions
+
+    gridDataSource.value = loadGridData();
+</script>

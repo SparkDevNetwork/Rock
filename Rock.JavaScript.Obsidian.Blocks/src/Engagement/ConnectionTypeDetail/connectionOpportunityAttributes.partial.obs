@@ -50,6 +50,14 @@
     const isModalVisible = ref(false);
     const theAttribute = ref<PublicEditableAttributeBag | null>(null);
 
+    /**
+     * Snapshot of the attribute's key taken when the modal opens, so the
+     * original key (never the live-edited value) is restored to the reserved
+     * list on close. Without this, editing the key and then cancelling would
+     * leave a phantom key reserved and the real sibling key unreserved.
+     */
+    const editingKey = ref<string | null>(null);
+
     // #endregion Values
 
     // #region Computed Values
@@ -183,14 +191,21 @@
 
     // #region Watchers
 
+    /**
+     * Manage the AttributeEditor's reservedKeyNames list as the modal opens and
+     * closes. On open, snapshot the attribute's original key and stop reserving
+     * it so the user can keep the same key. On close, restore that snapshotted
+     * key (never the live-edited value) so a cancelled key change cannot drop
+     * the real sibling key or reserve a phantom one.
+     */
     watch(isModalVisible, () => {
         if (isModalVisible.value) {
-            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== theAttribute.value?.key);
+            editingKey.value = theAttribute.value?.key ?? null;
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== editingKey.value);
         }
-        else {
-            if (theAttribute.value?.key && !reservedKeyNames.value.some(k => k === theAttribute.value?.key)) {
-                reservedKeyNames.value.push(theAttribute.value.key);
-            }
+        else if (editingKey.value && !reservedKeyNames.value.includes(editingKey.value)) {
+            reservedKeyNames.value.push(editingKey.value);
+            editingKey.value = null;
         }
     });
 

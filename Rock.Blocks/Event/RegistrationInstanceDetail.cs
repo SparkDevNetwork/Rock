@@ -245,7 +245,7 @@ namespace Rock.Blocks.Event
 
             // Explicit "0" new-entity sentinel: seed a blank instance from the current block
             // defaults and any RegistrationTemplateId page parameter.
-            var parentTemplateId = PageParameter( PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull();
+            var parentTemplateId = new RegistrationTemplateService( RockContext ).GetSelect( PageParameter( PageParameterKey.RegistrationTemplateId ), t => ( int? ) t.Id, !PageCache.Layout.Site.DisablePredictableIds );
 
             var entity = new RegistrationInstance
             {
@@ -535,7 +535,7 @@ namespace Rock.Blocks.Event
             {
                 entity = new RegistrationInstance();
 
-                var parentTemplateId = PageParameter( PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull();
+                var parentTemplateId = new RegistrationTemplateService( RockContext ).GetSelect( PageParameter( PageParameterKey.RegistrationTemplateId ), t => ( int? ) t.Id, !PageCache.Layout.Site.DisablePredictableIds );
                 if ( parentTemplateId.HasValue )
                 {
                     entity.RegistrationTemplateId = parentTemplateId.Value;
@@ -624,7 +624,7 @@ namespace Rock.Blocks.Event
         private Dictionary<string, string> GetBoxNavigationUrls( RegistrationInstance entity )
         {
             var templateId = entity?.RegistrationTemplateId > 0
-                ? entity.RegistrationTemplateId.ToString()
+                ? Rock.Utility.IdHasher.Instance.GetHash( entity.RegistrationTemplateId )
                 : PageParameter( PageParameterKey.RegistrationTemplateId );
 
             var parentParams = new Dictionary<string, string>();
@@ -762,8 +762,8 @@ namespace Rock.Blocks.Event
             {
                 var url = this.GetLinkedPageUrl( AttributeKey.GroupPlacementPage, new Dictionary<string, string>
                 {
-                    [PageParameterKey.RegistrationInstanceId] = entity.Id.ToString(),
-                    [PageParameterKey.RegistrationTemplatePlacementId] = placement.Id.ToString(),
+                    [PageParameterKey.RegistrationInstanceId] = entity.IdKey,
+                    [PageParameterKey.RegistrationTemplatePlacementId] = Rock.Utility.IdHasher.Instance.GetHash( placement.Id ),
                     [PageParameterKey.ReturnUrl] = currentPageUrl
                 } );
 
@@ -902,7 +902,7 @@ namespace Rock.Blocks.Event
                 };
 
                 var templateId = entity.RegistrationTemplateId > 0
-                    ? entity.RegistrationTemplateId.ToString()
+                    ? Rock.Utility.IdHasher.Instance.GetHash( entity.RegistrationTemplateId )
                     : PageParameter( PageParameterKey.RegistrationTemplateId );
 
                 if ( templateId.IsNotNullOrWhiteSpace() )
@@ -1010,7 +1010,7 @@ namespace Rock.Blocks.Event
 
             return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
             {
-                [PageParameterKey.RegistrationTemplateId] = templateId.ToString()
+                [PageParameterKey.RegistrationTemplateId] = Rock.Utility.IdHasher.Instance.GetHash( templateId )
             } ) );
         }
 

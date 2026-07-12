@@ -1,0 +1,320 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Block v-if="isBlockVisible" :title="config.bag?.groupName ?? 'Group History'">
+        <template #headerActions>
+            <RockButton v-if="config.bag?.groupMemberHistoryPageUrl"
+                        btnSize="xs"
+                        class="mr-2"
+                        @click="onGroupMemberHistoryClick">
+                Group Member History <i class="ti ti-chevron-right"></i>
+            </RockButton>
+
+            <RockButton btnSize="xs"
+                        btnType="link"
+                        isSquare
+                        class="group-history-settings-button"
+                        title="Settings"
+                        @click="onSettingsClick">
+                <i class="ti ti-settings"></i>
+            </RockButton>
+        </template>
+
+        <div v-if="isYearPillBarVisible" class="group-history-year-pills">
+            <button v-for="year in years"
+                    :key="year"
+                    type="button"
+                    class="group-history-year-pill"
+                    :class="{ 'is-active': year === selectedYear }"
+                    @click="onYearPillClick(year)">
+                {{ year }}
+            </button>
+        </div>
+
+        <Loading :isLoading="isLoadingTimeline">
+            <NotificationBox v-if="!timelineMonths.length" alertType="info">
+                No history is available for this group.
+            </NotificationBox>
+
+            <div v-else class="group-history-timeline">
+                <template v-for="month in timelineMonths" :key="month.key">
+                    <h4 :id="month.anchorId ?? undefined" class="group-history-month">
+                        <span>{{ month.label }}</span>
+                    </h4>
+
+                    <TimelineCard v-for="(item, index) in month.days"
+                                  :key="item.day.date ?? index"
+                                  :day="item.day"
+                                  :isRightAligned="item.isRightAligned" />
+                </template>
+            </div>
+        </Loading>
+
+        <SettingsModal v-model="isGroupMemberHistoryIncluded"
+                       v-model:visible="isSettingsModalVisible" />
+    </Block>
+</template>
+
+<style scoped>
+/* The design shows the gear in the plain text color at body-icon size,
+   not the link-colored xs button default. */
+.group-history-settings-button,
+.group-history-settings-button:hover,
+.group-history-settings-button:focus {
+    font-size: var(--font-size-regular);
+    color: var(--color-interface-medium);
+}
+
+.group-history-year-pills {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+    /* The panel heading uses 18px horizontal padding while the panel body
+       uses --spacing-medium, so this bridges the difference to line the
+       first pill up with the panel title. */
+    padding: 4px calc(18px - var(--spacing-medium)) 12px;
+    background-color: var(--color-interface-softest);
+}
+
+.group-history-year-pill {
+    padding: 6px 16px;
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-strong);
+    background-color: var(--color-interface-softer);
+    border: 0;
+    border-radius: 4px;
+}
+
+.group-history-year-pill.is-active {
+    color: var(--color-primary);
+    background-color: var(--color-primary-soft);
+}
+
+.group-history-timeline {
+    position: relative;
+    padding-bottom: 24px;
+}
+
+/* The vertical rail the cards hang off of. */
+.group-history-timeline::before {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    content: "";
+    background-color: var(--color-interface-soft);
+}
+
+.group-history-month {
+    position: relative;
+    margin: 8px 0 24px;
+    font-size: var(--font-size-h5);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-stronger);
+    text-align: center;
+    scroll-margin-top: 56px;
+}
+
+.group-history-month span {
+    display: inline-block;
+    padding: 4px 16px;
+    background-color: var(--color-interface-softest);
+}
+
+@media (max-width: 991px) {
+    .group-history-timeline::before {
+        display: none;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import Block from "@Obsidian/Templates/block";
+    import Loading from "@Obsidian/Controls/loading.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import SettingsModal from "./GroupHistory/settingsModal.partial.obs";
+    import TimelineCard from "./GroupHistory/timelineCard.partial.obs";
+    import { PreferenceKey } from "./GroupHistory/types.partial";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { GroupHistoryBag } from "@Obsidian/ViewModels/Blocks/Group/GroupHistory/groupHistoryBag";
+    import { GroupHistoryDayBag } from "@Obsidian/ViewModels/Blocks/Group/GroupHistory/groupHistoryDayBag";
+    import { GroupHistoryOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupHistory/groupHistoryOptionsBag";
+
+    // #region Types
+
+    type TimelineDay = {
+        day: GroupHistoryDayBag;
+        isRightAligned: boolean;
+    };
+
+    type TimelineMonth = {
+        key: string;
+        label: string;
+        anchorId: string | null;
+        days: TimelineDay[];
+    };
+
+    // #endregion Types
+
+    // #region Values
+
+    const config = useConfigurationValues<CustomBlockBox<GroupHistoryBag, GroupHistoryOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    const days = ref<GroupHistoryDayBag[]>(config.bag?.timeline ?? []);
+    const isGroupMemberHistoryIncluded = ref(config.bag?.isGroupMemberHistoryIncluded ?? true);
+    const isSettingsModalVisible = ref(false);
+    const isLoadingTimeline = ref(false);
+    const activeYear = ref<number | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isBlockVisible = computed((): boolean => {
+        return !!config.bag;
+    });
+
+    const timelineMonths = computed((): TimelineMonth[] => {
+        const months: TimelineMonth[] = [];
+        const seenYears = new Set<number>();
+        let dayIndex = 0;
+
+        for (const day of days.value) {
+            const date = day.date ? RockDateTime.parseISO(day.date) : null;
+
+            if (!date) {
+                continue;
+            }
+
+            const key = `${date.year}-${date.month}`;
+            let month = months[months.length - 1];
+
+            if (!month || month.key !== key) {
+                month = {
+                    key,
+                    label: date.toASPString("MMMM yyyy"),
+                    anchorId: seenYears.has(date.year) ? null : `group-history-year-${date.year}`,
+                    days: []
+                };
+
+                seenYears.add(date.year);
+                months.push(month);
+            }
+
+            month.days.push({ day, isRightAligned: dayIndex % 2 === 1 });
+            dayIndex++;
+        }
+
+        return months;
+    });
+
+    const years = computed((): number[] => {
+        const list: number[] = [];
+
+        for (const day of days.value) {
+            const date = day.date ? RockDateTime.parseISO(day.date) : null;
+
+            if (date && !list.includes(date.year)) {
+                list.push(date.year);
+            }
+        }
+
+        return list;
+    });
+
+    const isYearPillBarVisible = computed((): boolean => {
+        return years.value.length > 1;
+    });
+
+    const selectedYear = computed((): number | null => {
+        return activeYear.value ?? years.value[0] ?? null;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Navigates to the page that shows individual member history for this group.
+     */
+    function onGroupMemberHistoryClick(): void {
+        const url = config.bag?.groupMemberHistoryPageUrl;
+
+        if (url) {
+            window.location.href = url;
+        }
+    }
+
+    /**
+     * Opens the block settings modal.
+     */
+    function onSettingsClick(): void {
+        isSettingsModalVisible.value = true;
+    }
+
+    /**
+     * Marks the year as active and scrolls to its most recent activity.
+     */
+    function onYearPillClick(year: number): void {
+        activeYear.value = year;
+        document.getElementById(`group-history-year-${year}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Persists the member history setting as a person preference and reloads
+     * the timeline to reflect it.
+     */
+    async function saveSettingsAndReloadTimeline(): Promise<void> {
+        isLoadingTimeline.value = true;
+
+        try {
+            preferences.setValue(PreferenceKey.IncludeGroupMemberHistory, isGroupMemberHistoryIncluded.value ? "true" : "false");
+
+            await preferences.save();
+
+            const result = await invokeBlockAction<GroupHistoryDayBag[]>("GetTimeline", {
+                includeGroupMemberHistory: isGroupMemberHistoryIncluded.value
+            });
+
+            if (result.isSuccess && result.data) {
+                days.value = result.data;
+                activeYear.value = null;
+            }
+            else {
+                await alert(result.errorMessage ?? "Unable to load the group history.");
+            }
+        }
+        catch {
+            await alert("Unable to update the group history setting.");
+        }
+        finally {
+            isLoadingTimeline.value = false;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(isGroupMemberHistoryIncluded, () => {
+        saveSettingsAndReloadTimeline();
+    });
+
+    // #endregion Watchers
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

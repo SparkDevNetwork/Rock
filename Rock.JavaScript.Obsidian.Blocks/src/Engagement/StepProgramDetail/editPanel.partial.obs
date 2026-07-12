@@ -615,9 +615,10 @@
             reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== stepAttribute.value?.key);
         }
         else {
-            if (stepAttribute.value?.key && !reservedKeyNames.value.some(k => k === stepAttribute.value?.key)) {
-                reservedKeyNames.value.push(stepAttribute.value.key);
-            }
+            // Rebuild from the authoritative attribute list so a cancelled key
+            // change cannot leave a phantom key reserved or drop the real key.
+            reservedKeyNames.value = stepProgramAttributes.value.map(k => k.key!);
+            stepAttribute.value = null;
         }
     });
     // #endregion
@@ -801,20 +802,6 @@
     // #endregion
 
     // #endregion
-
-    // On close of the Attribute Modal add the step attribute key to our reserved key name list
-    watch(() => isAttributeModalOpen.value, () => {
-        if (!isAttributeModalOpen.value && stepAttribute.value?.key) {
-
-            const key = stepAttribute.value?.key ?? "";
-
-            if (!reservedKeyNames.value.includes(key) && stepProgramAttributes.value.find(x => x.key === key)) {
-                reservedKeyNames.value.push(key);
-            }
-
-            stepAttribute.value = null;
-        }
-    });
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {

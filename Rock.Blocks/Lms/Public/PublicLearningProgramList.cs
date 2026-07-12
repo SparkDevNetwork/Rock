@@ -51,8 +51,8 @@ namespace Rock.Blocks.Lms
         Key = AttributeKey.PageDescription,
         DefaultValue = AttributeDefault.PageDescription )]
 
-    [ImageField(
-        "Banner Image",
+    [ImageField( "Banner Image",
+        "Image",
         Description = "Add a welcoming banner image to visually enhance the homepage. Ideal size: 1200x400 pixels; use high-quality images.",
         Key = AttributeKey.BannerImage,
         IsRequired = false,

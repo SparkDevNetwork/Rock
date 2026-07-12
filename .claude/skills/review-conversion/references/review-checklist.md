@@ -4,24 +4,6 @@ Work through each category below. Check every item against both the WebForms sou
 
 ---
 
-## How to use this checklist
-
-`/review-conversion` v2 splits work between **/working/-driven audit passes** (Phase 2A-2E in `SKILL.md`) and **this generic checklist** (Phase 3). When the convert-block research artifacts are present, several sections here become spot-checks — duplicating them in full is wasted effort.
-
-| Section | Run mode (with /working/) | Run mode (without /working/) |
-|---|---|---|
-| §1 Functional Parity | **Spot-check** — covered by Phase 2A (parity-map.md) | Full sweep |
-| §2 Performance and Modernization | **Spot-check** — covered by Phase 2B (improvement-analysis.md) | Full sweep |
-| §3 Bug Patterns | **Spot-check** — mostly covered by Phase 2B; sweep code added post-research | Full sweep |
-| §4 Rock RMS Patterns | **Full sweep** — naming/style not in /working/ | Full sweep |
-| §5 Obsidian-Specific | **Full sweep** — bag types / block actions / reactive state not in /working/ | Full sweep |
-| §6 Grid Column Type Matrix | **Full sweep** — highly specialized, not in /working/ | Full sweep |
-| §7 Modernization Checks | **Full sweep** — general checks beyond improvement-analysis.md | Full sweep |
-
-Spot-check = scan for issues the per-block artifacts didn't capture (e.g., a bug introduced after convert-block research finished). Full sweep = walk every checkbox.
-
----
-
 ## 1. Functional Parity
 
 ### Data Access
@@ -92,6 +74,10 @@ Spot-check = scan for issues the per-block artifacts didn't capture (e.g., a bug
 - [ ] Complex/HTML columns have `filterValue` and `quickFilterValue` functions
 - [ ] Display-only computed columns have `:excludeFromExport="true"`
 - [ ] `v-for` `:key` uses `index` as fallback (not `''`) when key could be null
+- [ ] Name columns that display a description / subtitle below the name use `HighlightDetailColumn` (or `PersonColumn` for people, with `:hideAvatar="true"` if no avatar is wanted) — NOT a custom `<template #format>` with `<b>...</b><br>` or `text-semibold` + `text-muted`
+- [ ] If a Name column uses `HighlightDetailColumn` with `detailField`, any standalone Description column displaying the same field has been removed
+- [ ] No redundant `sortValue` / `filterValue` / `quickFilterValue` props on `HighlightDetailColumn` that just concatenate `field + detailField` (the column does this by default)
+- [ ] No custom two-line `<template #skeleton>` on `HighlightDetailColumn` (the default skeleton handles it)
 
 ---
 
@@ -189,7 +175,8 @@ Use this matrix to verify every grid column uses the correct component for its d
 | `bool` / `bool?` | `BooleanColumn` | Using `TextColumn` |
 | `DateTime` / `DateTime?` | `DateColumn` or `DateTimeColumn` | Using `TextColumn` |
 | `int` / `decimal` / `double` | `NumberColumn` | Using `TextColumn` |
-| `string` (person name) | `PersonColumn` | Using `TextColumn` without `filterValue` |
+| `string` (name with adjacent description / subtitle) | `HighlightDetailColumn` (`field` + `detailField`) | Hand-rolled `<template #format>` with `<b>...</b><br>` or `text-semibold` + `text-muted` |
+| `string` (person name) | `PersonColumn` (with `:hideAvatar="true"` if no avatar wanted; `detailField` for subtext) | Using `TextColumn` without `filterValue`; using `HighlightDetailColumn` for a person |
 | `string` (currency) | `CurrencyColumn` | Using `TextColumn` or `NumberColumn` |
 | `string` (enum display) | `TextColumn` with `filterValue` | Missing `filterValue` for filtering |
 | `string` (HTML content) | `TextColumn` with `filterValue` + `quickFilterValue` | Missing filter functions, missing `:excludeFromExport` |
@@ -201,6 +188,7 @@ Use this matrix to verify every grid column uses the correct component for its d
 - [ ] Columns displaying HTML or rich content have `quickFilterValue` for search
 - [ ] Computed/display-only columns (e.g., concatenated fields) have `:excludeFromExport="true"`
 - [ ] Grid settings modal emits `close` and the parent watches for it (standard pattern)
+- [ ] `HighlightDetailColumn` consumers do NOT redefine `filterValue` / `quickFilterValue` to `${field} ${detailField}` — the column already does this via `getCombinedFilterValue`
 
 ---
 

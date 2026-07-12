@@ -100,12 +100,12 @@ namespace Rock.Blocks.Core
         Order = 8,
         Key = AttributeKey.Alignment )]
 
-    [CampusField( name: "Default Campus",
-        description: "When there is no campus value, what campus should be displayed?",
-        required: false,
-        includeInactive: true,
-        order: 9,
-        key: AttributeKey.DefaultCampus )]
+    [CampusField( "Default Campus",
+        Description = "When there is no campus value, what campus should be displayed?",
+        IsRequired = false,
+        IncludeInactive = true,
+        Order = 9,
+        Key = AttributeKey.DefaultCampus )]
 
     [BooleanField( "Update Family Campus on Change",
         Description = "When the individual changes the selected campus, should their family's campus (primary family) be updated?",

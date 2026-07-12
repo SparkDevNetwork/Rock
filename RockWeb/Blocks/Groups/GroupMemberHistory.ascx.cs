@@ -45,9 +45,18 @@ namespace RockWeb.Blocks.Groups
         DefaultValue = @"{% include '~~/Assets/Lava/GroupHistoryTimeline.lava' %}",
         Order = 1 )]
 
-    [LinkedPage( "Group History Grid Page", defaultValue: Rock.SystemGuid.Page.GROUP_HISTORY_GRID, required: true, order: 2 )]
-    [LinkedPage( "Group Member History Page", defaultValue: Rock.SystemGuid.Page.GROUP_MEMBER_HISTORY, required: true, order: 3 )]
-    [BooleanField( "Show Members Grid", "Show Members Grid if GroupMemberId is not specified in the URL", true, order: 4 )]
+    [LinkedPage( "Group History Grid Page",
+        DefaultValue = Rock.SystemGuid.Page.GROUP_HISTORY_GRID,
+        IsRequired = true,
+        Order = 2 )]
+    [LinkedPage( "Group Member History Page", 
+        DefaultValue = Rock.SystemGuid.Page.GROUP_MEMBER_HISTORY,
+        IsRequired = true,
+        Order = 3 )]
+    [BooleanField( "Show Members Grid", 
+        Description = "Show Members Grid if GroupMemberId is not specified in the URL",
+        DefaultBooleanValue = true,
+        Order = 4 )]
 
     [Rock.SystemGuid.BlockTypeGuid( "EA6EA2E7-6504-41FE-AB55-0B1E7D04B226" )]
     public partial class GroupMemberHistory : RockBlock, ICustomGridColumns, ISecondaryBlock
@@ -79,8 +88,8 @@ namespace RockWeb.Blocks.Groups
         {
             if ( !Page.IsPostBack )
             {
-                int? groupId = this.PageParameter( "GroupId" ).AsIntegerOrNull();
-                int? groupMemberId = this.PageParameter( "GroupMemberId" ).AsIntegerOrNull();
+                int? groupId = this.PageParameter( "GroupId" ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( this.PageParameter( "GroupId" ) );
+                int? groupMemberId = this.PageParameter( "GroupMemberId" ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( this.PageParameter( "GroupMemberId" ) );
                 if ( !groupId.HasValue )
                 {
                     if ( groupMemberId.HasValue )

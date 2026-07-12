@@ -1,0 +1,351 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <component :is="rootTag"
+               :href="modelValue.mapUrl || undefined"
+               class="location-card rounded text-decoration-none">
+        <div class="location-card-map-wrap">
+            <div ref="mapContainer" class="location-card-map ratio-video w-100"></div>
+            <span v-if="modelValue.mapUrl" class="location-card-expand" aria-hidden="true">
+                <i class="ti ti-arrows-maximize"></i>
+            </span>
+        </div>
+        <div v-if="hasBody" class="location-card-body">
+            <div v-if="polygonLabel" class="font-italic text-interface-medium">{{ polygonLabel }}</div>
+            <div v-if="modelValue.address" class="location-card-address">{{ modelValue.address }}</div>
+            <div v-if="modelValue.scheduleText" class="location-card-schedule">{{ modelValue.scheduleText }}</div>
+        </div>
+    </component>
+</template>
+
+<script setup lang="ts">
+    /// <reference types="google.maps" />
+    /* global google */
+    import { GeoPickerGoogleMapSettingsBag } from "@Obsidian/ViewModels/Rest/Controls/geoPickerGoogleMapSettingsBag";
+    import { GroupMeetingLocationBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupMeetingLocationBag";
+    import { computed, onBeforeMount, onMounted, onUnmounted, PropType, ref, watch } from "vue";
+    import { GroupLocationPickerMode } from "@Obsidian/Enums/Group/groupLocationPickerMode";
+    import { loadMapResources, wellKnownToCoordinates } from "@Obsidian/Utility/geo";
+    import { Coordinate, DrawingMode } from "@Obsidian/Types/Controls/geo";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GroupMeetingLocationBag>,
+            required: true
+        },
+
+        /**
+         * The Guid of the Map Style DefinedValue from the block's
+         * MapStyle attribute. Passed to loadMapResources so the rendered
+         * map matches the site's configured style. Null falls back to
+         * Rock's default map style on the server.
+         */
+        mapStyleValueGuid: {
+            type: String as PropType<Guid | null>,
+            required: false,
+            default: null
+        }
+    });
+
+    // #region Values
+
+    const mapContainer = ref<HTMLDivElement | null>(null);
+    const isGoogleLoaded = ref(false);
+    const isMounted = ref(false);
+
+    /** True once both the Google SDK has loaded and the DOM has mounted. */
+    const isReady = computed((): boolean => isGoogleLoaded.value && isMounted.value);
+
+    /**
+     * Default Phoenix-area coordinates. Used only when `modelValue` has
+     * no geometry to derive a center from (e.g., an Address-mode location
+     * whose underlying Location was never geocoded).
+     */
+    const fallbackCenterLatitude = 33.590795;
+    const fallbackCenterLongitude = -112.126459;
+
+    let mapStyles: google.maps.MapTypeStyle[] = [];
+    let mapId: string | null = null;
+    let centerLatitude = fallbackCenterLatitude;
+    let centerLongitude = fallbackCenterLongitude;
+    let resizeObserver: ResizeObserver | null = null;
+    let map: google.maps.Map | null = null;
+    let polygon: google.maps.Polygon | null = null;
+    let marker: google.maps.Marker | null = null;
+    let advancedMarker: google.maps.marker.AdvancedMarkerElement | null = null;
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Whether the card is wrapped in an anchor (when `mapUrl` is set) or
+     * rendered as a div (when no GroupMapPage is configured). Wrapping a
+     * non-navigable card in an anchor with no href would be confusing for
+     * screen readers.
+     */
+    const rootTag = computed((): string => {
+        return props.modelValue.mapUrl ? "a" : "div";
+    });
+
+    /**
+     * The WKT parse path for the location. Polygon mode goes through the
+     * polygon parser; every other mode uses the point parser.
+     */
+    const drawingMode = computed((): DrawingMode => {
+        return props.modelValue.mode === GroupLocationPickerMode.Polygon ? "Polygon" : "Point";
+    });
+
+    /**
+     * "Geofenced Location" placeholder text rendered below the map for
+     * polygon-style locations (which intentionally have no address).
+     * Returns null for other modes.
+     */
+    const polygonLabel = computed((): string | null => {
+        return props.modelValue.mode === GroupLocationPickerMode.Polygon
+            ? "Geofenced Location"
+            : null;
+    });
+
+    /**
+     * Whether to render the body row at all. Hides the row when nothing
+     * goes inside (no address, no schedule, not a polygon).
+     */
+    const hasBody = computed((): boolean => {
+        return Boolean(polygonLabel.value)
+            || Boolean(props.modelValue.address)
+            || Boolean(props.modelValue.scheduleText);
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Initializes the Google Map in static mode (no zoom / pan / icon
+     * clicks) and overlays the marker or polygon shape. Called after both
+     * the map resources are loaded and the component is mounted; short-
+     * circuits if either is not yet ready.
+     */
+    function renderMap(): void {
+        if (!isReady.value || !mapContainer.value) {
+            return;
+        }
+
+        teardownMap();
+
+        const coordinates = wellKnownToCoordinates(props.modelValue.mapData ?? "", drawingMode.value);
+        const hasCoordinates = coordinates.length > 0;
+
+        const center = hasCoordinates
+            ? coordinatesToCenter(coordinates, drawingMode.value)
+            : new google.maps.LatLng(centerLatitude, centerLongitude);
+
+        const styledMap = new google.maps.StyledMapType(mapStyles, { name: "Styled Map" });
+
+        // Alias to a const so TS narrows the outer `let map` across the
+        // ResizeObserver closure. The outer `map` is still assigned so
+        // teardownMap can reach it on unmount.
+        const newMap = new google.maps.Map(mapContainer.value, {
+            center,
+            zoom: 14,
+            disableDefaultUI: true,
+            gestureHandling: "none",
+            keyboardShortcuts: false,
+            clickableIcons: false,
+            ...(mapId ? { mapId } : {})
+        });
+        map = newMap;
+
+        newMap.mapTypes.set("map_style", styledMap);
+        newMap.setMapTypeId("map_style");
+
+        if (!hasCoordinates) {
+            return;
+        }
+
+        let polygonBounds: google.maps.LatLngBounds | null = null;
+
+        if (drawingMode.value === "Polygon") {
+            polygon = new google.maps.Polygon({
+                paths: coordinates.map(([lat, lng]) => new google.maps.LatLng(lat, lng)),
+                clickable: false,
+                editable: false,
+                strokeColor: "#0088cc",
+                fillColor: "#0088cc",
+                strokeWeight: 2,
+                map: newMap
+            });
+
+            // Fit the viewport to the polygon's bounds so the whole
+            // shape is visible inside the 16:9 frame.
+            polygonBounds = new google.maps.LatLngBounds();
+            polygon.getPath().forEach((latLng) => polygonBounds!.extend(latLng));
+            newMap.fitBounds(polygonBounds);
+        }
+        else {
+            const position = new google.maps.LatLng(coordinates[0][0], coordinates[0][1]);
+
+            /*
+                5/19/2026 - MSE
+
+                When the org configures a custom googleMapId the Maps SDK
+                renders a vector map, on which legacy google.maps.Marker
+                is soft-deprecated (Feb 2024) and renders incorrectly.
+                AdvancedMarkerElement is the vector-map replacement but
+                requires a mapId to render at all — it does not work on
+                raster maps. So neither class is universal; we branch.
+
+                The same conditional lives in geoPickerMap.obs:236-269
+                and the WebForms GroupMap / GroupFinder marker code
+                (rationale documented at GroupFinder.ascx.cs:2316-2330).
+
+                Reason: AdvancedMarkerElement requires a mapId; legacy
+                Marker is required when no mapId is configured.
+            */
+            if (mapId) {
+                advancedMarker = new google.maps.marker.AdvancedMarkerElement({
+                    position,
+                    map: newMap
+                });
+            }
+            else {
+                marker = new google.maps.Marker({
+                    position,
+                    map: newMap,
+                    clickable: false
+                });
+            }
+        }
+
+        // Aspect-ratio sizing can leave the container with zero or stale
+        // dimensions at map-construction time, so Google Maps never fetches
+        // tiles until the user scrolls. The observer forces a resize when
+        // the box settles and re-frames the geometry so the marker/polygon
+        // stays centered. Disconnect any prior observer so re-runs don't stack.
+        resizeObserver?.disconnect();
+        resizeObserver = new ResizeObserver(() => {
+            google.maps.event.trigger(newMap, "resize");
+
+            if (polygonBounds) {
+                newMap.fitBounds(polygonBounds);
+            }
+            else {
+                newMap.setCenter(center);
+            }
+        });
+        resizeObserver.observe(mapContainer.value);
+    }
+
+    /**
+     * Tears down the Google Maps handles so internal listener tables
+     * and tile loaders can be GC'd. Called from onUnmounted and from
+     * renderMap before re-rendering.
+     */
+    function teardownMap(): void {
+        polygon?.setMap(null);
+        polygon = null;
+
+        marker?.setMap(null);
+        marker = null;
+
+        if (advancedMarker) {
+            // AdvancedMarkerElement detaches via `.map = null`, not `setMap(null)`.
+            advancedMarker.map = null;
+            advancedMarker = null;
+        }
+
+        // Alias to a const so TS narrows `Map | null` to `Map`; the outer
+        // `let` doesn't narrow because TS treats it as possibly reassigned.
+        const mapInstance = map;
+        if (mapInstance) {
+            google.maps.event.clearInstanceListeners(mapInstance);
+            map = null;
+        }
+    }
+
+    /**
+     * Returns a sensible center LatLng for the static map: the single point
+     * for Point mode, or the polygon's bounding-box center for Polygon mode.
+     * `fitBounds` runs after render for polygons; this just primes the
+     * initial center so the map doesn't flash to a default location before
+     * `fitBounds` settles.
+     */
+    function coordinatesToCenter(coordinates: Coordinate[], mode: DrawingMode): google.maps.LatLng {
+        if (mode === "Point") {
+            return new google.maps.LatLng(coordinates[0][0], coordinates[0][1]);
+        }
+
+        let minLat = coordinates[0][0];
+        let maxLat = coordinates[0][0];
+        let minLng = coordinates[0][1];
+        let maxLng = coordinates[0][1];
+
+        for (const [lat, lng] of coordinates) {
+            if (lat < minLat) minLat = lat;
+            if (lat > maxLat) maxLat = lat;
+            if (lng < minLng) minLng = lng;
+            if (lng > maxLng) maxLng = lng;
+        }
+
+        return new google.maps.LatLng((minLat + maxLat) / 2, (minLng + maxLng) / 2);
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Loads map resources (style, center, map ID) ahead of mount so the
+     * map can paint as soon as the DOM is ready.
+     */
+    onBeforeMount(async (): Promise<void> => {
+        const settings = await loadMapResources({ mapStyleValueGuid: props.mapStyleValueGuid ?? "" });
+
+        try {
+            mapStyles = JSON.parse(settings.mapStyle ?? "");
+        }
+        catch {
+            // Empty / malformed map style is non-fatal; the map renders
+            // with Google's default styling.
+        }
+
+        // googleMapId lives on the broader GeoPickerGoogleMapSettingsBag
+        // shape, not the trimmed GeoPickerSettingsBag that loadMapResources
+        // returns by type.
+        const googleSettings = settings as GeoPickerGoogleMapSettingsBag;
+        mapId = googleSettings.googleMapId ?? null;
+        centerLatitude = settings.centerLatitude ?? fallbackCenterLatitude;
+        centerLongitude = settings.centerLongitude ?? fallbackCenterLongitude;
+
+        isGoogleLoaded.value = true;
+    });
+
+    /** Signals DOM readiness for `isReady`. */
+    onMounted((): void => {
+        isMounted.value = true;
+    });
+
+    /**
+     * Tears down map handles and disconnects the resize observer so internal
+     * listener tables and tile loaders can be GC'd.
+     */
+    onUnmounted((): void => {
+        resizeObserver?.disconnect();
+        resizeObserver = null;
+        teardownMap();
+    });
+
+    // #endregion
+
+    // #region Watchers
+
+    /** Paints the map once the SDK and DOM are both ready (either order). */
+    watch(isReady, (ready) => {
+        if (ready) {
+            renderMap();
+        }
+    });
+
+    // #endregion
+</script>

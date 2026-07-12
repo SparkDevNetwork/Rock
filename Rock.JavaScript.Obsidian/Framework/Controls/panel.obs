@@ -94,6 +94,10 @@
                 </div>
             </div>
 
+            <template v-else-if="$slots.panelHeader">
+                <slot name="panelHeader" />
+            </template>
+
             <div v-if="$slots.subheaderLeft || $slots.subheaderRight" class="panel-sub-header">
                 <div class="panel-sub-header-left">
                     <slot name="subheaderLeft" />

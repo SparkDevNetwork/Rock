@@ -25,6 +25,7 @@
                     ${{ headerTotalAmount.toFixed(2) }}
                 </span>
                 <span class="label label-default">
+                    <i class="ti ti-gift"></i>
                     {{ headerBag?.transactionType?.text }}
                 </span>
             </template>
@@ -41,7 +42,7 @@
                 </RockForm>
             </template>
 
-            <template #footerSecondaryActions v-if="transactionViewBag?.canRefund">
+            <template #footerSecondaryActions v-if="transactionViewBag?.canRefund && panelMode === DetailPanelMode.View">
                 <div class="d-flex gap-2">
                     <RockButton
                                 btnType="default"
@@ -53,18 +54,12 @@
                            class="btn btn-default btn-sm">
                             <i class="fa fa-chevron-left"></i> Back
                         </a>
-                        <span v-else class="btn btn-default btn-sm disabled">
-                            <i class="fa fa-chevron-left"></i> Back
-                        </span>
 
                         <a v-if="nextTransactionUrl"
                            :href="nextTransactionUrl"
                            class="btn btn-default btn-sm">
                             Next <i class="fa fa-chevron-right"></i>
                         </a>
-                        <span v-else class="btn btn-default btn-sm disabled">
-                            Next <i class="fa fa-chevron-right"></i>
-                        </span>
                     </div>
                 </div>
             </template>
@@ -143,7 +138,6 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
-
     const config = useConfigurationValues<DetailBlockBox<TransactionBag, TransactionDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -216,7 +210,7 @@
 
     /** Footer actions shown in the panel. "Save & Add Another" is only available when adding a new step with a selectable person. */
     const editFooterActions = computed((): PanelAction[] => {
-        if (panelMode.value !== DetailPanelMode.Add || !transactionViewBag.value?.batchId || !isNewTransaction.value) {
+        if (panelMode.value !== DetailPanelMode.Add || !transactionViewBag.value?.batchId) {
             return [];
         }
 
@@ -488,9 +482,12 @@
         if (result.statusCode === 201) {
             if (reloadAction === "batch") {
                 const batchUrl = options.value.batchDetailPageUrl;
-                const batchId = transactionEditBag.value?.bag.batchId;
-                if (batchUrl && batchId) {
-                    window.location.href = `${batchUrl}?BatchId=${batchId}`;
+                // Prefer the hashed IdKey so the URL works regardless of the
+                // site's DisablePredictableIds setting; fall back to integer Id.
+                const batchKey = transactionEditBag.value?.bag.batchIdKey
+                    ?? transactionEditBag.value?.bag.batchId?.toString();
+                if (batchUrl && batchKey) {
+                    window.location.href = `${batchUrl}?BatchId=${batchKey}`;
                 }
                 return;
             }

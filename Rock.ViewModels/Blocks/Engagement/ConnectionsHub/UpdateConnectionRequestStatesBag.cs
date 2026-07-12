@@ -46,5 +46,10 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// Gets or sets the group member requirements to update when completing requests that have placement groups.
         /// </summary>
         public List<GroupMemberRequirementBag> GroupMemberRequirements { get; set; }
+
+        /// <summary>
+        /// Gets or sets a list of connection type id keys associated with the selected requests.
+        /// </summary>
+        public List<string> ConnectionTypeIdKeys { get; set; }
     }
 }

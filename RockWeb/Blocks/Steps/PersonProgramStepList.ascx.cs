@@ -41,33 +41,33 @@ namespace RockWeb.Blocks.Steps
     #region Attributes
 
     [StepProgramField(
-        name: "Step Program",
-        description: "The Step Program to display. This value can also be a page parameter: StepProgramId. Leave this attribute blank to use the page parameter.",
-        required: false,
-        order: 1,
-        key: AttributeKey.StepProgram )]
+        "Step Program",
+        Description = "The Step Program to display. This value can also be a page parameter: StepProgramId. Leave this attribute blank to use the page parameter.",
+        IsRequired = false,
+        Order = 1,
+        Key = AttributeKey.StepProgram )]
 
     [LinkedPage(
-        name: "Step Entry Page",
-        description: "The page where step records can be edited or added",
-        order: 2,
-        key: AttributeKey.StepPage )]
+        "Step Entry Page",
+        Description = "The page where step records can be edited or added",
+        Order = 2,
+        Key = AttributeKey.StepPage )]
 
     [IntegerField(
-        name: "Steps Per Row",
-        description: "The number of step cards that should be shown on a row",
-        order: 3,
-        required: true,
-        key: AttributeKey.StepsPerRow,
-        defaultValue: AttributeDefault.StepsPerRow )]
+        "Steps Per Row",
+        Description = "The number of step cards that should be shown on a row",
+        Order = 3,
+        IsRequired = true,
+        Key = AttributeKey.StepsPerRow,
+        DefaultIntegerValue = AttributeDefault.StepsPerRow )]
 
     [IntegerField(
-        name: "Steps Per Row Mobile",
-        description: "The number of step cards that should be shown on a row on a mobile screen size",
-        order: 4,
-        required: true,
-        key: AttributeKey.StepsPerRowMobile,
-        defaultValue: AttributeDefault.StepsPerRowMobile )]
+        "Steps Per Row Mobile",
+        Description = "The number of step cards that should be shown on a row on a mobile screen size",
+        Order = 4,
+        IsRequired = true,
+        Key = AttributeKey.StepsPerRowMobile,
+        DefaultIntegerValue = AttributeDefault.StepsPerRowMobile )]
 
     [BooleanField(
         "Show Campus Column",

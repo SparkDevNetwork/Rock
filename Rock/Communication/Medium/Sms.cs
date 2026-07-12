@@ -39,7 +39,10 @@ namespace Rock.Communication.Medium
     [Description( "An SMS communication" )]
     [Export( typeof( MediumComponent ) )]
     [ExportMetadata( "ComponentName", "SMS" )]
-    [IntegerField( "Character Limit", "Set this to show a character limit countdown for SMS communications. Set to 0 to disable", false, 160 )]
+    [IntegerField( "Character Limit",
+        Description = "Set this to show a character limit countdown for SMS communications. Set to 0 to disable",
+        IsRequired = false,
+        DefaultIntegerValue = 160 )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS )]
     public class Sms : MediumComponent
     {

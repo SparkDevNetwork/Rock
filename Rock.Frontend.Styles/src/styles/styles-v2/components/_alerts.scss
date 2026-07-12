@@ -153,14 +153,14 @@
 
 
 .alert-validation{
-  color:            var(--color-danger-strong);
-  background-color: var(--color-warning-soft);
-  border-color:     var(--color-warning-strong);
+  color:            var(--color-critical-strong);
+  background-color: var(--color-critical-soft);
+  border-color:     var(--color-critical-strong);
   hr {
-    border-top-color: var(--color-warning-strong);
+    border-top-color: var(--color-critical-strong);
   }
   .alert-link {
-    color: var(--color-warning-strong);
+    color: var(--color-critical-strong);
   }
   ul,
   span {

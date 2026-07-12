@@ -1,14 +1,14 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="tabbed-bar" :class="{ 'pills': props.type === 'pills' }">
+    <div class="tabbed-bar" :class="{ 'pills': props.type === 'pills', 'allow-wrapping': isWrappingEnabled }">
         <ul class="toolbar-nav" ref="toolbarNavElement">
             <li v-for="tab in tabs" :class="{ active: isTabActive(tab) }">
-                <span class="title" @click.prevent="onSelectTab(tab)">
-                    {{ getTabText(tab) }}
-                </span>
+                <div class="title" @click.prevent="onSelectTab(tab)">
+                    <slot name="tab" :tab="tab">{{ getTabText(tab) }}</slot>
+                </div>
             </li>
 
-            <li class="more-items">
+            <li v-if="!isWrappingEnabled" class="more-items">
                 <DropDownMenu :items="overflowTabActions" align="right">
                     <span class="title">More <i class="ti ti-chevron-down"></i></span>
                 </DropDownMenu>
@@ -43,6 +43,16 @@
             default: "tabs"
         },
 
+        /**
+         * Whether pill tabs should wrap onto multiple lines when they exceed
+         * the container width. Applies only to the "pills" type. When wrapping
+         * is not active, overflowing tabs collapse into a "More" dropdown.
+         */
+        allowPillWrapping: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         /** The key for the selected tab to be tracked in the Query String. */
         selectedTabQueryParameterKey: {
             type: String,
@@ -62,6 +72,14 @@
     let resizeTimer: number | undefined;
 
     // #region Computed Values
+
+    /**
+     * Whether tabs should currently wrap: pill wrapping is on and the bar is
+     * in pills mode.
+     */
+    const isWrappingEnabled = computed((): boolean =>
+        props.allowPillWrapping && props.type === "pills"
+    );
 
     /**
      * Contains a list of menu actions that represent all the tabs that have
@@ -127,6 +145,21 @@
      * then we use the ResizeObserver. Otherwise use a timer.
      */
     function updateOverflowObserver(): void {
+        // Wrapping shows every tab, so tear down any overflow observer or timer.
+        if (isWrappingEnabled.value) {
+            if (resizeObserver) {
+                resizeObserver.disconnect();
+                resizeObserver = undefined;
+            }
+
+            if (resizeTimer !== undefined) {
+                clearInterval(resizeTimer);
+                resizeTimer = undefined;
+            }
+
+            return;
+        }
+
         if (window.ResizeObserver) {
             if (toolbarNavElement.value && !resizeObserver) {
                 resizeObserver = new ResizeObserver(updateOverflowTabs);
@@ -169,6 +202,19 @@
      * Updates which tabs are overflowing and adjusts which tabs are visible.
      */
     function updateOverflowTabs(): void {
+        // Wrapping shows every tab, so clear any styles a prior overflow pass
+        // applied and skip the recompute.
+        if (isWrappingEnabled.value) {
+            if (toolbarNavElement.value) {
+                for (let i = 0; i < toolbarNavElement.value.children.length; i++) {
+                    (toolbarNavElement.value.children[i] as HTMLElement).style.display = "";
+                }
+            }
+
+            overflowTabs.value = [];
+            return;
+        }
+
         // With 12 tabs when all are visible and fit, this function takes
         // <1ms.
         //
@@ -289,6 +335,13 @@
     }
 
     watch(toolbarNavElement, updateOverflowObserver);
+
+    // Toggling wrapping at runtime installs or tears down the overflow
+    // management and clears any styles it applied.
+    watch(isWrappingEnabled, () => {
+        updateOverflowObserver();
+        nextTick(updateOverflowTabs);
+    });
 
     // Any time the selected tab changes or our list of tabs change then we
     // need to recalculate the overflow tabs.

@@ -1,0 +1,91 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Areas &amp; Groups List Settings"
+           saveText="Save"
+           cancelText="Cancel"
+           isNarrow
+           :onSave="onSave">
+        <InlineCheckBox v-model="showInactiveLocal"
+                        label="Show Inactive Groups" />
+
+        <InlineCheckBox v-model="disableAutoCollapseLocal"
+                        label="Disable Auto-Collapse"
+                        help="Enable to keep multiple Areas and Groups expanded at once. By default, selecting one will collapse the others." />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+
+    const props = defineProps({
+        /** Whether the modal is visible. */
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        /** The current "Show Inactive Groups" preference value. */
+        showInactive: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        /** The current "Disable Auto-Collapse" preference value. */
+        disableAutoCollapse: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "save", values: { showInactive: boolean; disableAutoCollapse: boolean }): void;
+    }>();
+
+    // #region Values
+
+    const isVisible = ref<boolean>(props.modelValue);
+    const showInactiveLocal = ref<boolean>(props.showInactive);
+    const disableAutoCollapseLocal = ref<boolean>(props.disableAutoCollapse);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Emits the working copy back to the parent and closes the modal.
+     * Triggered by the Save button.
+     */
+    function onSave(): void {
+        emit("save", {
+            showInactive: showInactiveLocal.value,
+            disableAutoCollapse: disableAutoCollapseLocal.value
+        });
+        isVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // Reset the local working copy each time the modal is opened so a previous
+    // Cancel doesn't leak into the next open, and a parent-side change to the
+    // persisted values is reflected when the modal next appears.
+    watch(() => props.modelValue, (value) => {
+        if (value) {
+            showInactiveLocal.value = props.showInactive;
+            disableAutoCollapseLocal.value = props.disableAutoCollapse;
+        }
+
+        isVisible.value = value;
+    });
+
+    watch(isVisible, (value) => {
+        emit("update:modelValue", value);
+    });
+
+    // #endregion Watchers
+</script>

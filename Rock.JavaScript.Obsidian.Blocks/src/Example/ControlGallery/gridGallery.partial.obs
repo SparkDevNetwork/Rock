@@ -11,9 +11,20 @@
               :markInactiveRows="markInactiveRows"
               itemTerm="Widget"
               @addItem="onAddItem"
+              @onLoad="onGridLoad"
               :showExport="showExport"
               :manualSort="onManualSort">
+            <template v-if="showActionToolbar" #actionToolbar>
+                <RockButton :btnType="BtnType.Default"
+                            :btnSize="BtnSize.Small">
+                    <i class="ti ti-mail"></i>
+                    Send Email
+                </RockButton>
+            </template>
+
             <ReorderColumn v-if="showReorder" />
+
+            <SelectColumn v-if="showActionToolbar" />
 
             <TextColumn name="name"
                         :title="nameTitle"
@@ -53,6 +64,7 @@
                 <CheckBox label="Mark Inactive Rows" v-model="markInactiveRows" />
                 <CheckBox label="Use Column Titles" v-model="useColumnTitles" />
                 <CheckBox label="Manual Sorting" v-model="manualSort" />
+                <CheckBox label="Action Toolbar" :modelValue="showActionToolbar" @update:modelValue="onShowActionToolbarChanged" />
             </div>
         </template>
     </GalleryAndResult>
@@ -60,8 +72,11 @@
 
 <script setup lang="ts">
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
-    import Grid, { BooleanColumn, DateColumn, DeleteColumn, EditColumn, NumberColumn, ReorderColumn, TextColumn, textValueFilter, dateValueFilter, numberValueFilter, booleanValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, DateColumn, DeleteColumn, EditColumn, NumberColumn, ReorderColumn, SelectColumn, TextColumn, textValueFilter, dateValueFilter, numberValueFilter, booleanValueFilter } from "@Obsidian/Controls/grid";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { ComponentUsage, getControlImportPath } from "./common/utils.partial";
     import { computed, nextTick, reactive, ref } from "vue";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
@@ -77,6 +92,7 @@
     const markInactiveRows = ref(false);
     const useColumnTitles = ref(true);
     const manualSort = ref(false);
+    const showActionToolbar = ref(false);
 
     const gridData: GridDataBag = reactive<GridDataBag>({
         rows: [1, 2, 3, 4, 5].map(idx => generateItem(idx))
@@ -105,8 +121,20 @@
         usage.addAttribute("showExport", showExport.value, false);
         usage.addAttribute("markInactiveRows", markInactiveRows.value, false);
 
+        if (showActionToolbar.value) {
+            usage.addBody("<template #actionToolbar>");
+            usage.addBody("    <RockButton :btnType=\"BtnType.Default\" :btnSize=\"BtnSize.Small\" @click=\"onActionToolbarClick\">Send Email</RockButton>");
+            usage.addBody("</template>");
+            usage.addBody("");
+        }
+
         if (showReorder.value) {
             usage.addBody(createColumn("ReorderColumn"));
+            usage.addBody("");
+        }
+
+        if (showActionToolbar.value) {
+            usage.addBody(createColumn("SelectColumn"));
             usage.addBody("");
         }
 
@@ -196,5 +224,27 @@
         showReorder.value = value;
         await nextTick();
         showGrid.value = true;
+    }
+
+    async function onShowActionToolbarChanged(value: boolean): Promise<void> {
+        showGrid.value = false;
+        await nextTick();
+        showActionToolbar.value = value;
+        await nextTick();
+        showGrid.value = true;
+    }
+
+    /**
+     * Captures the grid state when the grid loads. When the action toolbar is
+     * enabled, all rows are selected so the toolbar becomes visible immediately
+     * (the toolbar only appears when at least one row is selected).
+     */
+    function onGridLoad(state: IGridState): void {
+
+        if (showActionToolbar.value) {
+            state.selectedKeys = state.filteredRows
+                .map(r => state.getRowKey(r))
+                .filter((key): key is string => key !== undefined);
+        }
     }
 </script>

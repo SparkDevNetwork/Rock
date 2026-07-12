@@ -23,26 +23,38 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/** The options that populate the Content Channel View block's custom settings editor. */
 export type ContentChannelViewCustomSettingsOptionsBag = {
+    /** Gets or sets the active cache tag values available for selection. */
     cacheTags?: ListItemBag[] | null;
 
+    /** Gets or sets the item statuses available for selection. */
     contentChannelItemStatuses?: ListItemBag[] | null;
 
+    /** Gets or sets the content channels available for selection. */
     contentChannels?: ListItemBag[] | null;
 
+    /** Gets or sets the item attribute keys available for binding to the block's Context entity. */
     contextFilterAttributes?: ListItemBag[] | null;
 
+    /** Gets or sets a value indicating whether the personalization filter type selector should be shown in the editor. */
     isPersonalizationVisible: boolean;
 
+    /** Gets or sets a value indicating whether the RSS autodiscover link toggle should be shown in the editor. */
     isSetRssAutodiscoverLinkVisible: boolean;
 
+    /** Gets or sets the channel and item attributes eligible as the meta description source. */
     metaDescriptionAttributes?: ListItemBag[] | null;
 
+    /** Gets or sets the channel and item Image attributes eligible as the meta image source. */
     metaImageAttributes?: ListItemBag[] | null;
 
+    /** Gets or sets the sort field choices available to the order editor. */
     orderItemsByKeyOptions?: ListItemBag[] | null;
 
+    /** Gets or sets the sort direction choices paired with Rock.ViewModels.Blocks.Cms.ContentChannelView.ContentChannelViewCustomSettingsOptionsBag.OrderItemsByKeyOptions in the order editor. */
     orderItemsByValueOptions?: ListItemBag[] | null;
 
+    /** Gets or sets the personalization filter type choices available for selection. */
     personalizationFilterTypes?: ListItemBag[] | null;
 };

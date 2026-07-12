@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,12 +36,35 @@ namespace Rock.Follow.Suggestion
     [Export( typeof( SuggestionComponent ) )]
     [ExportMetadata( "ComponentName", "InGroupTogether" )]
 
-    [GroupTypeField("Group Type","The group type", true, order: 0 )]
-    [GroupField("Group (optional)", "A specific group to evaluate (Make sure to select group with same group type as above).", false, order:1, key:"Group" )]
-    [SecurityRoleField("Security Role (optional)", "A specific group to evaluate (Make sure to select group with same group type as above).", false, order:2, key:"SecurityRole")]
-    [GroupRoleField( null, "Follower Group Type (optional)", "If specified, only people with this role will be notified (Make sure to select same group type as above).", false, order:3, key:"FollowerGroupType" )]
-    [GroupRoleField( null, "Followed Group Type (optional)", "If specified, only people with this role will be suggested to the follower (Make sure to select same group type as above).", false, order:4, key:"FollowedGroupType" )]
-    [BooleanField("Auto-Follow", "Determines if new people added to the group should be auto-followed.", false, IsRequired = true, Key = "AutoFollow")]
+    [GroupTypeField( "Group Type",
+        Description = "The group type",
+        IsRequired = true,
+        Order = 0 )]
+    [GroupField( "Group (optional)",
+        Description = "A specific group to evaluate (Make sure to select group with same group type as above).",
+        IsRequired = false,
+        Order = 1,
+        Key = "Group" )]
+    [SecurityRoleField( "Security Role (optional)",
+        Description = "A specific group to evaluate (Make sure to select group with same group type as above).",
+        IsRequired = false,
+        Order = 2,
+        Key = "SecurityRole")]
+    [GroupRoleField( null, "Follower Group Type (optional)",
+        Description = "If specified, only people with this role will be notified (Make sure to select same group type as above).",
+        IsRequired = false,
+        Order = 3,
+        Key = "FollowerGroupType" )]
+    [GroupRoleField( null, "Followed Group Type (optional)",
+        Description = "If specified, only people with this role will be suggested to the follower (Make sure to select same group type as above).",
+        IsRequired = false,
+        Order = 4,
+        Key = "FollowedGroupType" )]
+    [BooleanField( "Auto-Follow",
+        Description = "Determines if new people added to the group should be auto-followed.",
+        IsRequired = true,
+        DefaultBooleanValue = false,
+        Key = "AutoFollow")]
     [Rock.SystemGuid.EntityTypeGuid( "20AC7F2A-D42F-438D-93D7-46E3C6769B8F")]
     public class InGroupTogether : SuggestionComponent
     {

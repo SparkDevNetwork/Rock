@@ -24,12 +24,14 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.AI;
+using Rock.Enums.Controls;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Prayer.PrayerRequestList;
+using Rock.ViewModels.Controls;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -58,6 +60,17 @@ namespace Rock.Blocks.Prayer
     [CustomizedGrid]
     public class PrayerRequestList : RockEntityListBlockType<PrayerRequest>
     {
+        #region Fields
+
+        /// <summary>
+        /// The number of viewable prayer comments, keyed by prayer request Id.
+        /// Loaded once per grid build in <see cref="GetListItems"/> so the Comments
+        /// column can be populated without a per-row database lookup.
+        /// </summary>
+        private Dictionary<int, int> _prayerCommentCounts = new Dictionary<int, int>();
+
+        #endregion Fields
+
         #region Keys
 
         private static class AttributeKey
@@ -77,6 +90,7 @@ namespace Rock.Blocks.Prayer
             public const string FilterUrgent = "filter-urgent";
             public const string FilterCommenting = "filter-commenting";
             public const string FilterShowExpiredRequests = "filter-show-expired-requests";
+            public const string FilterDateRange = "filter-date-range";
         }
 
         #region Properties
@@ -98,6 +112,10 @@ namespace Rock.Blocks.Prayer
         private bool FilterShowExpiredRequests => BlockPersonPreferences
             .GetValue( PreferenceKey.FilterShowExpiredRequests )
             .AsBoolean();
+
+        private SlidingDateRangeBag FilterDateRange => BlockPersonPreferences
+            .GetValue( PreferenceKey.FilterDateRange )
+            .ToSlidingDateRangeBagOrNull();
 
         #endregion Properties
 
@@ -239,6 +257,28 @@ namespace Rock.Blocks.Prayer
                 }
             }
 
+            // Filter by the entered date range. This is always applied and defaults to the
+            // last 3 months so the grid never materializes an unbounded number of rows (which
+            // is what enabling 'Show Expired Requests' would otherwise do, since requests
+            // accumulate over time). The individual can widen the range as needed.
+            var defaultDateRange = new SlidingDateRangeBag
+            {
+                RangeType = SlidingDateRangeType.Last,
+                TimeUnit = TimeUnitType.Month,
+                TimeValue = 3
+            };
+
+            var dateRange = FilterDateRange.Validate( defaultDateRange ).ActualDateRange;
+            if ( dateRange.Start.HasValue )
+            {
+                qry = qry.Where( p => p.EnteredDateTime >= dateRange.Start.Value );
+            }
+
+            if ( dateRange.End.HasValue )
+            {
+                qry = qry.Where( p => p.EnteredDateTime < dateRange.End.Value );
+            }
+
             // If 'Show Expired Requests' is false, filter them out... they're included by default.
             if ( !FilterShowExpiredRequests )
             {
@@ -258,6 +298,52 @@ namespace Rock.Blocks.Prayer
         }
 
         /// <inheritdoc/>
+        protected override List<PrayerRequest> GetListItems( IQueryable<PrayerRequest> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+
+            if ( items.Count == 0 )
+            {
+                return items;
+            }
+
+            /*
+                6/9/2026 - CLAUDE
+
+                The Comments column count is loaded here with a single grouped query
+                rather than per-row. The block was previously given a comment count
+                only by way of a customized-grid Lava column ({{ Row.Id | Notes:'2'
+                | Size }}), which issued a separate database lookup for every rendered
+                row. On instances with thousands of requests (e.g. when 'Show Expired
+                Requests' was enabled) that per-row Lava caused page timeouts.
+
+                Reason: Replace per-row Lava note lookups with one efficient aggregate query.
+            */
+            var prayerCommentNoteTypeId = NoteTypeCache.Get( Rock.SystemGuid.NoteType.PRAYER_COMMENT.AsGuid() )?.Id;
+
+            if ( !prayerCommentNoteTypeId.HasValue )
+            {
+                return items;
+            }
+
+            // Use the (unordered, still unexecuted) filtered queryable as a subquery basis for
+            // Contains so EF generates a single SQL statement instead of a large WHERE IN list.
+            // The ordered queryable is intentionally not reused here because an ORDER BY is not
+            // valid inside an IN subquery.
+            var prayerRequestIdQuery = GetListQueryable( rockContext ).Select( p => p.Id );
+            var currentPersonId = GetCurrentPerson()?.Id;
+
+            _prayerCommentCounts = new NoteService( rockContext )
+                .GetByNoteTypeId( prayerCommentNoteTypeId.Value )
+                .AreViewableBy( currentPersonId )
+                .Where( n => n.EntityId.HasValue && prayerRequestIdQuery.Contains( n.EntityId.Value ) )
+                .GroupBy( n => n.EntityId.Value )
+                .ToDictionary( g => g.Key, g => g.Count() );
+
+            return items;
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<PrayerRequest> GetGridBuilder()
         {
             var builder = new GridBuilder<PrayerRequest>()
@@ -270,6 +356,7 @@ namespace Rock.Blocks.Prayer
                 .AddDateTimeField( "enteredDateTime", a => a.EnteredDateTime )
                 .AddField( "prayerCount", a => a.PrayerCount )
                 .AddField( "flagCount", a => a.FlagCount )
+                .AddField( "commentCount", a => _prayerCommentCounts.GetValueOrDefault( a.Id, 0 ) )
                 .AddTextField( "moderationFlags", a => GetModerationFlagsText( a.ModerationFlags ) )
                 .AddAttributeFields( GetGridAttributes() );
 

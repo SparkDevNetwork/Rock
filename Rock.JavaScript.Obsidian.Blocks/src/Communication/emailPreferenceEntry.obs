@@ -5,63 +5,65 @@
         {{ errorMessage }}
     </NotificationBox>
 
-    <Panel v-else :hasTitle="false" hasNoBodyPadding>
+    <Panel v-else :hasTitle="false" hasNoBodyPadding type="block">
 
         <template #default>
-            <div class="email-preference-entry-header">
-                <i v-if="config.showHeaderIcon" :class="headerIconCssClass"></i>
-                <h3>
-                    {{ headerTitle }}
-                </h3>
-                <div v-if="headerDescriptionHtml"
-                     v-html="headerDescriptionHtml"
-                     class="email-preference-entry-header-description">
-                </div>
-                <div v-if="showResubscribeButtonInHeader" class="email-preference-entry-header-actions">
+            <ContentSectionContainer :sidebar="false">
 
-                    <NotificationBox v-if="resubscribeErrorMessage" :alertType="AlertType.Warning">
-                        {{ resubscribeErrorMessage }}
+                <ContentSection light disableCollapse>
+                    <div class="email-preference-entry-header">
+                        <i v-if="config.showHeaderIcon" :class="headerIconCssClass"></i>
+                        <h3>
+                            {{ headerTitle }}
+                        </h3>
+                        <div v-if="headerDescriptionHtml"
+                             v-html="headerDescriptionHtml"
+                             class="email-preference-entry-header-description">
+                        </div>
+                        <div v-if="showResubscribeButtonInHeader" class="email-preference-entry-header-actions">
+
+                            <NotificationBox v-if="resubscribeErrorMessage" :alertType="AlertType.Warning">
+                                {{ resubscribeErrorMessage }}
+                            </NotificationBox>
+
+                            <RockButton :btnType="BtnType.Link" @click="onResubscribeClick" :disabled="isResubscribing">
+                                Resubscribe
+                            </RockButton>
+
+                        </div>
+                        <div v-else-if="showManageMyAccountButtonInHeader" class="email-preference-entry-header-actions">
+                            <RockButton :btnType="BtnType.Link" @click="onManageMyAccountClick">
+                                Manage My Account
+                            </RockButton>
+                        </div>
+                    </div>
+                </ContentSection>
+
+                <ContentSection disableCollapse  v-if="isConfirmingDeactivation" class="email-preference-entry-confirm-deactivation-form">
+
+                    <NotificationBox v-if="deactivateErrorMessage" :alertType="AlertType.Warning">
+                        {{ deactivateErrorMessage }}
                     </NotificationBox>
 
-                    <RockButton :btnType="BtnType.Link" @click="onResubscribeClick" :disabled="isResubscribing">
-                        Resubscribe
-                    </RockButton>
+                    <RadioButtonList v-if="config.isDeactivatingFamilyEnabled"
+                                     v-model="recordsToDeactivate"
+                                     label="Record(s) To Deactivate"
+                                     :items="deactivateListItems"
+                                     :disabled="isDeactivating" />
 
-                </div>
-                <div v-else-if="showManageMyAccountButtonInHeader" class="email-preference-entry-header-actions">
-                    <RockButton :btnType="BtnType.Link" @click="onManageMyAccountClick">
-                        Manage My Account
-                    </RockButton>
-                </div>
-            </div>
+                    <RadioButtonList v-if="config.inactiveReasons?.length"
+                                     v-model="inactiveReasonValueGuid"
+                                     label="Reason"
+                                     :items="config.inactiveReasons"
+                                     :disabled="isDeactivating" />
 
-            <div v-if="isConfirmingDeactivation" class="email-preference-entry-confirm-deactivation-form">
+                    <TextBox v-model="inactiveReasonNote"
+                             label="Anything Else You'd Like Us To Know? (Optional)"
+                             textMode="multiline"
+                             :disabled="isDeactivating" />
+                </ContentSection>
 
-                <NotificationBox v-if="deactivateErrorMessage" :alertType="AlertType.Warning">
-                    {{ deactivateErrorMessage }}
-                </NotificationBox>
-
-                <RadioButtonList v-if="config.isDeactivatingFamilyEnabled"
-                                 v-model="recordsToDeactivate"
-                                 label="Record(s) To Deactivate"
-                                 :items="deactivateListItems"
-                                 :disabled="isDeactivating" />
-
-                <RadioButtonList v-if="config.inactiveReasons?.length"
-                                 v-model="inactiveReasonValueGuid"
-                                 label="Reason"
-                                 :items="config.inactiveReasons"
-                                 :disabled="isDeactivating" />
-
-                <TextBox v-model="inactiveReasonNote"
-                         label="Anything Else You'd Like Us To Know? (Optional)"
-                         textMode="multiline"
-                         :disabled="isDeactivating" />
-            </div>
-
-            <div v-else-if="!isRemovedFromChurchInvolvement" class="email-preference-entry-content">
-
-                <ContentSectionContainer :sidebar="false">
+                <template v-else-if="!isRemovedFromChurchInvolvement">
 
                     <ContentSection v-if="showUpdateContactInfoSection" light disableCollapse>
 
@@ -175,9 +177,9 @@
 
                     </ContentSection>
 
-                </ContentSectionContainer>
+                </template>
 
-            </div>
+            </ContentSectionContainer>
         </template>
 
         <template v-if="isConfirmingDeactivation" #footerActions>
@@ -210,7 +212,6 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: var(--spacing-large);
 }
 
 .email-preference-entry-header-icon-success {
@@ -238,11 +239,6 @@
     color: var(--color-primary);
 }
 
-.email-preference-entry-content {
-    border-top: 1px solid var(--color-interface-soft);
-    padding: var(--spacing-large);
-}
-
 .email-preference-entry-opt-out-options-description,
 .email-preference-entry-current-communication-channels-description,
 .email-preference-entry-available-communication-channels-description {
@@ -259,21 +255,10 @@
     border-top: 1px solid var(--color-interface-soft);
 }
 
-.email-preference-entry-confirm-deactivation-form {
-    border-top: 1px solid var(--color-interface-soft);
-    background-color: var(--color-interface-softer);
-    padding: var(--spacing-large);
-}
-
 .email-preference-entry-confirm-deactivation-footer-actions btn {
     color: var(--color-primary);
 }
 
-@media (max-width: 480px) {
-    .email-preference-entry-content {
-        padding: var(--spacing-medium);
-    }
-}
 </style>
 
 <script setup lang="ts">

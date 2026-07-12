@@ -28,45 +28,65 @@ import { DataViewFilterBag } from "@Obsidian/ViewModels/Reporting/dataViewFilter
 import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/** The settings used by the Content Channel View block. */
 export type ContentChannelViewCustomSettingsBag = {
+    /** Gets or sets the cache tags used to link cached content so that it can be expired as a group. */
     cacheTags?: string[] | null;
 
+    /** Gets or sets the unique identifier of the content channel that items are displayed from. */
     contentChannelGuid?: Guid | null;
 
+    /** Gets or sets the content channel item statuses that should be included when displaying items. */
     contentChannelItemStatuses?: ContentChannelItemStatus[] | null;
 
+    /** Gets or sets the item attribute key used when filtering items by the block's Context entity. */
     contextFilterAttributeKey?: string | null;
 
+    /** Gets or sets the data filter used to filter the items that are displayed. */
     dataViewFilter?: DataViewFilterBag | null;
 
+    /** Gets or sets the page used to navigate to for content item details. */
     detailPage?: PageRouteValueBag | null;
 
+    /** Gets or sets a value indicating whether an additional ArchiveSummary collection should be made available in Lava for building a month/year summary list of items. */
     isArchiveSummaryMergeFieldEnabled: boolean;
 
+    /** Gets or sets a value indicating whether the content data and attribute values should be merged using Lava. */
     isItemMergeFieldEnabled: boolean;
 
+    /** Gets or sets a value indicating whether the ItemTagList Lava merge field should be populated. */
     isItemTagListMergeFieldEnabled: boolean;
 
+    /** Gets or sets a value indicating whether the block should evaluate query string parameters for additional filter criteria. */
     isPageParameterFilteringEnabled: boolean;
 
+    /** Gets or sets a value indicating whether the block should set the page title using the channel name or content item. */
     isPageTitleUpdateEnabled: boolean;
 
+    /** Gets or sets a value indicating whether an RSS autodiscover link should be added to the page head. */
     isSetRssAutodiscoverLinkEnabled: boolean;
 
+    /** Gets or sets the number of seconds to cache the content items returned by the selected filter. */
     itemCacheDuration: number;
 
+    /** Gets or sets the maximum number of items to display. */
     itemsPerPage: number;
 
+    /** Gets or sets the Lava template used when formatting the list of content channel items. */
     lavaTemplate?: string | null;
 
+    /** Gets or sets the computed key (entity^attributeKey) of the attribute used for the meta description. */
     metaDescriptionAttributeValueKey?: string | null;
 
+    /** Gets or sets the computed key (entity^attributeKey) of the attribute used for the meta image. */
     metaImageAttributeValueKey?: string | null;
 
     /** Gets or sets the collection of items by which to order the results. */
     orderItemsBy?: ListItemBag[] | null;
 
+    /** Gets or sets the number of seconds to cache the rendered output. */
     outputCacheDuration: number;
 
+    /** Gets or sets how personalization (segments and request filters) affects the items that are returned. */
     personalizationFilterType: PersonalizationFilterType;
 };

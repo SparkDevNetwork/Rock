@@ -10,7 +10,7 @@ If you are new, start with [lms-overview.md](lms-overview.md). Sub-topics worth 
 
 | Doc | Summary |
 |---|---|
-| [LMS Activity Components](activity-components.md) | Pluggable activity types (Acknowledgment, Assessment, ContentArticle, FileUpload, VideoWatch, custom), per-component grading. |
+| [LMS Activity Components](activity-components.md) | Pluggable activity types (Acknowledgment, Assessment, ContentArticle, FileUpload, VideoWatch, custom), per-component grading, retake-support advertisement. |
 | [LMS Domain Overview](lms-overview.md) | Academic five-layer model, activity component pluggability, late-detection-by-submission-time, and file-retention-until-grading. |
-| [LMS Grading Systems](grading-systems.md) | Configurable grading systems and scales, per-Class assignment, statistics aggregation, late-submission handling. |
+| [LMS Grading Systems](grading-systems.md) | Configurable grading systems and scales, per-Class assignment, statistics aggregation, late-submission handling, assessment retakes. |
 | [LMS Public Block Security](public-block-security.md) | Per-entity authorization on public blocks, Smart Scroll workspace UX, anonymous vs authenticated access. |

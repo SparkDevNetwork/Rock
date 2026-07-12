@@ -83,13 +83,11 @@ namespace Rock.Attribute
         {
             get
             {
-                return FieldConfigurationValues.GetValueOrNull( ALLOW_MULTIPLE_KEY ).AsBoolean();
+                return FieldTypeGuid == SystemGuid.FieldType.CATEGORIES.AsGuid();
             }
 
             set
             {
-                FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new Field.ConfigurationValue( value.ToString() ) );
-
                 FieldTypeGuid = value
                     ? SystemGuid.FieldType.CATEGORIES.AsGuid()
                     : SystemGuid.FieldType.CATEGORY.AsGuid();

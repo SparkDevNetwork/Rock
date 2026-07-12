@@ -38,10 +38,26 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Person In Data View" )]
 
-    [WorkflowAttribute( "Person", "Workflow attribute that contains the person to find in the selected Data View.", true, "", "", 0, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [DataViewField( "DataView", "DataView to check.", true, "", "Rock.Model.Person", order: 1 )]
-    [IntegerField( "Timeout", "Number of seconds to wait before timing out.", false, 30, order: 2 )]
-    [WorkflowAttribute( "Boolean", "Workflow attribute to set True or False.", true, "", "", 3, null, new string[] { "Rock.Field.Types.BooleanFieldType" } )]
+    [WorkflowAttribute( "Person",
+        Description = "Workflow attribute that contains the person to find in the selected Data View.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [DataViewField( "DataView",
+        Description = "DataView to check.",
+        IsRequired = true,
+        EntityTypeName = "Rock.Model.Person",
+        Order = 1 )]
+    [IntegerField( "Timeout",
+        Description = "Number of seconds to wait before timing out.",
+        IsRequired = false,
+        DefaultIntegerValue = 30,
+        Order = 2 )]
+    [WorkflowAttribute( "Boolean",
+        Description = "Workflow attribute to set True or False.",
+        IsRequired = true,
+        Order = 3,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.BooleanFieldType" } )]
 
     [Rock.SystemGuid.EntityTypeGuid( "B6E3DA81-FDA9-4579-9438-93D6DCB86DAB")]
     public class PersonInDataView : ActionComponent

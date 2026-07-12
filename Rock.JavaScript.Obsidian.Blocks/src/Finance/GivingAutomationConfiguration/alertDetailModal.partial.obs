@@ -1,0 +1,377 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isOpen"
+           title="Alert Details"
+           saveText="Save"
+           @save="onSave">
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <CampusPicker v-model="campus"
+                              label="Person Campus"
+                              help="Optional Campus to filter people by." />
+            </div>
+            <div class="col-md-3">
+                <AccountPicker v-model="account"
+                               label="Account"
+                               help="Optional account to filter gifts by." />
+            </div>
+            <div class="col-md-3">
+                <div class="margin-t-lg">
+                    <InlineCheckBox v-model="isIncludeChildAccounts"
+                                    label="Include Child Accounts"
+                                    help="Checking this option will include all child accounts under all the selected account." />
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <RadioButtonList v-model="alertTypeValue"
+                                 label="Alert Type"
+                                 :items="alertTypeItems"
+                                 horizontal />
+            </div>
+            <div class="col-md-6">
+                <CheckBox v-model="isContinueIfMatched"
+                          label="Continue If Matched"
+                          help="Determines If additional rules should be considered if this rule is matched." />
+            </div>
+            <div class="col-md-6">
+                <DayOfWeekPicker v-model="runDays"
+                                 label="Days to Run"
+                                 multiple />
+            </div>
+            <div class="col-md-6">
+                <NumberBox v-model="repeatPreventionDuration"
+                           label="Repeat Prevention Duration"
+                           :decimalCount="0"
+                           help="The number of days between triggering the same alert. Blank means that the same trigger can occur on each occurrence if no global settings exist.">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">days</span>
+                    </template>
+                </NumberBox>
+            </div>
+        </div>
+
+        <div class="panel panel-section">
+            <div class="panel-heading">
+                <div>
+                    <h4 class="panel-title">Match Criteria</h4>
+                    <span class="description">The following criteria will be considered to determine if this alert should be fired.</span>
+                </div>
+            </div>
+
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-5">
+                        <NumberBox v-model="amountSensitivityScale"
+                                   class="input-width-xl"
+                                   label="Amount Sensitivity Scale"
+                                   help="The number of interquartile ranges below or above the median amount the gift must be to trigger the alert. A recommended value for classification of outliers is 1.5. Leave blank to ignore the sensitivity criteria." />
+                    </div>
+                    <div class="col-md-7 text-sm" v-html="amountSensitivityHelp"></div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-5">
+                        <NumberBox v-model="frequencySensitivityScale"
+                                   class="input-width-xl"
+                                   label="Frequency Sensitivity Scale"
+                                   help="The number of standard deviations below or above the mean the gift must be to trigger the alert. A value of 2 would classify the extreme 5% as outliers. Leave blank to ignore the sensitivity criteria." />
+                    </div>
+                    <div class="col-md-7 text-sm" v-html="frequencySensitivityHelp"></div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <CurrencyBox v-model="minimumGiftAmount"
+                                     label="Minimum Gift Amount"
+                                     help="The minimum amount the specific gift must be to be considered a match." />
+                        <CurrencyBox v-model="minimumMedianGiftAmount"
+                                     label="Minimum Median Gift Amount"
+                                     help="The minimum median gift amount for the giver to be considered a match." />
+                        <NumberBox v-model="maximumDaysSinceLastGift"
+                                   label="Maximum Days Since Last Gift"
+                                   :decimalCount="0"
+                                   help="The maximum number of days since the last gift.">
+                            <template #inputGroupAppend>
+                                <span class="input-group-addon">days</span>
+                            </template>
+                        </NumberBox>
+                        <DataViewPicker v-model="personDataView"
+                                        label="Person Data View"
+                                        :entityTypeGuid="EntityType.Person"
+                                        help="This data view will optionally filter the people who will trigger the alerts. The person's Giving Id will be used to filter out the gifts by." />
+                    </div>
+                    <div class="col-md-6">
+                        <CurrencyBox v-model="maximumGiftAmount"
+                                     label="Maximum Gift Amount"
+                                     help="The maximum amount the specific gift must be to be considered a match." />
+                        <CurrencyBox v-model="maximumMedianGiftAmount"
+                                     label="Maximum Median Gift Amount"
+                                     help="The maximum median gift amount for the giver to be considered a match." />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-section">
+            <div class="panel-heading">
+                <div>
+                    <h4 class="panel-title">Alert Actions</h4>
+                    <span class="description">If the criteria above is matched the following actions will be taken.</span>
+                </div>
+            </div>
+
+            <div class="panel-body">
+                <WorkflowTypePicker v-model="workflowType"
+                                    label="Launch Workflow of Type"
+                                    help="If matched, the selected workflow will be launched setting the workflow 'Initiator' as the financial transaction's 'authorized' person, and setting the attribute value with key 'FinancialTransactionId' (if it exists) to the financial transaction's Id." />
+                <DropDownList :modelValue="connectionTypeGuid"
+                              label="Connection Type"
+                              :items="options.connectionTypes ?? []"
+                              showBlankItem
+                              @update:modelValue="onConnectionTypeChanged" />
+                <DropDownList v-if="connectionTypeGuid"
+                              v-model="connectionOpportunityGuid"
+                              label="Connection Opportunity"
+                              :items="filteredOpportunities"
+                              showBlankItem
+                              help="If matched, will create a new connection request with the giver as the requestor and setting the attribute with the key 'FinancialTransactionId' if it exists. The Connection Request's Campus would be set from the Campus Filter defined above if it is provided. Otherwise the primary campus of the giver would be used in the Connection Request." />
+                <DropDownList v-model="donorSystemCommunicationGuid"
+                              label="Send Donor Communication From Template"
+                              :items="options.systemCommunications ?? []"
+                              showBlankItem
+                              help="If matched, a new communication will be sent to the person authorizing the gift using the provided communication template." />
+                <DropDownList v-model="accountParticipantSystemCommunicationGuid"
+                              label="Send Account Participant Communication From Template"
+                              :items="options.systemCommunications ?? []"
+                              showBlankItem
+                              help="If matched, a new communication will be sent to those following the Financial Account with the Purpose Key of 'Giving Alerts'. This action does require that an Account Filter be configured above for the alert." />
+                <CheckBox v-model="isSendBusEvent"
+                          label="Send Bus Event"
+                          help="If matched, will send an event via the Event Bus to notify external systems." />
+                <GroupPicker v-model="notificationGroup"
+                             label="Alert Summary Notification Group"
+                             help="This group will receive a summary email when an alert of this type is created." />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<style scoped>
+/*
+    The "Days to Run" picker renders its days as inline checkboxes that wrap on narrow
+    widths, so wrapped days don't line up with those above. Lay them out as a fixed
+    2-row grid filled column by column (Sun/Mon, Tue/Wed, ...).
+*/
+:deep(.rockcheckboxlist) {
+    display: grid;
+    grid-template-rows: repeat(2, auto);
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    justify-content: start;
+    gap: 2px 24px;
+}
+
+:deep(.rockcheckboxlist) .checkbox-inline {
+    /* Grid gap handles spacing; drop the inline sibling margin that would misalign columns. */
+    margin-left: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, watch } from "vue";
+    import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { AlertType, AlertTypeDescription } from "@Obsidian/Enums/Finance/alertType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { FinancialTransactionAlertTypeBag } from "@Obsidian/ViewModels/Blocks/Finance/GivingAutomationConfiguration/financialTransactionAlertTypeBag";
+    import { GivingAutomationConfigurationOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/GivingAutomationConfiguration/givingAutomationConfigurationOptionsBag";
+
+    const props = defineProps({
+        isOpen: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        alertType: {
+            type: Object as PropType<FinancialTransactionAlertTypeBag | null>,
+            default: null
+        },
+
+        options: {
+            type: Object as PropType<GivingAutomationConfigurationOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:isOpen", value: boolean): void;
+        (e: "save", value: FinancialTransactionAlertTypeBag): void;
+    }>();
+
+    // #region Values
+
+    const isOpen = useVModelPassthrough(props, "isOpen", emit);
+
+    const name = ref("");
+    const campus = ref<ListItemBag | null>(null);
+    const account = ref<ListItemBag>({});
+    const isIncludeChildAccounts = ref(false);
+    const alertTypeValue = ref(AlertType.Gratitude.toString());
+    const isContinueIfMatched = ref(false);
+    const runDays = ref<string[]>([]);
+    const repeatPreventionDuration = ref<number | null>(null);
+    const amountSensitivityScale = ref<number | null>(null);
+    const frequencySensitivityScale = ref<number | null>(null);
+    const minimumGiftAmount = ref<number | null>(null);
+    const maximumGiftAmount = ref<number | null>(null);
+    const minimumMedianGiftAmount = ref<number | null>(null);
+    const maximumMedianGiftAmount = ref<number | null>(null);
+    const maximumDaysSinceLastGift = ref<number | null>(null);
+    const personDataView = ref<ListItemBag | null>(null);
+    const workflowType = ref<ListItemBag | null>(null);
+    const connectionTypeGuid = ref("");
+    const connectionOpportunityGuid = ref("");
+    const donorSystemCommunicationGuid = ref("");
+    const accountParticipantSystemCommunicationGuid = ref("");
+    const isSendBusEvent = ref(false);
+    const notificationGroup = ref<ListItemBag | null>(null);
+
+    const alertTypeItems = enumToListItemBag(AlertTypeDescription);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const filteredOpportunities = computed((): ListItemBag[] => {
+        return (props.options.connectionOpportunities ?? []).filter(o => o.category === connectionTypeGuid.value);
+    });
+
+    const amountSensitivityHelp = computed((): string => {
+        return props.options.amountSensitivityDescriptions?.[alertTypeValue.value] ?? "";
+    });
+
+    const frequencySensitivityHelp = computed((): string => {
+        return props.options.frequencySensitivityDescriptions?.[alertTypeValue.value] ?? "";
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Copies the incoming alert type into the local editable fields.
+     */
+    function syncFromAlertType(): void {
+        const alert = props.alertType;
+
+        name.value = alert?.name ?? "";
+        campus.value = alert?.campus ?? null;
+        account.value = alert?.account ?? {};
+        isIncludeChildAccounts.value = alert?.isIncludeChildAccounts ?? false;
+        alertTypeValue.value = (alert?.alertType ?? AlertType.Gratitude).toString();
+        isContinueIfMatched.value = alert?.isContinueIfMatched ?? false;
+        runDays.value = alert?.runDays ?? [];
+        repeatPreventionDuration.value = alert?.repeatPreventionDuration ?? null;
+        amountSensitivityScale.value = alert?.amountSensitivityScale ?? null;
+        frequencySensitivityScale.value = alert?.frequencySensitivityScale ?? null;
+        minimumGiftAmount.value = alert?.minimumGiftAmount ?? null;
+        maximumGiftAmount.value = alert?.maximumGiftAmount ?? null;
+        minimumMedianGiftAmount.value = alert?.minimumMedianGiftAmount ?? null;
+        maximumMedianGiftAmount.value = alert?.maximumMedianGiftAmount ?? null;
+        maximumDaysSinceLastGift.value = alert?.maximumDaysSinceLastGift ?? null;
+        personDataView.value = alert?.personDataView ?? null;
+        workflowType.value = alert?.workflowType ?? null;
+        connectionTypeGuid.value = alert?.connectionTypeGuid ?? "";
+        connectionOpportunityGuid.value = alert?.connectionOpportunityGuid ?? "";
+        donorSystemCommunicationGuid.value = alert?.donorSystemCommunicationGuid ?? "";
+        accountParticipantSystemCommunicationGuid.value = alert?.accountParticipantSystemCommunicationGuid ?? "";
+        isSendBusEvent.value = alert?.isSendBusEvent ?? false;
+        notificationGroup.value = alert?.notificationGroup ?? null;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Updates the selected connection type and clears the opportunity when it no longer applies.
+     *
+     * @param value The newly selected connection type GUID.
+     */
+    function onConnectionTypeChanged(value: string | string[]): void {
+        connectionTypeGuid.value = Array.isArray(value) ? (value[0] ?? "") : value;
+
+        if (!filteredOpportunities.value.some(o => o.value === connectionOpportunityGuid.value)) {
+            connectionOpportunityGuid.value = "";
+        }
+    }
+
+    /**
+     * Assembles the editable fields into a bag and emits it for saving.
+     */
+    function onSave(): void {
+        const bag: FinancialTransactionAlertTypeBag = {
+            idKey: props.alertType?.idKey ?? "",
+            name: name.value,
+            campus: campus.value,
+            account: account.value,
+            isIncludeChildAccounts: isIncludeChildAccounts.value,
+            alertType: (toNumberOrNull(alertTypeValue.value) ?? AlertType.Gratitude) as AlertType,
+            isContinueIfMatched: isContinueIfMatched.value,
+            runDays: runDays.value,
+            repeatPreventionDuration: repeatPreventionDuration.value,
+            amountSensitivityScale: amountSensitivityScale.value,
+            frequencySensitivityScale: frequencySensitivityScale.value,
+            minimumGiftAmount: minimumGiftAmount.value,
+            maximumGiftAmount: maximumGiftAmount.value,
+            minimumMedianGiftAmount: minimumMedianGiftAmount.value,
+            maximumMedianGiftAmount: maximumMedianGiftAmount.value,
+            maximumDaysSinceLastGift: maximumDaysSinceLastGift.value,
+            personDataView: personDataView.value,
+            workflowType: workflowType.value,
+            connectionTypeGuid: connectionTypeGuid.value || null,
+            connectionOpportunityGuid: connectionOpportunityGuid.value || null,
+            donorSystemCommunicationGuid: donorSystemCommunicationGuid.value || null,
+            accountParticipantSystemCommunicationGuid: accountParticipantSystemCommunicationGuid.value || null,
+            isSendBusEvent: isSendBusEvent.value,
+            notificationGroup: notificationGroup.value
+        };
+
+        emit("save", bag);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.alertType, syncFromAlertType, { immediate: true });
+
+    // #endregion Watchers
+</script>

@@ -38,12 +38,29 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Creates a navigation tree for accounts" )]
 
-    [TextField( "Treeview Title", "Account Tree View", false, order: 1 )]
-    [BooleanField( "Show Settings Panel", defaultValue: true, key: "ShowFilterOption", order: 2 )]
-    [CustomDropdownListField( "Initial Active Setting", "Select whether to initially show all or just active accounts in the treeview", "0^All,1^Active", false, "1", "", 3 )]
-    [LinkedPage( "Detail Page", order: 4 )]
-    [LinkedPage( "Order Top-Level Page", key: "OrderTopLevelPage", order: 5 )]
-    [BooleanField( "Use Public Name", "Determines if the public name to be displayed for accounts.", defaultValue: false, order: 6 )]
+    [TextField( "Treeview Title",
+        Description = "Account Tree View",
+        IsRequired = false,
+        Order = 1 )]
+    [BooleanField( "Show Settings Panel",
+        DefaultBooleanValue = true,
+        Key = "ShowFilterOption",
+        Order = 2 )]
+    [CustomDropdownListField( "Initial Active Setting",
+        Description = "Select whether to initially show all or just active accounts in the treeview",
+        ListSource = "0^All,1^Active",
+        IsRequired = false,
+        DefaultValue = "1",
+        Order = 3 )]
+    [LinkedPage( "Detail Page",
+        Order = 4 )]
+    [LinkedPage( "Order Top-Level Page",
+        Key = "OrderTopLevelPage",
+        Order = 5 )]
+    [BooleanField( "Use Public Name",
+        Description = "Determines if the public name to be displayed for accounts.",
+        DefaultBooleanValue = false,
+        Order = 6 )]
     [Rock.SystemGuid.BlockTypeGuid( "EC6ECB2B-665F-43FC-9FF4-A6B1CD5F2AE6" )]
     public partial class AccountTreeView : RockBlock
     {

@@ -7,7 +7,7 @@
     <ContentSectionContainer>
         <ContentSection v-if="config.options?.exceptionType" class="margin-b-lg" light disableCollapse>
             <div class="exception-header">
-                <h5 class="text-danger m-0">{{ isDescriptionExpanded ? config.options.description : truncatedDescription }}</h5>
+                <h5 class="m-0">{{ isDescriptionExpanded ? config.options.description : truncatedDescription }}</h5>
 
                 <div class="d-flex align-items-center gap-2">
                     <RockButton v-if="isDescriptionTruncated" :btnType="BtnType.Default" :btnSize="BtnSize.ExtraSmall" @click="onToggleDescription">
@@ -45,7 +45,7 @@
                     :filter="numberValueFilter"
                     :exportValue="exportIdValue"
                     visiblePriority="xs"
-                    width="100px" />
+                    width="130px" />
 
         <DateTimeColumn name="createdDateTime"
                         title="Date/Time"

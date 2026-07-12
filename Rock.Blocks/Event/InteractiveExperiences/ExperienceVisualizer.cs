@@ -61,7 +61,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         Order = 1 )]
 
     [CampusField( "Campus",
-        includeInactive: false,
+        IncludeInactive = false,
         Description = "The campus to use when determining which experience occurrence to display. If no campus is selected then only occurrences with no campus will be considered.",
         IsRequired = false,
         Key = AttributeKey.Campus,

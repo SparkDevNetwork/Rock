@@ -27,18 +27,6 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder
     public class FormBuilderDetailViewModel
     {
         /// <summary>
-        /// The URL to redirect the individual to when the Submissions tab is
-        /// clicked.
-        /// </summary>
-        public string SubmissionsPageUrl { get; set; }
-
-        /// <summary>
-        /// The URL to redirect the individual to when the Analytics tab is
-        /// clicked.
-        /// </summary>
-        public string AnalyticsPageUrl { get; set; }
-
-        /// <summary>
         /// The source of information for various pickers and controls.
         /// </summary>
         public FormValueSourcesViewModel Sources { get; set; }
@@ -61,8 +49,16 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder
         public List<FormOtherAttributeViewModel> OtherAttributes { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public FormBuilderDetailLinkToFormBag DefaultPreviewPage { get; internal set; }
+
+        /// <summary>
+        /// True when the form already has one or more workflow instances
+        /// (submissions). Drives the Settings tab's slug-edit warning so
+        /// users editing the slug of a shared form get warned that the
+        /// existing share URLs will stop resolving.
+        /// </summary>
+        public bool HasSubmissions { get; set; }
     }
 }

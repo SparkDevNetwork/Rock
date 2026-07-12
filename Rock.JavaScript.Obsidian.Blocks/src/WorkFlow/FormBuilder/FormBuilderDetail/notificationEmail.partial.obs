@@ -1,60 +1,71 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <SectionContainer v-model="enabled"
-                      toggleText="Enable"
-                      title="Notification Email"
-                      description="Notification emails can be sent to specified individuals when each form is completed.">
-        <SegmentedPicker v-model="destination" :items="notificationDestinationOptions" />
+    <ContentSection title="Notification Email"
+                    icon="ti ti-bell"
+                    hideToggleButton
+                    unmountOnCollapse
+                    :isCollapsed="!enabled"
+                    @update:isCollapsed="enabled = !$event">
+        <template #description>
+            Notification emails can be sent to specified individuals when each form is completed.
+        </template>
+        <template #headerActions>
+            <InlineSwitch v-model="enabled" label="Enable" />
+        </template>
 
-        <div v-if="isDestinationSpecificIndividual">
-            <div class="row">
-                <div class="col-md-4">
-                    <PersonPicker v-model="recipient"
-                                  label="Recipient"
-                                  rules="required" />
+        <ContentStack title="Email Settings"
+                      description="Choose who receives a notification when this form is completed and how that notification e-mail is generated.">
+            <RadioButtonList v-model="destination"
+                             label="Send To"
+                             :items="notificationDestinationOptions" />
+
+            <ConditionalWell v-if="isDestinationSpecificIndividual">
+                <div class="row">
+                    <div class="col-md-6">
+                        <PersonPicker v-model="recipient"
+                                      label="Recipient"
+                                      rules="required" />
+                    </div>
                 </div>
-            </div>
-        </div>
+            </ConditionalWell>
 
-        <div v-else-if="isDestinationEmailAddress">
-            <div class="row">
-                <div class="col-md-4">
-                    <EmailBox v-model="emailAddress"
-                              label="Recipients"
-                              help="You can specify multiple email addresses by separating them with a comma."
-                              rules="required"
-                              allowMultiple />
+            <ConditionalWell v-else-if="isDestinationEmailAddress">
+                <EmailBox v-model="emailAddress"
+                          label="Recipient(s)"
+                          help="Enter one or more e-mail addresses, separated by commas, semicolons, or spaces."
+                          rules="required"
+                          allowMultiple />
+            </ConditionalWell>
+
+            <ConditionalWell v-else-if="isDestinationCampusTopic">
+                <div class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="campusTopicGuidOrEmptyString"
+                                      label="Topic"
+                                      rules="required"
+                                      :items="campusTopicOptions" />
+                    </div>
                 </div>
-            </div>
-        </div>
+            </ConditionalWell>
 
-        <div v-else-if="isDestinationCampusTopic">
-            <div class="row">
-                <div class="col-md-4">
-                    <DropDownList v-model="campusTopicGuidOrEmptyString"
-                                  label="Topic"
-                                  rules="required"
-                                  :items="campusTopicOptions" />
-                </div>
-            </div>
-        </div>
-
-        <div class="mt-3">
             <EmailSource v-model="source" :templateOptions="sourceTemplateOptions" />
-        </div>
-    </SectionContainer>
+        </ContentStack>
+    </ContentSection>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import EmailSource from "../Shared/emailSource.partial.obs";
-    import SegmentedPicker from "../Shared/segmentedPicker.partial.obs";
-    import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
     import { FormNotificationEmail, FormNotificationEmailDestination } from "../Shared/types.partial";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
@@ -88,8 +99,12 @@
     /** The recipient when destination is set to specific individual. */
     const recipient = ref(props.modelValue.recipient ?? undefined);
 
-    /** The e-mail address(es) when destination is set to email address. */
-    const emailAddress = ref(props.modelValue.emailAddress ?? "");
+    /*
+        Stored as a primitive string ref (matching the underlying ViewModel
+        field). Renders directly as a multi-address EmailBox; comma /
+        semicolon / whitespace separators are validated by the control.
+    */
+    const emailAddress = ref<string>(props.modelValue.emailAddress ?? "");
 
     /** The campus topic identifier when destination is set to campus topic (or empty string if not). */
     const campusTopicGuidOrEmptyString = ref<string>(props.modelValue.campusTopicGuid ?? "");
@@ -100,11 +115,11 @@
     const notificationDestinationOptions: ListItemBag[] = [
         {
             value: FormNotificationEmailDestination.SpecificIndividual.toString(),
-            text: "Specific Individual"
+            text: "Individual"
         },
         {
             value: FormNotificationEmailDestination.EmailAddress.toString(),
-            text: "Email Address"
+            text: "Email Address(es)"
         },
         {
             value: FormNotificationEmailDestination.CampusTopic.toString(),

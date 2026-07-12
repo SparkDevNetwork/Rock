@@ -6,51 +6,183 @@
         </div>
 
         <div class="sidebar-body">
+            <div class="general-aside-settings">
+                <div class="general-aside-settings-title">Settings</div>
+                <Switch v-if="!isPersonEntryForced" v-model="hasPersonEntry" text="Enable Person Entry" />
+                <NotificationBox v-else alertType="info">
+                    Person entry is enabled on the template and cannot be changed.
+                </NotificationBox>
+                <DropDownList v-model="campusSetFrom"
+                              label="Set Campus From"
+                              :items="campusSetFromOptions" />
+            </div>
+
             <div class="panel-body">
-                <div v-drag-source="sectionDragOptions">
-                    <div class="form-template-item form-template-item-section">
-                        <i class="ti ti-maximize ti-fw"></i>
-                        Section
-                    </div>
-                </div>
+                <RockLabel>Common Fields</RockLabel>
 
-                <div class="mt-3">
-                    <RockLabel>Common Fields</RockLabel>
-
-                    <div class="form-template-item-list" v-drag-source="fieldDragOptions">
-                        <div v-for="field in commonFieldTypes" class="form-template-item form-template-item-field" :data-field-type="field.guid">
-                            <span class="inline-svg icon" v-html="field.svg"></span>
-                            <div class="text">{{ field.text }}</div>
+                <div class="form-template-common-fields">
+                    <div v-drag-source="sectionDragOptions">
+                        <div class="form-template-item form-template-item-section form-template-item-wide">
+                            <div class="form-template-section-preview"></div>
+                            <div class="text">Section</div>
                         </div>
                     </div>
 
-                    <div @click="onAdditionalFieldsClick" class="mt-2">
-                        <RockLabel>Additional Fields <i :class="additionalFieldsClass"></i></RockLabel>
-                    </div>
-
-                    <TransitionVerticalCollapse>
-                        <div v-if="isAdditionalFieldsVisible" class="form-template-item-list" v-drag-source="fieldDragOptions">
-                            <div v-for="field in advancedFieldTypes" class="form-template-item form-template-item-field" :data-field-type="field.guid">
-                                <span class="inline-svg icon" v-html="field.svg"></span>
-                                <div class="text">{{ field.text }}</div>
-                            </div>
+                    <div class="form-template-item-list form-template-item-grid" v-drag-source="fieldDragOptions">
+                        <div v-for="field in commonFieldTypes"
+                             class="form-template-item form-template-item-field"
+                             :data-field-type="field.guid">
+                            <span class="form-template-icon">
+                                <i v-if="getCommonFieldIcon(field)" :class="['icon', getCommonFieldIcon(field)]"></i>
+                                <span v-else class="inline-svg icon" v-html="field.svg"></span>
+                                <i v-if="hasRangeIndicator(field)" class="form-template-range-indicator ti ti-arrows-horizontal"></i>
+                            </span>
+                            <div class="text">{{ getCommonFieldLabel(field) }}</div>
                         </div>
-                    </TransitionVerticalCollapse>
+                    </div>
                 </div>
 
-                <div class="mt-3">
-                    <Switch v-if="!isPersonEntryForced" v-model="hasPersonEntry" text="Enable Person Entry" />
-
-                    <NotificationBox v-else alertType="info">
-                        Person entry is enabled on the template and cannot be changed.
-                    </NotificationBox>
-
-                    <DropDownList v-model="campusSetFrom" label="Campus Set From" :items="campusSetFromOptions" />
+                <div @click="onAdditionalFieldsClick" class="mt-3">
+                    <RockLabel>Additional Fields <i :class="additionalFieldsClass"></i></RockLabel>
                 </div>
+
+                <TransitionVerticalCollapse>
+                    <div v-if="isAdditionalFieldsVisible"
+                         class="form-template-item-list form-template-item-grid"
+                         v-drag-source="fieldDragOptions">
+                        <div v-for="field in advancedFieldTypes"
+                             class="form-template-item form-template-item-field"
+                             :data-field-type="field.guid">
+                            <span class="form-template-icon">
+                                <i v-if="getCommonFieldIcon(field)" :class="['icon', getCommonFieldIcon(field)]"></i>
+                                <span v-else class="inline-svg icon" v-html="field.svg"></span>
+                                <i v-if="hasRangeIndicator(field)" class="form-template-range-indicator ti ti-arrows-horizontal"></i>
+                            </span>
+                            <div class="text">{{ getCommonFieldLabel(field) }}</div>
+                        </div>
+                    </div>
+                </TransitionVerticalCollapse>
             </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+.general-aside-settings {
+    padding: var(--spacing-medium) 16px;
+    background-color: var(--color-interface-softer);
+}
+
+.general-aside-settings-title {
+    margin-bottom: var(--spacing-small);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-stronger);
+}
+
+.form-template-item-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--spacing-small);
+    margin: 0;
+}
+
+.form-template-common-fields {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+}
+
+.form-template-item-grid :deep(.form-template-item-field) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    aspect-ratio: 1 / 1;
+    padding: var(--spacing-tiny);
+    margin: 0;
+    font-size: var(--font-size-xsmall);
+    font-weight: var(--font-weight-regular);
+    text-align: center;
+    border-left-width: 1px;
+}
+
+.form-template-item-grid :deep(.form-template-item-field) > .form-template-icon {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 0 var(--spacing-xsmall);
+}
+
+.form-template-item-grid :deep(.form-template-item-field) > .form-template-icon:has(.form-template-range-indicator) {
+    margin-bottom: var(--spacing-tiny);
+}
+
+.form-template-item-grid :deep(.form-template-item-field) .icon {
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    font-size: 24px;
+    line-height: 1;
+}
+
+.form-template-item-grid :deep(.form-template-item-field) .form-template-range-indicator {
+    margin-top: -4px;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.form-template-item-grid :deep(.form-template-item-field) .icon.ti-decimal + .form-template-range-indicator {
+    margin-top: -9px;
+}
+
+.form-template-item-grid :deep(.form-template-item-field) .icon.ti-hash + .form-template-range-indicator {
+    margin-top: -6px;
+}
+
+.form-template-item-grid :deep(.form-template-item-field) > .text {
+    line-height: 1.15;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+.form-template-item-wide {
+    width: 100%;
+}
+
+:deep(.form-template-item.form-template-item-section) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-xsmall);
+    padding: var(--spacing-medium);
+    font-size: var(--font-size-xsmall);
+    font-weight: var(--font-weight-regular);
+    text-align: center;
+    color: var(--color-interface-strong);
+    /* Override the base info-strong left border so the section tile
+       reads as a plain gray-outlined card to match the spec. The
+       double-class selector bumps specificity past the parent base
+       rule that sets `border-left-color: var(--color-info-strong)`. */
+    border: 1px solid var(--color-interface-soft);
+    border-left-color: var(--color-interface-soft);
+}
+
+.form-template-section-preview {
+    height: 40px;
+    width: 100%;
+    background-color: var(--color-interface-soft);
+    border-radius: var(--rounded-tiny);
+}
+
+:deep(.form-template-item-section) > .text {
+    line-height: 1.15;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}
+</style>
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
@@ -64,7 +196,14 @@
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { CampusSetFrom, FormFieldType } from "../Shared/types.partial";
     import { GeneralAsideSettings } from "./types.partial";
-    import { useFormSources } from "./utils.partial";
+    import {
+        fieldHasRangeIndicator,
+        getFieldDisplayLabel,
+        getFieldTablerIcon,
+        useFormSources
+    } from "./utils.partial";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { areEqual } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -122,15 +261,101 @@
         }
     ];
 
+    /*
+        Ordered list of common field type GUIDs. Drives display order
+        for the sidebar's Common Fields grid. Items not in this list
+        fall back to alphabetical sort after the listed entries.
+    */
+    const commonFieldOrder: string[] = [
+        FieldType.Boolean,
+        FieldType.Text,
+        FieldType.Integer,
+        FieldType.SingleSelect,
+        FieldType.MultiSelect,
+        FieldType.Memo,
+        FieldType.Date,
+        FieldType.DateTime,
+        FieldType.Time
+    ];
+
+    /*
+        Ordered list of additional field type GUIDs. Drives display
+        order for the sidebar's Additional Fields grid.
+    */
+    const additionalFieldOrder: string[] = [
+        FieldType.Address,
+        FieldType.Email,
+        FieldType.PhoneNumber,
+        FieldType.Gender,
+        FieldType.Campus,
+        FieldType.Campuses,
+        FieldType.DefinedValueCategorized,
+        FieldType.DefinedValue,
+        FieldType.KeyValueList,
+        FieldType.DayOfWeek,
+        FieldType.DaysOfWeek,
+        FieldType.DateRange,
+        FieldType.MonthDay,
+        FieldType.Currency,
+        FieldType.Decimal,
+        FieldType.DecimalRange,
+        FieldType.IntegerRange,
+        FieldType.RangeSlider,
+        FieldType.File,
+        FieldType.Image,
+        FieldType.StructureContentEditor,
+        FieldType.Rating,
+        FieldType.Ssn,
+        FieldType.UrlLink
+    ];
+
+    /**
+     * Sorts a list of field types by the supplied ordered GUID list.
+     * Items not in the ordered list fall to the end and sort
+     * alphabetically by text.
+     */
+    function sortByOrder(types: FormFieldType[], order: string[]): FormFieldType[] {
+        return [...types].sort((a, b) => {
+            const aIdx = order.findIndex(g => areEqual(g, a.guid));
+            const bIdx = order.findIndex(g => areEqual(g, b.guid));
+
+            if (aIdx === -1 && bIdx === -1) {
+                return a.text.localeCompare(b.text);
+            }
+            if (aIdx === -1) {
+                return 1;
+            }
+            if (bIdx === -1) {
+                return -1;
+            }
+            return aIdx - bIdx;
+        });
+    }
+
     /** The field types to display in the common field types section. */
     const commonFieldTypes = computed((): FormFieldType[] => {
-        return fieldTypes.filter(f => f.isCommon);
+        return sortByOrder(fieldTypes.filter(f => f.isCommon), commonFieldOrder);
     });
 
-    /** The field types to display in the advanced fiel types section. */
+    /** The field types to display in the advanced field types section. */
     const advancedFieldTypes = computed((): FormFieldType[] => {
-        return fieldTypes.filter(f => !f.isCommon);
+        return sortByOrder(fieldTypes.filter(f => !f.isCommon), additionalFieldOrder);
     });
+
+    /** Template helper — Tabler icon class for a given field type. */
+    function getCommonFieldIcon(field: FormFieldType): string | null {
+        return getFieldTablerIcon(field.guid);
+    }
+
+    /** Template helper — true if the field type renders a range indicator. */
+    function hasRangeIndicator(field: FormFieldType): boolean {
+        return fieldHasRangeIndicator(field.guid);
+    }
+
+    /** Template helper — display label override for a given field type. */
+    function getCommonFieldLabel(field: FormFieldType): string {
+        return getFieldDisplayLabel(field.guid, field.text);
+    }
 
     const additionalFieldsClass = computed((): string => {
         return isAdditionalFieldsVisible.value ? "ti ti-chevron-up" : "ti ti-chevron-down";

@@ -30,6 +30,11 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationDetail
         public bool IsHidden { get; set; }
 
         /// <summary>
+        /// Gets or sets the URL to redirect to on load when the current page cannot edit the communication; empty when it can.
+        /// </summary>
+        public string RedirectUrl { get; set; }
+
+        /// <summary>
         /// Gets or sets the detail of this communication.
         /// </summary>
         public CommunicationDetailBag CommunicationDetail { get; set; }

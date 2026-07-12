@@ -117,6 +117,12 @@ namespace Rock.Blocks.Engagement
             options.IsGroupPlacementEnabled = connectionType?.EnabledFeatures.HasFlag( EnabledFeatureFlags.GroupPlacement ) ?? false;
             options.IsReOrderColumnVisible = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
+            options.AllActiveCampuses = CampusCache.All()
+                .Where( c => c.IsActive ?? true )
+                .OrderBy( c => c.Order )
+                .ThenBy( c => c.Name )
+                .ToListItemBagList();
+
             return options;
         }
 
@@ -444,8 +450,12 @@ namespace Rock.Blocks.Engagement
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+
+            // Match the WebForms behavior: editing is allowed by block-level Edit rights or View
+            // rights on the connection opportunity itself.
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                || entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
 
             if ( entity.Id != 0 )
             {
@@ -868,7 +878,10 @@ namespace Rock.Blocks.Engagement
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            // Match the WebForms behavior: editing is allowed by block-level Edit rights or View
+            // rights on the connection opportunity itself.
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                && !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit {ConnectionOpportunity.FriendlyTypeName}." );
                 return false;
@@ -955,6 +968,27 @@ namespace Rock.Blocks.Engagement
                         .Where( id => id.HasValue )
                         .Select( id => id.Value )
                         .ToList();
+
+                    /*
+                        5/27/26 - MSE
+
+                        When the user leaves the Campuses selection empty, fall back to all active
+                        campuses. This preserves the pre-v19 ( WebForms ) behavior where "no campuses
+                        selected" implicitly meant "all campuses", which is what makes the per-campus
+                        Default Connector dropdowns persistable.
+
+                        Without this, the user can pick a Default Connector for a campus but it gets
+                        silently dropped because no ConnectionOpportunityCampus row exists to hang it on.
+
+                        Reason: https://github.com/SparkDevNetwork/Rock/issues/6840
+                    */
+                    if ( !incomingCampusIds.Any() )
+                    {
+                        incomingCampusIds = CampusCache.All()
+                            .Where( c => c.IsActive ?? true )
+                            .Select( c => c.Id )
+                            .ToList();
+                    }
 
                     SyncRelatedEntities(
                         connectionOpportunityCampusService,

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,7 +18,7 @@
 namespace Rock.ViewModels.Blocks.Cms.ContentChannelItemView
 {
     /// <summary>
-    /// The configuration values supplied to the <see cref="Rock.Blocks.Cms.ContentChannelItemView"/> Obsidian client.
+    /// The configuration values supplied to the Content Channel Item View Obsidian client.
     /// </summary>
     public class ContentChannelItemViewOptionsBag
     {

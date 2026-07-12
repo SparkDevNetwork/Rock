@@ -71,12 +71,12 @@ namespace Rock.Workflow.Action
         Key = AttributeKey.Location )]
 
     [CampusField(
-        name: "Campus",
-        description: "The campus for the Attendance.",
-        includeInactive: false,
-        required: false,
-        order: 4,
-        key: AttributeKey.Campus )]
+        "Campus",
+        Description = "The campus for the Attendance.",
+        IncludeInactive = false,
+        IsRequired = false,
+        Order = 4,
+        Key = AttributeKey.Campus )]
 
     [WorkflowAttribute(
         "Schedule",

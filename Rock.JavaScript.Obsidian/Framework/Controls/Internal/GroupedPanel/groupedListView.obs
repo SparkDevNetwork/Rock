@@ -21,10 +21,12 @@
                     </div>
                 </template>
                 <template #headerActions>
-                    <slot name="headerActions" v-bind="{ groupRows: group.gridData.rows }" />
-                    <HighlightLabel>
-                        {{ getCountMessage(group.key, group.gridData.rows) }}
-                    </HighlightLabel>
+                    <div class="section-header-actions">
+                        <slot name="headerActions" v-bind="{ groupRows: group.gridData.rows }" />
+                        <HighlightLabel v-if="getIsCountMessageVisible(group)">
+                            {{ getCountMessage(group.key, group.gridData.rows) }}
+                        </HighlightLabel>
+                    </div>
                 </template>
                 <ContentStack>
                     <slot name="grid" v-bind="{ group, setGridRef }" />
@@ -33,6 +35,14 @@
         </template>
     </ContentSectionContainer>
 </template>
+
+<style scoped>
+/* Let a group's header actions wrap onto a new line when they no longer fit, so a
+   long slotted action set plus the count label does not overflow on narrow screens. */
+.section-header-actions {
+    flex-wrap: wrap;
+}
+</style>
 
 <script setup lang="ts">
     import { ref, watch, PropType, ComponentPublicInstance, Ref } from "vue";
@@ -80,6 +90,17 @@
         itemTerm: {
             type: String,
             default: "Item"
+        },
+
+        /**
+         * Controls visibility of the per-group count label in each section header.
+         * Accepts a boolean for uniform behavior across all groups, or a predicate
+         * that receives the group so individual sections can show/hide the label
+         * independently.
+         */
+        isCountMessageVisible: {
+            type: [Boolean, Function] as PropType<boolean | ((group: GroupedGrid) => boolean)>,
+            default: true
         }
     });
 
@@ -137,6 +158,14 @@
     }
 
     defineExpose({ clearSelectedKeys, expandAll, collapseAll });
+
+    /** Resolves the `isCountMessageVisible` prop for a specific group. */
+    function getIsCountMessageVisible(group: GroupedGrid): boolean {
+        if (typeof props.isCountMessageVisible === "function") {
+            return props.isCountMessageVisible(group);
+        }
+        return props.isCountMessageVisible;
+    }
 
     /**
      * Returns the count label for a group header. Shows "X of Y Items" when

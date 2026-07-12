@@ -1,0 +1,162 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="Transaction Fee Report"
+           titleIconCssClass="ti ti-file-dollar"
+           type="block">
+        <RockForm @submit="applyFilters">
+            <div class="row d-md-flex align-items-md-end">
+                <div class="col-md-4">
+                    <AccountPicker label="Account"
+                                   v-model="selectedAccounts"
+                                   multiple
+                                   enhanceForLongLists />
+                </div>
+                <div class="col-md-8">
+                    <div class="d-flex flex-wrap align-items-end" style="gap: 0.5rem;">
+                        <SlidingDateRangePicker v-model="dateRange"
+                                                label="Date Range"
+                                                previewLocation="Top" />
+                        <div class="form-group">
+                            <RockButton type="submit"
+                                        :btnType="BtnType.Primary"
+                                        :isLoading="isLoading"
+                                        loadingText="Loading..."
+                                        autoLoading>Apply</RockButton>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </RockForm>
+
+        <div v-if="results" class="row">
+            <div class="col-sm-12 col-md-4">
+                <Kpi :value="toCurrencyOrNull(results.totalFeeCoverageAmount, currencyInfo) ?? ''"
+                     label="Total Fees"
+                     iconCssClass="ti ti-list"
+                     color="blue"
+                     :colorShade="500"
+                     :isCard="true">
+                    <template #secondaryLabel>
+                        {{ asFormattedString(results.totalTransactionCount) }} Transactions with Fees
+                    </template>
+                </Kpi>
+            </div>
+            <div class="col-sm-12 col-md-4">
+                <Kpi :value="toCurrencyOrNull(results.creditCardFeeCoverageAmount, currencyInfo) ?? ''"
+                     label="Credit Card Fees"
+                     iconCssClass="ti ti-credit-card"
+                     color="green"
+                     :colorShade="500"
+                     :isCard="true">
+                    <template #secondaryLabel>
+                        {{ asFormattedString(results.creditCardTransactionCount) }} Transactions with Fees
+                    </template>
+                </Kpi>
+            </div>
+            <div class="col-sm-12 col-md-4">
+                <Kpi :value="toCurrencyOrNull(results.achFeeCoverageAmount, currencyInfo) ?? ''"
+                     label="ACH Fees"
+                     iconCssClass="ti ti-cash-banknote"
+                     color="indigo"
+                     :colorShade="500"
+                     :isCard="true">
+                    <template #secondaryLabel>
+                        {{ asFormattedString(results.achTransactionCount) }} Transactions with Fees
+                    </template>
+                </Kpi>
+            </div>
+        </div>
+
+        <NotificationBox v-if="error" :alertType="AlertType.Danger" heading="Error loading data" @dismiss="dismissError">
+            {{ error }}
+        </NotificationBox>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Kpi from "@Obsidian/Controls/kpi.obs";
+    import { asFormattedString, toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { parseSlidingDateRangeString, slidingDateRangeToString, SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { TransactionFeeReportBag } from "@Obsidian/ViewModels/Blocks/Finance/TransactionFeeReport/transactionFeeReportBag";
+    import { TransactionFeeReportOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/TransactionFeeReport/transactionFeeReportOptionsBag";
+    import { PreferenceKey } from "./TransactionFeeReport/types.partial";
+
+    const config = useConfigurationValues<CustomBlockBox<TransactionFeeReportBag, TransactionFeeReportOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const currencyInfo = config.options?.currencyInfo ?? null;
+    const selectedAccounts = ref<ListItemBag[]>(config.options?.selectedAccounts ?? []);
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(config.options?.dateRangeDelimitedValue ?? ""));
+    const results = ref<TransactionFeeReportBag | null | undefined>(config.bag);
+    const isLoading = ref(false);
+    const error = ref<string | undefined>();
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Clears the current error message.
+     */
+    function dismissError(): void {
+        error.value = undefined;
+    }
+
+    /**
+     * Persists the current filter selections and reloads the report from the server.
+     */
+    async function applyFilters(): Promise<void> {
+        isLoading.value = true;
+        dismissError();
+
+        try {
+            const accountsValue = selectedAccounts.value
+                .map(a => a?.value)
+                .filter((v): v is string => typeof v === "string" && v !== "")
+                .join(",");
+
+            preferences.setValue(PreferenceKey.Accounts, accountsValue);
+            preferences.setValue(PreferenceKey.DateRange, dateRange.value ? slidingDateRangeToString(dateRange.value) : "");
+
+            await preferences.save();
+
+            const result = await invokeBlockAction<TransactionFeeReportBag>("GetReportData");
+
+            if (!result.isSuccess || !result.data) {
+                throw new Error(result.errorMessage ?? "Unknown error");
+            }
+
+            results.value = result.data;
+        }
+        catch (e) {
+            // Keep the last successful results visible so a failed refresh shows the error
+            // alongside the previous numbers instead of replacing them with a blank panel.
+            error.value = e instanceof Error ? e.message : "Unknown error.";
+        }
+        finally {
+            isLoading.value = false;
+        }
+    }
+
+    // #endregion
+</script>

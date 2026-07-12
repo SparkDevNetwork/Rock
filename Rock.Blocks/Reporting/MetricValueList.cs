@@ -53,6 +53,8 @@ namespace Rock.Blocks.Reporting
 
     [CustomizedGrid]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
+
     [Rock.SystemGuid.EntityTypeGuid( "2226E624-72E5-4D54-8A26-A0CDEA67630D" )]
     // was [Rock.SystemGuid.BlockTypeGuid( "100E5FE9-BE54-4C1A-B7E6-E8145B8E9257" )]
     [Rock.SystemGuid.BlockTypeGuid( "E40A1526-04D0-42A0-B275-D1AE161E2E57" )]

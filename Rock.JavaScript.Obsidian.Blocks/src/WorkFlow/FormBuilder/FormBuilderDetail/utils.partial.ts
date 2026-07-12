@@ -18,10 +18,122 @@
 import { inject, provide } from "vue";
 import { getFieldType } from "@Obsidian/Utility/fieldTypes";
 import { areEqual } from "@Obsidian/Utility/guid";
+import { FieldType } from "@Obsidian/SystemGuids/fieldType";
 import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
 import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
 import { FormField } from "../Shared/types.partial";
 import { FormValueSources } from "./types.partial";
+
+/*
+    Tabler icon class per field type, keyed by GUID. Renders in place
+    of the server-supplied SVG when present. Shared between the
+    sidebar tile grid and the field-edit aside title bar so both
+    surface the same icon for a given field type.
+*/
+const fieldIconMap: Record<string, string> = {
+    // Common
+    [FieldType.Boolean]: "ti ti-square-check",
+    [FieldType.Text]: "ti ti-typography",
+    [FieldType.Integer]: "ti ti-hash",
+    [FieldType.SingleSelect]: "ti ti-select",
+    [FieldType.MultiSelect]: "ti ti-list-check",
+    [FieldType.Memo]: "ti ti-align-left",
+    [FieldType.Date]: "ti ti-calendar",
+    [FieldType.DateTime]: "ti ti-calendar-clock",
+    [FieldType.Time]: "ti ti-clock",
+    // Additional
+    [FieldType.Address]: "ti ti-map-pin",
+    [FieldType.Email]: "ti ti-mail",
+    [FieldType.PhoneNumber]: "ti ti-phone",
+    [FieldType.Gender]: "ti ti-friends",
+    [FieldType.Campus]: "ti ti-building",
+    [FieldType.Campuses]: "ti ti-building-community",
+    [FieldType.DefinedValueCategorized]: "ti ti-folder",
+    [FieldType.DefinedValue]: "ti ti-book-2",
+    [FieldType.KeyValueList]: "ti ti-list-details",
+    [FieldType.DayOfWeek]: "ti ti-calendar-event",
+    [FieldType.DaysOfWeek]: "ti ti-calendar-week",
+    [FieldType.DateRange]: "ti ti-calendar-month",
+    [FieldType.MonthDay]: "ti ti-calendar",
+    [FieldType.Currency]: "ti ti-currency-dollar",
+    [FieldType.Decimal]: "ti ti-decimal",
+    [FieldType.DecimalRange]: "ti ti-decimal",
+    [FieldType.IntegerRange]: "ti ti-hash",
+    [FieldType.RangeSlider]: "ti ti-arrow-right-bar",
+    [FieldType.File]: "ti ti-upload",
+    [FieldType.Image]: "ti ti-photo",
+    [FieldType.StructureContentEditor]: "ti ti-template",
+    [FieldType.Rating]: "ti ti-star-half",
+    [FieldType.Ssn]: "ti ti-id",
+    [FieldType.UrlLink]: "ti ti-link"
+};
+
+/*
+    Display-name overrides keyed by field type GUID. Lets surfaces
+    present a name that differs from the server's field-type Name
+    without changing the underlying type.
+*/
+const fieldLabelMap: Record<string, string> = {
+    [FieldType.DateTime]: "Date/Time",
+    [FieldType.DefinedValueCategorized]: "Cat. Def. Value",
+    [FieldType.StructureContentEditor]: "Structured Content",
+    [FieldType.Ssn]: "SSN",
+    [FieldType.UrlLink]: "URL Link"
+};
+
+/*
+    Range-style field types — paired with a secondary
+    `arrows-horizontal` glyph in any icon-rendering surface so the
+    visual communicates "this is a range" alongside the base type.
+*/
+const rangeIndicatorFieldTypes: string[] = [
+    FieldType.DecimalRange,
+    FieldType.IntegerRange
+];
+
+/**
+ * Resolves the Tabler icon class for a field type, or null if there
+ * is no mapping (in which case callers can fall back to the
+ * server-supplied SVG).
+ */
+export function getFieldTablerIcon(fieldTypeGuid: string | null | undefined): string | null {
+    if (!fieldTypeGuid) {
+        return null;
+    }
+    for (const guid of Object.keys(fieldIconMap)) {
+        if (areEqual(guid, fieldTypeGuid)) {
+            return fieldIconMap[guid];
+        }
+    }
+    return null;
+}
+
+/**
+ * Resolves the display label for a field type, falling back to the
+ * supplied text when no override is registered.
+ */
+export function getFieldDisplayLabel(fieldTypeGuid: string | null | undefined, fallback: string): string {
+    if (!fieldTypeGuid) {
+        return fallback;
+    }
+    for (const guid of Object.keys(fieldLabelMap)) {
+        if (areEqual(guid, fieldTypeGuid)) {
+            return fieldLabelMap[guid];
+        }
+    }
+    return fallback;
+}
+
+/**
+ * Returns true if the field type should render a secondary
+ * `arrows-horizontal` range indicator alongside its main icon.
+ */
+export function fieldHasRangeIndicator(fieldTypeGuid: string | null | undefined): boolean {
+    if (!fieldTypeGuid) {
+        return false;
+    }
+    return rangeIndicatorFieldTypes.some(g => areEqual(g, fieldTypeGuid));
+}
 
 // Unique key used to track the sources for the FormTemplateDetail block.
 const sourcesKey = Symbol();

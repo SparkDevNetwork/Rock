@@ -1,0 +1,48 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <ValueDetailList :modelValue="topValues" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { ContentChannelItemBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemDetail/contentChannelItemBag";
+    import { ContentChannelItemDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemDetail/contentChannelItemDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ContentChannelItemBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<ContentChannelItemDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    /**
+     * The values to display full-width at the top of the block.
+     */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.title) {
+            valueBuilder.addTextValue("Title", props.modelValue.title);
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion Computed Values
+</script>

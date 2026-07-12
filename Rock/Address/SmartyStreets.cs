@@ -35,11 +35,35 @@ namespace Rock.Address
     [Export( typeof( VerificationComponent ) )]
     [ExportMetadata( "ComponentName", "Smarty Streets" )]
 
-    [BooleanField( "Use Managed API Key", "Enable this to use the Auth ID and Auth Token that is managed by Spark.", true, "", 1 )]
-    [TextField( "Auth ID", "The Smarty Streets Authorization ID. NOTE: This can be left blank and will be ignored if 'Use Managed API Key' is enabled.", false, "", "", 2 )]
-    [TextField( "Auth Token", "The Smarty Streets Authorization Token. NOTE: This can be left blank and will be ignored if 'Use Managed API Key' is enabled.", false, "", "", 3 )]
-    [TextField( "Acceptable DPV Codes", "The Smarty Streets Delivery Point Validation (DPV) match code values that are considered acceptable levels of standardization (see http://smartystreets.com/kb/liveaddress-api/field-definitions#dpvmatchcode for details).", false, "Y,S,D", "", 4 )]
-    [TextField( "Acceptable Precisions", "The Smarty Streets latitude & longitude precision values that are considered acceptable levels of geocoding (see http://smartystreets.com/kb/liveaddress-api/field-definitions#precision for details).", false, "Zip7,Zip8,Zip9", "", 5 )]
+    [BooleanField( "Use Managed API Key",
+        Description = "Enable this to use the Auth ID and Auth Token that is managed by Spark.",
+        DefaultBooleanValue = true,
+        Category = "",
+        Order = 1 )]
+    [TextField( "Auth ID",
+        Description = "The Smarty Streets Authorization ID. NOTE: This can be left blank and will be ignored if 'Use Managed API Key' is enabled.",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "",
+        Order = 2 )]
+    [TextField( "Auth Token",
+        Description = "The Smarty Streets Authorization Token. NOTE: This can be left blank and will be ignored if 'Use Managed API Key' is enabled.",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "",
+        Order = 3 )]
+    [TextField( "Acceptable DPV Codes",
+        Description = "The Smarty Streets Delivery Point Validation (DPV) match code values that are considered acceptable levels of standardization (see http://smartystreets.com/kb/liveaddress-api/field-definitions#dpvmatchcode for details).",
+        IsRequired = false,
+        DefaultValue = "Y,S,D",
+        Category = "",
+        Order = 4 )]
+    [TextField( "Acceptable Precisions",
+        Description = "The Smarty Streets latitude & longitude precision values that are considered acceptable levels of geocoding (see http://smartystreets.com/kb/liveaddress-api/field-definitions#precision for details).",
+        IsRequired = false,
+        DefaultValue = "Zip7,Zip8,Zip9",
+        Category = "",
+        Order = 5 )]
     [Rock.SystemGuid.EntityTypeGuid( "4278E7EF-221B-45E6-B9C6-5D11884389EF")]
     public class SmartyStreets : VerificationComponent
     {
@@ -53,8 +77,39 @@ namespace Rock.Address
         /// </returns>
         public override VerificationResult Verify( Rock.Model.Location location, out string resultMsg )
         {
-            VerificationResult result = VerificationResult.None;
             resultMsg = string.Empty;
+
+            if ( location == null )
+            {
+                resultMsg = "No location provided.";
+                return VerificationResult.None;
+            }
+
+            /*
+                 6/8/2026 - NA
+
+                 The Smarty US Street API only validates US addresses. If a location has a non-empty
+                 country value that is not "US" or "USA", skip verification entirely and return
+                 VerificationResult.None. Passing a non-US address produces no result and wastes an API call.
+            
+                 Reason: Confirmed with Smarty Support:
+                        "I can confirm that it will not attempt to standardize or geocode any address
+                        outside the US and US Territories."
+
+            */
+            var country = location.Country?.Trim();
+            var isNonUsNonEmptyCountry =
+                !string.IsNullOrWhiteSpace( country )
+                && !country.Equals( "US", StringComparison.OrdinalIgnoreCase )
+                && !country.Equals( "USA", StringComparison.OrdinalIgnoreCase );
+
+            if ( isNonUsNonEmptyCountry )
+            {
+                resultMsg = "Skipped: non-US country for this service.";
+                return VerificationResult.None;
+            }
+
+            VerificationResult result = VerificationResult.None;
 
             SmartyStreetsAPIKey apiKey = GetAPIKey();
 

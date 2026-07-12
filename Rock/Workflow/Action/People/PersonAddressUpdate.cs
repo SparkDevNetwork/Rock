@@ -36,17 +36,50 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Person Address Update" )]
 
-    [WorkflowAttribute("Person", "Workflow attribute that contains the person to update.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [WorkflowAttribute( "Location Type (From Attribute)", "The attribute that contains the location type to update.", false, "", "", 1, "LocationTypeAttribute",
-        new string[] { "Rock.Field.Types.DefinedValueFieldType" } )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE, "Location Type", "The type of location to update (if attribute is not specified or is an invalid value).", true, false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 2 )]
-    [LocationField("Location", "The location to use for updating person's record.", false, "", "", 3 )]
-    [WorkflowAttribute("Location (From Attribute)", "A location attribute to use for updating person's record. This will be used if a value is not entered for the Location field above.", false, "", "", 4, "LocationAttribute",
-        new string[] { "Rock.Field.Types.LocationFieldType", "Rock.Field.Types.AddressFieldType" } )]
-    [WorkflowTextOrAttribute( "Is Mailing Location", "Attribute Value", "The value or attribute value to indicate if the location is the mailing address. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 5, "IsMailing" )]
-    [WorkflowTextOrAttribute( "Is Mapped Location", "Attribute Value", "The value or attribute value to indicate if the location should be mapped location. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 6, "IsMapped" )]
-    [BooleanField( "Save Current Address as Previous Address", "Determines whether this will overwrite an existing address of the specified type or change its type to Previous and add a new address.", order: 7, key: "SavePreviousAddress" )]
+    [WorkflowAttribute("Person",
+        Description = "Workflow attribute that contains the person to update.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowAttribute( "Location Type (From Attribute)",
+        Description = "The attribute that contains the location type to update.",
+        IsRequired = false,
+        Order = 1,
+        Key = "LocationTypeAttribute",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.DefinedValueFieldType" } )]
+    [DefinedValueField( "Location Type",
+        Description = "The type of location to update (if attribute is not specified or is an invalid value).",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE,
+        DefaultValue = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
+        Order = 2 )]
+    [LocationField("Location",
+        Description = "The location to use for updating person's record.",
+        IsRequired = false,
+        Order = 3 )]
+    [WorkflowAttribute("Location (From Attribute)",
+        Description = "A location attribute to use for updating person's record. This will be used if a value is not entered for the Location field above.",
+        IsRequired = false,
+        Order = 4,
+        Key = "LocationAttribute",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.LocationFieldType", "Rock.Field.Types.AddressFieldType" } )]
+    [WorkflowTextOrAttribute( "Is Mailing Location",
+        "Attribute Value",
+        Description = "The value or attribute value to indicate if the location is the mailing address. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 5,
+        Key = "IsMailing" )]
+    [WorkflowTextOrAttribute( "Is Mapped Location",
+        "Attribute Value",
+        Description = "The value or attribute value to indicate if the location should be mapped location. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 6,
+        Key = "IsMapped" )]
+    [BooleanField( "Save Current Address as Previous Address",
+        Description = "Determines whether this will overwrite an existing address of the specified type or change its type to Previous and add a new address.",
+        Order = 7,
+        Key = "SavePreviousAddress" )]
     [Rock.SystemGuid.EntityTypeGuid( "B9C0DDB5-F437-4175-AB32-84AA4E20F788")]
     public class PersonAddressUpdate : ActionComponent
     {

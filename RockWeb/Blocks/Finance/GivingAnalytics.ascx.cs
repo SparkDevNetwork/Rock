@@ -48,42 +48,41 @@ namespace RockWeb.Blocks.Finance
     [Description( "Shows a graph of giving statistics which can be configured for specific date range, amounts, currency types, campus, etc." )]
 
     [DefinedValueField(
-        definedTypeGuid: Rock.SystemGuid.DefinedType.CHART_STYLES,
-        name: "Chart Style",
-        defaultValue: Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK,
-        order: 0,
-        key: AttributeKeys.ChartStyle )]
+        "Chart Style",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CHART_STYLES,
+        DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK,
+        Order = 0,
+        Key = AttributeKeys.ChartStyle )]
 
     [LinkedPage(
-        name: "Detail Page",
-        description: "Select the page to navigate to when the chart is clicked",
-        required: false,
-        order: 1,
-        key: AttributeKeys.DetailPage )]
+        "Detail Page",
+        Description = "Select the page to navigate to when the chart is clicked",
+        IsRequired = false,
+        Order = 1,
+        Key = AttributeKeys.DetailPage )]
 
     [BooleanField(
-        name: "Hide View By Options",
-        description: "Should the View By options be hidden (Giver, Adults, Children, Family)?",
-        order: 2,
-        key: AttributeKeys.HideViewByOptions )]
+        "Hide View By Options",
+        Description = "Should the View By options be hidden (Giver, Adults, Children, Family)?",
+        Order = 2,
+        Key = AttributeKeys.HideViewByOptions )]
 
     [CustomDropdownListField(
-        name: "Filter Column Direction",
-        description: "Choose the direction for the check boxes for filter selections.",
-        listSource: "vertical^Vertical,horizontal^Horizontal",
-        required: true,
-        defaultValue: "vertical",
-        order: 3,
-        key: AttributeKeys.FilterColumnDirection
-        )]
+        "Filter Column Direction",
+        Description = "Choose the direction for the check boxes for filter selections.",
+        ListSource = "vertical^Vertical,horizontal^Horizontal",
+        IsRequired = true,
+        DefaultValue = "vertical",
+        Order = 3,
+        Key = AttributeKeys.FilterColumnDirection )]
 
     [IntegerField(
-        name: "Filter Column Count",
-        description: "The number of check boxes for each row.",
-        required: false,
-        defaultValue: 1,
-        order: 4,
-        key: AttributeKeys.FilterColumnCount )]
+        "Filter Column Count",
+        Description = "The number of check boxes for each row.",
+        IsRequired = false,
+        DefaultIntegerValue = 1,
+        Order = 4,
+        Key = AttributeKeys.FilterColumnCount )]
 
     [IntegerField(
         "Database Timeout",

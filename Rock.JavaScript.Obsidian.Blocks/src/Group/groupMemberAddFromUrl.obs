@@ -1,0 +1,18 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-html="content"></div>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { GroupMemberAddFromUrlBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberAddFromUrl/groupMemberAddFromUrlBag";
+    import { GroupMemberAddFromUrlOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberAddFromUrl/groupMemberAddFromUrlOptionsBag";
+
+    const config = useConfigurationValues<CustomBlockBox<GroupMemberAddFromUrlBag, GroupMemberAddFromUrlOptionsBag>>();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    const content = ref(config.bag?.content ?? "");
+</script>

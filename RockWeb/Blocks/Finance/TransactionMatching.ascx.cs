@@ -559,7 +559,7 @@ namespace RockWeb.Blocks.Finance
             hfBatchId.Value = batchId.ToString();
             hfTransactionId.Value = string.Empty;
 
-            int? specificTransactionId = PageParameter( PageParameterKey.TransactionId ).AsIntegerOrNull();
+            int? specificTransactionId = PageParameter( PageParameterKey.TransactionId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.TransactionId ) );
             if ( specificTransactionId.HasValue )
             {
                 hfBackNextHistory.Value = specificTransactionId.Value.ToString();

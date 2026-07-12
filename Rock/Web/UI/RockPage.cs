@@ -2035,13 +2035,6 @@ namespace Rock.Web.UI
         {
             base.OnLoadComplete( e );
 
-            // Set the title displayed in the browser on the base page.
-            string pageTitle = BrowserTitle ?? string.Empty;
-            string siteTitle = _pageCache.Layout.Site.Name;
-            string seperator = pageTitle.Trim() != string.Empty && siteTitle.Trim() != string.Empty ? " | " : "";
-
-            base.Title = pageTitle + seperator + siteTitle;
-
             // Make the last breadcrumb on this page the only one active. This
             // takes care of any late additions to the breadcrumbs by Lava or
             // Obsidian blocks.
@@ -2064,6 +2057,22 @@ namespace Rock.Web.UI
                     ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-obsidian-page-timings", script, true );
                 }
             }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Page.PreRenderComplete" /> event after
+        /// the page's registered asynchronous tasks have completed.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> that contains the event data.</param>
+        protected override void OnPreRenderComplete( EventArgs e )
+        {
+            base.OnPreRenderComplete( e );
+
+            string pageTitle = BrowserTitle ?? string.Empty;
+            string siteTitle = _pageCache.Layout.Site.Name;
+            string seperator = pageTitle.Trim() != string.Empty && siteTitle.Trim() != string.Empty ? " | " : "";
+
+            base.Title = pageTitle + seperator + siteTitle;
         }
 
         /// <summary>
@@ -2149,6 +2158,24 @@ namespace Rock.Web.UI
                         }
                     */
 
+                    /*
+                        7/6/2026 - MSE
+
+                        The WebForms Person Bio block set this session value in its click
+                        handler, but the Obsidian version starts impersonation from a
+                        block action where session state is unavailable. Setting it here,
+                        while the request is still authenticated as the original user,
+                        keeps the admin bar "Restore" button and elevated page rights
+                        working. If the request is already impersonated, the existing
+                        value is kept so Restore returns to the original user.
+
+                        Reason: Support the impersonation Restore button for the new Obsidian Bio block.
+                    */
+                    if ( string.IsNullOrEmpty( impersonatedPersonKeyIdentity ) && CurrentUser != null )
+                    {
+                        Session["ImpersonatedByUser"] = CurrentUser;
+                    }
+
                     Authorization.SignOut();
 
                     /*
@@ -2214,7 +2241,7 @@ namespace Rock.Web.UI
         {
             var googleAPIKey = GlobalAttributesCache.Get().GetValue( "GoogleAPIKey" );
             string keyParameter = string.IsNullOrWhiteSpace( googleAPIKey ) ? "" : string.Format( "key={0}&", googleAPIKey );
-            string scriptUrl = string.Format( "https://maps.googleapis.com/maps/api/js?{0}libraries=drawing,visualization,geometry,marker", keyParameter );
+            string scriptUrl = string.Format( "https://maps.googleapis.com/maps/api/js?{0}v=3.64&libraries=drawing,visualization,geometry,marker", keyParameter );
 
             // first, add it to the page to handle cases where the api is needed on first page load
             if ( this.Page != null && this.Page.Header != null )
@@ -2683,6 +2710,35 @@ Sys.Application.add_load(function () {
                     secondaryBlock.SetVisible( !hidden );
                 }
             }
+
+            /*
+                6/2/26 - MSE
+
+                The loop above only hides WebForms ISecondaryBlock blocks. Obsidian blocks are
+                hosted in a wrapper that does not implement that interface, so we bridge to the
+                framework's hideBlockRole/showBlockRole helpers (BlockRole.Secondary = 4) to
+                hide or show every Obsidian block registered with the Secondary role. Registered
+                against the page (matching the existing partial-postback script convention here)
+                so it runs after the async postback that drives the edit/view toggle.
+
+                Reason: Hide Obsidian Secondary blocks when a legacy block enters edit mode.
+            */
+            var secondaryRoleMethod = hidden ? "hideBlockRole" : "showBlockRole";
+
+            // Use the body class to avoid unbalancing the helpers' reference counts on repeat calls.
+            var secondaryRoleGuard = hidden
+                ? "!document.body.classList.contains( 'hide-block-role-secondary' )"
+                : "document.body.classList.contains( 'hide-block-role-secondary' )";
+
+            var secondaryRoleScript = $@"if ( window.Obsidian && {secondaryRoleGuard} ) {{
+    Obsidian.onReady( function () {{
+        System.import( '@Obsidian/Utility/block.js' ).then( function ( block ) {{
+            block.{secondaryRoleMethod}( 4 );
+        }} );
+    }} );
+}}";
+
+            ScriptManager.RegisterStartupScript( this, typeof( RockPage ), "rock-toggle-secondary-block-role", secondaryRoleScript, true );
         }
 
         /// <summary>

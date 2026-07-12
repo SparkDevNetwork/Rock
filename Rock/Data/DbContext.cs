@@ -731,7 +731,13 @@ namespace Rock.Data
                         }
                         else
                         {
-                            ExceptionLogService.LogException( new Exception( "Property validation failed.", ex ) );
+                            // Captures the full current call stack, all callers
+                            // included so that we get more information about
+                            // where this happened in the log.
+                            var stack = new System.Diagnostics.StackTrace( true ).ToString();
+
+                            ex.SetStackTrace( stack );
+                            ExceptionLogService.LogException( ex, HttpContext.Current );
                         }
                     }
                 }
@@ -907,6 +913,8 @@ namespace Rock.Data
             var deleteContentCollectionIndexingMsgs = new List<BusStartedTaskMessage>();
             var addInteractionEntityTransactions = new List<AddInteractionEntityTransaction>();
             var interactionGuid = RockRequestContextAccessor.Current?.RelatedInteractionGuid;
+            var cacheSaveOptions = GetOptions<UpdateCacheSaveOptions>();
+            var isUpdateCacheDisabled = cacheSaveOptions?.IsUpdateCacheDisabled ?? false;
 
             foreach ( var item in updatedItems )
             {
@@ -957,7 +965,7 @@ namespace Rock.Data
                     }
                 }
 
-                if ( item.Entity is ICacheable cacheable )
+                if ( !isUpdateCacheDisabled && item.Entity is ICacheable cacheable )
                 {
                     /* 04/14/2022 MDP
 

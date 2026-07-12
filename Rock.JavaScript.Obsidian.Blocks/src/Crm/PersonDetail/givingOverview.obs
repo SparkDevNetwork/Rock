@@ -1,0 +1,319 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel v-if="isVisible" type="block" title="Giving Overview" titleIconCssClass="ti ti-chart-area" panelBodyCssClass="pt-0">
+        <div class="giving-overview">
+            <template v-if="hasGivingData">
+                <div class="d-flex flex-wrap py-2">
+                    <div>
+                        <span class="badge align-text-bottom mr-1" :title="firstGiftTooltip">{{ firstGiftText }}</span>
+                        <span class="badge badge-success align-text-bottom" :title="lastGiftTooltip">{{ lastGiftText }}</span>
+                    </div>
+                    <div class="giving-alerts d-inline-flex align-items-center ml-sm-auto">
+                        <span class="text-sm mr-2"><i class="ti ti-fw ti-message text-muted"></i> Giving Alerts</span>
+                        <a v-if="alertListUrl" :href="alertListUrl">
+                            <span class="badge badge-success align-text-bottom mr-1">{{ gratitudeAlertCount }}</span>
+                            <span class="badge badge-warning align-text-bottom">{{ followUpAlertCount }}</span>
+                        </a>
+                        <span v-else>
+                            <span class="badge badge-success align-text-bottom mr-1">{{ gratitudeAlertCount }}</span>
+                            <span class="badge badge-warning align-text-bottom">{{ followUpAlertCount }}</span>
+                        </span>
+                    </div>
+                </div>
+                <hr class="my-0 mx--panel-body">
+
+                <div v-if="isInactiveGiver" class="alert alert-warning mt-3">
+                    <strong>Inactive Giver</strong><br>
+                    Last Gift: {{ inactiveLastGiftText }}
+                </div>
+
+                <div :class="{ 'inactive-giving': isInactiveGiver }">
+                    <div v-html="givingStatsKpiHtml"></div>
+                    <hr class="mt-1 mb-0 mx--panel-body">
+
+                    <div class="row d-flex flex-wrap align-items-start py-3">
+                        <div class="col-xs-12 col-sm-12 col-lg-12 giving-by-month">
+                            <h5 class="mt-0 mb-3">Giving by Month</h5>
+                            <ul class="trend-chart trend-chart-gap" style="height: 85px;">
+                                <li v-for="(month, index) in givingByMonth" :key="index" :title="`${month.label} ${month.formattedAmount}`">
+                                    <span :style="{ height: getMonthBarHeight(month) }"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <hr class="my-0 mx--panel-body">
+                    <div class="py-3">
+                        <h5 class="m-0">Giving Characteristics</h5>
+                        <NotificationBox v-if="staleWarningText" alertType="warning" class="my-3">{{ staleWarningText }}</NotificationBox>
+                        <div class="row d-flex flex-wrap align-items-lg-center">
+                            <div class="col-xs-12 col-sm-7 col-md-8 giving-characteristics">
+                                <div v-html="givingCharacteristicsKpiHtml"></div>
+                            </div>
+                            <div class="col-xs-12 col-sm-5 col-md-4 percentile-giving mx-auto">
+                                <hr class="my-3 d-sm-none">
+                                <span class="text-sm text-muted p-0 mb-1">Community View</span>
+                                <div class="d-flex flex-column rollover-container">
+                                    <div class="rollover-item inset-0 z-10 well m-0 border-0 small">{{ communityViewHelpText }}</div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="stat-value" style="font-size: 30px; line-height: 1; font-weight: 700;">{{ givingPercentile }}%</span>
+                                        <span class="stat-label leading-snug text-sm ml-2">Percentile<br>Bin {{ givingBin }}</span>
+                                    </div>
+                                    <div class="flex-fill">
+                                        <ul class="trend-chart" style="height: 70px;">
+                                            <li v-for="(stageHeight, index) in stageHeights" :key="index">
+                                                <span :class="{ 'bg-primary': index + 1 === percentileStage }" :style="{ height: stageHeight }"></span>
+                                            </li>
+                                        </ul>
+                                        <ul class="trend-bar list-unstyled">
+                                            <li v-for="(binWidth, index) in binWidths" :key="index" :style="{ width: binWidth }">
+                                                <span :class="{ 'bg-primary': index + 1 === givingBin }"></span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr class="my-0 mx--panel-body">
+
+                <h5 class="mt-3">Yearly Summary</h5>
+                <div class="row d-flex flex-wrap">
+                    <div v-for="summary in visibleYearlySummaries" :key="summary.year" class="col-xs-12 col-sm-6">
+                        <table class="table table-condensed my-2">
+                            <thead>
+                                <tr>
+                                    <th class="bg-transparent" colspan="2">{{ summary.year }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(account, index) in summary.accounts" :key="index">
+                                    <td class="pr-4">{{ account.accountName }}</td>
+                                    <td class="text-right">{{ account.formattedAmount }}</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>Total</th>
+                                    <th class="text-right">{{ summary.formattedTotalAmount }}</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <NotificationBox v-if="yearlySummaryErrorMessage" alertType="danger" class="my-2">{{ yearlySummaryErrorMessage }}</NotificationBox>
+
+                <div class="text-center margin-v-sm">
+                    <button v-if="!isYearlySummaryExpanded"
+                            type="button"
+                            class="btn btn-xs btn-default"
+                            :disabled="isLoadingYearlySummary"
+                            @click="onShowMoreYearlySummary">
+                        <i class="ti ti-chevron-down"></i>
+                        Show More
+                        <i class="ti ti-chevron-down"></i>
+                    </button>
+                    <button v-else
+                            type="button"
+                            class="btn btn-xs btn-default"
+                            @click="onShowLessYearlySummary">
+                        <i class="ti ti-chevron-up"></i>
+                        Show Less
+                        <i class="ti ti-chevron-up"></i>
+                    </button>
+                </div>
+            </template>
+
+            <p v-else class="mt-3 mb-0">No giving data available.</p>
+        </div>
+    </Panel>
+</template>
+
+<!-- The KPI sections are rendered with v-html, so these styles must not be scoped. -->
+<style>
+.giving-overview .currency-span {
+    display: inline-block;
+}
+
+.giving-overview .currency-span > span {
+    font-size: .6em;
+    vertical-align: top;
+}
+
+.giving-overview .trend-bar {
+    height: 11px;
+    margin-top: 4px;
+}
+
+.giving-overview .trend-bar li {
+    float: left;
+    height: 100%;
+}
+
+.giving-overview .trend-bar li span {
+    display: flex;
+    height: 100%;
+    margin-right: 2px;
+    background: var(--theme-light);
+}
+
+@media (min-width: 768px) {
+    .giving-overview .percentile-giving {
+        border-left: 1px solid #cde1f1;
+    }
+}
+
+.giving-overview .inactive-giving {
+    position: relative;
+    opacity: .85;
+}
+
+.giving-overview .inactive-giving::before {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    bottom: -8px;
+    left: -8px;
+    z-index: -10;
+    content: " ";
+    background: var(--theme-lightest);
+    border-radius: 4px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { ContributionYearSummaryBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingOverview/contributionYearSummaryBag";
+    import { GivingOverviewBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingOverview/givingOverviewBag";
+    import { GivingOverviewOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingOverview/givingOverviewOptionsBag";
+    import { MonthlyGivingBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingOverview/monthlyGivingBag";
+    import { NavigationUrlKey } from "./GivingOverview/types.partial";
+
+    // #region Values
+
+    const config = useConfigurationValues<CustomBlockBox<GivingOverviewBag, GivingOverviewOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const bag = config.bag;
+
+    const isVisible = bag?.isVisible === true;
+    const hasGivingData = bag?.hasGivingData === true;
+    const firstGiftText = bag?.firstGiftText ?? "";
+    const firstGiftTooltip = bag?.firstGiftTooltip ?? "";
+    const lastGiftText = bag?.lastGiftText ?? "";
+    const lastGiftTooltip = bag?.lastGiftTooltip ?? "";
+    const gratitudeAlertCount = bag?.gratitudeAlertCount ?? 0;
+    const followUpAlertCount = bag?.followUpAlertCount ?? 0;
+    const isInactiveGiver = bag?.isInactiveGiver === true;
+    const inactiveLastGiftText = bag?.inactiveLastGiftText ?? "";
+    const givingByMonth = bag?.givingByMonth ?? [];
+    const givingStatsKpiHtml = bag?.givingStatsKpiHtml ?? "";
+    const givingCharacteristicsKpiHtml = bag?.givingCharacteristicsKpiHtml ?? "";
+    const staleWarningText = bag?.staleWarningText ?? "";
+    const givingPercentile = bag?.givingPercentile ?? 0;
+    const percentileStage = bag?.percentileStage ?? 0;
+    const givingBin = bag?.givingBin ?? 0;
+    const communityViewHelpText = bag?.communityViewHelpText ?? "";
+    const alertListUrl = config.navigationUrls?.[NavigationUrlKey.AlertListPage] ?? "";
+
+    // The relative heights of the ten percentile stage bars and the relative
+    // widths of the four bin bars in the community view.
+    const stageHeights = ["100%", "70%", "48%", "33%", "25%", "20%", "15%", "12.5%", "10%", "8%"];
+    const binWidths = ["5%", "15%", "20%", "60%"];
+
+    const collapsedYearlySummaries = bag?.yearlySummary ?? [];
+    const fullYearlySummaries = ref<ContributionYearSummaryBag[] | null>(null);
+    const isYearlySummaryExpanded = ref(false);
+    const isLoadingYearlySummary = ref(false);
+    const yearlySummaryErrorMessage = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const maxGiftAmount = computed((): number => {
+        return Math.max(0, ...givingByMonth.map(m => m.amount));
+    });
+
+    const visibleYearlySummaries = computed((): ContributionYearSummaryBag[] => {
+        if (isYearlySummaryExpanded.value && fullYearlySummaries.value) {
+            return fullYearlySummaries.value;
+        }
+
+        return collapsedYearlySummaries;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Expands the yearly summary to include all years, retrieving the full
+     * history from the server on the first expansion. Stays collapsed and
+     * shows an error message when the retrieval fails.
+     */
+    async function onShowMoreYearlySummary(): Promise<void> {
+        if (!fullYearlySummaries.value) {
+            isLoadingYearlySummary.value = true;
+            yearlySummaryErrorMessage.value = "";
+
+            try {
+                const result = await invokeBlockAction<ContributionYearSummaryBag[]>("GetYearlySummary");
+
+                if (result.isSuccess && result.data) {
+                    fullYearlySummaries.value = result.data;
+                }
+                else {
+                    yearlySummaryErrorMessage.value = result.errorMessage || "Unable to retrieve the yearly summary.";
+                }
+            }
+            catch {
+                yearlySummaryErrorMessage.value = "Unable to retrieve the yearly summary.";
+            }
+            finally {
+                isLoadingYearlySummary.value = false;
+            }
+        }
+
+        if (fullYearlySummaries.value) {
+            isYearlySummaryExpanded.value = true;
+        }
+    }
+
+    /**
+     * Collapses the yearly summary back to the current and previous year.
+     */
+    function onShowLessYearlySummary(): void {
+        isYearlySummaryExpanded.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Gets the bar height for a month in the giving by month chart, relative
+     * to the highest giving month.
+     *
+     * @param month The month to compute the bar height for.
+     *
+     * @returns A CSS height percentage.
+     */
+    function getMonthBarHeight(month: MonthlyGivingBag): string {
+        if (maxGiftAmount.value === 0) {
+            return "0%";
+        }
+
+        return `${(month.amount / maxGiftAmount.value) * 100}%`;
+    }
+
+    // #endregion Functions
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

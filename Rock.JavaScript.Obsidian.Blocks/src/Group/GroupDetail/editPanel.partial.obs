@@ -1,0 +1,1439 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="isSystem" alertType="info">
+        <strong>Note</strong> Because this group is used by Rock, editing is restricted.
+    </NotificationBox>
+
+    <ContentSectionContainer :sidebar="false">
+        <ContentSection light>
+            <div class="basic-fields">
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="name" label="Name" rules="required" :maxLength="100" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <CheckBox v-model="isActive" label="Active" />
+                    </div>
+                </div>
+
+                <ConditionalWell v-if="!isActive && (groupTypeOptions.isInactiveReasonVisible || hasActiveDescendants)">
+                    <template v-if="groupTypeOptions.isInactiveReasonVisible">
+                        <DropDownList v-model="inactiveReasonValueIdValue"
+                                      label="Inactive Reason"
+                                      help="The reason this group is inactive."
+                                      :items="inactiveReasonItems"
+                                      :rules="groupTypeOptions.isInactiveReasonRequired ? 'required' : ''" />
+
+                        <TextBox v-model="inactiveReasonNote"
+                                 label="Inactive Note"
+                                 textMode="multiline"
+                                 help="Additional context about why this group is inactive."
+                                 :rows="3" />
+                    </template>
+
+                    <div v-if="hasActiveDescendants" class="form-group">
+                        <InlineCheckBox v-model="inactivateChildGroups"
+                                        label="Also Inactivate Child Groups"
+                                        help="Applies the inactive status to child groups." />
+                    </div>
+                </ConditionalWell>
+
+                <TextBox v-model="description"
+                         label="Description"
+                         textMode="multiline"
+                         :rows="4" />
+
+                <div class="form-group">
+                    <InlineCheckBox v-model="isPublic"
+                                    label="Show Publicly"
+                                    help="Controls whether this group may be visible in external or public-facing contexts." />
+                </div>
+
+                <ImageUploader v-model="photoBinaryFile"
+                               label="Image"
+                               help="The image used to represent this group."
+                               :binaryFileTypeGuid="BinaryFiletype.Default" />
+            </div>
+        </ContentSection>
+
+        <ContentSection title="General" icon="ti ti-settings">
+            <ContentStack title="Overview" description="Basic information that identifies this group and places it within the organization.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <template v-if="isAddMode">
+                            <DropDownList v-model="groupTypeIdValue"
+                                          label="Group Type"
+                                          help="Determines the type of group. This value cannot be changed after the group is created."
+                                          :items="allowedGroupTypeItems"
+                                          rules="required"
+                                          :showBlankItem="true" />
+
+                            <NotificationBox v-if="allowedGroupTypeWarning" ref="emptyGroupTypeWarningElement" alertType="warning">
+                                {{ allowedGroupTypeWarning }}
+                            </NotificationBox>
+
+                            <NotificationBox v-if="!isCurrentGroupTypeAllowed && !allowedGroupTypeWarning" ref="groupTypeWarningElement" alertType="warning">
+                                The selected parent group does not allow this Group Type. Choose a different Group Type or parent group.
+                            </NotificationBox>
+                        </template>
+
+                        <div v-else class="static-compact">
+                            <StaticFormControl label="Group Type"
+                                               :modelValue="modelValue.bag?.groupType?.name ?? ''" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <GroupPicker v-model="parentGroup"
+                                     label="Parent Group"
+                                     help="The parent group this group belongs to." />
+
+                        <NotificationBox v-if="parentGroup && !parentGroupIsActive" alertType="warning">
+                            The selected parent group is inactive. Children of inactive groups may be hidden by default in some areas of Rock.
+                        </NotificationBox>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <CampusPicker v-model="campus"
+                                      label="Campus"
+                                      help="The campus associated with this group."
+                                      showBlankItem
+                                      :includeInactive="!preventSelectingInactiveCampus"
+                                      :rules="groupTypeOptions.requiresCampus ? 'required' : ''" />
+                    </div>
+                </div>
+
+                <div v-if="groupTypeOptions.isStatusVisible" class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="statusValueIdValue"
+                                      label="Status"
+                                      :items="statusItems" />
+                    </div>
+                </div>
+            </ContentStack>
+
+            <ContentStack v-if="isAdministrationSectionVisible"
+                          title="Administration &amp; Security"
+                          description="Administrative, capacity, and security settings that control how this group is managed.">
+                <div v-if="groupTypeOptions.isAdministratorVisible" class="row">
+                    <div class="col-md-6">
+                        <PersonPicker v-model="groupAdministrator"
+                                      :label="groupTypeOptions.administratorLabel || 'Group Administrator'"
+                                      help="The person responsible for managing this group."
+                                      :trailblazerField="true" />
+                    </div>
+                </div>
+
+                <div v-if="groupTypeOptions.isGroupCapacityVisible" class="row">
+                    <div class="col-md-6">
+                        <NumberBox v-model="groupCapacity"
+                                   label="Group Capacity"
+                                   help="The maximum number of people this group can hold."
+                                   :rules="groupTypeOptions.isGroupCapacityRequired ? 'required' : ''"
+                                   :minimumValue="0"
+                                   :decimalCount="0">
+                            <template #inputGroupAppend>
+                                <span class="input-group-addon">Members</span>
+                            </template>
+                        </NumberBox>
+
+                        <NotificationBox v-if="isCapacityBelowMemberCount" alertType="warning">
+                            This group has {{ bag.memberCount }} active member{{ bag.memberCount === 1 ? "" : "s" }}, which exceeds the capacity of {{ groupCapacity }}.
+                        </NotificationBox>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="requiredSignatureDocumentTemplateIdValue"
+                                      label="Require Signed Document"
+                                      help="The document group members must have signed, if applicable."
+                                      :items="signatureDocumentTemplateItems"
+                                      :showBlankItem="true"
+                                      :trailblazerField="true" />
+                    </div>
+                </div>
+
+                <div v-if="groupTypeOptions.isGroupSpecificRecordSourceVisible" class="row">
+                    <div class="col-md-6">
+                        <DefinedValuePicker v-model="recordSourceValue"
+                                            label="Member Record Source"
+                                            help="The record source assigned to members added to this group. If not set, the group type default is used."
+                                            :definedTypeGuid="DefinedTypeGuid.RecordSourceType"
+                                            :showBlankItem="true"
+                                            :trailblazerField="true" />
+                    </div>
+                </div>
+
+                <div v-if="isCurrentPersonGroupAdministrator" class="form-group">
+                    <InlineCheckBox v-model="isSecurityRole"
+                                    label="Enable as Security Role"
+                                    help="Identifies this group as a security role."
+                                    :disabled="isLimitedToSecurityRoleGroups" />
+                </div>
+
+                <div v-if="isSecurityRole && isCurrentPersonGroupAdministrator" class="row">
+                    <div class="col-md-6">
+                        <ConditionalWell>
+                            <RadioButtonList v-model="elevatedSecurityLevelValue"
+                                             label="Security Level"
+                                             help="The level of elevated access this security role grants."
+                                             :items="elevatedSecurityLevelItems" />
+                        </ConditionalWell>
+                    </div>
+                </div>
+            </ContentStack>
+
+            <ContentStack v-if="groupTypeOptions.isPeerNetworkSectionVisible"
+                          title="Relationships" description="Relationship settings that define how connection strength is calculated for this group.">
+                <div class="form-group">
+                    <InlineCheckBox v-model="overrideRelationshipStrength"
+                                    label="Override Relationship Strength"
+                                    help="Uses relationship settings for this group instead of the group type defaults." />
+                </div>
+
+                <template v-if="overrideRelationshipStrength">
+                    <RadioButtonList v-model="relationshipStrengthOverrideValue"
+                                     label="Relationship Strength"
+                                     help="Specifies the relationship strength between individuals in groups of this type. Advanced settings allow further customization based on each person's group role."
+                                     :items="relationshipStrengthItems" />
+
+                    <template v-if="store.state.trailblazerMode">
+                        <div class="form-group">
+                            <InlineSwitch v-if="hasRelationshipStrengthOverride"
+                                          v-model="showAdvancedRelationshipSettings"
+                                          label="Show Advanced Relationship Settings" />
+                        </div>
+
+                        <ConditionalWell v-if="showAdvancedRelationshipSettings && hasRelationshipStrengthOverride">
+                            <div class="form-group">
+                                <InlineCheckBox v-model="relationshipGrowthEnabledOverride"
+                                                label="Enable Relationship Growth Over Time"
+                                                help="Allows relationship strength to increase as people spend time together in the group." />
+                            </div>
+
+                            <NotificationBox alertType="info">
+                                Use the matrix to adjust relationship scores based on group member relationships. For example, if members have strong connections with group leaders but little interaction with other non-leaders, you can reduce or remove the score percentage between non-leaders.
+                            </NotificationBox>
+
+                            <div class="d-grid gap-3 relationship-matrix" style="width: max-content; grid-template-columns: auto auto auto; row-gap: 0.25rem;">
+                                <div></div>
+                                <div class="d-flex align-items-center">
+                                    <RockLabel>Leader</RockLabel>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <RockLabel>Non-Leader</RockLabel>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <RockLabel>Leader</RockLabel>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <NumberBox v-model="leaderToLeaderRelationshipMultiplierOverrideValue"
+                                               :placeholder="formatPercent(groupTypeOptions.leaderToLeaderMultiplierDefault)"
+                                               :decimalCount="0"
+                                               :minimumValue="0"
+                                               :maximumValue="100"
+                                               :maxLength="3"
+                                               style="width: 150px;"
+                                               validationTitle="Leader to Leader Relationship Multiplier">
+                                        <template #inputGroupAppend>
+                                            <span class="input-group-addon">%</span>
+                                        </template>
+                                    </NumberBox>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <NumberBox v-model="leaderToNonLeaderRelationshipMultiplierOverrideValue"
+                                               :placeholder="formatPercent(groupTypeOptions.leaderToNonLeaderMultiplierDefault)"
+                                               :decimalCount="0"
+                                               :minimumValue="0"
+                                               :maximumValue="100"
+                                               :maxLength="3"
+                                               style="width: 150px;"
+                                               validationTitle="Leader to Non-Leader Relationship Multiplier">
+                                        <template #inputGroupAppend>
+                                            <span class="input-group-addon">%</span>
+                                        </template>
+                                    </NumberBox>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <RockLabel>Non-Leader</RockLabel>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <NumberBox v-model="nonLeaderToLeaderRelationshipMultiplierOverrideValue"
+                                               :placeholder="formatPercent(groupTypeOptions.nonLeaderToLeaderMultiplierDefault)"
+                                               :decimalCount="0"
+                                               :minimumValue="0"
+                                               :maximumValue="100"
+                                               :maxLength="3"
+                                               style="width: 150px;"
+                                               validationTitle="Non-Leader to Leader Relationship Multiplier">
+                                        <template #inputGroupAppend>
+                                            <span class="input-group-addon">%</span>
+                                        </template>
+                                    </NumberBox>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <NumberBox v-model="nonLeaderToNonLeaderRelationshipMultiplierOverrideValue"
+                                               :placeholder="formatPercent(groupTypeOptions.nonLeaderToNonLeaderMultiplierDefault)"
+                                               :decimalCount="0"
+                                               :minimumValue="0"
+                                               :maximumValue="100"
+                                               :maxLength="3"
+                                               style="width: 150px;"
+                                               validationTitle="Non-Leader to Non-Leader Relationship Multiplier">
+                                        <template #inputGroupAppend>
+                                            <span class="input-group-addon">%</span>
+                                        </template>
+                                    </NumberBox>
+                                </div>
+                            </div>
+                        </ConditionalWell>
+                    </template>
+                </template>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection v-if="groupTypeOptions.isRsvpSectionVisible"
+                        title="RSVP"
+                        icon="ti ti-ticket">
+            <ContentStack title="Reminder Settings" description="Settings that control RSVP reminders for this group.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <StaticFormControl v-if="groupTypeOptions.rsvpReminderSystemCommunication"
+                                           label="RSVP Reminder Communication"
+                                           help="Specifies the System Communication used to remind group members to RSVP for upcoming group events. May only be configured on the Group Type settings."
+                                           :modelValue="groupTypeOptions.rsvpReminderSystemCommunication.text ?? ''" />
+                        <DropDownList v-else
+                                      v-model="rsvpReminderSystemCommunicationGuid"
+                                      label="RSVP Reminder Communication"
+                                      help="Specifies the System Communication used to remind group members to RSVP for upcoming group events. May only be configured on the Group Type settings."
+                                      :items="rsvpSystemCommunicationOptions"
+                                      showBlankItem
+                                      enhanceForLongLists />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <NumberBox v-model="rsvpReminderOffsetDays"
+                                   label="RSVP Reminder Lead Time"
+                                   help="The number of days prior to a group event occurrence to send the RSVP reminder."
+                                   :disabled="groupTypeOptions.rsvpReminderOffsetDays != null"
+                                   :minimumValue="0"
+                                   :decimalCount="0">
+                            <template #inputGroupAppend>
+                                <span class="input-group-addon">Days</span>
+                            </template>
+                        </NumberBox>
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection v-if="isMeetingAndSchedulingSectionVisible"
+                        title="Meeting &amp; Scheduling Details" icon="ti ti-calendar-month">
+
+            <ContentStack v-if="groupTypeOptions.isOverallScheduleStackVisible"
+                          title="Overall Group Schedule"
+                          description="Provide the schedule used to represent when this group meets as a whole.">
+                <RadioButtonList v-model="scheduleTypeValue"
+                                 label="Group Schedule"
+                                 help="The main schedule for the group as a whole. This does not replace location-specific schedules."
+                                 :items="scheduleTypeItems" />
+
+                <ConditionalWell v-if="scheduleType !== ScheduleType.None">
+                    <div v-if="scheduleType === ScheduleType.Weekly" class="row">
+                        <div class="col-md-6">
+                            <DayOfWeekPicker v-model="weeklyDayOfWeekValue" label="Day of Week" rules="required" />
+                        </div>
+                        <div class="col-md-6">
+                            <TimePicker v-model="weeklyTimeOfDayValue" label="Time of Day" rules="required" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ScheduleBuilder v-if="scheduleType === ScheduleType.Custom"
+                                             v-model="iCalendarContent"
+                                             label="Custom Schedule"
+                                             help="A custom schedule defined specifically for this group."
+                                             rules="required" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <SchedulePicker v-if="scheduleType === ScheduleType.Named"
+                                            v-model="namedSchedule"
+                                            label="Named Schedule"
+                                            help="A predefined schedule used for this group."
+                                            rules="required" />
+                        </div>
+                    </div>
+                </ConditionalWell>
+            </ContentStack>
+
+            <LocationsPanel v-model:groupLocations="groupLocations"
+                            :groupKey="modelValue.bag?.idKey ?? ''"
+                            :locationSelectionMode="groupTypeOptions.locationSelectionMode"
+                            :locationTypeOptions="groupTypeOptions.locationTypeValueOptions ?? []"
+                            :enableLocationSchedules="groupTypeOptions.enableLocationSchedules"
+                            :isSchedulingEnabled="groupTypeOptions.isSchedulingEnabled"
+                            :allowMultipleLocations="groupTypeOptions.allowMultipleLocations"
+                            :mapStyleValueGuid="mapStyleValueGuid" />
+
+            <ContentStack v-if="groupTypeOptions.isSchedulingEnabled || groupTypeOptions.isCheckInRequirementsVisible"
+                          title="Member Scheduling &amp; Check-in"
+                          description="Scheduling behavior and check-in access for this group.">
+                <div class="form-group">
+                    <InlineCheckBox v-model="disableScheduling"
+                                    label="Disable Group Member Scheduling"
+                                    help="Prevents this group from participating in group member scheduling. When enabled, scheduling tools, assignments, confirmations, and coordinator notifications no longer apply to this group." />
+                </div>
+
+                <template v-if="!disableScheduling">
+                    <div class="form-group">
+                        <InlineCheckBox v-model="disableScheduleToolboxAccess"
+                                        label="Hide from Schedule Toolbox"
+                                        help="Prevents this group from appearing in the Schedule Toolbox." />
+                    </div>
+
+                    <div class="form-group">
+                        <InlineCheckBox v-model="schedulingMustMeetRequirements"
+                                        label="Require Member Requirements for Scheduling"
+                                        help="Group members must meet applicable requirements before they can be scheduled." />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <DropDownList v-if="groupTypeOptions.isSchedulingEnabled"
+                                          v-model="scheduleConfirmationLogicValue"
+                                          label="Confirmation Behavior"
+                                          help="Controls how scheduling responses are handled for this group."
+                                          :items="scheduleConfirmationLogicItems"
+                                          :showBlankItem="true" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <PersonPicker v-if="groupTypeOptions.isSchedulingEnabled"
+                                          v-model="scheduleCoordinatorPerson"
+                                          label="Schedule Coordinator"
+                                          help="The person who receives scheduling-related notifications for this group." />
+                        </div>
+                    </div>
+
+                    <template v-if="groupTypeOptions.isSchedulingEnabled">
+                        <div class="form-group">
+                            <InlineCheckBox v-model="hasCoordinatorNotificationOverride"
+                                            label="Enable Schedule Coordinator Notifications"
+                                            help="Allows this group to use its own coordinator notification triggers. When disabled, notification triggers are inherited from the group type." />
+                        </div>
+
+                        <ConditionalWell v-if="hasCoordinatorNotificationOverride">
+                            <CheckBoxList v-model="scheduleCoordinatorNotificationTypesValue"
+                                          label="Coordinator Notifications"
+                                          help="The notification types sent to the schedule coordinator. Leave blank to use the group type default."
+                                          :items="coordinatorNotificationItems" />
+                        </ConditionalWell>
+                    </template>
+
+                    <RadioButtonList v-if="groupTypeOptions.isCheckInRequirementsVisible"
+                                     v-model="attendanceRecordRequiredForCheckInValue"
+                                     label="Who Can Check-in"
+                                     help="Determines whether a person must be scheduled before they can check in. Not Required allows anyone to check in. Preferred pre-selects scheduled members but still allows walk-ins. Required restricts check-in to scheduled members only."
+                                     :items="attendanceRecordRequiredForCheckInItems" />
+                </template>
+            </ContentStack>
+        </ContentSection>
+
+        <AttributeValuesContainer v-model="attributeValues"
+                                  :attributes="attributes"
+                                  :isEditMode="true"
+                                  :displayAsContentSection="true"
+                                  contentSectionTitle="Group Attributes"
+                                  globalCategoryNameOverride="Set Additional Attributes" />
+
+        <ContentSection v-if="canAdministrate && (groupTypeOptions.allowSpecificGroupMemberAttributes || inheritedMemberAttributes.length > 0 || groupMemberAttributes.length > 0)"
+                        title="Member Attributes"
+                        icon="ti ti-user-cog">
+            <GroupMemberAttributes v-model:groupMemberAttributes="groupMemberAttributes"
+                                   :inheritedGroupMemberAttributes="inheritedMemberAttributes" />
+        </ContentSection>
+
+        <GroupRequirements v-if="canAdministrate"
+                           v-model:groupRequirements="groupRequirements"
+                           :inheritedGroupRequirements="groupTypeOptions.inheritedGroupRequirements ?? []"
+                           :groupRoleOptions="groupTypeOptions.groupRoleOptions ?? []"
+                           :groupTypeId="groupTypeId"
+                           :enableSpecificGroupRequirements="groupTypeOptions.enableSpecificGroupRequirements" />
+
+        <ContentSection v-if="groupTypeOptions.isChatSectionVisible"
+                        title="Chat"
+                        icon="ti ti-message-dots">
+            <ContentStack title="Group Chat" description="Enable groups of this type to participate in the chat system as chat channels.">
+                <RadioButtonList v-model="isChatEnabledOverrideValue"
+                                 label="Enable Group Chat"
+                                 help="Controls whether this group is available as a chat channel."
+                                 :items="triStateOverrideItems"
+                                 :disabled="isSystem" />
+            </ContentStack>
+
+            <ContentStack v-if="isChatEnabledOverride !== false"
+                          title="Group Chat Settings"
+                          description="Control how group chat works for this group type.">
+                <RadioButtonList v-model="isLeavingChatChannelAllowedOverrideValue"
+                                 label="Allow Members to Leave Channel"
+                                 help="Controls whether members can leave this chat channel."
+                                 :items="triStateOverrideItems"
+                                 :disabled="isSystem" />
+
+                <RadioButtonList v-model="isChatChannelPublicOverrideValue"
+                                 label="Public Channel"
+                                 help="Makes this chat channel discoverable and joinable in chat search."
+                                 :items="triStateOverrideItems"
+                                 :disabled="isSystem" />
+
+                <RadioButtonList v-model="isChatChannelAlwaysShownOverrideValue"
+                                 label="Always Show Channel"
+                                 help="Shows this channel in the channel list even before a person joins it."
+                                 :items="triStateOverrideItems"
+                                 :disabled="isSystem" />
+
+                <RadioButtonList v-model="chatPushNotificationModeOverrideValue"
+                                 label="Push Notification Mode"
+                                 help="Controls how push notifications are sent for this channel."
+                                 :items="chatPushNotificationModeItems"
+                                 :disabled="isSystem" />
+
+                <ImageUploader v-model="chatChannelAvatarBinaryFile"
+                               label="Channel Avatar"
+                               help="The image used to represent this chat channel."
+                               :binaryFileTypeGuid="BinaryFiletype.Default"
+                               :disabled="isSystem" />
+            </ContentStack>
+        </ContentSection>
+
+        <GroupSync v-model:groupSyncs="groupSyncs"
+                   :groupRoleOptions="groupTypeOptions.groupRoleOptions ?? []"
+                   :canAdministrate="canAdministrate"
+                   :allowGroupSync="groupTypeOptions.allowGroupSync" />
+
+        <GroupMemberWorkflows v-model:groupMemberWorkflowTriggers="groupMemberWorkflowTriggers"
+                              :groupRoleOptions="groupTypeOptions.groupRoleOptions ?? []"
+                              :allowSpecificGroupMemberWorkflows="groupTypeOptions.allowSpecificGroupMemberWorkflows" />
+    </ContentSectionContainer>
+</template>
+
+<script setup lang="ts">
+    import { combineFlagValues, extractFlagValues, formatPercent, formatTimeValue, inheritOverrideToRadioValue, intToPercent, nullableInt, parseTimeString, percentToInt, radioValueToInheritOverride, scrollNotificationIntoView, useInvokeGroupDetailBlockAction } from "./utils.partial";
+    import { ScheduleCoordinatorNotificationType, ScheduleCoordinatorNotificationTypeDescription } from "@Obsidian/Enums/Group/scheduleCoordinatorNotificationType";
+    import { AttendanceRecordRequiredForCheckIn, AttendanceRecordRequiredForCheckInDescription } from "@Obsidian/Enums/Group/attendanceRecordRequiredForCheckIn";
+    import { GroupMemberInheritedAttributeBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupMemberInheritedAttributeBag";
+    import { ScheduleConfirmationLogic, ScheduleConfirmationLogicDescription } from "@Obsidian/Enums/Group/scheduleConfirmationLogic";
+    import { ChatNotificationMode, ChatNotificationModeDescription } from "@Obsidian/Enums/Communication/Chat/chatNotificationMode";
+    import { GroupMemberWorkflowTriggerBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupMemberWorkflowTriggerBag";
+    import { ElevatedSecurityLevel, ElevatedSecurityLevelDescription } from "@Obsidian/Enums/Security/elevatedSecurityLevel";
+    import { RelationshipStrength, RelationshipStrengthDescription } from "@Obsidian/Enums/Group/relationshipStrength";
+    import { GroupLocationStateBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupLocationStateBag";
+    import { GroupRequirementBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupRequirementBag";
+    import { GroupTypeOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupTypeOptionsBag";
+    import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
+    import { ParentGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/parentGroupBag";
+    import { ScheduleType, ScheduleTypeDescription } from "@Obsidian/Enums/Group/scheduleType";
+    import { GroupLocationPickerMode } from "@Obsidian/Enums/Group/groupLocationPickerMode";
+    import { GroupSyncBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupSyncBag";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { DefinedType as DefinedTypeGuid } from "@Obsidian/SystemGuids/definedType";
+    import { GroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupBag";
+    import { TimePickerValue } from "@Obsidian/ViewModels/Controls/timePickerValue";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { computed, PropType, ref, watch } from "vue";
+    import { useStore } from "@Obsidian/PageState";
+    import { Guid } from "@Obsidian/Types";
+    import GroupSync from "./groupSync.partial.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import LocationsPanel from "./locationsPanel.partial.obs";
+    import TimePicker from "@Obsidian/Controls/timePicker.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import GroupRequirements from "./groupRequirements.partial.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
+    import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
+    import GroupMemberWorkflows from "./groupMemberWorkflows.partial.obs";
+    import GroupMemberAttributes from "./groupMemberAttributes.partial.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<GroupBag>>,
+            required: true
+        },
+
+        /**
+         * Per-GroupType options that reshape the panel when the GroupType changes.
+         */
+        groupTypeOptions: {
+            type: Object as PropType<GroupTypeOptionsBag>,
+            required: true
+        },
+
+        /**
+         * GroupType options the user is allowed to pick from in Add mode.
+         */
+        allowedGroupTypes: {
+            type: Array as PropType<ListItemBag[]>,
+            default: () => [] as ListItemBag[]
+        },
+
+        /**
+         * Warning explaining why the Add-mode Group Type dropdown is empty, or
+         * an empty string when at least one group type is available to pick.
+         */
+        allowedGroupTypesWarning: {
+            type: String,
+            default: ""
+        },
+
+        /**
+         * Signature document templates for the Required Signature Document dropdown.
+         */
+        signatureDocumentTemplates: {
+            type: Array as PropType<ListItemBag[]>,
+            default: () => [] as ListItemBag[]
+        },
+
+        /**
+         * System communications available for the RSVP Reminder dropdown.
+         */
+        rsvpSystemCommunicationOptions: {
+            type: Array as PropType<ListItemBag[]>,
+            default: () => [] as ListItemBag[]
+        },
+
+        /**
+         * Whether inactive campuses should be excluded from the Campus picker.
+         */
+        preventSelectingInactiveCampus: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * The DefinedValue Guid of the configured map style.
+         */
+        mapStyleValueGuid: {
+            type: String as PropType<Guid | null>,
+            default: null
+        },
+
+        /**
+         * Whether the block is configured to limit groups to security-role groups.
+         */
+        isLimitedToSecurityRoleGroups: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * Whether the current user is a member of the GROUP_ADMINISTRATORS system group.
+         */
+        isCurrentPersonGroupAdministrator: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<GroupBag>): void;
+        (e: "propertyChanged", value: string): void;
+    }>();
+
+    // #region Values
+
+    const blockAction = useInvokeGroupDetailBlockAction();
+    const store = useStore();
+
+    const parentGroupIsActive = ref<boolean>(props.modelValue.bag?.parentGroup?.isActive ?? true);
+    const allowedGroupTypeItems = ref<ListItemBag[]>(props.allowedGroupTypes ?? []);
+    const allowedGroupTypeWarning = ref<string>(props.allowedGroupTypesWarning ?? "");
+    const groupTypeWarningElement = ref<InstanceType<typeof NotificationBox> | null>(null);
+    const emptyGroupTypeWarningElement = ref<InstanceType<typeof NotificationBox> | null>(null);
+    const showAdvancedRelationshipSettings = ref(hasCustomRelationshipMultipliers());
+
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? true, "IsActive");
+    const inactiveReasonValueId = propertyRef<number | null>(props.modelValue.bag?.inactiveReasonValueId ?? null, "InactiveReasonValueId");
+    const inactiveReasonNote = propertyRef(props.modelValue.bag?.inactiveReasonNote ?? "", "InactiveReasonNote");
+    const inactivateChildGroups = propertyRef(props.modelValue.bag?.inactivateChildGroups ?? false, "InactivateChildGroups");
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const isPublic = propertyRef(props.modelValue.bag?.isPublic ?? false, "IsPublic");
+    const photoBinaryFile = propertyRef<ListItemBag | null>(props.modelValue.bag?.photoBinaryFile ?? null, "PhotoBinaryFile");
+    const groupTypeId = propertyRef<number | null>(props.modelValue.bag?.groupTypeId ?? null, "GroupTypeId");
+    const parentGroup = propertyRef<ListItemBag | null>(props.modelValue.bag?.parentGroup ?? null, "ParentGroup");
+    const campus = propertyRef<ListItemBag | null>(props.modelValue.bag?.campus ?? null, "Campus");
+    const statusValueId = propertyRef<number | null>(props.modelValue.bag?.statusValueId ?? null, "StatusValueId");
+    const groupAdministrator = propertyRef<ListItemBag | undefined>(props.modelValue.bag?.administrator ?? undefined, "Administrator");
+    const groupCapacity = propertyRef<number | null>(props.modelValue.bag?.groupCapacity ?? null, "GroupCapacity");
+    const requiredSignatureDocumentTemplateId = propertyRef<number | null>(props.modelValue.bag?.requiredSignatureDocumentTemplateId ?? null, "RequiredSignatureDocumentTemplateId");
+    const recordSourceValue = propertyRef<ListItemBag | null>(props.modelValue.bag?.groupMemberRecordSource ?? null, "GroupMemberRecordSource");
+    const isSecurityRole = propertyRef(props.modelValue.bag?.isSecurityRole ?? false, "IsSecurityRole");
+    const elevatedSecurityLevel = propertyRef<ElevatedSecurityLevel>(props.modelValue.bag?.elevatedSecurityLevel ?? ElevatedSecurityLevel.None, "ElevatedSecurityLevel");
+    const overrideRelationshipStrength = propertyRef(props.modelValue.bag?.overrideRelationshipStrength ?? false, "OverrideRelationshipStrength");
+    const relationshipStrengthOverride = propertyRef<RelationshipStrength>(props.modelValue.bag?.relationshipStrengthOverride ?? RelationshipStrength.None, "RelationshipStrengthOverride");
+    const relationshipGrowthEnabledOverride = propertyRef<boolean>(props.modelValue.bag?.relationshipGrowthEnabledOverride ?? false, "RelationshipGrowthEnabledOverride");
+    const leaderToLeaderRelationshipMultiplierOverride = propertyRef<number | null>(props.modelValue.bag?.leaderToLeaderRelationshipMultiplierOverride ?? null, "LeaderToLeaderRelationshipMultiplierOverride");
+    const leaderToNonLeaderRelationshipMultiplierOverride = propertyRef<number | null>(props.modelValue.bag?.leaderToNonLeaderRelationshipMultiplierOverride ?? null, "LeaderToNonLeaderRelationshipMultiplierOverride");
+    const nonLeaderToLeaderRelationshipMultiplierOverride = propertyRef<number | null>(props.modelValue.bag?.nonLeaderToLeaderRelationshipMultiplierOverride ?? null, "NonLeaderToLeaderRelationshipMultiplierOverride");
+    const nonLeaderToNonLeaderRelationshipMultiplierOverride = propertyRef<number | null>(props.modelValue.bag?.nonLeaderToNonLeaderRelationshipMultiplierOverride ?? null, "NonLeaderToNonLeaderRelationshipMultiplierOverride");
+    const rsvpReminderSystemCommunication = propertyRef<ListItemBag | null>(props.modelValue.bag?.rsvpReminderSystemCommunication ?? null, "RsvpReminderSystemCommunication");
+    const rsvpReminderOffsetDays = propertyRef<number | null>(props.modelValue.bag?.rsvpReminderOffsetDays ?? null, "RsvpReminderOffsetDays");
+    const scheduleType = propertyRef<ScheduleType>(props.modelValue.bag?.scheduleType ?? ScheduleType.None, "ScheduleType");
+    const weeklyDayOfWeek = propertyRef<number | null>(props.modelValue.bag?.weeklyDayOfWeek ?? null, "WeeklyDayOfWeek");
+    const weeklyTimeOfDay = propertyRef<string | null>(props.modelValue.bag?.weeklyTimeOfDay ?? null, "WeeklyTimeOfDay");
+    const iCalendarContent = propertyRef(props.modelValue.bag?.iCalendarContent ?? "", "ICalendarContent");
+    const namedSchedule = propertyRef<ListItemBag | null>(props.modelValue.bag?.namedSchedule ?? null, "NamedSchedule");
+    const groupLocations = propertyRef<GroupLocationStateBag[]>(props.modelValue.bag?.groupLocations ?? [], "GroupLocations");
+    const disableScheduling = propertyRef(props.modelValue.bag?.disableScheduling ?? false, "DisableScheduling");
+    const disableScheduleToolboxAccess = propertyRef(props.modelValue.bag?.disableScheduleToolboxAccess ?? false, "DisableScheduleToolboxAccess");
+    const schedulingMustMeetRequirements = propertyRef(props.modelValue.bag?.schedulingMustMeetRequirements ?? false, "SchedulingMustMeetRequirements");
+    const scheduleConfirmationLogic = propertyRef<ScheduleConfirmationLogic | null>(props.modelValue.bag?.scheduleConfirmationLogic ?? null, "ScheduleConfirmationLogic");
+    const scheduleCoordinatorPerson = propertyRef<ListItemBag | undefined>(props.modelValue.bag?.scheduleCoordinatorPerson ?? undefined, "ScheduleCoordinatorPerson");
+    const hasCoordinatorNotificationOverride = propertyRef(props.modelValue.bag?.hasCoordinatorNotificationOverride ?? false, "HasCoordinatorNotificationOverride");
+    const scheduleCoordinatorNotificationTypes = propertyRef<ScheduleCoordinatorNotificationType>(props.modelValue.bag?.scheduleCoordinatorNotificationTypes ?? ScheduleCoordinatorNotificationType.None, "ScheduleCoordinatorNotificationTypes");
+    const attendanceRecordRequiredForCheckIn = propertyRef<AttendanceRecordRequiredForCheckIn>(props.modelValue.bag?.attendanceRecordRequiredForCheckIn ?? AttendanceRecordRequiredForCheckIn.ScheduleNotRequired, "AttendanceRecordRequiredForCheckIn");
+    const groupMemberAttributes = propertyRef<PublicEditableAttributeBag[]>(props.modelValue.bag?.groupMemberAttributes ?? [], "GroupMemberAttributes");
+    const groupRequirements = propertyRef<GroupRequirementBag[]>(props.modelValue.bag?.groupRequirements ?? [], "GroupRequirements");
+    const isChatEnabledOverride = propertyRef<boolean | null>(props.modelValue.bag?.isChatEnabledOverride ?? null, "IsChatEnabledOverride");
+    const isLeavingChatChannelAllowedOverride = propertyRef<boolean | null>(props.modelValue.bag?.isLeavingChatChannelAllowedOverride ?? null, "IsLeavingChatChannelAllowedOverride");
+    const isChatChannelPublicOverride = propertyRef<boolean | null>(props.modelValue.bag?.isChatChannelPublicOverride ?? null, "IsChatChannelPublicOverride");
+    const isChatChannelAlwaysShownOverride = propertyRef<boolean | null>(props.modelValue.bag?.isChatChannelAlwaysShownOverride ?? null, "IsChatChannelAlwaysShownOverride");
+    const chatPushNotificationModeOverride = propertyRef<ChatNotificationMode | null>(props.modelValue.bag?.chatPushNotificationModeOverride ?? null, "ChatPushNotificationModeOverride");
+    const chatChannelAvatarBinaryFile = propertyRef<ListItemBag | null>(props.modelValue.bag?.chatChannelAvatarBinaryFile ?? null, "ChatChannelAvatarBinaryFile");
+    const groupSyncs = propertyRef<GroupSyncBag[]>(props.modelValue.bag?.groupSyncs ?? [], "GroupSyncs");
+    const groupMemberWorkflowTriggers = propertyRef<GroupMemberWorkflowTriggerBag[]>(props.modelValue.bag?.groupMemberWorkflowTriggers ?? [], "GroupMemberWorkflowTriggers");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [
+        name, isActive, inactiveReasonValueId, inactiveReasonNote, inactivateChildGroups, description, isPublic, photoBinaryFile,
+        groupTypeId, parentGroup, campus, statusValueId, groupAdministrator, groupCapacity, requiredSignatureDocumentTemplateId,
+        recordSourceValue, isSecurityRole, elevatedSecurityLevel, overrideRelationshipStrength, relationshipStrengthOverride, relationshipGrowthEnabledOverride,
+        leaderToLeaderRelationshipMultiplierOverride, leaderToNonLeaderRelationshipMultiplierOverride,
+        nonLeaderToLeaderRelationshipMultiplierOverride, nonLeaderToNonLeaderRelationshipMultiplierOverride,
+        rsvpReminderSystemCommunication, rsvpReminderOffsetDays, scheduleType, weeklyDayOfWeek, weeklyTimeOfDay, iCalendarContent, namedSchedule,
+        groupLocations, disableScheduling, disableScheduleToolboxAccess, schedulingMustMeetRequirements,
+        scheduleConfirmationLogic, scheduleCoordinatorPerson, hasCoordinatorNotificationOverride,
+        scheduleCoordinatorNotificationTypes, attendanceRecordRequiredForCheckIn, groupMemberAttributes,
+        groupRequirements, isChatEnabledOverride, isLeavingChatChannelAllowedOverride, isChatChannelPublicOverride,
+        isChatChannelAlwaysShownOverride, chatPushNotificationModeOverride, chatChannelAvatarBinaryFile, groupSyncs, groupMemberWorkflowTriggers
+    ];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const bag = computed((): GroupBag => props.modelValue?.bag ?? {} as GroupBag);
+
+    const isAddMode = computed((): boolean => !bag.value.idKey);
+    const hasActiveDescendants = computed((): boolean => bag.value.hasActiveDescendants === true);
+    const isSystem = computed((): boolean => bag.value.isSystem === true);
+    const canAdministrate = computed((): boolean => bag.value.canAdministrate === true);
+
+    /**
+     * String-typed proxy of `inactiveReasonValueId` for the Inactive Reason dropdown.
+     */
+    const inactiveReasonValueIdValue = computed<string>({
+        get(): string {
+            return inactiveReasonValueId.value?.toString() ?? "";
+        },
+        set(newValue: string) {
+            inactiveReasonValueId.value = nullableInt(newValue);
+        }
+    });
+
+    /**
+     * Inactive reason options for the Inactive Reason dropdown.
+     */
+    const inactiveReasonItems = computed((): ListItemBag[] => props.groupTypeOptions.inactiveReasons ?? []);
+
+    /**
+     * String-typed proxy of `groupTypeId` for the Group Type dropdown.
+     */
+    const groupTypeIdValue = computed<string>({
+        get(): string {
+            return groupTypeId.value?.toString() ?? "";
+        },
+        set(newValue: string) {
+            groupTypeId.value = nullableInt(newValue);
+        }
+    });
+
+    /**
+     * Whether the Administration & Security stack has any visible control.
+     * Each control can independently not render (group-type visibility flags,
+     * Trailblazer-only fields hidden in Essentials mode, group-admin-only
+     * fields), so the whole stack is hidden when none would show. Mirrors the
+     * per-control conditions in the template; trailblazerField controls only
+     * render in Trailblazer (advanced) mode.
+     */
+    const isAdministrationSectionVisible = computed((): boolean => {
+        const isTrailblazerMode = store.state.trailblazerMode;
+        const options = props.groupTypeOptions;
+
+        return (options.isAdministratorVisible === true && isTrailblazerMode)              // Administrator
+            || options.isGroupCapacityVisible === true                                     // Group Capacity
+            || isTrailblazerMode                                                           // Require Signed Document (trailblazerField)
+            || (options.isGroupSpecificRecordSourceVisible === true && isTrailblazerMode)  // Member Record Source
+            || props.isCurrentPersonGroupAdministrator === true;                           // Enable as Security Role
+    });
+
+    /**
+     * Whether the Meeting & Scheduling section has any visible child. The
+     * section wraps three independently-gated children, so the whole section is
+     * hidden when none of them would render. Mirrors the per-child conditions in
+     * the template — keep this in sync with those gates. Notably, the Locations
+     * panel is driven by LocationSelectionMode alone, independent of scheduling,
+     * matching the WebForms "Meeting Details" panel.
+     */
+    const isMeetingAndSchedulingSectionVisible = computed((): boolean => {
+        const options = props.groupTypeOptions;
+
+        return options.isOverallScheduleStackVisible === true                  // Overall Group Schedule stack
+            || options.locationSelectionMode !== GroupLocationPickerMode.None  // Locations panel
+            || options.isSchedulingEnabled === true                            // Member Scheduling & Check-in stack
+            || options.isCheckInRequirementsVisible === true;                  // Member Scheduling & Check-in stack
+    });
+
+    /**
+     * Whether the currently selected Group Type is in the allowed-types list.
+     * The allowed list can change reactively when the parent group changes,
+     * so a previously valid selection may become invalid mid-edit.
+     */
+    const isCurrentGroupTypeAllowed = computed((): boolean => {
+        const currentId = groupTypeId.value;
+        if (currentId === null || currentId === undefined) {
+            return true;
+        }
+        return allowedGroupTypeItems.value.some(i => i.value === currentId.toString());
+    });
+
+    /**
+     * String-typed proxy of `statusValueId` for the Status dropdown.
+     */
+    const statusValueIdValue = computed<string>({
+        get(): string {
+            return statusValueId.value?.toString() ?? "";
+        },
+        set(newValue: string) {
+            statusValueId.value = nullableInt(newValue);
+        }
+    });
+
+    /**
+     * Status DefinedValue options for the current Group Type.
+     */
+    const statusItems = computed((): ListItemBag[] => props.groupTypeOptions.statusValues ?? []);
+
+    /**
+     * Whether the entered group capacity is below the current active-member
+     * count, which drives the over-capacity warning.
+     */
+    const isCapacityBelowMemberCount = computed((): boolean => {
+        const capacity = groupCapacity.value;
+        const memberCount = bag.value.memberCount ?? 0;
+        return capacity !== null && capacity !== undefined && memberCount > 0 && capacity < memberCount;
+    });
+
+    /**
+     * String-typed proxy of `requiredSignatureDocumentTemplateId` for the
+     * Required Signature Document dropdown.
+     */
+    const requiredSignatureDocumentTemplateIdValue = computed<string>({
+        get(): string {
+            return requiredSignatureDocumentTemplateId.value?.toString() ?? "";
+        },
+        set(newValue: string) {
+            requiredSignatureDocumentTemplateId.value = nullableInt(newValue);
+        }
+    });
+
+    /**
+     * Signature document template options for the Required Signature Document dropdown.
+     */
+    const signatureDocumentTemplateItems = computed((): ListItemBag[] => props.signatureDocumentTemplates ?? []);
+
+    /**
+     * String-typed proxy of `elevatedSecurityLevel` for the Security Level radio list.
+     */
+    const elevatedSecurityLevelValue = computed<string>({
+        get(): string {
+            return elevatedSecurityLevel.value.toString();
+        },
+        set(newValue: string) {
+            elevatedSecurityLevel.value = (parseInt(newValue, 10) || ElevatedSecurityLevel.None) as ElevatedSecurityLevel;
+        }
+    });
+
+    /**
+     * Elevated security level options for the Security Level radio list.
+     */
+    const elevatedSecurityLevelItems = computed((): ListItemBag[] => enumToListItemBag(ElevatedSecurityLevelDescription));
+
+    /**
+     * String-typed proxy of `relationshipStrengthOverride` for the Relationship
+     * Strength radio list.
+     */
+    const relationshipStrengthOverrideValue = computed<string>({
+        get(): string {
+            return relationshipStrengthOverride.value.toString();
+        },
+        set(newValue: string) {
+            relationshipStrengthOverride.value = (nullableInt(newValue) ?? RelationshipStrength.None) as RelationshipStrength;
+        }
+    });
+
+    /**
+     * Whether the user has chosen a non-None relationship strength override.
+     * Gates the advanced relationship settings toggle and multiplier matrix.
+     */
+    const hasRelationshipStrengthOverride = computed((): boolean => {
+        return relationshipStrengthOverride.value !== RelationshipStrength.None;
+    });
+
+    /**
+     * Relationship strength options for the Relationship Strength radio list.
+     */
+    const relationshipStrengthItems = computed((): ListItemBag[] => enumToListItemBag(RelationshipStrengthDescription));
+
+    /**
+     * Integer-percent (0-100) proxy of `leaderToLeaderRelationshipMultiplierOverride`
+     * for the percent-input field; persisted as a 0-1 decimal.
+     */
+    const leaderToLeaderRelationshipMultiplierOverrideValue = computed<number | null>({
+        get(): number | null {
+            return percentToInt(leaderToLeaderRelationshipMultiplierOverride.value);
+        },
+        set(newValue: number | null) {
+            leaderToLeaderRelationshipMultiplierOverride.value = intToPercent(newValue);
+        }
+    });
+
+    /**
+     * Integer-percent (0-100) proxy of `leaderToNonLeaderRelationshipMultiplierOverride`
+     * for the percent-input field; persisted as a 0-1 decimal.
+     */
+    const leaderToNonLeaderRelationshipMultiplierOverrideValue = computed<number | null>({
+        get(): number | null {
+            return percentToInt(leaderToNonLeaderRelationshipMultiplierOverride.value);
+        },
+        set(newValue: number | null) {
+            leaderToNonLeaderRelationshipMultiplierOverride.value = intToPercent(newValue);
+        }
+    });
+
+    /**
+     * Integer-percent (0-100) proxy of `nonLeaderToLeaderRelationshipMultiplierOverride`
+     * for the percent-input field; persisted as a 0-1 decimal.
+     */
+    const nonLeaderToLeaderRelationshipMultiplierOverrideValue = computed<number | null>({
+        get(): number | null {
+            return percentToInt(nonLeaderToLeaderRelationshipMultiplierOverride.value);
+        },
+        set(newValue: number | null) {
+            nonLeaderToLeaderRelationshipMultiplierOverride.value = intToPercent(newValue);
+        }
+    });
+
+    /**
+     * Integer-percent (0-100) proxy of `nonLeaderToNonLeaderRelationshipMultiplierOverride`
+     * for the percent-input field; persisted as a 0-1 decimal.
+     */
+    const nonLeaderToNonLeaderRelationshipMultiplierOverrideValue = computed<number | null>({
+        get(): number | null {
+            return percentToInt(nonLeaderToNonLeaderRelationshipMultiplierOverride.value);
+        },
+        set(newValue: number | null) {
+            nonLeaderToNonLeaderRelationshipMultiplierOverride.value = intToPercent(newValue);
+        }
+    });
+
+    /**
+     * Guid-string proxy of `rsvpReminderSystemCommunication` for the RSVP
+     * Reminder Communication dropdown; hydrated back into a `ListItemBag`
+     * with the matched display text on set.
+     */
+    const rsvpReminderSystemCommunicationGuid = computed<string>({
+        get(): string {
+            return rsvpReminderSystemCommunication.value?.value ?? "";
+        },
+        set(newValue: string) {
+            if (!newValue) {
+                rsvpReminderSystemCommunication.value = null;
+                return;
+            }
+            const item = props.rsvpSystemCommunicationOptions.find(i => (i.value ?? "") === newValue);
+            rsvpReminderSystemCommunication.value = item
+                ? { value: item.value ?? "", text: item.text ?? "" }
+                : null;
+        }
+    });
+
+    /**
+     * String-typed proxy of `scheduleType` for the Group Schedule radio list.
+     */
+    const scheduleTypeValue = computed<string>({
+        get(): string {
+            return scheduleType.value.toString();
+        },
+        set(newValue: string) {
+            scheduleType.value = (parseInt(newValue, 10) || ScheduleType.None) as ScheduleType;
+        }
+    });
+
+    /**
+     * Group Schedule radio options filtered by the group type's allowed
+     * schedule types bitmask.
+     */
+    const scheduleTypeItems = computed((): ListItemBag[] => {
+        const allowed = props.groupTypeOptions.allowedScheduleTypes ?? 0;
+        const items: ListItemBag[] = [{ value: ScheduleType.None.toString(), text: ScheduleTypeDescription[ScheduleType.None] ?? "None" }];
+        if ((allowed & ScheduleType.Weekly) === ScheduleType.Weekly) {
+            items.push({ value: ScheduleType.Weekly.toString(), text: ScheduleTypeDescription[ScheduleType.Weekly] ?? "Weekly" });
+        }
+        if ((allowed & ScheduleType.Custom) === ScheduleType.Custom) {
+            items.push({ value: ScheduleType.Custom.toString(), text: ScheduleTypeDescription[ScheduleType.Custom] ?? "Custom" });
+        }
+        if ((allowed & ScheduleType.Named) === ScheduleType.Named) {
+            items.push({ value: ScheduleType.Named.toString(), text: ScheduleTypeDescription[ScheduleType.Named] ?? "Named" });
+        }
+        return items;
+    });
+
+    /**
+     * String-typed proxy of `weeklyDayOfWeek` for the Day of Week picker.
+     */
+    const weeklyDayOfWeekValue = computed<string>({
+        get(): string {
+            return weeklyDayOfWeek.value != null ? weeklyDayOfWeek.value.toString() : "";
+        },
+        set(newValue: string) {
+            weeklyDayOfWeek.value = nullableInt(newValue);
+        }
+    });
+
+    /**
+     * `TimePickerValue` proxy of `weeklyTimeOfDay` (persisted as a TimeSpan
+     * string on the bag).
+     */
+    const weeklyTimeOfDayValue = computed<TimePickerValue>({
+        get(): TimePickerValue {
+            return parseTimeString(weeklyTimeOfDay.value);
+        },
+        set(newValue: TimePickerValue) {
+            weeklyTimeOfDay.value = formatTimeValue(newValue);
+        }
+    });
+
+    /**
+     * String-typed proxy of `scheduleConfirmationLogic` for the Confirmation
+     * Behavior dropdown.
+     */
+    const scheduleConfirmationLogicValue = computed<string>({
+        get(): string {
+            return scheduleConfirmationLogic.value?.toString() ?? "";
+        },
+        set(newValue: string) {
+            scheduleConfirmationLogic.value = (newValue ? parseInt(newValue, 10) : null) as ScheduleConfirmationLogic | null;
+        }
+    });
+
+    /**
+     * Confirmation Behavior options for the dropdown.
+     */
+    const scheduleConfirmationLogicItems = computed((): ListItemBag[] => enumToListItemBag(ScheduleConfirmationLogicDescription));
+
+    /**
+     * Multi-select string-array proxy of the `scheduleCoordinatorNotificationTypes`
+     * bitmask for the Coordinator Notifications checkbox list.
+     */
+    const scheduleCoordinatorNotificationTypesValue = computed<string[]>({
+        get(): string[] {
+            return extractFlagValues(scheduleCoordinatorNotificationTypes.value);
+        },
+        set(newValue: string[]) {
+            scheduleCoordinatorNotificationTypes.value = combineFlagValues(newValue) as ScheduleCoordinatorNotificationType;
+        }
+    });
+
+    /**
+     * Coordinator notification options for the checkbox list (excludes None).
+     */
+    const coordinatorNotificationItems = computed((): ListItemBag[] =>
+        enumToListItemBag(ScheduleCoordinatorNotificationTypeDescription)
+            .filter(i => i.value !== ScheduleCoordinatorNotificationType.None.toString())
+    );
+
+    /**
+     * String-typed proxy of `attendanceRecordRequiredForCheckIn` for the
+     * Who Can Check-in radio list.
+     */
+    const attendanceRecordRequiredForCheckInValue = computed<string>({
+        get(): string {
+            return attendanceRecordRequiredForCheckIn.value.toString();
+        },
+        set(newValue: string) {
+            attendanceRecordRequiredForCheckIn.value = (parseInt(newValue, 10) || AttendanceRecordRequiredForCheckIn.ScheduleNotRequired) as AttendanceRecordRequiredForCheckIn;
+        }
+    });
+
+    /**
+     * Who Can Check-in radio options.
+     */
+    const attendanceRecordRequiredForCheckInItems = computed((): ListItemBag[] => enumToListItemBag(AttendanceRecordRequiredForCheckInDescription));
+
+    /**
+     * Inherited group-member attributes surfaced by the active Group Type
+     * (read-only grid).
+     */
+    const inheritedMemberAttributes = computed((): GroupMemberInheritedAttributeBag[] => {
+        return props.groupTypeOptions?.inheritedMemberAttributes ?? [];
+    });
+
+    /**
+     * Inherit / Yes / No radio options shared by every chat-override toggle.
+     */
+    const triStateOverrideItems = computed((): ListItemBag[] => [
+        { value: "", text: "Inherit from Group Type" },
+        { value: "true", text: "Yes" },
+        { value: "false", text: "No" }
+    ]);
+
+    /**
+     * String-typed proxy of `isChatEnabledOverride` (boolean | null tri-state)
+     * for the Enable Group Chat radio list.
+     */
+    const isChatEnabledOverrideValue = computed<string>({
+        get(): string {
+            return inheritOverrideToRadioValue(isChatEnabledOverride.value);
+        },
+        set(newValue: string) {
+            isChatEnabledOverride.value = radioValueToInheritOverride(newValue);
+        }
+    });
+
+    /**
+     * String-typed proxy of `isLeavingChatChannelAllowedOverride`
+     * (boolean | null tri-state) for the Allow Members to Leave Channel radio list.
+     */
+    const isLeavingChatChannelAllowedOverrideValue = computed<string>({
+        get(): string {
+            return inheritOverrideToRadioValue(isLeavingChatChannelAllowedOverride.value);
+        },
+        set(newValue: string) {
+            isLeavingChatChannelAllowedOverride.value = radioValueToInheritOverride(newValue);
+        }
+    });
+
+    /**
+     * String-typed proxy of `isChatChannelPublicOverride` (boolean | null
+     * tri-state) for the Public Channel radio list.
+     */
+    const isChatChannelPublicOverrideValue = computed<string>({
+        get(): string {
+            return inheritOverrideToRadioValue(isChatChannelPublicOverride.value);
+        },
+        set(newValue: string) {
+            isChatChannelPublicOverride.value = radioValueToInheritOverride(newValue);
+        }
+    });
+
+    /**
+     * String-typed proxy of `isChatChannelAlwaysShownOverride` (boolean | null
+     * tri-state) for the Always Show Channel radio list.
+     */
+    const isChatChannelAlwaysShownOverrideValue = computed<string>({
+        get(): string {
+            return inheritOverrideToRadioValue(isChatChannelAlwaysShownOverride.value);
+        },
+        set(newValue: string) {
+            isChatChannelAlwaysShownOverride.value = radioValueToInheritOverride(newValue);
+        }
+    });
+
+    /**
+     * String-typed proxy of `chatPushNotificationModeOverride` for the
+     * Push Notification Mode dropdown.
+     */
+    const chatPushNotificationModeOverrideValue = computed<string>({
+        get(): string {
+            return chatPushNotificationModeOverride.value?.toString() ?? "";
+        },
+        set(newValue: string) {
+            chatPushNotificationModeOverride.value = (newValue ? parseInt(newValue, 10) : null) as ChatNotificationMode | null;
+        }
+    });
+
+    /**
+     * Push Notification Mode options including an Inherit-from-Group-Type entry.
+     */
+    const chatPushNotificationModeItems = computed((): ListItemBag[] => [
+        { value: "", text: "Inherit from Group Type" },
+        ...enumToListItemBag(ChatNotificationModeDescription)
+    ]);
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Initial value for `showAdvancedRelationshipSettings`. True when the group
+     * type marks any quadrant as customized, or when this group carries an
+     * explicit per-quadrant override. After first interaction the user's toggle
+     * takes over, so this is evaluated once at component setup.
+     */
+    function hasCustomRelationshipMultipliers(): boolean {
+        const bag = props.modelValue.bag;
+        return props.groupTypeOptions.areAnyRelationshipMultipliersCustomized === true
+            || bag?.leaderToLeaderRelationshipMultiplierOverride != null
+            || bag?.leaderToNonLeaderRelationshipMultiplierOverride != null
+            || bag?.nonLeaderToLeaderRelationshipMultiplierOverride != null
+            || bag?.nonLeaderToNonLeaderRelationshipMultiplierOverride != null;
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? true);
+        updateRefValue(inactiveReasonValueId, props.modelValue.bag?.inactiveReasonValueId ?? null);
+        updateRefValue(inactiveReasonNote, props.modelValue.bag?.inactiveReasonNote ?? "");
+        updateRefValue(inactivateChildGroups, props.modelValue.bag?.inactivateChildGroups ?? false);
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(isPublic, props.modelValue.bag?.isPublic ?? false);
+        updateRefValue(photoBinaryFile, props.modelValue.bag?.photoBinaryFile ?? null);
+        updateRefValue(groupTypeId, props.modelValue.bag?.groupTypeId ?? null);
+        updateRefValue(parentGroup, props.modelValue.bag?.parentGroup ?? null);
+
+        parentGroupIsActive.value = props.modelValue.bag?.parentGroup?.isActive ?? true;
+
+        updateRefValue(campus, props.modelValue.bag?.campus ?? null);
+        updateRefValue(statusValueId, props.modelValue.bag?.statusValueId ?? null);
+        updateRefValue(groupAdministrator, props.modelValue.bag?.administrator ?? undefined);
+        updateRefValue(groupCapacity, props.modelValue.bag?.groupCapacity ?? null);
+        updateRefValue(requiredSignatureDocumentTemplateId, props.modelValue.bag?.requiredSignatureDocumentTemplateId ?? null);
+        updateRefValue(recordSourceValue, props.modelValue.bag?.groupMemberRecordSource ?? null);
+        updateRefValue(isSecurityRole, props.modelValue.bag?.isSecurityRole ?? false);
+        updateRefValue(elevatedSecurityLevel, props.modelValue.bag?.elevatedSecurityLevel ?? ElevatedSecurityLevel.None);
+        updateRefValue(overrideRelationshipStrength, props.modelValue.bag?.overrideRelationshipStrength ?? false);
+        updateRefValue(relationshipStrengthOverride, props.modelValue.bag?.relationshipStrengthOverride ?? RelationshipStrength.None);
+        updateRefValue(relationshipGrowthEnabledOverride, props.modelValue.bag?.relationshipGrowthEnabledOverride ?? false);
+        updateRefValue(leaderToLeaderRelationshipMultiplierOverride, props.modelValue.bag?.leaderToLeaderRelationshipMultiplierOverride ?? null);
+        updateRefValue(leaderToNonLeaderRelationshipMultiplierOverride, props.modelValue.bag?.leaderToNonLeaderRelationshipMultiplierOverride ?? null);
+        updateRefValue(nonLeaderToLeaderRelationshipMultiplierOverride, props.modelValue.bag?.nonLeaderToLeaderRelationshipMultiplierOverride ?? null);
+        updateRefValue(nonLeaderToNonLeaderRelationshipMultiplierOverride, props.modelValue.bag?.nonLeaderToNonLeaderRelationshipMultiplierOverride ?? null);
+        updateRefValue(rsvpReminderSystemCommunication, props.modelValue.bag?.rsvpReminderSystemCommunication ?? null);
+        updateRefValue(rsvpReminderOffsetDays, props.modelValue.bag?.rsvpReminderOffsetDays ?? null);
+        updateRefValue(scheduleType, props.modelValue.bag?.scheduleType ?? ScheduleType.None);
+        updateRefValue(weeklyDayOfWeek, props.modelValue.bag?.weeklyDayOfWeek ?? null);
+        updateRefValue(weeklyTimeOfDay, props.modelValue.bag?.weeklyTimeOfDay ?? null);
+        updateRefValue(iCalendarContent, props.modelValue.bag?.iCalendarContent ?? "");
+        updateRefValue(namedSchedule, props.modelValue.bag?.namedSchedule ?? null);
+        updateRefValue(groupLocations, props.modelValue.bag?.groupLocations ?? []);
+        updateRefValue(disableScheduling, props.modelValue.bag?.disableScheduling ?? false);
+        updateRefValue(disableScheduleToolboxAccess, props.modelValue.bag?.disableScheduleToolboxAccess ?? false);
+        updateRefValue(schedulingMustMeetRequirements, props.modelValue.bag?.schedulingMustMeetRequirements ?? false);
+        updateRefValue(scheduleConfirmationLogic, props.modelValue.bag?.scheduleConfirmationLogic ?? null);
+        updateRefValue(scheduleCoordinatorPerson, props.modelValue.bag?.scheduleCoordinatorPerson ?? undefined);
+        updateRefValue(hasCoordinatorNotificationOverride, props.modelValue.bag?.hasCoordinatorNotificationOverride ?? false);
+        updateRefValue(scheduleCoordinatorNotificationTypes, props.modelValue.bag?.scheduleCoordinatorNotificationTypes ?? ScheduleCoordinatorNotificationType.None);
+        updateRefValue(attendanceRecordRequiredForCheckIn, props.modelValue.bag?.attendanceRecordRequiredForCheckIn ?? AttendanceRecordRequiredForCheckIn.ScheduleNotRequired);
+        updateRefValue(groupMemberAttributes, props.modelValue.bag?.groupMemberAttributes ?? []);
+        updateRefValue(groupRequirements, props.modelValue.bag?.groupRequirements ?? []);
+        updateRefValue(isChatEnabledOverride, props.modelValue.bag?.isChatEnabledOverride ?? null);
+        updateRefValue(isLeavingChatChannelAllowedOverride, props.modelValue.bag?.isLeavingChatChannelAllowedOverride ?? null);
+        updateRefValue(isChatChannelPublicOverride, props.modelValue.bag?.isChatChannelPublicOverride ?? null);
+        updateRefValue(isChatChannelAlwaysShownOverride, props.modelValue.bag?.isChatChannelAlwaysShownOverride ?? null);
+        updateRefValue(chatPushNotificationModeOverride, props.modelValue.bag?.chatPushNotificationModeOverride ?? null);
+        updateRefValue(chatChannelAvatarBinaryFile, props.modelValue.bag?.chatChannelAvatarBinaryFile ?? null);
+        updateRefValue(groupSyncs, props.modelValue.bag?.groupSyncs ?? []);
+        updateRefValue(groupMemberWorkflowTriggers, props.modelValue.bag?.groupMemberWorkflowTriggers ?? []);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<GroupBag> = {
+            bag: { ...props.modelValue.bag } as GroupBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "inactiveReasonValueId", inactiveReasonValueId.value);
+        setPropertiesBoxValue(newValue, "inactiveReasonNote", inactiveReasonNote.value);
+        setPropertiesBoxValue(newValue, "inactivateChildGroups", inactivateChildGroups.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "isPublic", isPublic.value);
+        setPropertiesBoxValue(newValue, "photoBinaryFile", photoBinaryFile.value);
+        setPropertiesBoxValue(newValue, "groupTypeId", groupTypeId.value);
+        setPropertiesBoxValue(newValue, "parentGroup", parentGroup.value as ParentGroupBag | null);
+        setPropertiesBoxValue(newValue, "campus", campus.value);
+        setPropertiesBoxValue(newValue, "statusValueId", statusValueId.value);
+        setPropertiesBoxValue(newValue, "administrator", groupAdministrator.value);
+        setPropertiesBoxValue(newValue, "groupCapacity", groupCapacity.value);
+        setPropertiesBoxValue(newValue, "requiredSignatureDocumentTemplateId", requiredSignatureDocumentTemplateId.value);
+        setPropertiesBoxValue(newValue, "groupMemberRecordSource", recordSourceValue.value);
+        setPropertiesBoxValue(newValue, "isSecurityRole", isSecurityRole.value);
+        setPropertiesBoxValue(newValue, "elevatedSecurityLevel", elevatedSecurityLevel.value);
+        setPropertiesBoxValue(newValue, "overrideRelationshipStrength", overrideRelationshipStrength.value);
+        setPropertiesBoxValue(newValue, "relationshipStrengthOverride", relationshipStrengthOverride.value);
+        setPropertiesBoxValue(newValue, "relationshipGrowthEnabledOverride", relationshipGrowthEnabledOverride.value);
+        setPropertiesBoxValue(newValue, "leaderToLeaderRelationshipMultiplierOverride", leaderToLeaderRelationshipMultiplierOverride.value);
+        setPropertiesBoxValue(newValue, "leaderToNonLeaderRelationshipMultiplierOverride", leaderToNonLeaderRelationshipMultiplierOverride.value);
+        setPropertiesBoxValue(newValue, "nonLeaderToLeaderRelationshipMultiplierOverride", nonLeaderToLeaderRelationshipMultiplierOverride.value);
+        setPropertiesBoxValue(newValue, "nonLeaderToNonLeaderRelationshipMultiplierOverride", nonLeaderToNonLeaderRelationshipMultiplierOverride.value);
+        setPropertiesBoxValue(newValue, "rsvpReminderSystemCommunication", rsvpReminderSystemCommunication.value);
+        setPropertiesBoxValue(newValue, "rsvpReminderOffsetDays", rsvpReminderOffsetDays.value);
+        setPropertiesBoxValue(newValue, "scheduleType", scheduleType.value);
+        setPropertiesBoxValue(newValue, "weeklyDayOfWeek", weeklyDayOfWeek.value);
+        setPropertiesBoxValue(newValue, "weeklyTimeOfDay", weeklyTimeOfDay.value);
+        setPropertiesBoxValue(newValue, "iCalendarContent", iCalendarContent.value);
+        setPropertiesBoxValue(newValue, "namedSchedule", namedSchedule.value);
+        setPropertiesBoxValue(newValue, "groupLocations", groupLocations.value);
+        setPropertiesBoxValue(newValue, "disableScheduling", disableScheduling.value);
+        setPropertiesBoxValue(newValue, "disableScheduleToolboxAccess", disableScheduleToolboxAccess.value);
+        setPropertiesBoxValue(newValue, "schedulingMustMeetRequirements", schedulingMustMeetRequirements.value);
+        setPropertiesBoxValue(newValue, "scheduleConfirmationLogic", scheduleConfirmationLogic.value);
+        setPropertiesBoxValue(newValue, "scheduleCoordinatorPerson", scheduleCoordinatorPerson.value);
+        setPropertiesBoxValue(newValue, "hasCoordinatorNotificationOverride", hasCoordinatorNotificationOverride.value);
+        setPropertiesBoxValue(newValue, "scheduleCoordinatorNotificationTypes", scheduleCoordinatorNotificationTypes.value);
+        setPropertiesBoxValue(newValue, "attendanceRecordRequiredForCheckIn", attendanceRecordRequiredForCheckIn.value);
+        setPropertiesBoxValue(newValue, "groupMemberAttributes", groupMemberAttributes.value);
+        setPropertiesBoxValue(newValue, "groupRequirements", groupRequirements.value);
+        setPropertiesBoxValue(newValue, "isChatEnabledOverride", isChatEnabledOverride.value);
+        setPropertiesBoxValue(newValue, "isLeavingChatChannelAllowedOverride", isLeavingChatChannelAllowedOverride.value);
+        setPropertiesBoxValue(newValue, "isChatChannelPublicOverride", isChatChannelPublicOverride.value);
+        setPropertiesBoxValue(newValue, "isChatChannelAlwaysShownOverride", isChatChannelAlwaysShownOverride.value);
+        setPropertiesBoxValue(newValue, "chatPushNotificationModeOverride", chatPushNotificationModeOverride.value);
+        setPropertiesBoxValue(newValue, "chatChannelAvatarBinaryFile", chatChannelAvatarBinaryFile.value);
+        setPropertiesBoxValue(newValue, "groupSyncs", groupSyncs.value);
+        setPropertiesBoxValue(newValue, "groupMemberWorkflowTriggers", groupMemberWorkflowTriggers.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    /**
+     * Refreshes parentGroupIsActive whenever the parent picker emits a new
+     * selection. GroupPicker only carries Value/Text, so we round-trip to
+     * GetParentGroupInfo to learn the picked parent's active flag. Clearing
+     * the picker hides the banner without a server call. Failures default
+     * to active so a transient error doesn't false-positive warn.
+     */
+    let parentGroupInfoRequestVersion = 0;
+    watch(() => parentGroup.value?.value, async (newKey) => {
+        const version = ++parentGroupInfoRequestVersion;
+
+        if (!newKey) {
+            parentGroupIsActive.value = true;
+            return;
+        }
+
+        const result = await blockAction.getParentGroupInfo(newKey);
+
+        if (version !== parentGroupInfoRequestVersion) {
+            return;
+        }
+
+        parentGroupIsActive.value = result.isSuccess && typeof result.data === "boolean"
+            ? result.data
+            : true;
+    });
+
+    /**
+     * Re-filters the Group Type dropdown whenever the parent picker emits
+     * a new selection (Add mode only).
+     */
+    let allowedGroupTypesRequestVersion = 0;
+    watch(() => parentGroup.value?.value, async (newKey) => {
+        if (!isAddMode.value) {
+            return;
+        }
+
+        const version = ++allowedGroupTypesRequestVersion;
+        const result = await blockAction.getAllowedChildGroupTypes(newKey ?? "");
+
+        if (version !== allowedGroupTypesRequestVersion) {
+            return;
+        }
+
+        if (result.isSuccess && result.data) {
+            allowedGroupTypeItems.value = result.data.items ?? [];
+            allowedGroupTypeWarning.value = result.data.warning ?? "";
+        }
+    });
+
+    /**
+     * Scrolls the GroupType warning into view when the user's current
+     * selection becomes invalid (typically after a parent-change refilter).
+     * Without this, the banner may render below the fold if the user is
+     * scrolled mid-form and the change-of-list happens above their viewport.
+     */
+    watch(isCurrentGroupTypeAllowed, (allowed) => {
+        if (allowed === false) {
+            scrollNotificationIntoView(groupTypeWarningElement);
+        }
+    });
+
+    /**
+     * Scrolls the empty-allowed-types warning into view when a parent-change
+     * refilter leaves no group types to choose from. Mirrors the invalid-selection
+     * scroll above so both Group Type warnings behave the same; change-only (no
+     * immediate) so the initial Add-mode load does not force a scroll.
+     */
+    watch(allowedGroupTypeWarning, (warning) => {
+        if (warning) {
+            scrollNotificationIntoView(emptyGroupTypeWarningElement);
+        }
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+
+    // #endregion
+</script>

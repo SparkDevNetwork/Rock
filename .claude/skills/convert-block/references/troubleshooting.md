@@ -63,7 +63,7 @@ If a block relies heavily on `System.Web` patterns throughout (not just a few li
 
 | Issue | Cause | Fix |
 |---|---|---|
-| Block shows "Block not found" | `[Rock.SystemGuid.BlockTypeGuid(...)]` does not match the WebForms block's GUID | The chop relies on the new entity-based class reusing the WebForms block's existing GUID. Open `RockWeb/Blocks/[Category]/[BlockName].ascx.cs` (or recover it from git history if already chopped) and copy its `[Rock.SystemGuid.BlockTypeGuid(...)]` value onto the new C# class. Restart Rock so `BlockTypeService` re-runs the swap. See `references/common-patterns.md` § GUID Assignment Rules. |
+| Block shows "Block not found" | `BlockTypeGuid` not registered | Run Rock.CodeGeneration or add a migration |
 | Attributes don't save | Missing `entity.SaveAttributeValues()` after `SaveChanges()` | Add the call after `RockContext.SaveChanges()` |
 | Grid shows no data | `GetListQueryable` returns wrong query | Verify the LINQ query and check for missing `.Include()` calls |
 | Edit panel fields don't persist | Using `ref` instead of `propertyRef` | Switch to `propertyRef` and wire up `ValidPropertiesBox` |

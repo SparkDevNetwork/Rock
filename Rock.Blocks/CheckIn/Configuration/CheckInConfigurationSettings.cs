@@ -60,7 +60,7 @@ namespace Rock.Blocks.CheckIn.Configuration
         "Show Classic Check-in Settings",
         Key = AttributeKey.ShowClassicCheckInSettings,
         Description = "Enabling this will show Classic Check-in Settings for this configuration. Note: Trailblazer Mode must be enabled.",
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         Order = 1,
         IsRequired = false )]
 
@@ -81,94 +81,21 @@ namespace Rock.Blocks.CheckIn.Configuration
 
         private static class PageParameterKey
         {
-            // "CheckInConfiguration" is the newer page parameter whereas "CheckinTypeId" is the older one from the
-            // legacy block. Both parameters allow check-in configuration GroupType Id, Guid, or IdKey values. Since
-            // we still have legacy check-in configuration pages/routes that use the "CheckinTypeId" page parameter, we
-            // will continue to support both parameters for now, but the "CheckInConfiguration" page parameter should
-            // be used for any new pages and routes.
             public const string CheckInConfiguration = "CheckInConfiguration";
-            public const string CheckinTypeId = "CheckinTypeId";
         }
 
         private static class NavigationUrlKey
         {
             public const string ParentPage = "ParentPage";
-            public const string ScheduleBuilderPage = "ScheduleBuilderPage";
         }
 
         #endregion Keys
 
         #region Fields
 
-        /// <summary>
-        /// The backing field for the <see cref="PageParameters"/> property.
-        /// </summary>
-        private IDictionary<string, string> _pageParameters;
-
-        /// <summary>
-        /// The backing field for the <see cref="GroupTypePageParameterKey"/> property.
-        /// </summary>
-        private string _groupTypePageParameterKey;
-
         private const string FRIENDLY_TYPE_NAME = "Check-in Configuration";
 
         #endregion Fields
-
-        #region Properties
-
-        /// <summary>
-        /// Gets the page parameters for this request.
-        /// </summary>
-        private IDictionary<string, string> PageParameters
-        {
-            get
-            {
-                _pageParameters ??= this.RequestContext?.GetPageParameters() ?? new Dictionary<string, string>();
-
-                return _pageParameters;
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether the block should hide itself entirely - that is, when neither
-        /// <see cref="PageParameterKey.CheckInConfiguration"/> nor <see cref="PageParameterKey.CheckinTypeId"/>
-        /// is present on the request. Mirrors the legacy behavior, where the detail panel was invisible until a
-        /// configuration was selected.
-        /// </summary>
-        private bool IsBlockHidden =>
-            !PageParameters.ContainsKey( PageParameterKey.CheckInConfiguration )
-            && !PageParameters.ContainsKey( PageParameterKey.CheckinTypeId );
-
-        /// <summary>
-        /// Gets the key of the page parameter - either "CheckInConfiguration" or "CheckinTypeId" - used to provide
-        /// the check-in configuration <see cref="GroupType"/> entity key.
-        /// </summary>
-        private string GroupTypePageParameterKey
-        {
-            get
-            {
-                if ( _groupTypePageParameterKey.IsNullOrWhiteSpace() )
-                {
-                    if ( PageParameters.ContainsKey( PageParameterKey.CheckInConfiguration ) )
-                    {
-                        _groupTypePageParameterKey = PageParameterKey.CheckInConfiguration;
-                    }
-                    else if ( PageParameters.ContainsKey( PageParameterKey.CheckinTypeId ) )
-                    {
-                        _groupTypePageParameterKey = PageParameterKey.CheckinTypeId;
-                    }
-                    else
-                    {
-                        // Fall back to the preferred key.
-                        _groupTypePageParameterKey = PageParameterKey.CheckInConfiguration;
-                    }
-                }
-
-                return _groupTypePageParameterKey;
-            }
-        }
-
-        #endregion Properties
 
         #region RockEntityDetailBlockType Implementation
 
@@ -176,12 +103,6 @@ namespace Rock.Blocks.CheckIn.Configuration
         public override object GetObsidianBlockInitialization()
         {
             var box = new DetailBlockBox<CheckInConfigurationSettingsBag, CheckInConfigurationSettingsOptionsBag>();
-
-            if ( IsBlockHidden )
-            {
-                box.Options = new CheckInConfigurationSettingsOptionsBag { IsHidden = true };
-                return box;
-            }
 
             SetBoxInitialEntityState( box );
 
@@ -559,7 +480,7 @@ namespace Rock.Blocks.CheckIn.Configuration
         /// <inheritdoc/>
         protected override GroupType GetInitialEntity()
         {
-            var entity = GetInitialEntity<GroupType, GroupTypeService>( RockContext, GroupTypePageParameterKey );
+            var entity = GetInitialEntity<GroupType, GroupTypeService>( RockContext, PageParameterKey.CheckInConfiguration );
 
             if ( entity?.Id == 0 )
             {
@@ -645,8 +566,6 @@ namespace Rock.Blocks.CheckIn.Configuration
         [BlockAction]
         public BlockActionResult Save( ValidPropertiesBox<CheckInConfigurationSettingsBag> box )
         {
-            var entityService = new GroupTypeService( RockContext );
-
             if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
                 return actionError;
@@ -687,23 +606,10 @@ namespace Rock.Blocks.CheckIn.Configuration
 
             if ( isNew )
             {
-                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                {
-                    [GroupTypePageParameterKey] = entity.IdKey
-                } ) );
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl() );
             }
 
-            // Ensure navigation properties will work now.
-            entity = entityService.Get( entity.Id );
-            entity.LoadAttributes( RockContext );
-
-            var bag = GetEntityBagForView( entity );
-
-            return ActionOk( new ValidPropertiesBox<CheckInConfigurationSettingsBag>
-            {
-                Bag = bag,
-                ValidProperties = GetValidProperties( bag )
-            } );
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>
@@ -737,15 +643,7 @@ namespace Rock.Blocks.CheckIn.Configuration
 
             RefreshConnectedKiosks();
 
-            var pageRef = new Rock.Web.PageReference( PageCache.Id );
-            var routeId = PageCache.PageRoutes.FirstOrDefault()?.Id;
-
-            if ( routeId.HasValue )
-            {
-                pageRef.RouteId = routeId.Value;
-            }
-
-            return ActionOk( pageRef.BuildUrl() );
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         #endregion Block Actions
@@ -1322,16 +1220,9 @@ namespace Rock.Blocks.CheckIn.Configuration
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
-            var qryParams = new Dictionary<string, string>
-            {
-                // The schedule builder block has already been updated to use the newer "CheckInConfiguration" page parameter.
-                { PageParameterKey.CheckInConfiguration, PageParameter( GroupTypePageParameterKey ) }
-            };
-
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl(),
-                [NavigationUrlKey.ScheduleBuilderPage] = this.GetLinkedPageUrl( AttributeKey.ScheduleBuilderPage, qryParams )
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
             };
         }
 

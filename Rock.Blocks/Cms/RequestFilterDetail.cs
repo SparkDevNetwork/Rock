@@ -134,8 +134,11 @@ namespace Rock.Blocks.Cms
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+
+            // The legacy Web Forms block applied no edit authorization: any user who could see the
+            // block could add, edit, and save request filters. Mirror that by gating edit on View.
+            box.IsEditable = isViewable;
 
             if ( entity.Id != 0 )
             {
@@ -310,7 +313,9 @@ namespace Rock.Blocks.Cms
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            // The legacy Web Forms block applied no edit authorization ( any user who could view the
+            // block could add, edit, and save ). Delete is gated separately in the Delete action.
+            if ( !BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit {RequestFilter.FriendlyTypeName}." );
                 return false;
@@ -618,6 +623,11 @@ namespace Rock.Blocks.Cms
             if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
                 return actionError;
+            }
+
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete {RequestFilter.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

@@ -27,8 +27,12 @@ namespace RockWeb.Blocks.Utility
     [Category( "Utility" )]
     [Description( "Redirects user to a new url after a specific number of idle seconds." )]
 
-    [TextField( "New Location", "The new location URL to send user to after idle time" )]
-    [IntegerField( "Idle Seconds", "How many seconds of idle time to wait before redirecting user", false, 20 )]
+    [TextField( "New Location",
+        Description = "The new location URL to send user to after idle time" )]
+    [IntegerField( "Idle Seconds",
+        Description = "How many seconds of idle time to wait before redirecting user",
+        IsRequired = false,
+        DefaultIntegerValue = 20 )]
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.System )]
     [Rock.SystemGuid.BlockTypeGuid( "49FC4B38-741E-4B0B-B395-7C1929340D88" )]

@@ -1,0 +1,28 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="wizard">
+        <div v-for="(item, index) in items"
+             :key="index"
+             class="wizard-item"
+             :class="{ active: item.isActive, complete: item.isComplete }">
+            <a class="wizard-item-link" :href="item.url || undefined">
+                <div class="wizard-item-icon">
+                    <i :class="item.iconCssClass"></i>
+                </div>
+                <div class="wizard-item-label">{{ item.label }}</div>
+            </a>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { CalendarNavigationOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/CalendarNavigation/calendarNavigationOptionsBag";
+
+    // #region Values
+
+    const config = useConfigurationValues<CalendarNavigationOptionsBag>();
+    const items = config.items ?? [];
+
+    // #endregion Values
+</script>

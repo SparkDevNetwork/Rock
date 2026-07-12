@@ -64,6 +64,7 @@
                          :mediaElementGuid="video?.value ?? ''"
                          :autoResumeInDays="60"
                          :combinePlayStatisticsInDays="60"
+                         emitInitialWatchedPercentage
                          @loaded="onMediaPlayerLoaded" />
         </div>
 
@@ -75,6 +76,7 @@
             </div>
 
         </div>
+
         <div class="footer-button-section">
             <RockButton :btnType="BtnType.Primary"
                         :disabled="!hasPassedThreshold"

@@ -1,0 +1,264 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="panel panel-section">
+        <div class="panel-heading">
+            <div>
+                <h4 class="panel-title">Giving Alerts</h4>
+                <span class="description">The configuration below will be used to generate alerts. An alert will be triggered for the first matching rule unless that rule is configured to continue matching other rules.</span>
+            </div>
+        </div>
+
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <NumberBox v-model="settings.globalRepeatPreventionDurationDays"
+                               label="Global Repeat Prevention Duration"
+                               inputGroupClasses="input-width-lg"
+                               :decimalCount="0"
+                               help="This will prevent any alert from being triggered within the provided number of days from a previous alert.">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">days</span>
+                        </template>
+                    </NumberBox>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <NumberBox v-model="settings.gratitudeRepeatPreventionDurationDays"
+                               label="Gratitude Repeat Prevention Duration"
+                               inputGroupClasses="input-width-lg"
+                               :decimalCount="0"
+                               help="This will prevent a gratitude alert from being triggered within the provided number of days from a previous alert.">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">days</span>
+                        </template>
+                    </NumberBox>
+                </div>
+                <div class="col-md-6">
+                    <NumberBox v-model="settings.followupRepeatPreventionDurationDays"
+                               label="Follow-up Repeat Prevention Duration"
+                               inputGroupClasses="input-width-lg"
+                               :decimalCount="0"
+                               help="This will prevent a follow-up alert from being triggered within the provided number of days from a previous alert.">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">days</span>
+                        </template>
+                    </NumberBox>
+                </div>
+            </div>
+
+            <Grid :data="alertGridData"
+                  keyField="idKey"
+                  itemTerm="Alert Type"
+                  light
+                  liveUpdates
+                  @addItem="onAddAlert">
+                <ReorderColumn @orderChanged="onReorderAlert" />
+
+                <Column name="status" title="" width="50">
+                    <template #format="{ row }">
+                        <span class="badge badge-circle"
+                              :class="(row.alertType as number) === AlertType.Gratitude ? 'badge-success' : 'badge-warning'"
+                              :title="alertTypeText(row.alertType as number)">
+                            <span class="sr-only">{{ alertTypeText(row.alertType as number) }}</span>
+                        </span>
+                    </template>
+                </Column>
+
+                <TextColumn name="name" title="Name" field="name" />
+
+                <Column v-if="options.isCampusColumnVisible" name="campus" title="Campus" field="campus">
+                    <template #format="{ row }">
+                        {{ row.campus || "All Campus" }}
+                    </template>
+                </Column>
+
+                <CurrencyColumn name="minimumGiftAmount" title="Min Amount" field="minimumGiftAmount" />
+
+                <CurrencyColumn name="maximumGiftAmount" title="Max Gift Amount" field="maximumGiftAmount" />
+
+                <Column name="actions" title="Action">
+                    <template #format="{ row }">
+                        <div class="status-list">
+                            <i class="margin-r-sm ti ti-settings" :style="{ opacity: row.hasWorkflow ? 1 : 0 }" aria-hidden="true"></i>
+                            <i class="margin-r-sm ti ti-message" :style="{ opacity: row.hasCommunication ? 1 : 0 }" aria-hidden="true"></i>
+                            <i class="margin-r-sm ti ti-plug" :style="{ opacity: row.hasConnection ? 1 : 0 }" aria-hidden="true"></i>
+                            <i class="margin-r-sm ti ti-bus" :style="{ opacity: row.hasBusEvent ? 1 : 0 }" aria-hidden="true"></i>
+                            <i class="margin-r-sm ti ti-building" :style="{ opacity: row.hasAccountParticipant ? 1 : 0 }" aria-hidden="true"></i>
+                        </div>
+                    </template>
+                </Column>
+
+                <BooleanColumn name="isContinueIfMatched" title="Continue" field="isContinueIfMatched" />
+
+                <EditColumn @click="onEditAlert" />
+
+                <DeleteColumn @click="onDeleteAlert" />
+            </Grid>
+        </div>
+    </div>
+
+    <AlertDetailModal v-model:is-open="isAlertModalOpen"
+                      :alertType="editAlert"
+                      :options="options"
+                      @save="onSaveAlert" />
+</template>
+
+<style scoped>
+/*
+    The Obsidian grid paints its surfaces on the default white background
+    (--color-interface-softest). This grid is embedded in a light-grey
+    panel-section, so clear those white backgrounds and let the panel color
+    show through. Scoped with :deep so only this block's grid is affected.
+    Cell borders are preserved, keeping the row separators.
+*/
+:deep(.grid-obsidian .grid-header),
+:deep(.grid-obsidian .grid-body),
+:deep(.grid-obsidian .grid-cell),
+:deep(.grid-obsidian .grid-footing),
+:deep(.grid-obsidian .grid-content-container .grid-column-header-container.sticky-column-header) {
+    background-color: transparent;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import Grid, { BooleanColumn, Column, CurrencyColumn, DeleteColumn, EditColumn, ReorderColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { AlertType, AlertTypeDescription } from "@Obsidian/Enums/Finance/alertType";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { FinancialTransactionAlertTypeBag } from "@Obsidian/ViewModels/Blocks/Finance/GivingAutomationConfiguration/financialTransactionAlertTypeBag";
+    import { GivingAutomationConfigurationBag } from "@Obsidian/ViewModels/Blocks/Finance/GivingAutomationConfiguration/givingAutomationConfigurationBag";
+    import { GivingAutomationConfigurationOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/GivingAutomationConfiguration/givingAutomationConfigurationOptionsBag";
+    import AlertDetailModal from "./alertDetailModal.partial.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GivingAutomationConfigurationBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<GivingAutomationConfigurationOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GivingAutomationConfigurationBag): void
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const settings = useVModelPassthrough(props, "modelValue", emit);
+
+    const alertGridData = ref<GridDataBag>(settings.value.alertTypes ?? { rows: [] });
+    const isAlertModalOpen = ref(false);
+    const editAlert = ref<FinancialTransactionAlertTypeBag | null>(null);
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Gets the friendly description for the supplied alert-type value.
+     *
+     * @param alertType The numeric alert-type value.
+     */
+    function alertTypeText(alertType: number): string {
+        return AlertTypeDescription[alertType] ?? "";
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Loads a blank alert type and opens the detail modal.
+     */
+    async function onAddAlert(): Promise<void> {
+        const result = await invokeBlockAction<FinancialTransactionAlertTypeBag>("GetAlertType", { key: "" });
+
+        if (result.isSuccess && result.data) {
+            editAlert.value = result.data;
+            isAlertModalOpen.value = true;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to load the alert type.");
+        }
+    }
+
+    /**
+     * Loads the selected alert type and opens the detail modal.
+     *
+     * @param key The identifier of the alert type to edit.
+     */
+    async function onEditAlert(key: string): Promise<void> {
+        const result = await invokeBlockAction<FinancialTransactionAlertTypeBag>("GetAlertType", { key });
+
+        if (result.isSuccess && result.data) {
+            editAlert.value = result.data;
+            isAlertModalOpen.value = true;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to load the alert type.");
+        }
+    }
+
+    /**
+     * Saves the alert type from the detail modal and refreshes the grid.
+     *
+     * @param bag The alert type to save.
+     */
+    async function onSaveAlert(bag: FinancialTransactionAlertTypeBag): Promise<void> {
+        const result = await invokeBlockAction<GridDataBag>("SaveAlertType", { bag });
+
+        if (result.isSuccess && result.data) {
+            alertGridData.value = result.data;
+            isAlertModalOpen.value = false;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to save the alert type.");
+        }
+    }
+
+    /**
+     * Deletes the selected alert type and refreshes the grid.
+     *
+     * @param key The identifier of the alert type to delete.
+     */
+    async function onDeleteAlert(key: string): Promise<void> {
+        const result = await invokeBlockAction<GridDataBag>("DeleteAlertType", { key });
+
+        if (result.isSuccess && result.data) {
+            alertGridData.value = result.data;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to delete the alert type.");
+        }
+    }
+
+    /**
+     * Persists a reordered alert type.
+     *
+     * @param item The row that was moved.
+     * @param beforeItem The row it was dropped before, or null when moved to the end.
+     *
+     * @returns true if the reorder succeeded; otherwise false.
+     */
+    async function onReorderAlert(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const result = await invokeBlockAction("ReorderAlertType", {
+            key: item["idKey"],
+            beforeKey: beforeItem?.["idKey"] ?? null
+        });
+
+        return result.isSuccess;
+    }
+
+    // #endregion Event Handlers
+</script>

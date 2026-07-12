@@ -13,7 +13,12 @@
                         <li v-for="location in group.children">
                             <div class="count-row">
                                 <span class="title">{{ location.name }}</span>
-                                <span class="subtitle">{{ location.count }}</span>
+                                <span class="subtitle">
+                                    <span class="label label-default">
+                                        <span class="badge">{{ location.count }}</span>
+                                        {{ getLocationRange(location) }}
+                                    </span>
+                                </span>
                             </div>
                         </li>
                     </ul>
@@ -24,7 +29,12 @@
                 <div v-for="location in columnCounts">
                     <h4 class="count-row">
                         <span class="title">{{ location.name }}</span>
-                        <span class="subtitle">{{ location.count }}</span>
+                        <span class="subtitle">
+                            <span class="label label-default">
+                                <span class="badge">{{ location.count }}</span>
+                                {{ getLocationRange(location) }}
+                            </span>
+                        </span>
                     </h4>
 
                     <ul v-if="location.children.length > 0">
@@ -40,6 +50,12 @@
         </div>
     </div>
 </template>
+
+<style scoped>
+.current-counts li {
+    margin-bottom: var(--spacing-tiny);
+}
+</style>
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
@@ -68,4 +84,19 @@
     const columns = computed((): AttendanceCountGroup[][] => {
         return [firstColumnCounts.value, secondColumnCounts.value];
     });
+
+    function getLocationRange(location: AttendanceCountGroup): string {
+        if (location.softThreshold === undefined && location.firmThreshold === undefined) {
+            return "";
+        }
+        else if (location.softThreshold === undefined) {
+            return ` of ${location.firmThreshold}`;
+        }
+        else if (location.firmThreshold === undefined) {
+            return ` of ${location.softThreshold}`;
+        }
+        else {
+            return ` of ${location.softThreshold}-${location.firmThreshold}`;
+        }
+    }
 </script>

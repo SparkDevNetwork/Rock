@@ -36,8 +36,14 @@ namespace Rock.Badge.Component
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Attended Group Of Type" )]
 
-    [GroupTypeField( "Group Type", "The type of group to use.", true, order: 1 )]
-    [SlidingDateRangeField( "Date Range", "The date range in which the person attended.", required: false, order: 2 )]
+    [GroupTypeField( "Group Type",
+        Description = "The type of group to use.",
+        IsRequired = true,
+        Order = 1 )]
+    [SlidingDateRangeField( "Date Range",
+        Description = "The date range in which the person attended.",
+        IsRequired = false,
+        Order = 2 )]
     [CodeEditorField( "Lava Template",
         Description = "The lava template to use for the badge display",
         EditorMode = CodeEditorMode.Lava,

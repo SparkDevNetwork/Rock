@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,7 +21,7 @@ namespace Rock.Utility
     /// Determines whether a Campaign Connection creates requests for every
     /// person in the data view or limits them to the head of household.
     /// </summary>
-    [Enums.EnumDomain( "Connection" )]
+    [Rock.Enums.EnumDomain( "Connection" )]
     public enum FamilyLimits
     {
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -599,6 +599,15 @@ namespace Rock.Model
         public int? ContributionFinancialAccountId { get; set; }
 
         /// <summary>
+        /// Gets or sets the identifier of the <see cref="Rock.Model.Schedule"/> the person prefers to attend (their preferred service time).
+        /// </summary>
+        /// <value>
+        /// The identifier of the person's preferred <see cref="Rock.Model.Schedule"/>.
+        /// </value>
+        [DataMember]
+        public int? PreferredServiceTimeScheduleId { get; set; }
+
+        /// <summary>
         /// Gets or sets the person's account protection profile, which determines the level of security applied to their account. Higher levels enforce stricter safeguards and limit automated changes.
         /// </summary>
         /// <value>
@@ -1028,6 +1037,15 @@ namespace Rock.Model
         public virtual FinancialAccount ContributionFinancialAccount { get; set; }
 
         /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.Schedule"/> the person prefers to attend (their preferred service time).
+        /// </summary>
+        /// <value>
+        /// The person's preferred <see cref="Rock.Model.Schedule"/>.
+        /// </value>
+        [LavaVisible]
+        public virtual Schedule PreferredServiceTimeSchedule { get; set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the Person's preferred language.
         /// </summary>
         /// <value>
@@ -1132,6 +1150,7 @@ namespace Rock.Model
             this.HasOptional( p => p.PrimaryFamily ).WithMany().HasForeignKey( p => p.PrimaryFamilyId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.PrimaryCampus ).WithMany().HasForeignKey( p => p.PrimaryCampusId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ContributionFinancialAccount ).WithMany().HasForeignKey( p => p.ContributionFinancialAccountId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.PreferredServiceTimeSchedule ).WithMany().HasForeignKey( p => p.PreferredServiceTimeScheduleId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.PreferredLanguageValue ).WithMany().HasForeignKey( a => a.PreferredLanguageValueId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.RaceValue ).WithMany().HasForeignKey( a => a.RaceValueId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.EthnicityValue ).WithMany().HasForeignKey( a => a.EthnicityValueId ).WillCascadeOnDelete( false );

@@ -17,6 +17,8 @@
 
 using System.Collections.Generic;
 
+using Rock.ViewModels.Core.Grid;
+
 namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
 {
     /// <summary>
@@ -28,6 +30,13 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// Gets or sets the updated grid row data for the affected connection request, keyed by column name.
         /// </summary>
         public Dictionary<string, object> GridRow { get; set; }
+
+        /// <summary>
+        /// Gets or sets the grouping metadata for the request's currently assigned connector.
+        /// Used by the client to label the connector's group when the connector is not part
+        /// of the block-load available groupings list. Null when the request is unassigned.
+        /// </summary>
+        public GroupingFieldBag ConnectorGroupingField { get; set; }
 
         /// <summary>
         /// Gets or sets the updated detail panel payload for the connection request.

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,10 +38,24 @@ namespace Rock.Security.BackgroundCheck
     [Export( typeof( BackgroundCheckComponent ) )]
     [ExportMetadata( "ComponentName", "Protect My Ministry" )]
 
-    [TextField( "User Name", "Protect My Ministry User Name", true, "", "", 0 )]
-    [EncryptedTextField( "Password", "Protect My Ministry Password", true, "", "", 1, null, true )]
-    [UrlLinkField( "Request URL", "The Protect My Ministry URL to send requests to.", true, "https://services.priorityresearch.com/webservice/default.cfm", "", 3 )]
-    [UrlLinkField( "Return URL", "The Web Hook URL for Protect My Ministry to send results to (e.g. 'http://www.mysite.com/Webhooks/ProtectMyMinistry.ashx').", true, "", "", 4 )]
+    [TextField( "User Name",
+        Description = "Protect My Ministry User Name",
+        IsRequired = true,
+        Order = 0 )]
+    [EncryptedTextField( "Password",
+        Description = "Protect My Ministry Password",
+        IsRequired = true,
+        Order = 1,
+        IsPassword = true )]
+    [UrlLinkField( "Request URL",
+        Description = "The Protect My Ministry URL to send requests to.",
+        IsRequired = true,
+        DefaultValue = "https://services.priorityresearch.com/webservice/default.cfm",
+        Order = 3 )]
+    [UrlLinkField( "Return URL",
+        Description = "The Web Hook URL for Protect My Ministry to send results to (e.g. 'http://www.mysite.com/Webhooks/ProtectMyMinistry.ashx').",
+        IsRequired = true,
+        Order = 4 )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER )]
     public class ProtectMyMinistry : BackgroundCheckComponent
     {

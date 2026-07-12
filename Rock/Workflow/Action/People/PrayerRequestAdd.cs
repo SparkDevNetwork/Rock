@@ -37,139 +37,139 @@ namespace Rock.Workflow.Action
     #region Attributes
 
     [WorkflowTextOrAttribute(
-        textLabel: "Requestor",
-        attributeLabel: "Attribute Value",
-        description: "Lava template for selecting the person making the request or attribute that contains the requestor. If an attribute is used, it should be a person attribute. <span class='tip tip-lava'></span>",
-        required: false,
-        defaultValue: "",
-        category: "",
-        order: 1,
-        key: AttributeKey.Requestor,
-        fieldTypeClassNames: new string[] {
+        "Requestor",
+        "Attribute Value",
+        Description = "Lava template for selecting the person making the request or attribute that contains the requestor. If an attribute is used, it should be a person attribute. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "",
+        Order = 1,
+        Key = AttributeKey.Requestor,
+        FieldTypeClassNames = new string[] {
             "Rock.Field.Types.TextFieldType",
             "Rock.Field.Types.PersonFieldType" } )]
 
     [WorkflowAttribute(
-        name: "First Name Attribute",
-        description: "The text attribute that contains the first name of the person that this prayer request is about.",
-        required: false,
-        defaultValue: "",
-        category: "",
-        order: 2,
-        key: AttributeKey.FirstName,
-        fieldTypeClassNames: new string[] {
+        "First Name Attribute",
+        Description = "The text attribute that contains the first name of the person that this prayer request is about.",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "",
+        Order = 2,
+        Key = AttributeKey.FirstName,
+        FieldTypeClassNames = new string[] {
             "Rock.Field.Types.TextFieldType" } )]
 
     [WorkflowAttribute(
-        name: "Last Name Attribute",
-        description: "The text attribute that contains the last name of the person that this prayer request is about.",
-        required: false,
-        defaultValue: "",
-        category: "",
-        order: 3,
-        key: AttributeKey.LastName,
-        fieldTypeClassNames: new string[] {
+        "Last Name Attribute",
+        Description = "The text attribute that contains the last name of the person that this prayer request is about.",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "",
+        Order = 3,
+        Key = AttributeKey.LastName,
+        FieldTypeClassNames = new string[] {
             "Rock.Field.Types.TextFieldType" } )]
 
     [WorkflowAttribute(
-        name: "Email Attribute",
-        description: "The text or email attribute that contains the email address of the person that this prayer request is about.",
-        required: false,
-        defaultValue: "",
-        category: "",
-        order: 4,
-        key: AttributeKey.Email,
-        fieldTypeClassNames: new string[] {
+        "Email Attribute",
+        Description = "The text or email attribute that contains the email address of the person that this prayer request is about.",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "",
+        Order = 4,
+        Key = AttributeKey.Email,
+        FieldTypeClassNames = new string[] {
             "Rock.Field.Types.TextFieldType",
             "Rock.Field.Types.EmailFieldType" } )]
 
     [BooleanField(
-        name: "Enable Person Matching",
-        description: "Is person matching enabled?",
-        order: 5,
-        key: AttributeKey.IsPersonMatchingEnabled )]
+        "Enable Person Matching",
+        Description = "Is person matching enabled?",
+        Order = 5,
+        Key = AttributeKey.IsPersonMatchingEnabled )]
 
     [WorkflowTextOrAttribute(
-        textLabel: "Campus",
-        attributeLabel: "Attribute Value",
-        description: "Lava template for selecting the campus for the request or attriibute that contains the campus. If an attribute is used, it must be a campus attribute type. <span class='tip tip-lava'></span>",
-        required: false,
-        defaultValue: "",
-        category: "",
-        order: 6,
-        key: AttributeKey.Campus,
-        fieldTypeClassNames: new string[] { "Rock.Field.Types.CampusFieldType" } )]
+        "Campus",
+        "Attribute Value",
+        Description = "Lava template for selecting the campus for the request or attriibute that contains the campus. If an attribute is used, it must be a campus attribute type. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "",
+        Order = 6,
+        Key = AttributeKey.Campus,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.CampusFieldType" } )]
 
     [WorkflowTextOrAttribute(
-        textLabel: "Request",
-        attributeLabel: "Attribute Value",
-        description: "Lava template for the request text or attribute that contains the request text. <span class='tip tip-lava'></span>",
-        required: true,
-        defaultValue: "",
-        category: "",
-        order: 7,
-        key: AttributeKey.Request,
-        fieldTypeClassNames: new string[] {
+        "Request",
+        "Attribute Value",
+        Description = "Lava template for the request text or attribute that contains the request text. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        DefaultValue = "",
+        Category = "",
+        Order = 7,
+        Key = AttributeKey.Request,
+        FieldTypeClassNames = new string[] {
             "Rock.Field.Types.TextFieldType",
             "Rock.Field.Types.MemoFieldType" } )]
 
     [WorkflowAttribute(
-        name: "Prayer Category Attribute",
-        description: "The category attribute that contains the category of this prayer request.",
-        required: true,
-        order: 8,
-        key: AttributeKey.Category,
-        fieldTypeClassNames: new string[] {
+        "Prayer Category Attribute",
+        Description = "The category attribute that contains the category of this prayer request.",
+        IsRequired = true,
+        Order = 8,
+        Key = AttributeKey.Category,
+        FieldTypeClassNames = new string[] {
             "Rock.Field.Types.CategoryFieldType" } )]
 
     [WorkflowAttribute(
-        name: "Is Public Attribute",
-        description: "The boolean attribute that indicates if the prayer request is public.",
-        order: 9,
-        required: false,
-        key: AttributeKey.IsPublic,
-        fieldTypeClassNames: new string[] {
+        "Is Public Attribute",
+        Description = "The boolean attribute that indicates if the prayer request is public.",
+        Order = 9,
+        IsRequired = false,
+        Key = AttributeKey.IsPublic,
+        FieldTypeClassNames = new string[] {
             "Rock.Field.Types.BooleanFieldType" } )]
 
     [WorkflowAttribute(
-        name: "Is Urgent Attribute",
-        description: "The boolean attribute that indicates if the prayer request is urgent.",
-        order: 10,
-        required: false,
-        key: AttributeKey.IsUrgent,
-        fieldTypeClassNames: new string[] {
+        "Is Urgent Attribute",
+        Description = "The boolean attribute that indicates if the prayer request is urgent.",
+        Order = 10,
+        IsRequired = false,
+        Key = AttributeKey.IsUrgent,
+        FieldTypeClassNames = new string[] {
             "Rock.Field.Types.BooleanFieldType" } )]
 
     [BooleanField(
-        name: "Is Approved",
-        description: "Is the prayer request approved?",
-        order: 11,
-        key: AttributeKey.IsApproved )]
+        "Is Approved",
+        Description = "Is the prayer request approved?",
+        Order = 11,
+        Key = AttributeKey.IsApproved )]
 
     [WorkflowAttribute(
-        name: "Allow Comments Attribute",
-        description: "The boolean attribute that indicates if comments are allowed on the prayer request.",
-        order: 12,
-        required: false,
-        key: AttributeKey.AreCommentsAllowed,
-        fieldTypeClassNames: new string[] {
+        "Allow Comments Attribute",
+        Description = "The boolean attribute that indicates if comments are allowed on the prayer request.",
+        Order = 12,
+        IsRequired = false,
+        Key = AttributeKey.AreCommentsAllowed,
+        FieldTypeClassNames = new string[] {
             "Rock.Field.Types.BooleanFieldType" } )]
 
     [IntegerField(
-        name: "Expire After (Days)",
-        description: "How many days will this prayer request be shown before being marked as expired?",
-        required: true,
-        defaultValue: AttributeDefaults.ExpireAfterDays,
-        order: 13,
-        key: AttributeKey.ExpireAfterDays )]
+        "Expire After (Days)",
+        Description = "How many days will this prayer request be shown before being marked as expired?",
+        IsRequired = true,
+        DefaultIntegerValue = AttributeDefaults.ExpireAfterDays,
+        Order = 13,
+        Key = AttributeKey.ExpireAfterDays )]
 
     [WorkflowAttribute(
-        name: "Prayer Request Attribute",
-        description: "The optional attribute to store the prayer request into. This should be a prayer request attribute.",
-        required: false,
-        order: 14,
-        key: AttributeKey.PrayerRequestAttribute,
-        fieldTypeClassNames: new string[] {
+        "Prayer Request Attribute",
+        Description = "The optional attribute to store the prayer request into. This should be a prayer request attribute.",
+        IsRequired = false,
+        Order = 14,
+        Key = AttributeKey.PrayerRequestAttribute,
+        FieldTypeClassNames = new string[] {
             "Rock.Field.Types.TextFieldType",
             "Rock.Field.Types.PrayerRequestFieldType" } )]
 

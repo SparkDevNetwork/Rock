@@ -137,22 +137,22 @@ namespace Rock.Blocks.Types.Mobile.Security
         Key = AttributeKeys.DisplayCampusStatuses,
         Order = 1 )]
 
-    [CampusField( name: "Online Campus",
-        description: "The campus to pick for the user if they press the 'Online Campus' button.",
-        required: false,
-        includeInactive: false,
-        category: AttributeCategories.Campus,
-        key: AttributeKeys.OnlineCampus,
-        order: 2,
+    [CampusField( "Online Campus",
+        Description = "The campus to pick for the user if they press the 'Online Campus' button.",
+        IsRequired = false,
+        IncludeInactive = false,
+        Category = AttributeCategories.Campus,
+        Key = AttributeKeys.OnlineCampus,
+        Order = 2,
         ForceVisible = true )]
 
-    [CampusField( name: "Do Not Attend Campus",
-        description: "The campus to pick for the user if they press the 'Do Not Attend' button.",
-        required: false,
-        includeInactive: false,
-        category: AttributeCategories.Campus,
-        key: AttributeKeys.DoNotAttendCampus,
-        order: 3,
+    [CampusField( "Do Not Attend Campus",
+        Description = "The campus to pick for the user if they press the 'Do Not Attend' button.",
+        IsRequired = false,
+        IncludeInactive = false,
+        Category = AttributeCategories.Campus,
+        Key = AttributeKeys.DoNotAttendCampus,
+        Order = 3,
         ForceVisible = true )]
 
     #endregion
@@ -1996,10 +1996,14 @@ namespace Rock.Blocks.Types.Mobile.Security
                             if ( personalDevice != null )
                             {
                                 personalDevice.PersonAliasId = person.PrimaryAliasId;
-                                if ( ShowNotificationsRequest )
+                              // A null or empty token (the user skipped the notifications screen
+                                // or denied the OS prompt) must not overwrite a valid registration
+                                // that the launch prompt already stored, so only write when a token
+                                // was actually supplied.
+                                if ( ShowNotificationsRequest && request.Details.PushToken.IsNotNullOrWhiteSpace() )
                                 {
                                     personalDevice.DeviceRegistrationId = request.Details.PushToken;
-                                    personalDevice.NotificationsEnabled = request.Details.PushToken.IsNotNullOrWhiteSpace();
+                                    personalDevice.NotificationsEnabled = true;
                                 }
 
                                 rockContext.SaveChanges();
@@ -2093,10 +2097,14 @@ namespace Rock.Blocks.Types.Mobile.Security
                         if ( personalDevice != null )
                         {
                             personalDevice.PersonAliasId = person.PrimaryAliasId;
-                            if ( ShowNotificationsRequest )
+                            // A null or empty token (the user skipped the notifications screen
+                            // or denied the OS prompt) must not overwrite a valid registration
+                            // that the launch prompt already stored, so only write when a token
+                            // was actually supplied.
+                            if ( ShowNotificationsRequest && details.PushToken.IsNotNullOrWhiteSpace() )
                             {
                                 personalDevice.DeviceRegistrationId = details.PushToken;
-                                personalDevice.NotificationsEnabled = details.PushToken.IsNotNullOrWhiteSpace();
+                                personalDevice.NotificationsEnabled = true;
                             }
                         }
                     }

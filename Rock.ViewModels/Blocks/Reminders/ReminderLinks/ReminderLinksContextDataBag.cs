@@ -70,7 +70,7 @@ namespace Rock.ViewModels.Blocks.Reminders.ReminderLinks
 
         /// <summary>
         /// Gets or sets the current person as the initial value of the Assign Reminder
-        /// To person picker. Value is the primary <see cref="Rock.Model.PersonAlias"/>
+        /// To person picker. Value is the primary Rock.Model.PersonAlias
         /// Guid (matches the value the Obsidian PersonPicker emits and what
         /// SaveReminder expects on <see cref="SaveReminderRequestBag.PersonAliasGuid"/>).
         /// </summary>

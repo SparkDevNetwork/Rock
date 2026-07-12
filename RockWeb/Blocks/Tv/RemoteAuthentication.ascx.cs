@@ -39,9 +39,10 @@ namespace RockWeb.Blocks.Tv
     #region Block Attributes
 
     [SiteField( "Site",
-                "The optional site that the remote authentication is tied to.",
-                false, "", "", 0,
-                AttributeKey.Site)]
+        Description = "The optional site that the remote authentication is tied to.",
+        IsRequired = false,
+        Order = 0,
+        Key = AttributeKey.Site )]
 
     [CodeEditorField( "Header Content",
         Description = "Lava template to create the header.",
@@ -81,12 +82,11 @@ namespace RockWeb.Blocks.Tv
         Key = AttributeKey.SuccessMessage )]
 
     [IntegerField(  "Code Expiration Duration",
-        "The length of time in minutes that a code is good for.",
-        true,
-        10,
-        "",
-        4,
-        AttributeKey.CodeExpirationDuration)]
+        Description = "The length of time in minutes that a code is good for.",
+        IsRequired = true,
+        DefaultIntegerValue = 10,
+        Order = 4,
+        Key = AttributeKey.CodeExpirationDuration)]
 
     #endregion Block Attributes
 

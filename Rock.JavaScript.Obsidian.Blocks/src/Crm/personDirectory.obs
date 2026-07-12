@@ -1,0 +1,229 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="Directory">
+        <NotificationBox v-if="config.errorMessage" alertType="danger">
+            {{ config.errorMessage }}
+        </NotificationBox>
+
+        <NotificationBox v-else-if="!options.isDataViewConfigured" alertType="warning">
+            This block requires a valid Data View setting.
+        </NotificationBox>
+
+        <template v-else>
+            <NotificationBox v-if="validationMessages.length > 0" alertType="validation">
+                Please correct the following:
+                <ul>
+                    <li v-for="(message, index) in validationMessages" :key="index">{{ message }}</li>
+                </ul>
+            </NotificationBox>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <TextBox v-model="firstName" label="First Name" @keydown.enter="onSearch" />
+                </div>
+                <div class="col-md-4">
+                    <TextBox v-model="lastName" label="Last Name" @keydown.enter="onSearch" />
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="control-label">&nbsp;</label>
+                        <div class="control-wrapper">
+                            <RockButton :btnType="BtnType.Primary" :isLoading="isSearching" @click="onSearch">Search</RockButton>
+                            <RockButton :btnType="BtnType.Link" @click="onClear">Clear</RockButton>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <ul v-if="options.isShowAllPeopleEnabled" class="list-inline directory-letters">
+                <li v-for="letter in letters" :key="letter">
+                    <RockButton :btnType="BtnType.Link" @click="onLetterClick(letter)">{{ letter }}</RockButton>
+                </li>
+            </ul>
+
+            <div class="directory-grid">
+                <template v-if="options.isShowByFamily">
+                    <FamilyCard v-for="(family, index) in families"
+                                :key="index"
+                                :family="family"
+                                :options="options"
+                                :profileUrlTemplate="profileUrlTemplate" />
+                </template>
+                <template v-else>
+                    <PersonCard v-for="(person, index) in people"
+                                :key="person.idKey ?? index"
+                                :person="person"
+                                :options="options"
+                                :profileUrlTemplate="profileUrlTemplate" />
+                </template>
+            </div>
+
+            <div v-if="options.isOptOutEnabled" class="actions margin-t-lg">
+                <RockButton :btnType="BtnType.Default"
+                            :btnSize="BtnSize.Small"
+                            :isLoading="isTogglingOptOut"
+                            @click="onToggleOptOut">
+                    {{ isOptedOut ? "Opt in to the Directory" : "Opt Out of the Directory" }}
+                </RockButton>
+            </div>
+        </template>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { PersonDirectoryBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDirectory/personDirectoryBag";
+    import { PersonDirectoryOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDirectory/personDirectoryOptionsBag";
+    import { PersonDirectoryResultsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDirectory/personDirectoryResultsBag";
+    import { PersonDirectoryPersonBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDirectory/personDirectoryPersonBag";
+    import { PersonDirectoryFamilyBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDirectory/personDirectoryFamilyBag";
+    import PersonCard from "./PersonDirectory/personCard.partial.obs";
+    import FamilyCard from "./PersonDirectory/familyCard.partial.obs";
+    import { NavigationUrlKey } from "./PersonDirectory/types.partial";
+
+    const config = useConfigurationValues<CustomBlockBox<PersonDirectoryBag, PersonDirectoryOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const options: PersonDirectoryOptionsBag = config.options ?? {
+        isShowByFamily: false,
+        isEmailShown: false,
+        isAddressShown: false,
+        arePhonesShown: false,
+        isBirthdayShown: false,
+        isGenderShown: false,
+        isGradeShown: false,
+        isEnvelopeNumberShown: false,
+        isShowAllPeopleEnabled: false,
+        isOptOutEnabled: false,
+        isDataViewConfigured: false,
+        firstNameCharactersRequired: null,
+        lastNameCharactersRequired: null
+    };
+
+    const firstName = ref("");
+    const lastName = ref("");
+    const results = ref<PersonDirectoryResultsBag>(config.bag?.results ?? {});
+    const isOptedOut = ref(config.bag?.isCurrentPersonOptedOut ?? false);
+    const validationMessages = ref<string[]>([]);
+    const isSearching = ref(false);
+    const isTogglingOptOut = ref(false);
+
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+    const profileUrlTemplate = config.navigationUrls?.[NavigationUrlKey.PersonProfilePage] ?? "";
+
+    const people = computed((): PersonDirectoryPersonBag[] => results.value.people ?? []);
+    const families = computed((): PersonDirectoryFamilyBag[] => results.value.families ?? []);
+
+    /**
+     * Builds the client-side validation messages for the minimum character requirements.
+     */
+    function buildValidationMessages(): string[] {
+        const messages: string[] = [];
+
+        const firstRequired = options.firstNameCharactersRequired;
+        if (firstRequired != null && firstName.value.trim().length < firstRequired) {
+            messages.push(`Please enter at least ${firstRequired} ${firstRequired === 1 ? "character" : "characters"} in First Name before searching.`);
+        }
+
+        const lastRequired = options.lastNameCharactersRequired;
+        if (lastRequired != null && lastName.value.trim().length < lastRequired) {
+            messages.push(`Please enter at least ${lastRequired} ${lastRequired === 1 ? "character" : "characters"} in Last Name before searching.`);
+        }
+
+        return messages;
+    }
+
+    /**
+     * Requests directory results from the server for the current search terms.
+     */
+    async function loadResults(): Promise<void> {
+        isSearching.value = true;
+
+        try {
+            const result = await invokeBlockAction<PersonDirectoryResultsBag>("GetResults", {
+                search: {
+                    firstName: firstName.value,
+                    lastName: lastName.value
+                }
+            });
+
+            if (result.isSuccess && result.data) {
+                results.value = result.data;
+            }
+            else {
+                results.value = {};
+                await alert(result.errorMessage ?? "Unable to load directory results.");
+            }
+        }
+        finally {
+            isSearching.value = false;
+        }
+    }
+
+    /**
+     * Validates the search terms and loads results when valid.
+     */
+    async function onSearch(): Promise<void> {
+        const messages = buildValidationMessages();
+        if (messages.length > 0) {
+            validationMessages.value = messages;
+            return;
+        }
+
+        validationMessages.value = [];
+        await loadResults();
+    }
+
+    /**
+     * Clears the search terms and reloads results.
+     */
+    async function onClear(): Promise<void> {
+        firstName.value = "";
+        lastName.value = "";
+        validationMessages.value = [];
+        await loadResults();
+    }
+
+    /**
+     * Filters by the chosen last-name initial.
+     */
+    async function onLetterClick(letter: string): Promise<void> {
+        firstName.value = "";
+        lastName.value = letter;
+        validationMessages.value = [];
+        await loadResults();
+    }
+
+    /**
+     * Toggles the current person's (and family's, in family mode) directory opt-out state.
+     */
+    async function onToggleOptOut(): Promise<void> {
+        isTogglingOptOut.value = true;
+
+        try {
+            const result = await invokeBlockAction<{ isOptedOut: boolean }>("ToggleOptOut");
+
+            if (result.isSuccess && result.data) {
+                isOptedOut.value = result.data.isOptedOut;
+                await loadResults();
+            }
+            else {
+                await alert(result.errorMessage ?? "Unable to update your directory preference.");
+            }
+        }
+        finally {
+            isTogglingOptOut.value = false;
+        }
+    }
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

@@ -26,10 +26,11 @@
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
 
     // Use ListItemBag, but don't worry about the "category" property, make the other
-    // properties not null/undefined, and optionally allow an icon CSS class.
+    // properties not null/undefined, optionally allow an icon CSS class, and
+    // optionally allow a per-item selected color.
     type StandardListItemBag = {
         [P in keyof Pick<ListItemBag, "text" | "value">]-?: NonNullable<ListItemBag[P]>;
-    } & { iconCssClass?: string };
+    } & { iconCssClass?: string; selectedBtnType?: LiteralUnion<BtnType> };
 
     const props = defineProps({
         modelValue: {
@@ -79,7 +80,11 @@
     });
 
     function itemButtonType(item: StandardListItemBag): LiteralUnion<BtnType> {
-        return item.value === internalValue.value ? props.selectedBtnType : props.unselectedBtnType;
+        if (item.value === internalValue.value) {
+            return item.selectedBtnType ?? props.selectedBtnType;
+        }
+
+        return props.unselectedBtnType;
     }
 
     const standardFieldProps = useStandardRockFormFieldProps(props);

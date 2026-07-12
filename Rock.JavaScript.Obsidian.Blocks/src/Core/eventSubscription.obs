@@ -1,0 +1,132 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel type="block" title="Following Events" titleIconCssClass="ti ti-flag">
+        <NotificationBox v-if="!isAuthenticated" alertType="warning">
+            You must be logged in to manage your event subscriptions.
+        </NotificationBox>
+
+        <template v-else>
+            <NotificationBox v-if="isSavedMessageShown"
+                             alertType="success"
+                             :dismissible="true"
+                             @dismiss="isSavedMessageShown = false">
+                Your settings have been saved.
+            </NotificationBox>
+
+            <NotificationBox v-if="errorMessage" alertType="danger">
+                {{ errorMessage }}
+            </NotificationBox>
+
+            <div v-for="(entityType, entityTypeIndex) in entityTypes" :key="entityTypeIndex">
+                <h4 class="mt-0">{{ entityType.name }} Events</h4>
+                <div class="margin-l-md">
+                    <ul class="list-unstyled">
+                        <li v-for="(event, eventIndex) in entityType.events" :key="event.guid || eventIndex" class="mb-2">
+                            <div class="d-flex flex-wrap align-items-baseline">
+                                <InlineCheckBox v-model="event.isChecked"
+                                                :label="event.name"
+                                                :disabled="event.isNoticeRequired" />
+                                <span v-if="event.isNoticeRequired" class="label label-info margin-l-sm">required</span>
+                                <small v-if="event.description" class="margin-l-lg text-muted" v-html="event.description"></small>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="actions">
+                <RockButton :btnType="BtnType.Primary"
+                            :isLoading="isSaving"
+                            loadingText="Saving..."
+                            shortcutKey="s"
+                            @click="onSaveClick">
+                    Save
+                </RockButton>
+            </div>
+        </template>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { EventSubscriptionBag } from "@Obsidian/ViewModels/Blocks/Core/EventSubscription/eventSubscriptionBag";
+    import { EventSubscriptionOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/EventSubscription/eventSubscriptionOptionsBag";
+
+    type EventItem = {
+        guid: string;
+        name: string;
+        description: string;
+        isNoticeRequired: boolean;
+        isChecked: boolean;
+    };
+
+    type EntityTypeGroup = {
+        name: string;
+        events: EventItem[];
+    };
+
+    // #region Values
+
+    const config = useConfigurationValues<CustomBlockBox<EventSubscriptionBag, EventSubscriptionOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const isAuthenticated = config.bag?.isAuthenticated === true;
+
+    const entityTypes = ref<EntityTypeGroup[]>((config.bag?.entityTypes ?? []).map(entityType => ({
+        name: entityType.name ?? "",
+        events: (entityType.events ?? []).map(event => ({
+            guid: event.guid ?? "",
+            name: event.name ?? "",
+            description: event.description ?? "",
+            isNoticeRequired: event.isNoticeRequired,
+            isChecked: event.isNoticeRequired || event.isSubscribed
+        }))
+    })));
+
+    const isSaving = ref(false);
+    const isSavedMessageShown = ref(false);
+    const errorMessage = ref("");
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Saves the selected event subscriptions for the current person.
+     */
+    async function onSaveClick(): Promise<void> {
+        isSavedMessageShown.value = false;
+        errorMessage.value = "";
+        isSaving.value = true;
+
+        try {
+            const selectedEventTypeGuids = entityTypes.value
+                .flatMap(entityType => entityType.events)
+                .filter(event => event.isChecked)
+                .map(event => event.guid);
+
+            const result = await invokeBlockAction("Save", { selectedEventTypeGuids });
+
+            if (result.isSuccess) {
+                isSavedMessageShown.value = true;
+            }
+            else {
+                errorMessage.value = result.errorMessage || "An error occurred while saving your settings.";
+            }
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

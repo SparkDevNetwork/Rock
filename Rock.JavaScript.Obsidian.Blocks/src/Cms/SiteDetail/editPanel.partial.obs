@@ -581,9 +581,9 @@
             reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== siteAttribute.value?.key);
         }
         else {
-            if (siteAttribute.value?.key && !reservedKeyNames.value.some(k => k === siteAttribute.value?.key)) {
-                reservedKeyNames.value.push(siteAttribute.value.key);
-            }
+            // Rebuild from the authoritative attribute list so a cancelled key
+            // change cannot leave a phantom key reserved or drop the real key.
+            reservedKeyNames.value = siteAttributes.value.map(k => k.key!);
         }
     });
 

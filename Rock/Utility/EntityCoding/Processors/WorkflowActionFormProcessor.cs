@@ -110,10 +110,31 @@ namespace Rock.Utility.EntityCoding.Processors
                     var details = actions[i].Split( new char[] { '^' } );
                     if ( details.Length > 2 )
                     {
-                        Guid definedValueGuid = details[1].AsGuid();
+                        var definedValueGuid = details[1].AsGuidOrNull();
                         Guid? activityTypeGuid = details[2].AsGuidOrNull();
 
-                        details[1] = helper.FindMappedGuid( definedValueGuid ).ToString();
+                        /*
+                             7/7/2026 - MSE
+
+                             A blank button type is valid and means "use the default button".
+                             Previously a blank value was converted to Guid.Empty and written
+                             into the Actions string as "00000000-0000-0000-0000-000000000000",
+                             which some consumers could not resolve to a Defined Value, causing
+                             the form to render without its buttons. Keep it blank instead, and
+                             also normalize an empty Guid from a previously exported file back
+                             to blank.
+
+                             Reason: Submit button was missing on the Workflow Entry block.
+                        */
+                        if ( definedValueGuid.HasValue && definedValueGuid.Value != Guid.Empty )
+                        {
+                            details[1] = helper.FindMappedGuid( definedValueGuid.Value ).ToString();
+                        }
+                        else
+                        {
+                            details[1] = string.Empty;
+                        }
+
                         if ( activityTypeGuid.HasValue )
                         {
                             details[2] = helper.FindMappedGuid( activityTypeGuid.Value ).ToString();

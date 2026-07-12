@@ -21,6 +21,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Web.Cache.Entities
 {
@@ -54,6 +55,13 @@ namespace Rock.Web.Cache.Entities
         #endregion
 
         #region Navigation Properties
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => AISkillCache.Get( AISkillId ) ?? base.ParentAuthority;
 
         #endregion
 

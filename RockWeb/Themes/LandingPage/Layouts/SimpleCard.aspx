@@ -8,14 +8,14 @@
     </div>
 
 
-        <Rock:Lava ID="HeaderImage" runat="server">
-            {%- assign headerImageId = CurrentPage | Attribute:'HeaderImage','Id' -%}
-            {%- if headerImageId != '' -%}
+    <Rock:Lava ID="HeaderImage" runat="server">
+        {%- assign headerImageId = CurrentPage | Attribute:'HeaderImage','Id' -%}
+        {%- if headerImageId != '' -%}
             <div class="hero hero-card has-overlay" style="background-image: url('{{ headerImageId | ImageUrl:'','rootUrl' }}&maxWidth=2500');">
-            {%- else -%}
-            <div class="hero hero-card">
-            {%- endif -%}
-        </Rock:Lava>
+        {%- else -%}
+            <div class="hero hero-card" style="background-image:url('https://images.unsplash.com/photo-1521127021408-f33c67dfcb76?fm=jpg&q=60&w=2500');">
+        {%- endif -%}
+    </Rock:Lava>
         <div class="container d-flex flex-column" style="min-height: 100vh;">
             <div class="row my-auto">
                 <div class="col-lg-5 col-md-8 col-sm-12 mx-auto">

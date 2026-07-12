@@ -25,6 +25,7 @@ import { ConnectionState } from "@Obsidian/Enums/Connection/connectionState";
 import { DueStatus } from "@Obsidian/Enums/Connection/dueStatus";
 import { Guid } from "@Obsidian/Types";
 import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
+import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Represents the updated field values for a single row in the connection request grid after a server-side change. */
@@ -67,6 +68,14 @@ export type ConnectionListGridUpdateBag = {
 
     /** Gets or sets the grouping key for the connector column. */
     connectorGrouping?: string | null;
+
+    /**
+     * Gets or sets the grouping metadata for the currently assigned connector. Used by
+     * the client to label the connector's group when the connector is not part of the
+     * block-load available groupings list. Null when the connector was not changed or
+     * the request is unassigned.
+     */
+    connectorGroupingField?: GroupingFieldBag | null;
 
     /** Gets or sets the date by which this request should be completed. */
     dueDate?: string | null;

@@ -300,11 +300,11 @@ namespace RockWeb.Blocks.Groups
                 SetBlockOptions();
                 ShowDetail
                 (
-                    PageParameter( PageParameterKey.GroupMemberId ).AsInteger(),
-                    PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull(),
+                    GetGroupMemberId( PageParameter( PageParameterKey.GroupMemberId ) ) ?? 0,
+                    PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.GroupId ) ),
                     PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull(),
                     PageParameter( PageParameterKey.LocationId ).AsIntegerOrNull(),
-                    PageParameter( PageParameterKey.ScheduleId ).AsIntegerOrNull()
+                    PageParameter( PageParameterKey.ScheduleId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.ScheduleId ) )
                 );
             }
             else
@@ -336,7 +336,7 @@ namespace RockWeb.Blocks.Groups
             btnShowMoveDialog.Visible = showMoveToOtherGroup;
 
             bool enableCommunications = this.GetAttributeValue( AttributeKey.EnableCommunications ).AsBooleanOrNull() ?? true;
-            btnShowCommunicationDialog.Visible = PageParameter( PageParameterKey.GroupMemberId ).AsInteger() != 0 && enableCommunications;
+            btnShowCommunicationDialog.Visible = ( GetGroupMemberId( PageParameter( PageParameterKey.GroupMemberId ) ) ?? 0 ) != 0 && enableCommunications;
 
             bool areRequirementsPubliclyHidden = this.GetAttributeValue( AttributeKey.AreRequirementsPubliclyHidden ).AsBooleanOrNull() ?? false;
             gmrcRequirements.Visible = !areRequirementsPubliclyHidden;
@@ -353,7 +353,7 @@ namespace RockWeb.Blocks.Groups
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? groupMemberId = PageParameter( pageReference, PageParameterKey.GroupMemberId ).AsIntegerOrNull();
+            int? groupMemberId = GetGroupMemberId( PageParameter( pageReference, PageParameterKey.GroupMemberId ) );
             if ( groupMemberId != null )
             {
                 GroupMember groupMember = new GroupMemberService( new RockContext() ).Get( groupMemberId.Value );
@@ -401,6 +401,28 @@ namespace RockWeb.Blocks.Groups
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Resolves the GroupMemberId page parameter, which may be supplied as an IdKey,
+        /// a Guid, or an integer identifier, into its integer identifier. Returns
+        /// <c>null</c> when the parameter was not provided, or <c>0</c> when it was
+        /// provided but did not resolve to an existing group member (which the block
+        /// treats as adding a new group member).
+        /// </summary>
+        /// <param name="key">The GroupMemberId page parameter value.</param>
+        /// <returns>The integer group member identifier, <c>0</c>, or <c>null</c>.</returns>
+        private int? GetGroupMemberId( string key )
+        {
+            if ( key.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                return new GroupMemberService( rockContext ).GetSelect( key, gm => gm.Id, true );
+            }
+        }
 
         /// <summary>
         /// Populates the group schedule assignment locations.
@@ -1956,7 +1978,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbResendDocumentRequest_Click( object sender, EventArgs e )
         {
-            int groupMemberId = PageParameter( PageParameterKey.GroupMemberId ).AsInteger();
+            int groupMemberId = GetGroupMemberId( PageParameter( PageParameterKey.GroupMemberId ) ) ?? 0;
             if ( groupMemberId > 0 )
             {
                 using ( var rockContext = new RockContext() )

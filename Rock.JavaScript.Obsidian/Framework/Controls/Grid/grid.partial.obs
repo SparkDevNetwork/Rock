@@ -1,7 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="grid-obsidian styled-scroll" :class="{ 'grid-sticky': isStickyHeader, 'grid-light': light, 'grid-bordered': !light, 'grid-striped': !light, 'grid-hover': !light, 'grid-comfy': comfy }">
-        <div class="grid-header">
+    <div class="grid-obsidian styled-scroll"
+         :class="{ 'grid-sticky': isStickyHeader, 'grid-light': light, 'grid-bordered': !light, 'grid-striped': !light, 'grid-hover': !light, 'grid-comfy': comfy }"
+         :style="{ '--grid-header-height': `${gridHeaderHeight}px` }">
+        <div ref="gridHeaderElement" class="grid-header">
             <FilterHeaderRow v-if="!light && !hideFilterHeaderRow"
                              v-model:quickFilterValue="quickFilterValue"
                              :grid="gridState"
@@ -18,6 +20,28 @@
                     <slot name="gridHeaderBadges" />
                 </template>
             </FilterHeaderRow>
+
+            <transition name="action-toolbar-slide">
+                <div v-if="$slots.actionToolbar && selectedRowCount > 0" class="action-toolbar-slide">
+                    <div class="action-toolbar-slide-inner">
+                        <div class="action-toolbar">
+                            <div class="action-toolbar-content">
+                                <div class="selected-row-count">
+                                    <span class="text-info-strong font-weight-semibold mb-0">Selected</span>
+                                    <Badge class="font-weight-semibold bg-info-strong">{{ selectedRowCount }}</Badge>
+                                </div>
+                                <slot name="actionToolbar" />
+                            </div>
+                            <button type="button"
+                                    class="btn btn-link btn-sm text-muted p-0"
+                                    title="Clear selection"
+                                    @click="clearSelectedKeys">
+                                <i class="ti ti-x"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </transition>
         </div>
 
         <div class="grid-content-container"
@@ -123,6 +147,77 @@
     </div>
 </template>
 
+<style scoped>
+/* Styling for the action toolbar which is now built into the grid component.
+Most styles are redundent from groupedPanel.obs */
+.action-toolbar {
+    padding: var(--spacing-xsmall) var(--spacing-large);
+    border-bottom: 1px solid var(--color-interface-soft);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    justify-content: space-between;
+    background-color: var(--color-info-soft);
+}
+
+.action-toolbar-content {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: var(--spacing-large);
+}
+
+.selected-row-count {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+}
+
+.action-toolbar-slide {
+    display: grid;
+    grid-template-rows: 1fr;
+}
+
+.action-toolbar-slide-inner {
+    overflow: hidden;
+    min-height: 0;
+}
+
+.action-toolbar-slide-enter-active,
+.action-toolbar-slide-leave-active {
+    transition: grid-template-rows 0.2s ease-in-out;
+}
+
+.action-toolbar-slide-enter-from,
+.action-toolbar-slide-leave-to {
+    grid-template-rows: 0fr;
+}
+
+/*
+    6/24/26 - Carter - Action Toolbar Slot
+
+    (This is probably not the cleanest solution)
+    Before the toolbar was added to the grid header, it was always 57px. So the
+    sticky header offset was able to be hardcoded to 57px. Now that the toolbar
+    can potentially be rendered in the grid header, the sticky element offset needs to vary based on the height
+    of the grid header element so that no overlapping occurs. Currently I am tracking the height
+    of the grid header element via javascript, then setting it in-line as a CSS variable so I can
+    reference it here for the offset.
+
+    Reason: Sticky column-header offset must track the grid header's actual height now that the action toolbar can grow it.
+*/
+.grid-obsidian.grid-sticky .sticky-column-header {
+    top: calc(var(--sticky-element-offset) + var(--grid-header-height, 57px));
+}
+
+/* Hide the selected-count indicator on small screens for resonsivness */
+@media (max-width: 768px) {
+    .selected-row-count {
+        display: none;
+    }
+}
+</style>
+
 <script setup lang="ts">
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import SkeletonRows from "./skeletonRows.partial.obs";
@@ -152,6 +247,7 @@
     import { type Column, type Workbook, type Worksheet } from "@Obsidian/Libs/exceljs";
     import { IPersonPreferenceCollection } from "@Obsidian/Types/Core/personPreferences";
     import { useStore } from "@Obsidian/PageState";
+    import Badge from "@Obsidian/Controls/badge.obs";
 
     /**
      * The preference keys used by the grid.
@@ -665,6 +761,15 @@
     const dataRowWidthCalculation = ref<{ offsetWidth: number; scrollWidth: number }>();
     const headerRowWidthCalculation = ref<{ offsetWidth: number; scrollWidth: number }>();
 
+    /** Reference to the grid header element so its height can be measured. */
+    const gridHeaderElement = ref<HTMLElement>();
+
+    /** The measured height (in pixels) of the grid header, used to offset the sticky column header below it. */
+    const gridHeaderHeight = ref<number>(57);
+
+    /** Observes the grid header for size changes so the sticky column header offset stays accurate. */
+    let gridHeaderResizeObserver: ResizeObserver | undefined;
+
     // #endregion
 
     // #region Computed Values
@@ -883,11 +988,14 @@
             });
         }
 
-        // Append the action for Launch Workflow.
+        // Append the action for Launch Workflow. When both light and
+        // showLaunchWorkflow are set the action is primary (inline icon button);
+        // otherwise it stays in the ellipsis menu as before.
         if (isLaunchWorkflowVisible.value) {
             actions.push({
                 handler: onLaunchWorkflow,
                 iconCssClass: "ti ti-settings",
+                isPrimary: props.light === true && props.showLaunchWorkflow === true,
                 title: "Launch Workflow",
                 tooltip: "Launch Workflow"
             });
@@ -1320,7 +1428,8 @@
             return await alert(result.errorMessage || "Unable to create communication.");
         }
 
-        const finalUrl = makeUrlRedirectSafe(url.replace("{CommunicationId}", `${result.data}`));
+        // See Spec: 260625-grid-communicate-url-placeholder-encoding.md
+        const finalUrl = makeUrlRedirectSafe(url.replace("((CommunicationId))", `${result.data}`));
 
         window.location.href = finalUrl;
     }
@@ -2018,10 +2127,22 @@
      */
     onMounted(() => {
         emit("onLoad", gridState);
+
+        // Track the grid header's height so the sticky column header can be
+        // offset below it. The header grows when the action toolbar appears or
+        // when the filter row wraps, so a fixed offset would overlap them.
+        if (gridHeaderElement.value) {
+            gridHeaderResizeObserver = new ResizeObserver((entries) => {
+                gridHeaderHeight.value = entries[0].target.clientHeight;
+            });
+            gridHeaderResizeObserver.observe(gridHeaderElement.value);
+        }
     });
 
     onUnmounted(() => {
         emit("onUnload", gridState);
+
+        gridHeaderResizeObserver?.disconnect();
 
         gridState.off("selectedKeysChanged", onSelectedKeysChanged);
         gridState.off("sortedRowsChanged", onSortedRowsChanged);

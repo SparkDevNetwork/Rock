@@ -58,28 +58,11 @@ namespace Rock
                 Attachments = new List<ConversationAttachmentBag>()
             };
 
-            // Initially set the photo URL using the recipient photo ID.
-            if ( response.RecipientPhotoId.HasValue )
-            {
-                bag.PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( FileUrlHelper.GetImageUrl( response.RecipientPhotoId.Value, new GetImageUrlOptions { MaxWidth = 256, MaxHeight = 256 } ) );
-            }
-
-            if ( response.RecipientPersonGuid.HasValue )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    // We want to use the recipient person guid to get the avatar view for the person.
-                    var photoUrl = new PersonService( rockContext )
-                        .Queryable()
-                        .FirstOrDefault( p => p.Guid == response.RecipientPersonGuid.Value )?.PhotoUrl;
-
-                    // Update the photo URL to use the avatar if there is one.
-                    if ( photoUrl.IsNotNullOrWhiteSpace() )
-                    {
-                        bag.PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( photoUrl );
-                    }
-                }
-            }
+            // Build the photo/avatar URL from the data already on the response (the service
+            // supplies the photo inputs), avoiding a per-message Person lookup. This mirrors
+            // Person.PhotoUrl, which is simply Person.GetPersonPhotoUrl( person ).
+            bag.PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl(
+                Person.GetPersonPhotoUrl( response.Initials, response.RecipientPhotoId, response.Age, response.Gender, response.RecordTypeValueId, response.AgeClassification ) );
 
             if ( loadAttachments )
             {

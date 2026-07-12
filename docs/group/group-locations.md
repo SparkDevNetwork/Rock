@@ -1,6 +1,6 @@
 ---
 title: Group Locations
-last_updated: 2026-05-01
+last_updated: 2026-05-26
 related_files:
   - Rock/Model/Group/GroupLocation/GroupLocation.cs
   - Rock/Model/Group/GroupLocation/GroupLocationService.cs
@@ -8,6 +8,7 @@ related_files:
   - Rock/Model/Group/GroupLocation/GroupLocationScheduleConfig.cs
   - Rock/Model/Group/GroupTypeLocationType/GroupTypeLocationType.cs
   - Rock/Web/Cache/Entities/GroupLocationCache.cs
+  - Rock.ViewModels/Blocks/Group/GroupDetail/GroupLocationStateBag.cs
 ---
 
 # Group Locations
@@ -128,6 +129,30 @@ Cascade delete from both `GroupLocation` and `Schedule`.
 | `Polygon` | Geofence picker. |
 | `GroupMember` | Pick from a Group member's addresses. Sets `GroupMemberPersonAliasId`. |
 
+### Resolving a Location from Picker Input
+
+When the Obsidian `GroupDetail` block submits a `GroupLocation` row, the picker's emitted value arrives in the bag as a single `object` field whose runtime shape varies by mode. A discriminator field carries the mode so the server can branch on it. The bag definition lives at [Rock.ViewModels/Blocks/Group/GroupDetail/GroupLocationStateBag.cs](../../Rock.ViewModels/Blocks/Group/GroupDetail/GroupLocationStateBag.cs):
+
+| Bag field | Type | Purpose |
+|---|---|---|
+| `SelectedLocation` | `object` | Raw picker emit. Runtime shape varies per mode (see below). Typed as `object` so System.Text.Json can round-trip the heterogeneous payload. |
+| `SelectedLocationMode` | `GroupLocationPickerMode` | The discriminator. Tells the server how to interpret `SelectedLocation`. |
+
+The server-side resolver `ResolveLocationFromBag` ([Rock.Blocks/Group/GroupDetail.cs:3853](../../Rock.Blocks/Group/GroupDetail.cs)) switches on `SelectedLocationMode` and routes to the appropriate `LocationService` overload:
+
+| Mode | `SelectedLocation` shape | Resolution path |
+|---|---|---|
+| `Named` | `ListItemBag` with the Location's Guid in `Value` | `locationService.Get(guid)` |
+| `GroupMember` | `ListItemBag` with the Location's Guid in `Value` (same shape as Named) | `locationService.Get(guid)` |
+| `Address` | `AddressControlBag` (Street1, City, State, PostalCode, etc.) | `locationService.Get(street1, street2, city, state, postalCode, country, verifyLocation: false)` — creates the Location row if needed. Returns null when both `Street1` and `City` are blank. |
+| `Point` | WKT string (`POINT(longitude latitude)`) | `DbGeography.FromText(wkt)` → `locationService.GetByGeoPoint(point)`. Invalid or partial WKT (a common picker side-effect during partial selection) is caught and treated as a no-op rather than a save failure. |
+| `Polygon` | WKT string (`POLYGON(...)`) | `DbGeography.PolygonFromText(wkt, DefaultCoordinateSystemId)` → `locationService.GetByGeoFence(fence)`. Same WKT-failure handling as Point. |
+
+Two patterns plugin authors should know:
+
+- **Round-trip through `ToJson().FromJsonOrNull<T>()`.** Because `SelectedLocation` is `object`, the deserialized value can be a `JObject` / `JsonElement` / dictionary depending on the JSON serializer in play. The resolver re-serializes and re-deserializes through `RockJsonOptions` to produce a stable typed shape (`ListItemBag` / `AddressControlBag`). Custom location pickers should emit one of the supported shapes so the resolver doesn't have to know about them.
+- **`null` returns are non-fatal.** Any branch can return `null` (missing required fields, invalid WKT, empty address). The Save flow treats a null-resolved Location as "skip this row" rather than a hard error. This makes the picker forgiving of in-progress states.
+
 ### Filtering Helpers
 
 [Rock/Model/Group/GroupLocation/GroupLocationExtensions.cs](../../Rock/Model/Group/GroupLocation/GroupLocationExtensions.cs):
@@ -147,7 +172,7 @@ Cascade delete from both `GroupLocation` and `Schedule`.
 
 ### Affected Blocks and UI Surfaces
 
-- **Group Detail "Locations" panel** (still WebForms in some shipped versions).
+- **Group Detail "Locations" panel** ([Rock.Blocks/Group/GroupDetail.cs](../../Rock.Blocks/Group/GroupDetail.cs), [Obsidian](../../Rock.JavaScript.Obsidian.Blocks/src/Group/GroupDetail/locationsPanel.partial.obs)). Drives `GroupLocation` CRUD, the Location modal with capacity matrix, and per-(location, schedule) `GroupLocationScheduleConfig` editing.
 - **Check-in admin UIs.** Configure classrooms with schedules and capacities.
 - **Family Edit and Person Detail.** Address management implemented as GroupLocation edits on the Family Group.
 - **Group Scheduler** ([Rock.Blocks/Group/Scheduling/GroupScheduler.cs](../../Rock.Blocks/Group/Scheduling/GroupScheduler.cs)). Reads `GroupLocationScheduleConfig` for capacity targets.

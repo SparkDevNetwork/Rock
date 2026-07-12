@@ -56,7 +56,7 @@
                         :disableCollapse="true">
 
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-4">
 
                     <div v-if="modelValue?.sourceType?.text">
                         <label>Transaction Source</label>
@@ -120,7 +120,10 @@
                     <div v-if="modelValue?.refundDetails">
                         <label>Refund Details</label>
 
-                        <p>Yes (<a :href='getTransactionLink(modelValue?.refundDetails.originalTransactionIdKey ?? "")'>Original Transaction</a>)</p>
+                        <p v-if="modelValue.refundDetails.originalTransactionIdKey">
+                            Yes (<a :href="getTransactionLink(modelValue.refundDetails.originalTransactionIdKey)">Original Transaction</a>)
+                        </p>
+                        <p v-else>Yes</p>
 
                         <label>Refund Reason</label>
                         <p>{{ modelValue?.refundDetails.refundReason?.text }}</p>
@@ -153,7 +156,7 @@
                         <AttributeValuesContainer :modelValue="paymentDetailAttributeValues" :attributes="paymentDetailAttributes" :numberOfColumns="1" :showCategoryLabel="false" />
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-8">
                     <ContentStack v-if="allocationsGridData">
                         <div class="mb-4">
                             <h6>Transaction Allocations</h6>
@@ -183,6 +186,7 @@
                                         <template v-else>{{ toCurrencyOrNull(row.amount) }}</template>
                                     </template>
                                 </Column>
+                                <AttributeColumns :attributes="allocationAttributeFields" :filter="undefined" />
                             </Grid>
                         </div>
                         <div v-if="modelValue?.refunds?.length && modelValue.refunds.length > 0" class="mb-4">
@@ -316,8 +320,8 @@ strong {
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import DisplayCard from "@Obsidian/Controls/displayCard.obs";
     import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
-    import { DateTimeFormat, RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import Grid, { Column } from "@Obsidian/Controls/grid";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import Grid, { AttributeColumns, Column } from "@Obsidian/Controls/grid";
     import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
 
     const props = defineProps({
@@ -332,6 +336,9 @@ strong {
         }
     });
 
+    /** Attribute column definitions for the allocations grid, sourced from the server response. */
+    const allocationAttributeFields = computed(() => props.modelValue?.transactionDetails?.attributeFields ?? []);
+
     /** Transforms transaction detail line items into the grid row format for the allocations table, with a totals row appended. */
     const allocationsGridData = computed(() => {
         const detailRows = props.modelValue?.transactionDetails?.rows ?? [];
@@ -344,7 +351,8 @@ strong {
             accountName: detail.account?.text ?? "",
             details: detail.summary ?? "",
             processingFees: detail.feeAmount ?? 0,
-            amount: detail.amount ?? 0
+            amount: detail.amount ?? 0,
+            ...detail.attributeDisplayValues
         }));
 
         return {
@@ -366,7 +374,7 @@ strong {
     const refundsGridData = computed(() => {
         const rows = (props.modelValue?.refunds ?? []).map(refund => ({
             idKey: refund.idKey,
-            dateTime: RockDateTime.parseISO(refund.date ?? "")?.toLocaleString(DateTimeFormat.DateTimeShortWithSeconds) ?? "",
+            dateTime: RockDateTime.parseISO(refund.date ?? "")?.toASPString("g") ?? "",
             transactionReference: refund.transactionCode,
             reason: refund.reason,
             amount: `${toCurrencyOrNull(refund.amount)}`
@@ -379,7 +387,7 @@ strong {
     const relatedTransactionsGridData = computed(() => {
         const rows = (props.modelValue?.relatedTransactions ?? []).map(transaction => ({
             idKey: transaction.idKey,
-            dateTime: RockDateTime.parseISO(transaction.transactionDateTime ?? "")?.toLocaleString(DateTimeFormat.DateTimeShortWithSeconds) ?? "",
+            dateTime: RockDateTime.parseISO(transaction.transactionDateTime ?? "")?.toASPString("G") ?? "",
             transactionReference: transaction.transactionReference,
             amount: toCurrencyOrNull(transaction.amount)
         }));
@@ -387,24 +395,21 @@ strong {
         return { rows };
     });
 
-    const formattedDate = ref("");
-
-    if (props.modelValue?.transactionDateTime) {
-        formattedDate.value = RockDateTime
-            .parseISO(props.modelValue.transactionDateTime)
-            ?.toLocaleString(DateTimeFormat.DateTimeShort) ?? "";
-    }
-    // #region Values
-
-    const attributes = ref(props.modelValue?.attributes ?? {});
-    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
-
-    const paymentDetailAttributes = ref(props.modelValue?.paymentDetail?.attributes ?? {});
-    const paymentDetailAttributeValues = ref(props.modelValue?.paymentDetail?.attributeValues ?? {});
-
-    // #endregion Values
-
     // #region Computed Values
+
+    /** Formats the transaction date/time using Rock's standard short date/time format. Reacts to modelValue changes. */
+    const formattedDate = computed((): string => {
+        if (!props.modelValue?.transactionDateTime) {
+            return "";
+        }
+        return RockDateTime.parseISO(props.modelValue.transactionDateTime)?.toASPString("g") ?? "";
+    });
+
+    const attributes = computed(() => props.modelValue?.attributes ?? {});
+    const attributeValues = computed(() => props.modelValue?.attributeValues ?? {});
+
+    const paymentDetailAttributes = computed(() => props.modelValue?.paymentDetail?.attributes ?? {});
+    const paymentDetailAttributeValues = computed(() => props.modelValue?.paymentDetail?.attributeValues ?? {});
 
     /** True when the payment detail entity has at least one public attribute defined. */
     const hasPaymentDetailAttributes = computed(() => Object.keys(paymentDetailAttributes.value).length > 0);

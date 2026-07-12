@@ -1,0 +1,113 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="attribute-values-view">
+        <AttributeValuesContainer :modelValue="attributeValues"
+                                  :attributes="attributes"
+                                  :showCategoryLabel="isGroupedByCategory" />
+    </div>
+</template>
+
+<style scoped>
+/*
+    Image attributes are shown as thumbnails to reproduce the legacy block's
+    condensed image display. The image is rendered by a nested field component,
+    so :deep() is required to reach it. height: auto preserves the aspect ratio
+    when the image tag template does not include img-responsive.
+*/
+.attribute-values-view :deep(img) {
+    max-width: 120px;
+    height: auto;
+}
+
+/* Space between attributes, matching the legacy person-detail layout. */
+.attribute-values-view :deep(.form-group) {
+    margin-bottom: var(--spacing-medium);
+}
+
+/*
+    The static value wrapper carries a min-height and bottom padding intended for
+    form layouts, which adds dead space below short one-line values. Remove both so
+    the gap between attributes is just the form-group margin above.
+*/
+.attribute-values-view :deep(.form-control-static) {
+    min-height: 0;
+    padding-bottom: 0;
+}
+
+/*
+    The category content's only child is a floated Bootstrap column with no
+    .row wrapper (the container only adds .row for multi-column layouts), so
+    the content collapses to zero height and the next category's heading is
+    laid out behind the floated values: its text is pushed below the float
+    while its shaded box stretches up over the values above it. flow-root
+    makes the content establish a formatting context that contains the float,
+    restoring normal stacking of heading bands and values.
+*/
+.attribute-values-view :deep(.attributevaluescontainer-category-content) {
+    display: flow-root;
+}
+
+/*
+    The last attribute in each category drops its trailing margin so the gap
+    before the next category band resolves to the band's own top margin (rather
+    than stacking on top of it). The final category's last attribute likewise
+    drops its margin so the list does not add dead space at the bottom.
+*/
+.attribute-values-view :deep(.attributevaluescontainer-category-content > :last-child .form-group) {
+    margin-bottom: 0;
+}
+
+/*
+    Align the attribute labels with the panel title. In a panel-flex header the
+    title is inset by --spacing-large while the panel body is inset by
+    --spacing-medium, so the difference is applied to the column here to line the
+    labels up under the title. (The Bootstrap column padding is otherwise 15px and
+    uncompensated because there is no surrounding .row.)
+*/
+.attribute-values-view :deep(.attributevaluescontainer-category-content > [class*="col-"]) {
+    padding-left: calc(var(--spacing-large) - var(--spacing-medium));
+    padding-right: 0;
+}
+
+/*
+    Category-separator headings render as a full-width shaded band, matching the
+    .panel-persondetails theme treatment the legacy person-profile markup received.
+    The negative horizontal margin bleeds the band across the panel body padding.
+*/
+.attribute-values-view :deep(h4) {
+    padding: var(--spacing-xsmall) var(--spacing-medium);
+    margin: var(--spacing-medium) calc(var(--spacing-medium) * -1) var(--spacing-small);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-strong);
+    background: var(--color-interface-softer);
+}
+
+/* The first band sits flush against the top of the panel body. */
+.attribute-values-view :deep(.attributevaluescontainer-category:first-child h4) {
+    margin-top: calc(var(--spacing-medium) * -1);
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    defineProps({
+        attributes: {
+            type: Object as PropType<Record<string, PublicAttributeBag>>,
+            required: true
+        },
+
+        attributeValues: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        },
+
+        isGroupedByCategory: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+</script>

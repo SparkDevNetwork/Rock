@@ -1,0 +1,1860 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Block title="Update Individuals">
+        <NotificationBox v-if="config.errorMessage" :alertType="AlertType.Danger">
+            {{ config.errorMessage }}
+        </NotificationBox>
+
+        <template v-else>
+            <template v-if="!isConfirming">
+                <NotificationBox v-if="config.attributeConfigurationWarning" :alertType="AlertType.Warning">
+                    {{ config.attributeConfigurationWarning }}
+                </NotificationBox>
+
+                <RockForm ref="entryFormElement" @submit="onNext">
+                    <NotificationBox v-if="validationMessage" ref="validationMessageElement" :alertType="AlertType.Warning">
+                        {{ validationMessage }}
+                    </NotificationBox>
+
+                    <ContentSectionContainer>
+                        <ContentSection light>
+                            <div class="basic-fields">
+                                <PersonPicker v-model:isSearchModeOpen="isAddingPerson"
+                                              @update:modelValue="onPersonSelected" isInputHidden />
+
+                                <PillList v-model="updatePersons" label="Individuals" :rules="[validateIndividualsSelected]" canAdd canRemove @add="isAddingPerson = true" @remove="onRemovePerson">
+                                    <template #item="{ item, canRemove, disabled, remove }">
+                                        <Pill :canRemove="canRemove" :disabled="disabled" @remove="remove">
+                                            <img :src="item?.photoUrl ?? undefined" class="bulk-person-image" />
+                                            <span class="item-content">{{ item.fullName ?? "Unknown Person" }}</span>
+                                        </Pill>
+                                    </template>
+                                </PillList>
+
+                                <NotificationBox v-if="pickerMessage" ref="pickerMessageElement" :alertType="AlertType.Info">
+                                    {{ pickerMessage }}
+                                </NotificationBox>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <RockButton :btnType="BtnType.Link" @click="onRemoveAllPersons">
+                                            <i class="ti ti-x bulk-remove-all-icon"></i> Remove all individuals
+                                        </RockButton>
+                                    </div>
+                                </div>
+                            </div>
+                        </ContentSection>
+
+                        <ContentSection v-if="(config.workflowTypeOptions?.length ?? 0) > 0"
+                                        title="Workflows" icon="ti ti-settings-cog" disableCollapse>
+                            <DropDownList v-model="workflows" :items="config.workflowTypeOptions ?? []" :showBlankItem="true"
+                                          :multiple="true" :disableLabel="true" placeholder="Select a workflow..." />
+                        </ContentSection>
+
+                        <ContentSection title="Individual Details" icon="ti ti-user">
+                            <ContentStack title="General" description="Change basic details about the individual">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <OptionalControl v-model="isUpdating.title" label="Title">
+                                            <DefinedValuePicker v-model="title" :definedTypeGuid="DefinedType.PersonTitle"
+                                                                enhanceForLongLists showBlankItem />
+                                        </OptionalControl>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <OptionalControl v-model="isUpdating.suffix" label="Suffix">
+                                            <DefinedValuePicker v-model="suffix" :definedTypeGuid="DefinedType.PersonSuffix"
+                                                                enhanceForLongLists showBlankItem />
+                                        </OptionalControl>
+                                    </div>
+                                </div>
+
+                                <OptionalControl v-model="isUpdating.gender" label="Gender">
+                                    <DropDownList v-model="gender" :items="enumToListItemBag(GenderDescription)" :showBlankItem="true" />
+                                </OptionalControl>
+
+                                <OptionalControl v-model="isUpdating.maritalStatus" label="Marital Status">
+                                    <DefinedValuePicker v-model="maritalStatus" :definedTypeGuid="DefinedType.PersonMaritalStatus" showBlankItem />
+                                </OptionalControl>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <OptionalControl v-model="isUpdating.grade" label="Grade">
+                                            <GradePicker v-model="grade" useGuidAsValue showBlankItem />
+                                        </OptionalControl>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <OptionalControl v-model="isUpdating.graduationYear" label="Graduation Year" help="High School Graduation Year.">
+                                            <YearPicker v-model="graduationYear" />
+                                        </OptionalControl>
+                                    </div>
+                                </div>
+
+                                <OptionalControl v-show="isCampusPickerVisible" v-model="isUpdating.campus" label="Campus">
+                                    <CampusPicker v-model="campus" showBlankItem @isVisible="isCampusPickerVisible = $event" />
+                                </OptionalControl>
+
+                                <OptionalControl v-if="config.canEditConnectionStatus" v-model="isUpdating.connectionStatus" label="Connection Status">
+                                    <DefinedValuePicker v-model="connectionStatus"
+                                                        :definedTypeGuid="DefinedType.PersonConnectionStatus" enhanceForLongLists showBlankItem />
+                                </OptionalControl>
+
+                                <OptionalControl v-if="config.canEditRecordStatus" v-model="isUpdating.recordStatus" label="Record Status">
+                                    <DefinedValuePicker v-model="recordStatus" :definedTypeGuid="DefinedType.PersonRecordStatus" showBlankItem />
+
+                                    <template v-if="isRecordStatusInactive">
+                                        <DefinedValuePicker v-model="inactiveReason" :definedTypeGuid="DefinedType.PersonRecordStatusReason"
+                                                            label="Inactive Reason" showBlankItem />
+
+                                        <TextBox v-model="inactiveReasonNote" label="Inactive Reason Note" textMode="multiline" :rows="2" />
+                                    </template>
+                                </OptionalControl>
+
+                                <OptionalControl v-if="config.canEditRecordSource" v-model="isUpdating.recordSource" label="Record Source">
+                                    <DefinedValuePicker v-model="recordSource" :definedTypeGuid="DefinedType.RecordSourceType"
+                                                        enhanceForLongLists showBlankItem />
+                                </OptionalControl>
+                            </ContentStack>
+
+                            <ContentStack title="Communication" description="Update communication details and preferences for individuals.">
+                                <OptionalControl v-model="isUpdating.communicationPreference" label="Communication Preference">
+                                    <DropDownList v-model="communicationPreference" :items="enumToListItemBag(CommunicationTypeDescription)" :showBlankItem="true" />
+                                </OptionalControl>
+
+                                <OptionalControl v-model="isUpdating.isEmailActive" label="Email Status">
+                                    <DropDownList v-model="isEmailActive" :items="emailStatusOptions" :showBlankItem="false" />
+                                </OptionalControl>
+
+                                <OptionalControl v-model="isUpdating.emailPreference" label="Email Preference">
+                                    <DropDownList v-model="emailPreference" :items="enumToListItemBag(EmailPreferenceDescription)" :showBlankItem="true" />
+                                </OptionalControl>
+
+                                <OptionalControl v-model="isUpdating.emailNote" label="Email Note">
+                                    <TextBox v-model="emailNote" textMode="multiline" />
+                                </OptionalControl>
+                            </ContentStack>
+
+                            <ContentStack title="Profile &amp; Records" description="Follow, review, or make a system note for individuals.">
+                                <OptionalControl v-model="isUpdating.following" label="Following">
+                                    <DropDownList v-model="following" :items="followingOptions" :showBlankItem="false" />
+                                </OptionalControl>
+
+                                <OptionalControl v-model="isUpdating.reviewReason" label="Review Reason">
+                                    <DefinedValuePicker v-model="reviewReason" :definedTypeGuid="DefinedType.PersonReviewReason"
+                                                        enhanceForLongLists showBlankItem />
+                                </OptionalControl>
+
+                                <OptionalControl v-model="isUpdating.reviewReasonNote" label="Review Reason Note">
+                                    <TextBox v-model="reviewReasonNote" textMode="multiline" />
+                                </OptionalControl>
+
+                                <OptionalControl v-model="isUpdating.systemNote" label="System Note">
+                                    <TextBox v-model="systemNote" textMode="multiline" />
+                                </OptionalControl>
+                            </ContentStack>
+                        </ContentSection>
+
+                        <ContentSection v-if="attributeCategories.length > 0" title="Attributes" icon="ti ti-binary-tree-2">
+                            <ContentStack v-for="category in attributeCategories" :key="category.guid" :title="category.name!"
+                                          :description="category.description ?? `Update ${category.name} attributes for individuals.`">
+                                <AttributeValueControls v-model="attributeValuesByCategory[category.guid]" />
+                            </ContentStack>
+                        </ContentSection>
+
+                        <ContentSection title="Notes" icon="ti ti-note">
+                            <ContentStack title="Bulk Add Note" description="Add a note to each individual. A note will be added when Note Text has a value.">
+                                <DropDownList v-model="noteTypeValue" :items="config.noteTypeOptions ?? []" label="Note Type" :showBlankItem="true" />
+
+                                <TextBox v-model="noteTextValue" label="Note" textMode="multiline" />
+
+                                <div class="form-group">
+                                    <InlineCheckBox v-model="noteUpdate.isAlert" label="Alert" />
+
+                                    <InlineCheckBox v-model="noteUpdate.isPrivate" label="Private" />
+                                </div>
+                            </ContentStack>
+                        </ContentSection>
+
+                        <ContentSection title="Group" icon="ti ti-users">
+                            <ContentStack title="Group Member Details" description="Add, remove, or update group member details for individuals.">
+                                <RadioButtonList v-model="groupAction" :items="groupActionOptions" label="Action" />
+
+                                <GroupPicker v-model="groupUpdate.group" label="Group" :multiple="false" showBlankItem />
+
+                                <NotificationBox v-if="groupNotAuthorizedMessage" ref="groupNotAuthorizedMessageElement" :alertType="AlertType.Warning">
+                                    {{ groupNotAuthorizedMessage }}
+                                </NotificationBox>
+
+                                <template v-if="groupUpdate.group && groupUpdate.action !== BulkUpdateActionSpecifier.Remove && !groupNotAuthorizedMessage">
+                                    <template v-if="groupUpdate.action === BulkUpdateActionSpecifier.Add">
+                                        <DropDownList v-model="groupRole"
+                                                      label="Group Role"
+                                                      :items="groupRoleOptions"
+                                                      :showBlankItem="true" />
+
+                                        <RadioButtonList v-model="groupMemberStatus"
+                                                         :items="groupMemberStatusOptions"
+                                                         label="Group Member Status" />
+
+                                        <AttributeValuesContainer v-model="groupMemberAttributeValues" :attributes="groupMemberAttributes" isEditMode :numberOfColumns="2" />
+                                    </template>
+
+                                    <template v-else-if="groupUpdate.action === BulkUpdateActionSpecifier.Update">
+                                        <OptionalControl v-model="isUpdatingGroup.role" label="Group Role">
+                                            <DropDownList v-model="groupRole"
+                                                          :items="groupRoleOptions"
+                                                          :showBlankItem="true" />
+                                        </OptionalControl>
+
+                                        <OptionalControl v-model="isUpdatingGroup.memberStatus" label="Group Member Status">
+                                            <RadioButtonList v-model="groupMemberStatus"
+                                                             :items="groupMemberStatusOptions" />
+                                        </OptionalControl>
+
+                                        <AttributeValueControls v-model="groupMemberAttributeUpdateItems" />
+                                    </template>
+                                </template>
+                            </ContentStack>
+                        </ContentSection>
+
+                        <ContentSection title="Tag" icon="ti ti-tag">
+                            <ContentStack title="Tag Actions" description="Add or remove tags for individuals.">
+                                <RadioButtonList v-model="tagAction" :items="tagActionOptions" label="Action" />
+
+                                <DropDownList v-model="tagValue" :items="config.tagOptions ?? []" label="Tag" grouped showBlankItem />
+                            </ContentStack>
+                        </ContentSection>
+
+                        <ContentSection title="Steps" icon="ti ti-walk">
+                            <ContentStack title="Steps Actions" description="Add, remove, or update Steps details for individuals.">
+                                <RadioButtonList v-model="stepAction" :items="stepActionOptions" label="Action" />
+
+                                <DropDownList v-model="stepProgram" :items="stepProgramItems" label="Step Program" showBlankItem />
+
+                                <template v-if="selectedStepProgram">
+                                    <DropDownList v-model="stepType" :items="stepTypeOptions" label="Step Type" showBlankItem />
+
+                                    <NotificationBox v-if="stepNotAuthorizedMessage" ref="stepNotAuthorizedMessageElement" :alertType="AlertType.Warning">
+                                        {{ stepNotAuthorizedMessage }}
+                                    </NotificationBox>
+
+                                    <template v-if="stepUpdate.stepType && stepUpdate.action !== BulkUpdateActionSpecifier.Remove && !stepNotAuthorizedMessage">
+                                        <template v-if="stepUpdate.action === BulkUpdateActionSpecifier.Add">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <DropDownList v-model="stepStatus" :items="stepStatusOptions" label="Status" showBlankItem />
+                                                </div>
+                                            </div>
+
+                                            <div class="d-flex gap-3">
+                                                <DatePicker v-model="stepUpdate.startDate" label="Start Date" />
+                                                <DatePicker v-model="stepUpdate.endDate" label="End Date" />
+                                            </div>
+
+                                            <CampusPicker v-model="stepUpdate.campus" label="Campus" showBlankItem @isVisible="isCampusPickerVisible = $event" />
+
+                                            <TextBox v-model="stepNote" label="Note" textMode="multiline" />
+
+                                            <AttributeValuesContainer v-model="stepAttributeValues" :attributes="stepAttributes" isEditMode :numberOfColumns="2" />
+                                        </template>
+
+                                        <template v-else-if="stepUpdate.action === BulkUpdateActionSpecifier.Update">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <OptionalControl v-model="isUpdatingStep.status" label="Status">
+                                                        <DropDownList v-model="stepStatus" :items="stepStatusOptions" showBlankItem />
+                                                    </OptionalControl>
+                                                </div>
+                                            </div>
+
+                                            <div class="d-flex gap-3">
+                                                <OptionalControl v-model="isUpdatingStep.startDate" label="Start Date">
+                                                    <DatePicker v-model="stepUpdate.startDate" />
+                                                </OptionalControl>
+                                                <OptionalControl v-model="isUpdatingStep.endDate" label="End Date">
+                                                    <DatePicker v-model="stepUpdate.endDate" />
+                                                </OptionalControl>
+                                            </div>
+
+                                            <OptionalControl v-show="isCampusPickerVisible" v-model="isUpdatingStep.campus" label="Campus">
+                                                <CampusPicker v-model="stepUpdate.campus" showBlankItem @isVisible="isCampusPickerVisible = $event" />
+                                            </OptionalControl>
+
+                                            <OptionalControl v-model="isUpdatingStep.note" label="Note">
+                                                <TextBox v-model="stepNote" textMode="multiline" />
+                                            </OptionalControl>
+
+                                            <AttributeValueControls v-model="stepAttributeUpdateItems" />
+                                        </template>
+                                    </template>
+                                </template>
+                            </ContentStack>
+                        </ContentSection>
+                    </ContentSectionContainer>
+
+                </RockForm>
+            </template>
+
+            <template v-else>
+                <div class="row">
+                    <div class="col-sm-9">
+                        <p>Please confirm that you want to make the following updates to <strong>{{ updatePersons.length }} {{ updatePersons.length !== 1 ? 'people' : 'person' }}</strong>:</p>
+
+                        <ul>
+                            <li v-for="(change, index) in changeSummary" :key="index">
+                                <template v-for="(segment, segmentIndex) in change" :key="segmentIndex">
+                                    <span v-if="segment.isChip" class="bulk-change-chip">{{ segment.text }}</span>
+                                    <template v-else>{{ segment.text }}</template>
+                                </template>
+                            </li>
+                        </ul>
+
+                        <div v-if="isProcessing" class="mt-3">
+                            <ProgressBar :percent="progressPercent" :progressBarType="progressBarType" showCompletionText />
+                            <p v-if="progressMessage" class="text-muted mt-2">{{ progressMessage }}</p>
+                            <NotificationBox v-if="lostConnectionWarning" :alertType="AlertType.Warning" class="mt-2">
+                                This is taking a little longer than expected, but your changes are still being applied. You can keep waiting here, or
+                                <a href="#" @click.prevent="returnToEntry">return to the form</a>. Your updates will keep processing either way.
+                            </NotificationBox>
+                        </div>
+
+                        <NotificationBox v-if="saveResultMessage" ref="saveResultMessageElement" :alertType="saveResultType">
+                            {{ saveResultMessage }}
+                            <small v-if="hasResultDetails" class="ml-2">
+                                <a href="#" @click.prevent="showResultDetails = !showResultDetails">{{ showResultDetails ? "Hide" : "Show" }}&nbsp;Details</a>
+                            </small>
+                            <TransitionVerticalCollapse>
+                                <div v-if="hasResultDetails && showResultDetails" class="bulk-result-details">
+                                    <div v-if="saveResultPersonIssues.length">
+                                        <p class="mb-1"><strong>{{ personIssuesHeader }}</strong></p>
+                                        <ul class="mb-0">
+                                            <li v-for="issue in saveResultPersonIssues" :key="issue.personId">
+                                                <a :href="`/Person/${issue.idKey}`" target="_blank" rel="noopener">{{ issue.personName }}</a>: {{ (issue.issues ?? []).join("; ") }}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div v-if="saveResultErrors.length">
+                                        <p class="mb-1"><strong>Errors</strong></p>
+                                        <ul class="mb-0">
+                                            <li v-for="(error, index) in saveResultErrors" :key="index">{{ error }}</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </TransitionVerticalCollapse>
+                        </NotificationBox>
+
+                    </div>
+
+                    <div class="col-sm-3">
+                        <div class="well">
+                            <h4 class="mt-0 bulk-records-title">Person Records to Update</h4>
+                            <ul class="list-unstyled mb-0 bulk-records-list">
+                                <li v-for="(person, index) in visiblePersons" :key="person.personAliasGuid ?? index">
+                                    {{ person.fullName ?? "Unknown Person" }}
+                                </li>
+                            </ul>
+                            <RockButton v-if="!showAllPersons && hiddenPersonCount > 0"
+                                        :btnType="BtnType.Link"
+                                        class="px-0 mt-1 bulk-records-show-all"
+                                        @click="showAllPersons = true">
+                                Show All ({{ hiddenPersonCount }} more)
+                            </RockButton>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </template>
+
+        <template v-if="showFooterActions" #footerActions>
+            <RockButton v-if="isEntryStep" :btnType="BtnType.Primary" @click="onNextClick">
+                Next
+            </RockButton>
+            <RockButton v-else-if="isComplete" :btnType="BtnType.Primary" @click="returnToEntry">
+                Back to Entry
+            </RockButton>
+            <template v-else>
+                <RockButton :btnType="BtnType.Primary" :disabled="isSaving" @click="onConfirm">
+                    <template v-if="isSaving">Starting...</template>
+                    <template v-else>Confirm</template>
+                </RockButton>
+                <RockButton :btnType="BtnType.Link" :disabled="isSaving" @click="onBack">
+                    Back
+                </RockButton>
+            </template>
+        </template>
+    </Block>
+</template>
+
+<style scoped>
+.bulk-person-image {
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+}
+
+.bulk-remove-all-icon {
+    text-decoration: inherit;
+}
+
+.bulk-result-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+    padding-top: var(--spacing-xsmall);
+}
+
+.bulk-records-title {
+    color: var(--color-interface-strong);
+    font-size: var(--font-size-regular);
+    font-weight: var(--font-weight-semibold);
+    line-height: 150%;
+}
+
+.bulk-records-list {
+    color: var(--color-interface-medium);
+}
+
+.bulk-records-show-all.btn-link {
+    color: var(--color-interface-medium);
+}
+
+/* Inline chips that wrap the dynamic entity / value names in the change summary. */
+.bulk-change-chip {
+    padding: 0 4px;
+    border-radius: var(--rounded-xsmall, 4px);
+    background-color: var(--color-interface-softer);
+    color: var(--color-interface-strong);
+    font-family: "Roboto Mono", monospace;
+    font-size: var(--font-size-regular);
+    font-weight: var(--font-weight-regular);
+    line-height: var(--font-line-height-relaxed, 28px);
+}
+</style>
+
+<script setup lang="ts">
+    import { reactive, ref, computed, watch, onBeforeUnmount } from "vue";
+    import OptionalControl from "./BulkUpdate/optionalControl.partial.obs";
+    import Block from "@Obsidian/Templates/block";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import AttributeValueControls from "./BulkUpdate/attributeValueControls.partial.obs";
+    import { AttributeUpdateItem, ChangeLine, UpdatedFields } from "./BulkUpdate/types.partial";
+    import { BulkUpdatePersonResultBag } from "@Obsidian/ViewModels/Blocks/Crm/BulkUpdate/bulkUpdatePersonResultBag";
+    import { BulkUpdateResultBag } from "@Obsidian/ViewModels/Blocks/Crm/BulkUpdate/bulkUpdateResultBag";
+    import { changeChip, changeText, collectActiveAttributeValues, formatAttributeValue, scrollNotificationIntoView, summarizeActiveAttributes, useInvokeBulkUpdateBlockAction } from "./BulkUpdate/utils.partial";
+    import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { BulkUpdateBag } from "@Obsidian/ViewModels/Blocks/Crm/BulkUpdate/bulkUpdateBag";
+    import { BulkUpdateOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/BulkUpdate/bulkUpdateOptionsBag";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import PillList from "@Obsidian/Controls/pillList.obs";
+    import Pill from "@Obsidian/Controls/pill.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import ProgressBar from "@Obsidian/Controls/progressBar.obs";
+    import { getTopic } from "@Obsidian/Utility/realTime";
+    import { TaskActivityProgressStatusBag } from "@Obsidian/ViewModels/Utility/taskActivityProgressStatusBag";
+    import { TaskActivityProgressUpdateBag } from "@Obsidian/ViewModels/Utility/taskActivityProgressUpdateBag";
+    import { BulkUpdatePersonBag } from "@Obsidian/ViewModels/Blocks/Crm/BulkUpdate/bulkUpdatePersonBag";
+    import { BulkUpdateNoteBag } from "@Obsidian/ViewModels/Blocks/Crm/BulkUpdate/bulkUpdateNoteBag";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { BulkUpdateActionSpecifier } from "@Obsidian/Enums/Crm/bulkUpdateActionSpecifier";
+    import { Gender, GenderDescription } from "@Obsidian/Enums/Crm/gender";
+    import { CommunicationType, CommunicationTypeDescription } from "@Obsidian/Enums/Communication/communicationType";
+    import { EmailPreference, EmailPreferenceDescription } from "@Obsidian/Enums/Crm/emailPreference";
+    import GradePicker from "@Obsidian/Controls/gradePicker.obs";
+    import YearPicker from "@Obsidian/Controls/yearPicker.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import { GroupMemberStatus, GroupMemberStatusDescription } from "@Obsidian/Enums/Group/groupMemberStatus";
+    import { BulkUpdateGroupBag } from "@Obsidian/ViewModels/Blocks/Crm/BulkUpdate/bulkUpdateGroupBag";
+    import { BulkUpdateTagBag } from "@Obsidian/ViewModels/Blocks/Crm/BulkUpdate/bulkUpdateTagBag";
+    import { BulkUpdateStepBag } from "@Obsidian/ViewModels/Blocks/Crm/BulkUpdate/bulkUpdateStepBag";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+
+    const config = useConfigurationValues<BulkUpdateOptionsBag>();
+    const blockAction = useInvokeBulkUpdateBlockAction();
+
+    // #region Values
+
+    /**
+     * Toggle state for every OptionalControl-wrapped field in the Individual Details section.
+     */
+    const isUpdating = reactive<UpdatedFields>({
+        title: false,
+        suffix: false,
+        gender: false,
+        maritalStatus: false,
+        grade: false,
+        graduationYear: false,
+        campus: false,
+        connectionStatus: false,
+        recordStatus: false,
+        recordSource: false,
+        communicationPreference: false,
+        isEmailActive: false,
+        emailPreference: false,
+        emailNote: false,
+        following: false,
+        reviewReason: false,
+        reviewReasonNote: false,
+        systemNote: false,
+    });
+
+    const entryFormElement = ref<InstanceType<typeof RockForm> | null>(null);
+    const validationMessageElement = ref<InstanceType<typeof NotificationBox> | null>(null);
+    const pickerMessageElement = ref<InstanceType<typeof NotificationBox> | null>(null);
+    const saveResultMessageElement = ref<InstanceType<typeof NotificationBox> | null>(null);
+    const stepNotAuthorizedMessageElement = ref<InstanceType<typeof NotificationBox> | null>(null);
+    const groupNotAuthorizedMessageElement = ref<InstanceType<typeof NotificationBox> | null>(null);
+
+    const isAddingPerson = ref(false);
+    const updatePersons = ref<BulkUpdatePersonBag[]>(config.updatePersons ?? []);
+
+    // Confirmation "Person Records to Update" well: list the first 10 people, then
+    // a "Show All" button reveals the rest and disappears.
+    const personPreviewLimit = 10;
+    const showAllPersons = ref(false);
+    const visiblePersons = computed(() => showAllPersons.value
+        ? updatePersons.value
+        : updatePersons.value.slice(0, personPreviewLimit));
+    const hiddenPersonCount = computed(() => Math.max(0, updatePersons.value.length - personPreviewLimit));
+    const pickerMessage = ref("");
+
+    const workflows = ref<Guid[]>([]);
+
+    const title = ref<ListItemBag>();
+    const suffix = ref<ListItemBag>();
+    const genderValue = ref<Gender | null>(null);
+    const maritalStatus = ref<ListItemBag>();
+    const grade = ref<ListItemBag>();
+    const graduationYear = ref<string>();
+
+    const campus = ref<ListItemBag>();
+    const isCampusPickerVisible = ref(false);
+
+    const connectionStatus = ref<ListItemBag>();
+    const recordStatus = ref<ListItemBag>();
+    const inactiveReason = ref<ListItemBag>();
+    const inactiveReasonNote = ref<string>("");
+    const recordSource = ref<ListItemBag>();
+
+    const communicationPreferenceValue = ref<CommunicationType | null>(null);
+    const isEmailActiveValue = ref<boolean | null>(true);
+
+    const emailStatusOptions: ListItemBag[] = [
+        { value: "true", text: "Active" },
+        { value: "false", text: "Inactive" },
+    ];
+
+    const emailPreferenceValue = ref<EmailPreference | null>(null);
+    const emailNote = ref<string>("");
+
+    const followingValue = ref<BulkUpdateActionSpecifier>(BulkUpdateActionSpecifier.Add);
+
+    const followingOptions: ListItemBag[] = [
+        { value: String(BulkUpdateActionSpecifier.Add), text: "Add to Following" },
+        { value: String(BulkUpdateActionSpecifier.Remove), text: "Remove Following" },
+    ];
+
+    const reviewReason = ref<ListItemBag>();
+    const reviewReasonNote = ref<string>("");
+    const systemNote = ref<string>("");
+
+    const attributeCategories = (config.attributeCategories ?? []).map(cat => ({
+        guid: cat.guid,
+        name: cat.name,
+        description: cat.description,
+        attributes: cat.attributes ?? []
+    }));
+
+    /**
+     * Key: Category GUID
+     * Value: Array of attribute update items ({ attribute: PublicAttributeBag, isActive, value }).
+     */
+    const attributeValuesByCategory = ref<Record<string, AttributeUpdateItem[]>>(
+        Object.fromEntries(
+            attributeCategories.map(cat => [
+                cat.guid,
+                cat.attributes.map(a => ({ attribute: a, isActive: false, value: "" }))
+            ])
+        )
+    );
+
+    const noteUpdate = reactive<BulkUpdateNoteBag>({
+        noteType: null,
+        noteText: "",
+        isAlert: false,
+        isPrivate: false,
+    });
+
+    const groupUpdate = reactive<BulkUpdateGroupBag>({
+        action: BulkUpdateActionSpecifier.Add,
+        group: null,
+        groupRole: null,
+        memberStatus: GroupMemberStatus.Active,
+        memberAttributes: null,
+    });
+
+    /**
+     * Tracks which group fields are being updated when action is "Update in Group".
+     */
+    const isUpdatingGroup = reactive({
+        role: false,
+        memberStatus: false,
+    });
+
+    /**
+     * Options for the Group Action radio button list.
+     */
+    const groupActionOptions: ListItemBag[] = [
+        { value: String(BulkUpdateActionSpecifier.Add), text: "Add to Group" },
+        { value: String(BulkUpdateActionSpecifier.Remove), text: "Remove from Group" },
+        { value: String(BulkUpdateActionSpecifier.Update), text: "Update in Group" },
+    ];
+
+    /**
+     * Role options for the selected group, populated by the GetGroupRoles block
+     * action when groupUpdate.group changes.
+     */
+    const groupRoleOptions = ref<ListItemBag[]>([]);
+
+    /**
+     * Options for the Group Member Status radio button list (Active, Inactive, Pending).
+     */
+    const groupMemberStatusOptions: ListItemBag[] = [
+        { value: String(GroupMemberStatus.Active), text: GroupMemberStatusDescription[GroupMemberStatus.Active] },
+        { value: String(GroupMemberStatus.Inactive), text: GroupMemberStatusDescription[GroupMemberStatus.Inactive] },
+        { value: String(GroupMemberStatus.Pending), text: GroupMemberStatusDescription[GroupMemberStatus.Pending] },
+    ];
+
+    const groupMemberAttributes = ref<Record<string, PublicAttributeBag>>({});
+    const groupMemberAttributeValues = ref<Record<string, string>>({});
+    const groupMemberAttributeUpdateItems = ref<AttributeUpdateItem[]>([]);
+
+    const tagUpdate = reactive<BulkUpdateTagBag>({
+        action: BulkUpdateActionSpecifier.Add,
+        tag: null,
+    });
+
+    /**
+     * Options for the Tag Action radio button list.
+     */
+    const tagActionOptions: ListItemBag[] = [
+        { value: String(BulkUpdateActionSpecifier.Add), text: "Add to Tag" },
+        { value: String(BulkUpdateActionSpecifier.Remove), text: "Remove from Tag" },
+    ];
+
+    const stepUpdate = reactive<BulkUpdateStepBag>({
+        action: BulkUpdateActionSpecifier.Add,
+        stepType: null,
+        stepStatus: null,
+        campus: null,
+        note: "",
+        startDate: null,
+        endDate: null,
+        stepAttributes: null,
+    });
+
+    /**
+     * Tracks which step fields are being updated when action is "Update Step".
+     */
+    const isUpdatingStep = reactive({
+        status: false,
+        startDate: false,
+        endDate: false,
+        campus: false,
+        note: false,
+    });
+
+    /**
+     * Tracks which step program is selected — UI only, not part of BulkUpdateStepBag.
+     */
+    const selectedStepProgram = ref<string | null>(null);
+
+    /**
+     * Options for the Step Action radio button list.
+     */
+    const stepActionOptions: ListItemBag[] = [
+        { value: String(BulkUpdateActionSpecifier.Add), text: "Add Step" },
+        { value: String(BulkUpdateActionSpecifier.Remove), text: "Remove Step" },
+        { value: String(BulkUpdateActionSpecifier.Update), text: "Update Step" },
+    ];
+
+    const stepAttributes = ref<Record<string, PublicAttributeBag>>({});
+    const stepAttributeValues = ref<Record<string, string>>({});
+    const stepAttributeUpdateItems = ref<AttributeUpdateItem[]>([]);
+
+    const stepNotAuthorizedMessage = ref("");
+    const groupNotAuthorizedMessage = ref("");
+
+    const isConfirming = ref(false);
+    const validationMessage = ref("");
+    const changeSummary = ref<ChangeLine[]>([]);
+    const saveBag = ref<BulkUpdateBag | null>(null);
+    const saveResultMessage = ref("");
+    const saveResultType = ref<AlertType>(AlertType.Success);
+    const isSaving = ref(false);
+    const isComplete = ref(false);
+    const isProcessing = ref(false);
+    const progressPercent = ref(0);
+    const progressMessage = ref("");
+    const progressBarType = ref<"default" | "success" | "info" | "warning" | "danger">("info");
+    const saveResultPersonIssues = ref<BulkUpdatePersonResultBag[]>([]);
+    const saveResultErrors = ref<string[]>([]);
+    const showResultDetails = ref(false);
+    const lostConnectionWarning = ref(false);
+    let realTimeConnectionId = "";
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * True when the selected Record Status is the Inactive defined value. Reveals the
+     * Inactive Reason and Inactive Reason Note controls, matching the WebForms block.
+     */
+    const isRecordStatusInactive = computed((): boolean =>
+        (recordStatus.value?.value ?? "").toLowerCase() === DefinedValue.PersonRecordStatusInactive.toLowerCase());
+
+    /**
+     * Adapter for DropDownList; underlying type is {@link Gender}.
+     */
+    const gender = computed<string>({
+        get: () => genderValue.value?.toString() ?? "",
+        set: (val) => {
+            genderValue.value = val ? Number(val) as Gender : null;
+        }
+    });
+
+    /**
+     * Adapter for DropDownList; underlying type is {@link CommunicationType}.
+     */
+    const communicationPreference = computed<string>({
+        get: () => communicationPreferenceValue.value?.toString() ?? "",
+        set: (val) => {
+            communicationPreferenceValue.value = val ? Number(val) as CommunicationType : null;
+        }
+    });
+
+    /**
+     * Adapter for DropDownList; underlying type is a tri-state boolean (true / false / null).
+     */
+    const isEmailActive = computed<string>({
+        get: () => isEmailActiveValue.value === true ? "true"
+            : isEmailActiveValue.value === false ? "false"
+                : "",
+        set: (val) => {
+            isEmailActiveValue.value = val === "true" ? true
+                : val === "false" ? false
+                    : null;
+        }
+    });
+
+    /**
+     * Adapter for DropDownList; underlying type is {@link EmailPreference}.
+     */
+    const emailPreference = computed<string>({
+        get: () => emailPreferenceValue.value?.toString() ?? "",
+        set: (val) => {
+            emailPreferenceValue.value = val ? Number(val) as EmailPreference : null;
+        }
+    });
+
+    /**
+     * Writable adapter: bridges followingValue (BulkUpdateActionSpecifier) to the
+     * string that DropDownList requires. The dropdown shows no blank item, so a
+     * toggled-on Following always carries Add or Remove (defaults to Add).
+     */
+    const following = computed<string>({
+        get: () => followingValue.value.toString(),
+        set: (val) => {
+            followingValue.value = val ? Number(val) as BulkUpdateActionSpecifier : BulkUpdateActionSpecifier.Add;
+        }
+    });
+
+    /**
+     * Writable adapter: bridges noteUpdate.noteType (ListItemBag | null) to the
+     * string value that DropDownList expects.
+     */
+    const noteTypeValue = computed<string>({
+        get: () => noteUpdate.noteType?.value ?? "",
+        set: (val) => {
+            noteUpdate.noteType = val ? { value: val } : null;
+        }
+    });
+
+    /**
+     * Writable adapter: bridges noteUpdate.noteText (string | null | undefined)
+     * to the plain string that TextBox requires.
+     */
+    const noteTextValue = computed<string>({
+        get: () => noteUpdate.noteText ?? "",
+        set: (val) => {
+            noteUpdate.noteText = val;
+        }
+    });
+
+    /**
+     * Writable adapter: bridges groupUpdate.action (BulkUpdateActionSpecifier enum number)
+     * to the string that RadioButtonList requires.
+     */
+    const groupAction = computed<string>({
+        get: () => groupUpdate.action.toString(),
+        set: (val) => {
+            groupUpdate.action = Number(val) as BulkUpdateActionSpecifier;
+        }
+    });
+
+    /**
+     * Writable adapter: bridges groupUpdate.groupRole (ListItemBag | null)
+     * to the string value that DropDownList requires.
+     */
+    const groupRole = computed<string>({
+        get: () => groupUpdate.groupRole?.value ?? "",
+        set: (val) => {
+            groupUpdate.groupRole = val ? { value: val } : null;
+        }
+    });
+
+    /**
+     * Writable adapter: bridges groupUpdate.memberStatus (GroupMemberStatus enum number)
+     * to the string that RadioButtonList requires.
+     */
+    const groupMemberStatus = computed<string>({
+        get: () => groupUpdate.memberStatus?.toString() ?? "",
+        set: (val) => {
+            groupUpdate.memberStatus = Number(val) as GroupMemberStatus;
+        }
+    });
+
+    /**
+     * Writable adapter: bridges tagUpdate.action (BulkUpdateActionSpecifier enum number)
+     * to the string that RadioButtonList requires.
+     */
+    const tagAction = computed<string>({
+        get: () => tagUpdate.action.toString(),
+        set: (val) => {
+            tagUpdate.action = Number(val) as BulkUpdateActionSpecifier;
+        }
+    });
+
+    /**
+     * Writable adapter: bridges tagUpdate.tag (ListItemBag | null) to the string
+     * value the DropDownList requires. On set, resolves the full option (with text)
+     * from the configured tag list so the change summary can show the tag name.
+     */
+    const tagValue = computed<string>({
+        get: () => tagUpdate.tag?.value ?? "",
+        set: (val) => {
+            tagUpdate.tag = val
+                ? config.tagOptions?.find(t => t.value === val) ?? { value: val }
+                : null;
+        }
+    });
+
+    /**
+     * Writable adapter: bridges stepUpdate.action (BulkUpdateActionSpecifier enum number)
+     * to the string that RadioButtonList requires.
+     */
+    const stepAction = computed<string>({
+        get: () => stepUpdate.action.toString(),
+        set: (val) => {
+            stepUpdate.action = Number(val) as BulkUpdateActionSpecifier;
+        }
+    });
+
+    /**
+     * Writable adapter: bridges selectedStepProgram (string | null)
+     * to the DropDownList. Also clears type/status when changed.
+     */
+    const stepProgram = computed<string>({
+        get: () => selectedStepProgram.value ?? "",
+        set: (val) => {
+            selectedStepProgram.value = val || null;
+        }
+    });
+
+    /**
+     * Step program items for the Step Program dropdown.
+     */
+    const stepProgramItems = computed<ListItemBag[]>(() =>
+        (config.stepProgramOptions ?? []).map(p => p.stepProgram ?? { value: "", text: "" })
+    );
+
+    /**
+     * Writable adapter: bridges stepUpdate.stepType (ListItemBag | null)
+     * to the string that DropDownList requires.
+     */
+    const stepType = computed<string>({
+        get: () => stepUpdate.stepType?.value ?? "",
+        set: (val) => {
+            stepUpdate.stepType = val ? { value: val } : null;
+        }
+    });
+
+    /**
+     * Step types filtered by the currently selected step program.
+     */
+    const stepTypeOptions = computed<ListItemBag[]>(() => {
+        if (!selectedStepProgram.value) {
+            return [];
+        }
+        return (config.stepProgramOptions ?? [])
+            .find(p => p.stepProgram?.value === selectedStepProgram.value)
+            ?.stepTypes ?? [];
+    });
+
+    /**
+     * Writable adapter: bridges stepUpdate.stepStatus (ListItemBag | null)
+     * to the string that DropDownList requires.
+     */
+    const stepStatus = computed<string>({
+        get: () => stepUpdate.stepStatus?.value ?? "",
+        set: (val) => {
+            stepUpdate.stepStatus = val ? { value: val } : null;
+        }
+    });
+
+    /**
+     * Step statuses filtered by the currently selected step program.
+     */
+    const stepStatusOptions = computed<ListItemBag[]>(() => {
+        if (!selectedStepProgram.value) {
+            return [];
+        }
+        return (config.stepProgramOptions ?? [])
+            .find(p => p.stepProgram?.value === selectedStepProgram.value)
+            ?.stepStatuses ?? [];
+    });
+
+    /**
+     * Writable adapter: bridges stepUpdate.note (string | null | undefined)
+     * to the plain string that TextBox requires.
+     */
+    const stepNote = computed<string>({
+        get: () => stepUpdate.note ?? "",
+        set: (val) => {
+            stepUpdate.note = val;
+        }
+    });
+
+    /**
+     * Header for the per-person results list. This list contains the people for whom at
+     * least one requested change could not be applied, with the specific reason on each row.
+     * Some of their other changes may have committed; if a person's only change failed,
+     * nothing was applied to them. People whose record could not be processed at all
+     * (deleted or merged, or a rolled-back batch) are NOT in this list - they appear in the
+     * summary count and the Errors section. An empty list therefore means there were no
+     * per-person change failures, not that everything succeeded.
+     */
+    const personIssuesHeader = "Some changes couldn't be applied";
+
+    /**
+     * True when there is per-person or run-level detail worth expanding under the result.
+     */
+    const hasResultDetails = computed((): boolean =>
+        saveResultPersonIssues.value.length > 0 || saveResultErrors.value.length > 0);
+
+    /**
+     * True on the entry (field selection) step, before the user has moved to the
+     * confirmation panel.
+     */
+    const isEntryStep = computed((): boolean => !isConfirming.value);
+
+    /**
+     * Whether the panel footer should show any buttons. The footer is suppressed only
+     * while the run is in flight (the progress bar owns the screen) and on the
+     * init-error screen. Otherwise the three branches drive which buttons show: Next on
+     * the entry step, Confirm / Back while awaiting confirmation, and Back to Entry once
+     * the run has completed (so a failed or partial run is recoverable instead of a
+     * dead end).
+     */
+    const showFooterActions = computed((): boolean =>
+        !config.errorMessage && !isProcessing.value);
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Validates that at least one individual has been added to the bulk
+     * update list, replacing the default "Individuals is required" message
+     * with one that tells the user what to do.
+     */
+    const validateIndividualsSelected: ValidationRuleFunction = (value): ValidationResult => {
+        if (!Array.isArray(value) || value.length === 0) {
+            return "Please add at least one individual before continuing with the bulk update process.";
+        }
+        return true;
+    };
+
+    let pickerMessageTimer: ReturnType<typeof setTimeout> | null = null;
+
+    /**
+     * Show a transient inline message under the individuals pill list.
+     */
+    function showPickerMessage(text: string): void {
+        pickerMessage.value = text;
+        scrollNotificationIntoView(pickerMessageElement);
+        if (pickerMessageTimer !== null) {
+            clearTimeout(pickerMessageTimer);
+        }
+        pickerMessageTimer = setTimeout(() => {
+            pickerMessage.value = "";
+            pickerMessageTimer = null;
+        }, 4000);
+    }
+
+    // How long the run can go without any RealTime signal before we surface a
+    // non-destructive escape hatch. A genuinely slow batch still reports between
+    // batches, so this only trips when the connection has actually gone quiet.
+    const progressWatchdogMs = 60000;
+    let progressWatchdog: ReturnType<typeof setTimeout> | null = null;
+
+    /**
+     * (Re)arms the progress watchdog. Called when the run starts and on every
+     * RealTime signal, so the timer only fires after a stretch of true silence
+     * (dropped connection, app restart). The server run is never aborted by this;
+     * if it finishes, the taskCompleted handler clears the timer and shows the result.
+     */
+    function armProgressWatchdog(): void {
+        lostConnectionWarning.value = false;
+        if (progressWatchdog !== null) {
+            clearTimeout(progressWatchdog);
+        }
+        progressWatchdog = setTimeout(() => {
+            lostConnectionWarning.value = true;
+            progressWatchdog = null;
+        }, progressWatchdogMs);
+    }
+
+    /**
+     * Stops the progress watchdog and clears any lost-connection warning.
+     */
+    function clearProgressWatchdog(): void {
+        if (progressWatchdog !== null) {
+            clearTimeout(progressWatchdog);
+            progressWatchdog = null;
+        }
+        lostConnectionWarning.value = false;
+    }
+
+    /**
+     * Returns true if at least one update action has been selected
+     * (a toggled field, attribute, note, group, tag, workflow, or step).
+     */
+    function areWeUpdatingAnything(): boolean {
+        const hasFieldUpdate = Object.values(isUpdating).some(v => v);
+
+        const hasAttributeUpdate = Object.values(attributeValuesByCategory.value)
+            .some(items => items.some(item => item.isActive));
+
+        const hasNote = !!noteUpdate.noteText?.trim();
+        const hasGroup = !!groupUpdate.group;
+        const hasTag = !!tagUpdate.tag;
+        const hasWorkflow = workflows.value.length > 0;
+        const hasStep = !!stepUpdate.stepType;
+
+        return hasFieldUpdate || hasAttributeUpdate || hasNote || hasGroup || hasTag || hasWorkflow || hasStep;
+    }
+
+    /**
+     * Builds the BulkUpdateBag payload from the current form state.
+     */
+    function buildSaveBag(): BulkUpdateBag {
+        const bag: BulkUpdateBag = {
+            updatePersons: updatePersons.value,
+        };
+
+        // Serialize toggle state so the server knows which fields were intentionally included.
+        bag.updatedFields = { ...isUpdating };
+
+        // Workflows — include if any are selected.
+        if (workflows.value.length > 0) {
+            bag.postUpdateWorkflowTypeGuids = workflows.value;
+        }
+
+        // Individual detail fields
+        if (isUpdating.title) {
+            bag.titleValueGuid = title.value?.value ?? null;
+        }
+        if (isUpdating.suffix) {
+            bag.suffixValueGuid = suffix.value?.value ?? null;
+        }
+        if (isUpdating.gender) {
+            bag.gender = genderValue.value;
+        }
+        if (isUpdating.maritalStatus) {
+            bag.maritalStatusValueGuid = maritalStatus.value?.value ?? null;
+        }
+        if (isUpdating.grade) {
+            bag.gradeValueGuid = grade.value?.value ?? null;
+        }
+        if (isUpdating.graduationYear) {
+            bag.graduationYear = graduationYear.value ? Number(graduationYear.value) : null;
+        }
+        if (isUpdating.campus) {
+            bag.campusGuid = campus.value?.value ?? null;
+        }
+        if (isUpdating.connectionStatus) {
+            bag.connectionStatusValueGuid = connectionStatus.value?.value ?? null;
+        }
+        if (isUpdating.recordStatus) {
+            bag.recordStatusValueGuid = recordStatus.value?.value ?? null;
+
+            // Inactive Reason and its note only apply when the new status is Inactive.
+            if (isRecordStatusInactive.value) {
+                bag.inactiveReasonValueGuid = inactiveReason.value?.value ?? null;
+                bag.inactiveReasonNote = inactiveReasonNote.value || null;
+            }
+        }
+        if (isUpdating.recordSource) {
+            bag.recordSourceValueGuid = recordSource.value?.value ?? null;
+        }
+        if (isUpdating.communicationPreference) {
+            bag.communicationPreference = communicationPreferenceValue.value;
+        }
+        if (isUpdating.isEmailActive) {
+            bag.isEmailActive = isEmailActiveValue.value;
+        }
+        if (isUpdating.emailPreference) {
+            bag.emailPreference = emailPreferenceValue.value;
+        }
+        if (isUpdating.emailNote) {
+            bag.emailNote = emailNote.value;
+        }
+        if (isUpdating.following) {
+            bag.following = followingValue.value;
+        }
+        if (isUpdating.reviewReason) {
+            bag.reviewReasonValueGuid = reviewReason.value?.value ?? null;
+        }
+        if (isUpdating.reviewReasonNote) {
+            bag.reviewReasonNote = reviewReasonNote.value;
+        }
+        if (isUpdating.systemNote) {
+            bag.systemNote = systemNote.value;
+        }
+
+        // Person attributes — collect active items across all categories.
+        const personAttributes: Record<string, string> = {};
+        let hasAttributes = false;
+        for (const categoryGuid of Object.keys(attributeValuesByCategory.value)) {
+            for (const item of attributeValuesByCategory.value[categoryGuid]) {
+                if (item.isActive && item.attribute.key) {
+                    personAttributes[item.attribute.key] = item.value;
+                    hasAttributes = true;
+                }
+            }
+        }
+        if (hasAttributes) {
+            bag.personAttributes = personAttributes;
+        }
+
+        // Note — include if note text has content.
+        if (noteUpdate.noteText?.trim()) {
+            bag.noteUpdate = { ...noteUpdate };
+        }
+
+        // Group — include if a group is selected.
+        if (groupUpdate.group) {
+            const groupBag: BulkUpdateGroupBag = {
+                action: groupUpdate.action,
+                group: groupUpdate.group,
+                groupRole: groupUpdate.groupRole,
+                memberStatus: groupUpdate.memberStatus,
+                memberAttributes: groupUpdate.memberAttributes,
+            };
+
+            // For Remove, the server only needs the action and group reference.
+            if (groupUpdate.action === BulkUpdateActionSpecifier.Remove) {
+                groupBag.groupRole = null;
+                groupBag.memberStatus = null;
+                groupBag.memberAttributes = null;
+            }
+            else {
+                groupBag.memberAttributes = collectActiveAttributeValues(
+                    groupUpdate.action,
+                    groupMemberAttributeValues.value,
+                    groupMemberAttributeUpdateItems.value
+                );
+            }
+
+            // For Update action, include which fields were toggled on.
+            if (groupUpdate.action === BulkUpdateActionSpecifier.Update) {
+                groupBag.updatedFields = { ...isUpdatingGroup };
+            }
+
+            bag.groupUpdate = groupBag;
+        }
+
+        // Tag — include if a tag is selected.
+        if (tagUpdate.tag) {
+            bag.tagUpdate = { ...tagUpdate };
+        }
+
+        // Step — include if a step type is selected.
+        if (stepUpdate.stepType) {
+            const stepBag: BulkUpdateStepBag = {
+                action: stepUpdate.action,
+                stepType: stepUpdate.stepType,
+                stepStatus: stepUpdate.stepStatus,
+                campus: stepUpdate.campus,
+                note: stepUpdate.note,
+                startDate: stepUpdate.startDate,
+                endDate: stepUpdate.endDate,
+                stepAttributes: stepUpdate.stepAttributes,
+            };
+
+            // For Remove, the server only needs the action and step type.
+            if (stepUpdate.action === BulkUpdateActionSpecifier.Remove) {
+                stepBag.stepStatus = null;
+                stepBag.campus = null;
+                stepBag.note = null;
+                stepBag.startDate = null;
+                stepBag.endDate = null;
+                stepBag.stepAttributes = null;
+            }
+            else {
+                stepBag.stepAttributes = collectActiveAttributeValues(
+                    stepUpdate.action,
+                    stepAttributeValues.value,
+                    stepAttributeUpdateItems.value
+                );
+            }
+
+            // For Update action, include which fields were toggled on.
+            if (stepUpdate.action === BulkUpdateActionSpecifier.Update) {
+                stepBag.updatedFields = { ...isUpdatingStep };
+            }
+
+            bag.stepUpdate = stepBag;
+        }
+
+        return bag;
+    }
+
+    /**
+     * Builds a human-readable summary of all pending changes
+     * for display on the confirmation screen.
+     */
+    function buildChangeSummary(): ChangeLine[] {
+        const changes: ChangeLine[] = [];
+
+        // Field updates render as "Update {label} to value of {value}." or, when the
+        // value is blank, "Clear {label}." with the label and value shown as chips.
+        const fieldChange = (label: string, value: string | null | undefined): ChangeLine =>
+            value
+                ? [changeText("Update "), changeChip(label), changeText(" to value of "), changeChip(value), changeText(".")]
+                : [changeText("Clear "), changeChip(label), changeText(".")];
+
+        if (isUpdating.title) {
+            changes.push(fieldChange("Title", title.value?.text));
+        }
+        if (isUpdating.suffix) {
+            changes.push(fieldChange("Suffix", suffix.value?.text));
+        }
+        if (isUpdating.gender) {
+            changes.push(fieldChange("Gender", genderValue.value != null ? GenderDescription[genderValue.value] : null));
+        }
+        if (isUpdating.maritalStatus) {
+            changes.push(fieldChange("Marital Status", maritalStatus.value?.text));
+        }
+        if (isUpdating.grade) {
+            changes.push(fieldChange("Grade", grade.value?.text));
+        }
+        if (isUpdating.graduationYear) {
+            changes.push(fieldChange("Graduation Year", graduationYear.value));
+        }
+        if (isUpdating.campus) {
+            changes.push(fieldChange("Campus", campus.value?.text));
+        }
+        if (isUpdating.connectionStatus) {
+            changes.push(fieldChange("Connection Status", connectionStatus.value?.text));
+        }
+        if (isUpdating.recordStatus) {
+            changes.push(fieldChange("Record Status", recordStatus.value?.text));
+            if (isRecordStatusInactive.value) {
+                changes.push(fieldChange("Inactive Reason", inactiveReason.value?.text));
+                if (inactiveReasonNote.value) {
+                    changes.push(fieldChange("Inactive Reason Note", inactiveReasonNote.value));
+                }
+            }
+        }
+        if (isUpdating.recordSource) {
+            changes.push(fieldChange("Record Source", recordSource.value?.text));
+        }
+        if (isUpdating.communicationPreference) {
+            changes.push(fieldChange("Communication Preference", communicationPreferenceValue.value != null ? CommunicationTypeDescription[communicationPreferenceValue.value] : null));
+        }
+        if (isUpdating.isEmailActive) {
+            const emailStatusLabel = isEmailActiveValue.value === false ? "Inactive" : "Active";
+            changes.push(fieldChange("Email Status", emailStatusLabel));
+        }
+        if (isUpdating.emailPreference) {
+            changes.push(fieldChange("Email Preference", emailPreferenceValue.value != null ? EmailPreferenceDescription[emailPreferenceValue.value] : null));
+        }
+        if (isUpdating.emailNote) {
+            changes.push(fieldChange("Email Note", emailNote.value));
+        }
+        if (isUpdating.following) {
+            changes.push([changeText(followingValue.value === BulkUpdateActionSpecifier.Remove
+                ? "Remove from Following."
+                : "Add to Following.")]);
+        }
+        if (isUpdating.reviewReason) {
+            changes.push(fieldChange("Review Reason", reviewReason.value?.text));
+        }
+        if (isUpdating.reviewReasonNote) {
+            changes.push(fieldChange("Review Reason Note", reviewReasonNote.value));
+        }
+        if (isUpdating.systemNote) {
+            changes.push(fieldChange("System Note", systemNote.value));
+        }
+
+        // Person attributes.
+        for (const categoryGuid of Object.keys(attributeValuesByCategory.value)) {
+            for (const item of attributeValuesByCategory.value[categoryGuid]) {
+                if (item.isActive) {
+                    changes.push(fieldChange(item.attribute.name ?? "Attribute", formatAttributeValue(item.attribute, item.value)));
+                }
+            }
+        }
+
+        // Note.
+        if (noteUpdate.noteText?.trim()) {
+            changes.push([changeText("Add the note "), changeChip(noteUpdate.noteText.trim()), changeText(".")]);
+        }
+
+        // Group.
+        if (groupUpdate.group) {
+            const groupName = groupUpdate.group.text ?? "the selected";
+            const groupVerb = groupUpdate.action === BulkUpdateActionSpecifier.Add ? "Add to "
+                : groupUpdate.action === BulkUpdateActionSpecifier.Remove ? "Remove from "
+                    : "Update membership in ";
+            changes.push([changeText(groupVerb), changeChip(groupName), changeText(" group.")]);
+
+            changes.push(...summarizeActiveAttributes(
+                groupUpdate.action,
+                groupMemberAttributeValues.value,
+                groupMemberAttributes.value,
+                groupMemberAttributeUpdateItems.value,
+                "Group Member"
+            ));
+        }
+
+        // Tag.
+        if (tagUpdate.tag) {
+            const tagLabel = tagUpdate.tag.text ?? tagUpdate.tag.value ?? "";
+            changes.push([changeText(tagUpdate.action === BulkUpdateActionSpecifier.Add ? "Add to " : "Remove from "), changeChip(tagLabel), changeText(" tag.")]);
+        }
+
+        // Workflows.
+        for (const wfGuid of workflows.value) {
+            const label = config.workflowTypeOptions?.find(o => o.value === wfGuid)?.text ?? wfGuid;
+            changes.push([changeText("Run "), changeChip(label), changeText(" workflow.")]);
+        }
+
+        // Step.
+        if (stepUpdate.stepType) {
+            const stepLabel = stepTypeOptions.value.find(o => o.value === stepUpdate.stepType?.value)?.text ?? stepUpdate.stepType.value ?? "";
+            if (stepUpdate.action === BulkUpdateActionSpecifier.Add) {
+                changes.push([changeText("Add a "), changeChip(stepLabel), changeText(" step.")]);
+            }
+            else if (stepUpdate.action === BulkUpdateActionSpecifier.Remove) {
+                changes.push([changeText("Remove "), changeChip(stepLabel), changeText(" steps.")]);
+            }
+            else {
+                changes.push([changeText("Update "), changeChip(stepLabel), changeText(" steps.")]);
+            }
+
+            changes.push(...summarizeActiveAttributes(
+                stepUpdate.action,
+                stepAttributeValues.value,
+                stepAttributes.value,
+                stepAttributeUpdateItems.value,
+                "Step Attribute"
+            ));
+        }
+
+        return changes;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when the remove button is clicked on a person pill.
+     *
+     * @param _person The person to be removed.
+     * @param index The index of the person in the list.
+     */
+    function onRemovePerson(_person: BulkUpdatePersonBag, index: number): void {
+        const remaining = [...updatePersons.value];
+        remaining.splice(index, 1);
+        updatePersons.value = remaining;
+    }
+
+    /**
+     * Called when the remove all button is clicked. Prompts for confirmation
+     * before clearing the entire list.
+     */
+    async function onRemoveAllPersons(): Promise<void> {
+        if (await confirm("Are you sure you want to remove all individuals from this list?")) {
+            updatePersons.value = [];
+        }
+    }
+
+    /**
+     * Called when a person is selected from the person picker. The picker's
+     * modelValue carries the person's primary alias guid in `value`.
+     */
+    async function onPersonSelected(value: ListItemBag | undefined): Promise<void> {
+        if (!value?.value) {
+            return;
+        }
+
+        const personAliasGuid = value.value;
+
+        // Pre-check duplicate to skip the round-trip and tell the user.
+        const existing = updatePersons.value.find(p => p.personAliasGuid === personAliasGuid);
+        if (existing) {
+            showPickerMessage(`${existing.fullName ?? "That person"} is already in the list.`);
+            return;
+        }
+
+        // Fetch additional person info from the server (name, photo) so we can
+        // render the pill.
+        const result = await blockAction.getUpdatePerson(personAliasGuid);
+
+        if (result.isSuccess && result.data) {
+            // Re-check in case a concurrent fetch landed first.
+            if (!updatePersons.value.some(p => p.personAliasGuid === result.data?.personAliasGuid)) {
+                updatePersons.value = [...updatePersons.value, result.data];
+            }
+        }
+    }
+
+    /**
+     * Triggers the entry form's validation and submission. The Next button lives in the
+     * panel footer (outside the form), so it asks the form to submit rather than relying
+     * on a native submit button.
+     */
+    function onNextClick(): void {
+        entryFormElement.value?.submitForm();
+    }
+
+    /**
+     * Called by RockForm after field-level validation passes.
+     * Performs cross-field validation, builds the save bag and change summary,
+     * then transitions to the confirmation panel.
+     */
+    async function onNext(): Promise<void> {
+        if (!areWeUpdatingAnything()) {
+            validationMessage.value = "You have not selected anything to update.";
+            scrollNotificationIntoView(validationMessageElement);
+            return;
+        }
+
+        validationMessage.value = "";
+        saveBag.value = buildSaveBag();
+        changeSummary.value = buildChangeSummary();
+        saveResultMessage.value = "";
+
+        isComplete.value = false;
+        isProcessing.value = false;
+        isConfirming.value = true;
+    }
+
+    /**
+     * Returns to the entry form from the confirmation panel.
+     */
+    function onBack(): void {
+        isConfirming.value = false;
+    }
+
+    /**
+     * Returns to the entry form after a run has finished (or while one appears stuck),
+     * resetting the terminal-state flags so a failed, partial, or stalled run is
+     * recoverable rather than a dead end. The form selections are preserved; the stale
+     * result is cleared on the next confirmation.
+     */
+    function returnToEntry(): void {
+        clearProgressWatchdog();
+        isProcessing.value = false;
+        isComplete.value = false;
+        isConfirming.value = false;
+    }
+
+    /**
+     * Subscribes to the TaskActivityProgress RealTime topic. Called once on the
+     * first Confirm; the connection is reused for any subsequent retries.
+     */
+    async function startRealTime(): Promise<void> {
+        if (realTimeConnectionId) {
+            return;
+        }
+
+        const topic = await getTopic("Rock.RealTime.Topics.TaskActivityProgressTopic");
+
+        topic.on("taskStarted", onTaskStarted);
+        topic.on("updateTaskProgress", onTaskProgress);
+        topic.on("taskCompleted", onTaskCompleted);
+
+        topic.onReconnected(() => {
+            realTimeConnectionId = topic.connectionId ?? "";
+        });
+
+        realTimeConnectionId = topic.connectionId ?? "";
+    }
+
+    /**
+     * Handler for the initial taskStarted event. Resets the progress UI.
+     */
+    function onTaskStarted(bag: TaskActivityProgressStatusBag): void {
+        armProgressWatchdog();
+        progressPercent.value = 0;
+        progressMessage.value = bag.message ?? "Starting...";
+        progressBarType.value = "default";
+    }
+
+    /**
+     * Handler for streaming progress updates from the server.
+     */
+    function onTaskProgress(bag: TaskActivityProgressUpdateBag): void {
+        armProgressWatchdog();
+        progressPercent.value = bag.completionPercentage ?? 0;
+        if (bag.message) {
+            progressMessage.value = bag.message;
+        }
+    }
+
+    /**
+     * Handler for the final taskCompleted event. Transitions the UI into its
+     * terminal state: shows the success/warning/error message and hides the
+     * action buttons via {@link isComplete}.
+     */
+    function onTaskCompleted(bag: TaskActivityProgressStatusBag): void {
+        clearProgressWatchdog();
+        progressPercent.value = 100;
+        isProcessing.value = false;
+        isComplete.value = true;
+
+        const result = bag.data as BulkUpdateResultBag | undefined;
+
+        if (!result) {
+            // The processor never produced a structured result (a hard failure before or
+            // around the run); fall back to the topic's own error list.
+            saveResultType.value = AlertType.Danger;
+            progressBarType.value = "danger";
+            saveResultMessage.value = bag.message ?? "The bulk update failed.";
+            saveResultPersonIssues.value = [];
+            saveResultErrors.value = bag.errors ?? [];
+            scrollNotificationIntoView(saveResultMessageElement);
+            return;
+        }
+
+        saveResultMessage.value = bag.message ?? "Bulk update completed.";
+        saveResultPersonIssues.value = result.personResults ?? [];
+        saveResultErrors.value = result.errors ?? [];
+
+        const hasProblems = result.issuesCount > 0 || result.failedCount > 0 || saveResultErrors.value.length > 0;
+        const nothingSucceeded = result.successCount === 0 && result.totalCount > 0;
+        const nothingToUpdate = result.totalCount === 0;
+
+        if (nothingToUpdate) {
+            // No individuals resolved (every selected record was deleted or merged after
+            // selection), so nothing ran. Treat as a warning, not a green success.
+            saveResultType.value = AlertType.Warning;
+            progressBarType.value = "warning";
+        }
+        else if (hasProblems && nothingSucceeded) {
+            // Every person failed.
+            saveResultType.value = AlertType.Danger;
+            progressBarType.value = "danger";
+        }
+        else if (hasProblems) {
+            // Some succeeded; some had issues or could not be updated.
+            saveResultType.value = AlertType.Warning;
+            progressBarType.value = "warning";
+        }
+        else {
+            saveResultType.value = AlertType.Success;
+            progressBarType.value = "success";
+        }
+
+        scrollNotificationIntoView(saveResultMessageElement);
+    }
+
+    /**
+     * Kicks off the server-side processor. Returns as soon as the server has
+     * accepted the request; live progress and the final result are delivered
+     * by the RealTime topic handlers above.
+     */
+    async function onConfirm(): Promise<void> {
+        if (isSaving.value || isProcessing.value || !saveBag.value) {
+            return;
+        }
+
+        isSaving.value = true;
+        saveResultMessage.value = "";
+        saveResultPersonIssues.value = [];
+        saveResultErrors.value = [];
+        showResultDetails.value = false;
+        progressPercent.value = 0;
+        progressMessage.value = "";
+        progressBarType.value = "info";
+
+        try {
+            await startRealTime();
+
+            const result = await blockAction.save(saveBag.value!, realTimeConnectionId);
+
+            if (result.isSuccess) {
+                isProcessing.value = true;
+                armProgressWatchdog();
+            }
+            else {
+                saveResultMessage.value = result.errorMessage ?? "An unexpected error occurred while starting the bulk update.";
+                saveResultType.value = AlertType.Danger;
+                scrollNotificationIntoView(saveResultMessageElement);
+            }
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    /**
+     * When the grade toggle changes, sync the graduation year toggle to match.
+     */
+    watch(() => isUpdating.grade, (isActive) => {
+        isUpdating.graduationYear = isActive;
+    });
+
+    /*
+        5/27/2026 - MSE
+
+        Tracks the value the grade watcher last auto-computed for graduation
+        year. The watcher only overwrites or clears graduationYear when its
+        current value still matches this; a user-typed override breaks the
+        link, so subsequent grade changes (including clearing the picker)
+        leave the field alone.
+    */
+    let lastAutoComputedYear: string | null = null;
+
+    /**
+     * When the grade value changes, ask the server for the projected
+     * graduation year. The server applies the grade's offset to the system's
+     * current graduation year. Only overwrites graduationYear when the field
+     * still holds the previous auto-computed value, preserving manual entry.
+     */
+    watch(grade, async (newGrade) => {
+        if (!newGrade?.value || !isUpdating.grade) {
+            if (graduationYear.value === lastAutoComputedYear) {
+                graduationYear.value = "";
+            }
+            lastAutoComputedYear = null;
+            return;
+        }
+
+        const requestedGuid = newGrade.value;
+
+        const result = await blockAction.getGraduationYearFromGrade(requestedGuid);
+
+        if (grade.value?.value !== requestedGuid || !isUpdating.grade) {
+            return;
+        }
+
+        if (result.isSuccess && result.data != null) {
+            const newYear = String(result.data);
+            if (!graduationYear.value || graduationYear.value === lastAutoComputedYear) {
+                graduationYear.value = newYear;
+                lastAutoComputedYear = newYear;
+            }
+        }
+    });
+
+    /**
+     * When the selected group changes, ask the server for the group's roles
+     * (via GetGroupRoles) and its member attributes. Also clears any previously
+     * selected role and stale attribute state.
+     */
+    watch(() => groupUpdate.group, async (group) => {
+        groupRoleOptions.value = [];
+        groupUpdate.groupRole = null;
+        groupMemberAttributes.value = {};
+        groupMemberAttributeValues.value = {};
+        groupMemberAttributeUpdateItems.value = [];
+        groupNotAuthorizedMessage.value = "";
+
+        const groupGuid = group?.value;
+        if (!groupGuid) {
+            return;
+        }
+
+        const rolesResult = await blockAction.getGroupRoles(groupGuid);
+
+        // Skip stale responses if the user has changed the group since this request was issued.
+        if (groupUpdate.group?.value !== groupGuid) {
+            return;
+        }
+
+        if (rolesResult.isSuccess && rolesResult.data) {
+            groupRoleOptions.value = rolesResult.data.roles ?? [];
+        }
+        else if (rolesResult.statusCode === 403) {
+            groupNotAuthorizedMessage.value = "You are not authorized to update members for the selected group.";
+            scrollNotificationIntoView(groupNotAuthorizedMessageElement);
+            return;
+        }
+
+        const attrResult = await blockAction.getGroupMemberAttributes(groupGuid);
+
+        // Skip stale responses if the user has changed the group since this request was issued.
+        if (groupUpdate.group?.value !== groupGuid) {
+            return;
+        }
+
+        if (attrResult.isSuccess && attrResult.data) {
+            const attrDict: Record<string, PublicAttributeBag> = {};
+            attrResult.data.forEach(a => {
+                if (a.key) {
+                    attrDict[a.key] = a;
+                }
+            });
+
+            groupMemberAttributes.value = attrDict;
+            groupMemberAttributeValues.value = {};
+            groupMemberAttributeUpdateItems.value = attrResult.data.map(a => ({
+                attribute: a,
+                isActive: false,
+                value: ""
+            }));
+        }
+    });
+
+    /**
+     * Clear group sub-fields when the group action changes, preventing stale
+     * data or optional toggles from carrying over between actions.
+     */
+    watch(() => groupUpdate.action, () => {
+        groupUpdate.groupRole = null;
+        groupUpdate.memberStatus = GroupMemberStatus.Active;
+        isUpdatingGroup.role = false;
+        isUpdatingGroup.memberStatus = false;
+    });
+
+    /**
+     * When the step program changes, clear all step-specific selections and
+     * collapse the optional update toggles.
+     */
+    watch(selectedStepProgram, () => {
+        stepUpdate.stepType = null;
+        stepUpdate.stepStatus = null;
+        stepUpdate.startDate = null;
+        stepUpdate.endDate = null;
+        stepUpdate.campus = null;
+        stepUpdate.note = "";
+        isUpdatingStep.status = false;
+        isUpdatingStep.startDate = false;
+        isUpdatingStep.endDate = false;
+        isUpdatingStep.campus = false;
+        isUpdatingStep.note = false;
+    });
+
+    /**
+     * Clear step sub-fields when the step action changes, preventing stale
+     * data or optional toggles from carrying over between actions.
+     */
+    watch(() => stepUpdate.action, () => {
+        stepUpdate.stepStatus = null;
+        stepUpdate.startDate = null;
+        stepUpdate.endDate = null;
+        stepUpdate.campus = null;
+        stepUpdate.note = "";
+        isUpdatingStep.status = false;
+        isUpdatingStep.startDate = false;
+        isUpdatingStep.endDate = false;
+        isUpdatingStep.campus = false;
+        isUpdatingStep.note = false;
+    });
+
+    /**
+     * When the step type changes, ask the server for the attributes associated
+     * with the step type.
+     */
+    watch(() => stepUpdate.stepType, async (stepType) => {
+        stepAttributes.value = {};
+        stepAttributeValues.value = {};
+        stepAttributeUpdateItems.value = [];
+        stepNotAuthorizedMessage.value = "";
+
+        const typeGuid = stepType?.value;
+        if (!typeGuid) {
+            return;
+        }
+
+        const result = await blockAction.getStepAttributes(typeGuid);
+
+        // Skip stale responses if the user has changed the step type since this request was issued.
+        if (stepUpdate.stepType?.value !== typeGuid) {
+            return;
+        }
+
+        if (result.isSuccess && result.data) {
+            const attrDict: Record<string, PublicAttributeBag> = {};
+            result.data.forEach(a => {
+                if (a.key) {
+                    attrDict[a.key] = a;
+                }
+            });
+            stepAttributes.value = attrDict;
+            stepAttributeUpdateItems.value = result.data.map(a => ({
+                attribute: a,
+                isActive: false,
+                value: ""
+            }));
+        }
+        else if (result.statusCode === 403) {
+            stepNotAuthorizedMessage.value = "You are not authorized to update steps for the selected step type.";
+            scrollNotificationIntoView(stepNotAuthorizedMessageElement);
+        }
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onBeforeUnmount(() => {
+        if (pickerMessageTimer !== null) {
+            clearTimeout(pickerMessageTimer);
+            pickerMessageTimer = null;
+        }
+        clearProgressWatchdog();
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

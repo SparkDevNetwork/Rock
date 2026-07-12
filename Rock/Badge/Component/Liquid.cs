@@ -38,7 +38,9 @@ namespace Rock.Badge.Component
         Description = "The text (or HTML) to display as a badge",
         EditorMode = CodeEditorMode.Lava )]
 
-    [BooleanField( "Enable Debug", "Outputs the object graph to help create your Lava syntax.", false )]
+    [BooleanField( "Enable Debug",
+        Description = "Outputs the object graph to help create your Lava syntax.",
+        DefaultBooleanValue = false )]
 
     [Rock.SystemGuid.EntityTypeGuid( "95912004-62B5-4460-951F-D752427D44FE")]
     public class Liquid : BadgeComponent

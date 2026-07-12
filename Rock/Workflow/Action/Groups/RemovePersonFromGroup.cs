@@ -36,10 +36,17 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Group Member Remove from Specified Group" )]
 
-    [WorkflowAttribute( "Person", "Workflow attribute that contains the person to remove from the group.", true, "", "", 0, null, 
-        new string[] { "Rock.Field.Types.PersonFieldType" })]
+    [WorkflowAttribute( "Person",
+        Description = "Workflow attribute that contains the person to remove from the group.",
+        IsRequired = true,
+        Order = 0, 
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" })]
 
-    [Rock.Attribute.GroupAndRoleFieldAttribute( "Group and Role", "Group/Role to use for the removal. Leave role blank to remove them no matter what their role is.", "Group", true, key: "GroupAndRole" )]
+    [Rock.Attribute.GroupAndRoleFieldAttribute( "Group and Role",
+        Description = "Group/Role to use for the removal. Leave role blank to remove them no matter what their role is.",
+        GroupAndRolePickerLabel = "Group",
+        IsRequired = true,
+        Key = "GroupAndRole" )]
     [Rock.SystemGuid.EntityTypeGuid( "E0305041-5F3B-42FD-8E1D-D2BC3224D50E")]
     public class RemovePersonFromGroup : ActionComponent
     {

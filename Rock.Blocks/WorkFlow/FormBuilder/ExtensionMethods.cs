@@ -157,6 +157,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             {
                 Enabled = emailSettings.Enabled,
                 RecipientAttributeGuid = emailSettings.RecipientAttributeGuid,
+                Recipient = ( FormConfirmationEmailRecipientType ) ( int ) emailSettings.Recipient,
                 Source = ToViewModel( emailSettings.Source, rockContext )
             };
         }
@@ -179,6 +180,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
                 Enabled = viewModel.Enabled,
                 Destination = Rock.Workflow.FormBuilder.FormConfirmationEmailDestination.Custom,
                 RecipientAttributeGuid = viewModel.RecipientAttributeGuid,
+                Recipient = ( Rock.Workflow.FormBuilder.FormConfirmationEmailRecipientType ) ( int ) viewModel.Recipient,
                 Source = FromViewModel( viewModel.Source, rockContext )
             };
         }
@@ -255,6 +257,66 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
                 EmailAddress = viewModel.EmailAddress,
                 RecipientAliasId = recipientAliasId,
                 Source = FromViewModel( viewModel.Source, rockContext )
+            };
+        }
+
+        /// <summary>
+        /// Creates a view model representation of a
+        /// <see cref="Rock.Workflow.FormBuilder.FormConnectionRequestsSettings"/> object.
+        /// </summary>
+        /// <param name="settings">The runtime settings to be represented as a view model.</param>
+        /// <returns>The view model representation, or <c>null</c> when <paramref name="settings"/> is null.</returns>
+        internal static FormConnectionRequestsViewModel ToViewModel( this Rock.Workflow.FormBuilder.FormConnectionRequestsSettings settings )
+        {
+            if ( settings == null )
+            {
+                return null;
+            }
+
+            return new FormConnectionRequestsViewModel
+            {
+                Enabled = settings.Enabled,
+                ConnectionTypeGuid = settings.ConnectionTypeGuid,
+                ConnectionOpportunityGuid = settings.ConnectionOpportunityGuid,
+                ConnectionStatusGuid = settings.ConnectionStatusGuid,
+                ConnectionSourceValueGuid = settings.ConnectionSourceValueGuid,
+                AttributeMappings = ( settings.AttributeMappings ?? new List<Rock.Workflow.FormBuilder.FormFieldAttributeMappingSettings>() )
+                    .Select( m => new FormFieldAttributeMappingViewModel
+                    {
+                        FormAttributeGuid = m.FormAttributeGuid,
+                        TargetAttributeGuid = m.TargetAttributeGuid
+                    } )
+                    .ToList()
+            };
+        }
+
+        /// <summary>
+        /// Creates a <see cref="Rock.Workflow.FormBuilder.FormConnectionRequestsSettings"/>
+        /// object from its view model representation.
+        /// </summary>
+        /// <param name="viewModel">The view model that represents the object.</param>
+        /// <returns>The runtime settings, or <c>null</c> when <paramref name="viewModel"/> is null.</returns>
+        internal static Rock.Workflow.FormBuilder.FormConnectionRequestsSettings FromViewModel( this FormConnectionRequestsViewModel viewModel )
+        {
+            if ( viewModel == null )
+            {
+                return null;
+            }
+
+            return new Rock.Workflow.FormBuilder.FormConnectionRequestsSettings
+            {
+                Enabled = viewModel.Enabled,
+                ConnectionTypeGuid = viewModel.ConnectionTypeGuid,
+                ConnectionOpportunityGuid = viewModel.ConnectionOpportunityGuid,
+                ConnectionStatusGuid = viewModel.ConnectionStatusGuid,
+                ConnectionSourceValueGuid = viewModel.ConnectionSourceValueGuid,
+                AttributeMappings = ( viewModel.AttributeMappings ?? new List<FormFieldAttributeMappingViewModel>() )
+                    .Select( m => new Rock.Workflow.FormBuilder.FormFieldAttributeMappingSettings
+                    {
+                        FormAttributeGuid = m.FormAttributeGuid,
+                        TargetAttributeGuid = m.TargetAttributeGuid
+                    } )
+                    .ToList()
             };
         }
 

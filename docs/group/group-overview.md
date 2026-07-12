@@ -1,6 +1,6 @@
 ---
 title: Groups Domain Overview
-last_updated: 2026-05-01
+last_updated: 2026-05-26
 related_files:
   - Rock/Model/Group/Group/Group.cs
   - Rock/Model/Group/Group/Group.Logic.cs
@@ -118,7 +118,7 @@ The full set of entities under `Rock/Model/Group/`:
 | `GroupDemographicType` / `GroupDemographicValue` | Demographic trait template + value. |
 | `PeerNetwork` | Inferred peer relationships from shared membership. |
 
-Group key columns ([Rock/Model/Group/Group/Group.cs](../../Rock/Model/Group/Group/Group.cs)): `GroupTypeId`, `ParentGroupId`, `CampusId`, `ScheduleId`, `IsActive`, `InactiveDateTime`, `IsArchived`, `ArchivedDateTime`, `ArchivedByPersonAliasId`, `IsSystem`, `Order`, `GroupCapacity`, plus chat and scheduling override flags.
+Group key columns ([Rock/Model/Group/Group/Group.cs](../../Rock/Model/Group/Group/Group.cs)): `GroupTypeId`, `ParentGroupId`, `CampusId`, `ScheduleId`, `IsActive`, `InactiveDateTime`, `IsArchived`, `ArchivedDateTime`, `ArchivedByPersonAliasId`, `IsSystem`, `Order`, `GroupCapacity`, `PhotoId`, plus chat and scheduling override flags. `PhotoId` ([Group.cs:190](../../Rock/Model/Group/Group/Group.cs)) is a nullable FK to `BinaryFile` (no cascade per the configuration at [Group.cs:960](../../Rock/Model/Group/Group/Group.cs)) mirroring `Person.PhotoId`; added in EF migration [Rock.Migrations/Migrations/202605261726398_AddGroupPhotoId.cs](../../Rock.Migrations/Migrations/202605261726398_AddGroupPhotoId.cs).
 
 The Z.EntityFramework.Plus global query filter is registered in `GroupConfiguration` ([Group.cs:938](../../Rock/Model/Group/Group/Group.cs)) and excludes `IsArchived = true` from every default query. The filter does not propagate through navigation properties: `someGroup.ParentGroup` returns the parent regardless of its archive state.
 

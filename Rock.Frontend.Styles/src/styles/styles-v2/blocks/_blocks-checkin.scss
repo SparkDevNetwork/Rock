@@ -5,8 +5,357 @@
 
 // =============================================================
 // Table of Content
+//  + Check-in Configuration List - styles for the check-in configuration list block.
+//  + Check-in Areas and Groups - styles for the check-in areas and groups block.
 //  + Check-in Schedule Builder - styles for the check-in schedule builder block.
+//  + Rapid Attendance Entry - styles for the rapid attendance entry block.
 // =============================================================
+
+// ===================== CHECKIN CONFIGURATION LIST =====================
+.check-ins-list {
+    .sort-dropdown {
+        .sort-dropdown-toggle {
+            display:          inline-flex;
+            align-items:      center;
+            gap:              var(--spacing-tiny);
+            background-color: transparent;
+            border-color:     transparent;
+            box-shadow:       none;
+            color:            var(--color-interface-medium);
+            font-size:        var(--font-size-xsmall);
+            font-weight:      var(--font-weight-semibold);
+        }
+
+        .sort-dropdown-toggle:hover,
+        .sort-dropdown-toggle:focus,
+        &.open > .sort-dropdown-toggle {
+            background-color: transparent;
+            border-color:     transparent;
+            box-shadow:       none;
+            color:            var(--color-interface-strong);
+        }
+
+        .sort-dropdown-menu li > a {
+            display:     flex;
+            align-items: center;
+            gap:         var(--spacing-tiny);
+        }
+    }
+
+    /* Agressive selector to override the default padding. */
+    .panel.panel-flex > .panel-header .panel-header-actions > .action {
+        padding-right: 0;
+    }
+}
+// =================== END CHECKIN CONFIGURATION LIST ===================
+
+// ======================== CHECKIN AREAS AND GROUPS ========================
+/*----------------------------------------
+    Outer panel container. The block sets an explicit height on this element
+    from JS so the panel fills the remaining viewport space below the slicer to
+    support the panel's bounded scroll regions (the split pane's two columns).
+----------------------------------------*/
+.area-group-panel-container {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.area-group-panel-container > div {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.area-group-panel-container > div > .panel {
+    flex: 1;
+    min-height: 0;
+}
+
+/* The panel body holds the split-pane content. The flex chain pushes the
+   panel's body height down to .area-group-content so the two panes can manage their
+   own bounded scroll regions. The bottom corners match the panel's radius
+   and overflow is hidden so the list pane's soft background gets clipped to
+   the curve instead of squaring off the panel's rounded bottom. */
+.area-group-panel-container .panel-body {
+    flex: 1;
+    min-height: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-bottom-left-radius: var(--rounded-medium);
+    border-bottom-right-radius: var(--rounded-medium);
+}
+
+/*----------------------------------------
+    SPLIT PANE LAYOUT
+    Two columns inside the panel body, each managing its own scroll.
+----------------------------------------*/
+.area-group-content {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+.area-group-list-pane,
+.area-group-detail-pane {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.area-group-list-pane {
+    background-color: var(--color-interface-softer);
+    border-right: 1px solid var(--color-interface-soft);
+}
+
+/* The detail pane's RockForm acts as the inner flex column, holding the
+   pinned header, the scrolling body, and the pinned footer. */
+.area-group-detail-pane > form {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/*----------------------------------------
+    SHARED PANE SHELL
+    Both panes use the same header / body / footer skeleton. Header is pinned,
+    body scrolls, and the detail pane optionally adds a pinned footer.
+----------------------------------------*/
+/* min-height floors the list-pane and area-editor headers so they match the
+   group editor's natural two-line height (icon 43 or stack 44 + padding 24). */
+.area-group-pane-header {
+    min-height: 72px;
+    padding: var(--spacing-small) var(--spacing-large);
+    display: flex;
+    justify-content: space-between;
+
+    .heading {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: var(--spacing-small);
+    }
+
+    .heading-text {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: var(--spacing-tiny);
+    }
+
+    /* padding-bottom keeps descender glyphs (g, p, y) inside the overflow-hidden
+       clipping region that the ellipsis requires. Without it, line-height: tight
+       on the h5 puts the line-box bottom right at the baseline and descenders
+       fall outside it. */
+    .heading-title {
+        color: var(--color-interface-strong);
+        margin: 0;
+        padding-bottom: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .heading-description {
+        color: var(--color-interface-medium);
+        font-size: var(--font-size-xsmall);
+        line-height: var(--line-height-tight);
+        padding-bottom: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .heading-icon {
+        color: var(--color-interface-softest);
+        background-color: var(--color-info-strong);
+        padding: var(--spacing-xsmall);
+        border-radius: var(--rounded-small);
+        flex-shrink: 0;
+        font-size: var(--font-size-h5);
+
+        /* The .is-group modifier swaps to the lighter group palette. */
+        &.is-group {
+            background-color: var(--color-info-soft);
+            color: var(--color-info-strong);
+        }
+    }
+
+    .header-actions {
+        display: flex;
+        gap: var(--spacing-tiny);
+        align-items: center;
+        margin-left: var(--spacing-large);
+        color: var(--color-interface-strong);
+        cursor: initial;
+    }
+}
+
+.area-group-pane-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 0 var(--spacing-medium) var(--spacing-medium);
+}
+
+.area-group-pane-footer {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-small);
+    padding: var(--spacing-medium) var(--spacing-large);
+    border-top: 1px solid var(--color-interface-soft);
+}
+
+/*----------------------------------------
+    GROUP HANDLE COLORING
+    Areas inherit the SortableTree control's default handle color.
+    Groups override with a lighter palette.
+----------------------------------------*/
+.sortable-tree-row-handle.area-group-handle {
+    background-color: var(--color-info-soft);
+    color: var(--color-info-strong);
+}
+
+/* Selected groups read off a softer body background than selected areas. */
+.area-group-list-pane .sortable-tree-row.group-group.selected .sortable-tree-row-body {
+    background-color: var(--color-interface-softer);
+}
+
+/*----------------------------------------
+    EMPTY STATES
+    Centered both axes within their pane. Used in the list pane when no areas
+    or groups are configured, and in the detail pane when nothing is selected.
+----------------------------------------*/
+.area-group-empty-state,
+.area-group-detail-loading {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: var(--spacing-tiny);
+    padding: var(--spacing-large);
+}
+
+.area-group-detail-loading {
+    color: var(--color-interface-medium);
+}
+
+.area-group-empty-state {
+    .empty-icon {
+        color: var(--color-interface-medium);
+        margin-bottom: var(--spacing-small);
+    }
+
+    .empty-title {
+        color: var(--color-interface-medium);
+        margin: 0;
+        font-weight: var(--font-weight-semibold);
+    }
+
+    .empty-subtitle {
+        color: var(--color-interface-medium);
+        margin: 0;
+        font-size: var(--font-size-small);
+    }
+}
+
+/*----------------------------------------
+    COMPACT LAYOUT (small breakpoints)
+    Drops the JS height-bound and stacks the two panes vertically. The panel
+    takes its natural height; the page provides scroll. Right-border between
+    panes becomes a bottom-border instead.
+----------------------------------------*/
+.area-group-panel-container.is-compact-layout {
+    overflow: visible;
+}
+
+.area-group-panel-container.is-compact-layout .area-group-content {
+    flex-direction: column;
+}
+
+.area-group-panel-container.is-compact-layout .area-group-list-pane,
+.area-group-panel-container.is-compact-layout .area-group-detail-pane {
+    flex: none;
+    overflow-y: visible;
+}
+
+/* In compact layout the page scrolls, so each pane's body should stop forcing
+   its own scroll region and let the page handle it. The detail pane's form
+   wrapper also relaxes its flex chain. */
+.area-group-panel-container.is-compact-layout .area-group-pane-body {
+    flex: none;
+    overflow-y: visible;
+}
+
+.area-group-panel-container.is-compact-layout .area-group-detail-pane > form {
+    flex: none;
+}
+
+.area-group-panel-container.is-compact-layout .area-group-list-pane {
+    border-right: none;
+    border-bottom: 1px solid var(--color-interface-soft);
+}
+
+/*----------------------------------------
+    LABEL GRID
+    Wrapper for the Check-in Labels and Classic Check-in Labels grids in the
+    Area editor. Header row has the section title on the left and an optional
+    "Create Label" external-tab link on the right; <Grid light> renders below.
+----------------------------------------*/
+.area-group-label-grid {
+    margin-top: var(--spacing-large);
+
+    .section-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: var(--spacing-tiny);
+        margin-bottom: var(--spacing-tiny);
+    }
+
+    .create-link {
+        font-size: var(--font-size-small);
+        font-weight: var(--font-weight-semibold);
+        white-space: nowrap;
+    }
+}
+
+/*----------------------------------------
+    LOCATIONS GRID
+    Wrapper for the Main and Overflow named-location grids in the Group editor.
+----------------------------------------*/
+.area-group-locations-grid + .area-group-locations-grid {
+    margin-top: var(--spacing-large);
+}
+
+/* Columns have no title, so the grid omits its header row and the core grid's
+   header-less corner rounding skips the first data row. Round its outer top
+   corner cells to match the rounded panel. */
+.area-group-locations-grid .grid-row:first-child .grid-cell:first-child {
+    border-top-left-radius: var(--rounded-medium);
+}
+
+.area-group-locations-grid .grid-row:first-child .grid-cell:last-child {
+    border-top-right-radius: var(--rounded-medium);
+}
+
+// ====================== END CHECKIN AREAS AND GROUPS ======================
 
 // ======================== CHECKIN SCHEDULE BUILDER ========================
 /*----------------------------------------
@@ -213,4 +562,413 @@
     align-items: center;
     gap: var(--spacing-tiny);
 }
+
 // ====================== END CHECKIN SCHEDULE BUILDER ======================
+
+// ======================== RAPID ATTENDANCE ENTRY ========================
+
+/* The panel body is flush; each screen owns its padding. */
+.rapid-attendance-entry-start-session {
+    padding: var(--panel-body-padding);
+}
+
+/* Entry screen: search sidebar and main entry split the bounded panel body,
+   each managing its own scroll. */
+.rapid-attendance-entry-screen {
+    height: 100%;
+    display: flex;
+}
+
+/* Fixed basis keeps the result cards at their designed width regardless of
+   viewport (the control gallery's sidebar takes the same approach). */
+.rapid-attendance-entry-search-sidebar {
+    flex: 0 0 315px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-interface-softer);
+    border-right: 1px solid var(--color-interface-soft);
+}
+
+.rapid-attendance-entry-search-sidebar-header {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xsmall);
+    padding: var(--spacing-medium) var(--spacing-medium) 0;
+    margin-bottom: var(--spacing-medium);
+
+    .form-group {
+        margin-bottom: 0;
+    }
+}
+
+.rapid-attendance-entry-search-results {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: var(--spacing-tiny) var(--spacing-medium) var(--spacing-medium) var(--spacing-medium);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+}
+
+/* With a scrollbar present, tighten the right padding so the bar sits near the edge. */
+.rapid-attendance-entry-search-results.is-scrollable {
+    padding-right: var(--spacing-xsmall);
+}
+
+.rapid-attendance-entry-search-results .is-selected {
+    outline: 2px solid var(--color-primary);
+}
+
+/* Selected card stays white in every state; .clickable lifts specificity above the hover-tint rule. */
+.rapid-attendance-entry-search-results .displaycard.clickable.is-selected {
+    background-color: var(--color-interface-softest);
+}
+
+.rapid-attendance-entry-search-results .is-inactive {
+    opacity: 0.6;
+}
+
+.rapid-attendance-entry-no-results {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--color-interface-medium);
+}
+
+/* The whole card body is custom markup in the DisplayCard description slot,
+   so the slot's <small> font scale is reset here. */
+.rapid-attendance-entry-search-result {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-tiny);
+    font-size: var(--font-size-regular);
+    color: var(--color-interface-strong);
+
+    .label {
+        margin-top: var(--spacing-xsmall);
+        max-width: 100%;
+    }
+}
+
+.rapid-attendance-entry-search-result-name {
+    font-size: var(--font-size-h5);
+    font-weight: var(--font-weight-semibold);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rapid-attendance-entry-search-result-age {
+    color: var(--color-interface-medium);
+}
+
+.rapid-attendance-entry-search-result-family {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* The campus label is an inline-flex container, so the text inside it (not the label) is what clips. */
+.rapid-attendance-entry-search-result-campus {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+/* Attended indicator at the card's top-right: green check when attended, gray circle otherwise. */
+.rapid-attendance-entry-search-result-attended {
+    font-size: var(--font-size-h4);
+    color: var(--color-interface-medium);
+}
+
+.rapid-attendance-entry-search-result-attended.is-attended {
+    color: var(--color-success-strong);
+}
+
+/* Pin the indicator to the card's first line rather than its vertical center. */
+.rapid-attendance-entry-search-results .displaycard-aside {
+    align-self: flex-start;
+}
+
+.rapid-attendance-entry-search-result-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xsmall);
+    margin-top: var(--spacing-medium);
+    max-width: 100%;
+    font-size: var(--font-size-small);
+    color: var(--color-interface-medium);
+
+    > div {
+        display: flex;
+        gap: var(--spacing-tiny);
+        align-items: baseline;
+        min-width: 0;
+    }
+
+    /* Each value clips to its line; the address still breaks into lines via its own <br> markup. */
+    > div > span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+    }
+}
+
+.rapid-attendance-entry-main {
+    flex: 1;
+    min-width: 0;
+    overflow-y: auto;
+    padding: var(--panel-body-padding);
+}
+
+/* Drop the save notifications' own margins so they don't stack on that gap. */
+.rapid-attendance-entry-main .contentsection-list > .alert {
+    margin: 0;
+}
+
+/* Small screens stack the panes; the panel's scrollable region provides the
+   single scroll. */
+@media (max-width: $screen-medium) {
+    .rapid-attendance-entry-screen {
+        height: auto;
+        flex-direction: column;
+    }
+
+    /* The search header pins to the top while the results scroll beneath it. The
+       gap to the results moves from margin to padding so the sticky background
+       covers cards passing under it. */
+    .rapid-attendance-entry-search-sidebar-header {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background-color: var(--color-interface-softer);
+        margin-bottom: 0;
+        padding-bottom: var(--spacing-medium);
+    }
+
+    .rapid-attendance-entry-search-sidebar {
+        flex: none;
+        border-right: 0;
+        border-bottom: 1px solid var(--color-interface-soft);
+    }
+
+    .rapid-attendance-entry-search-results {
+        flex: none;
+        overflow-y: visible;
+    }
+
+    .rapid-attendance-entry-main {
+        flex: none;
+        overflow-y: visible;
+    }
+}
+
+/* Family header content on the left, action buttons on the right. */
+.rapid-attendance-entry-family-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* The Lava stretches to fill the width beside the action buttons. */
+.rapid-attendance-entry-family-header {
+    flex: 1;
+    min-width: 0;
+}
+
+.rapid-attendance-entry-family-header-actions {
+    display: flex;
+    gap: var(--spacing-xsmall);
+}
+
+/* Groups the Select All and roster as one section-body child so the container's
+   gap between children doesn't space them apart. */
+.rapid-attendance-entry-attendance {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Select All sits above the roster as its own row. */
+.rapid-attendance-entry-select-all {
+    margin-bottom: var(--spacing-small);
+}
+
+/* The roster flows into as many columns as fit the pane. */
+.rapid-attendance-entry-attendance-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    column-gap: var(--spacing-medium);
+
+    .checkbox {
+        margin-top: 0;
+        margin-bottom: var(--spacing-xsmall);
+    }
+}
+
+.rapid-attendance-entry-person-nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-medium);
+    margin-bottom: var(--spacing-medium);
+}
+
+.rapid-attendance-entry-person-nav-label {
+    flex: none;
+    font-weight: var(--font-weight-semibold);
+}
+
+/* The person navigation tabs show a small round avatar before the name. */
+.rapid-attendance-entry-person-tab {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+}
+
+.rapid-attendance-entry-person-tab-avatar {
+    width: 1.5em;
+    height: 1.5em;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Pills sit flush-left under the label, dropping the control's default side padding. */
+.rapid-attendance-entry-person-nav .tabbed-bar {
+    padding: 0;
+}
+
+/* Every row of pills starts flush-left: the per-pill side padding moves to a
+   column gap, so wrapped rows align with the first row rather than indenting. */
+.rapid-attendance-entry-person-nav .tabbed-bar.pills > .toolbar-nav {
+    column-gap: var(--spacing-small);
+}
+
+.rapid-attendance-entry-person-nav .tabbed-bar.pills > .toolbar-nav > li {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* Non-selected person pills use the softest fill; hover and active defer to the control's styling. */
+.rapid-attendance-entry-person-nav .tabbed-bar.pills > .toolbar-nav > li:not(.active):not(:hover) .title {
+    background-color: var(--color-interface-softest);
+}
+
+/* Person header content on the left, the edit button on the right. */
+.rapid-attendance-entry-person-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* The Lava stretches to fill so its two-column content lays out at full width. */
+.rapid-attendance-entry-person-header {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Each per-person input group: workflows, connections, notes, prayer. */
+.rapid-attendance-entry-person-section {
+    /* A top margin on all but the first spaces the groups, leaving the first
+       and last flush with the panel edges. */
+    &:not(:first-child) {
+        margin-top: var(--spacing-xlarge);
+    }
+}
+
+.rapid-attendance-entry-person-subheader {
+    margin-top: 0;
+}
+
+.rapid-attendance-entry-person-subheader > i {
+    margin-right: var(--spacing-tiny);
+}
+
+/* CategoryPicker doesn't expose inputClasses, so constrain it here to match the
+   note dropdown's input-width-lg (210px). */
+.rapid-attendance-entry-person-section .category-picker {
+    max-width: 210px;
+}
+
+.rapid-attendance-entry-prayer-flags {
+    margin-top: var(--spacing-large);
+    display: flex;
+    gap: var(--spacing-medium);
+
+    /* Drop the default stacked-checkbox margins so the side-by-side flags align. */
+    .checkbox {
+        margin: 0;
+    }
+}
+
+.rapid-attendance-entry-edit-family {
+    /* The section container owns the spacing below the well, so it carries no margin of its own. */
+    .well {
+        margin-bottom: 0;
+    }
+
+    .address-fields {
+        .address-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Drop the address control's trailing margin so the flags sit exactly one gap below it. */
+        .address-control {
+            margin-bottom: 0;
+        }
+
+        .flags {
+            margin-top: var(--spacing-medium);
+            display: flex;
+            gap: var(--spacing-medium);
+
+            /* Drop the default stacked-checkbox margins so the side-by-side flags align. */
+            .checkbox {
+                margin: 0;
+            }
+        }
+    }
+}
+
+.rapid-attendance-entry-edit-person {
+    /* The well sits among the wrapped fields, so it carries the same bottom spacing they do
+       rather than relying on the content section's larger inter-child gap. */
+    .well {
+        margin-bottom: var(--spacing-medium);
+    }
+
+    /* The suffix, marital status, and grade dropdowns are capped to roughly Rock's input-width-lg.
+       They don't expose inputClasses, so the width is applied here. */
+    .field-suffix,
+    .field-role-detail {
+        max-width: 210px; /* input-width-lg */
+    }
+
+    /* The trailing SMS / Unlisted / Email Is Active flags sit inline in the column beside the input. */
+    .contact-flags {
+        display: flex;
+        gap: var(--spacing-medium);
+
+        .checkbox {
+            margin: 0;
+        }
+
+        /* Once the columns sit side by side, offset the flags past the field label to align with the input. */
+        @media (min-width: $screen-medium) {
+            margin-top: calc(var(--spacing-large) + 5px);
+        }
+    }
+}
+
+// ====================== END RAPID ATTENDANCE ENTRY ======================

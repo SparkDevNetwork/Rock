@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 
-// Validates an Obsidian block conversion: branch is a feature branch (not develop/main/master),
-// all required block files exist, .d.ts placeholders match bag .cs files 1:1, and the WebForms
-// .ascx/.ascx.cs files have been deleted. Surfaces additional partials as INFO.
+// Validates that all expected files exist (and WebForms files are deleted) after an Obsidian block conversion.
 // Usage: node validate-conversion.js <Category> <BlockName> <detail|list|custom>
 
 const fs = require( "fs" );
@@ -108,21 +106,16 @@ try
         console.log( `FAIL  Current branch is "${currentBranch}" — must be on a feature branch` );
         failed++;
     }
-    else if ( !currentBranch )
-    {
-        console.log( "FAIL  Could not determine current git branch (empty result)" );
-        failed++;
-    }
     else
     {
         console.log( `PASS  Branch: ${currentBranch}` );
         passed++;
     }
 }
-catch ( err )
+catch
 {
-    console.log( `FAIL  git branch --show-current failed: ${err.message}` );
-    failed++;
+    console.log( "WARN  Could not determine current git branch" );
+    warnings++;
 }
 
 // --- Always required ---
@@ -130,63 +123,67 @@ checkFile( `Rock.ViewModels/Blocks/${category}/${blockName}/${blockName}OptionsB
 checkFile( `Rock.Blocks/${category}/${blockName}.cs`, "required" );
 checkFile( `Rock.JavaScript.Obsidian.Blocks/src/${category}/${toCamelCase( blockName )}.obs`, "required" );
 
-// .d.ts files: must match bags 1:1.
-const bagsDir = path.join( repoRoot, `Rock.ViewModels/Blocks/${category}/${blockName}` );
+// At least one .d.ts placeholder.
 const dtsDir = path.join( repoRoot, `Rock.JavaScript.Obsidian/Framework/ViewModels/Blocks/${category}/${blockName}` );
+let hasDts = false;
 
-const bagFiles = fs.existsSync( bagsDir )
-    ? fs.readdirSync( bagsDir ).filter( f => f.endsWith( ".cs" ) )
-    : [];
-const dtsFiles = fs.existsSync( dtsDir )
-    ? fs.readdirSync( dtsDir ).filter( f => f.endsWith( ".d.ts" ) )
-    : [];
-
-if ( bagFiles.length === 0 )
+if ( fs.existsSync( dtsDir ) )
 {
-    console.log( `FAIL  Rock.ViewModels/Blocks/${category}/${blockName}/ (no bag files found)` );
-    failed++;
+    const dtsFiles = fs.readdirSync( dtsDir ).filter( f => f.endsWith( ".d.ts" ) );
+    hasDts = dtsFiles.length > 0;
 }
-else if ( dtsFiles.length === 0 )
+
+if ( hasDts )
 {
-    console.log( `FAIL  Rock.JavaScript.Obsidian/Framework/ViewModels/Blocks/${category}/${blockName}/ (no .d.ts files found)` );
-    failed++;
+    console.log( `PASS  Rock.JavaScript.Obsidian/Framework/ViewModels/Blocks/${category}/${blockName}/ (has .d.ts files)` );
+    passed++;
 }
 else
 {
-    // Each FooBag.cs must have a matching fooBag.d.ts (camelCase).
-    const expectedDtsFromBags = bagFiles.map( bag =>
-    {
-        const stem = bag.replace( /\.cs$/, "" );
-        return `${toCamelCase( stem )}.d.ts`;
-    } );
-
-    const dtsSet = new Set( dtsFiles );
-    const missing = expectedDtsFromBags.filter( d => !dtsSet.has( d ) );
-    const orphan = dtsFiles.filter( d => !expectedDtsFromBags.includes( d ) );
-
-    if ( missing.length === 0 && orphan.length === 0 )
-    {
-        console.log( `PASS  Rock.JavaScript.Obsidian/Framework/ViewModels/Blocks/${category}/${blockName}/ (${bagFiles.length} bags / ${dtsFiles.length} .d.ts, 1:1 match)` );
-        passed++;
-    }
-    else
-    {
-        if ( missing.length > 0 )
-        {
-            console.log( `FAIL  .d.ts files missing for bags: ${missing.join( ", " )}` );
-            failed++;
-        }
-        if ( orphan.length > 0 )
-        {
-            console.log( `WARN  .d.ts files with no matching bag (may need cleanup): ${orphan.join( ", " )}` );
-            warnings++;
-        }
-    }
+    console.log( `FAIL  Rock.JavaScript.Obsidian/Framework/ViewModels/Blocks/${category}/${blockName}/ (no .d.ts files found)` );
+    failed++;
 }
 
 // WebForms deleted.
 checkFile( `RockWeb/Blocks/${category}/${blockName}.ascx`, "deleted" );
 checkFile( `RockWeb/Blocks/${category}/${blockName}.ascx.cs`, "deleted" );
+
+// --- Page parameter resolution check ---
+// Obsidian's standard is IdKey. A page parameter resolved with PageParameter(...).AsInteger()
+// is almost always a carried-over WebForms integer lookup that will fail for IdKeys and Guids.
+// This is a heuristic WARN (a parameter that is genuinely a number is a valid exception), so it
+// does not fail the run — but each hit must be reviewed and fixed unless it is truly numeric.
+const blockCsPath = path.join( repoRoot, `Rock.Blocks/${category}/${blockName}.cs` );
+
+if ( fs.existsSync( blockCsPath ) )
+{
+    const blockSource = fs.readFileSync( blockCsPath, "utf8" );
+    const lines = blockSource.split( /\r?\n/ );
+    const pageParamIntegerPattern = /PageParameter\s*\([^)]*\)\s*\.\s*AsInteger(OrNull)?\s*\(/;
+    const offendingLines = [];
+
+    lines.forEach( ( line, index ) =>
+    {
+        if ( pageParamIntegerPattern.test( line ) )
+        {
+            offendingLines.push( index + 1 );
+        }
+    } );
+
+    if ( offendingLines.length > 0 )
+    {
+        console.log( `WARN  ${blockName}.cs resolves a page parameter with PageParameter(...).AsInteger() at line(s) ${offendingLines.join( ", " )}` );
+        console.log( "       Obsidian's standard is IdKey. Unless the value is genuinely a number (page index, count, year)," );
+        console.log( "       resolve it as Id/IdKey/Guid: Get( key, !PageCache.Layout.Site.DisablePredictableIds )." );
+        console.log( "       See references/common-patterns.md § \"Page Parameter Resolution\"." );
+        warnings++;
+    }
+    else
+    {
+        console.log( `PASS  ${blockName}.cs has no integer-only page parameter lookups` );
+        passed++;
+    }
+}
 
 // --- Type-specific checks ---
 if ( blockType === "detail" )

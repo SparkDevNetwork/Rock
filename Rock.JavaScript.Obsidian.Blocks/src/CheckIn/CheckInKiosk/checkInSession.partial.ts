@@ -1220,7 +1220,9 @@ export class CheckInSession {
             // that are valid.
             validAreaIds = this.attendeeOpportunities
                 .groups
-                ?.filter(g => !g.abilityLevelId || g.abilityLevelId === this.selectedAbilityLevel?.id)
+                ?.filter(g => (this.overridePinCode !== undefined && this.overridePinCode !== "")
+                    || !g.abilityLevelId
+                    || g.abilityLevelId === this.selectedAbilityLevel?.id)
                 .map(g => g.areaId as string) ?? [];
         }
         else {
@@ -1231,7 +1233,10 @@ export class CheckInSession {
                 .groups
                 ?.filter(g => g.locations
                     && g.locations.some(l => l.scheduleId === this.currentFamilyScheduleId)
-                    && (!g.abilityLevelId || g.abilityLevelId === this.selectedAbilityLevel?.id))
+                    && (
+                        (this.overridePinCode !== undefined && this.overridePinCode !== "")
+                        || !g.abilityLevelId
+                        || g.abilityLevelId === this.selectedAbilityLevel?.id))
                 .map(g => g.areaId as string) ?? [];
         }
 

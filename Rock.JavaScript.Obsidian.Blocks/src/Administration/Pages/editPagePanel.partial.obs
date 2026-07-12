@@ -1,0 +1,118 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockForm @submit="onFormSubmit">
+        <fieldset>
+            <legend>{{ title }}</legend>
+
+            <TextBox v-model="internalName"
+                     label="Internal Name"
+                     :maxLength="100"
+                     rules="required" />
+
+            <DropDownList v-model="layout"
+                          label="Layout"
+                          :items="layouts"
+                          :showBlankItem="false"
+                          @open="isLayoutPickerOpen = true" />
+        </fieldset>
+
+        <div class="actions">
+            <RockButton :btnType="BtnType.Primary" type="submit">{{ saveText }}</RockButton>
+            <RockButton :btnType="BtnType.Link" type="button" @click="onCancel">Cancel</RockButton>
+        </div>
+
+        <div v-if="isLayoutPickerOpen" class="layout-picker-spacer" aria-hidden="true"></div>
+    </RockForm>
+</template>
+
+<style scoped>
+/* This form sits in an iframe modal that auto-sizes to its content, but the Layout dropdown's
+   popup floats as an overlay that does not grow that content, so it gets clipped or flips
+   upward. Once the dropdown has been opened we reserve extra height here so the modal grows
+   tall enough for the popup to open downward. The height is kept for the rest of the session
+   to avoid a collapse flicker on the dropdown's rapid close. */
+.layout-picker-spacer {
+    height: 12rem;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PageBag } from "@Obsidian/ViewModels/Blocks/Administration/Pages/pageBag";
+
+    const props = defineProps({
+        editBag: {
+            type: Object as PropType<PageBag>,
+            required: true
+        },
+
+        layouts: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        /** Called with the page details when the form is submitted. A function prop rather than
+            an emit so its promise flows back through RockForm's submit handler, holding the
+            form's double-submit guard until the save round trip completes. */
+        onSave: {
+            type: Function as PropType<((bag: PageBag) => void | PromiseLike<void>)>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "cancel"): void;
+    }>();
+
+    // #region Values
+
+    const internalName = ref(props.editBag.internalName ?? "");
+    const layout = ref(props.editBag.layout ?? "");
+
+    /** Whether the Layout dropdown has been opened. Reserves height (see the picker spacer in the
+        template) so its popup opens downward inside the auto-sizing modal instead of flipping up. */
+    const isLayoutPickerOpen = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const title = computed((): string => {
+        return props.editBag.idKey ? "Edit Child Page" : "Add Child Page";
+    });
+
+    const saveText = computed((): string => {
+        return props.editBag.idKey ? "Save" : "Add";
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Passes the page details to the parent's save handler, returning its promise so RockForm
+     * blocks repeat submits until the save round trip completes.
+     */
+    async function onFormSubmit(): Promise<void> {
+        await props.onSave({
+            idKey: props.editBag.idKey,
+            internalName: internalName.value,
+            layout: layout.value
+        });
+    }
+
+    /**
+     * Emits a request to close the form without saving.
+     */
+    function onCancel(): void {
+        emit("cancel");
+    }
+
+    // #endregion Event Handlers
+</script>

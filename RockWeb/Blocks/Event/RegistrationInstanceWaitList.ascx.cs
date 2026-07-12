@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Event
 
     [LinkedPage(
         "Wait List Process Page",
-        "The page for moving a person from the wait list to a full registrant.",
+        Description = "The page for moving a person from the wait list to a full registrant.",
         Key = AttributeKey.WaitListProcessingPage,
         DefaultValue = Rock.SystemGuid.Page.REGISTRATION_WAIT_LIST_CONFIRMATION,
         IsRequired = false,
@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Event
 
     [LinkedPage(
         "Registration Page",
-        "The page for editing registration and registrant information",
+        Description = "The page for editing registration and registrant information",
         Key = AttributeKey.RegistrationPage,
         DefaultValue = Rock.SystemGuid.Page.REGISTRATION_DETAIL,
         IsRequired = false,

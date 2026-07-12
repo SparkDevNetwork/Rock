@@ -36,7 +36,8 @@ namespace Rock.Reporting.DataSelect.Group
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Group Parent" )]
 
-    [BooleanField( "Show As Link", "", true )]
+    [BooleanField( "Show As Link",
+        DefaultBooleanValue = true )]
     [Rock.SystemGuid.EntityTypeGuid( "0F99D3D5-E198-4E54-95CB-16B9EB23E718" )]
     public class ParentGroupSelect : DataSelectComponent
     {

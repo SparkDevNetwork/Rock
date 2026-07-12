@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <ContentSectionContainer>
-        <ContentSection title="Registration Type" light>
+        <ContentSection light>
             <div class="row">
                 <div class="col-md-6">
                     <TextBox v-model="name" label="Registration Instance Name" rules="required"
