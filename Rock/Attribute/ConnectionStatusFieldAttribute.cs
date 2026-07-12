@@ -81,24 +81,5 @@ namespace Rock.Attribute
             get => FieldConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBoolean();
             set => FieldConfigurationValues.AddOrReplace( INCLUDE_INACTIVE_KEY, new Field.ConfigurationValue( value.ToString() ) );
         }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ConnectionStatusFieldAttribute" /> class.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        public ConnectionStatusFieldAttribute( string name )
-            : base( name, fieldTypeClass: typeof( Rock.Field.Types.ConnectionStatusFieldType ).FullName )
-        {
-            IncludeInactive = false;
-        }
-
-        /// <summary>
-        /// Determines if inactive connection statuses are included.
-        /// </summary>
-        public bool IncludeInactive
-        {
-            get => FieldConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBoolean();
-            set => FieldConfigurationValues.AddOrReplace( INCLUDE_INACTIVE_KEY, new Field.ConfigurationValue( value.ToString() ) );
-        }
     }
 }

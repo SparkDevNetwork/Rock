@@ -56,7 +56,7 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         public StreakTypeFieldAttribute( string name )
-            : base( SystemGuid.FieldType.STREAK_TYPE, name )
+            : base( SystemGuid.FieldType.STREAK_TYPE.AsGuid(), name )
         {
         }
     }

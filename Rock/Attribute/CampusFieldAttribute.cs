@@ -77,16 +77,6 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CampusFieldAttribute" /> class.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        public CampusFieldAttribute( string name )
-            : base( name, fieldTypeClass: typeof( Rock.Field.Types.CampusFieldType ).FullName )
-        {
-            IncludeInactive = false;
-        }
-
-        /// <summary>
         /// Gets or sets the campus types filter.
         /// </summary>
         /// <value>

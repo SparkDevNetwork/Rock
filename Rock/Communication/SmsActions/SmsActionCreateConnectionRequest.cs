@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -54,7 +54,7 @@ namespace Rock.Communication.SmsActions
         Order = 2 )]
 
     [CampusField( "Campus",
-        includeInactive: false,
+        IncludeInactive = false,
         Description = "Overrides the inbound person's primary campus when set. Leave blank to use the person's primary campus.",
         IsRequired = false,
         ForceVisible = true,
@@ -76,7 +76,7 @@ namespace Rock.Communication.SmsActions
         Key = AttributeKey.PassNamelessPerson,
         Category = AttributeCategories.Connection,
         Description = "When true, an inbound message from an unknown phone number is allowed to create a Connection Request against a nameless Person record. When false, such messages are skipped.",
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         Order = 5 )]
 

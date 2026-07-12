@@ -222,7 +222,7 @@ END" );
         {
             // The attribute is already a Boolean field type; whether it edits as a checkbox or a Yes/No drop down is
             // driven by its BooleanControlType qualifier. Flip it to a checkbox.
-            var checkboxControlType = ( ( int ) Rock.Field.Types.BooleanFieldType.BooleanControlType.Checkbox ).ToString();
+            var checkboxControlType = ( ( int ) Rock.Enums.Controls.BooleanControlType.Checkbox ).ToString();
 
             Sql( $@"
 DECLARE @AttributeId INT = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '6DC6E992-4CAF-4C9F-B11D-5918D244BD40');
@@ -298,7 +298,7 @@ WHERE [BlockId] = @BlockId
         private void JPH_MigrateCheckInConfigAttributes_Down()
         {
             // Restore the Yes/No drop down control type.
-            var dropDownControlType = ( ( int ) Rock.Field.Types.BooleanFieldType.BooleanControlType.DropDown ).ToString();
+            var dropDownControlType = ( ( int ) Rock.Enums.Controls.BooleanControlType.DropDown ).ToString();
 
             Sql( $@"
 DECLARE @AttributeId INT = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '6DC6E992-4CAF-4C9F-B11D-5918D244BD40');

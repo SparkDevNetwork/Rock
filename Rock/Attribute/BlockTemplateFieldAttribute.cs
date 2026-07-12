@@ -59,7 +59,7 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         public BlockTemplateFieldAttribute( string name )
-            : base( SystemGuid.FieldType.BLOCK_TEMPLATE, name )
+            : base( SystemGuid.FieldType.BLOCK_TEMPLATE.AsGuid(), name )
         {
         }
 
