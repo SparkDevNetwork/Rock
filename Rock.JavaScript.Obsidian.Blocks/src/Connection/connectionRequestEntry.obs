@@ -37,227 +37,244 @@
                     <NotificationBox alertType="danger">{{ submitError }}</NotificationBox>
                 </div>
 
-                <ContentSectionContainer :sidebar="false">
-                    <ContentSection v-if="config.isCampusVisible" title="Pick a Campus" icon="ti ti-map-pin" disableCollapse light>
-                        <template #description>
-                            Select a campus to set content and preferences to your location.
-                        </template>
-
-                        <ContentStack>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <CampusPicker v-model="campus"
-                                                  label="Campus"
-                                                  forceVisible
-                                                  rules="required" />
-                                </div>
-                            </div>
-                        </ContentStack>
-                    </ContentSection>
-
-                    <ContentSection :title="config.personalInformationTitle || 'Personal Information'" icon="ti ti-user-circle" disableCollapse>
-                        <template v-if="config.personalInformationDescription" #description>
-                            {{ config.personalInformationDescription }}
-                        </template>
-
-                        <ContentStack>
-                            <InlineCheckBox v-if="isFieldVisible(config.firstTimeGuestVisibility)"
-                                            v-model="isFirstTimeGuest"
-                                            label="I am a first time guest" />
-
-                            <div v-if="isFieldVisible(config.titleVisibility)" class="row">
-                                <div class="col-md-3">
-                                    <DropDownList v-model="title"
-                                                  label="Title"
-                                                  :items="config.titleOptions ?? []"
-                                                  :rules="fieldRules(config.titleVisibility)"
-                                                  showBlankItem />
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <FirstNameTextBox v-model="firstName"
-                                                      label="First Name"
-                                                      rules="required" />
-                                </div>
-                                <div class="col-md-6">
-                                    <TextBox v-model="lastName" label="Last Name" rules="required" />
-                                </div>
-                            </div>
-
-                            <div v-if="isFieldVisible(config.suffixVisibility)" class="row">
-                                <div class="col-md-3">
-                                    <DropDownList v-model="suffix"
-                                                  label="Suffix"
-                                                  :items="config.suffixOptions ?? []"
-                                                  :rules="fieldRules(config.suffixVisibility)"
-                                                  showBlankItem />
-                                </div>
-                            </div>
-
-                            <div v-if="isFieldVisible(config.birthDateVisibility)" class="row">
-                                <div class="col-md-6">
-                                    <BirthdayPicker v-model="birthDate"
-                                                    label="Birthdate"
-                                                    :rules="fieldRules(config.birthDateVisibility)" />
-                                </div>
-                            </div>
-
-                            <div v-if="isFieldVisible(config.genderVisibility)" class="row">
-                                <div class="col-md-6">
-                                    <RadioButtonList v-model="gender"
-                                                     label="Gender"
-                                                     :items="genderOptions"
-                                                     :rules="fieldRules(config.genderVisibility)" />
-                                </div>
-                            </div>
-
-                            <div v-if="isFieldVisible(config.profilePhotoVisibility)" class="row">
-                                <div class="col-md-6">
-                                    <ImageUploader v-model="photo"
-                                                   label="Profile Photo"
-                                                   :binaryFileTypeGuid="profilePhotoFileTypeGuid"
-                                                   :rules="fieldRules(config.profilePhotoVisibility)" />
-                                </div>
-                            </div>
-
-                            <div v-if="isFieldVisible(config.maritalStatusVisibility)" class="row">
-                                <div class="col-md-6">
-                                    <DropDownList v-model="maritalStatus"
-                                                  label="Marital Status"
-                                                  :items="config.maritalStatusOptions ?? []"
-                                                  :rules="fieldRules(config.maritalStatusVisibility)"
-                                                  showBlankItem />
-                                </div>
-                            </div>
-
-                            <TransitionVerticalCollapse>
-                                <ConditionalWell v-if="isSpouseSectionVisible">
-                                    <div class="row">
-                                        <div v-if="isFieldVisible(config.spouseFirstNameVisibility)" class="col-md-6">
-                                            <TextBox v-model="spouseFirstName"
-                                                     label="Spouse First Name"
-                                                     :rules="fieldRules(config.spouseFirstNameVisibility)" />
-                                        </div>
-                                        <div v-if="isFieldVisible(config.spouseLastNameVisibility)" class="col-md-6">
-                                            <TextBox v-model="spouseLastName"
-                                                     label="Spouse Last Name"
-                                                     :rules="fieldRules(config.spouseLastNameVisibility)" />
-                                        </div>
-                                    </div>
-                                    <div v-if="isFieldVisible(config.spouseGenderVisibility)" class="row">
-                                        <div class="col-md-6">
-                                            <RadioButtonList v-model="spouseGender"
-                                                             label="Spouse Gender"
-                                                             :items="genderOptions"
-                                                             :rules="fieldRules(config.spouseGenderVisibility)" />
-                                        </div>
-                                    </div>
-                                </ConditionalWell>
-                            </TransitionVerticalCollapse>
-                        </ContentStack>
-                    </ContentSection>
-
-                    <ContentSection :title="config.contactInformationTitle || 'Contact Information'" icon="ti ti-messages" disableCollapse>
-                        <template v-if="config.contactInformationDescription" #description>
-                            {{ config.contactInformationDescription }}
-                        </template>
-
-                        <ContentStack>
-                            <div class="row">
-                                <div v-if="isFieldVisible(config.emailVisibility)" class="col-md-6">
-                                    <EmailBox v-model="email"
-                                              label="Email"
-                                              :rules="fieldRules(config.emailVisibility)" />
-                                </div>
-                                <div v-if="isMarried && isFieldVisible(config.spouseEmailVisibility)" class="col-md-6">
-                                    <EmailBox v-model="spouseEmail"
-                                              label="Spouse Email"
-                                              :rules="fieldRules(config.spouseEmailVisibility)" />
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div v-if="isFieldVisible(config.mobilePhoneVisibility)" class="col-md-6">
-                                    <PhoneNumberBoxWithSms v-model="mobilePhone"
-                                                           label="Mobile Phone"
-                                                           :rules="fieldRules(config.mobilePhoneVisibility)"
-                                                           :hideSms="!isFieldVisible(config.smsConsentVisibility)" />
-                                </div>
-                                <div v-if="isMarried && isFieldVisible(config.spouseMobilePhoneVisibility)" class="col-md-6">
-                                    <PhoneNumberBoxWithSms v-model="spouseMobilePhone"
-                                                           label="Spouse Mobile Phone"
-                                                           :rules="fieldRules(config.spouseMobilePhoneVisibility)"
-                                                           :hideSms="!isFieldVisible(config.smsConsentVisibility)" />
-                                </div>
-                            </div>
-
-                            <div v-if="isFieldVisible(config.addressVisibility)" class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group connection-request-entry-address">
-                                        <label class="control-label">Address</label>
-                                        <AddressControl v-model="address"
-                                                        :rules="fieldRules(config.addressVisibility)" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div v-if="isFieldVisible(config.preferredServiceTimeVisibility)" class="row">
-                                <div class="col-md-6">
-                                    <DropDownList v-model="preferredServiceTime"
-                                                  label="Preferred Service Time"
-                                                  help="Let us know which service you usually attend or plan to attend so we can help get you better connected."
-                                                  :items="config.preferredServiceTimeOptions ?? []"
-                                                  :rules="fieldRules(config.preferredServiceTimeVisibility)"
-                                                  showBlankItem />
-                                </div>
-                            </div>
-
-                            <TextBox v-if="isFieldVisible(config.additionalCommentsVisibility)"
-                                     v-model="additionalComments"
-                                     :label="additionalCommentsLabel"
-                                     textMode="multiline"
-                                     :rows="3"
-                                     :rules="fieldRules(config.additionalCommentsVisibility)" />
-                        </ContentStack>
-                    </ContentSection>
-
-                    <ContentSection :title="config.connectionOpportunitiesTitle || 'Connection Opportunities'" icon="ti ti-plug">
-                        <template v-if="config.connectionOpportunitiesDescription" #description>
-                            {{ config.connectionOpportunitiesDescription }}
-                        </template>
-
-                        <ContentStack>
-                            <DisplayCardContainer v-if="hasOpportunities">
-                                <ConnectionOpportunityCard v-for="opportunity in opportunities"
-                                                           :key="opportunity.idKey ?? ''"
-                                                           :opportunity="opportunity"
-                                                           :selected="isOpportunitySelected(opportunity)"
-                                                           :modelValue="opportunityAttributeValues[opportunity.idKey ?? '']"
-                                                           @update:selected="onOpportunitySelectedChange(opportunity, $event)"
-                                                           @update:modelValue="onOpportunityAttributesChange(opportunity, $event)" />
-                            </DisplayCardContainer>
-
-                            <template v-else>
-                                <NotificationBox v-if="config.opportunitiesAdminMessage" alertType="warning">{{ config.opportunitiesAdminMessage }}</NotificationBox>
-                                <NotificationBox alertType="info">{{ emptyOpportunitiesMessage }}</NotificationBox>
+                <!-- Disable every field while a submission is in flight. The wrapper is layout-transparent (display: contents). -->
+                <fieldset class="connection-request-entry-fields" :disabled="isSubmitting">
+                    <ContentSectionContainer :sidebar="false">
+                        <ContentSection v-if="config.isCampusVisible" title="Pick a Campus" icon="ti ti-map-pin" disableCollapse light>
+                            <template #description>
+                                Select a campus to set content and preferences to your location.
                             </template>
-                        </ContentStack>
-                    </ContentSection>
 
-                    <ContentSection v-if="hasPersonAttributes" :title="config.additionalInformationTitle || 'Additional Information'" icon="ti ti-info-circle" disableCollapse>
-                        <template v-if="config.additionalInformationDescription" #description>
-                            {{ config.additionalInformationDescription }}
-                        </template>
+                            <ContentStack>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <CampusPicker v-model="campus"
+                                                      label="Campus"
+                                                      forceVisible
+                                                      :disabled="isSubmitting"
+                                                      rules="required" />
+                                    </div>
+                                </div>
+                            </ContentStack>
+                        </ContentSection>
 
-                        <ContentStack>
-                            <AttributeValuesContainer v-model="personAttributeValues"
-                                                      :attributes="config.personAttributes ?? {}"
-                                                      isEditMode />
-                        </ContentStack>
-                    </ContentSection>
-                </ContentSectionContainer>
+                        <ContentSection :title="config.personalInformationTitle || 'Personal Information'" icon="ti ti-user-circle" disableCollapse>
+                            <template v-if="config.personalInformationDescription" #description>
+                                {{ config.personalInformationDescription }}
+                            </template>
+
+                            <ContentStack>
+                                <InlineCheckBox v-if="isFieldVisible(config.firstTimeGuestVisibility)"
+                                                v-model="isFirstTimeGuest"
+                                                label="I am a first time guest" />
+
+                                <div v-if="isFieldVisible(config.titleVisibility)" class="row">
+                                    <div class="col-md-3">
+                                        <DropDownList v-model="title"
+                                                      label="Title"
+                                                      :items="config.titleOptions ?? []"
+                                                      :rules="fieldRules(config.titleVisibility)"
+                                                      :disabled="isSubmitting"
+                                                      showBlankItem />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <FirstNameTextBox v-model="firstName"
+                                                          label="First Name"
+                                                          rules="required" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <TextBox v-model="lastName" label="Last Name" rules="required" />
+                                    </div>
+                                </div>
+
+                                <div v-if="isFieldVisible(config.suffixVisibility)" class="row">
+                                    <div class="col-md-3">
+                                        <DropDownList v-model="suffix"
+                                                      label="Suffix"
+                                                      :items="config.suffixOptions ?? []"
+                                                      :rules="fieldRules(config.suffixVisibility)"
+                                                      :disabled="isSubmitting"
+                                                      showBlankItem />
+                                    </div>
+                                </div>
+
+                                <div v-if="isFieldVisible(config.birthDateVisibility)" class="row">
+                                    <div class="col-md-6">
+                                        <BirthdayPicker v-model="birthDate"
+                                                        label="Birthdate"
+                                                        :disabled="isSubmitting"
+                                                        :rules="fieldRules(config.birthDateVisibility)" />
+                                    </div>
+                                </div>
+
+                                <div v-if="isFieldVisible(config.genderVisibility)" class="row">
+                                    <div class="col-md-6">
+                                        <RadioButtonList v-model="gender"
+                                                         label="Gender"
+                                                         :items="genderOptions"
+                                                         :disabled="isSubmitting"
+                                                         :rules="fieldRules(config.genderVisibility)" />
+                                    </div>
+                                </div>
+
+                                <div v-if="isFieldVisible(config.profilePhotoVisibility)" class="row">
+                                    <div class="col-md-6">
+                                        <ImageUploader v-model="photo"
+                                                       label="Profile Photo"
+                                                       :binaryFileTypeGuid="profilePhotoFileTypeGuid"
+                                                       :disabled="isSubmitting"
+                                                       :rules="fieldRules(config.profilePhotoVisibility)" />
+                                    </div>
+                                </div>
+
+                                <div v-if="isFieldVisible(config.maritalStatusVisibility)" class="row">
+                                    <div class="col-md-6">
+                                        <DropDownList v-model="maritalStatus"
+                                                      label="Marital Status"
+                                                      :items="config.maritalStatusOptions ?? []"
+                                                      :rules="fieldRules(config.maritalStatusVisibility)"
+                                                      :disabled="isSubmitting"
+                                                      showBlankItem />
+                                    </div>
+                                </div>
+
+                                <TransitionVerticalCollapse>
+                                    <ConditionalWell v-if="isSpouseSectionVisible">
+                                        <div class="row">
+                                            <div v-if="isFieldVisible(config.spouseFirstNameVisibility)" class="col-md-6">
+                                                <TextBox v-model="spouseFirstName"
+                                                         label="Spouse First Name"
+                                                         :rules="fieldRules(config.spouseFirstNameVisibility)" />
+                                            </div>
+                                            <div v-if="isFieldVisible(config.spouseLastNameVisibility)" class="col-md-6">
+                                                <TextBox v-model="spouseLastName"
+                                                         label="Spouse Last Name"
+                                                         :rules="fieldRules(config.spouseLastNameVisibility)" />
+                                            </div>
+                                        </div>
+                                        <div v-if="isFieldVisible(config.spouseGenderVisibility)" class="row">
+                                            <div class="col-md-6">
+                                                <RadioButtonList v-model="spouseGender"
+                                                                 label="Spouse Gender"
+                                                                 :items="genderOptions"
+                                                                 :disabled="isSubmitting"
+                                                                 :rules="fieldRules(config.spouseGenderVisibility)" />
+                                            </div>
+                                        </div>
+                                    </ConditionalWell>
+                                </TransitionVerticalCollapse>
+                            </ContentStack>
+                        </ContentSection>
+
+                        <ContentSection :title="config.contactInformationTitle || 'Contact Information'" icon="ti ti-messages" disableCollapse>
+                            <template v-if="config.contactInformationDescription" #description>
+                                {{ config.contactInformationDescription }}
+                            </template>
+
+                            <ContentStack>
+                                <div class="row">
+                                    <div v-if="isFieldVisible(config.emailVisibility)" class="col-md-6">
+                                        <EmailBox v-model="email"
+                                                  label="Email"
+                                                  :rules="fieldRules(config.emailVisibility)" />
+                                    </div>
+                                    <div v-if="isMarried && isFieldVisible(config.spouseEmailVisibility)" class="col-md-6">
+                                        <EmailBox v-model="spouseEmail"
+                                                  label="Spouse Email"
+                                                  :rules="fieldRules(config.spouseEmailVisibility)" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div v-if="isFieldVisible(config.mobilePhoneVisibility)" class="col-md-6">
+                                        <PhoneNumberBoxWithSms v-model="mobilePhone"
+                                                               label="Mobile Phone"
+                                                               :rules="fieldRules(config.mobilePhoneVisibility)"
+                                                               :disabled="isSubmitting"
+                                                               :hideSms="!isFieldVisible(config.smsConsentVisibility)" />
+                                    </div>
+                                    <div v-if="isMarried && isFieldVisible(config.spouseMobilePhoneVisibility)" class="col-md-6">
+                                        <PhoneNumberBoxWithSms v-model="spouseMobilePhone"
+                                                               label="Spouse Mobile Phone"
+                                                               :rules="fieldRules(config.spouseMobilePhoneVisibility)"
+                                                               :disabled="isSubmitting"
+                                                               :hideSms="!isFieldVisible(config.smsConsentVisibility)" />
+                                    </div>
+                                </div>
+
+                                <div v-if="isFieldVisible(config.addressVisibility)" class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group connection-request-entry-address">
+                                            <label class="control-label" :class="{ 'required-indicator': isFieldRequired(config.addressVisibility) }">Address</label>
+                                            <AddressControl v-model="address"
+                                                            :disabled="isSubmitting"
+                                                            :rules="fieldRules(config.addressVisibility)" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div v-if="isFieldVisible(config.preferredServiceTimeVisibility)" class="row">
+                                    <div class="col-md-6">
+                                        <DropDownList v-model="preferredServiceTime"
+                                                      label="Preferred Service Time"
+                                                      help="Let us know which service you usually attend or plan to attend so we can help get you better connected."
+                                                      :items="config.preferredServiceTimeOptions ?? []"
+                                                      :rules="fieldRules(config.preferredServiceTimeVisibility)"
+                                                      :disabled="isSubmitting"
+                                                      showBlankItem />
+                                    </div>
+                                </div>
+
+                                <TextBox v-if="isFieldVisible(config.additionalCommentsVisibility)"
+                                         v-model="additionalComments"
+                                         :label="additionalCommentsLabel"
+                                         textMode="multiline"
+                                         :rows="3"
+                                         :rules="fieldRules(config.additionalCommentsVisibility)" />
+                            </ContentStack>
+                        </ContentSection>
+
+                        <ContentSection :title="config.connectionOpportunitiesTitle || 'Connection Opportunities'" icon="ti ti-plug">
+                            <template v-if="config.connectionOpportunitiesDescription" #description>
+                                {{ config.connectionOpportunitiesDescription }}
+                            </template>
+
+                            <ContentStack>
+                                <DisplayCardContainer v-if="hasOpportunities">
+                                    <ConnectionOpportunityCard v-for="opportunity in opportunities"
+                                                               :key="opportunity.idKey ?? ''"
+                                                               :opportunity="opportunity"
+                                                               :selected="isOpportunitySelected(opportunity)"
+                                                               :modelValue="opportunityAttributeValues[opportunity.idKey ?? '']"
+                                                               :disabled="isSubmitting"
+                                                               @update:selected="onOpportunitySelectedChange(opportunity, $event)"
+                                                               @update:modelValue="onOpportunityAttributesChange(opportunity, $event)" />
+                                </DisplayCardContainer>
+
+                                <template v-else>
+                                    <NotificationBox v-if="config.opportunitiesAdminMessage" alertType="warning">{{ config.opportunitiesAdminMessage }}</NotificationBox>
+                                    <NotificationBox alertType="info">{{ emptyOpportunitiesMessage }}</NotificationBox>
+                                </template>
+                            </ContentStack>
+                        </ContentSection>
+
+                        <ContentSection v-if="hasPersonAttributes" :title="config.additionalInformationTitle || 'Additional Information'" icon="ti ti-info-circle" disableCollapse>
+                            <template v-if="config.additionalInformationDescription" #description>
+                                {{ config.additionalInformationDescription }}
+                            </template>
+
+                            <ContentStack>
+                                <AttributeValuesContainer v-model="personAttributeValues"
+                                                          :attributes="config.personAttributes ?? {}"
+                                                          :disabled="isSubmitting"
+                                                          isEditMode />
+                            </ContentStack>
+                        </ContentSection>
+                    </ContentSectionContainer>
+                </fieldset>
 
                 <div class="connection-request-entry-footer">
                     <div v-if="config.isCaptchaEnabled" v-show="!isCaptchaComplete">
@@ -338,6 +355,11 @@
     padding: 0.75rem 0;
     background: var(--color-interface-softest);
 }
+
+/* Layout-transparent wrapper; carries only the disabled state to the fields while submitting. */
+.connection-request-entry-fields {
+    display: contents;
+}
 </style>
 
 <script setup lang="ts">
@@ -384,7 +406,7 @@
 
     // #region Types
 
-    const profilePhotoFileTypeGuid = BinaryFiletype.Default;
+    const profilePhotoFileTypeGuid = BinaryFiletype.PersonImage;
 
     // #endregion Types
 
@@ -617,10 +639,17 @@
     }
 
     /**
+     * Indicates whether a configurable field is required.
+     */
+    function isFieldRequired(visibility: ConnectionRequestEntryFieldVisibility): boolean {
+        return visibility === ConnectionRequestEntryFieldVisibility.Required;
+    }
+
+    /**
      * Returns the validation rules for a field based on its visibility setting.
      */
     function fieldRules(visibility: ConnectionRequestEntryFieldVisibility): string {
-        return visibility === ConnectionRequestEntryFieldVisibility.Required ? "required" : "";
+        return isFieldRequired(visibility) ? "required" : "";
     }
 
     /**
