@@ -118,5 +118,11 @@ namespace Rock.ViewModels.Blocks.Fundraising.FundraisingOpportunityView
         /// Gets or sets the navigation URLs used by the block.
         /// </summary>
         public Dictionary<string, string> NavigationUrls { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL of the current person's avatar, used when adding a new comment
+        /// on the Comments tab.
+        /// </summary>
+        public string PersonAvatarUrl { get; set; }
     }
 }

@@ -1,41 +1,45 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <template v-if="comments">
-        <NotesContainer v-if="hasComments || comments.isAddAllowed"
-                        title="Comments"
-                        :notes="comments.notes ?? []"
-                        :noteTypes="comments.noteTypes ?? []"
-                        :showAdd="comments.isAddAllowed"
-                        showAvatar
-                        descending
-                        @editNote="onEditNote"
-                        @watchNote="onWatchNote"
-                        @saveNote="onSaveNote"
-                        @deleteNote="onDeleteNote" />
-        <i v-else><br />No comments yet.</i>
-
         <RockButton v-if="comments.loginUrl"
                     btnType="link"
-                    class="pull-right"
                     @click="onLoginToCommentClick">
             Log In to Comment
         </RockButton>
+
+        <template v-else>
+            <NotesContainer v-if="hasComments || comments.isAddAllowed"
+                            title="Comments"
+                            :notes="comments.notes ?? []"
+                            :noteTypes="comments.noteTypes ?? []"
+                            :showAdd="comments.isAddAllowed"
+                            showAvatar
+                            descending
+                            :personAvatarUrl="config.personAvatarUrl ?? ''"
+                            @editNote="onEditNote"
+                            @watchNote="onWatchNote"
+                            @saveNote="onSaveNote"
+                            @deleteNote="onDeleteNote" />
+            <i v-else><br />No comments yet.</i>
+        </template>
     </template>
 </template>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import NotesContainer from "@Obsidian/Controls/Internal/notesContainer.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { NoteBag } from "@Obsidian/ViewModels/Controls/noteBag";
     import { NoteEditBag } from "@Obsidian/ViewModels/Controls/noteEditBag";
     import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Controls/saveNoteRequestBag";
     import { FundraisingOpportunityViewCommentsBag } from "@Obsidian/ViewModels/Blocks/Fundraising/FundraisingOpportunityView/fundraisingOpportunityViewCommentsBag";
+    import { FundraisingOpportunityViewInitializationBox } from "@Obsidian/ViewModels/Blocks/Fundraising/FundraisingOpportunityView/fundraisingOpportunityViewInitializationBox";
 
     // #region Values
 
     const invokeBlockAction = useInvokeBlockAction();
+    const config = useConfigurationValues<FundraisingOpportunityViewInitializationBox>();
 
     const comments = ref<FundraisingOpportunityViewCommentsBag>();
 

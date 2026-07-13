@@ -24,7 +24,6 @@ using System.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.ClientService.Core.Note;
-using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Fundraising.FundraisingOpportunityView;
@@ -218,7 +217,8 @@ namespace Rock.Blocks.Fundraising
         {
             var box = new FundraisingOpportunityViewInitializationBox
             {
-                NavigationUrls = GetBoxNavigationUrls()
+                NavigationUrls = GetBoxNavigationUrls(),
+                PersonAvatarUrl = RequestContext.CurrentPerson?.PhotoUrl
             };
 
             GetFundraisingOpportunityBox( box );
@@ -502,8 +502,8 @@ namespace Rock.Blocks.Fundraising
                 {
                     var familyMemberQueryParams = new Dictionary<string, string>
                     {
-                        { PageParameterKey.GroupId, group.Id.ToString() },
-                        { PageParameterKey.GroupMemberId, member.Id.ToString() },
+                        { PageParameterKey.GroupId, group.IdKey },
+                        { PageParameterKey.GroupMemberId, member.IdKey },
                         { PageParameterKey.ParticipationMode, participationMode.ToString( "D" ) }
                     };
 
@@ -539,8 +539,8 @@ namespace Rock.Blocks.Fundraising
 
             var queryParams = new Dictionary<string, string>
             {
-                { PageParameterKey.GroupId, group.Id.ToString() },
-                { PageParameterKey.GroupMemberId, currentPerson.Id.ToString() },
+                { PageParameterKey.GroupId, group.IdKey },
+                { PageParameterKey.GroupMemberId, currentPerson.IdKey },
                 { PageParameterKey.ParticipationMode, participationMode.ToString( "D" ) }
             };
             mergeFields.Add( "MakeDonationUrl", this.GetLinkedPageUrl( AttributeKey.DonationPage, queryParams ) );
@@ -604,7 +604,7 @@ namespace Rock.Blocks.Fundraising
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
             var group = GetGroup();
-            var groupId = group?.Id.ToString() ?? string.Empty;
+            var groupId = group?.IdKey ?? string.Empty;
 
             var groupQueryParams = new Dictionary<string, string>
             {

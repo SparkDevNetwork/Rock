@@ -20,6 +20,7 @@
                     <div v-if="isAddNoteVisible" class="notes-container-editor">
                         <NoteEditor v-model="addNoteBag"
                                     :noteTypes="noteTypes"
+                                    :avatarUrl="noteOptions.avatarUrl"
                                     :showAlert="noteOptions.showAlert"
                                     :showDate="noteOptions.showCreateDate"
                                     :showPrivate="noteOptions.showPrivate"
@@ -47,6 +48,7 @@
                     <div v-if="isAddNoteVisible" class="notes-container-editor">
                         <NoteEditor v-model="addNoteBag"
                                     :noteTypes="noteTypes"
+                                    :avatarUrl="noteOptions.avatarUrl"
                                     :showAlert="noteOptions.showAlert"
                                     :showDate="noteOptions.showCreateDate"
                                     :showPrivate="noteOptions.showPrivate"
