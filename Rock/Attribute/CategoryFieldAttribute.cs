@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using Rock.Field.Types;
 
 namespace Rock.Attribute
 {

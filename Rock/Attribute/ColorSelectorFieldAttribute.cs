@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using Rock.Field.Types;
 
 namespace Rock.Attribute
 {
@@ -61,11 +60,11 @@ namespace Rock.Attribute
         {
             get
             {
-                return FieldConfigurationValues.GetValueOrNull( ColorSelectorFieldType.ConfigurationKey.Colors );
+                return FieldConfigurationValues.GetValueOrNull( "colors" );
             }
             set
             {
-                FieldConfigurationValues.AddOrReplace( ColorSelectorFieldType.ConfigurationKey.Colors, new Field.ConfigurationValue( value ) );
+                FieldConfigurationValues.AddOrReplace( "colors", new Field.ConfigurationValue( value ) );
             }
         }
     }

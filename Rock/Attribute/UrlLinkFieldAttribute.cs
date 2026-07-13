@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using Rock.Field.Types;
 
 namespace Rock.Attribute
 {
@@ -61,11 +60,11 @@ namespace Rock.Attribute
         {
             get
             {
-                return FieldConfigurationValues.GetValueOrDefault( UrlLinkFieldType.ConfigurationKey.ShouldRequireTrailingForwardSlash, new Field.ConfigurationValue( "false" ) ).Value.AsBoolean();
+                return FieldConfigurationValues.GetValueOrDefault( "ShouldRequireTrailingForwardSlash", new Field.ConfigurationValue( "false" ) ).Value.AsBoolean();
             }
             set
             {
-                FieldConfigurationValues.AddOrReplace( UrlLinkFieldType.ConfigurationKey.ShouldRequireTrailingForwardSlash, new Field.ConfigurationValue( value.ToString() ) );
+                FieldConfigurationValues.AddOrReplace( "ShouldRequireTrailingForwardSlash", new Field.ConfigurationValue( value.ToString() ) );
             }
         }
 
@@ -79,11 +78,11 @@ namespace Rock.Attribute
         {
             get
             {
-                return FieldConfigurationValues.GetValueOrDefault( UrlLinkFieldType.ConfigurationKey.ShouldAlwaysShowCondensed, new Field.ConfigurationValue( "false" ) ).Value.AsBoolean();
+                return FieldConfigurationValues.GetValueOrDefault( "ShouldAlwaysShowCondensed", new Field.ConfigurationValue( "false" ) ).Value.AsBoolean();
             }
             set
             {
-                FieldConfigurationValues.AddOrReplace( UrlLinkFieldType.ConfigurationKey.ShouldAlwaysShowCondensed, new Field.ConfigurationValue( value.ToString() ) );
+                FieldConfigurationValues.AddOrReplace( "ShouldAlwaysShowCondensed", new Field.ConfigurationValue( value.ToString() ) );
             }
         }
     }

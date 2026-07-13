@@ -26,7 +26,7 @@ namespace Rock.Migrations
         /// <summary>
         /// The attribute qualifier key that stores a Boolean attribute's edit control type (drop down, checkbox, etc.).
         /// </summary>
-        private const string BooleanControlTypeQualifierKey = Rock.Field.Types.BooleanFieldType.ConfigurationKey.BooleanControlType;
+        private const string BooleanControlTypeQualifierKey = "BooleanControlType";
 
         /// <summary>
         /// Operations to be performed during the upgrade process.

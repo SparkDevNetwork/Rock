@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 
+using Rock.Data;
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Field
@@ -173,6 +175,146 @@ namespace Rock.Field
             }
 
             return values;
+        }
+
+        /// <summary>
+        /// Splits the persisted pipe-delimited value into its four guid slots.
+        /// </summary>
+        /// <param name="value">The persisted attribute value.</param>
+        /// <param name="connectionTypeGuid">The Connection Type guid, if present.</param>
+        /// <param name="connectionOpportunityGuid">The Connection Opportunity guid, if present.</param>
+        /// <param name="connectionStatusGuid">The Connection Status guid, if present.</param>
+        /// <param name="connectionTypeSourceGuid">The Connection Type Source guid, if present.</param>
+        public static void ParseConnectionTypeSettingsDelimitedGuids( string value, out Guid? connectionTypeGuid, out Guid? connectionOpportunityGuid, out Guid? connectionStatusGuid, out Guid? connectionTypeSourceGuid )
+        {
+            var parts = ( value ?? string.Empty ).Split( '|' );
+            connectionTypeGuid = parts.Length > 0 ? parts[0].AsGuidOrNull() : null;
+            connectionOpportunityGuid = parts.Length > 1 ? parts[1].AsGuidOrNull() : null;
+            connectionStatusGuid = parts.Length > 2 ? parts[2].AsGuidOrNull() : null;
+            connectionTypeSourceGuid = parts.Length > 3 ? parts[3].AsGuidOrNull() : null;
+        }
+
+        /// <summary>
+        /// Get a value for this field type from a serialized representation, or return the specified default value.
+        /// </summary>
+        /// <param name="serialized"></param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
+        public static T GetEnumDeserializedValue<T>( string serialized, T defaultValue )
+            where T : struct
+        {
+            T enumValue;
+
+            var isValid = Enum.TryParse( serialized, out enumValue );
+
+            if ( isValid )
+            {
+                return enumValue;
+            }
+            else
+            {
+                return defaultValue;
+            }
+        }
+
+        /// <summary>
+        /// Adds the defined value to the attribute configuration. This only
+        /// updates the configuration if it is required. If the id already is
+        /// selected or the configuration already specifies all values to be
+        /// shown then no changes are made. This makes the change but does not
+        /// save the changes to the database.
+        /// </summary>
+        /// <param name="attributeId">The attribute identifier.</param>
+        /// <param name="definedValueId">The defined value identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if SaveChanges() should be called, <c>false</c> otherwise.</returns>
+        internal static bool AddDefinedValueToAttributeConfiguration( int attributeId, int definedValueId, RockContext rockContext )
+        {
+            var qualifier = new AttributeQualifierService( rockContext )
+                .Queryable()
+                .Where( q => q.AttributeId == attributeId && q.Key == "SelectableDefinedValuesId" )
+                .FirstOrDefault();
+
+            if ( qualifier == null || qualifier.Value.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            var ids = qualifier.Value.SplitDelimitedValues().AsIntegerList();
+
+            if ( ids.Contains( definedValueId ) )
+            {
+                return false;
+            }
+
+            ids.Add( definedValueId );
+
+            qualifier.Value = string.Join( ",", ids.Select( id => id.ToString() ) );
+
+            return true;
+        }
+
+        /// <summary>
+        /// Unencrypts and strips any non-numeric characters from value.
+        /// </summary>
+        /// <param name="encryptedValue">The encrypted value.</param>
+        /// <returns></returns>
+        internal static string UnencryptAndCleanSocialSecurityNumber( string encryptedValue )
+        {
+            if ( encryptedValue.IsNotNullOrWhiteSpace() )
+            {
+                string ssn = Rock.Security.Encryption.DecryptString( encryptedValue );
+                if ( !string.IsNullOrEmpty( ssn ) )
+                {
+                    return ssn.AsNumeric();
+                }
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the models from the delimited values.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="stepProgramGuid">The step program unique identifier.</param>
+        /// <param name="stepStatusGuid">The step status unique identifier.</param>
+        internal static void ParseStepProgramStatusDelimitedGuids( string value, out Guid? stepProgramGuid, out Guid? stepStatusGuid )
+        {
+            var parts = ( value ?? string.Empty ).Split( '|' );
+
+            if ( parts.Length == 1 )
+            {
+                // If there is only one guid, assume it is the status
+                stepProgramGuid = null;
+                stepStatusGuid = parts[0].AsGuidOrNull();
+                return;
+            }
+
+            stepProgramGuid = parts.Length > 0 ? parts[0].AsGuidOrNull() : null;
+            stepStatusGuid = parts.Length > 1 ? parts[1].AsGuidOrNull() : null;
+        }
+
+        /// <summary>
+        /// Gets the models from the delimited values.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="stepProgramGuid">The step program unique identifier.</param>
+        /// <param name="stepTypeGuid">The step type unique identifier.</param>
+        internal static void ParseStepProgramStepTypeDelimitedGuids( string value, out Guid? stepProgramGuid, out Guid? stepTypeGuid )
+        {
+            var parts = ( value ?? string.Empty ).Split( '|' );
+
+            if ( parts.Length == 1 )
+            {
+                // If there is only one guid, assume it is the type
+                stepProgramGuid = null;
+                stepTypeGuid = parts[0].AsGuidOrNull();
+                return;
+            }
+
+            stepProgramGuid = parts.Length > 0 ? parts[0].AsGuidOrNull() : null;
+            stepTypeGuid = parts.Length > 1 ? parts[1].AsGuidOrNull() : null;
         }
 
         #endregion

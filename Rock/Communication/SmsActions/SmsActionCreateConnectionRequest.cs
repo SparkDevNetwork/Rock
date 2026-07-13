@@ -22,8 +22,6 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Field.Types;
-using Rock.Lava;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -135,7 +133,7 @@ namespace Rock.Communication.SmsActions
 
             var attribute = action.Attributes.ContainsKey( AttributeKey.Message ) ? action.Attributes[AttributeKey.Message] : null;
             var msg = GetAttributeValue( action, AttributeKey.Message );
-            var filter = ValueFilterFieldType.GetFilterExpression( attribute?.QualifierValues, msg );
+            var filter = FilterExpression.FromJsonOrNull(  msg );
 
             return filter != null ? filter.Evaluate( message, AttributeKey.Message ) : true;
         }
@@ -145,7 +143,7 @@ namespace Rock.Communication.SmsActions
         {
             errorMessage = string.Empty;
 
-            ConnectionTypeSettingsFieldType.ParseDelimitedGuids(
+            Field.Helper.ParseConnectionTypeSettingsDelimitedGuids(
                 GetAttributeValue( action, AttributeKey.ConnectionTypeSettings ),
                 out _,
                 out var opportunityGuid,

@@ -131,18 +131,7 @@ namespace Rock.Field.Types
         /// <param name="stepStatusGuid">The step status unique identifier.</param>
         public static void ParseDelimitedGuids( string value, out Guid? stepProgramGuid, out Guid? stepStatusGuid )
         {
-            var parts = ( value ?? string.Empty ).Split( '|' );
-
-            if ( parts.Length == 1 )
-            {
-                // If there is only one guid, assume it is the status
-                stepProgramGuid = null;
-                stepStatusGuid = parts[0].AsGuidOrNull();
-                return;
-            }
-
-            stepProgramGuid = parts.Length > 0 ? parts[0].AsGuidOrNull() : null;
-            stepStatusGuid = parts.Length > 1 ? parts[1].AsGuidOrNull() : null;
+            Helper.ParseStepProgramStatusDelimitedGuids( value, out stepProgramGuid, out stepStatusGuid );
         }
 
         /// <summary>

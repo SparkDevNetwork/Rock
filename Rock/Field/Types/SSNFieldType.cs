@@ -128,17 +128,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public static string UnencryptAndClean( string encryptedValue )
         {
-            if ( encryptedValue.IsNotNullOrWhiteSpace() )
-            {
-                string ssn = Rock.Security.Encryption.DecryptString( encryptedValue );
-                if ( !string.IsNullOrEmpty( ssn ) )
-                {
-                    return ssn.AsNumeric();
-                    ;
-                }
-            }
-
-            return string.Empty;
+            return Helper.UnencryptAndCleanSocialSecurityNumber( encryptedValue );
         }
 
         #region WebForms

@@ -185,13 +185,14 @@ namespace Rock.Model
                 // not check BinaryFileFieldType nor LabelFieldType because those
                 // operate as pickers to an existing file rather than being the
                 // source of the file itself.
-                var field = AttributeCache.Get( Entity.AttributeId )?.FieldType.Field;
+                var fieldType = AttributeCache.Get( Entity.AttributeId )?.FieldType;
+                var field = fieldType.Field;
                 if ( field != null && (
-                    field is Field.Types.FileFieldType ||
-                    field is Field.Types.ImageFieldType ||
-                    field is Field.Types.BackgroundCheckFieldType ) )
+                    fieldType.Guid == SystemGuid.FieldType.FILE.AsGuid() ||
+                    fieldType.Guid == SystemGuid.FieldType.IMAGE.AsGuid() ||
+                    fieldType.Guid == SystemGuid.FieldType.BACKGROUNDCHECK.AsGuid() ) )
                 {
-                    PostSaveDeleteUnreferencedBinaryFile( field is Field.Types.BackgroundCheckFieldType );
+                    PostSaveDeleteUnreferencedBinaryFile( fieldType.Guid == SystemGuid.FieldType.BACKGROUNDCHECK.AsGuid() );
                 }
 
                 // Previously we were doing this here:
@@ -274,7 +275,7 @@ namespace Rock.Model
 
             /// <summary>
             /// Processes the PreSave event when this value is for
-            /// <see cref="Field.Types.StructureContentEditorFieldType"/>. Detect any
+            /// <c>Field.Types.StructureContentEditorFieldType</c>. Detect any
             /// changes to the internal content and apply them to the database as well.
             /// </summary>
             /// <param name="rockContext">The rock context.</param>

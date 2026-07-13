@@ -22,29 +22,6 @@ using Rock.Attribute;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Specifies a level of necessity and/or availability of a data entry element.
-    /// </summary>
-    public enum DataEntryRequirementLevelSpecifier
-    {
-        /// <summary>
-        /// No requirement level has been specified for this data element.
-        /// </summary>
-        Unspecified = 0,
-        /// <summary>
-        /// The data element is available but not required.
-        /// </summary>
-        Optional = 1,
-        /// <summary>
-        /// The data element is available and required.
-        /// </summary>
-        Required = 2,
-        /// <summary>
-        /// The data element is not available.
-        /// </summary>
-        Unavailable = 3
-    }
-
-    /// <summary>
     /// A field that stores the level of necessity and availability associated with a data entry item.
     /// </summary>
     /// <summary>

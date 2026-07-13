@@ -17,7 +17,6 @@
 using System;
 
 using Rock.Configuration;
-using Rock.Field.Types;
 using Rock.Web.Cache;
 
 namespace Rock.Attribute

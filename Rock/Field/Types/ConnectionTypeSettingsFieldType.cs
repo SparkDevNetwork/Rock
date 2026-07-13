@@ -220,11 +220,7 @@ namespace Rock.Field.Types
         /// <param name="connectionTypeSourceGuid">The Connection Type Source guid, if present.</param>
         public static void ParseDelimitedGuids( string value, out Guid? connectionTypeGuid, out Guid? connectionOpportunityGuid, out Guid? connectionStatusGuid, out Guid? connectionTypeSourceGuid )
         {
-            var parts = ( value ?? string.Empty ).Split( '|' );
-            connectionTypeGuid = parts.Length > 0 ? parts[0].AsGuidOrNull() : null;
-            connectionOpportunityGuid = parts.Length > 1 ? parts[1].AsGuidOrNull() : null;
-            connectionStatusGuid = parts.Length > 2 ? parts[2].AsGuidOrNull() : null;
-            connectionTypeSourceGuid = parts.Length > 3 ? parts[3].AsGuidOrNull() : null;
+            Helper.ParseConnectionTypeSettingsDelimitedGuids( value, out connectionTypeGuid, out connectionOpportunityGuid, out connectionStatusGuid, out connectionTypeSourceGuid );
         }
 
         private static void GetModelsFromAttributeValue( string value, out ConnectionType type, out ConnectionOpportunity opportunity, out ConnectionStatus status, out ConnectionTypeSource source )

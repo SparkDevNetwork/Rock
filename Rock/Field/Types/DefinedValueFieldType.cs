@@ -224,28 +224,7 @@ namespace Rock.Field.Types
         /// <returns><c>true</c> if SaveChanges() should be called, <c>false</c> otherwise.</returns>
         internal static bool AddValueToAttributeConfiguration( int attributeId, int definedValueId, RockContext rockContext )
         {
-            var qualifier = new AttributeQualifierService( rockContext )
-                .Queryable()
-                .Where( q => q.AttributeId == attributeId && q.Key == SELECTABLE_VALUES_KEY )
-                .FirstOrDefault();
-
-            if ( qualifier == null || qualifier.Value.IsNullOrWhiteSpace() )
-            {
-                return false;
-            }
-
-            var ids = qualifier.Value.SplitDelimitedValues().AsIntegerList();
-
-            if ( ids.Contains( definedValueId ) )
-            {
-                return false;
-            }
-
-            ids.Add( definedValueId );
-
-            qualifier.Value = string.Join( ",", ids.Select( id => id.ToString() ) );
-
-            return true;
+            return Helper.AddDefinedValueToAttributeConfiguration( attributeId, definedValueId, rockContext );
         }
 
         #endregion

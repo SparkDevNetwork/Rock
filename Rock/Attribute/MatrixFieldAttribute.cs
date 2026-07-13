@@ -17,10 +17,7 @@
 using System;
 
 using Rock.Configuration;
-using Rock.Data;
-using Rock.Field.Types;
 using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.Attribute
 {

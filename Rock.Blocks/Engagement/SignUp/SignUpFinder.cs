@@ -17,7 +17,6 @@
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Utility;

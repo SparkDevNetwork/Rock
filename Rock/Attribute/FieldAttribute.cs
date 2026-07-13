@@ -65,7 +65,7 @@ namespace Rock.Attribute
 
             if ( string.IsNullOrWhiteSpace( fieldTypeClass ) )
             {
-                fieldTypeClass = typeof( Rock.Field.Types.TextFieldType ).FullName;
+                fieldTypeClass = "Rock.Field.Types.TextFieldType";
             }
 
             Name = name;

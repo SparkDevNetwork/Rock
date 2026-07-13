@@ -340,18 +340,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public T GetDeserializedValue( string serialized, T defaultValue )
         {
-            T enumValue;
-
-            var isValid = Enum.TryParse( serialized, out enumValue );
-
-            if ( isValid )
-            {
-                return enumValue;
-            }
-            else
-            {
-                return defaultValue;
-            }
+            return Helper.GetEnumDeserializedValue( serialized, defaultValue );
         }
 
         #endregion

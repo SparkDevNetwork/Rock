@@ -19,10 +19,8 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -84,7 +82,7 @@ namespace Rock.Model
             if ( checkIfUsedByAchievementType )
             {
                 // check if any MatrixAttributes are using this AttributeMatrixTemplate
-                var streakTypeFieldTypeId = FieldTypeCache.Get<StreakTypeFieldType>().Id;
+                var streakTypeFieldTypeId = FieldTypeCache.Get( SystemGuid.FieldType.STREAK_TYPE.AsGuid() ).Id;
                 var entityTypeIdAchievementType = EntityTypeCache.GetId<Rock.Model.AchievementType>();
 
                 var streakTypeGuid = item.Guid.ToString();

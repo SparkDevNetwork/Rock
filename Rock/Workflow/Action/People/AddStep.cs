@@ -22,7 +22,6 @@ using System.Data.Entity;
 using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -310,7 +309,7 @@ namespace Rock.Workflow.Action
             var stepTypeValue = GetLavaAttributeValue( action, AttributeKey.StepProgramStepType );
 
             // Check if the value is a guid. This method works for stepProgram|stepType or simply just step type guids
-            StepProgramStepTypeFieldType.ParseDelimitedGuids( stepTypeValue, out var unused1, out var stepTypeGuid );
+            Field.Helper.ParseStepProgramStepTypeDelimitedGuids( stepTypeValue, out var unused1, out var stepTypeGuid );
 
             if ( stepTypeGuid.HasValue )
             {
@@ -378,7 +377,7 @@ namespace Rock.Workflow.Action
             }
 
             // Check if the value is a guid. This method works for stepProgram|stepStatus or simply just step status guid
-            StepProgramStepStatusFieldType.ParseDelimitedGuids( stepStatusValue, out var unused2, out var stepStatusGuid );
+            Field.Helper.ParseStepProgramStatusDelimitedGuids( stepStatusValue, out var unused2, out var stepStatusGuid );
 
             if ( stepStatusGuid.HasValue )
             {

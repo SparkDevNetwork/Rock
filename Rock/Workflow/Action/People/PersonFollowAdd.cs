@@ -218,7 +218,7 @@ namespace Rock.Workflow.Action
                     var entityFieldType = attribute.FieldType.Field as IEntityFieldType;
                     if ( entityFieldType != null )
                     {
-                        if ( entityFieldType is Rock.Field.Types.PersonFieldType && EntityTypeCache.Get<Model.PersonAlias>().Id == entityType.Id )
+                        if ( attribute.FieldType.Guid == SystemGuid.FieldType.PERSON.AsGuid() && EntityTypeCache.Get<Model.PersonAlias>().Id == entityType.Id )
                         {
                             var guidValue = attributeValue.AsGuidOrNull();
                             if ( guidValue.HasValue )

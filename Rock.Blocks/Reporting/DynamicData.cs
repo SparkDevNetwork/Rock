@@ -24,7 +24,6 @@ using System.Text.RegularExpressions;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Obsidian.UI;
