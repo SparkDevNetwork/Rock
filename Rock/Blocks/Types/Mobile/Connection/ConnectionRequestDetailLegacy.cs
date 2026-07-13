@@ -111,6 +111,9 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL )]
+
+    [Obsolete( "Use the new ConnectionRequestDetail block instead." )]
+    [RockObsolete( "20.0" )]
     public class ConnectionRequestDetailLegacy : RockBlockType
     {
         #region Block Attributes
