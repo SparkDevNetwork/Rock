@@ -754,14 +754,13 @@ namespace Rock.Blocks.Finance
             else if ( _person != null )
             {
                 // Use GivingId so family members who give together are all included.
-                var personAliasIds = new PersonAliasService( RockContext )
+                var personAliasQry = new PersonAliasService( RockContext )
                     .Queryable()
                     .Where( a => a.Person.GivingId == _person.GivingId )
-                    .Select( a => a.Id )
-                    .ToList();
+                    .Select( a => a.Id );
 
                 qry = qry.Where( t => t.AuthorizedPersonAliasId.HasValue
-                    && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
+                    && personAliasQry.Contains( t.AuthorizedPersonAliasId.Value ) );
             }
 
             return qry.Select( t => new TransactionListRow
@@ -859,14 +858,14 @@ namespace Rock.Blocks.Finance
             }
             else if ( _person != null )
             {
-                var personAliasIds = new PersonAliasService( RockContext )
+                // Use GivingId so family members who give together are all included.
+                var personAliasQry = new PersonAliasService( RockContext )
                     .Queryable()
                     .Where( a => a.Person.GivingId == _person.GivingId )
-                    .Select( a => a.Id )
-                    .ToList();
+                    .Select( a => a.Id );
 
                 qry = qry.Where( d => d.Transaction.AuthorizedPersonAliasId.HasValue
-                    && personAliasIds.Contains( d.Transaction.AuthorizedPersonAliasId.Value ) );
+                    && personAliasQry.Contains( d.Transaction.AuthorizedPersonAliasId.Value ) );
             }
 
             return qry.Select( d => new TransactionListRow
@@ -1224,6 +1223,11 @@ namespace Rock.Blocks.Finance
         /// <returns>The image URL or <c>null</c>.</returns>
         private string GetTransactionImageUrl( TransactionListRow row )
         {
+            if ( !ShowImages )
+            {
+                return null;
+            }
+
             var firstImageBinaryFileId = row.ImageBinaryFileIds?.FirstOrDefault();
             if ( !firstImageBinaryFileId.HasValue || firstImageBinaryFileId.Value == 0 )
             {
