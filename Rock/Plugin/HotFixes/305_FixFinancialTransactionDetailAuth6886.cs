@@ -1,0 +1,48 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+using System;
+
+namespace Rock.Plugin.HotFixes
+{
+    /// <summary>
+    /// Corrects the security (Auth) records for the FinancialTransactionDetail model to allow
+    /// Financial Admins and Financial Workers to match the FinancialTransaction model so that
+    /// they can use the ModifyEntity Lava commands. Fix for issue #6886.
+    /// </summary>
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 305, "19.3" )]
+    public class FixFinancialTransactionDetailAuth6886 : Migration
+    {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            RockMigrationHelper.AddSecurityAuthForEntityType( "Rock.Model.FinancialTransactionDetail", 1, "Edit", true, "2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9", 0, "20FF56BB-D406-4779-AFDD-7886CD85EAE0" ); // EntityType:Rock.Model.FinancialTransactionDetail Group: 2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9 ( RSR - Finance Worker ), 
+            RockMigrationHelper.AddSecurityAuthForEntityType( "Rock.Model.FinancialTransactionDetail", 0, "Edit", true, "6246A7EF-B7A3-4C8C-B1E4-3FF114B84559", 0, "049908E0-50DE-4137-9000-C0DBA9B86A5D" ); // EntityType:Rock.Model.FinancialTransactionDetail Group: 6246A7EF-B7A3-4C8C-B1E4-3FF114B84559 ( RSR - Finance Administration ), 
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            //
+        }
+    }
+}
