@@ -328,6 +328,9 @@ namespace Rock.Attribute
                 // intentionally ignore exceptions since this is only
                 // used for backwards compatibility with the old
                 // constructor.
+
+                _fieldTypeAssembly = string.Empty;
+                _fieldTypeClass = string.Empty;
             }
         }
     }
