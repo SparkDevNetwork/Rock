@@ -66,6 +66,7 @@
 
 .carousel-inner .item {
     grid-area: 1 / 1;
+    cursor: pointer;
 }
 
 .carousel-inner .item a {
