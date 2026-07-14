@@ -31,7 +31,8 @@ namespace Rock.Field.Types
     [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DATA_ENTRY_REQUIREMENT_LEVEL )]
-    // The base class 
+    // The base class will be replaced with the RequirementLevel enum after
+    // the DataEntryRequirementLevelSpecifier enum is removed in a future release.
 #pragma warning disable CS0618 // Type or member is obsolete
     public class DataEntryRequirementLevelFieldType : EnumFieldType<DataEntryRequirementLevelSpecifier>
     {
