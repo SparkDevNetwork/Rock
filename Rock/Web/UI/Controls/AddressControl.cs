@@ -24,6 +24,7 @@ using Rock.Web.Cache;
 using Rock.Model;
 using System.Collections.Generic;
 using Rock.Attribute;
+using Rock.Enums.Controls;
 
 namespace Rock.Web.UI.Controls
 {
@@ -281,12 +282,12 @@ namespace Rock.Web.UI.Controls
         private string _orgState = null;
         private string _orgCountry = null;
 
-        private DataEntryRequirementLevelSpecifier _AddressLine1Requirement = DataEntryRequirementLevelSpecifier.Optional;
-        private DataEntryRequirementLevelSpecifier _AddressLine2Requirement = DataEntryRequirementLevelSpecifier.Optional;
-        private DataEntryRequirementLevelSpecifier _CityRequirement = DataEntryRequirementLevelSpecifier.Optional;
-        private DataEntryRequirementLevelSpecifier _LocalityRequirement = DataEntryRequirementLevelSpecifier.Optional;
-        private DataEntryRequirementLevelSpecifier _StateRequirement = DataEntryRequirementLevelSpecifier.Optional;
-        private DataEntryRequirementLevelSpecifier _PostalCodeRequirement = DataEntryRequirementLevelSpecifier.Optional;
+        private RequirementLevel _AddressLine1Requirement = RequirementLevel.Optional;
+        private RequirementLevel _AddressLine2Requirement = RequirementLevel.Optional;
+        private RequirementLevel _CityRequirement = RequirementLevel.Optional;
+        private RequirementLevel _LocalityRequirement = RequirementLevel.Optional;
+        private RequirementLevel _StateRequirement = RequirementLevel.Optional;
+        private RequirementLevel _PostalCodeRequirement = RequirementLevel.Optional;
 
         private string _CityLabel;
         private string _LocalityLabel;
@@ -940,12 +941,12 @@ namespace Rock.Web.UI.Controls
                 if ( !this.PartialAddressIsAllowed )
                 {
                     // Set the field requirements for valid data entry.
-                    _AddressLine1Requirement = Field.Helper.GetEnumDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine1Requirement ), DataEntryRequirementLevelSpecifier.Optional );
-                    _AddressLine2Requirement = Field.Helper.GetEnumDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine2Requirement ), DataEntryRequirementLevelSpecifier.Optional );
-                    _CityRequirement = Field.Helper.GetEnumDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressCityRequirement ), DataEntryRequirementLevelSpecifier.Optional );
-                    _LocalityRequirement = Field.Helper.GetEnumDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLocalityRequirement ), DataEntryRequirementLevelSpecifier.Optional );
-                    _StateRequirement = Field.Helper.GetEnumDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressStateRequirement ), DataEntryRequirementLevelSpecifier.Optional );
-                    _PostalCodeRequirement = Field.Helper.GetEnumDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressPostalCodeRequirement ), DataEntryRequirementLevelSpecifier.Optional );
+                    _AddressLine1Requirement = Field.Helper.GetEnumDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine1Requirement ), RequirementLevel.Optional );
+                    _AddressLine2Requirement = Field.Helper.GetEnumDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine2Requirement ), RequirementLevel.Optional );
+                    _CityRequirement = Field.Helper.GetEnumDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressCityRequirement ), RequirementLevel.Optional );
+                    _LocalityRequirement = Field.Helper.GetEnumDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLocalityRequirement ), RequirementLevel.Optional );
+                    _StateRequirement = Field.Helper.GetEnumDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressStateRequirement ), RequirementLevel.Optional );
+                    _PostalCodeRequirement = Field.Helper.GetEnumDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressPostalCodeRequirement ), RequirementLevel.Optional );
                 }
             }
 
@@ -957,18 +958,18 @@ namespace Rock.Web.UI.Controls
             if ( !this.PartialAddressIsAllowed )
             {
                 // Hide Address Line 2 if it is not required, and not specified to show in the control settings.
-                if ( _AddressLine2Requirement == DataEntryRequirementLevelSpecifier.Optional
+                if ( _AddressLine2Requirement == RequirementLevel.Optional
                      && !this.ShowAddressLine2 )
                 {
-                    _AddressLine2Requirement = DataEntryRequirementLevelSpecifier.Unavailable;
+                    _AddressLine2Requirement = RequirementLevel.Unavailable;
                 }
 
                 // Hide Locality if specified in the control settings and it is not required.
                 // The ShowCounty property is probably not necessary now because this setting can be specified per-country.
-                if ( _LocalityRequirement == DataEntryRequirementLevelSpecifier.Optional
+                if ( _LocalityRequirement == RequirementLevel.Optional
                      && !this.ShowCounty )
                 {
-                    _LocalityRequirement = DataEntryRequirementLevelSpecifier.Unavailable;
+                    _LocalityRequirement = RequirementLevel.Unavailable;
                 }
             }
         }
@@ -980,13 +981,13 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Required )
             {
-                _tbStreet1.CssClass += ( _AddressLine1Requirement == DataEntryRequirementLevelSpecifier.Required ? " required" : string.Empty );
-                _tbStreet2.CssClass += ( _AddressLine2Requirement == DataEntryRequirementLevelSpecifier.Required ? " required" : string.Empty );
-                _tbCity.CssClass += ( _CityRequirement == DataEntryRequirementLevelSpecifier.Required ? " required" : string.Empty );
-                _tbCounty.CssClass += ( _LocalityRequirement == DataEntryRequirementLevelSpecifier.Required ? " required" : string.Empty );
-                _tbState.CssClass += ( _StateRequirement == DataEntryRequirementLevelSpecifier.Required ? " required" : string.Empty );
-                _ddlState.CssClass += ( _StateRequirement == DataEntryRequirementLevelSpecifier.Required ? " required" : string.Empty );
-                _tbPostalCode.CssClass += ( _PostalCodeRequirement == DataEntryRequirementLevelSpecifier.Required ? " required" : string.Empty );
+                _tbStreet1.CssClass += ( _AddressLine1Requirement == RequirementLevel.Required ? " required" : string.Empty );
+                _tbStreet2.CssClass += ( _AddressLine2Requirement == RequirementLevel.Required ? " required" : string.Empty );
+                _tbCity.CssClass += ( _CityRequirement == RequirementLevel.Required ? " required" : string.Empty );
+                _tbCounty.CssClass += ( _LocalityRequirement == RequirementLevel.Required ? " required" : string.Empty );
+                _tbState.CssClass += ( _StateRequirement == RequirementLevel.Required ? " required" : string.Empty );
+                _ddlState.CssClass += ( _StateRequirement == RequirementLevel.Required ? " required" : string.Empty );
+                _tbPostalCode.CssClass += ( _PostalCodeRequirement == RequirementLevel.Required ? " required" : string.Empty );
             }
         }
 
@@ -995,7 +996,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void ApplyCountryConfigurationToControls()
         {
-            bool addressLine2IsVisible = ( _AddressLine2Requirement != DataEntryRequirementLevelSpecifier.Unavailable );
+            bool addressLine2IsVisible = ( _AddressLine2Requirement != RequirementLevel.Unavailable );
 
             _tbStreet1.Attributes["field-name"] = addressLine2IsVisible ? "Address Line 1" : "Address";
             _tbStreet1.Attributes["placeholder"] = addressLine2IsVisible ? "Address Line 1" : "Address";
@@ -1061,7 +1062,7 @@ namespace Rock.Web.UI.Controls
             }
 
             // Address Line 1
-            if ( _AddressLine1Requirement != DataEntryRequirementLevelSpecifier.Unavailable )
+            if ( _AddressLine1Requirement != RequirementLevel.Unavailable )
             {
                 writer.AddAttribute( "class", "form-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -1070,7 +1071,7 @@ namespace Rock.Web.UI.Controls
             }
 
             // Address Line 2
-            if ( _AddressLine2Requirement != DataEntryRequirementLevelSpecifier.Unavailable )
+            if ( _AddressLine2Requirement != RequirementLevel.Unavailable )
             {
                 writer.AddAttribute( "class", "form-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -1080,13 +1081,13 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();  // div.form-group
             }
 
-            bool localityIsVisible = ( _LocalityRequirement != DataEntryRequirementLevelSpecifier.Unavailable );
+            bool localityIsVisible = ( _LocalityRequirement != RequirementLevel.Unavailable );
 
             writer.AddAttribute( "class", "form-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // City or Town
-            if ( _CityRequirement != DataEntryRequirementLevelSpecifier.Unavailable )
+            if ( _CityRequirement != RequirementLevel.Unavailable )
             {
                 writer.AddAttribute( "class", "form-group" + ( localityIsVisible ? " col-sm-3" : " col-sm-6" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -1096,7 +1097,7 @@ namespace Rock.Web.UI.Controls
             }
 
             // Locality or County
-            if ( _LocalityRequirement != DataEntryRequirementLevelSpecifier.Unavailable )
+            if ( _LocalityRequirement != RequirementLevel.Unavailable )
             {
                 writer.AddAttribute( "class", "form-group col-sm-3" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -1106,7 +1107,7 @@ namespace Rock.Web.UI.Controls
             }
 
             // State or Region
-            if ( _StateRequirement != DataEntryRequirementLevelSpecifier.Unavailable )
+            if ( _StateRequirement != RequirementLevel.Unavailable )
             {
                 writer.AddAttribute( "class", "form-group col-sm-3" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -1117,7 +1118,7 @@ namespace Rock.Web.UI.Controls
             }
 
             // Postal Code
-            if ( _PostalCodeRequirement != DataEntryRequirementLevelSpecifier.Unavailable )
+            if ( _PostalCodeRequirement != RequirementLevel.Unavailable )
             {
                 writer.AddAttribute( "class", "form-group col-sm-3" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -1280,9 +1281,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="value"></param>
         /// <param name="requirementLevel"></param>
         /// <returns></returns>
-        private string GetLocationFieldValue( string value, DataEntryRequirementLevelSpecifier requirementLevel )
+        private string GetLocationFieldValue( string value, RequirementLevel requirementLevel )
         {
-            if ( requirementLevel == DataEntryRequirementLevelSpecifier.Unavailable )
+            if ( requirementLevel == RequirementLevel.Unavailable )
             {
                 // If the field is unavailable, mask the value.
                 return null;

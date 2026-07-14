@@ -14,11 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Specifies a level of necessity and/or availability of a data entry element.
     /// </summary>
+    [Obsolete( "Use Rock.Enums.Controls.RequirementLevel instead." )]
+    [RockObsolete( "20.0" )]
     public enum DataEntryRequirementLevelSpecifier
     {
         /// <summary>
