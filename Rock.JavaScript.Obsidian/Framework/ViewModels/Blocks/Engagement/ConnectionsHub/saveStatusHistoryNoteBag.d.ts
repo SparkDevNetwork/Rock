@@ -21,39 +21,20 @@
 // </copyright>
 //
 
-/** Activity Entry Types */
-export const ActivityEntryType = {
-    /** Activity type. */
-    Activity: 0,
-
-    /** Request Note type */
-    RequestNote: 1,
-
-    /** System Update type. */
-    SystemUpdate: 2,
-
-    /** Communication type. */
-    Communication: 3,
-
+/**
+ * Represents the data required to add or edit the note on a connection request status history
+ * record (the note explaining why a request moved from one status to another).
+ */
+export type SaveStatusHistoryNoteBag = {
     /**
-     * Status change type. Rendered as a card entry so its optional status-change note reads as
-     * editable card content rather than a passive system update line.
+     * Gets or sets the activity feed entry key of the status change this note belongs to. It is echoed back
+     * unchanged in the response so the client can locate and refresh the corresponding entry in the feed.
      */
-    StatusChange: 4
-} as const;
+    key?: string | null;
 
-/** Activity Entry Types */
-export const ActivityEntryTypeDescription: Record<number, string> = {
-    0: "Activity",
+    /** Gets or sets the text content of the note. An empty value clears the note unless the ended status requires one. */
+    note?: string | null;
 
-    1: "Request Note",
-
-    2: "System Update",
-
-    3: "Communication",
-
-    4: "Status Change"
+    /** Gets or sets the encrypted identifier key of the connection request status history record whose note is being saved. */
+    statusHistoryIdKey?: string | null;
 };
-
-/** Activity Entry Types */
-export type ActivityEntryType = typeof ActivityEntryType[keyof typeof ActivityEntryType];
