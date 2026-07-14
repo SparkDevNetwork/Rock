@@ -228,7 +228,7 @@ namespace Rock.Attribute
         /// <returns>A <see cref="IFieldType"/> instance.</returns>
         private static IFieldType GetFieldType( Guid guid )
         {
-            return FieldTypeCache.Get( guid )?.Field ?? new Field.Types.TextFieldType();
+            return FieldTypeCache.Get( guid )?.Field;
         }
 
         #endregion

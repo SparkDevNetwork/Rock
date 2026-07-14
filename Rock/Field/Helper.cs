@@ -39,12 +39,17 @@ namespace Rock.Field
         public static IFieldType InstantiateFieldType( string assembly, string typeName )
         {
             string thetype = string.Format( "{0}, {1}", typeName, assembly );
-            Type type = Type.GetType(thetype);
+            Type type = Type.GetType( thetype )
+                ?? Type.GetType( "Rock.Field.Types.TextFieldType, Rock" );
 
             if ( type != null )
-                return ( IFieldType )Activator.CreateInstance( type );
+            {
+                return ( IFieldType ) Activator.CreateInstance( type );
+            }
             else
-                return ( IFieldType )Activator.CreateInstance( typeof( Rock.Field.Types.TextFieldType ) );
+            {
+                throw new InvalidOperationException( $"Could not create an instance of the field type {thetype}." );
+            }
         }
 
         /// <summary>
@@ -315,6 +320,21 @@ namespace Rock.Field
 
             stepProgramGuid = parts.Length > 0 ? parts[0].AsGuidOrNull() : null;
             stepTypeGuid = parts.Length > 1 ? parts[1].AsGuidOrNull() : null;
+        }
+
+        /// <summary>
+        /// Determines whether the Attribute Configuration for the field has IsPassword = True
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        internal static bool IsTextFieldPassword( Dictionary<string, string> configurationValues )
+        {
+            if ( configurationValues != null && configurationValues.ContainsKey( "ispassword" ) )
+            {
+                return configurationValues["ispassword"].AsBoolean();
+            }
+
+            return false;
         }
 
         #endregion

@@ -342,7 +342,7 @@ namespace Rock.Jobs
             {
                 if ( attribute.FieldType.Guid == SystemGuid.FieldType.TEXT.AsGuid() )
                 {
-                    if ( ( attribute.FieldType.Field as Field.Types.TextFieldType ).IsPassword( attribute.QualifierValues ) )
+                    if ( Field.Helper.IsTextFieldPassword( attribute.ConfigurationValues ) )
                     {
                         // since this TextField for this attribute has IsPassword=true, let FormatValue populate the value
                         return true;

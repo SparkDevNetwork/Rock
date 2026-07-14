@@ -55,14 +55,11 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
+        [Obsolete( "Helper.IsTextFieldPassword() instead." )]
+        [RockObsolete( "20.0" )]
         public bool IsPassword( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( configurationValues != null && configurationValues.ContainsKey( IS_PASSWORD_KEY ) )
-            {
-                return configurationValues[IS_PASSWORD_KEY].Value.AsBoolean();
-            }
-
-            return false;
+            return Helper.IsTextFieldPassword( configurationValues.ToDictionary( a => a.Key, a => a.Value.Value ) );
         }
 
         #endregion
