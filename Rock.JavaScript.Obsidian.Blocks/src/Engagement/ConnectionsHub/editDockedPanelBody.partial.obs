@@ -389,12 +389,13 @@
      * Filters group member status items by the selected group member role.
      */
     const groupMemberStatusItems = computed((): ListItemBag[] => {
-        const roleGuid = groupMemberRoleGuid.value;
         const statuses = selectedPlacementGroupDetails.value?.groupMemberStatuses;
 
-        if (isNullOrWhiteSpace(roleGuid) || !statuses || Object.keys(statuses).length === 0) {
+        if (!statuses || Object.keys(statuses).length === 0) {
             return [];
         }
+
+        const roleGuid = isNullOrWhiteSpace(groupMemberRoleGuid.value) ? Object.keys(statuses)[0] : groupMemberRoleGuid.value;
 
         return statuses[roleGuid] ?? [];
     });
