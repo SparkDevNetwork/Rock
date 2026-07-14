@@ -52,7 +52,7 @@ namespace Rock.Blocks.Reporting
     [BooleanField( "Enable Quick Return",
         Key = AttributeKey.EnableQuickReturn,
         Description = "When enabled, viewing the block will cause it to be added to the Quick Return list in the bookmarks feature.",
-        EditControlType = Rock.Enums.Controls.BooleanControlType.DropDown,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.DropDown,
         DefaultBooleanValue = false,
         Order = 0,
         IsRequired = false )]
@@ -60,7 +60,7 @@ namespace Rock.Blocks.Reporting
     [BooleanField( "Update Page",
         Key = AttributeKey.UpdatePage,
         Description = "If True, provides fields for updating the parent page's Name and Description.",
-        EditControlType = Rock.Enums.Controls.BooleanControlType.DropDown,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.DropDown,
         DefaultBooleanValue = true,
         Order = 1,
         IsRequired = false )]

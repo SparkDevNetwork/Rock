@@ -61,7 +61,7 @@ namespace Rock.Blocks.Engagement.SignUp
         Key = AttributeKey.HideOvercapacityProjects,
         Description = "Determines if projects that are full should be shown.",
         Category = AttributeCategory.CustomSetting,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
         IsRequired = false )]
 
@@ -69,7 +69,7 @@ namespace Rock.Blocks.Engagement.SignUp
         Key = AttributeKey.LoadResultsOnInitialPageLoad,
         Description = "When enabled the project finder will load with all configured projects (no filters enabled).",
         Category = AttributeCategory.CustomSetting,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         IsRequired = false )]
 
@@ -123,7 +123,7 @@ namespace Rock.Blocks.Engagement.SignUp
         Key = AttributeKey.DisplayCampusFilter,
         Description = "Determines if the campus filter should be shown. If there is only one active campus to display then this filter will not be shown, even if enabled.",
         Category = AttributeCategory.CustomSetting,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
         IsRequired = false )]
 
@@ -131,7 +131,7 @@ namespace Rock.Blocks.Engagement.SignUp
         Key = AttributeKey.HideCampusesWithNoOpportunities,
         Description = @"Determines if campuses should be excluded from the filter list if they don't have any sign-up opportunities. This setting will be ignored if ""Display Campus Filter"" is disabled.",
         Category = AttributeCategory.CustomSetting,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
         IsRequired = false )]
 
@@ -139,7 +139,7 @@ namespace Rock.Blocks.Engagement.SignUp
         Key = AttributeKey.EnableCampusContext,
         Description = @"If enabled and the page has a campus context, its value will be used as a filter. If ""Display Campus Filter"" is disabled when this setting is enabled, the ""Campus Types"", ""Campus Statuses"" and ""Campuses"" settings will be ignored. However, if ""Display Campus Filter"" is enabled and the campus context is one of the allowed campuses, it will be pre-selected in the filter list.",
         Category = AttributeCategory.CustomSetting,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
         IsRequired = false )]
 
@@ -173,7 +173,7 @@ namespace Rock.Blocks.Engagement.SignUp
         Key = AttributeKey.DisplayNamedScheduleFilter,
         Description = "When enabled a list of named schedules will be show as a filter.",
         Category = AttributeCategory.CustomSetting,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
         IsRequired = false )]
 
@@ -199,7 +199,7 @@ namespace Rock.Blocks.Engagement.SignUp
         Key = AttributeKey.DisplayLocationSort,
         Description = "Determines if the location sort field should be shown.",
         Category = AttributeCategory.CustomSetting,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         IsRequired = false )]
 
@@ -214,7 +214,7 @@ namespace Rock.Blocks.Engagement.SignUp
         Key = AttributeKey.DisplayLocationRangeFilter,
         Description = "When enabled a filter will be shown to limit results to a specified number of miles from the location selected or their mailing address if logged in. If the Location Sort entry is not enabled to be shown and the individual is not logged in then this filter will not be shown, even if enabled, as we will not be able to honor the filter.",
         Category = AttributeCategory.CustomSetting,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         IsRequired = false )]
 
@@ -226,7 +226,7 @@ namespace Rock.Blocks.Engagement.SignUp
         Key = AttributeKey.DisplayDateRange,
         Description = "When enabled, individuals would be able to filter the results by projects occurring inside the provided date range.",
         Category = AttributeCategory.CustomSetting,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         IsRequired = false )]
 
@@ -234,7 +234,7 @@ namespace Rock.Blocks.Engagement.SignUp
         Key = AttributeKey.DisplaySlotsAvailableFilter,
         Description = @"When enabled allows the individual to find projects with ""at least"" or ""no more than"" the provided spots available.",
         Category = AttributeCategory.CustomSetting,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         IsRequired = false )]
 

@@ -64,7 +64,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "Include expired prayer requests in the list.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowExpired,
         Order = 3 )]
 
@@ -84,7 +84,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "Includes prayer requests that are attached to a group.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.IncludeGroupRequests,
         Order = 6 )]
 

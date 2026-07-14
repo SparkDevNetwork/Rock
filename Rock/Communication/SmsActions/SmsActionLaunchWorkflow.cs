@@ -50,7 +50,7 @@ namespace Rock.Communication.SmsActions
         Key = AttributeKey.PassNamelessPerson,
         Category = AttributeCategories.Workflow,
         Description = "If a matching person is not found in the database should a nameless person record be passed to the workflow.",
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         Order = 3 )]
 

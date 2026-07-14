@@ -75,7 +75,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         Description = "If enabled then events will be filtered by campus to the campus context of the page and user.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnableCampusFiltering,
         Order = 4 )]
 
@@ -83,7 +83,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         Description = "When enabled past events will be included on the calendar, otherwise only future events will be shown.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowPastEvents,
         Order = 5 )]
 

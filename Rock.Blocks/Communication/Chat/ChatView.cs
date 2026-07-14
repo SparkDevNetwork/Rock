@@ -43,7 +43,7 @@ namespace Rock.Blocks.Communication.Chat
         Description = "Only show channels that match the individual's campus or have no campus set.",
         DefaultBooleanValue = false,
         Key = AttributeKey.FilterSharedChannelsByCampus,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Order = 1 )]
 
     [IntegerField( "Minimum Age",

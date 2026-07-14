@@ -87,7 +87,7 @@ namespace Rock.Blocks.Security
     [BooleanField( "Save Communication History",
         Description = "Should a record of communication from this block be saved to the recipient's profile?",
         DefaultBooleanValue = false,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKey.CreateCommunicationRecord,
         Order = 5 )]
 

@@ -52,7 +52,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Determines if the input label for the search box should be displayed.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.ShowSearchLabel,
         Order = 1 )]
 
@@ -109,7 +109,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Determines if the keyboard should auto-focus into the search field when the page is attached.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.AutoFocusKeyboard,
         Order = 9 )]
 

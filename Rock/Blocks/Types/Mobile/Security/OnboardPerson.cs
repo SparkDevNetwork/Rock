@@ -51,7 +51,7 @@ namespace Rock.Blocks.Types.Mobile.Security
     [BooleanField( "Allow Skip of Onboarding",
         Description = "Allows the user to skip the onboarding process and go straight to the homepage.",
         IsRequired = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         Key = AttributeKeys.AllowSkipOfOnboarding,
         Order = 0 )]

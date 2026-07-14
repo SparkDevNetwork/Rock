@@ -103,7 +103,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         Description = "Indicates whether or not the 'Transfer' option should be shown.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.ShowTransferOption,
         Order = 6 )]
 

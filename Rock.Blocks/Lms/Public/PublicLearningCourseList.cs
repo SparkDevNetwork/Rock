@@ -56,7 +56,7 @@ namespace Rock.Blocks.Lms
         "Show Completion Status",
         Key = AttributeKey.ShowCompletionStatus,
         Description = "Determines if the individual's completion status should be shown.",
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         IsRequired = true,
         DefaultBooleanValue = true,
         Order = 3 )]
@@ -66,7 +66,7 @@ namespace Rock.Blocks.Lms
         Description = "If selected, all non-public courses will be excluded.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.PublicOnly,
         Order = 4 )]
 

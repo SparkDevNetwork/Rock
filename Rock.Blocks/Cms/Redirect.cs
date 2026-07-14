@@ -56,7 +56,7 @@ namespace Rock.Blocks.Cms
         IsRequired = false,
         Order = 3,
         DefaultBooleanValue = false,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKey.PermanentRedirect )]
 
     #endregion

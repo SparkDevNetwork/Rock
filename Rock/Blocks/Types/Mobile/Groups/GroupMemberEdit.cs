@@ -49,7 +49,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "If enabled, a 'Group Member Edit' header will be displayed.",
         IsRequired = true,
         DefaultBooleanValue = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowHeader,
         Order = 0 )]
 
@@ -57,7 +57,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.AllowRoleChange,
         Order = 1 )]
 
@@ -65,7 +65,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.AllowMemberStatusChange,
         Order = 2 )]
 
@@ -73,7 +73,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.AllowCommunicationPreferenceChange,
         Order = 3 )]
 
@@ -81,7 +81,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.AllowNoteEdit,
         Order = 4 )]
 
@@ -102,7 +102,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "Will show or hide the delete button. This will either delete or archive the member depending on the group type configuration.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnableDelete,
         Order = 7 )]
 

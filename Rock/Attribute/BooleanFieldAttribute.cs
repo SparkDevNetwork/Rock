@@ -137,7 +137,7 @@ namespace Rock.Attribute
         /// <value>
         /// The type of the control.
         /// </value>
-        [Obsolete( "Use EditControlType instead." )]
+        [Obsolete( "Use BooleanControlType instead." )]
         [RockObsolete( "20.0" )]
         public BooleanFieldType.BooleanControlType ControlType
         {
@@ -156,7 +156,7 @@ namespace Rock.Attribute
         /// The type of the control (DropDown, CheckBox, Toggle, or Switch) to
         /// use when editing the value.
         /// </summary>
-        public BooleanControlType EditControlType
+        public BooleanControlType BooleanControlType
         {
             get
             {

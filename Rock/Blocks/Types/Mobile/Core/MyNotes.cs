@@ -55,7 +55,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "When enabled, swipe actions will be available for each note.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.EnableSwipeForOptions,
         Order = 1 )]
 
@@ -111,7 +111,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "When enabled, notes will be grouped by date.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.GroupNotesByDate,
         Order = 9 )]
 

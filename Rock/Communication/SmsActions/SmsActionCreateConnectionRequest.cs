@@ -74,7 +74,7 @@ namespace Rock.Communication.SmsActions
         Key = AttributeKey.PassNamelessPerson,
         Category = AttributeCategories.Connection,
         Description = "When true, an inbound message from an unknown phone number is allowed to create a Connection Request against a nameless Person record. When false, such messages are skipped.",
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         Order = 5 )]
 

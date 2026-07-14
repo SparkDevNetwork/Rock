@@ -83,7 +83,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Determines if the keyboard should auto-focus into the search field when the page is attached.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.AutoFocusKeyboard,
         Order = 4 )]
 
@@ -102,7 +102,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Determines if the person's birthdate should be displayed in the search results.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.ShowBirthdate,
         Category = AttributeCategory.PersonSearch,
         Order = 6 )]
@@ -111,7 +111,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Determines if the person's age should be displayed in the search results.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.ShowAge,
         Category = AttributeCategory.PersonSearch,
         Order = 7 )]
@@ -120,7 +120,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Determines if the person's spouse should be displayed in the search results.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.ShowSpouse,
         Category = AttributeCategory.PersonSearch,
         Order = 8 )]
@@ -129,7 +129,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Determines if the person's phone number should be displayed in the search results.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.ShowPhoneNumber,
         Category = AttributeCategory.PersonSearch,
         Order = 9 )]
@@ -138,7 +138,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Determines if the person's address should be displayed in the search results.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.ShowAddress,
         Category = AttributeCategory.PersonSearch,
         Order = 10 )]
@@ -147,7 +147,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Determines if the person's age should be displayed in the search results.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.ShowAge,
         Category = AttributeCategory.PersonSearch,
         Order = 11 )]

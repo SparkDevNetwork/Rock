@@ -93,7 +93,7 @@ namespace Rock.Workflow.Action
         Key = AttributeKey.DocumentPurposeKey )]
     [BooleanField(
         "Overwrite Documents with Same Purpose Key",
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Description = "Determines if statements with the purpose keys should be overwritten.",
         DefaultBooleanValue = true,
         Order = 7,

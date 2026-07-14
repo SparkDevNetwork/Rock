@@ -61,7 +61,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "Will hide the campus picker when a campus is known from either the Current Person's campus or passed in CampusGuid page parameter.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.HideCampusWhenKnown,
         Order = 2 )]
 
@@ -70,7 +70,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "Hides the campus picker and disables filtering by campus.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.AlwaysHideCampus,
         Order = 3 )]
 
@@ -87,7 +87,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "If selected, all non-public prayer requests will be excluded.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.PublicOnly,
         Order = 5 )]
 
@@ -96,7 +96,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "If selected, all unapproved prayer requests will be included.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.IncludeUnapproved,
         Order = 6 )]
 
@@ -139,7 +139,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "Loads an optional collection of last prayed times for the requests. This is available as a separate merge field in Lava.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.LoadLastPrayedCollection,
         Order = 11 )]
 
@@ -155,7 +155,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "Includes prayer requests that are attached to a group.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.IncludeGroupRequests,
         Order = 13 )]
 
