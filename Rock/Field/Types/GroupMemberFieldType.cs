@@ -161,9 +161,13 @@ namespace Rock.Field.Types
                 {
                     return string.Empty;
                 }
+                else if ( privateConfigurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && bool.TryParse( privateConfigurationValues[ALLOW_MULTIPLE_KEY], out bool allowMultiple ) && allowMultiple )
+                {
+                    return groupMembers.ToCamelCaseJson( false, true );
+                }
                 else
                 {
-                    return groupMembers.Count == 1 ? groupMembers.FirstOrDefault().ToCamelCaseJson( false, true ) : groupMembers.ToCamelCaseJson( false, true );
+                    return groupMembers.FirstOrDefault().ToCamelCaseJson( false, true );
                 }
             }
         }
