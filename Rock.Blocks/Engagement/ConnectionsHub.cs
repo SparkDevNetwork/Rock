@@ -4615,6 +4615,27 @@ WHERE 1 = 1" );
                 else
                 {
                     launchWorkflowResultBag.StatusMessage = $"A '{workflowType.Name}' workflow has been started.";
+
+                    // A workflow with no active entry form may still contain a "Redirect to Page"
+                    // action. Redirect.Execute() intentionally does nothing when invoked through an
+                    // Obsidian block action (see its IsObsidianBlock short-circuit), so the action is
+                    // left active on the workflow. Locate that pending action and resolve its target
+                    // URL through the same IInteractiveAction mechanism the Workflow Entry block uses,
+                    // then hand the URL back to the client to perform the browser navigation.
+                    var nextInteractiveAction = workflow.GetNextInteractiveAction( RequestContext.CurrentPerson, null, BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) );
+
+                    // Only invoke the interactive action for the Redirect component. Other interactive
+                    // actions (e.g. Electronic Signature, Payment Entry) can have side effects on
+                    // StartAction and must not be triggered from here.
+                    if ( nextInteractiveAction?.ActionTypeCache.WorkflowAction is Rock.Workflow.Action.Redirect redirectAction )
+                    {
+                        var redirectResult = ( ( Rock.Workflow.IInteractiveAction ) redirectAction ).StartAction( nextInteractiveAction, RockContext, RequestContext );
+
+                        if ( redirectResult?.ActionData?.Message?.Type == Rock.Enums.Workflow.InteractiveMessageType.Redirect )
+                        {
+                            launchWorkflowResultBag.RedirectUrl = redirectResult.ActionData.Message.Content;
+                        }
+                    }
                 }
 
                 RockContext.SaveChanges();

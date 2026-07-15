@@ -34,5 +34,13 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// Gets or sets the URL of the workflow entry page to redirect to, if the launched workflow requires user interaction.
         /// </summary>
         public string WorkflowEntryPageUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL the browser should navigate to as the result of a
+        /// "Redirect to Page" workflow action that ran during the launch. This is
+        /// populated only for single-request launches, since a background (bulk)
+        /// launch has no single browser session to redirect.
+        /// </summary>
+        public string RedirectUrl { get; set; }
     }
 }

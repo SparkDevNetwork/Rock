@@ -28,4 +28,12 @@ export type LaunchWorkflowResultBag = {
 
     /** Gets or sets the URL of the workflow entry page to redirect to, if the launched workflow requires user interaction. */
     workflowEntryPageUrl?: string | null;
+
+    /**
+     * Gets or sets the URL the browser should navigate to as the result of a
+     * "Redirect to Page" workflow action that ran during the launch. This is
+     * populated only for single-request launches, since a background (bulk)
+     * launch has no single browser session to redirect.
+     */
+    redirectUrl?: string | null;
 };

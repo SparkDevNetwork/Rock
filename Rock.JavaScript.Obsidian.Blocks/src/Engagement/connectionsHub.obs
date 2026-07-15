@@ -2574,6 +2574,20 @@
                     });
                 }
 
+                // If the launched workflow ran a "Redirect to Page" action, navigate the
+                // current window to its target once the status alert is dismissed. This
+                // mirrors the classic Connection Request Board block. Set only for single
+                // requests, and mutually exclusive with workflowEntryPageUrl above.
+                if (!isNullOrWhiteSpace(result.data.redirectUrl) && typeof result.data.redirectUrl === "string") {
+                    const redirectUrl = result.data.redirectUrl;
+                    const stopRedirect = watch(isModalAlertVisible, (isVisible) => {
+                        if (!isVisible) {
+                            window.location.href = redirectUrl;
+                            stopRedirect(); // tear down watcher
+                        }
+                    });
+                }
+
                 isLaunchWorkflowModalVisible.value = false;
 
                 return;
