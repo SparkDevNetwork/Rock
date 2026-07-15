@@ -15,7 +15,7 @@
 // </copyright>
 //
 using Azure.Storage.Blobs;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Net.Http;
 
 namespace Rock.Storage.Common
@@ -38,12 +38,16 @@ namespace Rock.Storage.Common
         /// <summary>
         /// Shared <see cref="HttpClient"/>.  All Azure Clients should use this.
         /// </summary>
-        private HttpClient _httpClient;
+        private readonly HttpClient _httpClient = new HttpClient();
 
         /// <summary>
-        /// Dictionary for cached <see cref="BlobContainerClient"/>s.  Users should have a limited number of containers, so we will keep them in memory as they are used.
+        /// Cached <see cref="BlobContainerClient"/>s. A <see cref="ConcurrentDictionary{TKey, TValue}"/>
+        /// is required here because this singleton is shared across all threads: a plain
+        /// <see cref="System.Collections.Generic.Dictionary{TKey, TValue}"/> could corrupt its internal
+        /// bucket chain under concurrent Add calls, after which lookups would spin in FindEntry at
+        /// 100% CPU (issue #6919).
         /// </summary>
-        private Dictionary<int, BlobContainerClient> _containerClients = new Dictionary<int, BlobContainerClient>();
+        private readonly ConcurrentDictionary<int, BlobContainerClient> _containerClients = new ConcurrentDictionary<int, BlobContainerClient>();
 
         /// <summary>
         /// Gets a <see cref="BlobClient"/> for a specific Blob.
@@ -56,10 +60,13 @@ namespace Rock.Storage.Common
         /// <returns></returns>
         public BlobClient GetBlobClient( string accountName, string accountKey, string customDomain, string containerName, string blobName )
         {
-            _httpClient = _httpClient ?? new HttpClient();
-
             var hashKey = ( accountName + accountKey + customDomain + containerName ).GetHashCode();
-            if ( !_containerClients.ContainsKey( hashKey ) )
+
+            // GetOrAdd is atomic on the dictionary. The value factory may execute more than once
+            // under high contention, but only one BlobContainerClient is retained; the extras are
+            // discarded. BlobContainerClient construction is cheap and side-effect-free, so this
+            // is acceptable.
+            var containerClient = _containerClients.GetOrAdd( hashKey, _ =>
             {
                 var connectionString = $"DefaultEndpointsProtocol=https;AccountName={accountName};AccountKey={accountKey}";
                 if ( !string.IsNullOrWhiteSpace( customDomain ) )
@@ -73,11 +80,10 @@ namespace Rock.Storage.Common
                     Transport = new Azure.Core.Pipeline.HttpClientTransport( _httpClient )
                 };
 
-                var containerClient = new BlobContainerClient( connectionString, containerName, clientOptions );
-                _containerClients.Add( hashKey, containerClient );
-            }
+                return new BlobContainerClient( connectionString, containerName, clientOptions );
+            } );
 
-            return _containerClients[hashKey].GetBlobClient( blobName );
+            return containerClient.GetBlobClient( blobName );
         }
 
         /// <summary>
