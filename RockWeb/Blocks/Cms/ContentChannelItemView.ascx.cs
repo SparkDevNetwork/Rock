@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Blocks;
+using Rock.Cms.Utm;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
@@ -973,6 +974,10 @@ Guid - ContentChannelItem Guid";
                 InteractionSummary = contentChannelItem.Title,
                 PersonAliasId = this.CurrentPerson?.PrimaryAliasId
             };
+
+            // Populate UTM tracking values from the request's UTM cookie so they are written onto the interaction.
+            var utmInfo = UtmHelper.GetUtmCookieDataFromRequest( this.Request );
+            UtmHelper.AddUtmInfoToInteractionTransactionInfo( info, utmInfo );
 
             var interactionTransaction = new InteractionTransaction( info );
             interactionTransaction.Enqueue();
