@@ -672,7 +672,8 @@ namespace RockWeb.Blocks.WorkFlow
 
                 WorkflowId = _workflow.Id != 0 ? _workflow.Id : WorkflowId;
             }
-            else
+            // else, if the workflow is not already completed, try to process it...
+            else if ( !_workflow.CompletedDateTime.HasValue )
             {
                 // A workflow already exists, run WorkflowService.Process to ensure that any actions that were not completed due to delays, incomplete previous actions, or errors are run.
                 // This is to ensure that any forms available in the workflow are presented and not delayed until the Process Workflows job has completed.

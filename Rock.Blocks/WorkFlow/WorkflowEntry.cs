@@ -690,6 +690,13 @@ namespace Rock.Blocks.Workflow
             IEntity entity = null;
             var processedMultipleInteractiveActions = false;
 
+            // Skip re-processing a completed workflow; doing so would overwrite
+            // CompletedDateTime on the workflow and its activities (Issue #6897).
+            if ( workflow.CompletedDateTime.HasValue )
+            {
+                return GetEndOfWorkflowBag( workflow, null, null, null );
+            }
+
             if ( workflow.Id == 0 )
             {
                 entity = GetInitialWorkflowEntity();
