@@ -69,7 +69,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <summary>
         /// Gets the landing template.
         /// </summary>
-        protected string LandingTemplate => GetAttributeValueTemplateContent( AttributeKey.LandingTemplate );
+        protected string LandingTemplate => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKey.LandingTemplate ) );
 
         /// <summary>
         /// Gets the current person ID, or 0 if unable to.

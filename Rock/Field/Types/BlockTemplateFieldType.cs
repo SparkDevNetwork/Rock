@@ -237,7 +237,7 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>The content of the selected template.</returns>
-        [Obsolete( "Use the GetAttributeValueTemplateContent method on RockBlockType instead." )]
+        [Obsolete( "Use the GetBlockTemplateContent method on Rock.Field.Helper instead." )]
         [RockObsolete( "20.0" )]
         public static string GetTemplateContent( string value )
         {

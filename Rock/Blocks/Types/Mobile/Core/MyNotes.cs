@@ -189,7 +189,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// <value>
         /// The XAML template to parse on the shell.
         /// </value>
-        protected string NoteItemTemplate => GetAttributeValueTemplateContent( AttributeKey.NoteItemTemplate );
+        protected string NoteItemTemplate => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKey.NoteItemTemplate ) );
 
         /// <summary>
         /// Whether or not to enable swipe for options.

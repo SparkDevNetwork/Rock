@@ -149,7 +149,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <value>
         /// The activity template.
         /// </value>
-        protected string ActivityTemplate => GetAttributeValueTemplateContent( AttributeKey.ActivityTemplate );
+        protected string ActivityTemplate => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKey.ActivityTemplate ) );
 
         /// <summary>
         /// Gets the person profile page unique identifier.

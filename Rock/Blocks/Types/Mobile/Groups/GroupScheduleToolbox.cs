@@ -110,7 +110,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <value>
         /// The type template.
         /// </value>
-        protected string TypeTemplate => GetAttributeValueTemplateContent( AttributeKey.ToolboxTemplate );
+        protected string TypeTemplate => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKey.ToolboxTemplate ) );
 
         /// <summary>
         /// Get the decline template.
@@ -118,7 +118,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <value>
         /// The decline reason template.
         /// </value>
-        protected string ConfirmDeclineTemplate => GetAttributeValueTemplateContent( AttributeKey.ConfirmDeclineTemplate );
+        protected string ConfirmDeclineTemplate => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKey.ConfirmDeclineTemplate ) );
 
         /// <summary>
         /// Gets the current person ID, or 0 if unable to.

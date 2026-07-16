@@ -104,7 +104,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <value>
         /// The opportunity template.
         /// </value>
-        protected string TypeTemplate => GetAttributeValueTemplateContent( AttributeKey.TypeTemplate );
+        protected string TypeTemplate => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKey.TypeTemplate ) );
 
         /// <summary>
         /// Gets the detail page unique identifier.

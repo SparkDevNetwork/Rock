@@ -337,6 +337,35 @@ namespace Rock.Field
             return false;
         }
 
+        /// <summary>
+        /// Gets the template value specified by the block attribute key from
+        /// either the pre-defined template or the custom template content.
+        /// This should be used when the attribute is configured to use the
+        /// BlockTemplate field type.
+        /// </summary>
+        /// <param name="value">The raw value from the attribute field.</param>
+        /// <returns>The content of the selected template.</returns>
+        public static string GetBlockTemplateContent( string value )
+        {
+            var values = value.Split( ['|'], 2 );
+
+            if ( values.Length >= 1 )
+            {
+                var customTemplateGuid = new Guid( "ffffffff-ffff-ffff-ffff-ffffffffffff" );
+
+                if ( values[0].AsGuid() == customTemplateGuid && values.Length >= 2 )
+                {
+                    return values[1];
+                }
+                else
+                {
+                    return DefinedValueCache.Get( values[0].AsGuid() )?.Description ?? string.Empty;
+                }
+            }
+
+            return string.Empty;
+        }
+
         #endregion
     }
 }

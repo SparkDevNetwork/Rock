@@ -316,7 +316,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <value>
         /// The template.
         /// </value>
-        protected string Template => GetAttributeValueTemplateContent( AttributeKeys.Template );
+        protected string Template => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
 
         /// <summary>
         /// Gets a value indicating whether [group by person].

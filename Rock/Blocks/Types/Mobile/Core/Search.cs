@@ -276,7 +276,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// Gets the result item template.
         /// </summary>
         /// <value>The result item template.</value>
-        protected string ResultItemTemplate => GetAttributeValueTemplateContent( AttributeKey.ResultItemTemplate );
+        protected string ResultItemTemplate => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKey.ResultItemTemplate ) );
 
         /// <summary>
         /// Gets the detail navigation action.
