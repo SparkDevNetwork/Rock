@@ -98,6 +98,8 @@ namespace Rock.Model
                     // source of the file itself.
                     if ( field != null && (
                         fieldGuid == SystemGuid.FieldType.FILE.AsGuid() ||
+                        fieldGuid == SystemGuid.FieldType.AUDIO_FILE.AsGuid() ||
+                        fieldGuid == SystemGuid.FieldType.VIDEO_FILE.AsGuid() ||
                         fieldGuid == SystemGuid.FieldType.IMAGE.AsGuid() ||
                         fieldGuid == SystemGuid.FieldType.BACKGROUNDCHECK.AsGuid() ) )
                     {
@@ -189,6 +191,8 @@ namespace Rock.Model
                 var field = fieldType.Field;
                 if ( field != null && (
                     fieldType.Guid == SystemGuid.FieldType.FILE.AsGuid() ||
+                    fieldType.Guid == SystemGuid.FieldType.AUDIO_FILE.AsGuid() ||
+                    fieldType.Guid == SystemGuid.FieldType.VIDEO_FILE.AsGuid() ||
                     fieldType.Guid == SystemGuid.FieldType.IMAGE.AsGuid() ||
                     fieldType.Guid == SystemGuid.FieldType.BACKGROUNDCHECK.AsGuid() ) )
                 {

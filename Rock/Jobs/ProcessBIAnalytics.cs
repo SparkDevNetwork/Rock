@@ -340,7 +340,10 @@ namespace Rock.Jobs
         {
             if ( attribute.FieldType.Field.AttributeValueFieldName == "Value" )
             {
-                if ( attribute.FieldType.Guid == SystemGuid.FieldType.TEXT.AsGuid() )
+                var isTextField = attribute.FieldType.Guid == SystemGuid.FieldType.TEXT.AsGuid()
+                    || attribute.FieldType.Guid == SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid();
+
+                if ( isTextField )
                 {
                     if ( Field.Helper.IsTextFieldPassword( attribute.ConfigurationValues ) )
                     {

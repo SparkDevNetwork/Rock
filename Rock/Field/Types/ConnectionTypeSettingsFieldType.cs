@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -62,7 +62,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            ParseDelimitedGuids( privateValue, out var typeGuid, out var opportunityGuid, out _, out _ );
+            Helper.ParseConnectionTypeSettingsDelimitedGuids( privateValue, out var typeGuid, out var opportunityGuid, out _, out _ );
 
             if ( !typeGuid.HasValue && !opportunityGuid.HasValue )
             {
@@ -218,6 +218,8 @@ namespace Rock.Field.Types
         /// <param name="connectionOpportunityGuid">The Connection Opportunity guid, if present.</param>
         /// <param name="connectionStatusGuid">The Connection Status guid, if present.</param>
         /// <param name="connectionTypeSourceGuid">The Connection Type Source guid, if present.</param>
+        [Obsolete( "Use the ParseConnectionTypeSettingsDelimitedGuids method on Rock.Field.Helper instead." )]
+        [RockObsolete( "20.0" )]
         public static void ParseDelimitedGuids( string value, out Guid? connectionTypeGuid, out Guid? connectionOpportunityGuid, out Guid? connectionStatusGuid, out Guid? connectionTypeSourceGuid )
         {
             Helper.ParseConnectionTypeSettingsDelimitedGuids( value, out connectionTypeGuid, out connectionOpportunityGuid, out connectionStatusGuid, out connectionTypeSourceGuid );
@@ -230,7 +232,7 @@ namespace Rock.Field.Types
             status = null;
             source = null;
 
-            ParseDelimitedGuids( value, out var typeGuid, out var opportunityGuid, out var statusGuid, out var sourceGuid );
+            Helper.ParseConnectionTypeSettingsDelimitedGuids( value, out var typeGuid, out var opportunityGuid, out var statusGuid, out var sourceGuid );
 
             if ( !typeGuid.HasValue && !opportunityGuid.HasValue && !statusGuid.HasValue && !sourceGuid.HasValue )
             {
@@ -268,7 +270,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            ParseDelimitedGuids( privateValue, out var typeGuid, out var opportunityGuid, out var statusGuid, out var sourceGuid );
+            Helper.ParseConnectionTypeSettingsDelimitedGuids( privateValue, out var typeGuid, out var opportunityGuid, out var statusGuid, out var sourceGuid );
 
             if ( !typeGuid.HasValue && !opportunityGuid.HasValue && !statusGuid.HasValue && !sourceGuid.HasValue )
             {

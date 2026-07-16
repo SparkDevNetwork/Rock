@@ -119,7 +119,15 @@ namespace Rock.Model
             {
                 // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
                 var fieldTypeCache = FieldTypeCache.Get( this.FieldTypeId );
-                if ( fieldTypeCache != null && fieldTypeCache.Guid == SystemGuid.FieldType.BINARY_FILE.AsGuid() )
+                var isBinaryFileType = fieldTypeCache?.Guid == SystemGuid.FieldType.BINARY_FILE.AsGuid()
+                    || fieldTypeCache?.Guid == SystemGuid.FieldType.AUDIO_FILE.AsGuid()
+                    || fieldTypeCache?.Guid == SystemGuid.FieldType.BACKGROUNDCHECK.AsGuid()
+                    || fieldTypeCache?.Guid == SystemGuid.FieldType.FILE.AsGuid()
+                    || fieldTypeCache?.Guid == SystemGuid.FieldType.IMAGE.AsGuid()
+                    || fieldTypeCache?.Guid == SystemGuid.FieldType.LABEL.AsGuid()
+                    || fieldTypeCache?.Guid == SystemGuid.FieldType.VIDEO_FILE.AsGuid();
+
+                if ( isBinaryFileType )
                 {
                     Guid? binaryFileGuid = DefaultValue.AsGuidOrNull();
                     if ( binaryFileGuid.HasValue )

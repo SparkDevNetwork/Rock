@@ -129,6 +129,8 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         /// <param name="stepProgramGuid">The step program unique identifier.</param>
         /// <param name="stepStatusGuid">The step status unique identifier.</param>
+        [Obsolete( "Use the ParseStepProgramStatusDelimitedGuids method on Rock.Field.Helper instead." )]
+        [RockObsolete( "20.0" )]
         public static void ParseDelimitedGuids( string value, out Guid? stepProgramGuid, out Guid? stepStatusGuid )
         {
             Helper.ParseStepProgramStatusDelimitedGuids( value, out stepProgramGuid, out stepStatusGuid );
@@ -145,7 +147,7 @@ namespace Rock.Field.Types
             stepProgram = null;
             stepStatus = null;
 
-            ParseDelimitedGuids( value, out var stepProgramGuid, out var stepStatusGuid );
+            Helper.ParseStepProgramStatusDelimitedGuids( value, out var stepProgramGuid, out var stepStatusGuid );
 
             if ( stepProgramGuid.HasValue || stepStatusGuid.HasValue )
             {
@@ -172,7 +174,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            ParseDelimitedGuids( privateValue, out var stepProgramGuid, out var stepStatusGuid );
+            Helper.ParseStepProgramStatusDelimitedGuids( privateValue, out var stepProgramGuid, out var stepStatusGuid );
 
             if ( !stepProgramGuid.HasValue && !stepStatusGuid.HasValue )
             {

@@ -593,7 +593,7 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <returns></returns>
-        [Obsolete( "Use Rock.Field.Helper.GetKeyValueListValuesFromString instead." )]
+        [Obsolete( "Use the GetKeyValueListValuesFromString method on Rock.Field.Helper instead." )]
         [RockObsolete( "20.0" )]
         public List<KeyValuePair<string, object>> GetValuesFromString( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
