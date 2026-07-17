@@ -262,6 +262,10 @@
 
     // #region Computed Values
 
+    const selectableNoteTypes = computed((): NoteTypeBag[] => {
+        return props.noteTypes?.filter(nt => nt.userSelectable) ?? [];
+    });
+
     const isAddNoteVisible = computed((): boolean => {
         if (isManuallyAddingNote.value) {
             return true;
@@ -271,7 +275,18 @@
             return false;
         }
 
-        return props.showAdd && props.alwaysShowAdd;
+        /*
+            7/17/26 - MSE
+
+            alwaysShowAdd must still require at least one selectable note type.
+            Without this check the editor is shown for people who lack EDIT on the
+            note type (e.g. Prayer Comment without Staff Worker), then Save fails
+            with "Note type is invalid" because no noteTypeIdKey can be selected.
+            WebForms NoteContainer gates canAdd on GetEditableNoteTypes().Any().
+
+            Reason: Match WebForms — hide add editor when no editable note types.
+        */
+        return props.showAdd && props.alwaysShowAdd && selectableNoteTypes.value.length > 0;
     });
 
     const noteTypeFilterItems = computed((): MenuAction[] => {
@@ -324,10 +339,6 @@
         return notes.filter(n => n.noteType.idKey === internalNoteTypeIdKeyFilter.value);
     });
 
-    const selectableNoteTypes = computed((): NoteTypeBag[] => {
-        return props.noteTypes?.filter(nt => nt.userSelectable) ?? [];
-    });
-
     const showAddNote = computed((): boolean => {
         return selectableNoteTypes.value.length > 0 && !props.alwaysShowAdd && props.showAdd;
     });
@@ -337,6 +348,10 @@
      * than passing all the information around inside properties.
      */
     const noteOptions = computed((): NoteOptions => {
+        // Match WebForms NoteContainer.canAdd: adding (including replies) requires
+        // both the block-level allow flag and at least one editable note type.
+        const canAdd = props.showAdd && selectableNoteTypes.value.length > 0;
+
         return {
             autoExpandReplies: props.autoExpandReplies,
             avatarUrl: props.showAvatar ? props.personAvatarUrl : undefined,
@@ -345,7 +360,7 @@
             noteTypes: props.noteTypes ?? [],
             selectableNoteTypes: selectableNoteTypes.value,
             isDescending: props.descending,
-            showAdd: props.showAdd,
+            showAdd: canAdd,
             showAlert: props.showAlert,
             showAvatar: props.showAvatar,
             showCreateDate: props.showCreateDateOverride,
