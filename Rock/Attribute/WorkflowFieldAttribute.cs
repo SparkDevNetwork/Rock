@@ -54,7 +54,7 @@ namespace Rock.Attribute
                         if ( workflowType != null )
                         {
                             var configValue = new Field.ConfigurationValue( workflowType.Id.ToString() );
-                            FieldConfigurationValues.Add( "workflowtype", configValue );
+                            FieldConfigurationValues.AddOrReplace( "workflowtype", configValue );
                         }
                     }
                 }
@@ -112,7 +112,7 @@ namespace Rock.Attribute
                     if ( workflowType != null )
                     {
                         var configValue = new Field.ConfigurationValue( workflowType.Id.ToString() );
-                        FieldConfigurationValues.Add( "workflowtype", configValue );
+                        FieldConfigurationValues.AddOrReplace( "workflowtype", configValue );
                     }
                 }
             }

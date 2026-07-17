@@ -44,7 +44,7 @@ namespace Rock.Attribute
             : base( SystemGuid.FieldType.COMPONENT.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             var configValue = new Field.ConfigurationValue( mefContainerAssemblyName );
-            FieldConfigurationValues.Add( "container", configValue );
+            FieldConfigurationValues.AddOrReplace( "container", configValue );
 
             if ( string.IsNullOrWhiteSpace( Name ) && RockApp.Current.IsDatabaseAvailable() )
             {

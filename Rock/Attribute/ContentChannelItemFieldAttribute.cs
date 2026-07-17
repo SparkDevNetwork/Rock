@@ -53,7 +53,7 @@ namespace Rock.Attribute
                     if ( contentChannel != null )
                     {
                         var configValue = new Field.ConfigurationValue( contentChannel.Id.ToString() );
-                        FieldConfigurationValues.Add( "contentchannel", configValue );
+                        FieldConfigurationValues.AddOrReplace( "contentchannel", configValue );
 
                         if ( string.IsNullOrWhiteSpace( Name ) )
                         {
@@ -84,7 +84,7 @@ namespace Rock.Attribute
         /// guid as the first parameter.
         /// </remarks>
         public ContentChannelItemFieldAttribute( string contentChannelGuid, string name )
-            : base( SystemGuid.FieldType.COMPONENT.AsGuid(), name )
+            : base( SystemGuid.FieldType.CONTENT_CHANNEL_ITEM.AsGuid(), name )
         {
             ContentChannelGuid = contentChannelGuid;
         }
@@ -124,7 +124,7 @@ namespace Rock.Attribute
                     if ( contentChannel != null )
                     {
                         var configValue = new Field.ConfigurationValue( contentChannel.Id.ToString() );
-                        FieldConfigurationValues.Add( "contentchannel", configValue );
+                        FieldConfigurationValues.AddOrReplace( "contentchannel", configValue );
                     }
                 }
             }

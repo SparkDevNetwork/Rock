@@ -44,10 +44,10 @@ namespace Rock.Attribute
             : base( SystemGuid.FieldType.SYSTEM_PHONE_NUMBER.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             var includeInactiveConfigValue = new Field.ConfigurationValue( "False" );
-            FieldConfigurationValues.Add( INCLUDE_INACTIVE_KEY, includeInactiveConfigValue );
+            FieldConfigurationValues.AddOrReplace( INCLUDE_INACTIVE_KEY, includeInactiveConfigValue );
 
             var allowMultipleConfigKey = new Field.ConfigurationValue( allowMultiple.ToString() );
-            FieldConfigurationValues.Add( ALLOW_MULTIPLE_KEY, allowMultipleConfigKey );
+            FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, allowMultipleConfigKey );
         }
 
         /// <summary>

@@ -43,8 +43,8 @@ namespace Rock.Attribute
         public CustomEnhancedListFieldAttribute( string name, string description, string listSource, bool required = false, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( SystemGuid.FieldType.MULTI_SELECT.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
-            FieldConfigurationValues.Add( VALUES_KEY, new Field.ConfigurationValue( listSource ) );
-            FieldConfigurationValues.Add( ENHANCED_SELECTION_KEY, new Field.ConfigurationValue( "True" ) );
+            FieldConfigurationValues.AddOrReplace( VALUES_KEY, new Field.ConfigurationValue( listSource ) );
+            FieldConfigurationValues.AddOrReplace( ENHANCED_SELECTION_KEY, new Field.ConfigurationValue( "True" ) );
         }
 
         /// <summary>

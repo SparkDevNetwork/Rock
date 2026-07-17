@@ -49,7 +49,7 @@ namespace Rock.Attribute
             if ( definedType != null )
             {
                 var definedTypeConfigValue = new Field.ConfigurationValue( definedType.Id.ToString() );
-                FieldConfigurationValues.Add( DEFINED_TYPE_KEY, definedTypeConfigValue );
+                FieldConfigurationValues.AddOrReplace( DEFINED_TYPE_KEY, definedTypeConfigValue );
 
                 if ( string.IsNullOrWhiteSpace( Name ) )
                 {
@@ -84,7 +84,7 @@ namespace Rock.Attribute
             if ( definedType != null )
             {
                 var definedTypeConfigValue = new Field.ConfigurationValue( definedType.Id.ToString() );
-                FieldConfigurationValues.Add( DEFINED_TYPE_KEY, definedTypeConfigValue );
+                FieldConfigurationValues.AddOrReplace( DEFINED_TYPE_KEY, definedTypeConfigValue );
 
                 if ( string.IsNullOrWhiteSpace( Name ) )
                 {

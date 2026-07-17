@@ -57,7 +57,7 @@ namespace Rock.Attribute
             : base( SystemGuid.FieldType.ENTITYTYPE.AsGuid(), name, description, required, "", category, order, key )
         {
             var configValue = new Field.ConfigurationValue( includeGlobalAttributeOption.ToString() );
-            FieldConfigurationValues.Add( "includeglobal", configValue );
+            FieldConfigurationValues.AddOrReplace( "includeglobal", configValue );
         }
 
         /// <summary>

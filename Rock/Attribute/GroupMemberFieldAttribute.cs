@@ -81,13 +81,13 @@ namespace Rock.Attribute
             if ( group != null )
             {
                 var groupConfigValue = new Field.ConfigurationValue( group.Id.ToString() );
-                FieldConfigurationValues.Add( GROUP_KEY, groupConfigValue );
+                FieldConfigurationValues.AddOrReplace( GROUP_KEY, groupConfigValue );
 
                 var allowMultipleConfigValue = new Field.ConfigurationValue( allowMultiple.ToString() );
-                FieldConfigurationValues.Add( ALLOW_MULTIPLE_KEY, allowMultipleConfigValue );
+                FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, allowMultipleConfigValue );
 
                 var enhancedConfigValue = new Field.ConfigurationValue( enhanced.ToString() );
-                FieldConfigurationValues.Add( ENHANCED_SELECTION_KEY, enhancedConfigValue );
+                FieldConfigurationValues.AddOrReplace( ENHANCED_SELECTION_KEY, enhancedConfigValue );
 
                 if ( string.IsNullOrWhiteSpace( Name ) )
                 {
@@ -118,6 +118,7 @@ namespace Rock.Attribute
         public GroupMemberFieldAttribute( string groupGuid, string name )
             : base( SystemGuid.FieldType.GROUP_MEMBER.AsGuid(), name )
         {
+            GroupGuid = groupGuid;
             AllowMultiple = false;
             EnhancedSelection = false;
         }
@@ -153,7 +154,7 @@ namespace Rock.Attribute
                     if ( group != null )
                     {
                         var configValue = new Field.ConfigurationValue( group.Id.ToString() );
-                        FieldConfigurationValues.Add( GROUP_KEY, configValue );
+                        FieldConfigurationValues.AddOrReplace( GROUP_KEY, configValue );
                     }
                 }
             }

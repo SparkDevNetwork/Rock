@@ -41,7 +41,7 @@ namespace Rock.Attribute
         public GroupTypeGroupFieldAttribute( string name = "", string description = "", string groupPickerLabel = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( SystemGuid.FieldType.GROUP_TYPE_GROUP.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
-            FieldConfigurationValues.Add( "groupPickerLabel", new Field.ConfigurationValue( groupPickerLabel ) );
+            FieldConfigurationValues.AddOrReplace( "groupPickerLabel", new Field.ConfigurationValue( groupPickerLabel ) );
         }
 
         /// <summary>

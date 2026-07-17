@@ -42,7 +42,7 @@ namespace Rock.Attribute
             : base( SystemGuid.FieldType.DATE_TIME.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             var displayCurrentConfigValue = new Field.ConfigurationValue( allowCurrentOption.ToString() );
-            FieldConfigurationValues.Add( "displayCurrentOption", displayCurrentConfigValue );
+            FieldConfigurationValues.AddOrReplace( "displayCurrentOption", displayCurrentConfigValue );
         }
 
         /// <summary>

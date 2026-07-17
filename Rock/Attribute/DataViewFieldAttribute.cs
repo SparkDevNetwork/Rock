@@ -43,7 +43,7 @@ namespace Rock.Attribute
         {
             if ( !string.IsNullOrWhiteSpace( entityTypeName ) )
             {
-                FieldConfigurationValues.Add( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( entityTypeName ) );
+                FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( entityTypeName ) );
             }
         }
 

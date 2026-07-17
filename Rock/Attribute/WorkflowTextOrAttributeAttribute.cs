@@ -68,13 +68,13 @@ namespace Rock.Attribute
             if ( fieldTypeClassNames != null && fieldTypeClassNames.Length > 0 )
             {
                 var workflowTypeConfigValue = new Field.ConfigurationValue( fieldTypeClassNames.ToList().AsDelimited("|") );
-                FieldConfigurationValues.Add( ATTRIBUTE_FIELD_TYPES_KEY, workflowTypeConfigValue );
+                FieldConfigurationValues.AddOrReplace( ATTRIBUTE_FIELD_TYPES_KEY, workflowTypeConfigValue );
             }
 
             if ( rows > 1 )
             {
                 var rowsConfigValue = new Field.ConfigurationValue( rows.ToString() );
-                FieldConfigurationValues.Add( TEXTBOX_ROWS_KEY, rowsConfigValue );
+                FieldConfigurationValues.AddOrReplace( TEXTBOX_ROWS_KEY, rowsConfigValue );
             }
         }
 
@@ -110,7 +110,7 @@ namespace Rock.Attribute
                 if ( value != null )
                 {
                     var flattenedClassNames = value.ToList().AsDelimited( "|" );
-                    FieldConfigurationValues.Add( ATTRIBUTE_FIELD_TYPES_KEY, new Field.ConfigurationValue( flattenedClassNames ) );
+                    FieldConfigurationValues.AddOrReplace( ATTRIBUTE_FIELD_TYPES_KEY, new Field.ConfigurationValue( flattenedClassNames ) );
                 }
             }
         }
@@ -125,7 +125,7 @@ namespace Rock.Attribute
             {
                 if ( value > 1 )
                 {
-                    FieldConfigurationValues.Add( TEXTBOX_ROWS_KEY, new Field.ConfigurationValue( value.ToString() ) );
+                    FieldConfigurationValues.AddOrReplace( TEXTBOX_ROWS_KEY, new Field.ConfigurationValue( value.ToString() ) );
                 }
                 else
                 {

@@ -36,7 +36,7 @@ namespace Rock.Attribute
         public EnumFieldAttribute( string name )
             : base( SystemGuid.FieldType.SINGLE_SELECT.AsGuid(), name )
         {
-            FieldConfigurationValues.Add( FIELDTYPE, new Field.ConfigurationValue( "rb" ) );
+            FieldConfigurationValues.AddOrReplace( FIELDTYPE, new Field.ConfigurationValue( "rb" ) );
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace Rock.Attribute
                 Key = key;
             }
 
-            FieldConfigurationValues.Add( FIELDTYPE, new Field.ConfigurationValue( "rb" ) );
+            FieldConfigurationValues.AddOrReplace( FIELDTYPE, new Field.ConfigurationValue( "rb" ) );
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace Rock.Attribute
                 }
 
                 var listSource = string.Join( ",", list );
-                FieldConfigurationValues.Add( VALUES, new Field.ConfigurationValue( listSource ) );
+                FieldConfigurationValues.AddOrReplace( VALUES, new Field.ConfigurationValue( listSource ) );
             }
         }
 

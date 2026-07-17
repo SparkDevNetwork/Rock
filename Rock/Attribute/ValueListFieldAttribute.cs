@@ -55,7 +55,7 @@ namespace Rock.Attribute
             if ( !string.IsNullOrWhiteSpace( valuePrompt ) )
             {
                 var configValue = new Field.ConfigurationValue( valuePrompt );
-                FieldConfigurationValues.Add( VALUE_PROMPT_KEY, configValue );
+                FieldConfigurationValues.AddOrReplace( VALUE_PROMPT_KEY, configValue );
             }
 
             Guid? guid = definedTypeGuid.AsGuidOrNull();
@@ -65,14 +65,14 @@ namespace Rock.Attribute
                 if ( definedType != null )
                 {
                     var definedTypeConfigValue = new Field.ConfigurationValue( definedType.Id.ToString() );
-                    FieldConfigurationValues.Add( DEFINED_TYPE_KEY, definedTypeConfigValue );
+                    FieldConfigurationValues.AddOrReplace( DEFINED_TYPE_KEY, definedTypeConfigValue );
                 }
             }
 
             if ( !string.IsNullOrWhiteSpace( customValues ) )
             {
                 var configValue = new Field.ConfigurationValue( customValues );
-                FieldConfigurationValues.Add( CUSTOM_VALUES, configValue );
+                FieldConfigurationValues.AddOrReplace( CUSTOM_VALUES, configValue );
             }
         }
 
@@ -205,7 +205,7 @@ namespace Rock.Attribute
                     if ( definedType != null )
                     {
                         var configValue = new Field.ConfigurationValue( definedType.Id.ToString() );
-                        FieldConfigurationValues.Add( DEFINED_TYPE_KEY, configValue );
+                        FieldConfigurationValues.AddOrReplace( DEFINED_TYPE_KEY, configValue );
                     }
                 }
             }

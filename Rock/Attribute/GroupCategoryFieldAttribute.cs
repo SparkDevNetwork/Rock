@@ -56,8 +56,8 @@ namespace Rock.Attribute
             base( allowMultiple ? SystemGuid.FieldType.CATEGORIES.AsGuid() : SystemGuid.FieldType.CATEGORY.AsGuid(),
                 name, description, required, defaultValue, category, order, key )
         {
-            FieldConfigurationValues.Add( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( "Rock.Model.Group" ) );
-            FieldConfigurationValues.Add( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( "GroupTypeId" ) );
+            FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( "Rock.Model.Group" ) );
+            FieldConfigurationValues.AddOrReplace( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( "GroupTypeId" ) );
 
             GroupTypeGuid = groupTypeGuid;
         }
@@ -69,8 +69,8 @@ namespace Rock.Attribute
         public GroupCategoryFieldAttribute( string name )
             : base( SystemGuid.FieldType.CATEGORY.AsGuid(), name )
         {
-            FieldConfigurationValues.Add( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( "Rock.Model.Group" ) );
-            FieldConfigurationValues.Add( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( "GroupTypeId" ) );
+            FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( "Rock.Model.Group" ) );
+            FieldConfigurationValues.AddOrReplace( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( "GroupTypeId" ) );
         }
 
         /// <summary>

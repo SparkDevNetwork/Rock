@@ -65,7 +65,7 @@ namespace Rock.Attribute
             if ( groupType != null )
             {
                 var configValue = new Field.ConfigurationValue( groupType.ToString() );
-                FieldConfigurationValues.Add( "groupTypeGuid", configValue );
+                FieldConfigurationValues.AddOrReplace( "groupTypeGuid", configValue );
             }
 
             if ( string.IsNullOrWhiteSpace( Name ) )

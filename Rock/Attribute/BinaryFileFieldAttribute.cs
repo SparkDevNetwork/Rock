@@ -43,7 +43,7 @@ namespace Rock.Attribute
             : base( SystemGuid.FieldType.BINARY_FILE.AsGuid(), name, description, required, defaultBinaryFileGuid, category, order, key )
         {
             var configValue = new Field.ConfigurationValue( binaryFileTypeGuid );
-            FieldConfigurationValues.Add( BINARY_FILE_TYPE, configValue );
+            FieldConfigurationValues.AddOrReplace( BINARY_FILE_TYPE, configValue );
         }
 
         /// <summary>

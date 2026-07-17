@@ -44,7 +44,7 @@ namespace Rock.Attribute
             : base( SystemGuid.FieldType.ENTITY.AsGuid(), name, description, required, "", category, order, key )
         {
             
-            FieldConfigurationValues.Add( "entityControlHelpTextFormat", new Field.ConfigurationValue( entityControlHelpTextFormat ) );
+            FieldConfigurationValues.AddOrReplace( "entityControlHelpTextFormat", new Field.ConfigurationValue( entityControlHelpTextFormat ) );
         }
 
         /// <summary>

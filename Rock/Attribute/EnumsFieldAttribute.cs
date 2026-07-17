@@ -63,7 +63,7 @@ namespace Rock.Attribute
                 }
 
                 var listSource = string.Join( ",", list );
-                FieldConfigurationValues.Add( VALUES, new Field.ConfigurationValue( listSource ) );
+                FieldConfigurationValues.AddOrReplace( VALUES, new Field.ConfigurationValue( listSource ) );
             }
         }
 

@@ -39,17 +39,12 @@ namespace Rock.Field
         public static IFieldType InstantiateFieldType( string assembly, string typeName )
         {
             string thetype = string.Format( "{0}, {1}", typeName, assembly );
-            Type type = Type.GetType( thetype )
-                ?? Type.GetType( "Rock.Field.Types.TextFieldType, Rock" );
+            Type type = Type.GetType( thetype );
 
             if ( type != null )
-            {
                 return ( IFieldType ) Activator.CreateInstance( type );
-            }
             else
-            {
-                throw new InvalidOperationException( $"Could not create an instance of the field type {thetype}." );
-            }
+                return ( IFieldType ) Activator.CreateInstance( typeof( Rock.Field.Types.TextFieldType ) );
         }
 
         /// <summary>

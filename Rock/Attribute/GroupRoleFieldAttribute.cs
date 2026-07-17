@@ -53,7 +53,7 @@ namespace Rock.Attribute
                     if ( groupType != null )
                     {
                         var configValue = new Field.ConfigurationValue( groupType.Id.ToString() );
-                        FieldConfigurationValues.Add( "grouptype", configValue );
+                        FieldConfigurationValues.AddOrReplace( "grouptype", configValue );
 
                         if ( string.IsNullOrWhiteSpace( Name ) )
                         {
@@ -119,7 +119,7 @@ namespace Rock.Attribute
                     if ( groupType != null )
                     {
                         var configValue = new Field.ConfigurationValue( groupType.Id.ToString() );
-                        FieldConfigurationValues.Add( "grouptype", configValue );
+                        FieldConfigurationValues.AddOrReplace( "grouptype", configValue );
                     }
                 }
             }

@@ -597,7 +597,7 @@ namespace Rock.Field.Types
         [RockObsolete( "20.0" )]
         public List<KeyValuePair<string, object>> GetValuesFromString( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            return Helper.GetKeyValueListValuesFromString( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ), condensed );
+            return Helper.GetKeyValueListValuesFromString( value, configurationValues?.ToDictionary( cv => cv.Key, cv => cv.Value.Value ), condensed );
         }
 
 #endif

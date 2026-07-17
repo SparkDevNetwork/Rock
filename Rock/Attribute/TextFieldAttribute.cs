@@ -76,7 +76,7 @@ namespace Rock.Attribute
             set
             {
                 var isPasswordValue = new Field.ConfigurationValue( value.ToString() );
-                FieldConfigurationValues.Add( IS_PASSWORD_KEY, isPasswordValue );
+                FieldConfigurationValues.AddOrReplace( IS_PASSWORD_KEY, isPasswordValue );
             }
         }
     }

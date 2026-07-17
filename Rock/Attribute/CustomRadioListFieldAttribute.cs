@@ -64,8 +64,8 @@ namespace Rock.Attribute
                 Key = key;
             }
 
-            FieldConfigurationValues.Add( VALUES, new Field.ConfigurationValue( listSource ) );
-            FieldConfigurationValues.Add( FIELDTYPE, new Field.ConfigurationValue( "rb" ) );
+            FieldConfigurationValues.AddOrReplace( VALUES, new Field.ConfigurationValue( listSource ) );
+            FieldConfigurationValues.AddOrReplace( FIELDTYPE, new Field.ConfigurationValue( "rb" ) );
         }
 
         /// <summary>

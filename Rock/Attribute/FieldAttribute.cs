@@ -256,13 +256,22 @@ namespace Rock.Attribute
                         var fieldType = FieldTypeCache.All()
                             .FirstOrDefault( c => c.Class == _fieldTypeClass );
 
+                        if ( fieldType == null )
+                        {
+                            // Don't set _fieldTypeGuid to Guid.Empty here
+                            // because that would prevent future attempts to
+                            // look up the field type by class name.
+                            return Guid.Empty;
+                        }
+
                         _fieldTypeGuid = ( fieldType?.Guid ?? Guid.Empty );
                     }
                     catch
                     {
-                        // intentionally ignore exceptions since this is only
-                        // used for backwards compatibility with the old
-                        // constructor.
+                        // Don't set _fieldTypeGuid to Guid.Empty here
+                        // because that would prevent future attempts to
+                        // look up the field type by class name.
+                        return Guid.Empty;
                     }
                 }
 
@@ -329,8 +338,8 @@ namespace Rock.Attribute
                 // used for backwards compatibility with the old
                 // constructor.
 
-                _fieldTypeAssembly = string.Empty;
-                _fieldTypeClass = string.Empty;
+                _fieldTypeAssembly ??= string.Empty;
+                _fieldTypeClass ??= string.Empty;
             }
         }
     }

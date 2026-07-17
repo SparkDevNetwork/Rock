@@ -188,8 +188,7 @@ namespace Rock.Model
                 // operate as pickers to an existing file rather than being the
                 // source of the file itself.
                 var fieldType = AttributeCache.Get( Entity.AttributeId )?.FieldType;
-                var field = fieldType.Field;
-                if ( field != null && (
+                if ( fieldType != null && (
                     fieldType.Guid == SystemGuid.FieldType.FILE.AsGuid() ||
                     fieldType.Guid == SystemGuid.FieldType.AUDIO_FILE.AsGuid() ||
                     fieldType.Guid == SystemGuid.FieldType.VIDEO_FILE.AsGuid() ||

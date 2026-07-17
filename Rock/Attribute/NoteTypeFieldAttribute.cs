@@ -49,9 +49,9 @@ namespace Rock.Attribute
             base( allowMultiple ? SystemGuid.FieldType.NOTE_TYPES.AsGuid() : SystemGuid.FieldType.NOTE_TYPE.AsGuid(),
                 name, description, required, defaultValue, category, order, key )
         {
-            FieldConfigurationValues.Add( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( entityTypeName ) );
-            FieldConfigurationValues.Add( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( entityTypeQualifierColumn ) );
-            FieldConfigurationValues.Add( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( entityTypeQualifierValue ) );
+            FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( entityTypeName ) );
+            FieldConfigurationValues.AddOrReplace( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( entityTypeQualifierColumn ) );
+            FieldConfigurationValues.AddOrReplace( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( entityTypeQualifierValue ) );
         }
 
         /// <summary>

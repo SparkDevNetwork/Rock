@@ -143,7 +143,7 @@ namespace Rock.Attribute
                         Category = "Context",
                         Description = "The type of entity that will provide context for this block",
                         IncludeGlobalAttributeOption = false,
-                        IsRequired = true,
+                        IsRequired = false,
                         Key = propertyKeyName,
                         Order = 0,
                     };

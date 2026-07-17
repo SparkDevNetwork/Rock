@@ -45,7 +45,7 @@ namespace Rock.Attribute
             var attributeMatrixTemplate = new AttributeMatrixTemplateService( new Data.RockContext() ).Get( attributeMatrixTemplateGuid.AsGuid() );
             if ( attributeMatrixTemplate != null )
             {
-                FieldConfigurationValues.Add( "attributematrixtemplate", new Field.ConfigurationValue( attributeMatrixTemplate.Id.ToString() ) );
+                FieldConfigurationValues.AddOrReplace( "attributematrixtemplate", new Field.ConfigurationValue( attributeMatrixTemplate.Id.ToString() ) );
             }
         }
 
@@ -91,7 +91,7 @@ namespace Rock.Attribute
                     if ( attributeMatrixTemplate != null )
                     {
                         var configValue = new Field.ConfigurationValue( attributeMatrixTemplate.Id.ToString() );
-                        FieldConfigurationValues.Add( "attributematrixtemplate", configValue );
+                        FieldConfigurationValues.AddOrReplace( "attributematrixtemplate", configValue );
                     }
                 }
             }

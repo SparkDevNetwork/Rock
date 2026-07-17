@@ -81,7 +81,7 @@ namespace Rock.Attribute
                 if ( value != null )
                 {
                     var flattenedClassNames = value.ToList().AsDelimited( "|" );
-                    FieldConfigurationValues.Add( ATTRIBUTE_FIELD_TYPES_KEY, new Field.ConfigurationValue( flattenedClassNames ) );
+                    FieldConfigurationValues.AddOrReplace( ATTRIBUTE_FIELD_TYPES_KEY, new Field.ConfigurationValue( flattenedClassNames ) );
                 }
             }
         }

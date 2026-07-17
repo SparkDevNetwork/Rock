@@ -60,7 +60,7 @@ namespace Rock.Attribute
         public string DefaultStepProgramGuid
         {
             get => FieldConfigurationValues.GetValueOrNull( "DefaultStepProgramGuid" );
-            set => FieldConfigurationValues.Add( "DefaultStepProgramGuid", new Field.ConfigurationValue( value ) );
+            set => FieldConfigurationValues.AddOrReplace( "DefaultStepProgramGuid", new Field.ConfigurationValue( value ) );
         }
     }
 }
