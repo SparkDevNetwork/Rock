@@ -35,6 +35,7 @@ namespace Rock.Attribute
         public CustomRadioListFieldAttribute( string name )
             : base( SystemGuid.FieldType.SINGLE_SELECT.AsGuid(), name )
         {
+            FieldConfigurationValues.AddOrReplace( FIELDTYPE, new Field.ConfigurationValue( "rb" ) );
         }
 
         /// <summary>

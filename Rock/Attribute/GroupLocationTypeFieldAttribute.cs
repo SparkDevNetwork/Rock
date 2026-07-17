@@ -94,7 +94,7 @@ namespace Rock.Attribute
             var groupTypeGuid = name.AsGuidOrNull();
             if ( groupTypeGuid != null )
             {
-                GroupTypeGuid = GroupTypeGuid;
+                GroupTypeGuid = groupTypeGuid.ToString();
                 Name = "Group Location Type";
             }
         }

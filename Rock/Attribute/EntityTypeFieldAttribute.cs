@@ -67,7 +67,7 @@ namespace Rock.Attribute
         public EntityTypeFieldAttribute( string name )
             : base( SystemGuid.FieldType.ENTITYTYPE.AsGuid(), name )
         {
-            IncludeGlobalAttributeOption = false;
+            IncludeGlobalAttributeOption = true;
         }
 
         /// <summary>

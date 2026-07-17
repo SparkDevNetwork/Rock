@@ -59,7 +59,7 @@ namespace Rock.Field.Types
         [RockObsolete( "20.0" )]
         public bool IsPassword( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            return Helper.IsTextFieldPassword( configurationValues?.ToDictionary( a => a.Key, a => a.Value.Value ) );
+            return Helper.IsTextFieldPassword( configurationValues?.ToDictionary( a => a.Key, a => a.Value?.Value ) );
         }
 
         #endregion

@@ -72,6 +72,7 @@ namespace Rock.Attribute
             : base( SystemGuid.FieldType.BOOLEAN.AsGuid(), name )
         {
             IsRequired = false;
+            DefaultBooleanValue = false;
         }
 
         /// <summary>

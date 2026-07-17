@@ -241,21 +241,7 @@ namespace Rock.Field.Types
         [RockObsolete( "20.0" )]
         public static string GetTemplateContent( string value )
         {
-            var values = value.Split( new[] { '|' }, 2 );
-
-            if ( values.Length >= 1 )
-            {
-                if ( values[0].AsGuid() == _CustomGuid && values.Length >= 2 )
-                {
-                    return values[1];
-                }
-                else
-                {
-                    return DefinedValueCache.Get( values[0].AsGuid() )?.Description ?? string.Empty;
-                }
-            }
-
-            return string.Empty;
+            return Helper.GetBlockTemplateContent( value );
         }
 
         #region WebForms

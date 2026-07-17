@@ -675,7 +675,7 @@ namespace Rock.Web.UI.Controls
             //// If only the Page.Guid is specified this is just a reference to a page without a special route
             //// In case the PageRoute record can't be found from PageRoute.Guid (maybe the pageroute was deleted), fall back to the Page without a PageRoute
 
-            var rockContext = new RockContext();
+            using var rockContext = new RockContext();
 
             if ( valuePair.Length == 2 )
             {
