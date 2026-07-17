@@ -20,29 +20,25 @@
         <TextColumn name="projectName"
                     title="Project Name"
                     field="projectName"
-                    :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    :filter="textValueFilter" />
 
         <Column name="friendlySchedule"
                 title="Schedule"
                 field="friendlySchedule"
                 :filter="dateValueFilter"
                 :filterValue="getScheduleFilterValue"
-                :sortValue="getScheduleSortValue"
-                visiblePriority="xs" />
+                :sortValue="getScheduleSortValue" />
 
         <NumberColumn name="leaderCount"
                       title="Leader Count"
                       field="leaderCount"
-                      :filter="numberValueFilter"
-                      visiblePriority="sm" />
+                      :filter="numberValueFilter" />
 
         <Column name="participantCount"
                 title="Participant Count"
                 field="participantCount"
                 :filter="numberValueFilter"
-                :exportValue="getParticipantCountExportValue"
-                visiblePriority="sm">
+                :exportValue="getParticipantCountExportValue">
             <template #format="{ row }">
                 <span :class="'badge badge-' + row.participantCountBadgeType">{{ row.participantCount }}</span>
             </template>
@@ -53,7 +49,6 @@
                       tooltip="Attendee List"
                       iconClass="ti ti-users"
                       :excludeFromExport="true"
-                      visiblePriority="md"
                       @click="onAttendeeListClick" />
 
         <DeleteColumn v-if="config.isDeleteEnabled"

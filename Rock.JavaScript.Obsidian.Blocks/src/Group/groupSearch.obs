@@ -25,8 +25,7 @@
                 :filter="textValueFilter"
                 :filterValue="getGroupFilterValue"
                 :quickFilterValue="getGroupFilterValue"
-                :exportValue="getGroupFilterValue"
-                visiblePriority="xs">
+                :exportValue="getGroupFilterValue">
             <template #format="{ row }">
                 <div>
                     <span v-if="row.structure" v-html="row.structure"></span>
@@ -43,20 +42,17 @@
         <TextColumn name="groupType"
                     title="Type"
                     field="groupType"
-                    :filter="textValueFilter"
-                    visiblePriority="md" />
+                    :filter="textValueFilter" />
 
         <NumberColumn name="memberCount"
                       title="Member Count"
                       field="memberCount"
-                      :filter="numberValueFilter"
-                      visiblePriority="md" />
+                      :filter="numberValueFilter" />
 
         <TextColumn name="campus"
                     title="Campus"
                     field="campus"
-                    :filter="textValueFilter"
-                    visiblePriority="lg" />
+                    :filter="textValueFilter" />
     </Grid>
 </template>
 
