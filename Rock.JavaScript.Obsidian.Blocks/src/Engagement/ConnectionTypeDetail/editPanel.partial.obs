@@ -110,7 +110,8 @@
         </ContentSection>
 
         <ContentSection title="Request Attributes" icon="ti ti-id" :order="4">
-            <ConnectionRequestAttributes v-model:connectionRequestAttributes="connectionRequestAttributes" />
+            <ConnectionRequestAttributes v-model:connectionRequestAttributes="connectionRequestAttributes"
+                                         :reservedOpportunityAttributeKeys="options.opportunityConnectionRequestAttributeKeys ?? []" />
         </ContentSection>
 
         <ContentSection title="Activity Types" icon="ti ti-activity" :order="5">

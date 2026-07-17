@@ -31,6 +31,13 @@ export type ConnectionTypeDetailOptionsBag = {
     /** Gets or sets a value indicating whether active AI providers exist. */
     hasActiveAIProvider: boolean;
 
+    /**
+     * Gets or sets the Connection Request attribute keys that are already defined
+     * on any Connection Opportunity under this Connection Type. Type-level request
+     * attributes must not reuse these keys.
+     */
+    opportunityConnectionRequestAttributeKeys?: string[] | null;
+
     /** Gets or sets the Person Note Type Items to be used when creating Connection Activity Types */
     personNoteTypeItems?: ListItemBag[] | null;
 };

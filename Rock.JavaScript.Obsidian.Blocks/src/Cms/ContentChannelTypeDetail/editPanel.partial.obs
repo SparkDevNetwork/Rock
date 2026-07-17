@@ -131,6 +131,7 @@
     const isItemAttributeModalOpen = ref(false);
     const itemAttribute = ref<PublicEditableAttributeBag | null>(null);
     const itemAttributesReservedKeyNames = ref<string[]>([]);
+    const contentChannelItemAttributeKeys = ref<string[]>(props.options.contentChannelItemAttributeKeys ?? []);
 
     const channelAttributes = ref(props.modelValue.channelAttributes ?? []);
     const isChannelAttributeModalOpen = ref(false);
@@ -162,11 +163,10 @@
     // #region Functions
 
     function convertToAttributeGridRowItem(attribute: PublicEditableAttributeBag, reservedKeyNames: Ref<string[]>): Record<string, unknown> {
-
-        if (attribute.key) {
-            if (!reservedKeyNames.value.includes(attribute.key)) {
-                reservedKeyNames.value.push(attribute.key);
-            }
+        // Channel attributes still seed reserved keys here; item attributes are
+        // rebuilt via rebuildItemAttributeReservedKeyNames (includes channel-level keys).
+        if (attribute.key && !reservedKeyNames.value.includes(attribute.key)) {
+            reservedKeyNames.value.push(attribute.key);
         }
 
         return {
@@ -176,6 +176,21 @@
             isRequired: attribute.isRequired,
             guid: attribute.guid
         };
+    }
+
+    /**
+     * Rebuilds reserved type item attribute keys from this type's attributes
+     * plus any keys already used on channels of this type.
+     */
+    function rebuildItemAttributeReservedKeyNames(): void {
+        const ownKeys = (itemAttributes.value ?? [])
+            .map(a => a.key)
+            .filter((k): k is string => !!k);
+
+        const channelKeys = (contentChannelItemAttributeKeys.value ?? [])
+            .filter((k): k is string => !!k);
+
+        itemAttributesReservedKeyNames.value = Array.from(new Set([...ownKeys, ...channelKeys]));
     }
 
     // #endregion
@@ -204,7 +219,7 @@
         // Close modal and remove deleted attribute from the current collection of attributes.
         isItemAttributeModalOpen.value = false;
         itemAttributes.value = itemAttributes.value.filter(s => s.guid !== key);
-        itemAttributesReservedKeyNames.value = itemAttributes.value.map(k => k.key!);
+        rebuildItemAttributeReservedKeyNames();
 
         // Update the grid.
         if (itemAttributesGridData.rows) {
@@ -298,12 +313,20 @@
             itemAttributesReservedKeyNames.value = itemAttributesReservedKeyNames.value.filter(k => k !== itemAttribute.value?.key);
         }
         else {
-            // Rebuild from the authoritative attribute list so a cancelled key
-            // change cannot leave a phantom edited key reserved or drop the real
-            // sibling key. Saves have already been committed to itemAttributes.
-            itemAttributesReservedKeyNames.value = itemAttributes.value.map(k => k.key!);
+            // Rebuild from type item attributes plus channel-level reserved keys
+            // so a cancelled key change cannot leave a phantom key reserved.
+            rebuildItemAttributeReservedKeyNames();
         }
     });
+
+    watch(itemAttributes, () => {
+        if (!isItemAttributeModalOpen.value) {
+            rebuildItemAttributeReservedKeyNames();
+        }
+    }, { deep: true });
+
+    // Seed reserved keys on first render.
+    rebuildItemAttributeReservedKeyNames();
 
     // #endregion
 
