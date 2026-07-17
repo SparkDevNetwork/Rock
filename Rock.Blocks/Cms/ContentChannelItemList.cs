@@ -461,7 +461,7 @@ namespace Rock.Blocks.Cms
                     return contentChannel.ItemUrl.ResolveMergeFields( itemUrlMergeFields );
                 } )
                 .AddField( "hasLinkedMediaElements", a => false )
-                .AddAttributeFields( GetGridAttributes() );
+                .AddAttributeFields( GetDistinctGridAttributes() );
 
             return builder;
         }
@@ -477,6 +477,8 @@ namespace Rock.Blocks.Cms
                 return new List<AttributeCache>();
             }
 
+            // Return all matching attributes (including same Key on type and channel)
+            // so LoadFilteredAttributes can still resolve values for either AttributeId.
             return AttributeCache.All().AsQueryable()
                 .Where( a =>
                     a.EntityTypeId == entityTypeId &&
@@ -489,6 +491,41 @@ namespace Rock.Blocks.Cms
                     ) ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name ).ToList();
+        }
+
+        /// <summary>
+        /// Gets grid attributes de-duplicated by Key for column definitions.
+        /// </summary>
+        /// <remarks>
+        /// Type and channel item attributes can share a Key. The grid field name is
+        /// <c>attr_{Key}</c>, so only one column is registered per Key. Values still load
+        /// from the full list returned by <see cref="GetGridAttributes"/>.
+        /// </remarks>
+        /// <returns>A distinct list of <see cref="AttributeCache"/> objects for grid columns.</returns>
+        private List<AttributeCache> GetDistinctGridAttributes()
+        {
+            /*
+                7/17/26 - MSE
+
+                De-dupe by Key so attr_{Key} is only registered once when the same Key exists
+                on both the Content Channel Type and Content Channel. Prefer non-Boolean, then
+                channel-level, then Order/Name. Full attribute list still loads for values.
+
+                Reason: Prevent grid crash on duplicate item attribute Keys.
+            */
+            var booleanFieldTypeGuid = Rock.SystemGuid.FieldType.BOOLEAN.AsGuid();
+
+            return GetGridAttributes()
+                .GroupBy( a => a.Key )
+                .Select( group => group
+                    .OrderBy( a => a.FieldType?.Guid == booleanFieldTypeGuid )
+                    .ThenByDescending( a => a.EntityTypeQualifierColumn.Equals( "ContentChannelId", StringComparison.OrdinalIgnoreCase ) )
+                    .ThenBy( a => a.Order )
+                    .ThenBy( a => a.Name )
+                    .First() )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList();
         }
 
         private ContentChannel GetContentChannel()
