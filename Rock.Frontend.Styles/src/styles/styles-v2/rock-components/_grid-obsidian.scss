@@ -367,13 +367,14 @@
     flex-wrap: wrap;
 }
 
-.grid-cell > .label {
+.grid-cell .label {
+    display: inline-block; // Allow for proper truncation of label content when placed in a grid cell
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.grid-cell > .label:empty {
+.grid-cell .label:empty {
     display: none;
 }
 
