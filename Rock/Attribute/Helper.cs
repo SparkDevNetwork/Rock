@@ -155,7 +155,11 @@ namespace Rock.Attribute
             bool customGridColumnsBlock = typeof( Rock.Web.UI.ICustomGridColumns ).IsAssignableFrom( type );
             if ( customGridColumnsBlock || customizedGrid?.IsCustomColumnsSupported == true )
             {
-                entityProperties.Add( new TextFieldAttribute( CustomGridColumnsConfig.AttributeKey, category: "CustomSetting" ) );
+                entityProperties.Add( new TextFieldAttribute( CustomGridColumnsConfig.AttributeKey, category: "CustomSetting" )
+                {
+                    AllowHtml = true,
+                    AllowLava = true,
+                } );
             }
 
             bool customGridOptionsBlock = typeof( Rock.Web.UI.ICustomGridOptions ).IsAssignableFrom( type );
