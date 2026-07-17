@@ -260,6 +260,17 @@
                     : [{ text: "The group was updated" }];
 
             case GroupHistoryEventType.MembersAdded:
+                // When the block supplies a target the member is named (as the
+                // member timeline does, where the whole page is about them);
+                // otherwise the members are counted, as the group timeline does.
+                if (actor && event.targetText) {
+                    return [
+                        actor,
+                        { text: " added " },
+                        { text: event.targetText, url: event.targetUrl, isEmphasized: true }
+                    ];
+                }
+
                 return actor
                     ? [actor, { text: ` added ${memberCount} ${memberText}` }]
                     : [
@@ -268,6 +279,14 @@
                     ];
 
             case GroupHistoryEventType.MembersRemoved:
+                if (actor && event.targetText) {
+                    return [
+                        actor,
+                        { text: " removed " },
+                        { text: event.targetText, url: event.targetUrl, isEmphasized: true }
+                    ];
+                }
+
                 return actor
                     ? [actor, { text: ` removed ${memberCount} ${memberText}` }]
                     : [
@@ -296,7 +315,13 @@
                     ];
 
             default:
-                return [{ text: event.captionText ?? "" }];
+                // Captions are arbitrary text (e.g. "Group Member Deleted"),
+                // so the actor is appended as "by X" rather than prefixed,
+                // which reads correctly for any caption shape and avoids
+                // implying the actor was the subject of the event.
+                return actor
+                    ? [{ text: `${event.captionText ?? ""} by ` }, actor]
+                    : [{ text: event.captionText ?? "" }];
         }
     });
 
