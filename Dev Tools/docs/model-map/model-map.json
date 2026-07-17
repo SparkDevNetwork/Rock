@@ -1,5 +1,5 @@
 {
-  "generatedAtUtc": "2026-07-17T21:48:59.0000229Z",
+  "generatedAtUtc": "2026-07-17T22:09:34.8595312Z",
   "rockVersion": "20.0.4",
   "domains": [
     {
@@ -296699,6 +296699,5958 @@
               "referenceColumnName": "Id"
             }
           ]
+        }
+      ]
+    }
+  ],
+  "entityTypes": [
+    {
+      "name": "Rock.Model.AchievementAttempt",
+      "model": "AchievementAttempt",
+      "guid": "5c144b51-3d2e-4bc2-b6c7-7e4cb890e15f"
+    },
+    {
+      "name": "Rock.Model.AchievementType",
+      "model": "AchievementType",
+      "guid": "0e99356c-0dea-4f24-944e-21cd5fa83b9e"
+    },
+    {
+      "name": "Rock.Model.AchievementTypePrerequisite",
+      "model": "AchievementTypePrerequisite",
+      "guid": "5362db19-b8e1-4378-a66a-fb097ce3ab90"
+    },
+    {
+      "name": "Rock.Model.AdaptiveMessage",
+      "model": "AdaptiveMessage",
+      "guid": "63d98f58-da81-46ae-ae0c-662a7bfaa7d0"
+    },
+    {
+      "name": "Rock.Model.AdaptiveMessageAdaptation",
+      "model": "AdaptiveMessageAdaptation",
+      "guid": "39753cce-184a-4f14-ae80-08241de8fc2e"
+    },
+    {
+      "name": "Rock.Model.AdaptiveMessageAdaptationSegment",
+      "model": "AdaptiveMessageAdaptationSegment",
+      "guid": "40edf82b-eff5-4253-a129-965f7bc90033"
+    },
+    {
+      "name": "Rock.Model.AdaptiveMessageCategory",
+      "model": "AdaptiveMessageCategory",
+      "guid": "d47bda25-03a3-46ee-a0a6-f8b220e39e4a"
+    },
+    {
+      "name": "Rock.Model.AIAgent",
+      "model": "AIAgent",
+      "guid": "ee3fe609-5c7c-492e-b0e9-5461045fc825"
+    },
+    {
+      "name": "Rock.Model.AIAgentSession",
+      "model": "AIAgentSession",
+      "guid": "2415941a-8a3f-49fe-8039-db27096b0edf"
+    },
+    {
+      "name": "Rock.Model.AIAgentSessionAnchor",
+      "model": "AIAgentSessionAnchor",
+      "guid": "3ed1476a-b7fc-40e2-bbab-af084c82d7f1"
+    },
+    {
+      "name": "Rock.Model.AIAgentSessionHistory",
+      "model": "AIAgentSessionHistory",
+      "guid": "6ad212be-f8d0-4c58-ab0e-d723ed5e2155"
+    },
+    {
+      "name": "Rock.Model.AIAgentSkill",
+      "model": "AIAgentSkill",
+      "guid": "36deda2f-75bd-4bee-ac36-46d20dcd1331"
+    },
+    {
+      "name": "Rock.Model.AIProvider",
+      "model": "AIProvider",
+      "guid": "945a994f-f15e-43ac-b503-a54bde70f77f"
+    },
+    {
+      "name": "Rock.Model.AISkill",
+      "model": "AISkill",
+      "guid": "d953ab34-4ab6-47c6-857b-53044a99ed75"
+    },
+    {
+      "name": "Rock.Model.AISkillTool",
+      "model": "AISkillTool",
+      "guid": "357d2625-fdca-41f8-ab8d-1cf2ce0abeed"
+    },
+    {
+      "name": "Rock.Model.AnalyticsDimCampus",
+      "model": "AnalyticsDimCampus",
+      "guid": "dceb0575-1351-4cff-ba4f-410ba2d638cb"
+    },
+    {
+      "name": "Rock.Model.AnalyticsDimFamilyCurrent",
+      "model": "AnalyticsDimFamilyCurrent",
+      "guid": "b78878c9-4eb7-4ee4-bb85-d00cca83bcea"
+    },
+    {
+      "name": "Rock.Model.AnalyticsDimFamilyHeadOfHousehold",
+      "model": "AnalyticsDimFamilyHeadOfHousehold",
+      "guid": "89730008-fd3f-49be-9084-6cc5ea4dc4b3"
+    },
+    {
+      "name": "Rock.Model.AnalyticsDimFamilyHistorical",
+      "model": "AnalyticsDimFamilyHistorical",
+      "guid": "d906b981-9603-4b5f-9009-31f6edde9dc3"
+    },
+    {
+      "name": "Rock.Model.AnalyticsDimFinancialAccount",
+      "model": "AnalyticsDimFinancialAccount",
+      "guid": "893f38f8-fbf8-4157-b718-6009298abc91"
+    },
+    {
+      "name": "Rock.Model.AnalyticsDimFinancialBatch",
+      "model": "AnalyticsDimFinancialBatch",
+      "guid": "f970ff85-f3ed-41bd-90d9-5511baced928"
+    },
+    {
+      "name": "Rock.Model.AnalyticsDimPersonCurrent",
+      "model": "AnalyticsDimPersonCurrent",
+      "guid": "30cbf82b-4c90-4767-9c2d-622308439bf2"
+    },
+    {
+      "name": "Rock.Model.AnalyticsDimPersonHistorical",
+      "model": "AnalyticsDimPersonHistorical",
+      "guid": "050aaa2b-43ea-4952-936c-70638d3bcc0d"
+    },
+    {
+      "name": "Rock.Model.AnalyticsFactAttendance",
+      "model": "AnalyticsFactAttendance",
+      "guid": "3fcc0df5-4299-4971-860c-8cb591da75d8"
+    },
+    {
+      "name": "Rock.Model.AnalyticsFactFinancialTransaction",
+      "model": "AnalyticsFactFinancialTransaction",
+      "guid": "6447497f-c40f-41b9-ab5b-a1f14f80dd18"
+    },
+    {
+      "name": "Rock.Model.AnalyticsSourceAttendance",
+      "model": "AnalyticsSourceAttendance",
+      "guid": "bce52831-6fef-4521-9e4a-ae5c29f20e2f"
+    },
+    {
+      "name": "Rock.Model.AnalyticsSourceCampus",
+      "model": "AnalyticsSourceCampus",
+      "guid": "9de61413-6d38-4f14-ae1b-db927e07ce56"
+    },
+    {
+      "name": "Rock.Model.AnalyticsSourceFamilyHistorical",
+      "model": "AnalyticsSourceFamilyHistorical",
+      "guid": "c9941e89-ec9d-41ff-a892-5016730f22c1"
+    },
+    {
+      "name": "Rock.Model.AnalyticsSourceFinancialTransaction",
+      "model": "AnalyticsSourceFinancialTransaction",
+      "guid": "68e1bb08-b30b-49e2-993e-0b5352bb97c5"
+    },
+    {
+      "name": "Rock.Model.AnalyticsSourceGivingUnit",
+      "model": "AnalyticsSourceGivingUnit",
+      "guid": "05103bcb-b164-4591-9129-f949a58c04b1"
+    },
+    {
+      "name": "Rock.Model.AnalyticsSourcePersonHistorical",
+      "model": "AnalyticsSourcePersonHistorical",
+      "guid": "fc84e469-7e8f-4202-89c3-f27dd41bc132"
+    },
+    {
+      "name": "Rock.Model.Assessment",
+      "model": "Assessment",
+      "guid": "6dcd8ff0-4bfd-4af7-8f4f-e387934775a3"
+    },
+    {
+      "name": "Rock.Model.AssessmentType",
+      "model": "AssessmentType",
+      "guid": "d17a28ac-f529-4ab0-a790-c21f9e74ac89"
+    },
+    {
+      "name": "Rock.Model.AssetStorageProvider",
+      "model": "AssetStorageProvider",
+      "guid": "e0b4be77-b29f-4bd4-ae45-cf833ac3a482"
+    },
+    {
+      "name": "Rock.Model.Attendance",
+      "model": "Attendance",
+      "guid": "4ccb856f-51e0-4e48-b94a-1705efba6c9e"
+    },
+    {
+      "name": "Rock.Model.AttendanceCheckInSession",
+      "model": "AttendanceCheckInSession",
+      "guid": "d60a20a7-98a2-45b5-bf7e-a327e4090940"
+    },
+    {
+      "name": "Rock.Model.AttendanceCode",
+      "model": "AttendanceCode",
+      "guid": "d5adc6d3-9aa0-4ac6-9762-a703ee684934"
+    },
+    {
+      "name": "Rock.Model.AttendanceOccurrence",
+      "model": "AttendanceOccurrence",
+      "guid": "0f6fd7f1-7af5-4135-843f-e34948d4ea28"
+    },
+    {
+      "name": "Rock.Model.Attribute",
+      "model": "Attribute",
+      "guid": "5997c8d3-8840-4591-99a5-552919f90cbd"
+    },
+    {
+      "name": "Rock.Model.AttributeMatrix",
+      "model": "AttributeMatrix",
+      "guid": "028228f0-b1d9-4de5-9e6a-f898c34ddab8"
+    },
+    {
+      "name": "Rock.Model.AttributeMatrixItem",
+      "model": "AttributeMatrixItem",
+      "guid": "3c9d5021-0484-4846-aef6-b6216d26c3c8"
+    },
+    {
+      "name": "Rock.Model.AttributeMatrixTemplate",
+      "model": "AttributeMatrixTemplate",
+      "guid": "20b90f35-70c1-4adc-a908-a4254c15373d"
+    },
+    {
+      "name": "Rock.Model.AttributeQualifier",
+      "model": "AttributeQualifier",
+      "guid": "ec7eb9ac-8b52-4a3d-8587-4a08050780cc"
+    },
+    {
+      "name": "Rock.Model.AttributeValue",
+      "model": "AttributeValue",
+      "guid": "d2bdccf0-d3f4-4f29-b286-da5b7bfa41c6"
+    },
+    {
+      "name": "Rock.Model.AttributeValueHistorical",
+      "model": "AttributeValueHistorical",
+      "guid": "d940aa57-d977-4b75-b4be-7c2eb40b26a4"
+    },
+    {
+      "name": "Rock.Model.Audit",
+      "model": "Audit",
+      "guid": "5de389e2-4e25-4bb0-8292-67a94ecb379b"
+    },
+    {
+      "name": "Rock.Model.AuditDetail",
+      "model": "AuditDetail",
+      "guid": "00a4323f-4a05-4e6a-8480-35d8b7bb6615"
+    },
+    {
+      "name": "Rock.Model.Auth",
+      "model": "Auth",
+      "guid": "84855f4e-9865-4f1b-b420-939318272004"
+    },
+    {
+      "name": "Rock.Model.AuthAuditLog",
+      "model": "AuthAuditLog",
+      "guid": "6ac9997f-b238-4a67-933e-d80e1551704d"
+    },
+    {
+      "name": "Rock.Model.AuthClaim",
+      "model": "AuthClaim",
+      "guid": "a6924ee0-509b-461e-8127-dbf5c4fe30da"
+    },
+    {
+      "name": "Rock.Model.AuthClient",
+      "model": "AuthClient",
+      "guid": "cbd66c3a-959a-4a0b-926c-c3ade43066b1"
+    },
+    {
+      "name": "Rock.Model.AuthScope",
+      "model": "AuthScope",
+      "guid": "8926fe3b-5ab6-4e48-8191-09eb1682f743"
+    },
+    {
+      "name": "Rock.Model.AutomationEvent",
+      "model": "AutomationEvent",
+      "guid": "905de2d9-1ea8-4e59-b0cf-e2bac8383927"
+    },
+    {
+      "name": "Rock.Model.AutomationTrigger",
+      "model": "AutomationTrigger",
+      "guid": "89abfa37-68e5-41b7-b43c-a0cf823dea61"
+    },
+    {
+      "name": "Rock.Model.BackgroundCheck",
+      "model": "BackgroundCheck",
+      "guid": "6d3a2293-ba7e-44d9-b5b3-5b85da0eecac"
+    },
+    {
+      "name": "Rock.Model.Badge",
+      "model": "Badge",
+      "guid": "99300129-6f4c-45b2-b486-71123f046289"
+    },
+    {
+      "name": "Rock.Model.BenevolenceRequest",
+      "model": "BenevolenceRequest",
+      "guid": "cf0ce5c1-9286-4310-9b50-10d040f8ebd2"
+    },
+    {
+      "name": "Rock.Model.BenevolenceRequestDocument",
+      "model": "BenevolenceRequestDocument",
+      "guid": "3d627f51-e262-454b-95a0-2ef97103bce1"
+    },
+    {
+      "name": "Rock.Model.BenevolenceResult",
+      "model": "BenevolenceResult",
+      "guid": "a4929a2d-5b83-4535-a1d4-8a2c84fba581"
+    },
+    {
+      "name": "Rock.Model.BenevolenceType",
+      "model": "BenevolenceType",
+      "guid": "9db5d35a-f2df-4aff-ab9f-06c2eb587c0d"
+    },
+    {
+      "name": "Rock.Model.BenevolenceWorkflow",
+      "model": "BenevolenceWorkflow",
+      "guid": "1f27a8e2-c40a-4c8d-9f22-55bc24b98d80"
+    },
+    {
+      "name": "Rock.Model.BinaryFile",
+      "model": "BinaryFile",
+      "guid": "9bb1a349-5998-47c1-97d5-d6cc00275662"
+    },
+    {
+      "name": "Rock.Model.BinaryFileData",
+      "model": "BinaryFileData",
+      "guid": "ea647542-1e0f-4dae-9537-65e3ffee8792"
+    },
+    {
+      "name": "Rock.Model.BinaryFileType",
+      "model": "BinaryFileType",
+      "guid": "62af597f-f193-412b-94ea-291cf713327d"
+    },
+    {
+      "name": "Rock.Model.Block",
+      "model": "Block",
+      "guid": "d89555ca-9ae4-4d62-8af1-e5e463c1ef65"
+    },
+    {
+      "name": "Rock.Model.BlockType",
+      "model": "BlockType",
+      "guid": "04768edf-c0cd-4950-b629-4d2370b57c99"
+    },
+    {
+      "name": "Rock.Model.Campus",
+      "model": "Campus",
+      "guid": "00096bed-9587-415e-8ad4-4e076ae8fbf0"
+    },
+    {
+      "name": "Rock.Model.CampusSchedule",
+      "model": "CampusSchedule",
+      "guid": "134b8879-cd7c-4872-8065-882aa3721c2d"
+    },
+    {
+      "name": "Rock.Model.CampusTopic",
+      "model": "CampusTopic",
+      "guid": "0ffdcb0b-b435-4e66-9085-2750534e706a"
+    },
+    {
+      "name": "Rock.Model.Category",
+      "model": "Category",
+      "guid": "1d68154e-ec76-44c8-9813-7736b27aecf9"
+    },
+    {
+      "name": "Rock.Model.CheckInLabel",
+      "model": "CheckInLabel",
+      "guid": "8b651eb1-492f-46d0-821b-ca7355c6e6e7"
+    },
+    {
+      "name": "Rock.Model.Communication",
+      "model": "Communication",
+      "guid": "c4ccbd91-1264-48bf-bc33-92751c8948b5"
+    },
+    {
+      "name": "Rock.Model.CommunicationAttachment",
+      "model": "CommunicationAttachment",
+      "guid": "4271bfb1-af05-4b6c-8931-032eb02dd760"
+    },
+    {
+      "name": "Rock.Model.CommunicationFlow",
+      "model": "CommunicationFlow",
+      "guid": "c7a67172-9a41-4421-94b0-f59dfeacf705"
+    },
+    {
+      "name": "Rock.Model.CommunicationFlowCommunication",
+      "model": "CommunicationFlowCommunication",
+      "guid": "07d0cecc-066f-45a8-95bc-7c8f5199d53c"
+    },
+    {
+      "name": "Rock.Model.CommunicationFlowInstance",
+      "model": "CommunicationFlowInstance",
+      "guid": "7b487d88-0667-4aff-bc6c-1fc8482392c8"
+    },
+    {
+      "name": "Rock.Model.CommunicationFlowInstanceCommunication",
+      "model": "CommunicationFlowInstanceCommunication",
+      "guid": "fc2d426e-07e4-4803-bcb6-09cb43031856"
+    },
+    {
+      "name": "Rock.Model.CommunicationFlowInstanceCommunicationConversion",
+      "model": "CommunicationFlowInstanceCommunicationConversion",
+      "guid": "726b5b81-b4b2-4e74-9069-0409a3d19753"
+    },
+    {
+      "name": "Rock.Model.CommunicationFlowInstanceRecipient",
+      "model": "CommunicationFlowInstanceRecipient",
+      "guid": "f615ac08-8acd-48f9-b42e-2f4ce02d4206"
+    },
+    {
+      "name": "Rock.Model.CommunicationRecipient",
+      "model": "CommunicationRecipient",
+      "guid": "3ec89b90-6692-451e-a48f-0d2adeba05bc"
+    },
+    {
+      "name": "Rock.Model.CommunicationResponse",
+      "model": "CommunicationResponse",
+      "guid": "db449144-6045-4b11-aa55-ecf286b117a9"
+    },
+    {
+      "name": "Rock.Model.CommunicationResponseAttachment",
+      "model": "CommunicationResponseAttachment",
+      "guid": "2f34e79e-f158-4693-85c4-87ff75d3afe4"
+    },
+    {
+      "name": "Rock.Model.CommunicationTemplate",
+      "model": "CommunicationTemplate",
+      "guid": "a9493afe-4316-4651-800d-5028e4c7444d"
+    },
+    {
+      "name": "Rock.Model.CommunicationTemplateAttachment",
+      "model": "CommunicationTemplateAttachment",
+      "guid": "0dea0bc5-2af2-4e06-92cf-dccd4d3ff011"
+    },
+    {
+      "name": "Rock.Model.ConnectionActivityType",
+      "model": "ConnectionActivityType",
+      "guid": "97b143f0-cb9d-4652-8ff1-ff2fa1ea4945"
+    },
+    {
+      "name": "Rock.Model.ConnectionOpportunity",
+      "model": "ConnectionOpportunity",
+      "guid": "79f64363-bc90-4109-9d31-a5eeb397cb2f"
+    },
+    {
+      "name": "Rock.Model.ConnectionOpportunityCampus",
+      "model": "ConnectionOpportunityCampus",
+      "guid": "e656e8b3-12ab-476e-aa63-5f9b76f64a08"
+    },
+    {
+      "name": "Rock.Model.ConnectionOpportunityConnectorGroup",
+      "model": "ConnectionOpportunityConnectorGroup",
+      "guid": "2adbe499-c9ec-479b-b33b-6e92bde09fd1"
+    },
+    {
+      "name": "Rock.Model.ConnectionOpportunityGroup",
+      "model": "ConnectionOpportunityGroup",
+      "guid": "cd3f425c-9b36-4433-9c38-d58de42c9f65"
+    },
+    {
+      "name": "Rock.Model.ConnectionOpportunityGroupConfig",
+      "model": "ConnectionOpportunityGroupConfig",
+      "guid": "59756122-b779-4a4e-9ce7-6a4468aa9524"
+    },
+    {
+      "name": "Rock.Model.ConnectionRequest",
+      "model": "ConnectionRequest",
+      "guid": "36b0d0c7-8125-48fa-9da2-729aaa65f718"
+    },
+    {
+      "name": "Rock.Model.ConnectionRequestActivity",
+      "model": "ConnectionRequestActivity",
+      "guid": "3248f40d-7661-42cc-ad9b-ef63322937b7"
+    },
+    {
+      "name": "Rock.Model.ConnectionRequestStatusHistory",
+      "model": "ConnectionRequestStatusHistory",
+      "guid": "9d73fa0e-5787-4357-bd7c-43ad1800dbb1"
+    },
+    {
+      "name": "Rock.Model.ConnectionRequestWorkflow",
+      "model": "ConnectionRequestWorkflow",
+      "guid": "c69d1c9f-5521-4c83-8fe9-5044ecc2ce65"
+    },
+    {
+      "name": "Rock.Model.ConnectionStatus",
+      "model": "ConnectionStatus",
+      "guid": "f3840c8b-63bf-4f98-ac4a-9336896e589b"
+    },
+    {
+      "name": "Rock.Model.ConnectionStatusAutomation",
+      "model": "ConnectionStatusAutomation",
+      "guid": "acf794c7-f12d-42df-85c5-089a28993ee6"
+    },
+    {
+      "name": "Rock.Model.ConnectionType",
+      "model": "ConnectionType",
+      "guid": "b1e52ead-65bd-4c4d-bccd-73368067621d"
+    },
+    {
+      "name": "Rock.Model.ConnectionTypeSource",
+      "model": "ConnectionTypeSource",
+      "guid": "06fd04c5-8a18-43d1-ae13-3611344fb40a"
+    },
+    {
+      "name": "Rock.Model.ConnectionWorkflow",
+      "model": "ConnectionWorkflow",
+      "guid": "4eb8711f-7301-4699-a223-0505a7ceb20a"
+    },
+    {
+      "name": "Rock.Model.Contact",
+      "model": "Contact",
+      "guid": "a2fbb846-2511-4760-b912-928775bfc6d6"
+    },
+    {
+      "name": "Rock.Model.ContactRelationshipChange",
+      "model": "ContactRelationshipChange",
+      "guid": "0397d69f-1e9e-4202-bcb8-9deedaa554c9"
+    },
+    {
+      "name": "Rock.Model.ContactTouchpoint",
+      "model": "ContactTouchpoint",
+      "guid": "1068b648-fee4-44e7-bf43-607371871367"
+    },
+    {
+      "name": "Rock.Model.ContentChannel",
+      "model": "ContentChannel",
+      "guid": "44484685-477e-4668-89a6-84f29739eb68"
+    },
+    {
+      "name": "Rock.Model.ContentChannelItem",
+      "model": "ContentChannelItem",
+      "guid": "bf12ae64-21fb-433b-a8a4-e40e8c426dda"
+    },
+    {
+      "name": "Rock.Model.ContentChannelItemAssociation",
+      "model": "ContentChannelItemAssociation",
+      "guid": "7c86eed3-c3f9-4b25-887b-f732fe3c35f0"
+    },
+    {
+      "name": "Rock.Model.ContentChannelItemSlug",
+      "model": "ContentChannelItemSlug",
+      "guid": "2ff2f1c3-a440-4d24-8fb8-2b0d9436ea75"
+    },
+    {
+      "name": "Rock.Model.ContentChannelType",
+      "model": "ContentChannelType",
+      "guid": "d5992f79-7fb8-49ff-82ab-e8cb2cec1e74"
+    },
+    {
+      "name": "Rock.Model.ContentCollection",
+      "model": "ContentCollection",
+      "guid": "ad7b9219-1b47-4164-9dd1-90f0af588cb8"
+    },
+    {
+      "name": "Rock.Model.ContentCollectionSource",
+      "model": "ContentCollectionSource",
+      "guid": "46bd0e73-14b3-499d-b8be-c0ef6bdcd733"
+    },
+    {
+      "name": "Rock.Model.ContentTopic",
+      "model": "ContentTopic",
+      "guid": "cd4be244-147e-4a90-9137-b35fc35b5a52"
+    },
+    {
+      "name": "Rock.Model.ContentTopicDomain",
+      "model": "ContentTopicDomain",
+      "guid": "8c26a4d9-9c0b-4433-af31-6c7094befb51"
+    },
+    {
+      "name": "Rock.Model.DataView",
+      "model": "DataView",
+      "guid": "57f8fa29-dcf1-4f74-8553-87e90f234139"
+    },
+    {
+      "name": "Rock.Model.DataViewFilter",
+      "model": "DataViewFilter",
+      "guid": "507e646b-9943-4dd6-8fb7-8ba9f95e6bd0"
+    },
+    {
+      "name": "Rock.Model.DefinedType",
+      "model": "DefinedType",
+      "guid": "6028d502-79f4-4a74-9323-525e90f900c7"
+    },
+    {
+      "name": "Rock.Model.DefinedValue",
+      "model": "DefinedValue",
+      "guid": "53d4bf38-c49e-4a52-8b0e-5e016fb9574e"
+    },
+    {
+      "name": "Rock.Model.Device",
+      "model": "Device",
+      "guid": "c06ee1fe-af12-410a-a364-7a366cd72414"
+    },
+    {
+      "name": "Rock.Model.Document",
+      "model": "Document",
+      "guid": "7cefa340-9d98-4b2c-b462-313c61944b6c"
+    },
+    {
+      "name": "Rock.Model.DocumentType",
+      "model": "DocumentType",
+      "guid": "18cf366f-46b6-49ca-b557-bcabd6bbd175"
+    },
+    {
+      "name": "Rock.Model.EmailSection",
+      "model": "EmailSection",
+      "guid": "86b2ce94-9dc3-463c-b2b1-deecab70474e"
+    },
+    {
+      "name": "Rock.Model.EntityCampusFilter",
+      "model": "EntityCampusFilter",
+      "guid": "a736a9fb-f2a5-4458-b126-fad6bd3f3b78"
+    },
+    {
+      "name": "Rock.Model.EntityIntent",
+      "model": "EntityIntent",
+      "guid": "15ce39a3-193f-44e5-80c7-de47da3eaf97"
+    },
+    {
+      "name": "Rock.Model.EntitySearch",
+      "model": "EntitySearch",
+      "guid": "080374b4-c765-4f90-8b85-bc2635164275"
+    },
+    {
+      "name": "Rock.Model.EntitySet",
+      "model": "EntitySet",
+      "guid": "50e3f9c8-4010-41af-8f61-08308dc44640"
+    },
+    {
+      "name": "Rock.Model.EntitySetItem",
+      "model": "EntitySetItem",
+      "guid": "1f9d13f9-bf55-48be-bea9-0939cd6fda5b"
+    },
+    {
+      "name": "Rock.Model.EntityType",
+      "model": "EntityType",
+      "guid": "a2277fba-d09f-4d07-b0ab-1c650c25a7a7"
+    },
+    {
+      "name": "Rock.Model.EventCalendar",
+      "model": "EventCalendar",
+      "guid": "e67d8d6d-4fe6-48d5-a940-a39213047314"
+    },
+    {
+      "name": "Rock.Model.EventCalendarContentChannel",
+      "model": "EventCalendarContentChannel",
+      "guid": "b8631058-dac3-4164-9a50-9e732b0c3882"
+    },
+    {
+      "name": "Rock.Model.EventCalendarItem",
+      "model": "EventCalendarItem",
+      "guid": "e37fb26f-03f6-48da-8e96-f412616f5ee4"
+    },
+    {
+      "name": "Rock.Model.EventItem",
+      "model": "EventItem",
+      "guid": "6a58ad11-3491-84ae-4896-8f39906ea65e"
+    },
+    {
+      "name": "Rock.Model.EventItemAudience",
+      "model": "EventItemAudience",
+      "guid": "22394315-e21b-40af-afda-75d9f5dad721"
+    },
+    {
+      "name": "Rock.Model.EventItemOccurrence",
+      "model": "EventItemOccurrence",
+      "guid": "71632e1a-1e7f-42b9-a630-ec99f375303a"
+    },
+    {
+      "name": "Rock.Model.EventItemOccurrenceChannelItem",
+      "model": "EventItemOccurrenceChannelItem",
+      "guid": "378a9559-bd86-45a8-b218-2c5d4cf3d770"
+    },
+    {
+      "name": "Rock.Model.EventItemOccurrenceGroupMap",
+      "model": "EventItemOccurrenceGroupMap",
+      "guid": "1479d2b7-65c0-4e98-9e70-0848422fa00c"
+    },
+    {
+      "name": "Rock.Model.ExceptionLog",
+      "model": "ExceptionLog",
+      "guid": "f61a9f8a-6da5-49c6-bc8e-5545c5eeda21"
+    },
+    {
+      "name": "Rock.Model.FieldType",
+      "model": "FieldType",
+      "guid": "54018eb6-868c-477d-8b6a-455a6115b30b"
+    },
+    {
+      "name": "Rock.Model.FinancialAccount",
+      "model": "FinancialAccount",
+      "guid": "798bce48-6aa7-4983-9214-f9bcefb4521d"
+    },
+    {
+      "name": "Rock.Model.FinancialBatch",
+      "model": "FinancialBatch",
+      "guid": "bdd09c8e-2c52-4d08-9062-be7d52d190c2"
+    },
+    {
+      "name": "Rock.Model.FinancialGateway",
+      "model": "FinancialGateway",
+      "guid": "122efe60-84a6-4c7a-a852-30e4bd89a662"
+    },
+    {
+      "name": "Rock.Model.FinancialPaymentDetail",
+      "model": "FinancialPaymentDetail",
+      "guid": "f3659077-43fd-4805-bc42-bc8a3f9c3008"
+    },
+    {
+      "name": "Rock.Model.FinancialPersonBankAccount",
+      "model": "FinancialPersonBankAccount",
+      "guid": "ec1ae861-bdfe-4a08-9741-2e1d2293456f"
+    },
+    {
+      "name": "Rock.Model.FinancialPersonSavedAccount",
+      "model": "FinancialPersonSavedAccount",
+      "guid": "f5244e64-53db-4707-a398-d248616a776d"
+    },
+    {
+      "name": "Rock.Model.FinancialPledge",
+      "model": "FinancialPledge",
+      "guid": "ce8060e6-21e7-49f5-bfbe-f632c816c232"
+    },
+    {
+      "name": "Rock.Model.FinancialScheduledTransaction",
+      "model": "FinancialScheduledTransaction",
+      "guid": "76824e8a-ccc4-4085-84d9-8af8c0807e20"
+    },
+    {
+      "name": "Rock.Model.FinancialScheduledTransactionDetail",
+      "model": "FinancialScheduledTransactionDetail",
+      "guid": "a206615f-3fb5-48df-b606-86ae8716fd57"
+    },
+    {
+      "name": "Rock.Model.FinancialStatementTemplate",
+      "model": "FinancialStatementTemplate",
+      "guid": "85442202-13bc-46c5-b1e9-43018dea20f1"
+    },
+    {
+      "name": "Rock.Model.FinancialTransaction",
+      "model": "FinancialTransaction",
+      "guid": "2c1cb26b-ab22-42d0-8164-aedee0dae667"
+    },
+    {
+      "name": "Rock.Model.FinancialTransactionAlert",
+      "model": "FinancialTransactionAlert",
+      "guid": "0e60f95e-70b5-4a06-9bee-80ed9f12f25a"
+    },
+    {
+      "name": "Rock.Model.FinancialTransactionAlertType",
+      "model": "FinancialTransactionAlertType",
+      "guid": "2e237b04-5b2a-40f1-8cd3-52673c104305"
+    },
+    {
+      "name": "Rock.Model.FinancialTransactionDetail",
+      "model": "FinancialTransactionDetail",
+      "guid": "ac4ac28b-8e7e-4d7e-85db-dffb4f3adcce"
+    },
+    {
+      "name": "Rock.Model.FinancialTransactionImage",
+      "model": "FinancialTransactionImage",
+      "guid": "78dca7ee-c5fe-49ae-9995-0e254cc8e2a2"
+    },
+    {
+      "name": "Rock.Model.FinancialTransactionRefund",
+      "model": "FinancialTransactionRefund",
+      "guid": "7616e2af-cef2-44a5-b27f-3e70ec8b70fa"
+    },
+    {
+      "name": "Rock.Model.FinancialTransactionScannedCheck",
+      "model": "FinancialTransactionScannedCheck",
+      "guid": "0ad40889-547b-4966-b3e1-2f9b2829c09c"
+    },
+    {
+      "name": "Rock.Model.Following",
+      "model": "Following",
+      "guid": "d9ad7a30-92f2-467b-a3f9-37ca246f90bd"
+    },
+    {
+      "name": "Rock.Model.FollowingEventNotification",
+      "model": "FollowingEventNotification",
+      "guid": "21ba6002-1fb0-45c7-bca6-d6629ec8ab52"
+    },
+    {
+      "name": "Rock.Model.FollowingEventSubscription",
+      "model": "FollowingEventSubscription",
+      "guid": "2eea3df1-1fbe-472c-85af-6d952dfc4684"
+    },
+    {
+      "name": "Rock.Model.FollowingEventType",
+      "model": "FollowingEventType",
+      "guid": "8a0d208b-762d-403a-a972-3a0f079866d4"
+    },
+    {
+      "name": "Rock.Model.FollowingSuggested",
+      "model": "FollowingSuggested",
+      "guid": "ec14b80a-3776-4134-884d-031a89c0ef03"
+    },
+    {
+      "name": "Rock.Model.FollowingSuggestionType",
+      "model": "FollowingSuggestionType",
+      "guid": "cc7df118-86a1-4f90-82d8-0dae9cd37343"
+    },
+    {
+      "name": "Rock.Model.Group",
+      "model": "Group",
+      "guid": "9bbfda11-0d22-40d5-902f-60adfbc88987"
+    },
+    {
+      "name": "Rock.Model.GroupDemographicType",
+      "model": "GroupDemographicType",
+      "guid": "9ae7a87b-e274-4ff5-befd-55ccf603ce13"
+    },
+    {
+      "name": "Rock.Model.GroupDemographicValue",
+      "model": "GroupDemographicValue",
+      "guid": "c9ced7b0-88bf-40d1-83d1-a58b3c57a2e1"
+    },
+    {
+      "name": "Rock.Model.GroupHistorical",
+      "model": "GroupHistorical",
+      "guid": "422a2ef2-9d74-4308-8cdb-d5fa4b6a01ff"
+    },
+    {
+      "name": "Rock.Model.GroupLocation",
+      "model": "GroupLocation",
+      "guid": "26248ee7-09f3-4578-a1d6-47e01d91d6ef"
+    },
+    {
+      "name": "Rock.Model.GroupLocationHistorical",
+      "model": "GroupLocationHistorical",
+      "guid": "03128778-5e7d-4fe4-9c7a-929936e06f90"
+    },
+    {
+      "name": "Rock.Model.GroupMember",
+      "model": "GroupMember",
+      "guid": "49668b95-fedc-43dd-8085-d2b0d6343c48"
+    },
+    {
+      "name": "Rock.Model.GroupMemberAssignment",
+      "model": "GroupMemberAssignment",
+      "guid": "22bf14ed-e882-4bb0-9328-d12545bf5f61"
+    },
+    {
+      "name": "Rock.Model.GroupMemberHistorical",
+      "model": "GroupMemberHistorical",
+      "guid": "233ea15d-8fee-40fe-9772-d369d34e3a8d"
+    },
+    {
+      "name": "Rock.Model.GroupMemberRequirement",
+      "model": "GroupMemberRequirement",
+      "guid": "ff1b2c4b-0f2d-4d9b-9e85-7336ccc24a62"
+    },
+    {
+      "name": "Rock.Model.GroupMemberScheduleTemplate",
+      "model": "GroupMemberScheduleTemplate",
+      "guid": "d84ed719-b659-433c-bfa0-e798e52c6b24"
+    },
+    {
+      "name": "Rock.Model.GroupMemberWorkflowTrigger",
+      "model": "GroupMemberWorkflowTrigger",
+      "guid": "3ce3406a-1ffe-4cca-a8d5-916eef800d76"
+    },
+    {
+      "name": "Rock.Model.GroupRequirement",
+      "model": "GroupRequirement",
+      "guid": "cfc7de86-222e-4669-83c2-a3f5b04cb5d6"
+    },
+    {
+      "name": "Rock.Model.GroupRequirementType",
+      "model": "GroupRequirementType",
+      "guid": "8e67e852-d1bf-485c-9898-09f19998cc40"
+    },
+    {
+      "name": "Rock.Model.GroupScheduleExclusion",
+      "model": "GroupScheduleExclusion",
+      "guid": "047d57ee-1b06-455f-86ea-d96b8325c77d"
+    },
+    {
+      "name": "Rock.Model.GroupSync",
+      "model": "GroupSync",
+      "guid": "1c011499-1122-4429-9afa-6578798e18a9"
+    },
+    {
+      "name": "Rock.Model.GroupType",
+      "model": "GroupType",
+      "guid": "0dd30b04-01cf-4b38-8e83-be661e2f7286"
+    },
+    {
+      "name": "Rock.Model.GroupTypeRole",
+      "model": "GroupTypeRole",
+      "guid": "d155c373-9e47-4c6a-badd-792f31af5fba"
+    },
+    {
+      "name": "Rock.Model.History",
+      "model": "History",
+      "guid": "546d5f43-1184-47c9-8265-2d7bf4e1bca5"
+    },
+    {
+      "name": "Rock.Model.HistoryLogin",
+      "model": "HistoryLogin",
+      "guid": "b0c039e1-d2b0-460a-a787-83565bcb665c"
+    },
+    {
+      "name": "Rock.Model.HtmlContent",
+      "model": "HtmlContent",
+      "guid": "fb30ec4c-7dcc-41a4-94ab-e728a8ce537b"
+    },
+    {
+      "name": "Rock.Model.IdentityVerification",
+      "model": "IdentityVerification",
+      "guid": "c76071b0-0c2f-4a3f-88bf-08b2e006c614"
+    },
+    {
+      "name": "Rock.Model.IdentityVerificationCode",
+      "model": "IdentityVerificationCode",
+      "guid": "3fcb8972-c319-4262-9d6e-3d60e1c4e463"
+    },
+    {
+      "name": "Rock.Model.Interaction",
+      "model": "Interaction",
+      "guid": "3bb4b095-2de4-4009-8fa2-705bf284f7b7"
+    },
+    {
+      "name": "Rock.Model.InteractionChannel",
+      "model": "InteractionChannel",
+      "guid": "08606092-5ff5-4a34-a7a6-3dee43f2843a"
+    },
+    {
+      "name": "Rock.Model.InteractionComponent",
+      "model": "InteractionComponent",
+      "guid": "ace6145b-57d6-4694-972f-ec43af776de7"
+    },
+    {
+      "name": "Rock.Model.InteractionDeviceType",
+      "model": "InteractionDeviceType",
+      "guid": "c1a24534-c77f-41a8-bca9-73aba57348e3"
+    },
+    {
+      "name": "Rock.Model.InteractionSession",
+      "model": "InteractionSession",
+      "guid": "338025de-c16f-47bb-ba31-6de0c59e59aa"
+    },
+    {
+      "name": "Rock.Model.InteractionSessionLocation",
+      "model": "InteractionSessionLocation",
+      "guid": "790ec7ac-7443-466c-a07e-f702d86b9e1b"
+    },
+    {
+      "name": "Rock.Model.InteractiveExperience",
+      "model": "InteractiveExperience",
+      "guid": "3d90e693-476e-4dfc-b958-a28d1dd370bf"
+    },
+    {
+      "name": "Rock.Model.InteractiveExperienceAction",
+      "model": "InteractiveExperienceAction",
+      "guid": "8635e7e7-3576-47ff-92de-30a69eb5d011"
+    },
+    {
+      "name": "Rock.Model.InteractiveExperienceAnswer",
+      "model": "InteractiveExperienceAnswer",
+      "guid": "d11da9d4-8887-4ec2-b396-78556926de89"
+    },
+    {
+      "name": "Rock.Model.InteractiveExperienceOccurrence",
+      "model": "InteractiveExperienceOccurrence",
+      "guid": "2d1263a1-a3e7-4568-aa4b-c1234824188d"
+    },
+    {
+      "name": "Rock.Model.InteractiveExperienceSchedule",
+      "model": "InteractiveExperienceSchedule",
+      "guid": "d23b4dcf-545a-490f-aead-ba78a8fb4028"
+    },
+    {
+      "name": "Rock.Model.InteractiveExperienceScheduleCampus",
+      "model": "InteractiveExperienceScheduleCampus",
+      "guid": "abef4137-f25b-4b2e-af01-2ceff704fc11"
+    },
+    {
+      "name": "Rock.Model.LavaApplication",
+      "model": "LavaApplication",
+      "guid": "fffe0de1-b410-435e-9aa8-3a0b18aaf0f7"
+    },
+    {
+      "name": "Rock.Model.LavaEndpoint",
+      "model": "LavaEndpoint",
+      "guid": "f1bbf7d4-cafd-450d-a89a-b3312c9738a2"
+    },
+    {
+      "name": "Rock.Model.LavaShortcode",
+      "model": "LavaShortcode",
+      "guid": "7574a473-3326-4973-8df6-c7bf5f64eb36"
+    },
+    {
+      "name": "Rock.Model.Layout",
+      "model": "Layout",
+      "guid": "9dacc861-fed4-47fc-946d-d6a120ff6d56"
+    },
+    {
+      "name": "Rock.Model.LearningActivity",
+      "model": "LearningActivity",
+      "guid": "98b98fa8-a92d-4e10-aa3e-b3082e61976f"
+    },
+    {
+      "name": "Rock.Model.LearningClass",
+      "model": "LearningClass",
+      "guid": "eb41e4e1-64b1-4aa1-8f66-f0dfd81557d9"
+    },
+    {
+      "name": "Rock.Model.LearningClassActivity",
+      "model": "LearningClassActivity",
+      "guid": "e82f540c-f483-4d4a-898a-3ae7ff76f75a"
+    },
+    {
+      "name": "Rock.Model.LearningClassActivityCompletion",
+      "model": "LearningClassActivityCompletion",
+      "guid": "14d1295a-ce9e-4fcb-a63c-6df04db5e9b1"
+    },
+    {
+      "name": "Rock.Model.LearningClassAnnouncement",
+      "model": "LearningClassAnnouncement",
+      "guid": "d2ce59d3-55e1-4275-9ea1-38c18a05a32b"
+    },
+    {
+      "name": "Rock.Model.LearningClassContentPage",
+      "model": "LearningClassContentPage",
+      "guid": "72a061c4-b7e6-4a91-a4f2-80551f772d46"
+    },
+    {
+      "name": "Rock.Model.LearningCourse",
+      "model": "LearningCourse",
+      "guid": "21870376-4a6e-4402-ace3-42aa4441fc2e"
+    },
+    {
+      "name": "Rock.Model.LearningCourseRequirement",
+      "model": "LearningCourseRequirement",
+      "guid": "576f54e1-ce70-43ed-a7d8-5169529c70e9"
+    },
+    {
+      "name": "Rock.Model.LearningGradingSystem",
+      "model": "LearningGradingSystem",
+      "guid": "0b693caf-3718-4913-b7ac-61d31b4df099"
+    },
+    {
+      "name": "Rock.Model.LearningGradingSystemScale",
+      "model": "LearningGradingSystemScale",
+      "guid": "14ba9b5b-6b4a-4462-acdf-898dcec9ec0d"
+    },
+    {
+      "name": "Rock.Model.LearningParticipant",
+      "model": "LearningParticipant",
+      "guid": "03195758-1770-4794-9487-7a4aa02930a7"
+    },
+    {
+      "name": "Rock.Model.LearningProgram",
+      "model": "LearningProgram",
+      "guid": "afd89885-6923-4fa1-b6fe-a1df8d821bbc"
+    },
+    {
+      "name": "Rock.Model.LearningProgramCompletion",
+      "model": "LearningProgramCompletion",
+      "guid": "b82813a7-e70e-4f04-8568-0d84efb484b2"
+    },
+    {
+      "name": "Rock.Model.LearningSemester",
+      "model": "LearningSemester",
+      "guid": "f9a40931-0ace-4b50-a507-0d1d75f92bc4"
+    },
+    {
+      "name": "Rock.Model.Location",
+      "model": "Location",
+      "guid": "0d6410ad-c83c-47ac-af3d-616d09edf63b"
+    },
+    {
+      "name": "Rock.Model.MediaAccount",
+      "model": "MediaAccount",
+      "guid": "cd35f034-ac18-40d5-b703-6bf16d79c51c"
+    },
+    {
+      "name": "Rock.Model.MediaElement",
+      "model": "MediaElement",
+      "guid": "f4506b5d-f22c-4d3f-8205-fe48a9b7584b"
+    },
+    {
+      "name": "Rock.Model.MediaFolder",
+      "model": "MediaFolder",
+      "guid": "b28fc79f-9fee-4be4-801d-96b9246e6043"
+    },
+    {
+      "name": "Rock.Model.MergeTemplate",
+      "model": "MergeTemplate",
+      "guid": "cd1db988-6891-4b0f-8d1b-b0a311a3bc3e"
+    },
+    {
+      "name": "Rock.Model.MetaFirstNameGenderLookup",
+      "model": "MetaFirstNameGenderLookup",
+      "guid": "fa96e086-811e-4fe0-beca-f7a593f9fb05"
+    },
+    {
+      "name": "Rock.Model.MetaLastNameLookup",
+      "model": "MetaLastNameLookup",
+      "guid": "0fb0f456-6999-426d-9c86-973d54749565"
+    },
+    {
+      "name": "Rock.Model.MetaNickNameLookup",
+      "model": "MetaNickNameLookup",
+      "guid": "5fcbe899-3756-4f64-8540-ce37ea9eed45"
+    },
+    {
+      "name": "Rock.Model.Metric",
+      "model": "Metric",
+      "guid": "1c5489c6-82f9-4967-8425-52545ce8af90"
+    },
+    {
+      "name": "Rock.Model.MetricCategory",
+      "model": "MetricCategory",
+      "guid": "3d35c859-df37-433f-a20a-0ffd0fcb9862"
+    },
+    {
+      "name": "Rock.Model.MetricPartition",
+      "model": "MetricPartition",
+      "guid": "82ed733f-bad8-4d8d-bcb7-10a6433f452a"
+    },
+    {
+      "name": "Rock.Model.MetricValue",
+      "model": "MetricValue",
+      "guid": "dd0e6f39-3e07-44d0-be7b-b1ab75afed2d"
+    },
+    {
+      "name": "Rock.Model.MetricValuePartition",
+      "model": "MetricValuePartition",
+      "guid": "fec12664-c5f2-44e1-9805-1137068ac755"
+    },
+    {
+      "name": "Rock.Model.NcoaHistory",
+      "model": "NcoaHistory",
+      "guid": "1f20ac90-c57e-4dd1-a71b-06312110e56f"
+    },
+    {
+      "name": "Rock.Model.Note",
+      "model": "Note",
+      "guid": "53dc1e78-14a5-44de-903f-6a2cb02164e7"
+    },
+    {
+      "name": "Rock.Model.NoteAttachment",
+      "model": "NoteAttachment",
+      "guid": "d090c50e-2fe1-4284-9631-19d06f4ad8b0"
+    },
+    {
+      "name": "Rock.Model.NoteType",
+      "model": "NoteType",
+      "guid": "337eed57-d4ab-4eed-bbdb-0cb3a467dbcc"
+    },
+    {
+      "name": "Rock.Model.NoteWatch",
+      "model": "NoteWatch",
+      "guid": "a5c129c2-e64d-4b72-b94d-dba6da6ac2e3"
+    },
+    {
+      "name": "Rock.Model.Notification",
+      "model": "Notification",
+      "guid": "6db6d280-9740-41fd-b8bd-0aa29e12f4b6"
+    },
+    {
+      "name": "Rock.Model.NotificationMessage",
+      "model": "NotificationMessage",
+      "guid": "239add2e-2dbf-46a7-bd28-4a2a201d4e7b"
+    },
+    {
+      "name": "Rock.Model.NotificationMessageType",
+      "model": "NotificationMessageType",
+      "guid": "36fb1038-8836-429f-bad4-04d32892d6d0"
+    },
+    {
+      "name": "Rock.Model.NotificationRecipient",
+      "model": "NotificationRecipient",
+      "guid": "2ece2776-0fe2-429d-b655-ab56a2d6ee0b"
+    },
+    {
+      "name": "Rock.Model.Page",
+      "model": "Page",
+      "guid": "e104dcdf-247c-4ced-a119-8cc51632761f"
+    },
+    {
+      "name": "Rock.Model.PageContext",
+      "model": "PageContext",
+      "guid": "5c56b915-8a8b-4747-9d84-ebaf0bacc9a1"
+    },
+    {
+      "name": "Rock.Model.PageRoute",
+      "model": "PageRoute",
+      "guid": "42c14361-67b2-472c-95be-ea8a9c511837"
+    },
+    {
+      "name": "Rock.Model.PageShortLink",
+      "model": "PageShortLink",
+      "guid": "83d8c6df-1d53-438b-93b2-75a2038bbee6"
+    },
+    {
+      "name": "Rock.Model.PersistedDataset",
+      "model": "PersistedDataset",
+      "guid": "9c3064c0-cf9c-4549-9a80-022514b7ff83"
+    },
+    {
+      "name": "Rock.Model.Person",
+      "model": "Person",
+      "guid": "72657ed8-d16e-492e-ac12-144c5e7567e7"
+    },
+    {
+      "name": "Rock.Model.PersonalDevice",
+      "model": "PersonalDevice",
+      "guid": "e9cd3369-e087-4809-9952-f2dcd6b8816b"
+    },
+    {
+      "name": "Rock.Model.PersonAlias",
+      "model": "PersonAlias",
+      "guid": "90f5e87b-f0d5-4617-8ae9-eb57e673f36f"
+    },
+    {
+      "name": "Rock.Model.PersonalizationSegment",
+      "model": "PersonalizationSegment",
+      "guid": "368a3581-c8c4-4960-901a-9587864226f3"
+    },
+    {
+      "name": "Rock.Model.PersonalLink",
+      "model": "PersonalLink",
+      "guid": "f858cf72-eccc-4dc6-ad72-7b82467b3466"
+    },
+    {
+      "name": "Rock.Model.PersonalLinkSection",
+      "model": "PersonalLinkSection",
+      "guid": "42411fc0-7acd-42e9-a8a1-bcea78af0aaf"
+    },
+    {
+      "name": "Rock.Model.PersonalLinkSectionOrder",
+      "model": "PersonalLinkSectionOrder",
+      "guid": "648325dc-1555-44b7-afa4-1971e57f7e11"
+    },
+    {
+      "name": "Rock.Model.PersonDuplicate",
+      "model": "PersonDuplicate",
+      "guid": "20b2b2b6-38c3-4302-9200-63dd4c78687b"
+    },
+    {
+      "name": "Rock.Model.PersonPreference",
+      "model": "PersonPreference",
+      "guid": "fdcf766c-f36b-403b-89f3-7030da65507e"
+    },
+    {
+      "name": "Rock.Model.PersonPreviousName",
+      "model": "PersonPreviousName",
+      "guid": "80ac80e1-f769-4e34-9937-e2feef2b60ee"
+    },
+    {
+      "name": "Rock.Model.PersonScheduleExclusion",
+      "model": "PersonScheduleExclusion",
+      "guid": "07204f06-c09c-4b37-921a-c31c042938b9"
+    },
+    {
+      "name": "Rock.Model.PersonSearchKey",
+      "model": "PersonSearchKey",
+      "guid": "914fe998-4f61-4005-accc-a8d0433cad47"
+    },
+    {
+      "name": "Rock.Model.PersonSignal",
+      "model": "PersonSignal",
+      "guid": "0fff77a1-e92d-4a05-8b36-1d2b6d46660f"
+    },
+    {
+      "name": "Rock.Model.PersonToken",
+      "model": "PersonToken",
+      "guid": "846b2bce-7101-46b9-b89c-cd68073712ce"
+    },
+    {
+      "name": "Rock.Model.PersonViewed",
+      "model": "PersonViewed",
+      "guid": "af13df44-4ee7-4492-aee4-6bd2a62f9c76"
+    },
+    {
+      "name": "Rock.Model.PhoneNumber",
+      "model": "PhoneNumber",
+      "guid": "ad7e27cb-036d-40c6-b352-81b38bfae798"
+    },
+    {
+      "name": "Rock.Model.PluginMigration",
+      "model": "PluginMigration",
+      "guid": "f239557e-c7a8-4d1f-82cc-55cdd0aca3c8"
+    },
+    {
+      "name": "Rock.Model.PrayerRequest",
+      "model": "PrayerRequest",
+      "guid": "f13c8fd2-7702-4c79-a6a9-86440dd5de13"
+    },
+    {
+      "name": "Rock.Model.Registration",
+      "model": "Registration",
+      "guid": "d2f294c6-e161-4a56-85c7-cd74d535f61a"
+    },
+    {
+      "name": "Rock.Model.RegistrationInstance",
+      "model": "RegistrationInstance",
+      "guid": "5cd9c0c8-c047-61a0-4e36-0fdb8496f066"
+    },
+    {
+      "name": "Rock.Model.RegistrationRegistrant",
+      "model": "RegistrationRegistrant",
+      "guid": "8a25e5ce-1b4f-4825-bcea-216167836305"
+    },
+    {
+      "name": "Rock.Model.RegistrationRegistrantFee",
+      "model": "RegistrationRegistrantFee",
+      "guid": "ab66f63a-3e79-438f-8c52-c9a8c70a0511"
+    },
+    {
+      "name": "Rock.Model.RegistrationSession",
+      "model": "RegistrationSession",
+      "guid": "6846744b-2623-4ef3-a20f-8027c4839094"
+    },
+    {
+      "name": "Rock.Model.RegistrationTemplate",
+      "model": "RegistrationTemplate",
+      "guid": "a01e3e99-a8ad-4c6c-baac-98795738ba70"
+    },
+    {
+      "name": "Rock.Model.RegistrationTemplateDiscount",
+      "model": "RegistrationTemplateDiscount",
+      "guid": "88d94ecb-fcee-4a00-acb9-ff90bdba7a17"
+    },
+    {
+      "name": "Rock.Model.RegistrationTemplateFee",
+      "model": "RegistrationTemplateFee",
+      "guid": "2db3a441-6ca1-49d1-bb25-c744e2ffa457"
+    },
+    {
+      "name": "Rock.Model.RegistrationTemplateFeeItem",
+      "model": "RegistrationTemplateFeeItem",
+      "guid": "cc1db3ff-a145-49ce-adc0-b8960ebf37d4"
+    },
+    {
+      "name": "Rock.Model.RegistrationTemplateForm",
+      "model": "RegistrationTemplateForm",
+      "guid": "2f0b3a6a-4e47-45a8-a331-7234ce711356"
+    },
+    {
+      "name": "Rock.Model.RegistrationTemplateFormField",
+      "model": "RegistrationTemplateFormField",
+      "guid": "a773caa2-2211-416b-bdd7-d907085b4441"
+    },
+    {
+      "name": "Rock.Model.RegistrationTemplatePlacement",
+      "model": "RegistrationTemplatePlacement",
+      "guid": "cce05820-5854-47a4-ace3-05df48479939"
+    },
+    {
+      "name": "Rock.Model.RelatedEntity",
+      "model": "RelatedEntity",
+      "guid": "bd29e403-ba47-4688-be29-45a38ce8bd03"
+    },
+    {
+      "name": "Rock.Model.Reminder",
+      "model": "Reminder",
+      "guid": "46cc0d74-be46-4d5d-a6f1-0811645721ac"
+    },
+    {
+      "name": "Rock.Model.ReminderType",
+      "model": "ReminderType",
+      "guid": "b2b0b6f3-0e3b-40cf-ba93-fbb99d50788c"
+    },
+    {
+      "name": "Rock.Model.RemoteAuthenticationSession",
+      "model": "RemoteAuthenticationSession",
+      "guid": "2fdee857-08be-47f3-8e86-b2027f545ee8"
+    },
+    {
+      "name": "Rock.Model.Report",
+      "model": "Report",
+      "guid": "f1f22d3e-fefa-4c84-9ffa-9e8ace60fce7"
+    },
+    {
+      "name": "Rock.Model.ReportField",
+      "model": "ReportField",
+      "guid": "6b541baa-44b7-48ba-937a-543866905689"
+    },
+    {
+      "name": "Rock.Model.RequestFilter",
+      "model": "RequestFilter",
+      "guid": "97fac672-37a4-4185-b1d4-c68426c625b1"
+    },
+    {
+      "name": "Rock.Model.RestAction",
+      "model": "RestAction",
+      "guid": "d4f7f055-5351-4adf-9f8d-4802cad6cc9d"
+    },
+    {
+      "name": "Rock.Model.RestController",
+      "model": "RestController",
+      "guid": "65cdfd5b-a9aa-48fa-8d22-669612d5ea7d"
+    },
+    {
+      "name": "Rock.Model.Schedule",
+      "model": "Schedule",
+      "guid": "0b2c38a7-d79c-4f85-9757-f1b045d32c8a"
+    },
+    {
+      "name": "Rock.Model.ScheduleCategoryExclusion",
+      "model": "ScheduleCategoryExclusion",
+      "guid": "e04681eb-7a85-441b-b794-82b025ffb5d4"
+    },
+    {
+      "name": "Rock.Model.ServiceJob",
+      "model": "ServiceJob",
+      "guid": "52766196-a72f-4f60-997a-78e19508843d"
+    },
+    {
+      "name": "Rock.Model.ServiceJobHistory",
+      "model": "ServiceJobHistory",
+      "guid": "d6a7c6e0-004f-4f38-9dca-16e645f5edf4"
+    },
+    {
+      "name": "Rock.Model.ServiceLog",
+      "model": "ServiceLog",
+      "guid": "b5c26a04-e374-495a-aec6-171c2d2cbd60"
+    },
+    {
+      "name": "Rock.Model.SignalType",
+      "model": "SignalType",
+      "guid": "0ba03b9b-e974-4526-9b21-5037424b6d16"
+    },
+    {
+      "name": "Rock.Model.SignatureDocument",
+      "model": "SignatureDocument",
+      "guid": "c1724719-1c03-4d0c-8a66-e3545138f57f"
+    },
+    {
+      "name": "Rock.Model.SignatureDocumentTemplate",
+      "model": "SignatureDocumentTemplate",
+      "guid": "3f9828cc-8224-4ab0-98a5-6d60001ebe32"
+    },
+    {
+      "name": "Rock.Model.Site",
+      "model": "Site",
+      "guid": "7244c10b-5d87-467b-a7f5-12dc29910ca8"
+    },
+    {
+      "name": "Rock.Model.SiteDomain",
+      "model": "SiteDomain",
+      "guid": "4c4cd7dd-427c-45ec-9651-f8250d3cab5f"
+    },
+    {
+      "name": "Rock.Model.SmsAction",
+      "model": "SmsAction",
+      "guid": "1f5e26be-0ed4-4250-8ffc-1ded5e9eacf0"
+    },
+    {
+      "name": "Rock.Model.SmsPipeline",
+      "model": "SmsPipeline",
+      "guid": "64da3a06-fd39-4e5b-8126-38404fb0092a"
+    },
+    {
+      "name": "Rock.Model.Snippet",
+      "model": "Snippet",
+      "guid": "93548852-201b-4ef6-af27-bbf535a2cc2b"
+    },
+    {
+      "name": "Rock.Model.SnippetType",
+      "model": "SnippetType",
+      "guid": "fd4c72de-6b5d-4eb5-9438-385e2e15af05"
+    },
+    {
+      "name": "Rock.Model.Step",
+      "model": "Step",
+      "guid": "8eadb0dc-17f4-4541-a46e-53f89e21a622"
+    },
+    {
+      "name": "Rock.Model.StepProgram",
+      "model": "StepProgram",
+      "guid": "e89f9528-a74e-41b7-8b65-b56b4ce7a122"
+    },
+    {
+      "name": "Rock.Model.StepProgramCompletion",
+      "model": "StepProgramCompletion",
+      "guid": "b7a9c37d-2b04-4fd3-91bd-dfca50b3cc8c"
+    },
+    {
+      "name": "Rock.Model.StepStatus",
+      "model": "StepStatus",
+      "guid": "6c270d6a-f126-445b-93f0-5079a968bf4e"
+    },
+    {
+      "name": "Rock.Model.StepType",
+      "model": "StepType",
+      "guid": "5e795620-9f16-49d2-9030-947c0e348a8e"
+    },
+    {
+      "name": "Rock.Model.StepTypePrerequisite",
+      "model": "StepTypePrerequisite",
+      "guid": "f2181fcd-1423-4937-9137-099154e1c3ec"
+    },
+    {
+      "name": "Rock.Model.StepWorkflow",
+      "model": "StepWorkflow",
+      "guid": "9e164dcb-2b3c-49db-a3da-e25e24bb23b9"
+    },
+    {
+      "name": "Rock.Model.StepWorkflowTrigger",
+      "model": "StepWorkflowTrigger",
+      "guid": "55c1d610-d42f-4e08-9cd9-1ec9801bc4e3"
+    },
+    {
+      "name": "Rock.Model.Streak",
+      "model": "Streak",
+      "guid": "d953b0a5-0065-4624-8844-10010de01e5c"
+    },
+    {
+      "name": "Rock.Model.StreakType",
+      "model": "StreakType",
+      "guid": "66203975-2a7a-4000-870e-76457df3c920"
+    },
+    {
+      "name": "Rock.Model.StreakTypeExclusion",
+      "model": "StreakTypeExclusion",
+      "guid": "1f00c782-f8a2-4cfa-b7df-e5b3b6d36069"
+    },
+    {
+      "name": "Rock.Model.SystemCommunication",
+      "model": "SystemCommunication",
+      "guid": "d0cad7c0-10fe-41ef-b89d-e6f0d22456c4"
+    },
+    {
+      "name": "Rock.Model.SystemPhoneNumber",
+      "model": "SystemPhoneNumber",
+      "guid": "66d62a9f-13cd-4160-8653-211b2a4abf16"
+    },
+    {
+      "name": "Rock.Model.Tag",
+      "model": "Tag",
+      "guid": "d34258d0-d366-4efb-aa76-84b059fb5434"
+    },
+    {
+      "name": "Rock.Model.TaggedItem",
+      "model": "TaggedItem",
+      "guid": "ab97403a-206e-4e0c-ac42-856a010fa6dd"
+    },
+    {
+      "name": "Rock.Model.Theme",
+      "model": "Theme",
+      "guid": "d02b63b9-e945-45bc-9d41-2c3e72b85f46"
+    },
+    {
+      "name": "Rock.Model.UserLogin",
+      "model": "UserLogin",
+      "guid": "0fa592f1-728c-4885-be38-60ed6c0d834f"
+    },
+    {
+      "name": "Rock.Model.WebFarmNode",
+      "model": "WebFarmNode",
+      "guid": "2338d5c3-e808-408f-b000-e8a7d8a4858c"
+    },
+    {
+      "name": "Rock.Model.WebFarmNodeLog",
+      "model": "WebFarmNodeLog",
+      "guid": "e00b4559-8e53-4b21-8b29-db2e6dd74c50"
+    },
+    {
+      "name": "Rock.Model.WebFarmNodeMetric",
+      "model": "WebFarmNodeMetric",
+      "guid": "3194a5e3-f352-4cd0-a585-f1dd37008b9c"
+    },
+    {
+      "name": "Rock.Model.Workflow",
+      "model": "Workflow",
+      "guid": "3540e9a7-fe30-43a9-8b0a-a372b63dfc93"
+    },
+    {
+      "name": "Rock.Model.WorkflowAction",
+      "model": "WorkflowAction",
+      "guid": "9cbf4bec-5653-47f9-8e87-0d31c6ca5947"
+    },
+    {
+      "name": "Rock.Model.WorkflowActionForm",
+      "model": "WorkflowActionForm",
+      "guid": "fdab9aeb-b2aa-4fb5-a35d-83254a9b014c"
+    },
+    {
+      "name": "Rock.Model.WorkflowActionFormAttribute",
+      "model": "WorkflowActionFormAttribute",
+      "guid": "e147611f-d1ab-4c34-a1f8-84a118bafde3"
+    },
+    {
+      "name": "Rock.Model.WorkflowActionFormSection",
+      "model": "WorkflowActionFormSection",
+      "guid": "90af7254-87a2-42cb-b2f6-d4d53d7e30a0"
+    },
+    {
+      "name": "Rock.Model.WorkflowActionType",
+      "model": "WorkflowActionType",
+      "guid": "23e3273a-b137-48a3-9aff-c8dc832ddca6"
+    },
+    {
+      "name": "Rock.Model.WorkflowActivity",
+      "model": "WorkflowActivity",
+      "guid": "2cb52ed0-cb06-4d62-9e2c-73b60afa4c9f"
+    },
+    {
+      "name": "Rock.Model.WorkflowActivityType",
+      "model": "WorkflowActivityType",
+      "guid": "e5fbdba2-9539-4679-b948-2e06c1bb1e3f"
+    },
+    {
+      "name": "Rock.Model.WorkflowFormBuilderTemplate",
+      "model": "WorkflowFormBuilderTemplate",
+      "guid": "65fa3078-9d42-4857-b78a-f32a05f7a4c1"
+    },
+    {
+      "name": "Rock.Model.WorkflowLog",
+      "model": "WorkflowLog",
+      "guid": "332cff36-d637-414d-b732-370b330b8d73"
+    },
+    {
+      "name": "Rock.Model.WorkflowTrigger",
+      "model": "WorkflowTrigger",
+      "guid": "3781c82a-7f40-4d88-b3db-1b9589d73d3d"
+    },
+    {
+      "name": "Rock.Model.WorkflowType",
+      "model": "WorkflowType",
+      "guid": "c9f3c4a5-1526-474d-803f-d6c7a45cbbae"
+    },
+    {
+      "name": "Rock.Rest.Controllers.MetricYTDData",
+      "model": "Rock.Rest.Controllers.MetricYTDData",
+      "guid": "7c878afd-df74-4cdf-8491-31671559bd30"
+    }
+  ],
+  "systemDefinedTypes": [
+    {
+      "name": "Ability Level",
+      "guid": "7beef4d4-0860-4913-9a3d-857634d1bf7c",
+      "definedValues": []
+    },
+    {
+      "name": "Account Type",
+      "guid": "752da126-471f-4221-8503-5297593c99ff",
+      "definedValues": []
+    },
+    {
+      "name": "Address State",
+      "guid": "c3a20d2d-aeaf-4e2b-a1d9-2e072cefc2bb",
+      "definedValues": [
+        {
+          "guid": "50abdd73-c7bf-4439-994f-ee3add60910b",
+          "value": "AB",
+          "description": "Alberta"
+        },
+        {
+          "guid": "2651dee8-30d6-477d-88ca-48eba769683e",
+          "value": "BC",
+          "description": "British Columbia"
+        },
+        {
+          "guid": "5a59dc0e-97e0-45ea-83cd-586eb9d4bd49",
+          "value": "MB",
+          "description": "Manitoba"
+        },
+        {
+          "guid": "c975fd3b-2a25-473a-8cd4-abbcd0757ca0",
+          "value": "NB",
+          "description": "New Brunswick"
+        },
+        {
+          "guid": "c8abe4d8-6b88-47ed-80db-cdf8eef47a7f",
+          "value": "NL",
+          "description": "Newfoundland and Labrador"
+        },
+        {
+          "guid": "67e0bc8b-be23-40b0-adb1-aca50cef8825",
+          "value": "NT",
+          "description": "Northwest Territories"
+        },
+        {
+          "guid": "f91359c1-d6f9-495e-a475-9d7def7aa67b",
+          "value": "NS",
+          "description": "Nova Scotia"
+        },
+        {
+          "guid": "b6ac22e5-676e-4fb9-909d-4e047a21b703",
+          "value": "NU",
+          "description": "Nunavut"
+        },
+        {
+          "guid": "0ef0f132-69c3-480f-801a-59145f417277",
+          "value": "ON",
+          "description": "Ontario"
+        },
+        {
+          "guid": "25de8c9b-9f69-4b4e-a21f-d976fe1d0d41",
+          "value": "PE",
+          "description": "Prince Edward Island"
+        },
+        {
+          "guid": "be1a052a-abcd-48c2-aa04-bde4f394d001",
+          "value": "QC",
+          "description": "Quebec"
+        },
+        {
+          "guid": "63b48aa0-8904-4415-9f5e-7218454d3d0f",
+          "value": "SK",
+          "description": "Saskatchewan"
+        },
+        {
+          "guid": "91d87671-f309-4908-abe1-57fa27b2c7f6",
+          "value": "YT",
+          "description": "Yukon"
+        }
+      ]
+    },
+    {
+      "name": "Administrator's Checklist",
+      "guid": "4bf34677-37e9-4e71-bd03-252b66c9373d",
+      "definedValues": [
+        {
+          "guid": "0b16bd4b-f55b-4adb-a744-fc4751731a7d",
+          "value": "Upgrade to SQL Server 2014 or Later",
+          "description": "Please remember that starting with v11 Rock will no longer support SQL Server 2012 (see this <a href='https://community.rockrms.com/connect/ending-support-for-sql-server-2012'>link</a> for more details)."
+        },
+        {
+          "guid": "27e02d09-e3b1-4d89-920b-0dfdda298d72",
+          "value": "Enable Following Jobs",
+          "description": "Two new jobs have been added for sending following suggestions and following reminders. Make sure to activate both these jobs when you are ready start using the Following features."
+        },
+        {
+          "guid": "8cce4657-409d-0998-445a-ca6dc2f43096",
+          "value": "Enable Family Analytics",
+          "description": "<a href='http://www.rockrms.com/Rock/BookContent/5#personfamilyanalytics'>Read up on the Family Analytics features</a> and enable the job that supports them."
+        },
+        {
+          "guid": "6538909a-b75e-46c3-a141-3ca02dd6de06",
+          "value": "Upgrade to SQL Server 2016 or Later",
+          "description": "Please remember that starting with v16 Rock will no longer support SQL Server 2014 (see this link<https://community.rockrms.com/connect/ending-support-for-sql-server-2014> for more details)."
+        }
+      ]
+    },
+    {
+      "name": "Apple Device Models",
+      "guid": "dae31f78-7ab9-4ace-9ee1-c1e6a734562c",
+      "definedValues": [
+        {
+          "guid": "649110c3-6664-4f06-8e55-c44782f356fa",
+          "value": "i386",
+          "description": "iPhone Simulator"
+        },
+        {
+          "guid": "afdcac1a-5897-4a55-84d7-dd3ac59ff3f6",
+          "value": "x86_64",
+          "description": "iPhone Simulator"
+        },
+        {
+          "guid": "4bae0554-6a6b-49f3-af19-7a2ec5a539c0",
+          "value": "arm64",
+          "description": "iPhone Simulator"
+        },
+        {
+          "guid": "197d349d-9428-4fbc-9f32-68e9e2d081bb",
+          "value": "iPhone1,1",
+          "description": "iPhone"
+        },
+        {
+          "guid": "44d1b39f-a238-40f9-9c66-acf2b7300bbf",
+          "value": "iPhone1,2",
+          "description": "iPhone 3G"
+        },
+        {
+          "guid": "934a984d-ec16-4347-b952-11bf48d4af3c",
+          "value": "iPhone2,1",
+          "description": "iPhone 3GS"
+        },
+        {
+          "guid": "03f3558a-7242-4a18-9564-961995f48eb5",
+          "value": "iPhone3,1",
+          "description": "iPhone 4"
+        },
+        {
+          "guid": "b118f7ba-778c-4bdb-a645-782331450fe6",
+          "value": "iPhone3,2",
+          "description": "iPhone 4 GSM Rev A"
+        },
+        {
+          "guid": "bec3a911-d136-4979-8ddb-d0038286328a",
+          "value": "iPhone3,3",
+          "description": "iPhone 4 CDMA"
+        },
+        {
+          "guid": "cd67ab72-9bd1-4dbb-9318-a5e587727494",
+          "value": "iPhone4,1",
+          "description": "iPhone 4S"
+        },
+        {
+          "guid": "1a7138d7-4179-4569-a530-0b0414574dc2",
+          "value": "iPhone5,1",
+          "description": "iPhone 5 (GSM)"
+        },
+        {
+          "guid": "78bbbe42-b196-4fc8-85fa-d6983bb94457",
+          "value": "iPhone5,2",
+          "description": "iPhone 5 (GSM+CDMA)"
+        },
+        {
+          "guid": "c84470ec-f4ad-4a8c-97a4-56702cfef58c",
+          "value": "iPhone5,3",
+          "description": "iPhone 5C (GSM)"
+        },
+        {
+          "guid": "8c783f2e-96ff-42c2-8747-19ea63a0e8a1",
+          "value": "iPhone5,4",
+          "description": "iPhone 5C (Global)"
+        },
+        {
+          "guid": "5f3a3e71-f69f-4a17-a5a3-ae2eaaf93f03",
+          "value": "iPhone6,1",
+          "description": "iPhone 5S (GSM)"
+        },
+        {
+          "guid": "2a1e014d-370c-42fc-b906-94814159823d",
+          "value": "iPhone6,2",
+          "description": "iPhone 5S (Global)"
+        },
+        {
+          "guid": "63cda68a-e7d5-4bd4-9d2a-4756701bbe1e",
+          "value": "iPhone7,1",
+          "description": "iPhone 6 Plus"
+        },
+        {
+          "guid": "c0e8e2db-90b1-4d68-adb2-5c929cbcd331",
+          "value": "iPhone7,2",
+          "description": "iPhone 6"
+        },
+        {
+          "guid": "da8fd7b9-03df-4df5-8a02-1744961f760e",
+          "value": "iPhone8,1",
+          "description": "iPhone 6s"
+        },
+        {
+          "guid": "21926076-3fe3-4e67-a22d-879c1bfcbc0b",
+          "value": "iPhone8,2",
+          "description": "iPhone 6s Plus"
+        },
+        {
+          "guid": "39dd84ac-74ad-4cdf-b23a-d6ebee1c49e0",
+          "value": "iPhone8,4",
+          "description": "iPhone SE (GSM)"
+        },
+        {
+          "guid": "22787e41-6623-4a37-b9db-c8d1fa92ca09",
+          "value": "iPhone9,1",
+          "description": "iPhone 7"
+        },
+        {
+          "guid": "0d0dfa29-6abc-4164-a1ee-fc4ac9629b09",
+          "value": "iPhone9,2",
+          "description": "iPhone 7 Plus"
+        },
+        {
+          "guid": "fbebc7a0-b80d-47bf-b85f-335668268d59",
+          "value": "iPhone9,3",
+          "description": "iPhone 7"
+        },
+        {
+          "guid": "733236f0-1ad8-4a3d-b847-f9c0d31a5698",
+          "value": "iPhone9,4",
+          "description": "iPhone 7 Plus"
+        },
+        {
+          "guid": "38befdfa-b2f3-42b9-9c53-df6ee27e2bde",
+          "value": "iPhone10,1",
+          "description": "iPhone 8"
+        },
+        {
+          "guid": "4ed1fc82-d786-422b-8167-aa16dfa49efb",
+          "value": "iPhone10,2",
+          "description": "iPhone 8 Plus"
+        },
+        {
+          "guid": "884acb1c-2216-4a03-8904-ebfaacb86067",
+          "value": "iPhone10,3",
+          "description": "iPhone X Global"
+        },
+        {
+          "guid": "479eb3a2-b954-4d01-aedc-f0fde80f1dc1",
+          "value": "iPhone10,4",
+          "description": "iPhone 8"
+        },
+        {
+          "guid": "ba887138-855a-452c-9dd1-abac9479360f",
+          "value": "iPhone10,5",
+          "description": "iPhone 8 Plus"
+        },
+        {
+          "guid": "c51a4972-83a3-4e0f-94df-5ff7893f0c5e",
+          "value": "iPhone10,6",
+          "description": "iPhone X GSM"
+        },
+        {
+          "guid": "4b49b365-cdcb-4216-b380-c64e25fd13f5",
+          "value": "iPhone11,2",
+          "description": "iPhone XS"
+        },
+        {
+          "guid": "41da475f-736f-43df-8ea2-3d91a6457eb6",
+          "value": "iPhone11,4",
+          "description": "iPhone XS Max"
+        },
+        {
+          "guid": "21681fd8-c6b1-4e82-bb47-da19cd8bd5b9",
+          "value": "iPhone11,6",
+          "description": "iPhone XS Max Global"
+        },
+        {
+          "guid": "d6ea258e-3866-4376-b3f0-d0653619d152",
+          "value": "iPhone11,8",
+          "description": "iPhone XR"
+        },
+        {
+          "guid": "36f5ea3d-fe4b-4605-906c-ac0213aacddc",
+          "value": "iPhone12,1",
+          "description": "iPhone 11"
+        },
+        {
+          "guid": "0047678d-1e99-4af7-a79d-ac28d3182119",
+          "value": "iPhone12,3",
+          "description": "iPhone 11 Pro"
+        },
+        {
+          "guid": "7491dcbe-e588-421b-9e4a-3e9988e2c432",
+          "value": "iPhone12,5",
+          "description": "iPhone 11 Pro Max"
+        },
+        {
+          "guid": "0230571f-1da2-41b0-a05a-c58b322f081e",
+          "value": "iPhone12,8",
+          "description": "iPhone SE 2nd Gen"
+        },
+        {
+          "guid": "c8a90be5-825e-42ef-ac1c-bd77f231c7e8",
+          "value": "iPhone13,1",
+          "description": "iPhone 12 Mini"
+        },
+        {
+          "guid": "8ffe7bbb-fb44-4be6-8945-0e5852fa1d0c",
+          "value": "iPhone13,2",
+          "description": "iPhone 12"
+        },
+        {
+          "guid": "8d27b3e0-7cf3-4a79-bb57-315d472dfd2e",
+          "value": "iPhone13,3",
+          "description": "iPhone 12 Pro"
+        },
+        {
+          "guid": "416ea719-17a6-4e6c-a7e2-4b5ee569d46b",
+          "value": "iPhone13,4",
+          "description": "iPhone 12 Pro Max"
+        },
+        {
+          "guid": "f61ec68b-3c2a-46a1-93c8-71c5ea9ced1d",
+          "value": "iPhone14,2",
+          "description": "iPhone 13 Pro"
+        },
+        {
+          "guid": "50655253-b65a-4cda-8b82-77d547f0ebea",
+          "value": "iPhone14,3",
+          "description": "iPhone 13 Pro Max"
+        },
+        {
+          "guid": "3b292af3-9560-4a1d-ae88-d0a481b44594",
+          "value": "iPhone14,4",
+          "description": "iPhone 13 Mini"
+        },
+        {
+          "guid": "a21c54b3-de05-4dce-bfee-7afd4549e32f",
+          "value": "iPhone14,5",
+          "description": "iPhone 13"
+        },
+        {
+          "guid": "cf717cad-f4de-41b8-b739-306c5180f756",
+          "value": "iPhone14,6",
+          "description": "iPhone SE 3rd Gen"
+        },
+        {
+          "guid": "24904541-8af4-4bea-8152-a4cef35adefc",
+          "value": "iPod1,1",
+          "description": "1st Gen iPod"
+        },
+        {
+          "guid": "2406400f-ffed-4304-9221-1fd61b694a14",
+          "value": "iPod2,1",
+          "description": "2nd Gen iPod"
+        },
+        {
+          "guid": "23471c11-7835-42c2-8b2d-b67bd93edc35",
+          "value": "iPod3,1",
+          "description": "3rd Gen iPod"
+        },
+        {
+          "guid": "dbe6cca2-8849-4a9f-a111-6447db98bb48",
+          "value": "iPod4,1",
+          "description": "4th Gen iPod"
+        },
+        {
+          "guid": "7c0d0473-5597-4655-8653-1d5fa68d91ba",
+          "value": "iPod5,1",
+          "description": "5th Gen iPod"
+        },
+        {
+          "guid": "af883b41-ed81-44c7-a69e-3d4bdd9bef71",
+          "value": "iPod7,1",
+          "description": "6th Gen iPod"
+        },
+        {
+          "guid": "461f12c4-b6f1-4e1b-a0c2-9d3b3d9f6dab",
+          "value": "iPad1,1",
+          "description": "iPad"
+        },
+        {
+          "guid": "a499030c-4be1-4668-91c7-ea724ebf27ea",
+          "value": "iPad1,2",
+          "description": "iPad 3G"
+        },
+        {
+          "guid": "43a8617a-7997-41b6-8c6e-159cc97e8965",
+          "value": "iPad2,1",
+          "description": "2nd Gen iPad"
+        },
+        {
+          "guid": "4562bdb3-a3d9-4f64-a9e2-af6bf9537436",
+          "value": "iPad2,2",
+          "description": "2nd Gen iPad GSM"
+        },
+        {
+          "guid": "0347fdbd-c707-4444-ac11-98590af82ee9",
+          "value": "iPad2,3",
+          "description": "2nd Gen iPad CDMA"
+        },
+        {
+          "guid": "60576a7d-2e11-4c46-beaf-734ea1ea2810",
+          "value": "iPad2,4",
+          "description": "2nd Gen iPad New Revision"
+        },
+        {
+          "guid": "439954cb-80f1-485c-98c9-38b2bad08d8e",
+          "value": "iPad3,1",
+          "description": "3rd Gen iPad"
+        },
+        {
+          "guid": "a62e1b87-e2dc-4b84-8fe5-06fa72c9b409",
+          "value": "iPad3,2",
+          "description": "3rd Gen iPad CDMA"
+        },
+        {
+          "guid": "fd19081c-e715-4587-8920-729595e52468",
+          "value": "iPad3,3",
+          "description": "3rd Gen iPad GSM"
+        },
+        {
+          "guid": "10440f4e-3f44-49e3-bcaa-bf7004905318",
+          "value": "iPad2,5",
+          "description": "iPad mini"
+        },
+        {
+          "guid": "a03b92c5-9240-4902-83b9-070c2a894a09",
+          "value": "iPad2,6",
+          "description": "iPad mini GSM+LTE"
+        },
+        {
+          "guid": "85051012-078b-4774-91ae-bcacaf1d6b8b",
+          "value": "iPad2,7",
+          "description": "iPad mini CDMA+LTE"
+        },
+        {
+          "guid": "15f42c70-1fec-44a4-bc01-599565f941a5",
+          "value": "iPad3,4",
+          "description": "4th Gen iPad"
+        },
+        {
+          "guid": "77be49d2-3f9f-4f1c-8408-174461bc6a75",
+          "value": "iPad3,5",
+          "description": "4th Gen iPad GSM+LTE"
+        },
+        {
+          "guid": "8a9700fa-e9cc-4d2b-bd6e-84c7cd4d86f6",
+          "value": "iPad3,6",
+          "description": "4th Gen iPad CDMA+LTE"
+        },
+        {
+          "guid": "538d5c5b-bc67-4414-a808-73a2dcf5f9b0",
+          "value": "iPad4,1",
+          "description": "iPad Air (WiFi)"
+        },
+        {
+          "guid": "6c143c40-24df-4991-9c99-ea0d01ff6510",
+          "value": "iPad4,2",
+          "description": "iPad Air (GSM+CDMA)"
+        },
+        {
+          "guid": "c20bde5b-e52d-489d-b700-0a7f9284db6f",
+          "value": "iPad4,3",
+          "description": "1st Gen iPad Air (China)"
+        },
+        {
+          "guid": "ed960d00-e4af-4b96-8d63-0be216cc5bf3",
+          "value": "iPad4,4",
+          "description": "iPad mini Retina (WiFi)"
+        },
+        {
+          "guid": "8c977af4-8caf-4dd1-964b-b6c985817211",
+          "value": "iPad4,5",
+          "description": "iPad mini Retina (GSM+CDMA)"
+        },
+        {
+          "guid": "d3f0f71a-9fb4-4406-8f14-a3c34267e1a9",
+          "value": "iPad4,6",
+          "description": "iPad mini Retina (China)"
+        },
+        {
+          "guid": "65c18998-a02f-43b4-a5a9-04406f9e7345",
+          "value": "iPad4,7",
+          "description": "iPad mini 3 (WiFi)"
+        },
+        {
+          "guid": "ec1b6f9e-db84-4245-942f-9cd5c97fa927",
+          "value": "iPad4,8",
+          "description": "iPad mini 3 (GSM+CDMA)"
+        },
+        {
+          "guid": "7c8a351b-4a6d-40e0-919c-abc4f862f287",
+          "value": "iPad4,9",
+          "description": "iPad Mini 3 (China)"
+        },
+        {
+          "guid": "148077ca-448a-4392-b242-8b1c7450fcdb",
+          "value": "iPad5,1",
+          "description": "iPad mini 4 (WiFi)"
+        },
+        {
+          "guid": "eb94b0ae-7b8c-4a14-b571-163f3f81fd82",
+          "value": "iPad5,2",
+          "description": "4th Gen iPad mini (WiFi+Cellular)"
+        },
+        {
+          "guid": "2b92a779-08e6-42f9-ac1d-e7e16e8cd02d",
+          "value": "iPad5,3",
+          "description": "iPad Air 2 (WiFi)"
+        },
+        {
+          "guid": "315acd50-9419-4216-a6d6-d2e0beb52f1d",
+          "value": "iPad5,4",
+          "description": "iPad Air 2 (Cellular)"
+        },
+        {
+          "guid": "95d7b4fd-497b-4100-895b-571489d21104",
+          "value": "iPad6,3",
+          "description": "iPad Pro (9.7 inch, WiFi)"
+        },
+        {
+          "guid": "cdf1936c-65d6-4080-bc7e-887584a05a73",
+          "value": "iPad6,4",
+          "description": "iPad Pro (9.7 inch, WiFi+LTE)"
+        },
+        {
+          "guid": "c57bfbfb-3795-4140-aa98-87443eed777f",
+          "value": "iPad6,7",
+          "description": "iPad Pro (12.9 inch, WiFi)"
+        },
+        {
+          "guid": "7c4039f2-41ed-4010-bc1d-773ce08fa13d",
+          "value": "iPad6,8",
+          "description": "iPad Pro (12.9 inch, WiFi+LTE)"
+        },
+        {
+          "guid": "97643e47-f1cd-4b2b-a272-ec5d85ecb704",
+          "value": "iPad6,11",
+          "description": "iPad (2017)"
+        },
+        {
+          "guid": "60b0192d-0cf4-4192-8f27-528f849d1f13",
+          "value": "iPad6,12",
+          "description": "iPad (2017)"
+        },
+        {
+          "guid": "350868ea-24d1-4f1e-a64a-22da74f8f67a",
+          "value": "iPad7,1",
+          "description": "iPad Pro 2nd Gen (WiFi)"
+        },
+        {
+          "guid": "5d544cc2-eed2-4e2e-88d6-5f3f72215497",
+          "value": "iPad7,2",
+          "description": "iPad Pro 2nd Gen (WiFi+Cellular)"
+        },
+        {
+          "guid": "42912eb6-540b-4c91-9d58-385aa3518909",
+          "value": "iPad7,3",
+          "description": "iPad Pro 10.5-inch 2nd Gen"
+        },
+        {
+          "guid": "d359723d-e8d1-41f2-be93-b149d195860e",
+          "value": "iPad7,4",
+          "description": "iPad Pro 10.5-inch 2nd Gen"
+        },
+        {
+          "guid": "0f931d3e-4a49-49a4-a288-3db28f93336e",
+          "value": "iPad7,5",
+          "description": "iPad 6th Gen (WiFi)"
+        },
+        {
+          "guid": "7d4d5642-4a25-404e-8df3-052fcc94be76",
+          "value": "iPad7,6",
+          "description": "iPad 6th Gen (WiFi+Cellular)"
+        },
+        {
+          "guid": "59c4db32-910f-4a22-8b71-9a34b4e7dc2d",
+          "value": "iPad7,11",
+          "description": "iPad 7th Gen 10.2-inch (WiFi)"
+        },
+        {
+          "guid": "8db86bf5-b6a9-4d8d-92b7-d1c3975460e6",
+          "value": "iPad7,12",
+          "description": "iPad 7th Gen 10.2-inch (WiFi+Cellular)"
+        },
+        {
+          "guid": "f19eb89c-2836-4a23-b77f-7b248e8feb49",
+          "value": "iPad8,1",
+          "description": "iPad Pro 11 inch 3rd Gen (WiFi)"
+        },
+        {
+          "guid": "74bc60a5-d0a9-439e-9842-0bbb651b2d1e",
+          "value": "iPad8,2",
+          "description": "iPad Pro 11 inch 3rd Gen (1TB, WiFi)"
+        },
+        {
+          "guid": "8255d050-1ade-419f-90b7-bbe6b01c4707",
+          "value": "iPad8,3",
+          "description": "iPad Pro 11 inch 3rd Gen (WiFi+Cellular)"
+        },
+        {
+          "guid": "fbccbdba-cd21-4f12-8a7c-7d4e76beec27",
+          "value": "iPad8,4",
+          "description": "iPad Pro 11 inch 3rd Gen (1TB, WiFi+Cellular)"
+        },
+        {
+          "guid": "52d6c197-8c4f-4084-9559-e523d92815d8",
+          "value": "iPad8,5",
+          "description": "iPad Pro 12.9 inch 3rd Gen (WiFi)"
+        },
+        {
+          "guid": "3165d294-529f-4867-8c8c-7965fb07112b",
+          "value": "iPad8,6",
+          "description": "iPad Pro 12.9 inch 3rd Gen (1TB, WiFi)"
+        },
+        {
+          "guid": "51a5d945-2cb9-43d7-9fc0-ef24e898d82e",
+          "value": "iPad8,7",
+          "description": "iPad Pro 12.9 inch 3rd Gen (WiFi+Cellular)"
+        },
+        {
+          "guid": "eab9cbd4-3084-46f0-b8c4-59d75614bc39",
+          "value": "iPad8,8",
+          "description": "iPad Pro 12.9 inch 3rd Gen (1TB, WiFi+Cellular)"
+        },
+        {
+          "guid": "b518d93c-41c7-4e7d-8b4c-09e41658f559",
+          "value": "iPad8,9",
+          "description": "iPad Pro 11 inch 4th Gen (WiFi)"
+        },
+        {
+          "guid": "6dee3f6b-9039-4cf1-8814-34d6a89b3fc7",
+          "value": "iPad8,10",
+          "description": "iPad Pro 11 inch 4th Gen (WiFi+Cellular)"
+        },
+        {
+          "guid": "727d077e-66a9-4306-a32b-4e5ea1c4a2a8",
+          "value": "iPad8,11",
+          "description": "iPad Pro 12.9 inch 4th Gen (WiFi)"
+        },
+        {
+          "guid": "7c0e14f5-eb08-4033-b716-5fdd8a51228c",
+          "value": "iPad8,12",
+          "description": "iPad Pro 12.9 inch 4th Gen (WiFi+Cellular)"
+        },
+        {
+          "guid": "9ee55000-151e-47f8-b018-58ee0924ef09",
+          "value": "iPad11,1",
+          "description": "iPad mini 5th Gen (WiFi)"
+        },
+        {
+          "guid": "43566c8e-08f6-4fa0-85ad-4c76e8f78b1a",
+          "value": "iPad11,2",
+          "description": "iPad mini 5th Gen"
+        },
+        {
+          "guid": "2b59427e-516b-4430-b972-0f4555bc26fe",
+          "value": "iPad11,3",
+          "description": "iPad Air 3rd Gen (WiFi)"
+        },
+        {
+          "guid": "55e29aef-9d67-48da-94b5-73f375327876",
+          "value": "iPad11,4",
+          "description": "iPad Air 3rd Gen"
+        },
+        {
+          "guid": "4377f614-7c1f-4abc-a87c-5bfdc7ee92b1",
+          "value": "iPad11,6",
+          "description": "iPad 8th Gen (WiFi)"
+        },
+        {
+          "guid": "50af2b05-3738-4188-aed4-f7c5f5167bdb",
+          "value": "iPad11,7",
+          "description": "iPad 8th Gen (WiFi+Cellular)"
+        },
+        {
+          "guid": "673dc4be-2ab8-45e1-9eee-70fde0ef1290",
+          "value": "iPad12,1",
+          "description": "iPad 9th Gen (WiFi)"
+        },
+        {
+          "guid": "7a0808b4-d09d-4182-83a1-79e6d74d2ae6",
+          "value": "iPad12,2",
+          "description": "iPad 9th Gen (WiFi+Cellular)"
+        },
+        {
+          "guid": "32725560-dd9e-4e68-999c-223ba56552ef",
+          "value": "iPad14,1",
+          "description": "iPad mini 6th Gen (WiFi)"
+        },
+        {
+          "guid": "74fff099-98fe-40b6-9651-21f887f502e1",
+          "value": "iPad14,2",
+          "description": "iPad mini 6th Gen (WiFi+Cellular)"
+        },
+        {
+          "guid": "497d7881-0154-489d-9e14-8a0eb6c15145",
+          "value": "iPad13,1",
+          "description": "iPad Air 4th Gen (WiFi)"
+        },
+        {
+          "guid": "f1386adb-89ca-4531-97e1-7fc9b2520f64",
+          "value": "iPad13,2",
+          "description": "iPad Air 4th Gen (WiFi+Cellular)"
+        },
+        {
+          "guid": "1c4b3a97-a6b3-4a3a-be51-c3b1069c561c",
+          "value": "iPad13,4",
+          "description": "iPad Pro 11 inch 5th Gen"
+        },
+        {
+          "guid": "4bcfe654-1398-4303-aa1f-efee447d2313",
+          "value": "iPad13,5",
+          "description": "iPad Pro 11 inch 5th Gen"
+        },
+        {
+          "guid": "32e15af2-0af5-4e15-8406-5ae803987f90",
+          "value": "iPad13,6",
+          "description": "iPad Pro 11 inch 5th Gen"
+        },
+        {
+          "guid": "79526b7c-9df6-4d49-931d-72898eec7f8e",
+          "value": "iPad13,7",
+          "description": "iPad Pro 11 inch 5th Gen"
+        },
+        {
+          "guid": "52379922-8451-4d6d-b37a-f58dd55a50ba",
+          "value": "iPad13,8",
+          "description": "iPad Pro 12.9 inch 5th Gen"
+        },
+        {
+          "guid": "7f57b1e1-1d2e-4f45-8e2b-f490867eefa1",
+          "value": "iPad13,9",
+          "description": "iPad Pro 12.9 inch 5th Gen"
+        },
+        {
+          "guid": "b3d207b0-bc1d-4add-81a1-2e5949498481",
+          "value": "iPad13,10",
+          "description": "iPad Pro 12.9 inch 5th Gen"
+        },
+        {
+          "guid": "874d269e-7a54-4ca2-af97-ca0af0bade5d",
+          "value": "iPad13,11",
+          "description": "iPad Pro 12.9 inch 5th Gen"
+        },
+        {
+          "guid": "c4d409a5-35b7-44b6-b9db-eaba10b8f6ef",
+          "value": "iPad13,16",
+          "description": "iPad Air 5th Gen (WiFi)"
+        },
+        {
+          "guid": "dc791f3a-6943-46f5-8502-3ab22dcd92a4",
+          "value": "iPad13,17",
+          "description": "iPad Air 5th Gen (WiFi+Cellular)"
+        },
+        {
+          "guid": "bde4da51-7ccc-42b0-871f-ededf3a3ea0b",
+          "value": "Watch1,1",
+          "description": "Apple Watch 38mm case"
+        },
+        {
+          "guid": "b05f49ec-2026-466c-9f4c-2779a57715ab",
+          "value": "Watch1,2",
+          "description": "Apple Watch 42mm case"
+        },
+        {
+          "guid": "10f34ad6-75d9-4364-a7d5-61be61d334c9",
+          "value": "Watch2,6",
+          "description": "Apple Watch Series 1 38mm case"
+        },
+        {
+          "guid": "4d1e0ce7-7d81-4d8e-8432-d12872331a96",
+          "value": "Watch2,7",
+          "description": "Apple Watch Series 1 42mm case"
+        },
+        {
+          "guid": "9731de22-fe13-4edd-85f2-4ffa3837a3f3",
+          "value": "Watch2,3",
+          "description": "Apple Watch Series 2 38mm case"
+        },
+        {
+          "guid": "7bf2eaa0-4628-4746-8fce-241ff6b7868b",
+          "value": "Watch2,4",
+          "description": "Apple Watch Series 2 42mm case"
+        },
+        {
+          "guid": "5d1bc43a-829d-4697-876d-1f8f902da415",
+          "value": "Watch3,1",
+          "description": "Apple Watch Series 3 38mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "701376f1-8cbf-4b93-b37f-ed0f96046f27",
+          "value": "Watch3,2",
+          "description": "Apple Watch Series 3 42mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "5e089c56-5eb8-4755-88e3-2df7e1a6040c",
+          "value": "Watch3,3",
+          "description": "Apple Watch Series 3 38mm case (GPS)"
+        },
+        {
+          "guid": "bd5782b8-2549-4c9b-bdd7-4b7452dfaa9b",
+          "value": "Watch3,4",
+          "description": "Apple Watch Series 3 42mm case (GPS)"
+        },
+        {
+          "guid": "c82f795b-b94c-400d-8284-250c58eda4f4",
+          "value": "Watch4,1",
+          "description": "Apple Watch Series 4 40mm case (GPS)"
+        },
+        {
+          "guid": "45fe0477-ffa2-45bf-a129-e8d9caf606b0",
+          "value": "Watch4,2",
+          "description": "Apple Watch Series 4 44mm case (GPS)"
+        },
+        {
+          "guid": "a84624ba-b612-4954-85da-2f1653c3ac47",
+          "value": "Watch4,3",
+          "description": "Apple Watch Series 4 40mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "f8e40b39-57a9-4c0e-b18d-493718ddaa9d",
+          "value": "Watch4,4",
+          "description": "Apple Watch Series 4 44mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "3e3075ef-8a07-4377-84c2-bb6c537badf0",
+          "value": "Watch5,1",
+          "description": "Apple Watch Series 5 40mm case (GPS)"
+        },
+        {
+          "guid": "1d7f0bb3-4457-4461-990a-063bed082b13",
+          "value": "Watch5,2",
+          "description": "Apple Watch Series 5 44mm case (GPS)"
+        },
+        {
+          "guid": "84c912fe-adb1-4838-a205-a0d09dac8ab4",
+          "value": "Watch5,3",
+          "description": "Apple Watch Series 5 40mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "cca10bb1-64a5-4b5b-ac9f-0ea95938af72",
+          "value": "Watch5,4",
+          "description": "Apple Watch Series 5 44mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "efff3bad-58d6-40ff-a8ea-b66f31087cf5",
+          "value": "Watch5,9",
+          "description": "Apple Watch SE 40mm case (GPS)"
+        },
+        {
+          "guid": "1eeefc4e-3bdd-4852-84d6-552b9b512c7a",
+          "value": "Watch5,10",
+          "description": "Apple Watch SE 44mm case (GPS)"
+        },
+        {
+          "guid": "9f574260-d240-408d-94a7-e72bad1abe74",
+          "value": "Watch5,11",
+          "description": "Apple Watch SE 40mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "bed75931-a35a-49e6-bf66-e8f8ffae3864",
+          "value": "Watch5,12",
+          "description": "Apple Watch SE 44mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "072eb602-236a-4ef8-907d-38709873e463",
+          "value": "Watch6,1",
+          "description": "Apple Watch Series 6 40mm case (GPS)"
+        },
+        {
+          "guid": "55961288-307f-40cb-a388-09c033f71e03",
+          "value": "Watch6,2",
+          "description": "Apple Watch Series 6 44mm case (GPS)"
+        },
+        {
+          "guid": "854bbb1e-f2b2-4224-92bb-7ad9296f4858",
+          "value": "Watch6,3",
+          "description": "Apple Watch Series 6 40mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "c66c9680-c2af-4841-aa69-224054e8d0ec",
+          "value": "Watch6,4",
+          "description": "Apple Watch Series 6 44mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "82bdaeb1-e2ce-4a2e-adce-98ea1148277f",
+          "value": "Watch6,6",
+          "description": "Apple Watch Series 7 41mm case (GPS)"
+        },
+        {
+          "guid": "a2f46f18-fb52-4685-9953-e84e46873db6",
+          "value": "Watch6,7",
+          "description": "Apple Watch Series 7 45mm case (GPS)"
+        },
+        {
+          "guid": "38c5b568-63be-486d-bce4-19183db15eda",
+          "value": "Watch6,8",
+          "description": "Apple Watch Series 7 41mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "8dcf48e6-00e4-446d-a4d7-30236d95af92",
+          "value": "Watch6,9",
+          "description": "Apple Watch Series 7 45mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "529bdbd1-85fb-4f38-82d7-747b6c2bcd65",
+          "value": "iPad14,3",
+          "description": "iPad Pro 11 inch 4th Gen"
+        },
+        {
+          "guid": "04a2ee64-ea46-4f61-8497-4ac0eee5f6a1",
+          "value": "iPad14,4",
+          "description": "iPad Pro 11 inch 4th Gen"
+        },
+        {
+          "guid": "7d7d90be-1456-47f9-bac9-b22b7fbe8a7c",
+          "value": "iPad14,5",
+          "description": "iPad Pro 12.9 inch 6th Gen"
+        },
+        {
+          "guid": "4e261c44-87ee-4439-aa70-dfd29462f0ae",
+          "value": "iPhone14,7",
+          "description": "iPhone 14"
+        },
+        {
+          "guid": "f91b11c0-6d97-4c9f-ae4a-a1c21fc99f95",
+          "value": "iPhone14,8",
+          "description": "iPhone 14 Plus"
+        },
+        {
+          "guid": "b8e425e3-413b-44e7-80b2-cf39878d31f1",
+          "value": "iPhone15,2",
+          "description": "iPhone 14 Pro"
+        },
+        {
+          "guid": "821c355f-b020-4f6e-a932-701da88c66d8",
+          "value": "iPhone15,3",
+          "description": "iPhone 14 Pro Max"
+        },
+        {
+          "guid": "ba270342-8857-4903-994a-5d2bd2bd107a",
+          "value": "iPod9,1",
+          "description": "7th Gen iPod"
+        },
+        {
+          "guid": "156448b2-3533-44aa-a66d-85a07715e252",
+          "value": "Watch6,10",
+          "description": "Apple Watch SE 40mm case (GPS)"
+        },
+        {
+          "guid": "66fbe4dc-c22c-4317-a6cf-7e6488b19ad6",
+          "value": "Watch6,11",
+          "description": "Apple Watch SE 44mm case (GPS)"
+        },
+        {
+          "guid": "55c68622-c275-4ac4-b532-ef83ee8de3aa",
+          "value": "Watch6,12",
+          "description": "Apple Watch SE 40mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "af02e15c-2a1e-4f16-8096-baa9ff6f79e9",
+          "value": "Watch6,13",
+          "description": "Apple Watch SE 44mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "383c9a7e-c839-4352-8a3b-10dc1fb432f5",
+          "value": "Watch6,14",
+          "description": "Apple Watch Series 8 41mm case (GPS)"
+        },
+        {
+          "guid": "71be1a30-1603-424b-85be-a914a85cbd2f",
+          "value": "Watch6,15",
+          "description": "Apple Watch Series 8 45mm case (GPS)"
+        },
+        {
+          "guid": "f515ffc7-0d57-4300-a8c2-a0e1c4ab9721",
+          "value": "Watch6,16",
+          "description": "Apple Watch Series 8 41mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "540640f1-971c-48e8-afe8-bf465e4cf13f",
+          "value": "Watch6,17",
+          "description": "Apple Watch Series 8 45mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "de66d28a-a9ae-4984-8f91-351a258261d3",
+          "value": "Watch6,18",
+          "description": "Apple Watch Ultra"
+        },
+        {
+          "guid": "0fe19db4-a0bb-4ed1-bf45-7b229ae9f3ad",
+          "value": "iPad14,6",
+          "description": "iPad Pro 12.9 inch 6th Gen"
+        },
+        {
+          "guid": "31fc70ca-7963-458f-93f9-b6907690079b",
+          "value": "iPad13,18",
+          "description": "iPad 10th Gen"
+        },
+        {
+          "guid": "c226b926-59a0-4d09-8737-5b3a0dc39a58",
+          "value": "iPad13,19",
+          "description": "iPad 10th Gen"
+        },
+        {
+          "guid": "47e5ca6b-f484-45ea-a497-d6f98dfb0e20",
+          "value": "Watch7,1",
+          "description": "Apple Watch Series 9 41mm case (GPS)"
+        },
+        {
+          "guid": "12c39df0-4182-44b8-bc21-01095dc44c8f",
+          "value": "Watch7,2",
+          "description": "Apple Watch Series 9 45mm case (GPS)"
+        },
+        {
+          "guid": "8afbe44f-88bb-4a2f-b218-479d8cbec968",
+          "value": "Watch7,3",
+          "description": "Apple Watch Series 9 41mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "ea3da24a-c8ba-449d-9f77-b50db0219e5e",
+          "value": "Watch7,4",
+          "description": "Apple Watch Series 9 45mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "913da648-80a0-4e9f-ab67-7978cf4ee912",
+          "value": "Watch7,5",
+          "description": "Apple Watch Ultra 2"
+        },
+        {
+          "guid": "d97cdd93-276c-487e-9a91-7fb8023856cc",
+          "value": "iPhone15,4",
+          "description": "iPhone 15"
+        },
+        {
+          "guid": "a8d06af7-9baf-4ec8-91c2-0e0eca171b5a",
+          "value": "iPhone15,5",
+          "description": "iPhone 15 Plus"
+        },
+        {
+          "guid": "e4f9fa97-d51f-47ba-9795-79320e025817",
+          "value": "iPhone16,1",
+          "description": "iPhone 15 Pro"
+        },
+        {
+          "guid": "91e5aa06-6b34-4d08-91a7-7c75a891041d",
+          "value": "iPhone16,2",
+          "description": "iPhone 15 Pro Max"
+        },
+        {
+          "guid": "f5468959-14a5-46c8-bcfd-201ad56a7008",
+          "value": "Watch7,1",
+          "description": "Apple Watch Series 9 41mm case (GPS)"
+        },
+        {
+          "guid": "c5ef18a9-cd62-446f-bede-9f28b0907d41",
+          "value": "Watch7,2",
+          "description": "Apple Watch Series 9 45mm case (GPS)"
+        },
+        {
+          "guid": "7b902398-25f3-4250-95b1-1c5469a81330",
+          "value": "Watch7,3",
+          "description": "Apple Watch Series 9 41mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "f9c8ca02-db1b-4525-bace-7a1afbec335c",
+          "value": "Watch7,4",
+          "description": "Apple Watch Series 9 45mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "baef68c7-274a-4ba3-ac4a-8d781ea57b42",
+          "value": "Watch7,5",
+          "description": "Apple Watch Ultra 2"
+        },
+        {
+          "guid": "a6954ec7-e1c0-459e-a852-bce4056adcd0",
+          "value": "iPad16,6",
+          "description": "iPad Pro 12.9 inch 7th Gen"
+        },
+        {
+          "guid": "fbfcc7b2-ec3f-496f-8c42-f7a0910567c4",
+          "value": "iPad16,5",
+          "description": "iPad Pro 12.9 inch 7th Gen"
+        },
+        {
+          "guid": "95b01ffe-c49b-4a93-b9d2-679a7aa0ab25",
+          "value": "iPad16,4",
+          "description": "iPad Pro 11 inch 5th Gen"
+        },
+        {
+          "guid": "e3973b42-3bee-4966-9c58-3bd6d978ad27",
+          "value": "iPad16,3",
+          "description": "iPad Pro 11 inch 5th Gen"
+        },
+        {
+          "guid": "808345fe-3f2b-4b16-b254-d3a72119e8aa",
+          "value": "iPad14,9",
+          "description": "iPad Air 6th Gen"
+        },
+        {
+          "guid": "265712e5-1c3c-4364-884f-a29a306a4a65",
+          "value": "iPad14,8",
+          "description": "iPad Air 6th Gen"
+        },
+        {
+          "guid": "be61e10c-9bd9-4807-9d85-6dd00b86c07a",
+          "value": "iPad14,11",
+          "description": "iPad Air 7th Gen"
+        },
+        {
+          "guid": "f7132478-7ed0-47ea-9509-53e55e091baf",
+          "value": "iPad14,10",
+          "description": "iPad Air 7th Gen"
+        },
+        {
+          "guid": "0278ead9-0b7c-4b9f-9d05-f4d5692f459a",
+          "value": "iPhone17,4",
+          "description": "iPhone 16 Plus"
+        },
+        {
+          "guid": "1cc01cdf-0f56-498c-a3b9-9080d40fc710",
+          "value": "iPhone17,3",
+          "description": "iPhone 16"
+        },
+        {
+          "guid": "646f4abe-5aa4-4e9b-8c34-63c27c5ef7a1",
+          "value": "iPhone17,2",
+          "description": "iPhone 16 Pro Max"
+        },
+        {
+          "guid": "fbf3d89c-7010-4315-a513-fc50f8cdc441",
+          "value": "iPhone17,1",
+          "description": "iPhone 16 Pro"
+        },
+        {
+          "guid": "19843044-0870-4760-a644-3cecabbeaa09",
+          "value": "iPad16,6",
+          "description": "iPad Pro 12.9 inch 7th Gen"
+        },
+        {
+          "guid": "c4ca706e-8b22-4dfe-b15e-4027b1208353",
+          "value": "iPad16,5",
+          "description": "iPad Pro 12.9 inch 7th Gen"
+        },
+        {
+          "guid": "cd445d01-e04f-44f3-aa21-46378cc12743",
+          "value": "iPad16,4",
+          "description": "iPad Pro 11 inch 5th Gen"
+        },
+        {
+          "guid": "369840ff-a488-49ef-acfa-9515e72f8d3d",
+          "value": "iPad16,3",
+          "description": "iPad Pro 11 inch 5th Gen"
+        },
+        {
+          "guid": "4f5ad619-a051-4958-b999-e3c8d92b04ec",
+          "value": "iPad14,9",
+          "description": "iPad Air 6th Gen"
+        },
+        {
+          "guid": "7145faa3-5f35-49c8-913c-f826c4e85e4e",
+          "value": "iPad14,8",
+          "description": "iPad Air 6th Gen"
+        },
+        {
+          "guid": "4192d9a8-2b97-420a-9851-34f1de237827",
+          "value": "iPad14,11",
+          "description": "iPad Air 7th Gen"
+        },
+        {
+          "guid": "b050bd9d-64f9-4da4-8e1f-8fb14be8c996",
+          "value": "iPad14,10",
+          "description": "iPad Air 7th Gen"
+        },
+        {
+          "guid": "18e187f2-34c8-4330-b9e0-1a0e7ff8b599",
+          "value": "Watch7,9",
+          "description": "Apple Watch Series 10 46mm case (GPS)"
+        },
+        {
+          "guid": "6edb5969-30fb-4fdb-a2fc-cd2af942e998",
+          "value": "Watch7,8",
+          "description": "Apple Watch Series 10 42mm case (GPS)"
+        },
+        {
+          "guid": "543a507c-7159-45c4-a5ff-207cdf644334",
+          "value": "Watch7,11",
+          "description": "Apple Watch Series 10 46mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "99f249f1-4ba4-49fd-b083-f127e2ade93e",
+          "value": "Watch7,10",
+          "description": "Apple Watch Series 10 42mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "c28f3390-4a58-4f60-8cf4-60776d46a7d6",
+          "value": "iPhone17,4",
+          "description": "iPhone 16 Plus"
+        },
+        {
+          "guid": "3fc5491e-745a-4a3e-b7f4-e7adbfd953ea",
+          "value": "iPhone17,3",
+          "description": "iPhone 16"
+        },
+        {
+          "guid": "87f5b85d-af18-467a-9281-70447b023ba8",
+          "value": "iPhone17,2",
+          "description": "iPhone 16 Pro Max"
+        },
+        {
+          "guid": "9ab15493-f22e-456e-b0a1-1002e163a234",
+          "value": "iPhone17,1",
+          "description": "iPhone 16 Pro"
+        },
+        {
+          "guid": "adf63539-0e5b-4e3a-b05d-11e1cdee3eca",
+          "value": "iPad14,11",
+          "description": "iPad Air 7th Gen"
+        },
+        {
+          "guid": "26d0ce42-b175-40cd-a0b2-97f669df924c",
+          "value": "iPad14,10",
+          "description": "iPad Air 7th Gen"
+        },
+        {
+          "guid": "2f91e1b5-41ad-48f0-a715-a30a9f2eb39c",
+          "value": "iPad16,6",
+          "description": "iPad Pro 12.9 inch 7th Gen"
+        },
+        {
+          "guid": "38abeb94-ece3-45b2-ba80-1cfc79fa47e2",
+          "value": "iPad16,5",
+          "description": "iPad Pro 12.9 inch 7th Gen"
+        },
+        {
+          "guid": "1d75e178-b4aa-4cd6-86e4-9faf6136fd00",
+          "value": "iPad16,4",
+          "description": "iPad Pro 11 inch 5th Gen"
+        },
+        {
+          "guid": "0e849e28-6620-4ed1-93a0-e03cd7eba2fc",
+          "value": "iPad16,3",
+          "description": "iPad Pro 11 inch 5th Gen"
+        },
+        {
+          "guid": "9c75ca94-bc9a-40ec-87f1-c96bb13214f0",
+          "value": "iPad16,2",
+          "description": "iPad mini 7th Gen (WiFi+Cellular)"
+        },
+        {
+          "guid": "bb35effd-e516-4555-87e5-3778e00f621d",
+          "value": "iPad16,1",
+          "description": "iPad mini 7th Gen (WiFi)"
+        },
+        {
+          "guid": "63d18171-3304-4b7a-bffb-76ed35db6178",
+          "value": "iPad14,9",
+          "description": "iPad Air 6th Gen"
+        },
+        {
+          "guid": "a3d055fa-7117-403d-82b1-a6fa0fe59039",
+          "value": "iPad14,8",
+          "description": "iPad Air 6th Gen"
+        },
+        {
+          "guid": "099c90e2-0771-413d-8762-b473ee6dfdb9",
+          "value": "iPhone17,5",
+          "description": "iPhone 16e"
+        },
+        {
+          "guid": "27d7717d-9483-4efb-bbf9-1cd26d4c5f68",
+          "value": "iPad15,8",
+          "description": "iPad 11th Gen (WiFi+Cellular)"
+        },
+        {
+          "guid": "a55a657e-ca61-415d-8ba6-27c48a51a1d7",
+          "value": "iPad15,7",
+          "description": "iPad 11th Gen (WiFi)"
+        },
+        {
+          "guid": "7b731688-93b7-4de0-af86-a0621fdc586b",
+          "value": "iPad15,6",
+          "description": "iPad Air 13-inch 7th Gen (WiFi+Cellular)"
+        },
+        {
+          "guid": "e2940051-b693-4b20-b230-0aab0f2cd8d0",
+          "value": "iPad15,5",
+          "description": "iPad Air 13-inch 7th Gen (WiFi)"
+        },
+        {
+          "guid": "2575b3eb-c8cd-448b-80f3-15c2bdd11069",
+          "value": "iPad15,4",
+          "description": "iPad Air 11-inch 7th Gen (WiFi+Cellular)"
+        },
+        {
+          "guid": "e4ea4216-12e3-49df-afb4-f6b2a26e311e",
+          "value": "iPad15,3",
+          "description": "iPad Air 11-inch 7th Gen (WiFi)"
+        },
+        {
+          "guid": "63b74479-f333-4301-ace5-a3dc650e0786",
+          "value": "iPhone18,1",
+          "description": "iPhone 17 Pro"
+        },
+        {
+          "guid": "8f3a7e55-9885-4267-8f6d-eb47b2c20a2a",
+          "value": "iPhone18,2",
+          "description": "iPhone 17 Pro Max"
+        },
+        {
+          "guid": "b9992759-3b0e-4d60-9439-f3e3fd580c0b",
+          "value": "iPhone18,3",
+          "description": "iPhone 17"
+        },
+        {
+          "guid": "012071d4-e069-4cb9-bce6-6220335a04c5",
+          "value": "iPhone18,4",
+          "description": "iPhone Air"
+        },
+        {
+          "guid": "a9613744-23ce-4ac6-8d0f-042ce5d54c67",
+          "value": "Watch7,12",
+          "description": "Apple Watch Ultra 3 49mm case"
+        },
+        {
+          "guid": "236c2306-d507-43e3-97b9-8bafc1578e78",
+          "value": "Watch7,13",
+          "description": "Apple Watch SE 3 40mm case"
+        },
+        {
+          "guid": "bb560c44-ed54-4ba5-9208-d1db8006c5bb",
+          "value": "Watch7,14",
+          "description": "Apple Watch SE 3 44mm case"
+        },
+        {
+          "guid": "348e8b3c-2a63-4bdd-8d9e-60ef08a7740f",
+          "value": "Watch7,15",
+          "description": "Apple Watch SE 3 40mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "28d10d56-59f5-4b3b-ac96-4831fe1c9e17",
+          "value": "Watch7,16",
+          "description": "Apple Watch SE 3 44mm case (GPS+Cellular)"
+        },
+        {
+          "guid": "56f6ddc8-b893-4d0a-8490-95b08df09f23",
+          "value": "Watch7,17",
+          "description": "Apple Watch Series 11 42mm case"
+        },
+        {
+          "guid": "2a73de79-deb5-4823-b89c-5186720a87a8",
+          "value": "Watch7,18",
+          "description": "Apple Watch Series 11 46mm case"
+        },
+        {
+          "guid": "15f1a1c4-85ba-4c20-8a67-d8e84c092a4d",
+          "value": "Watch7,19",
+          "description": "Apple Watch Series 11 42mm case (GPS+Celllular)"
+        },
+        {
+          "guid": "e36cd124-459e-4ba7-b620-31b9ba898b64",
+          "value": "Watch7,20",
+          "description": "Apple Watch Series 11 46mm case (GPS+Celllular)"
+        }
+      ]
+    },
+    {
+      "name": "Attendance Source",
+      "guid": "a27bf9dd-7af0-47b4-8fe4-0b5e510381db",
+      "definedValues": [
+        {
+          "guid": "0b25a627-679b-4b73-aa84-305def24815a",
+          "value": "Legacy Kiosk",
+          "description": "The attendance record was created by a legacy Kiosk."
+        },
+        {
+          "guid": "9a21d7eb-bcb5-4466-b62f-70ec5008b6b9",
+          "value": "Kiosk",
+          "description": "The attendance record was created by a Kiosk."
+        },
+        {
+          "guid": "972e8841-a3c9-4ddd-bd24-a414c0290331",
+          "value": "Mobile",
+          "description": "The attendance record was created by a personal mobile device."
+        },
+        {
+          "guid": "799e6fa9-33d8-44aa-93dc-3dbaf25fe9f1",
+          "value": "Proximity",
+          "description": "The attendance record was created in response to a Bluetooth low energy proximity beacon."
+        },
+        {
+          "guid": "8059cc0a-bd93-4d35-9458-6e6dff2fa3e3",
+          "value": "Token",
+          "description": "The attendance record was created by scanning a physical token, such as NFC or a QR Code."
+        }
+      ]
+    },
+    {
+      "name": "Attendance Types",
+      "guid": "c0508751-3bdd-40a7-be37-8aa4fc56e00e",
+      "definedValues": [
+        {
+          "guid": "290ce89f-7da0-41ed-82c1-1249a4a42ba4",
+          "value": "Physical",
+          "description": ""
+        },
+        {
+          "guid": "df1c89d0-7d8a-48c2-b251-dff3376c2931",
+          "value": "Virtual",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "Audience Type",
+      "guid": "799301a3-2026-4977-994e-45dc68502559",
+      "definedValues": []
+    },
+    {
+      "name": "Background Check Types",
+      "guid": "bc2fdf9a-93b8-4325-8de9-2f7b1943bfdf",
+      "definedValues": []
+    },
+    {
+      "name": "Benevolence Request Status",
+      "guid": "2787b088-d607-4d69-84ff-850a6891ee34",
+      "definedValues": []
+    },
+    {
+      "name": "Benevolence Result Type",
+      "guid": "35fc0225-3dac-48b4-bdf7-afde104fb60e",
+      "definedValues": []
+    },
+    {
+      "name": "Button HTML",
+      "guid": "407a3a73-a3ef-4970-b856-2a33f62ac72e",
+      "definedValues": [
+        {
+          "guid": "5683e775-b9f3-408c-80ac-94de0e51cf3a",
+          "value": "Cancel",
+          "description": "Used for Cancel when you don't want the page/form to validate."
+        }
+      ]
+    },
+    {
+      "name": "Cache Tags",
+      "guid": "bdf73089-9154-40c1-90e4-74518e9937dc",
+      "definedValues": []
+    },
+    {
+      "name": "Campus Status",
+      "guid": "840cda6d-6e81-4eb7-b325-be708990cce9",
+      "definedValues": [
+        {
+          "guid": "99d2c9cb-b6dc-49c1-b626-b76bd398b63a",
+          "value": "Closed",
+          "description": ""
+        },
+        {
+          "guid": "10696fd8-d0c7-486f-b736-5fb3f5d69f1a",
+          "value": "Open",
+          "description": ""
+        },
+        {
+          "guid": "008209f5-144e-4282-92c3-944a4ac78700",
+          "value": "Pending",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "Campus Type",
+      "guid": "8c2260a8-6130-414a-bd32-22743feab256",
+      "definedValues": [
+        {
+          "guid": "10101010-2db4-4c95-b07d-c400e412289b",
+          "value": "Online",
+          "description": ""
+        },
+        {
+          "guid": "5a61507b-79cb-4da2-af43-6f82260203b3",
+          "value": "Physical",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "Chart Styles",
+      "guid": "fc684fd7-fe68-493f-af38-1656fbf67e6b",
+      "definedValues": []
+    },
+    {
+      "name": "Chat Reactions",
+      "guid": "879c25ee-8bf3-46ce-8549-db4caf4074e9",
+      "definedValues": [
+        {
+          "guid": "bc0d5463-93f6-4087-9d94-c8f393b969e6",
+          "value": "love",
+          "description": "Heart reaction to show love."
+        },
+        {
+          "guid": "a71e5e19-bf17-4424-bcc0-9ce87544daa5",
+          "value": "haha",
+          "description": "Laugh reaction for something funny."
+        },
+        {
+          "guid": "dee11d1a-4ac2-4264-8e33-235c0d177626",
+          "value": "like",
+          "description": "Thumbs-up reaction to show approval."
+        },
+        {
+          "guid": "94214a68-a5e0-4b44-8194-e0b91f00cf9e",
+          "value": "sad",
+          "description": "Crying reaction to express sadness."
+        },
+        {
+          "guid": "304df5a2-142e-494d-8eee-d4dbe81b1579",
+          "value": "wow",
+          "description": "Surprised reaction for something amazing."
+        }
+      ]
+    },
+    {
+      "name": "Color Picker Swatches",
+      "guid": "cc1400b3-e161-45e3-bf49-49825d3d6467",
+      "definedValues": [
+        {
+          "guid": "69e71798-df68-4ed7-93ac-cfe9915d664d",
+          "value": "#f44336",
+          "description": "Red"
+        },
+        {
+          "guid": "edff48d7-de7c-455d-9b89-86614d3fa14d",
+          "value": "#9c27b0",
+          "description": "Purple"
+        },
+        {
+          "guid": "0da03527-0dbb-41d2-a3d1-de60d10e4193",
+          "value": "#3f51b5",
+          "description": "Indigo"
+        },
+        {
+          "guid": "d64bd9f7-5a0e-4709-9a0e-b8f88ed360f9",
+          "value": "#2196f3",
+          "description": "Blue"
+        },
+        {
+          "guid": "b18a4333-a5ba-418a-9559-0ceb59770d33",
+          "value": "#4caf50",
+          "description": "Green"
+        },
+        {
+          "guid": "80051d45-6d75-4316-bd12-2ebca226f0bc",
+          "value": "#ffeb3b",
+          "description": "Yellow"
+        },
+        {
+          "guid": "161ab06a-2b03-4380-977f-b8a88e4169e0",
+          "value": "#ee7625",
+          "description": "Rock Orange"
+        }
+      ]
+    },
+    {
+      "name": "Communication Topic",
+      "guid": "a798492c-f0a4-496e-9142-97d9336c3e99",
+      "definedValues": []
+    },
+    {
+      "name": "Conflict Profile",
+      "guid": "ee7e089e-df81-4407-8bfa-ad865fa5427a",
+      "definedValues": [
+        {
+          "guid": "663b0f4a-de1f-46be-8bdd-d7c98863ddc4",
+          "value": "Avoiding",
+          "description": "Avoiding is not pursuing your own rights or those of the other person."
+        },
+        {
+          "guid": "cf78d6b1-38aa-4ff7-9a4b-e900438fa85a",
+          "value": "Compromising",
+          "description": "Compromising is finding a middle ground in the conflict."
+        },
+        {
+          "guid": "df7b1eb2-7e7e-4f91-bd26-c6dfd88e38df",
+          "value": "Resolving",
+          "description": "Resolving is attempting to work with the other person in depth to find the best solution regardless of where it may lie on the continuum."
+        },
+        {
+          "guid": "56300095-86ad-43fe-98d2-50829e9223c2",
+          "value": "Winning",
+          "description": "Winning is you believe you have the right answer and you must prove you are right whatever it takes."
+        },
+        {
+          "guid": "4ab06a6f-f5b1-4385-9365-199ea7969e50",
+          "value": "Yielding",
+          "description": "Yielding is neglecting your own interests and giving in to those of the other person."
+        }
+      ]
+    },
+    {
+      "name": "Connection Status",
+      "guid": "2e6540ea-63f0-40fe-be50-f2a84735e600",
+      "definedValues": [
+        {
+          "guid": "41540783-d9ef-4c70-8f1d-c9e83d91ed5f",
+          "value": "Member",
+          "description": "Applied to individuals who have completed all requirements established to become a member."
+        },
+        {
+          "guid": "39f491c5-d6ac-4a9b-8ac0-c431cb17d588",
+          "value": "Attendee",
+          "description": "Denotes an individual who is a consistently active participant in your services and/or ministry events."
+        },
+        {
+          "guid": "b91ba046-bc1e-400c-b85d-638c1f4e0ce2",
+          "value": "Visitor",
+          "description": "Used when a person first enters through your first-time visitor process. As they continue to attend they will become an attendee and possibly a member."
+        },
+        {
+          "guid": "8ebc0ceb-474d-4c1b-a6ba-734c3a9ab061",
+          "value": "Participant",
+          "description": "Is involved in non-service or ministry events or programs."
+        },
+        {
+          "guid": "368dd475-242c-49c4-a42c-7278be690cc2",
+          "value": "Prospect",
+          "description": "The default status given to a record that is added from the website."
+        }
+      ]
+    },
+    {
+      "name": "Content Component Template",
+      "guid": "313b579f-f442-4247-adbb-bbd25e255003",
+      "definedValues": [
+        {
+          "guid": "3e7d4d0c-8238-4a5f-9e5f-34e4dfbf7725",
+          "value": "Hero",
+          "description": ""
+        },
+        {
+          "guid": "ec429625-767e-4f69-bb48-f55da3c836a3",
+          "value": "Side By Side",
+          "description": ""
+        },
+        {
+          "guid": "54a6fe8c-b38f-46db-81f7-a7648886b592",
+          "value": "Card",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "Countries",
+      "guid": "d7979ea1-44e9-46e2-bf37-ddaf7f741378",
+      "definedValues": []
+    },
+    {
+      "name": "Credit Card Type",
+      "guid": "2bd4ffb0-6c7f-4890-8d08-00f0bb7b43e9",
+      "definedValues": [
+        {
+          "guid": "fc66b5f8-634f-4800-a60d-436964d27b64",
+          "value": "Visa",
+          "description": "Visa Card"
+        },
+        {
+          "guid": "6373a4b6-4dca-4eb6-9ade-b30e8a7f8621",
+          "value": "MasterCard",
+          "description": "Master Card"
+        },
+        {
+          "guid": "696a54e3-352c-49fb-88a1-bcdbd81aa9ec",
+          "value": "Amex",
+          "description": "American Express Card"
+        },
+        {
+          "guid": "4b746601-e9eb-4660-ba13-c0b66b24e248",
+          "value": "Discover",
+          "description": "Discover Card"
+        },
+        {
+          "guid": "1a9a4db9-aff3-4773-875c-c10346bd1ca7",
+          "value": "Diner's Club",
+          "description": "Diner's Club Card"
+        },
+        {
+          "guid": "4dd7f0c2-f6b7-4510-90e6-287adc25fd05",
+          "value": "JCB",
+          "description": "Japan Credit Bureau Card"
+        }
+      ]
+    },
+    {
+      "name": "Currency Code",
+      "guid": "b9f3d359-4365-4594-bcee-d23fa824fb81",
+      "definedValues": [
+        {
+          "guid": "e8311bfd-dfd6-4942-a353-c9d1048e8358",
+          "value": "AED",
+          "description": "United Arab Emirates Dirham"
+        },
+        {
+          "guid": "3f473de6-435e-408d-a938-a38e48970b71",
+          "value": "AFN",
+          "description": "Afghanistan Afghani"
+        },
+        {
+          "guid": "8c1e2929-b814-49bd-8ccd-864a451726ba",
+          "value": "ALL",
+          "description": "Albania Lek"
+        },
+        {
+          "guid": "8beb88f3-4615-4d66-b687-12cd49c133c0",
+          "value": "AMD",
+          "description": "Armenia Dram"
+        },
+        {
+          "guid": "492ee19a-8e63-4cfe-b181-500966703ffc",
+          "value": "ANG",
+          "description": "Netherlands Antilled Guilder"
+        },
+        {
+          "guid": "57c9dcb6-181b-47b7-a8a0-393a3f282dbd",
+          "value": "AOA",
+          "description": "Angola Kwanza"
+        },
+        {
+          "guid": "11e670bc-5f1c-43fd-bb36-710be2e7ea9c",
+          "value": "ARS",
+          "description": "Argentina Peso"
+        },
+        {
+          "guid": "d385f680-74f5-4fdf-9f05-f36611b811c2",
+          "value": "AUD",
+          "description": "Australia Dollar"
+        },
+        {
+          "guid": "ef064e62-0f3f-48fe-805e-f75b0f6cc208",
+          "value": "AWG",
+          "description": "Aruba Guilder"
+        },
+        {
+          "guid": "68c599f4-41e5-4f0c-902a-a51c3a23ea80",
+          "value": "AZN",
+          "description": "Azerbaijan Manat"
+        },
+        {
+          "guid": "99527366-8be1-4dc6-a19b-d661925c22f6",
+          "value": "BAM",
+          "description": "Bosnia and Herzegovina Convertible Mark"
+        },
+        {
+          "guid": "2bc04b92-52c7-4297-be1e-ef2d2f4d872e",
+          "value": "BBD",
+          "description": "Barbados Dollar"
+        },
+        {
+          "guid": "4bd2f195-1eae-47dd-9200-a5cb42ba026d",
+          "value": "BDT",
+          "description": "Bangladesh Taka"
+        },
+        {
+          "guid": "7cfb179b-cd1f-4007-a73e-3b3aeb70ba80",
+          "value": "BGN",
+          "description": "Bulgaria Lev"
+        },
+        {
+          "guid": "8ae9766c-226f-46f5-9511-132018937540",
+          "value": "BIF",
+          "description": "Bahrain Dinar"
+        },
+        {
+          "guid": "107f3ce0-15ef-4b5b-a04c-f16b02897514",
+          "value": "BMD",
+          "description": "Burundi Franc"
+        },
+        {
+          "guid": "39061690-23a9-4ac0-972a-70c8348c2f13",
+          "value": "BND",
+          "description": "Bermuda Dollar"
+        },
+        {
+          "guid": "e9a0dd4a-7a60-4e18-bc9c-1e5cdf08c56f",
+          "value": "BOB",
+          "description": "Bolivia Boliviano"
+        },
+        {
+          "guid": "ca3b180e-3a4b-4dbf-8c09-5a36ffcebc8b",
+          "value": "BRL",
+          "description": "Brazil Real"
+        },
+        {
+          "guid": "097d05af-c8b7-4b7b-9b83-e87eb66f2557",
+          "value": "BSD",
+          "description": "Bahamas Dollar"
+        },
+        {
+          "guid": "40db2ae9-2a54-4e73-9a07-67d3d7323d38",
+          "value": "BWP",
+          "description": "Botswana Pula"
+        },
+        {
+          "guid": "9b369c03-f310-45fb-b9bd-cfac380cf0a1",
+          "value": "BZD",
+          "description": "Belize Dollar"
+        },
+        {
+          "guid": "c1f19493-15d6-4247-8bcd-c5062d08aa3a",
+          "value": "CAD",
+          "description": "Canada Dollar"
+        },
+        {
+          "guid": "dbaac8ab-3cfa-4ea5-a468-9fcb3f58d32a",
+          "value": "CDF",
+          "description": "Congo/Kinshasa Franc"
+        },
+        {
+          "guid": "1169a8ec-76f2-4470-ac6c-b669ae1ce335",
+          "value": "CHF",
+          "description": "Switzerland Franc"
+        },
+        {
+          "guid": "cf801143-791b-4057-84dd-f68e3e6a0096",
+          "value": "CLP",
+          "description": "Chile Peso"
+        },
+        {
+          "guid": "dc070450-95e0-474a-979c-958eb45d5b6d",
+          "value": "CNY",
+          "description": "China Yuan Renminbi"
+        },
+        {
+          "guid": "b2fe77b6-34ba-46be-a21b-b844e4bbd9e7",
+          "value": "COP",
+          "description": "Colombia Peso"
+        },
+        {
+          "guid": "6a2ca4d2-65aa-427f-ae66-87d41c2c9df1",
+          "value": "CRC",
+          "description": "Costa Rica Colon"
+        },
+        {
+          "guid": "8e9ee059-69a5-4a24-a603-65dc8b923b42",
+          "value": "CVE",
+          "description": "Cape Verde Escudo"
+        },
+        {
+          "guid": "91f5f7bc-a0b7-4b84-bc5c-4e65d6ce138b",
+          "value": "CZK",
+          "description": "Czech Republic Koruna"
+        },
+        {
+          "guid": "c0301df3-07a3-4fc0-97e2-eb49756c0719",
+          "value": "DJF",
+          "description": "Djibouti Franc"
+        },
+        {
+          "guid": "b42fec19-9ff1-4b97-853d-46416f894a3e",
+          "value": "DKK",
+          "description": "Denmark Krone"
+        },
+        {
+          "guid": "b438a909-7d48-4eae-ad61-fd2af6856ae1",
+          "value": "DOP",
+          "description": "Dominican Republic Peso"
+        },
+        {
+          "guid": "da7291e8-3267-4195-a234-5a4a0fc76bdc",
+          "value": "DZD",
+          "description": "Algeria Dinar"
+        },
+        {
+          "guid": "9b8a06ce-975a-4f8f-94b8-2b82ca736a8b",
+          "value": "EGP",
+          "description": "Egypt Pound"
+        },
+        {
+          "guid": "b8b922af-6410-41a1-8c7c-0d1bd2a233ef",
+          "value": "ETB",
+          "description": "Ethiopia Birr"
+        },
+        {
+          "guid": "4baf371b-d6ec-4485-bc95-f1ace8e74a77",
+          "value": "EUR",
+          "description": "Euro Member Countries"
+        },
+        {
+          "guid": "2f2410af-f716-4987-9273-6f8c2137f196",
+          "value": "FJD",
+          "description": "Fiji Dollar"
+        },
+        {
+          "guid": "a78e15bd-5219-4f5c-a96d-f0ba59e09b1e",
+          "value": "FKP",
+          "description": "Falkland Islands (Malvinas) Pound"
+        },
+        {
+          "guid": "2d90b494-6575-45f0-9a85-af44cad352ee",
+          "value": "GBP",
+          "description": "United Kingdom Pound"
+        },
+        {
+          "guid": "99b6448f-663c-4338-8a00-a993bb2f9d42",
+          "value": "GEL",
+          "description": "Georgia Lari"
+        },
+        {
+          "guid": "f61faac0-bd13-4ddd-8c62-b4b7cfafb881",
+          "value": "GIP",
+          "description": "Gibraltar Pound"
+        },
+        {
+          "guid": "61b9f4be-5e7d-44b6-8d7c-c9a049b693ee",
+          "value": "GMD",
+          "description": "Gambia Dalasi"
+        },
+        {
+          "guid": "6d66a95d-5aa7-48e4-802c-0ba9c5db92d6",
+          "value": "GNF",
+          "description": "Guinea Franc"
+        },
+        {
+          "guid": "407301c4-529b-4356-bc1a-acd7d2106708",
+          "value": "GTQ",
+          "description": "Guatemala Quetzal"
+        },
+        {
+          "guid": "17f3e292-d93f-4e02-ac6a-7288610c86e7",
+          "value": "GYD",
+          "description": "Guyana Dollar"
+        },
+        {
+          "guid": "f3a39e0d-fe32-44ec-a59b-2687daa3dfb3",
+          "value": "HKD",
+          "description": "Hong Kong Dollar"
+        },
+        {
+          "guid": "2eaed942-07f6-4ea0-bfd0-5dbcbb35569f",
+          "value": "HNL",
+          "description": "Honduras Lempira"
+        },
+        {
+          "guid": "ea1144cf-9742-427b-a13c-2efa83eb697e",
+          "value": "HRK",
+          "description": "Croatia Dollar"
+        },
+        {
+          "guid": "31e405a6-55ce-4eeb-8688-0c4d7b4b9b95",
+          "value": "HTG",
+          "description": "Haiti Gourde"
+        },
+        {
+          "guid": "ca51cd64-68cc-470b-b1b2-7fd4c496d0b0",
+          "value": "HUF",
+          "description": "Hungary Forint"
+        },
+        {
+          "guid": "9a2fd6b8-2d64-4ed3-933e-c8a8e437c9de",
+          "value": "IDR",
+          "description": "Indonesia Rupiah"
+        },
+        {
+          "guid": "33624eeb-becb-4297-92a3-c0121b5b0806",
+          "value": "ILS",
+          "description": "Israel Shekel"
+        },
+        {
+          "guid": "12f8fef2-f5e4-4ba0-bf0f-a7dc57d095e9",
+          "value": "INR",
+          "description": "India Rupee"
+        },
+        {
+          "guid": "9aa6b574-77e5-4cd0-a109-5d31ef51c90b",
+          "value": "ISK",
+          "description": "Iceland Krona"
+        },
+        {
+          "guid": "0228b0df-ec2e-41d5-87e3-56c53e4f36b9",
+          "value": "JMD",
+          "description": "Jamaica Dollar"
+        },
+        {
+          "guid": "af28af43-8461-41ac-a2c5-85122712be96",
+          "value": "JPY",
+          "description": "Japan Yen"
+        },
+        {
+          "guid": "bb3c284f-256c-4a6c-bd60-5ff36a034fc9",
+          "value": "KES",
+          "description": "Kenya Shilling"
+        },
+        {
+          "guid": "6f9f4591-0995-40d9-9973-5fa47645c922",
+          "value": "KGS",
+          "description": "Kyrgyzstan Som"
+        },
+        {
+          "guid": "ba1d927b-f010-4ebb-922b-a1815c65deab",
+          "value": "KHR",
+          "description": "Cambodia Riel"
+        },
+        {
+          "guid": "de144212-76a7-43d9-8b91-54e0da5bba46",
+          "value": "KMF",
+          "description": "Comorian Franc"
+        },
+        {
+          "guid": "d64ba50a-bdf1-4f3d-8c86-f897a1f6c4e3",
+          "value": "KRW",
+          "description": "Korea (South) Won"
+        },
+        {
+          "guid": "6e73e247-21af-4953-a2ea-427f7f07c930",
+          "value": "KYD",
+          "description": "Cayman Islands Dollar"
+        },
+        {
+          "guid": "6414a05f-1f59-47d5-af28-c47036c45581",
+          "value": "KZT",
+          "description": "Kazakhstan Tenge"
+        },
+        {
+          "guid": "1f6e4c5e-21bc-4ab4-a8cf-4ee18da3406e",
+          "value": "LAK",
+          "description": "Laos Kip"
+        },
+        {
+          "guid": "52fd7d31-fb97-47cb-a815-17652a99c651",
+          "value": "LBP",
+          "description": "Lebanon Pound"
+        },
+        {
+          "guid": "2640b45e-f0df-41f8-8cbb-806c00869034",
+          "value": "LKR",
+          "description": "Sri Lanka Rupee"
+        },
+        {
+          "guid": "bdba6849-f172-4a9a-9750-53448115544e",
+          "value": "LRD",
+          "description": "Liberia Dollar"
+        },
+        {
+          "guid": "964891de-852c-48d5-a3ed-b56b4be502ae",
+          "value": "LSL",
+          "description": "Lesotho Loti"
+        },
+        {
+          "guid": "4e165a63-d75c-4dcf-866c-1a63e70ed6da",
+          "value": "MAD",
+          "description": "Morocco Dirham"
+        },
+        {
+          "guid": "d4b9589b-092c-4ef5-a424-faa2240b12a5",
+          "value": "MDL",
+          "description": "Moldova Leu"
+        },
+        {
+          "guid": "9efe3400-bec2-4fd7-9bed-11bcdb71d0c8",
+          "value": "MGA",
+          "description": "Madagascar Ariary"
+        },
+        {
+          "guid": "c12e7c5b-160a-45d3-9f08-a4ebed6ba41c",
+          "value": "MKD",
+          "description": "Macedonia Denar"
+        },
+        {
+          "guid": "70c9da9f-c74b-42ba-8194-861435c5f874",
+          "value": "MMK",
+          "description": "Myanmar (Burma) Kyat"
+        },
+        {
+          "guid": "39c1528e-28d9-409b-a323-660910bf6f9b",
+          "value": "MNT",
+          "description": "Mongolia Tughrik"
+        },
+        {
+          "guid": "6b48892d-c1e7-435b-ae67-07c56e803b3c",
+          "value": "MOP",
+          "description": "Macau Pataca"
+        },
+        {
+          "guid": "80333f0d-0a1a-40a3-846d-a4138df42bed",
+          "value": "MRU",
+          "description": "Mauritania Ouguiya"
+        },
+        {
+          "guid": "172e6cdd-95b5-4fc0-81b0-e63809ebb629",
+          "value": "MUR",
+          "description": "Mauritius Rupee"
+        },
+        {
+          "guid": "95d1883f-5519-4b3b-9717-e47ab2033a0a",
+          "value": "MVR",
+          "description": "Maldives (Maldive Islands) Rufiyaa"
+        },
+        {
+          "guid": "71475757-7bb4-4e90-bb46-b82f866ccb98",
+          "value": "MWK",
+          "description": "Malawi Kwacha"
+        },
+        {
+          "guid": "c1ae0e8e-8c5f-45fb-8a88-000794c46cdb",
+          "value": "MXN",
+          "description": "Mexico Kwacha"
+        },
+        {
+          "guid": "fa188643-6407-46e3-9d4f-7455117c1377",
+          "value": "MYR",
+          "description": "Malaysia Ringgit"
+        },
+        {
+          "guid": "d5605d91-f9c4-494a-b4da-3d4ccf89315d",
+          "value": "MZN",
+          "description": "Mozambiqui Metical"
+        },
+        {
+          "guid": "eef22cb2-643c-439d-965b-10e93f9054ff",
+          "value": "NAD",
+          "description": "Namibia Dollar"
+        },
+        {
+          "guid": "ba71d131-4bdb-40ca-a40d-2ae01c4cde32",
+          "value": "NGN",
+          "description": "Nigeria Naira"
+        },
+        {
+          "guid": "4b6e4323-a26d-407f-a73c-fd33672b96bf",
+          "value": "NIO",
+          "description": "Nicaragua Cordoba"
+        },
+        {
+          "guid": "35636979-6e39-4aab-a2c2-f7718bc6574b",
+          "value": "NOK",
+          "description": "Norway Krone"
+        },
+        {
+          "guid": "a82d1b0d-2d77-44b0-9319-df89d3c2c102",
+          "value": "NPR",
+          "description": "Nepal Rupee"
+        },
+        {
+          "guid": "ae369700-7b98-4360-b477-e3bfeb0be70a",
+          "value": "NZD",
+          "description": "New Zealand Dollar"
+        },
+        {
+          "guid": "f86bfa5d-196e-4b95-8575-aed565a01f40",
+          "value": "PAB",
+          "description": "Panama Balboa"
+        },
+        {
+          "guid": "7fdad2c4-53bb-448d-8c9c-611aa5a721af",
+          "value": "PEN",
+          "description": "Peru Sol"
+        },
+        {
+          "guid": "b1814620-4f8a-4291-b6a0-99051ec5f13b",
+          "value": "PGK",
+          "description": "Paupa New Guinea Kina"
+        },
+        {
+          "guid": "9806539a-d44b-4d75-8f15-fefbda20da3f",
+          "value": "PHP",
+          "description": "Philippines Peso"
+        },
+        {
+          "guid": "f646d37d-6790-4f1f-be4f-cc2e63711895",
+          "value": "PKR",
+          "description": "Pakistan Rupee"
+        },
+        {
+          "guid": "cbe89c67-1e1d-4b10-a5b9-2180f690fd9a",
+          "value": "PLN",
+          "description": "Poland Zloty"
+        },
+        {
+          "guid": "08d73edd-cf8a-42cf-b057-128f13a23a55",
+          "value": "PYG",
+          "description": "Paraguay Guarani"
+        },
+        {
+          "guid": "66b75081-f3cc-47cd-b032-ca7964f78026",
+          "value": "QAR",
+          "description": "Qatar Riyal"
+        },
+        {
+          "guid": "3e424d69-d4d7-4c2b-8a58-72424fc4a4e6",
+          "value": "RON",
+          "description": "Romania Leu"
+        },
+        {
+          "guid": "2e2d91c4-1967-4f06-aafa-b1a8d095f716",
+          "value": "RSD",
+          "description": "Serbia Dinar"
+        },
+        {
+          "guid": "76d46f48-6f2e-4b58-ae76-50fdc638984f",
+          "value": "RUB",
+          "description": "Russia Ruble"
+        },
+        {
+          "guid": "9ca1de62-2a58-4fa1-a5c5-d34d8a6f7742",
+          "value": "RWF",
+          "description": "Rwanda Franc"
+        },
+        {
+          "guid": "7df4b48b-734e-44c0-991c-9154a8f7d704",
+          "value": "SAR",
+          "description": "Saudi Arabia Riyal"
+        },
+        {
+          "guid": "8b1f131d-625d-43b5-b0fb-bc3ae11ede1a",
+          "value": "SBD",
+          "description": "Solomon Islands Dollar"
+        },
+        {
+          "guid": "de5b866a-d217-43f2-854c-f88a58a9cd74",
+          "value": "SCR",
+          "description": "Seychelles Rupee"
+        },
+        {
+          "guid": "e34f8b89-a400-4839-9c9f-63de6d91ee97",
+          "value": "SEK",
+          "description": "Sweden Krona"
+        },
+        {
+          "guid": "28ec8c33-7445-4ea3-9d62-264cd44a2045",
+          "value": "SGD",
+          "description": "Singapore Dollar"
+        },
+        {
+          "guid": "e52d57d1-2a04-4142-8244-1a23f63063d1",
+          "value": "SHP",
+          "description": "Saint Helena Pound"
+        },
+        {
+          "guid": "8d30f49f-3c71-40bd-b71e-16b6620652ce",
+          "value": "SLL",
+          "description": "Sierra Leone Leone"
+        },
+        {
+          "guid": "ed9e9e39-00c5-4f5c-a9a5-d4f7a734efb5",
+          "value": "SOS",
+          "description": "Somalia Shilling"
+        },
+        {
+          "guid": "c216da39-af82-4497-9b90-83ba0cfc314e",
+          "value": "SRD",
+          "description": "Suriname Dollar"
+        },
+        {
+          "guid": "2836c4c2-28a4-493e-b399-71114e26d776",
+          "value": "STN",
+          "description": "Sao Tome and Principe Dobra"
+        },
+        {
+          "guid": "1f05bd1b-253f-4a6c-bf1d-884feb1d0fb5",
+          "value": "SZL",
+          "description": "eSwatini Lilageni"
+        },
+        {
+          "guid": "667c5d07-99a2-4181-829d-f5c9abbfc9d1",
+          "value": "THB",
+          "description": "Thailand Baht"
+        },
+        {
+          "guid": "1da03888-48db-43e6-be2d-9a0776bf7f18",
+          "value": "TJS",
+          "description": "Tajikistan Somoni"
+        },
+        {
+          "guid": "aafbdb35-4885-4e80-badf-b4d73dabd2a7",
+          "value": "TOP",
+          "description": "Tonga Pa'anga"
+        },
+        {
+          "guid": "ea963a7e-fdc5-49e3-962d-70ac7abfcecd",
+          "value": "TRY",
+          "description": "Turkey Lira"
+        },
+        {
+          "guid": "056a1321-ea55-4d01-86fb-7007caf7bef4",
+          "value": "TTD",
+          "description": "Trinidad and Tobago Dollar"
+        },
+        {
+          "guid": "5c5cf899-1291-490b-93de-7d0fffa250df",
+          "value": "TWD",
+          "description": "Taiwan New Dollar"
+        },
+        {
+          "guid": "416089fe-e4b6-4bf3-bf51-8374b6940b69",
+          "value": "TZS",
+          "description": "Tanzania Shilling"
+        },
+        {
+          "guid": "dda2f2c4-1f5a-49e3-85a1-bdc4f0d121be",
+          "value": "UAH",
+          "description": "Ukraine Hryvnia"
+        },
+        {
+          "guid": "dd51556e-e327-4305-9ca3-57f2e30ff654",
+          "value": "UGX",
+          "description": "Uganda Shilling"
+        },
+        {
+          "guid": "0bd42a7e-9c7e-417c-affe-51102b1e4b43",
+          "value": "USD",
+          "description": "United States Dollar"
+        },
+        {
+          "guid": "8e09755b-e47d-4472-9c0a-a16d2032f0d8",
+          "value": "UYU",
+          "description": "Uruguay Peso"
+        },
+        {
+          "guid": "d926dee2-2628-4ddf-af80-75e2eab3bc2b",
+          "value": "UZS",
+          "description": "Uzbekistan Som"
+        },
+        {
+          "guid": "37544fbe-1317-4cd0-8dcb-a12a693db056",
+          "value": "VND",
+          "description": "Viet Nam Dong"
+        },
+        {
+          "guid": "8f686039-89a6-47a7-aa7f-3f8f0bd1e434",
+          "value": "VUV",
+          "description": "Vanuatu Vatu"
+        },
+        {
+          "guid": "ac8716bf-a907-4657-80bd-bbb3fde77802",
+          "value": "WST",
+          "description": "Samoa Tala"
+        },
+        {
+          "guid": "84ca3152-374d-4e07-baf5-554f4ca450c4",
+          "value": "XAF",
+          "description": "Communaute Financiere Africaine (BEAC) CFA Franc"
+        },
+        {
+          "guid": "1582e971-543d-4c3b-b6d2-f6c5be88461e",
+          "value": "XCD",
+          "description": "East Caribbean Dollar"
+        },
+        {
+          "guid": "85da3507-e266-4494-bf7f-e9365f6645bd",
+          "value": "XOF",
+          "description": "Communaute Financiere Africaine (BCEAO) Franc"
+        },
+        {
+          "guid": "81ae524b-1a16-49f8-99e1-0911897c26ad",
+          "value": "XPF",
+          "description": "Comptoirs Francais du Pacifique (CFP) Franc"
+        },
+        {
+          "guid": "5f96d37d-878b-4a5b-801b-d8c11f5c4dd8",
+          "value": "YER",
+          "description": "Yemen Rial"
+        },
+        {
+          "guid": "148f0f96-a551-45c7-b17c-4afcb2b6addd",
+          "value": "ZAR",
+          "description": "South Africa Rand"
+        },
+        {
+          "guid": "e7fe5e77-a202-4b93-8de8-ea1db8d674cc",
+          "value": "ZMW",
+          "description": "Zambia Kwacha"
+        }
+      ]
+    },
+    {
+      "name": "Currency Type",
+      "guid": "1d1304de-e83a-44af-b11d-0c66dd600b81",
+      "definedValues": [
+        {
+          "guid": "8b086a19-405a-451f-8d44-174e92d6b402",
+          "value": "Check",
+          "description": "Check"
+        },
+        {
+          "guid": "f3adc889-1ee8-4eb6-b3fd-8c10f3c8af93",
+          "value": "Cash",
+          "description": "Cash"
+        },
+        {
+          "guid": "928a2e04-c77b-4282-888f-ec549cee026a",
+          "value": "Credit Card",
+          "description": "Credit Card"
+        },
+        {
+          "guid": "dabee8fd-aedf-43e1-8547-4c97fa14d9b6",
+          "value": "ACH",
+          "description": "Bank Account (ACH)"
+        },
+        {
+          "guid": "d42c4df7-1ae9-4dde-ada2-774b866b798c",
+          "value": "Apple Pay",
+          "description": "Apple Pay"
+        },
+        {
+          "guid": "6151f6e0-3223-46ba-a59e-e091be4af75c",
+          "value": "Android Pay",
+          "description": "Android Pay"
+        },
+        {
+          "guid": "7950ff66-80ee-e8ab-4a77-4a13edeb7513",
+          "value": "Non-Cash Asset",
+          "description": "Used to track non-cash transactions."
+        },
+        {
+          "guid": "56c9ae9c-b5eb-46d5-9650-2ef86b14f856",
+          "value": "Unknown",
+          "description": "The currency type is unknown. For example, it might have been imported from a system that doesn't indicate currency type."
+        },
+        {
+          "guid": "0fdf0bb3-b483-4c0a-9dff-a35abe3b688d",
+          "value": "Other",
+          "description": "The currency type is other."
+        }
+      ]
+    },
+    {
+      "name": "DISC Results",
+      "guid": "f06ddad8-6058-4182-ad0a-b523bb7a2d78",
+      "definedValues": [
+        {
+          "guid": "b428b0ca-2e41-4b3e-9a37-5b618c116ca3",
+          "value": "C",
+          "description": "You enjoy maintaining high standards and following procedures correctly. You may have difficulty accepting the lack of quality in projects or people around you."
+        },
+        {
+          "guid": "c742748e-e86f-4145-962b-3468cc563d71",
+          "value": "CD",
+          "description": "You enjoy maintaining high standards and following procedures correctly while also accomplishing the task. You may be seen by others as being only concerned with accomplishing a goal to the exclusion of the people in the process."
+        },
+        {
+          "guid": "227a4c9a-f92b-48d7-9e2b-62d328369c3d",
+          "value": "CI",
+          "description": "You enjoy maintaining high standards and following procedures correctly while also valuing having fun with people in the process. You may be frustrated because it is difficult to maintaining excellence while having fun with people."
+        },
+        {
+          "guid": "3fdc0a3c-a826-4252-90a4-4bf710c12311",
+          "value": "CS",
+          "description": "You enjoy maintaining high standards and following procedures correctly while keeping a stable and consistent pace. You may tend to hold high standards for yourself, your work as well as those around you; which may cause others not to meet your expectations."
+        },
+        {
+          "guid": "8b33090d-dd62-4bbb-bfda-2dc67f26745d",
+          "value": "D",
+          "description": "You enjoy accomplishing the end goal and are willing to do whatever it takes to accomplish the task. You may hurt people in accomplishing the goal, but you feel the goal is more important."
+        },
+        {
+          "guid": "20706b1c-b8cc-45ab-af41-4d52e55583bb",
+          "value": "DC",
+          "description": "You enjoy accomplishing the end goal as well as all of the steps needed to accomplish the goal. You have an excellent ability to see the end goal and know the specific steps needed to accomplish this which can make it difficult to work with you on a team."
+        },
+        {
+          "guid": "43164d7b-9521-40ff-8877-fafa1c753284",
+          "value": "DI",
+          "description": "You enjoy accomplishing the end goal and want to bring people with you to accomplish the task. You are able to persuade people to get on board, but when they are no longer needed, you can move on without them."
+        },
+        {
+          "guid": "09d96c14-1f68-4454-954b-7ec8898b0a86",
+          "value": "DS",
+          "description": "You enjoy accomplishing the end goal and want to accomplish it without alienating people in the process. You may struggle between accomplishing the task and keeping people on board, the tradeoff is often difficult for you."
+        },
+        {
+          "guid": "ad076e20-adab-4df3-9598-8f9fcc19b9f0",
+          "value": "I",
+          "description": "You enjoy bringing energy and life to people that you are with. You may not be able to keep focused on the task, but you enjoy hanging with people."
+        },
+        {
+          "guid": "879149e8-d396-41d9-92c2-ec9e62be8916",
+          "value": "IC",
+          "description": "You enjoy bringing energy and life to people that you are with as well as following rules and procedures. Because you have competing behavioral needs of enjoying people and focusing on details; you may find yourself torn between meeting the needs of people and paying attention to the rules or processes necessary to accomplish a task well."
+        },
+        {
+          "guid": "03b518c2-f9eb-4b84-a470-45ebebab7f17",
+          "value": "ID",
+          "description": "You enjoy bringing energy and life to people that you are with and moving them in a direction to accomplish a task. You may not always accomplish the task, because you don’t want to hurt peoples’ feelings."
+        },
+        {
+          "guid": "99d3129c-295c-471a-8e8a-804a9ebf36b9",
+          "value": "IS",
+          "description": "You enjoy bringing energy and life to people that you are with and keeping everyone content and on board in long term relationships. You would tend to focus more on people than the task at hand, which may frustrate task oriented people."
+        },
+        {
+          "guid": "03de220e-7924-47a5-90d4-d6383285340c",
+          "value": "S",
+          "description": "You enjoy a stable and consistent pace with everyone in harmony. You may have difficulty with change because it usually involves some sense of the unknown."
+        },
+        {
+          "guid": "ac246f37-0858-4692-a373-c0f125036355",
+          "value": "SC",
+          "description": "You enjoy a stable and consistent pace with everyone in harmony; while maintaining high standards and precise procedures. You may tend to hold high standards for yourself, your work as well as those around you; which may cause others not to meet your expectations."
+        },
+        {
+          "guid": "5580070a-3d01-4cb6-bc45-2645e222dc21",
+          "value": "SD",
+          "description": "You enjoy a stable and consistent pace with everyone in harmony while also wanting to accomplish a goal and/or task. You may struggle with valuing how to get the task done, while attempting to keep things consistent and everyone in harmony."
+        },
+        {
+          "guid": "05868dfc-bed9-497d-8998-6b5474280568",
+          "value": "SI",
+          "description": "You enjoy a stable and consistent pace with everyone in harmony as well as having fun in the moment. You would tend to focus more on people than the task at hand, which may frustrate task oriented people."
+        }
+      ]
+    },
+    {
+      "name": "Data Automation Ignored Person Attributes",
+      "guid": "886cdb4e-ed8b-48dd-a4cc-d615e032e622",
+      "definedValues": []
+    },
+    {
+      "name": "Device Type",
+      "guid": "0368b637-327a-4f5e-80c2-832079e482ee",
+      "definedValues": [
+        {
+          "guid": "bc809626-1389-4543-b8bb-6fac79c27afd",
+          "value": "Check-in Kiosk",
+          "description": "Computer or tablet used for check-in"
+        },
+        {
+          "guid": "64a1dbe5-10ad-42f1-a9ba-646a781d4112",
+          "value": "Self-Service Kiosk",
+          "description": "Device used as a giving kiosk"
+        },
+        {
+          "guid": "8284b128-e73b-4863-9fc2-43e6827b65e6",
+          "value": "Printer",
+          "description": "Printer"
+        },
+        {
+          "guid": "ef5bf148-c9e0-4f96-8152-bb23cd85d845",
+          "value": "Cloud Print Proxy",
+          "description": "A proxy device that handles communication between the server and a printer."
+        }
+      ]
+    },
+    {
+      "name": "Domain Login Sharing",
+      "guid": "6ce00e1b-fe09-45fe-bd9d-56c57a11be1a",
+      "definedValues": []
+    },
+    {
+      "name": "Entity Set Purpose",
+      "guid": "618bbf3f-794f-4ff9-9615-9211cdbaf723",
+      "definedValues": [
+        {
+          "guid": "214eb26f-5493-4540-b2ef-f0887c8fbb9e",
+          "value": "Person Merge Request",
+          "description": "An EntitySet that contains a list a person records that have been requested to be merged"
+        }
+      ]
+    },
+    {
+      "name": "External Application",
+      "guid": "1fac459c-5f62-4e7c-8933-61ff9fe2dfef",
+      "definedValues": [
+        {
+          "guid": "bd5c5a1f-d295-4946-84a4-771834ed0598",
+          "value": "Rock Check Scanner",
+          "description": "The Check Scanner application uploads scanned checks as financial transactions. A Canon CR-50 or MagTek MICR MicrImage RS232 check scanner is required."
+        },
+        {
+          "guid": "54e1ebcc-5a5a-4b26-9ccb-36e7ceb49c3c",
+          "value": "Rock Statement Generator",
+          "description": "The Statement Generator creates contribution statements for either a single person or all persons for a specified date range. It outputs a pdf which can be printed and mailed."
+        },
+        {
+          "guid": "c162f21e-7d86-4bb4-a72c-7f4a0e5b02c3",
+          "value": "Rock Windows Check-in Client",
+          "description": "The Windows Check-in Client hosts the Rock check-in screens and allows client based printing to either networked or USB printers."
+        },
+        {
+          "guid": "d63ee996-bfec-42eb-8cda-7b5c7d6213cf",
+          "value": "Rock Cloud Print (beta)",
+          "description": "The Rock Cloud Print service will connect to your Rock server and handle printing requests for check-in labels."
+        }
+      ]
+    },
+    {
+      "name": "External Link Type",
+      "guid": "d42c1a05-6504-4bde-bbb7-0ec99a7fb632",
+      "definedValues": [
+        {
+          "guid": "bb3e2119-3cf1-4b20-958e-304bfff120b1",
+          "value": "Amazon Link",
+          "description": "Link to a specific book or product on Amazon."
+        },
+        {
+          "guid": "acac304a-a760-4313-bd7d-f272c2a8bc5b",
+          "value": "Barnes & Noble Link",
+          "description": "Link to a specific book or product from Barnes and Noble."
+        },
+        {
+          "guid": "ee74b3d2-1b5a-4436-9908-abc63ff59309",
+          "value": "ChristianBook Link",
+          "description": "Link to a specific book or product on the ChristianBook.com website."
+        },
+        {
+          "guid": "fe7a6de2-206c-420f-b67e-7139bb9b8b6d",
+          "value": "YouTube Video",
+          "description": "YouTube ID to a specific video. This link should be in the format of 'dQw4w9WgXcQ'."
+        }
+      ]
+    },
+    {
+      "name": "Family Manager Configuration",
+      "guid": "251d752b-0595-c3a6-4e2a-ad0264dafccd",
+      "definedValues": []
+    },
+    {
+      "name": "Family Status",
+      "guid": "792c6979-0f40-47c5-bd0c-06fa7df22837",
+      "definedValues": []
+    },
+    {
+      "name": "Fundraising Opportunity Type",
+      "guid": "53c8fff6-3022-4a2d-9bae-fd3435bea43d",
+      "definedValues": []
+    },
+    {
+      "name": "Group RSVP Decline Reason",
+      "guid": "1e339d24-3df3-4628-91c3-da9300d21ace",
+      "definedValues": [
+        {
+          "guid": "15b4124e-9717-4161-9974-86c4925053e3",
+          "value": "Illness",
+          "description": ""
+        },
+        {
+          "guid": "759e0745-727b-493d-a44c-3a042a11b761",
+          "value": "Vacation",
+          "description": ""
+        },
+        {
+          "guid": "d5989fa4-2ce0-4427-83e4-e43f30045b43",
+          "value": "Schedule Conflict",
+          "description": ""
+        },
+        {
+          "guid": "0e728945-3d74-4e03-9799-0cf5ee8d6b3d",
+          "value": "No Childcare Available",
+          "description": ""
+        },
+        {
+          "guid": "1634ac71-0054-4f3c-a76d-a75a48e6ba56",
+          "value": "Other",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "Group Schedule Decline Reason",
+      "guid": "70c9f9c4-20cc-43dd-888d-9243853a0e52",
+      "definedValues": []
+    },
+    {
+      "name": "Group Type Purpose",
+      "guid": "b23f1e45-bc26-4e82-beb3-9b191fe5ccc3",
+      "definedValues": [
+        {
+          "guid": "4a406cb0-495b-4795-b788-52bdfde00b01",
+          "value": "Check-in Template",
+          "description": "A Group Type where the purpose is for check-in groups"
+        },
+        {
+          "guid": "6bced84c-69ad-4f5a-9197-5c0f9c02dd34",
+          "value": "Check-in Filter",
+          "description": "A Group Type where the purpose is for check-in filter."
+        },
+        {
+          "guid": "36a554ce-7815-41b9-a435-93f3d52a2828",
+          "value": "Serving Area",
+          "description": "Used to denote group types that count as serving"
+        }
+      ]
+    },
+    {
+      "name": "Icon Libraries",
+      "guid": "eefc6aa8-3946-47ab-8daf-149eef347df3",
+      "definedValues": []
+    },
+    {
+      "name": "Inactive Group Reasons",
+      "guid": "eb5d9839-f770-4e22-8b56-0b09397307d9",
+      "definedValues": []
+    },
+    {
+      "name": "Inactive Record Reason",
+      "guid": "e17d5988-0372-4792-82cf-9e37c79f7319",
+      "definedValues": [
+        {
+          "guid": "64014fe6-943d-4acf-8014-fed9f9169ae8",
+          "value": "No Activity",
+          "description": "The individual has not participated in any recent activity."
+        }
+      ]
+    },
+    {
+      "name": "Interaction Intent",
+      "guid": "f0e9555c-9464-41bd-bed7-96adb0b79879",
+      "definedValues": []
+    },
+    {
+      "name": "Interaction Medium",
+      "guid": "9bf5777a-961f-49a8-a834-45e5c2077967",
+      "definedValues": [
+        {
+          "guid": "e503e77d-cf35-e09f-41a2-b213184f48e8",
+          "value": "Website",
+          "description": "Used for tracking page views for various websites."
+        },
+        {
+          "guid": "55004f5c-a8ed-7cb7-47ee-5988e9f8e0a8",
+          "value": "Communication",
+          "description": "Used for emails, SMS, etc."
+        },
+        {
+          "guid": "f1a19d09-e010-eeb3-465a-940a6f023ceb",
+          "value": "Content Channel",
+          "description": "Used for tracking content channels."
+        },
+        {
+          "guid": "371066d5-c5f9-4783-88c8-d9ac8dc67468",
+          "value": "URL Shortner",
+          "description": "Used for tracking views using a short link."
+        },
+        {
+          "guid": "338cb800-c556-46cd-849d-8ae58fc7cb0e",
+          "value": "WiFi Presence",
+          "description": "Used for tracking a device's presence on a WiFi zone"
+        },
+        {
+          "guid": "b3904b57-62a2-57ac-43ea-94d4deba3d51",
+          "value": "PBX CDR",
+          "description": "Used for tracking phone calls coming from phone systems."
+        },
+        {
+          "guid": "5919214f-9c59-4913-be4e-0dfb6a05f528",
+          "value": "System Events",
+          "description": "Used for tracking general system events where the individual channels will identify the type of event."
+        },
+        {
+          "guid": "6aa529bd-9fa5-43ad-a98e-b8df5f997146",
+          "value": "Challenge Progress",
+          "description": "Used for tracking completion of individual challenges (content channel items) in a day."
+        },
+        {
+          "guid": "593607dc-4537-46e4-939f-60e0f74a1518",
+          "value": "Challenges",
+          "description": "Used for tracking completion of an entire days worth of challenges."
+        },
+        {
+          "guid": "a64da89b-f634-4d58-adc7-32243f84224b",
+          "value": "Interaction Intents",
+          "description": "Used for tracking interaction intents."
+        },
+        {
+          "guid": "0e2eae2c-957b-4ccb-8826-aa5627c27bbd",
+          "value": "Chat",
+          "description": "Used for tracking engagement with Rock's chat system."
+        }
+      ]
+    },
+    {
+      "name": "JSON Web Token Configuration",
+      "guid": "7d848ce3-f039-4ce1-a59b-f0d923f0c1a7",
+      "definedValues": []
+    },
+    {
+      "name": "Label Merge Fields",
+      "guid": "e4d289a9-70fa-4381-913e-2a757ad11147",
+      "definedValues": [
+        {
+          "guid": "9dcb69c4-1b9b-4d31-b8b6-8c9dbfa9933b",
+          "value": "Security Code",
+          "description": "The security code generated during check-in."
+        },
+        {
+          "guid": "e2db40f4-a064-429e-9a76-c520e7e7a43a",
+          "value": "Nick Name",
+          "description": "The nick-name of the person who checked in."
+        },
+        {
+          "guid": "85b71255-19f9-4443-a7ae-ef670385dc71",
+          "value": "Last Name",
+          "description": "The last name of the person who checked in."
+        },
+        {
+          "guid": "0cdce2cd-da27-4bb8-a799-db780674b00e",
+          "value": "Full Name",
+          "description": "The full name of the person who checked in."
+        },
+        {
+          "guid": "18b24bf8-26dd-43bb-a54d-8b10c57ea740",
+          "value": "Schedule Times",
+          "description": "The schedule(s) the person checked in to."
+        },
+        {
+          "guid": "13e9155c-b153-454b-b3b4-6687767c9400",
+          "value": "Locations",
+          "description": "The locations the person checked in to."
+        },
+        {
+          "guid": "c6aa76b5-3e7f-4e14-905e-36173e60949d",
+          "value": "Birthday Icon",
+          "description": "An upcoming birthday indicator."
+        },
+        {
+          "guid": "604cb370-636b-43d2-9674-b7ce8a09eafa",
+          "value": "Birthday Day of Week",
+          "description": "The day of the week of the child's birthday (e.g. Wed.)."
+        },
+        {
+          "guid": "bd31d356-0b9f-453c-a9dd-e066db2dab3c",
+          "value": "Legal Icon",
+          "description": "Displays 'L' if legal notes exist."
+        },
+        {
+          "guid": "94cc0022-d324-4492-81a3-30e1beb1c85a",
+          "value": "Legal Note",
+          "description": "The legal note for the person who checked in."
+        },
+        {
+          "guid": "cd131071-28b1-440d-afc6-aaa998b59bf9",
+          "value": "Allergy Icon",
+          "description": "Displays 'A' if allergies exist."
+        },
+        {
+          "guid": "a1e7ecbd-6248-42ba-8844-2378ea2b9f0e",
+          "value": "Allergy Note",
+          "description": "Allergy note for the person who checked in."
+        },
+        {
+          "guid": "bd1b1fea-d4a9-45eb-9958-01ef75d5a949",
+          "value": "First-time Icon",
+          "description": "Displays 'F' if it's the person's first visit."
+        }
+      ]
+    },
+    {
+      "name": "Languages",
+      "guid": "6060ba8b-4085-4a29-bf19-a4862b95556a",
+      "definedValues": [
+        {
+          "guid": "df0a29a7-a61e-e4a7-4f3d-58cfdd3d3871",
+          "value": "English",
+          "description": ""
+        },
+        {
+          "guid": "c93cb430-8554-e599-4f49-d7f3ced2b2c7",
+          "value": "Spanish",
+          "description": ""
+        },
+        {
+          "guid": "467b688c-6eae-3281-472a-7f39d7a3b45e",
+          "value": "Danish",
+          "description": ""
+        },
+        {
+          "guid": "0450dc04-6f03-268a-4fe8-cbbddd3f1f2a",
+          "value": "German",
+          "description": ""
+        },
+        {
+          "guid": "2e1a430a-ba5a-229e-4ca8-d0c73dbdea21",
+          "value": "French",
+          "description": ""
+        },
+        {
+          "guid": "01e4748a-185d-ddad-4748-3848112b5512",
+          "value": "Italian",
+          "description": ""
+        },
+        {
+          "guid": "ddd324f0-ad96-8d9c-4ff2-746b2a0dba76",
+          "value": "Japanese",
+          "description": ""
+        },
+        {
+          "guid": "fd1421bb-8fcb-4aa4-4831-d7d0b1f51496",
+          "value": "Korean",
+          "description": ""
+        },
+        {
+          "guid": "2033d2b8-b3e4-cf8e-4837-cc42d2f632a9",
+          "value": "Dutch",
+          "description": ""
+        },
+        {
+          "guid": "59635125-7bcf-d193-424a-dc231d9489bf",
+          "value": "Norwegian",
+          "description": ""
+        },
+        {
+          "guid": "671ff957-75eb-52bd-4b88-72b67b348c07",
+          "value": "Portuguese",
+          "description": ""
+        },
+        {
+          "guid": "c46acd20-ef01-8ab3-4f7f-237a6a72979e",
+          "value": "Russian",
+          "description": ""
+        },
+        {
+          "guid": "adb6a75c-5ccb-66bb-4601-8a9af971b4fc",
+          "value": "Swedish",
+          "description": ""
+        },
+        {
+          "guid": "4a1b270f-47a0-088a-4083-c74d7b8f63bd",
+          "value": "Chinese",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "Lava Templates",
+      "guid": "c3d44004-6951-44d9-8560-8567d705a48b",
+      "definedValues": [
+        {
+          "guid": "d6149581-9efc-40d8-bd38-e92c0717beda",
+          "value": "Default RSS Channel",
+          "description": "The default RSS channel template used by the RSS provider if one is not provided."
+        },
+        {
+          "guid": "dcba4862-73e9-49b5-8ad5-08e17be68025",
+          "value": "Default iCal Description",
+          "description": "The default iCal description used by the Event Calendar Feed if one is not specified. All iCal templates will use the MIME Type of 'text/calendar'."
+        }
+      ]
+    },
+    {
+      "name": "Lava Webhook",
+      "guid": "7bcf6434-8b15-49c3-8ef3-bab9a63b545d",
+      "definedValues": []
+    },
+    {
+      "name": "Library Content Type",
+      "guid": "c23b34d6-91d7-4fc5-aa80-e68a62288a05",
+      "definedValues": [
+        {
+          "guid": "8b66ebaa-9be4-42c8-a106-655a2efd6109",
+          "value": "Article",
+          "description": "General content about a specific topic."
+        }
+      ]
+    },
+    {
+      "name": "Library License Type",
+      "guid": "83fb89b4-205a-41d6-a798-a81f12e6cdb0",
+      "definedValues": [
+        {
+          "guid": "54d8921d-a9e9-46da-8b7c-433c163fd41a",
+          "value": "Open",
+          "description": "The Open content license is a type of license that allows an organization to use, modify, and distribute the licensed content without the need for attribution to the original creator. However, this license does not permit the commercial use of the content, meaning that the content cannot be sold or used for commercial purposes."
+        },
+        {
+          "guid": "9aed8dee-f74d-4f38-ad45-2423170d31d2",
+          "value": "Author Attribution",
+          "description": "This license allows the licensed content to be downloaded and shared with others, as long as the text of content is not modified in any way, and the organization does not use the content for commercial purposes. Additionally, the organization must provide attribution to the individual author when displaying the content."
+        },
+        {
+          "guid": "577f2bd5-bfdf-41b7-96a8-32c0f1e44905",
+          "value": "Organization Attribution",
+          "description": "This license allows the licensed content to be downloaded and shared with others, as long as the content is not modified in any way, and the content is not used for commercial purposes. Additionally, the user must provide attribution to the organization that published the content when displaying the content."
+        }
+      ]
+    },
+    {
+      "name": "Links",
+      "guid": "7e7969bd-945c-4472-8a80-889ef5833776",
+      "definedValues": []
+    },
+    {
+      "name": "Location Type",
+      "guid": "2e68d37c-fb7b-4aa5-9e09-3785d52156cb",
+      "definedValues": [
+        {
+          "guid": "8c52e53c-2a66-435a-ae6e-5ee307d9a0dc",
+          "value": "Home",
+          "description": "Address where the family lives."
+        },
+        {
+          "guid": "e071472a-f805-4fc4-917a-d5e3c095c35c",
+          "value": "Work",
+          "description": "Address where the group works."
+        },
+        {
+          "guid": "853d98f1-6e08-4321-861b-520b4106cfe0",
+          "value": "Previous",
+          "description": "Address where the family used to live."
+        },
+        {
+          "guid": "96d540f5-071d-4bbd-9906-28f0a64d39c4",
+          "value": "Meeting Location",
+          "description": "Indicates the place where the group regularly meets."
+        },
+        {
+          "guid": "44990c3f-c45b-eda3-4b65-a238a581a26f",
+          "value": "Geographic Area",
+          "description": "Used to defined a geofenced area."
+        }
+      ]
+    },
+    {
+      "name": "Location Type",
+      "guid": "3285dcef-faa4-43b9-9338-983f4a384aba",
+      "definedValues": [
+        {
+          "guid": "c0d7ae35-7901-4396-870e-3aaf472aae88",
+          "value": "Campus",
+          "description": "Location of a campus"
+        },
+        {
+          "guid": "d9646a93-1667-4a44-82da-12e1229b4695",
+          "value": "Building",
+          "description": "Location of a building (usually on a campus)"
+        },
+        {
+          "guid": "107c6da1-266d-4e1c-a443-1cd37064601d",
+          "value": "Room",
+          "description": "Location of a room (usually in a building)"
+        }
+      ]
+    },
+    {
+      "name": "Logging Domains",
+      "guid": "60487370-de7e-4962-b58f-1865303f0414",
+      "definedValues": [
+        {
+          "guid": "c8a94ba4-9450-459c-b32e-e34c153ad02f",
+          "value": "CMS",
+          "description": ""
+        },
+        {
+          "guid": "ef558f8a-08da-4001-bbaa-83390613d20e",
+          "value": "Event",
+          "description": ""
+        },
+        {
+          "guid": "a2960b6b-0df5-458b-906c-f64521cb8c83",
+          "value": "Reporting",
+          "description": ""
+        },
+        {
+          "guid": "8ee2657e-ff42-4e04-a5da-15b14c8086b8",
+          "value": "Communications",
+          "description": ""
+        },
+        {
+          "guid": "24230441-ae17-4f8b-abf7-da32cc5f2571",
+          "value": "Finance",
+          "description": ""
+        },
+        {
+          "guid": "0fe30f0c-e503-4de6-a8ee-1e86b141967b",
+          "value": "Steps",
+          "description": ""
+        },
+        {
+          "guid": "e5125727-8361-4bbb-a615-28b3f045ba7e",
+          "value": "Connection",
+          "description": ""
+        },
+        {
+          "guid": "134088b7-a12a-4ed8-aa18-e059fb5d17b5",
+          "value": "Group",
+          "description": ""
+        },
+        {
+          "guid": "e7d3d04f-7bb8-4fe4-b2c2-924d8c0ca62b",
+          "value": "Streaks",
+          "description": ""
+        },
+        {
+          "guid": "3b4f21dc-c169-453e-b119-8f33e122c84c",
+          "value": "Core",
+          "description": ""
+        },
+        {
+          "guid": "2741a4a3-8e57-4b58-abcc-56c0a31c3a25",
+          "value": "Jobs",
+          "description": ""
+        },
+        {
+          "guid": "ff8cba1b-5daf-4c0e-a7da-a0277f7aa1e5",
+          "value": "Workflow",
+          "description": ""
+        },
+        {
+          "guid": "5d737243-e7e0-4981-87a5-0787e52631c6",
+          "value": "CRM",
+          "description": ""
+        },
+        {
+          "guid": "f460bde7-6ffc-4979-a3ac-7bbbed05c781",
+          "value": "Prayer",
+          "description": ""
+        },
+        {
+          "guid": "83cfda4f-5867-4d4b-853f-d9b535ec5131",
+          "value": "Other",
+          "description": ""
+        },
+        {
+          "guid": "41a3cbf1-769a-4d15-a13c-56d48b2009b8",
+          "value": "AppleTv",
+          "description": "Used for logging with development related to Apple Tv apps."
+        },
+        {
+          "guid": "77148fef-bc4f-4b16-9d4e-e1de28149751",
+          "value": "Mobile",
+          "description": "Used for logging with development related to mobile apps."
+        }
+      ]
+    },
+    {
+      "name": "Map Markers",
+      "guid": "80dc21de-a2c2-42df-880b-fa9cabd504a0",
+      "definedValues": [
+        {
+          "guid": "52deb4f4-7d2c-4bb0-9a70-80cca536e3eb",
+          "value": "Pin",
+          "description": "M-2.8-9.2V4.3l1.9,2.8c0.4,0.6,1.3,0.6,1.7,0l1.9-2.8V-9.2C1.9-9,0.9-8.9,0-8.9S-1.9-9-2.8-9.2z M0-36.4 c-6.8,0-12.4,5.5-12.4,12.4S-6.8-11.7,0-11.7s12.4-5.5,12.4-12.4S6.8-36.4,0-36.4z"
+        },
+        {
+          "guid": "d9841ddb-bd34-45a7-97dc-141c8d6d9e84",
+          "value": "Marker",
+          "description": "M-1.8,11.2c-13.5-19.5-16-21.5-16-28.7c0-9.8,8-17.8,17.8-17.8s17.8,8,17.8,17.8c0,7.2-2.5,9.2-16,28.7 C0.9,12.5-0.9,12.5-1.8,11.2L-1.8,11.2z"
+        },
+        {
+          "guid": "c0ff9c66-8232-41e8-a9c0-dc9d0ecaf932",
+          "value": "Marker With Dot",
+          "description": "M-1.8,11.2c-13.5-19.5-16-21.5-16-28.7c0-9.8,8-17.8,17.8-17.8s17.8,8,17.8,17.8c0,7.2-2.5,9.2-16,28.7 C0.9,12.5-0.9,12.5-1.8,11.2L-1.8,11.2z M0-10.1c4.1,0,7.4-3.3,7.4-7.4S4.1-24.9,0-24.9s-7.4,3.3-7.4,7.4S-4.1-10.1,0-10.1z"
+        },
+        {
+          "guid": "66c27e88-6bc5-4b57-a981-0ad58481c66a",
+          "value": "Circle",
+          "description": "M0-11.3c-6.3,0-11.3,5.1-11.3,11.3S-6.3,11.3,0,11.3S11.3,6.3,11.3,0S6.3-11.3,0-11.3z"
+        }
+      ]
+    },
+    {
+      "name": "Map Styles",
+      "guid": "4ef89471-c049-49ed-ab50-677f689a4e4e",
+      "definedValues": []
+    },
+    {
+      "name": "Marital Status",
+      "guid": "b4b92c3f-a935-40e1-a00b-ba484ead613b",
+      "definedValues": [
+        {
+          "guid": "5fe5a540-7d9f-433e-b47e-4229d1472248",
+          "value": "Married",
+          "description": "Used when an individual is married."
+        },
+        {
+          "guid": "f19fc180-fe8f-4b72-a59c-8013e3b0eb0d",
+          "value": "Single",
+          "description": "Used when the individual is single."
+        },
+        {
+          "guid": "3b689240-24c2-434b-a7b9-a4a6cba7928c",
+          "value": "Divorced",
+          "description": "Used when the individual is divorced."
+        }
+      ]
+    },
+    {
+      "name": "Measurement Classification",
+      "guid": "a9897479-110e-4e50-8f60-160cefe4cf7b",
+      "definedValues": [
+        {
+          "guid": "8ec797e4-7dce-4a70-b1e8-9b21192476c3",
+          "value": "Total Students Attendance",
+          "description": "This metric measures the total students (7-12th grade) weekend attendance for the organization, partitioned by Campus > Schedule."
+        },
+        {
+          "guid": "9b16a979-48b1-4180-b44f-57fcd38a103a",
+          "value": "Total Children's Attendance",
+          "description": "This metric measures the total children's (0-6th grade) weekend attendance for the organization, partitioned by Campus > Schedule."
+        },
+        {
+          "guid": "b24acb41-8b75-41dc-9b47-f289d8c9f04f",
+          "value": "Total Weekend Attendance",
+          "description": "This metric measures the total weekend attendance for the organization, partitioned by Campus > Schedule."
+        },
+        {
+          "guid": "6a2621bf-e600-428a-94c2-ccb79645fa27",
+          "value": "Total Volunteer Attendance",
+          "description": "This metric measures the number of volunteers that served for the given week. This metric should be partitioned by Campus > Schedule."
+        },
+        {
+          "guid": "0428144f-f28d-4dfb-9c16-568751ae2b8e",
+          "value": "Prayer Requests",
+          "description": "This metric measures the number of active prayer requests for the given week. This metric should be partitioned by Campus."
+        },
+        {
+          "guid": "03b8b301-58b9-4de3-87fb-c77a588ee258",
+          "value": "Prayers",
+          "description": "This metrics measures the number of prayers for the given week. This metric should be partitioned by Campus."
+        },
+        {
+          "guid": "26f7b2f5-4d3f-4d55-aa2e-23fac4d40f7b",
+          "value": "Active Families",
+          "description": "This metric represents the number of active families in the given week. This metric should be partitioned by Campus."
+        },
+        {
+          "guid": "c1e5b1e5-3db1-460e-9761-cf07ce105632",
+          "value": "Baptisms",
+          "description": "The metric that represents the number of baptisms in a given month. This metric should be partitioned by Campus."
+        },
+        {
+          "guid": "152f3b1c-8797-4aca-9948-c1f9a000ea8b",
+          "value": "Giving",
+          "description": "This metric represents weekly giving to the tithe. It's up to each organization to define the financial accounts that make up this metric. This metric should be partitioned by Campus of the financial account."
+        },
+        {
+          "guid": "3db1fb2d-2a55-4f24-9ff6-6d7021574132",
+          "value": "eRA Weekly Wins",
+          "description": "The metric that tracks eRA wins by week. This metric should be partitioned by Campus."
+        },
+        {
+          "guid": "30489505-50be-4a1b-8ad2-2d19853f820a",
+          "value": "eRA Weekly Losses",
+          "description": "The metric that tracks eRA losses by week. This metric should be partitioned by Campus."
+        },
+        {
+          "guid": "66c649ef-7569-4ce2-8ea0-fb9851f9a598",
+          "value": "Total Adult Attendance",
+          "description": "This metric measures the total adult service attendance for the given week. This metric should be partitioned by Campus > Service (Schedule)."
+        }
+      ]
+    },
+    {
+      "name": "Mobile Device Platform",
+      "guid": "a55849d7-5c7b-4b36-9024-a672169e4c9c",
+      "definedValues": [
+        {
+          "guid": "f00515e7-4ef3-480d-a45d-372ce3d80e69",
+          "value": "iOS",
+          "description": "An Apple Device"
+        },
+        {
+          "guid": "63464bb8-83e2-4914-b922-5075311758f9",
+          "value": "Android",
+          "description": "An Android Device"
+        },
+        {
+          "guid": "13091a2d-c483-46fa-b489-e5d230b353c8",
+          "value": "Other",
+          "description": "A Device other than Apple or Android"
+        },
+        {
+          "guid": "42688552-5b2a-42c9-bd36-8dadb10993d3",
+          "value": "Windows",
+          "description": "A Windows device"
+        },
+        {
+          "guid": "785684a8-d7ac-463d-9292-6c6d864d5118",
+          "value": "Mac",
+          "description": "A Macintosh device"
+        }
+      ]
+    },
+    {
+      "name": "Motivator",
+      "guid": "1dff1804-0055-491e-9559-54ea3f8f89d1",
+      "definedValues": []
+    },
+    {
+      "name": "Motivators Theme",
+      "guid": "354715fa-564a-420a-8324-0411988ae7ab",
+      "definedValues": []
+    },
+    {
+      "name": "Non-Cash Asset Types",
+      "guid": "6b19c65e-ff8f-4add-9da0-48e53fc074a6",
+      "definedValues": [
+        {
+          "guid": "ff4e8d66-cff2-4a96-aa30-19721884c373",
+          "value": "Property",
+          "description": "Non-Cash Asset Type: Property."
+        },
+        {
+          "guid": "b29d7d89-357f-47f9-be7b-52aff3892007",
+          "value": "Stocks And Bonds",
+          "description": "Non-Cash Asset Type: Stocks And Bonds."
+        },
+        {
+          "guid": "c1dcbe74-88fe-4876-8943-5783499cbbe0",
+          "value": "Vehicles",
+          "description": "Non-Cash Asset Type: Vehicles."
+        },
+        {
+          "guid": "3086af9a-108b-47c8-b299-cecf53b9d1df",
+          "value": "Other",
+          "description": "Non-Cash Asset Type: Other."
+        }
+      ]
+    },
+    {
+      "name": "Organizational Objective",
+      "guid": "47448937-1993-4064-95f9-18bb35e1f45b",
+      "definedValues": [
+        {
+          "guid": "396b3980-eb66-446f-86b4-6c6e95fc74a7",
+          "value": "Outreach",
+          "description": "Connecting with those outside the church to share the love and message of Christ."
+        },
+        {
+          "guid": "9dfd8f1e-922e-420d-ae00-f640a2eff405",
+          "value": "Discipleship",
+          "description": "Guiding individuals to grow in their faith and deepen their relationship with Jesus."
+        },
+        {
+          "guid": "283bc4ac-cccd-4fcf-8c94-9848b6b5e734",
+          "value": "Activation",
+          "description": "Empowering individuals to serve others and actively participate in God's mission."
+        }
+      ]
+    },
+    {
+      "name": "Peer Network Relationship Type",
+      "guid": "f2e8e639-f16d-489d-aafb-be0133531e41",
+      "definedValues": [
+        {
+          "guid": "84e0360e-0828-e5a5-4bcc-f3113be338a1",
+          "value": "Following Connections",
+          "description": "Connects individuals who are following each other."
+        },
+        {
+          "guid": "cb51dc46-fbdb-43da-b7f3-60e7c6e70f40",
+          "value": "Group Connections",
+          "description": "Links individuals who are in common groups with one another."
+        }
+      ]
+    },
+    {
+      "name": "Person Ethnicity",
+      "guid": "79c8aa9a-507c-454b-afc8-7a9464298a6e",
+      "definedValues": []
+    },
+    {
+      "name": "Person Race",
+      "guid": "a6e2518f-8dbb-4c60-ba17-05768ec68ea5",
+      "definedValues": []
+    },
+    {
+      "name": "Person Search Keys",
+      "guid": "61bdd0e3-173d-45ab-9e8c-1fbb9fa8fdf3",
+      "definedValues": [
+        {
+          "guid": "d6cfd200-b33b-4d01-b49f-24325e47d8b8",
+          "value": "Email",
+          "description": ""
+        },
+        {
+          "guid": "ad77cf28-e42b-44c2-8d5c-f6a0a6ee8022",
+          "value": "Alternate Id",
+          "description": "An alternate identifier is used for things like check-in (bar-code, fingerprint id, etc.)"
+        }
+      ]
+    },
+    {
+      "name": "Personal Device Type",
+      "guid": "c1848f4c-d6f8-4514-8db6-cd3c19621025",
+      "definedValues": [
+        {
+          "guid": "5a8f264f-3be6-4f15-912a-3ce93a98e8f6",
+          "value": "Mobile",
+          "description": "Personal Device Type Mobile"
+        },
+        {
+          "guid": "828adece-efe7-49df-ba8c-b3f132509a95",
+          "value": "Computer",
+          "description": "Personal Device Type Computer"
+        },
+        {
+          "guid": "ca45fc83-2b1c-51ac-4b46-f3427f57116b",
+          "value": "TV",
+          "description": "Personal Device Type TV"
+        }
+      ]
+    },
+    {
+      "name": "Phone Country Code",
+      "guid": "45e9ef7c-91c7-45ab-92c1-1d6219293847",
+      "definedValues": [
+        {
+          "guid": "a02dfe36-1a47-47c5-8f08-7bca0c3fbb61",
+          "value": "1",
+          "description": "North American Phone Number without Area Code"
+        },
+        {
+          "guid": "2131f4af-8e17-4fd9-9610-a3c02100ef6a",
+          "value": "1",
+          "description": "North American Phone Number with Area Code"
+        },
+        {
+          "guid": "b3f916ca-2833-4ecd-82ac-171473972c20",
+          "value": "1",
+          "description": "North American Phone Number with Country Code and Area Code"
+        }
+      ]
+    },
+    {
+      "name": "Phone Type",
+      "guid": "8345dd45-73c6-4f5e-bebd-b77fc83f18fd",
+      "definedValues": [
+        {
+          "guid": "407e7e45-7b2e-4fcd-9605-ecb1339f2453",
+          "value": "Mobile",
+          "description": "Mobile/Cell phone number"
+        },
+        {
+          "guid": "aa8732fb-2cea-4c76-8d6d-6aaa2c6a4303",
+          "value": "Home",
+          "description": "Home phone number"
+        },
+        {
+          "guid": "2cc66d5a-f61c-4b74-9af9-590a9847c13c",
+          "value": "Work",
+          "description": "Work phone number"
+        }
+      ]
+    },
+    {
+      "name": "Project Type",
+      "guid": "b7842af3-6f04-495e-9a6c-f403d06c02f3",
+      "definedValues": [
+        {
+          "guid": "ff3f0c5c-9775-4a09-9ccf-94902db99bf6",
+          "value": "In-Person",
+          "description": "The project happens on the configured date/time."
+        },
+        {
+          "guid": "c999d489-5b8f-4892-bcc3-90dffbc524f5",
+          "value": "Project Due",
+          "description": "The project is due on the configured date/time."
+        }
+      ]
+    },
+    {
+      "name": "Protect My Ministry DVR Jurisdiction Codes",
+      "guid": "2f8821e8-05b9-4cd5-9fa4-303662aac85d",
+      "definedValues": []
+    },
+    {
+      "name": "REST CORS Domains (Advanced)",
+      "guid": "df7c8df7-49f9-4858-9e5d-20842af65ad8",
+      "definedValues": []
+    },
+    {
+      "name": "RealTime Visualizer Themes",
+      "guid": "b8a57dfe-827a-40c1-b8de-f6ea0c50b864",
+      "definedValues": [
+        {
+          "guid": "1d830402-3378-43c0-a8a7-088dbd3ce57b",
+          "value": "Toast",
+          "description": "The Toast theme displays the item at the top of the area for a short period of time and then removes it. If additional items are displayed before previous ones are removed then they are inserted at the top."
+        },
+        {
+          "guid": "6262166b-b25a-458c-b531-2fd4768059ad",
+          "value": "Swap",
+          "description": "Swaps the content out whenever new content arrives."
+        }
+      ]
+    },
+    {
+      "name": "Record Source",
+      "guid": "b8f781c5-6690-4e5e-8bce-75cc62db0ebb",
+      "definedValues": [
+        {
+          "guid": "8f2394ae-aff1-4773-8bf8-e4b9c9d5e978",
+          "value": "External Website",
+          "description": "Describes a record that was created from interaction with an external website."
+        },
+        {
+          "guid": "2b8df7d7-fa3a-4a56-a72b-db4caab2df32",
+          "value": "Prayer",
+          "description": "Describes a record that was created from a prayer request submission."
+        },
+        {
+          "guid": "8c461a53-160d-4693-a394-154673e83d17",
+          "value": "Event Registration",
+          "description": "Describes a record that was created from an event registration."
+        },
+        {
+          "guid": "42ba3f0c-00b5-4104-a9f8-c4c092ba2e0c",
+          "value": "Workflow",
+          "description": "Describes a record that was created from a workflow."
+        },
+        {
+          "guid": "a0f69572-b5c3-4195-8fd1-6fc72bb84fc8",
+          "value": "Group Registration",
+          "description": "Describes a record that was created from a group registration."
+        },
+        {
+          "guid": "a6677492-5aa5-4a09-9854-d9c54705c67d",
+          "value": "Giving",
+          "description": "Describes a record that was created from a giving submission."
+        },
+        {
+          "guid": "59eab321-27d7-4d57-a1ee-38287416e840",
+          "value": "Pledge",
+          "description": "Describes a record that was created from a pledge submission."
+        },
+        {
+          "guid": "d0163e35-4065-4097-b018-d7d8092c86f7",
+          "value": "Sign-up",
+          "description": "Describes a record that was created from a sign-up registration."
+        },
+        {
+          "guid": "12a138e7-6d93-4d84-b99a-545395694553",
+          "value": "Check-in",
+          "description": "Describes a record that was created from check-in."
+        },
+        {
+          "guid": "264c0969-55ea-4df2-8ffd-2e3aab311601",
+          "value": "Family Registration",
+          "description": "Describes a record that was created from a family registration."
+        },
+        {
+          "guid": "d465f0b7-4519-46b8-a4ff-11a207f9d86f",
+          "value": "Mobile App",
+          "description": "Describes a record that was created from interaction with a mobile app."
+        },
+        {
+          "guid": "96884743-3c6b-41d9-a8fd-5ddee65a7983",
+          "value": "Apple TV App",
+          "description": "Describes a record that was created from interaction with an Apple TV app."
+        },
+        {
+          "guid": "1849a5fb-1434-45aa-ad78-d403a3c7685a",
+          "value": "Roku TV App",
+          "description": "Describes a record that was created from interaction with a Roku TV app."
+        },
+        {
+          "guid": "2cf9de9f-14d5-4036-b329-85b192a63a9b",
+          "value": "Serving Connection",
+          "description": "Describes a record that was created from a serving connection."
+        }
+      ]
+    },
+    {
+      "name": "Record Status",
+      "guid": "8522badd-2871-45a5-81dd-c76da07e2e7e",
+      "definedValues": [
+        {
+          "guid": "618f906c-c33d-4fa3-8aef-e58cb7b63f1e",
+          "value": "Active",
+          "description": "Denotes an individual that is actively participating in the activities or services of the organization."
+        },
+        {
+          "guid": "1dad99d5-41a9-4865-8366-f269902b80a4",
+          "value": "Inactive",
+          "description": "Represents a person who is no longer participating in the activities or services of the organization."
+        },
+        {
+          "guid": "283999ec-7346-42e3-b807-bce9b2babb49",
+          "value": "Pending",
+          "description": "Is used by the system to mark a record that needs to be verified before becoming active.  This state is often used when someone registers on-line to allow a staff person to confirm the new individual and check that it is not a duplicate record."
+        }
+      ]
+    },
+    {
+      "name": "Record Type",
+      "guid": "26be73a6-a9c5-4e94-ae00-3afdcf8c9275",
+      "definedValues": [
+        {
+          "guid": "36cf10d6-c695-413d-8e7c-4546efef385e",
+          "value": "Person",
+          "description": "A Person Record"
+        },
+        {
+          "guid": "bf64add3-e70a-44ce-9c4b-e76bbed37550",
+          "value": "Business",
+          "description": "A Business Record"
+        },
+        {
+          "guid": "e2261a84-831d-4234-9be0-4d628bbe751e",
+          "value": "RestUser",
+          "description": "Rest User Record"
+        },
+        {
+          "guid": "721300ed-1267-4da0-b4f2-6c6b5b17b1c5",
+          "value": "Nameless Person",
+          "description": "A presumed transient, unknown person record with limited data not yet matched to an existing person record."
+        },
+        {
+          "guid": "80007453-30a7-453c-bf0b-c82aafe2ba12",
+          "value": "Anonymous Visitor",
+          "description": "An Anonymous Visitor"
+        }
+      ]
+    },
+    {
+      "name": "Recurring Transaction Frequency",
+      "guid": "1f645cfb-5bbd-4465-b9ca-0d2104a1479b",
+      "definedValues": [
+        {
+          "guid": "82614683-7fb4-4f16-9087-6f85945a7b16",
+          "value": "One-Time",
+          "description": "One Time"
+        },
+        {
+          "guid": "35711e44-131b-4534-b0b2-f0a749292362",
+          "value": "Weekly",
+          "description": "Every Week"
+        },
+        {
+          "guid": "72990023-0d43-4554-8d32-28461cab8920",
+          "value": "Bi-Weekly",
+          "description": "Every Two Weeks"
+        },
+        {
+          "guid": "c752403c-0f88-45cd-b574-069355c01d77",
+          "value": "1st and 15th",
+          "description": "1st and 15th"
+        },
+        {
+          "guid": "791c863d-2600-445b-98f8-3e5b66a3dec4",
+          "value": "Twice a Month",
+          "description": "Twice a Month"
+        },
+        {
+          "guid": "1400753c-a0f9-4a45-8a1d-81c98450bd1f",
+          "value": "Monthly",
+          "description": "Once a Month"
+        },
+        {
+          "guid": "bf08ea03-c52a-4364-b142-12ebca7ca14a",
+          "value": "Quarterly",
+          "description": "Every Quarter"
+        },
+        {
+          "guid": "691bb8ab-5f96-4e88-847c-cb970d9e87fa",
+          "value": "Twice a Year",
+          "description": "Every Six Months"
+        },
+        {
+          "guid": "ac88c37a-901e-4cbb-947b-11348c208192",
+          "value": "Yearly",
+          "description": "Every Year"
+        }
+      ]
+    },
+    {
+      "name": "Refund Reason",
+      "guid": "61fe3a58-9f4f-472f-a4e0-5116eb90a323",
+      "definedValues": [
+        {
+          "guid": "554e1a30-fec9-4af7-8818-3a1fc2656ce4",
+          "value": "Duplicate Payment",
+          "description": "The person entered the transaction more than once"
+        },
+        {
+          "guid": "69b21d23-91ad-4433-bbfe-6ed1945e826b",
+          "value": "Incorrect Amount",
+          "description": "The person entered the incorrect amount on the transaction"
+        },
+        {
+          "guid": "40248bd5-59c4-48ce-bd21-8cc094f3655c",
+          "value": "Insufficient Funds",
+          "description": "The account did not have the sufficient funds"
+        },
+        {
+          "guid": "b5cdaaff-b381-4e4f-9d5c-8a66e9384faa",
+          "value": "Refund Requested",
+          "description": "The person requested a refund"
+        },
+        {
+          "guid": "8538611d-3624-4cd4-bb74-8cc7861d2adb",
+          "value": "Returned Check",
+          "description": "The check was returned"
+        }
+      ]
+    },
+    {
+      "name": "Review Reason",
+      "guid": "7680c445-ad69-4e5d-94f0-cbaa96db0ff8",
+      "definedValues": [
+        {
+          "guid": "d539c356-6856-4e94-80b4-8fea869af38b",
+          "value": "Self - Inactivated",
+          "description": "This person inactivated their record from the Email Preferences block on the public website."
+        }
+      ]
+    },
+    {
+      "name": "Safe Sender Domains",
+      "guid": "db91d0e9-dca6-45a9-8276-aef032be8aed",
+      "definedValues": []
+    },
+    {
+      "name": "Saved Check-in Kiosk Templates",
+      "guid": "f986008c-99bb-4c48-8a6e-38c8a121d75b",
+      "definedValues": []
+    },
+    {
+      "name": "Schedule Type",
+      "guid": "831648d4-2e2c-4940-8358-9b426aedb460",
+      "definedValues": [
+        {
+          "guid": "033fc160-2650-4c97-8075-0c0114fa7a8d",
+          "value": "Weekend Service",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "School",
+      "guid": "576ff1e2-6225-4565-a16d-230e26167a3d",
+      "definedValues": []
+    },
+    {
+      "name": "School Grades",
+      "guid": "24e5a79f-1e62-467a-ad5d-0d10a2328b4d",
+      "definedValues": []
+    },
+    {
+      "name": "Search Type",
+      "guid": "1ebcdb30-a89a-4c14-8580-8289ec2c7742",
+      "definedValues": [
+        {
+          "guid": "f3f66040-c50f-4d13-9652-780305fffe23",
+          "value": "Phone Number",
+          "description": "Search for family based on phone number"
+        },
+        {
+          "guid": "071d6daa-3063-463a-b8a1-7d9a1be1bb31",
+          "value": "Name",
+          "description": "Search for family based on name"
+        },
+        {
+          "guid": "93773b0a-6e7f-1aa0-4f1d-9a4d6ace930f",
+          "value": "Name & Phone",
+          "description": "This option allows you to search by phone and name at the same time. If the input has at least one non-numeric character the search will assume to be name. Otherwise phone number will be used."
+        },
+        {
+          "guid": "7668ce15-e372-47ee-8ff8-6fee09f7c858",
+          "value": "Scanned Id",
+          "description": "Search for family based on a barcode, proximity card, etc."
+        },
+        {
+          "guid": "111385bb-daeb-4ce3-a945-0b50dc15ee02",
+          "value": "Family Id",
+          "description": "Search for family based on a Family Id"
+        }
+      ]
+    },
+    {
+      "name": "Section Type",
+      "guid": "a72d940b-2a69-44b8-931c-7fe99824d84c",
+      "definedValues": []
+    },
+    {
+      "name": "Sentiment Emotions",
+      "guid": "c9751c20-da81-4521-81de-0099d6f598ba",
+      "definedValues": []
+    },
+    {
+      "name": "Small Group Topic",
+      "guid": "d4111631-6b42-1cbd-4019-427d6bc6f475",
+      "definedValues": []
+    },
+    {
+      "name": "Source Value Type",
+      "guid": "d6f323ff-6ef2-4da7-a82c-61399ac1d798",
+      "definedValues": [
+        {
+          "guid": "6a1e1a1b-a636-4e12-b90c-d7fd1bdae764",
+          "value": "SQL",
+          "description": "The Metric Values are populated from custom SQL"
+        },
+        {
+          "guid": "2ec60bcf-ef63-4ccc-a970-f152292765d0",
+          "value": "DataView",
+          "description": "The Metric Values are from a dataview"
+        },
+        {
+          "guid": "1d6511d6-b15d-4ded-b3c4-459cd2a7ec0e",
+          "value": "Manual",
+          "description": "The Metric Values are manually entered"
+        },
+        {
+          "guid": "2868a3e8-4632-4966-84cd-edb8b775d66c",
+          "value": "Lava",
+          "description": "The Metric Values are populated from custom Lava"
+        }
+      ]
+    },
+    {
+      "name": "Source of Visit",
+      "guid": "54c1ec6c-3de8-42f4-9445-6a2f91c16b08",
+      "definedValues": []
+    },
+    {
+      "name": "Spiritual Gifts",
+      "guid": "9d9628f0-7fc5-411e-b9df-740aa17689a0",
+      "definedValues": []
+    },
+    {
+      "name": "Statement Generator Lava Template (Legacy)",
+      "guid": "74a23516-a20a-40c9-93b5-1ab5fdff6750",
+      "definedValues": [
+        {
+          "guid": "7c504683-0de2-41ed-a640-867125713d23",
+          "value": "Rock Default",
+          "description": "The default statement generator lava template. It includes a  transaction list, account summary, non-cash contributions section and a pledges section. Use this as a starting point for making a custom template. A logo size of 240 x 80px works best for this template."
+        }
+      ]
+    },
+    {
+      "name": "Structured Content Editor Tools",
+      "guid": "e43ad92c-4dd4-4d78-9852-fcfaefdf52ca",
+      "definedValues": [
+        {
+          "guid": "09b25845-b879-4e69-87e9-003f9380b8dd",
+          "value": "Default",
+          "description": "{\r\n    header: {\r\n        class: Rock.UI.StructuredContentEditor.EditorTools.Header,\r\n        inlineToolbar: ['link'],\r\n        config: {\r\n            placeholder: 'Header'\r\n        },\r\n        shortcut: 'CMD+SHIFT+H'\r\n    },\r\n    image: {\r\n        class: Rock.UI.StructuredContentEditor.EditorTools.RockImage,\r\n        inlineToolbar: ['link'],\r\n    },\r\n    attachment: {\r\n        class: Rock.UI.StructuredContentEditor.EditorTools.Attachment,\r\n    },\r\n    list: {\r\n        class: Rock.UI.StructuredContentEditor.EditorTools.NestedList,\r\n        inlineToolbar: true,\r\n        shortcut: 'CMD+SHIFT+L'\r\n    },\r\n    checklist: {\r\n        class: Rock.UI.StructuredContentEditor.EditorTools.Checklist,\r\n        inlineToolbar: true,\r\n    },\r\n    quote: {\r\n        class: Rock.UI.StructuredContentEditor.EditorTools.Quote,\r\n        inlineToolbar: true,\r\n        config: {\r\n            quotePlaceholder: 'Enter a quote',\r\n            captionPlaceholder: 'Quote\\'s author',\r\n        },\r\n        shortcut: 'CMD+SHIFT+O'\r\n    },\r\n    alert: {\r\n        class: Rock.UI.StructuredContentEditor.EditorTools.Alert,\r\n        inlineToolbar: ['bold', 'italic'],\r\n        config: {\r\n            alertTypes: ['info', 'success', 'warning', 'danger']\r\n        }\r\n    },\r\n    warning: Rock.UI.StructuredContentEditor.EditorTools.Warning,\r\n    marker: {\r\n        class: Rock.UI.StructuredContentEditor.EditorTools.Marker,\r\n        shortcut: 'CMD+SHIFT+M'\r\n    },\r\n    code: {\r\n        class: Rock.UI.StructuredContentEditor.EditorTools.Code,\r\n        shortcut: 'CMD+SHIFT+C'\r\n    },\r\n    raw: {\r\n        class: Rock.UI.StructuredContentEditor.EditorTools.Raw\r\n    },\r\n    delimiter: Rock.UI.StructuredContentEditor.EditorTools.Delimiter,\r\n    inlineCode: {\r\n        class: Rock.UI.StructuredContentEditor.EditorTools.InlineCode,\r\n        shortcut: 'CMD+SHIFT+C'\r\n    },\r\n    embed: Rock.UI.StructuredContentEditor.EditorTools.Embed,\r\n    table: {\r\n        class: Rock.UI.StructuredContentEditor.EditorTools.Table,\r\n        config: {\r\n            defaultHeadings: true\r\n        },\r\n        inlineToolbar: true,\r\n        shortcut: 'CMD+ALT+T'\r\n    }\r\n}"
+        }
+      ]
+    },
+    {
+      "name": "Suffix",
+      "guid": "16f85b3c-b3e8-434c-9094-f3d41f87a740",
+      "definedValues": []
+    },
+    {
+      "name": "Template Block",
+      "guid": "0f8e2b71-985e-44c4-bf5a-2fb1aaf3e183",
+      "definedValues": [
+        {
+          "guid": "e5618730-9e50-4bda-9e13-d27697f83980",
+          "value": "Mobile Group Member List",
+          "description": ""
+        },
+        {
+          "guid": "09053c7c-9374-4489-8a7b-71f02e3e7d89",
+          "value": "Mobile Group Member View",
+          "description": ""
+        },
+        {
+          "guid": "559346fb-c684-42cf-8f4c-cf4a1c278ad6",
+          "value": "Mobile Group View",
+          "description": ""
+        },
+        {
+          "guid": "248587c7-5ce3-46b7-8728-2e03e725d0b2",
+          "value": "Mobile Calendar Event List",
+          "description": ""
+        },
+        {
+          "guid": "6f1f6bab-b403-48d1-bf6a-52b16361279c",
+          "value": "Mobile Prayer Session",
+          "description": ""
+        },
+        {
+          "guid": "128f7350-97fd-4eca-9c79-d02de0c434eb",
+          "value": "Mobile Calendar Event Item Occurrence View",
+          "description": ""
+        },
+        {
+          "guid": "0d588d84-111c-4350-98de-460c194f5de5",
+          "value": "Mobile Communication View",
+          "description": ""
+        },
+        {
+          "guid": "26944b71-7b69-4943-8ec2-3506f728d943",
+          "value": "Mobile Event Item Occurrence List By Audience",
+          "description": ""
+        },
+        {
+          "guid": "d13256e3-d9ed-45c2-8ef7-c4aabcf4b2b7",
+          "value": "Mobile Answer To Prayer",
+          "description": ""
+        },
+        {
+          "guid": "198f3006-5f0f-48ab-9ea0-2fa56f633753",
+          "value": "Mobile My Prayer Requests",
+          "description": ""
+        },
+        {
+          "guid": "30eca4b6-0869-4656-a4cd-b8729cb29e76",
+          "value": "Mobile Daily Challenge Entry",
+          "description": ""
+        },
+        {
+          "guid": "dcfeca8c-cdf5-4863-851e-7efee6758ee9",
+          "value": "Mobile Prayer Prayer Card View",
+          "description": ""
+        },
+        {
+          "guid": "1b6d540a-2e40-44f6-8ae9-2857de913459",
+          "value": "Mobile Groups Group Finder",
+          "description": ""
+        },
+        {
+          "guid": "fecad08a-570f-434e-beed-412c4f2a3159",
+          "value": "Mobile > Connection > Connection Type List",
+          "description": ""
+        },
+        {
+          "guid": "167465d9-e8d2-413c-ba99-fda529b14e6c",
+          "value": "Mobile > Connection > Connection Opportunity List",
+          "description": ""
+        },
+        {
+          "guid": "4a45926c-5571-414c-8c69-8203fdbf4ae7",
+          "value": "Mobile > Connection > Connection Request List",
+          "description": ""
+        },
+        {
+          "guid": "44538702-5157-489a-b256-217f5d1f53f4",
+          "value": "Mobile > Connection > Connection Request Detail",
+          "description": ""
+        },
+        {
+          "guid": "cfeb7fa6-0f19-496b-8dcc-4d200aeee866",
+          "value": "Mobile > Core > Search",
+          "description": ""
+        },
+        {
+          "guid": "d39ccb65-2444-48e4-9de1-7a01ab20cb61",
+          "value": "Mobile > Groups > Group Schedule Preference > Landing Page",
+          "description": ""
+        },
+        {
+          "guid": "68acfe34-c1d9-40c6-9ab1-9e6f4da846ee",
+          "value": "Mobile > Groups > Group Schedule Toolbox > Decline Modal",
+          "description": ""
+        },
+        {
+          "guid": "7e11bef1-f6f7-49e3-8804-90ac1cb9ad25",
+          "value": "Mobile > Groups > Group Schedule Toolbox",
+          "description": ""
+        },
+        {
+          "guid": "48ee4803-66be-43a0-a7cf-e2d669db2d21",
+          "value": "Mobile > Groups > Group Schedule Unavailability",
+          "description": ""
+        },
+        {
+          "guid": "7f89ae4d-bd8b-49ed-b8ec-f883d43505f2",
+          "value": "Mobile > Groups > Group Schedule Sign Up > Landing Page",
+          "description": ""
+        },
+        {
+          "guid": "95837896-bb45-47fa-8517-f1c0efe2a89c",
+          "value": "Mobile > Event > Live Experience Occurrences > Template",
+          "description": ""
+        },
+        {
+          "guid": "37f44005-c4d8-4527-ba86-b6f8b72bf243",
+          "value": "Mobile > Core > Notes",
+          "description": ""
+        },
+        {
+          "guid": "74ae7a3d-7335-439c-8c06-ae30b033a82b",
+          "value": "Utility > RealTime Visualizer",
+          "description": ""
+        },
+        {
+          "guid": "89322c87-ca36-4169-9361-fda4efef07c1",
+          "value": "Mobile > Crm > Group Members",
+          "description": ""
+        },
+        {
+          "guid": "652a4e12-6c15-407d-9620-ed39190899a5",
+          "value": "Mobile > Core > My Notes",
+          "description": ""
+        },
+        {
+          "guid": "4fb77c19-3d70-4051-9fed-df254b3fb310",
+          "value": "Mobile > Finance > Scheduled Transaction List",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "Text To Workflow (Legacy)",
+      "guid": "2cacb86f-d811-4483-98e1-272f1ff8ff5d",
+      "definedValues": []
+    },
+    {
+      "name": "Theme Purpose",
+      "guid": "99ff0317-9b21-4e56-9f83-ea89a3c8c789",
+      "definedValues": []
+    },
+    {
+      "name": "Title",
+      "guid": "4784cd23-518b-43ee-9b97-225bf6e07846",
+      "definedValues": []
+    },
+    {
+      "name": "Topic Type",
+      "guid": "41141100-8fc6-44bb-aa36-9778eeda7f62",
+      "definedValues": []
+    },
+    {
+      "name": "Transaction Source",
+      "guid": "4f02b41e-ab7d-4345-8a97-3904ddd89b01",
+      "definedValues": [
+        {
+          "guid": "7d705ce7-7b11-4342-a58e-53617c5b4e69",
+          "value": "Website",
+          "description": "Transactions that originated from the website"
+        },
+        {
+          "guid": "8ba95e24-d291-499e-a535-4dcac365689b",
+          "value": "SMS Gift",
+          "description": "A payment made through text-to-give"
+        }
+      ]
+    },
+    {
+      "name": "Transaction Type",
+      "guid": "fff62a4b-5d88-4deb-af8f-8e6178e41fe5",
+      "definedValues": [
+        {
+          "guid": "2d607262-52d6-4724-910d-5c6e8fb89acc",
+          "value": "Contribution",
+          "description": "A Contribution Transaction"
+        },
+        {
+          "guid": "33cb96dd-8752-4bee-a142-88db7de538f0",
+          "value": "Event Registration",
+          "description": "An Event Registration Transaction"
+        }
+      ]
+    },
+    {
+      "name": "UTM Campaign",
+      "guid": "a2f452bb-39e8-40f8-9dad-74dbd920fd2f",
+      "definedValues": []
+    },
+    {
+      "name": "UTM Medium",
+      "guid": "31693856-8553-4321-a302-b84cf1d22bab",
+      "definedValues": [
+        {
+          "guid": "d369d728-dec2-4c53-9528-b4d2c78e2e40",
+          "value": "email",
+          "description": ""
+        },
+        {
+          "guid": "616764ec-28a5-45ef-ace5-5ba579284a21",
+          "value": "social",
+          "description": ""
+        },
+        {
+          "guid": "3bdfc79a-6f08-40cd-9eb5-b652a935721d",
+          "value": "cpc",
+          "description": ""
+        },
+        {
+          "guid": "8f5401ab-12d6-4837-851d-b785461bc74e",
+          "value": "organic",
+          "description": ""
+        },
+        {
+          "guid": "084113db-d162-4f82-a001-2a7a6a985e73",
+          "value": "post",
+          "description": ""
+        },
+        {
+          "guid": "6583cdd5-158e-447f-a662-a3fdb5990b89",
+          "value": "ppc",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "UTM Source",
+      "guid": "3cfe43a9-5d0c-4be4-b1ec-afa06bbb7c32",
+      "definedValues": [
+        {
+          "guid": "dafaa4d6-e754-48af-b374-5f1683cbe089",
+          "value": "google",
+          "description": ""
+        },
+        {
+          "guid": "9ff58ee1-dadd-4524-9123-fe2d767845d1",
+          "value": "youtube",
+          "description": ""
+        },
+        {
+          "guid": "ed3d6562-3f65-40dd-8c4f-a8726198b001",
+          "value": "facebook",
+          "description": ""
+        },
+        {
+          "guid": "5dab0df9-778d-408a-87c4-1e4ddb8ba00b",
+          "value": "instagram",
+          "description": ""
+        },
+        {
+          "guid": "9b59ad12-7d5a-4d9a-8f61-b1169564a526",
+          "value": "bing",
+          "description": ""
+        },
+        {
+          "guid": "d08a34e7-0685-4ba5-8b55-ea3480a75220",
+          "value": "website",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "Workflow Webhook",
+      "guid": "7b39ba6a-e7ef-48a6-9ec7-4a0f498d8fdb",
+      "definedValues": []
+    }
+  ],
+  "systemGroupTypes": [
+    {
+      "name": "Application Group",
+      "guid": "3981cf6d-7d15-4b57-aace-c0e25d28bd49",
+      "roles": [
+        {
+          "name": "Member",
+          "guid": "09b14358-fa17-4d65-a8e9-03fa7312cd62"
+        }
+      ]
+    },
+    {
+      "name": "Campus Team",
+      "guid": "badd7a6c-1fb3-4e11-a721-6d1377c6958c",
+      "roles": [
+        {
+          "name": "Campus Pastor",
+          "guid": "f8c6289b-0e68-4121-a595-a51369404eba"
+        },
+        {
+          "name": "Campus Administrator",
+          "guid": "07f857ed-c0d7-47b4-ab6c-9afdfae2add9"
+        }
+      ]
+    },
+    {
+      "name": "Chat Direct Message",
+      "guid": "dfdc14a3-d1dc-4342-a012-5ce9e8994b5e",
+      "roles": [
+        {
+          "name": "Admin",
+          "guid": "0f85c980-1a45-4fe2-bd2b-3e3a051ffddf"
+        },
+        {
+          "name": "Moderator",
+          "guid": "78ca32c4-f34a-4056-ae42-d49bcd39b027"
+        },
+        {
+          "name": "Member",
+          "guid": "ec36d21c-ff61-4a4e-8164-5a1145abbd85"
+        }
+      ]
+    },
+    {
+      "name": "Chat Shared Channel",
+      "guid": "268d4802-24c7-4891-890e-71313bee17b1",
+      "roles": [
+        {
+          "name": "Admin",
+          "guid": "a04c6e1d-89ea-48d1-856f-e91f9ab6acf3"
+        },
+        {
+          "name": "Moderator",
+          "guid": "e0bc063f-ecaa-4c4f-9a87-a4752030aed7"
+        },
+        {
+          "name": "Member",
+          "guid": "e133e458-9785-4c59-b844-35e0c3b686d9"
+        }
+      ]
+    },
+    {
+      "name": "Check in by Data View",
+      "guid": "dc7ed2fd-5f88-4760-b3c8-494edb1cfc06",
+      "roles": []
+    },
+    {
+      "name": "Communication List",
+      "guid": "d1d95777-ffa3-cbb3-4a6d-658706daed33",
+      "roles": [
+        {
+          "name": "Recipient",
+          "guid": "9d85ab4e-59bc-b48a-494a-5684ba41578e"
+        }
+      ]
+    },
+    {
+      "name": "Family",
+      "guid": "790e3215-3b10-442b-af69-616c0dcb998e",
+      "roles": [
+        {
+          "name": "Adult",
+          "guid": "2639f9a5-2aae-4e48-a8c3-4ffe86681e42"
+        },
+        {
+          "name": "Child",
+          "guid": "c8b1814f-6aa7-4055-b2d7-48fe20429cb9"
+        }
+      ]
+    },
+    {
+      "name": "Fundraising Opportunity",
+      "guid": "4be7fc44-332d-40a8-978e-47b7035d7a0c",
+      "roles": [
+        {
+          "name": "Leader",
+          "guid": "253973a5-18f2-49b6-b2f1-f8f84294aab2"
+        },
+        {
+          "name": "Participant",
+          "guid": "f82df077-9664-4da8-a3d9-7379b690124d"
+        }
+      ]
+    },
+    {
+      "name": "Known Relationship",
+      "guid": "e0c5a0e2-b7b3-4ef4-820d-bbf7f9a374ef",
+      "roles": [
+        {
+          "name": "Online Watcher",
+          "guid": "6b05f48e-5235-45de-970e-fe145bd28e1d"
+        },
+        {
+          "name": "Owner",
+          "guid": "7bc6c12e-0cd1-4dfd-8d5b-1b35ae714c42"
+        },
+        {
+          "name": "Facebook Friend",
+          "guid": "ab69816c-4dfa-4a7a-86a5-9bfcba6fed1e"
+        },
+        {
+          "name": "Can check in",
+          "guid": "dc8e5c35-f37c-4b49-a5c6-df3d94fc808f"
+        },
+        {
+          "name": "Allow check in by",
+          "guid": "ff9869f1-bc56-4410-8a12-cafc32c62257"
+        },
+        {
+          "name": "Child",
+          "guid": "f87df00f-e86d-4771-a3ae-dbf79b78cf5d"
+        },
+        {
+          "name": "Parent",
+          "guid": "6f3fadc4-6320-4b54-9cf6-02ef9586a660"
+        }
+      ]
+    },
+    {
+      "name": "LMS Class",
+      "guid": "4bbc41e2-0a37-4289-b7a7-756b9fe8f775",
+      "roles": [
+        {
+          "name": "Student",
+          "guid": "fa3acac2-0377-484c-b888-974ca3bf2ff2"
+        },
+        {
+          "name": "Facilitator",
+          "guid": "80f802ce-2f59-4ab1-abd8-cfd7a009a00a"
+        }
+      ]
+    },
+    {
+      "name": "Organization Unit",
+      "guid": "aab2e9f4-e828-4fee-8467-73dc9dab784c",
+      "roles": [
+        {
+          "name": "Staff",
+          "guid": "17e516fc-76a4-4bf4-9b6f-0f859b13f563"
+        },
+        {
+          "name": "Leader",
+          "guid": "8438d6c5-db92-4c99-947b-60e9100f223d"
+        }
+      ]
+    },
+    {
+      "name": "Security Role",
+      "guid": "aece949f-704c-483e-a4fb-93d5e4720c4c",
+      "roles": [
+        {
+          "name": "Member",
+          "guid": "00f3ac1c-71b9-4ee5-a30e-4c48c8a0bf1f"
+        }
+      ]
+    },
+    {
+      "name": "Service Attendance",
+      "guid": "77713830-ae5e-4b1a-94fa-e145dff85035",
+      "roles": []
+    },
+    {
+      "name": "Services",
+      "guid": "235bae2b-5760-4763-aadf-3938f34ba100",
+      "roles": []
+    },
+    {
+      "name": "Sign-Up Group",
+      "guid": "499b1367-06b3-4538-9d56-56d53f55dcb1",
+      "roles": [
+        {
+          "name": "Leader",
+          "guid": "9f063da9-cb3d-49eb-b4ec-bc909a00fdd4"
+        },
+        {
+          "name": "Member",
+          "guid": "3849b594-c079-4ab3-869a-e1dec6790a34"
         }
       ]
     }

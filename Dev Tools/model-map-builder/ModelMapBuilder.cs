@@ -154,8 +154,100 @@ namespace Rock.ModelMapBuilder
                 */
                 GeneratedAtUtc = DateTime.UtcNow,
                 RockVersion = Rock.VersionInfo.VersionInfo.GetRockSemanticVersionNumber(),
-                Domains = domains
+                Domains = domains,
+                EntityTypes = LoadEntityTypes(),
+                SystemDefinedTypes = BuildSystemDefinedTypes(),
+                SystemGroupTypes = BuildSystemGroupTypes()
             };
+        }
+
+        /// <summary>
+        /// Loads all registered entity types from the database. Failure is
+        /// non-fatal: an empty list is returned and a warning recorded.
+        /// </summary>
+        private List<ModelMapEntityType> LoadEntityTypes()
+        {
+            try
+            {
+                var connectionString = RockApp.Current.InitializationSettings.ConnectionString;
+                return DatabaseSchemaReader.LoadEntityTypes( connectionString );
+            }
+            catch ( Exception ex )
+            {
+                _skippedEntityTypeNames.Add( $"Entity types could not be read ({ex.GetType().Name}); the entityTypes section will be empty." );
+                return new List<ModelMapEntityType>();
+            }
+        }
+
+        /// <summary>
+        /// Builds the system defined types (excluding "Template") and their
+        /// system-defined values from the cache. Failure is non-fatal.
+        /// </summary>
+        private List<ModelMapSystemDefinedType> BuildSystemDefinedTypes()
+        {
+            try
+            {
+                return DefinedTypeCache.All()
+                    .Where( dt => dt.IsSystem && dt.Name != "Template" )
+                    .OrderBy( dt => dt.Name, StringComparer.Ordinal )
+                    .Select( dt => new ModelMapSystemDefinedType
+                    {
+                        Name = dt.Name,
+                        Guid = dt.Guid,
+                        DefinedValues = dt.DefinedValues
+                            .Where( dv => dv.IsSystem )
+                            .OrderBy( dv => dv.Order )
+                            .ThenBy( dv => dv.Guid )
+                            .Select( dv => new ModelMapDefinedValueInfo
+                            {
+                                Guid = dv.Guid,
+                                Value = dv.Value,
+                                Description = dv.Description
+                            } )
+                            .ToList()
+                    } )
+                    .ToList();
+            }
+            catch ( Exception ex )
+            {
+                _skippedEntityTypeNames.Add( $"System defined types could not be read ({ex.GetType().Name}); the systemDefinedTypes section will be empty." );
+                return new List<ModelMapSystemDefinedType>();
+            }
+        }
+
+        /// <summary>
+        /// Builds the system group types and their system-defined roles from the
+        /// cache. Failure is non-fatal.
+        /// </summary>
+        private List<ModelMapSystemGroupType> BuildSystemGroupTypes()
+        {
+            try
+            {
+                return GroupTypeCache.All()
+                    .Where( gt => gt.IsSystem )
+                    .OrderBy( gt => gt.Name, StringComparer.Ordinal )
+                    .Select( gt => new ModelMapSystemGroupType
+                    {
+                        Name = gt.Name,
+                        Guid = gt.Guid,
+                        Roles = gt.Roles
+                            .Where( r => r.IsSystem )
+                            .OrderBy( r => r.Order )
+                            .ThenBy( r => r.Guid )
+                            .Select( r => new ModelMapGroupTypeRole
+                            {
+                                Name = r.Name,
+                                Guid = r.Guid
+                            } )
+                            .ToList()
+                    } )
+                    .ToList();
+            }
+            catch ( Exception ex )
+            {
+                _skippedEntityTypeNames.Add( $"System group types could not be read ({ex.GetType().Name}); the systemGroupTypes section will be empty." );
+                return new List<ModelMapSystemGroupType>();
+            }
         }
 
         /// <summary>

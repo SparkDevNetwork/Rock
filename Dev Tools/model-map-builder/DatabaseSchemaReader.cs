@@ -83,6 +83,47 @@ namespace Rock.ModelMapBuilder
         }
 
         /// <summary>
+        /// Loads every registered entity type (an <c>[EntityType]</c> row where
+        /// <c>IsEntity</c> is true) from the database. Reading the table directly
+        /// avoids <c>EntityTypeCache.All()</c>, which eagerly loads every CLR type
+        /// and throws in a headless process.
+        /// </summary>
+        /// <param name="connectionString">The Rock database connection string.</param>
+        /// <returns>The entity types, ordered by name.</returns>
+        public static List<ModelMapEntityType> LoadEntityTypes( string connectionString )
+        {
+            var entityTypes = new List<ModelMapEntityType>();
+
+            using ( var connection = new SqlConnection( connectionString ) )
+            {
+                connection.Open();
+
+                const string sql = @"
+SELECT [Name], [Guid]
+FROM   [EntityType]
+WHERE  [IsEntity] = 1 AND [Name] IS NOT NULL
+ORDER BY [Name]";
+
+                using ( var reader = ExecuteReader( connection, sql ) )
+                {
+                    while ( reader.Read() )
+                    {
+                        var name = reader["Name"].ToString();
+
+                        entityTypes.Add( new ModelMapEntityType
+                        {
+                            Name = name,
+                            Model = name.Replace( "Rock.Model.", string.Empty ),
+                            Guid = ( Guid ) reader["Guid"]
+                        } );
+                    }
+                }
+            }
+
+            return entityTypes;
+        }
+
+        /// <summary>
         /// Gets (creating if necessary) the schema entry for a table.
         /// </summary>
         /// <param name="tables">The table dictionary.</param>

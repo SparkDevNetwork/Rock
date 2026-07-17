@@ -51,6 +51,14 @@ Defined-value properties include the defined type's **name + guid** and its
 by installation and are excluded. Enum properties include their value list.
 Methods are omitted unless `--include-methods` is passed.
 
+Alongside `domains`, the file has three reference sections:
+
+- `entityTypes` — every registered entity type (`name`, `model`, `guid`), read
+  straight from the `[EntityType]` table.
+- `systemDefinedTypes` — system defined types (excluding "Template") and their
+  system-defined values.
+- `systemGroupTypes` — system group types and their system-defined roles.
+
 Output is deterministically sorted (domains alphabetically with `Other` last,
 models/properties alphabetically), so between runs on unchanged models the only
 thing that changes is `generatedAtUtc`.

@@ -40,5 +40,20 @@ namespace Rock.ModelMapBuilder
         /// Gets or sets the domains, each containing its models.
         /// </summary>
         public List<ModelMapDomain> Domains { get; set; }
+
+        /// <summary>
+        /// Gets or sets every registered entity type (name, model, guid).
+        /// </summary>
+        public List<ModelMapEntityType> EntityTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system defined types and their system-defined values.
+        /// </summary>
+        public List<ModelMapSystemDefinedType> SystemDefinedTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system group types and their system-defined roles.
+        /// </summary>
+        public List<ModelMapSystemGroupType> SystemGroupTypes { get; set; }
     }
 }
