@@ -31,7 +31,9 @@ namespace Rock.ViewModels.Blocks.Group.GroupHistory
 
         /// <summary>
         /// Gets or sets the new value. Null or empty when the value was
-        /// removed or is sensitive.
+        /// removed or is sensitive. May contain HTML when the history row was
+        /// written from a formatted field type (for example an Image or HTML
+        /// attribute); the client should render this as HTML rather than text.
         /// </summary>
         public string NewValue { get; set; }
 

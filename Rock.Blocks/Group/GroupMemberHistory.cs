@@ -492,7 +492,21 @@ namespace Rock.Blocks.Group
                 .Select( h => new GroupHistoryChangeBag
                 {
                     ValueName = h.ValueName,
-                    NewValue = h.IsSensitive == true ? null : h.NewValue?.Trim().Truncate( MaxChangeValueLength ),
+                    /*
+                        7/17/26 - MSE
+
+                        Attribute history stores FormatValue output (condensed),
+                        which is HTML for field types such as Image and HTML.
+                        TruncateHtml preserves tags so images still render.
+                        SanitizeHtml(strict: false) keeps safe markup (img, p,
+                        strong, etc.) while stripping script/iframe/on* handlers
+                        before the client renders NewValue with v-html.
+
+                        Reason: Plain Truncate breaks mid-tag; v-html needs XSS-safe HTML.
+                    */
+                    NewValue = h.IsSensitive == true
+                        ? null
+                        : h.NewValue?.Trim().TruncateHtml( MaxChangeValueLength ).SanitizeHtml( strict: false ),
                     IsInitialValue = h.Verb == HistoryVerbValue.Add || h.OldValue.IsNullOrWhiteSpace(),
                     IsSensitive = h.IsSensitive == true
                 } )

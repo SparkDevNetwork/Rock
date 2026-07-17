@@ -24,7 +24,8 @@
                         Removed the {{ change.valueName }}
                     </template>
                     <template v-else>
-                        {{ change.isInitialValue ? "Set" : "Changed" }} {{ change.valueName }} to <span class="history-event-change-value">{{ change.newValue }}</span>
+                        {{ change.isInitialValue ? "Set" : "Changed" }} {{ change.valueName }} to
+                        <span class="history-event-change-value" v-html="change.newValue"></span>
                     </template>
                 </li>
             </ul>
@@ -119,6 +120,19 @@
 
 .history-event-change-value {
     color: var(--color-interface-strong);
+}
+
+/* Formatted field values (images, HTML attributes) must stay inside the card. */
+.history-event-change-value :deep(img) {
+    display: inline-block;
+    max-width: 120px;
+    max-height: 120px;
+    vertical-align: middle;
+}
+
+.history-event-change-value :deep(p) {
+    display: inline;
+    margin: 0;
 }
 
 .history-event-more {
