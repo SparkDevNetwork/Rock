@@ -3,6 +3,7 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="id"
+          :entityTypeGuid="EntityType.Group"
           itemTerm="Group"
           title="Search Results"
           emptyDataText="No Groups Found"
@@ -67,6 +68,7 @@
         numberValueFilter,
         textValueFilter
     } from "@Obsidian/Controls/grid";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { GroupSearchOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupSearch/groupSearchOptionsBag";
