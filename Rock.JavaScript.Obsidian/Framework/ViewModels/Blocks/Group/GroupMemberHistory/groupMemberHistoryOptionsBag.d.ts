@@ -21,6 +21,9 @@
 // </copyright>
 //
 
-/** The additional configuration options for the Group Member History block. */
+/**
+ * The additional configuration options for the Group Member History
+ * block.
+ */
 export type GroupMemberHistoryOptionsBag = {
 };

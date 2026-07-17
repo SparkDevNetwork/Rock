@@ -21,14 +21,10 @@
 // </copyright>
 //
 
-/** The result of attempting to authenticate a remote session with a security code. */
-export type RemoteAuthenticationAuthenticateResultBag = {
-    /** Gets or sets an error message when authentication failed. */
-    errorMessage?: string | null;
+import { GroupTreeViewBlockAttributesBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTreeView/groupTreeViewBlockAttributesBag";
 
-    /** Gets or sets a value indicating whether authentication succeeded. */
-    isSuccess: boolean;
-
-    /** Gets or sets the resolved Lava HTML shown after a successful authentication. */
-    successHtml?: string | null;
+/** The configuration the Group Tree View block ships to its Obsidian component. */
+export type GroupTreeViewOptionsBag = {
+    /** Gets or sets the block's configured settings. */
+    blockProperties?: GroupTreeViewBlockAttributesBag | null;
 };

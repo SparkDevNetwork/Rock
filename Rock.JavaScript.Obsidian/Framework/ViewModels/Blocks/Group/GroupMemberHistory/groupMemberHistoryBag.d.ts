@@ -26,10 +26,16 @@ import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinition
 
 /** Holds initialization data for the Group Member History block. */
 export type GroupMemberHistoryBag = {
-    /** Gets or sets the full name of the group member whose timeline is displayed. */
+    /**
+     * Gets or sets the full name of the group member whose timeline is
+     * displayed.
+     */
     groupMemberName?: string | null;
 
-    /** Gets or sets the name of the group whose member history is displayed. */
+    /**
+     * Gets or sets the name of the group whose member history is
+     * displayed.
+     */
     groupName?: string | null;
 
     /**

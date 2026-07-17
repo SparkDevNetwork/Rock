@@ -20,13 +20,14 @@ using System.Collections.Generic;
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// The options that can be passed to the GetGroupMembers API action of
-    /// the GroupMemberPicker control.
+    /// The options that can be passed to the GroupPickerGetChildren API action
+    /// of the Group Picker control (and Group Tree View).
     /// </summary>
     public class GroupPickerGetChildrenOptionsBag
     {
         /// <summary>
-        /// GUID of the group the member is part of.
+        /// Guid of the parent group whose children should be loaded.
+        /// When null or empty, children of the root (or top-level groups) are returned.
         /// </summary>
         public Guid? Guid { get; set; }
 
@@ -36,7 +37,7 @@ namespace Rock.ViewModels.Rest.Controls
         public Guid? RootGroupGuid { get; set; }
 
         /// <summary>
-        /// List of group types IDs to limit to groups of those types.
+        /// List of group type Guids to limit results to groups of those types.
         /// </summary>
         public List<Guid> IncludedGroupTypeGuids { get; set; } = new List<Guid>();
 
@@ -59,6 +60,38 @@ namespace Rock.ViewModels.Rest.Controls
         /// Whether to limit to only groups that have RSVPs enabled.
         /// </summary>
         public bool LimitToRSVPEnabled { get; set; } = false;
+
+        /// <summary>
+        /// Whether to limit results to security-role groups only.
+        /// </summary>
+        public bool LimitToSecurityRoleGroups { get; set; } = false;
+
+        /// <summary>
+        /// List of group type Guids to exclude. Only applied when
+        /// <see cref="IncludedGroupTypeGuids"/> is empty.
+        /// </summary>
+        public List<Guid> ExcludedGroupTypeGuids { get; set; } = new List<Guid>();
+
+        /// <summary>
+        /// Optional campus Guid used to filter groups by campus.
+        /// </summary>
+        public Guid? CampusGuid { get; set; }
+
+        /// <summary>
+        /// When a campus filter is set, whether to also include groups that have no campus.
+        /// </summary>
+        public bool IncludeNoCampus { get; set; } = false;
+
+        /// <summary>
+        /// Whether to limit results to public groups only.
+        /// </summary>
+        public bool LimitToPublic { get; set; } = false;
+
+        /// <summary>
+        /// The count mode to attach to each node: 0 = None, 1 = Child Groups, 2 = Group Members.
+        /// Counts are written to <c>TreeItemBag.ChildCount</c>.
+        /// </summary>
+        public int CountsType { get; set; } = 0;
 
         /// <summary>
         /// Gets or sets the security grant token to use when performing
