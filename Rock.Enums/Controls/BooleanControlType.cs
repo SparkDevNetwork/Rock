@@ -17,13 +17,13 @@
 namespace Rock.Enums.Controls
 {
     /// <summary>
-    /// The type of the control (DropDown, CheckBox, Toggle, or Switch) to
+    /// The type of the control (DropDown, Checkbox, or Toggle) to
     /// use to edit the value.
     /// </summary>
     public enum BooleanControlType
     {
         /// <summary>
-        /// Use a dropdown control with TrueText and FalseTest as the options
+        /// Use a dropdown control with TrueText and FalseText as the options
         /// </summary>
         DropDown,
 
@@ -33,7 +33,7 @@ namespace Rock.Enums.Controls
         Checkbox,
 
         /// <summary>
-        /// Use a toggle control with TrueText and FalseTest as the buttons text.
+        /// Use a toggle control with TrueText and FalseText as the buttons text.
         /// </summary>
         Toggle
     }
