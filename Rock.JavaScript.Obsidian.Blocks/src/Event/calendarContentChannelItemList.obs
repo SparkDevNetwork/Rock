@@ -1,0 +1,119 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel v-if="config.options?.isBlockVisible"
+           type="block"
+           title="Content Channels"
+           titleIconCssClass="ti ti-speakerphone">
+        <ContentSectionContainer :sidebar="false">
+            <ContentChannelPanel v-for="(channel, index) in config.options?.contentChannels ?? []"
+                                 :key="channel.idKey ?? index"
+                                 :channel="channel"
+                                 :navigationUrls="config.navigationUrls"
+                                 :refreshToken="channelRefreshTokens[channel.idKey ?? ''] ?? 0"
+                                 @linkExisting="onLinkExisting"
+                                 @unlinkedOnly="onUnlinkedOnly" />
+        </ContentSectionContainer>
+
+        <LinkExistingModal v-model="isLinkExistingVisible"
+                           :contentChannelKey="linkExistingChannelKey"
+                           @linked="onLinked" />
+
+        <Modal v-model="isUnlinkInfoVisible"
+               title="Item Unlinked"
+               saveText=""
+               cancelText="OK">
+            <p>{{ unlinkMessage }}</p>
+            <ul v-if="remainingLinks.length">
+                <li v-for="(link, index) in remainingLinks" :key="link.value ?? index">
+                    {{ link.text }}
+                </li>
+            </ul>
+        </Modal>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { reactive, ref } from "vue";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import {
+        onConfigurationValuesChanged,
+        useConfigurationValues,
+        useReloadBlock
+    } from "@Obsidian/Utility/block";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { CalendarContentChannelItemListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/CalendarContentChannelItemList/calendarContentChannelItemListOptionsBag";
+    import { CalendarContentChannelItemListDeleteResponseBag } from "@Obsidian/ViewModels/Blocks/Event/CalendarContentChannelItemList/calendarContentChannelItemListDeleteResponseBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import ContentChannelPanel from "./CalendarContentChannelItemList/contentChannelPanel.partial.obs";
+    import LinkExistingModal from "./CalendarContentChannelItemList/linkExistingModal.partial.obs";
+
+    // #region Values
+
+    const config = useConfigurationValues<ListBlockBox<CalendarContentChannelItemListOptionsBag>>();
+
+    const isLinkExistingVisible = ref(false);
+    const linkExistingChannelKey = ref<string | null>(null);
+
+    /** Per-channel bump counters that soft-refresh a panel after Link Existing. */
+    const channelRefreshTokens = reactive<Record<string, number>>({});
+
+    const isUnlinkInfoVisible = ref(false);
+    const unlinkMessage = ref("");
+    const remainingLinks = ref<ListItemBag[]>([]);
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Bumps the refresh token for a content channel panel so it reloads grid data.
+     */
+    function bumpChannelRefresh(contentChannelKey: string | null | undefined): void {
+        if (!contentChannelKey) {
+            return;
+        }
+
+        channelRefreshTokens[contentChannelKey] = (channelRefreshTokens[contentChannelKey] ?? 0) + 1;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Opens the link-existing modal for the selected content channel.
+     */
+    function onLinkExisting(contentChannelKey: string): void {
+        linkExistingChannelKey.value = contentChannelKey;
+        isLinkExistingVisible.value = true;
+    }
+
+    /**
+     * Shows the informational modal when an item was only unlinked.
+     * The panel already soft-refreshes its own grid after delete.
+     */
+    function onUnlinkedOnly(response: CalendarContentChannelItemListDeleteResponseBag): void {
+        unlinkMessage.value = response.message
+            ?? `"${response.itemTitle ?? "Item"}" was removed from this occurrence but was not deleted because it is still linked to other event occurrences.`;
+        remainingLinks.value = response.remainingOccurrenceLinks ?? [];
+        isUnlinkInfoVisible.value = true;
+    }
+
+    /**
+     * Soft-refreshes the channel that was just linked (preserves other panels' expand state).
+     */
+    function onLinked(): void {
+        bumpChannelRefresh(linkExistingChannelKey.value);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers / Lifecycle
+
+    // Full remount is still appropriate when block settings change.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #endregion Watchers / Lifecycle
+</script>
