@@ -202,7 +202,7 @@ namespace Rock.Attribute
                     PopulateLegacyClassAndAssembly();
                 }
 
-                return _fieldTypeAssembly;
+                return _fieldTypeAssembly ?? string.Empty;
             }
             set
             {
@@ -236,7 +236,7 @@ namespace Rock.Attribute
                     PopulateLegacyClassAndAssembly();
                 }
 
-                return _fieldTypeClass;
+                return _fieldTypeClass ?? string.Empty;
             }
             set
             {
