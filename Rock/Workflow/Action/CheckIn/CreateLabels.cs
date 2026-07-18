@@ -314,7 +314,7 @@ namespace Rock.Workflow.Action.CheckIn
 
             foreach ( var attribute in item.Attributes.OrderBy( a => a.Value.Order ) )
             {
-                if ( attribute.Value.FieldType.Class == typeof( Rock.Field.Types.LabelFieldType ).FullName )
+                if ( attribute.Value.FieldType.Guid == SystemGuid.FieldType.LABEL.AsGuid() )
                 {
                     Guid? binaryFileGuid = item.GetAttributeValue( attribute.Key ).AsGuidOrNull();
                     if ( binaryFileGuid != null )

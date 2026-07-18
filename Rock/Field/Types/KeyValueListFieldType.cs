@@ -593,46 +593,11 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <returns></returns>
+        [Obsolete( "Use the GetKeyValueListValuesFromString method on Rock.Field.Helper instead." )]
+        [RockObsolete( "20.0" )]
         public List<KeyValuePair<string, object>> GetValuesFromString( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            List<KeyValuePair<string, object>> values = new List<KeyValuePair<string, object>>();
-
-            bool isDefinedType = configurationValues != null && configurationValues.ContainsKey( "definedtype" ) && configurationValues["definedtype"].Value.AsIntegerOrNull().HasValue;
-
-            string[] nameValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-
-            // url decode array items just in case they were UrlEncoded (in the KeyValueList controls)
-            nameValues = nameValues.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
-
-            foreach ( string nameValue in nameValues )
-            {
-                string[] nameAndValue = nameValue.Split( new char[] { '^' } );
-                if ( nameAndValue.Length == 2 )
-                {
-                    if ( isDefinedType )
-                    {
-                        var definedValue = DefinedValueCache.Get( nameAndValue[1].AsInteger() );
-                        if ( definedValue != null )
-                        {
-                            values.Add( new KeyValuePair<string, object>( nameAndValue[0], definedValue ) );
-                        }
-                        else
-                        {
-                            values.Add( new KeyValuePair<string, object>( nameAndValue[0], nameAndValue[1] ) );
-                        }
-                    }
-                    else
-                    {
-                        values.Add( new KeyValuePair<string, object>( nameAndValue[0], nameAndValue[1] ) );
-                    }
-                }
-                else
-                {
-                    values.Add( new KeyValuePair<string, object>( nameAndValue[0], null ) );
-                }
-            }
-
-            return values;
+            return Helper.GetKeyValueListValuesFromString( value, configurationValues?.ToDictionary( cv => cv.Key, cv => cv.Value?.Value ), condensed );
         }
 
 #endif

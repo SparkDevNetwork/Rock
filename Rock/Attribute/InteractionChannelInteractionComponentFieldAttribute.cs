@@ -30,7 +30,7 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         public InteractionChannelInteractionComponentFieldAttribute( string name )
-            : base( name, fieldTypeClass: typeof( Field.Types.InteractionChannelInteractionComponentFieldType ).FullName )
+            : base( SystemGuid.FieldType.INTERACTION_CHANNEL_INTERACTION_COMPONENT.AsGuid(), name )
         {
         }
     }

@@ -36,8 +36,10 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public GroupLocationTypeFieldAttribute( string name, string groupTypeGuid = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.GroupLocationTypeFieldType ).FullName )
+            : base( SystemGuid.FieldType.GROUP_LOCATION_TYPE.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             /*
             07/13/2020 - Shaun
@@ -63,11 +65,36 @@ namespace Rock.Attribute
             if ( groupType != null )
             {
                 var configValue = new Field.ConfigurationValue( groupType.ToString() );
-                FieldConfigurationValues.Add( "groupTypeGuid", configValue );
+                FieldConfigurationValues.AddOrReplace( "groupTypeGuid", configValue );
             }
 
             if ( string.IsNullOrWhiteSpace( Name ) )
             {
+                Name = "Group Location Type";
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupLocationTypeFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public GroupLocationTypeFieldAttribute( string name )
+            : base( SystemGuid.FieldType.GROUP_LOCATION_TYPE.AsGuid(), name )
+        {
+            /*
+            07/13/2020 - Shaun
+            This is a workaround because the original constructor for this
+            class was built to accept groupTypeGuid as the only parameter,
+            so if any plugins were using the constructor in this manner,
+            they would be passing the guid into the name parameter, so we
+            will check there, first.
+            
+            Reason: Maintaining backwards compatibility for plugins.
+            */
+            var groupTypeGuid = name.AsGuidOrNull();
+            if ( groupTypeGuid != null )
+            {
+                GroupTypeGuid = groupTypeGuid.ToString();
                 Name = "Group Location Type";
             }
         }
@@ -90,6 +117,5 @@ namespace Rock.Attribute
                 FieldConfigurationValues.AddOrReplace( "groupTypeGuid", new Field.ConfigurationValue( value ) );
             }
         }
-
     }
 }

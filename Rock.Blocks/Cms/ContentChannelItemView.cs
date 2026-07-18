@@ -160,6 +160,7 @@ namespace Rock.Blocks.Cms
     [WorkflowTypeField(
         "Workflow Type",
         Description = "The workflow type to launch when the content is viewed.",
+        IsRequired = false,
         Category = "CustomSetting",
         Key = AttributeKey.WorkflowType )]
 

@@ -34,8 +34,18 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public LabelFieldAttribute( string name = "Label File", string description = "", bool required = true, string defaultLabelFileGuid = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultLabelFileGuid, category, order, key, typeof( Rock.Field.Types.LabelFieldType ).FullName )
+            : base( SystemGuid.FieldType.LABEL.AsGuid(), name, description, required, defaultLabelFileGuid, category, order, key )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LabelFieldAttribute" /> class.
+        /// </summary>
+        public LabelFieldAttribute( string name )
+            : base( SystemGuid.FieldType.LABEL.AsGuid(), name )
         {
         }
     }

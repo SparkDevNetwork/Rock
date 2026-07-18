@@ -34,8 +34,19 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public TimeZoneFieldAttribute( string name, string description = "", bool required = false, string defaultTimeZoneId = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultTimeZoneId, category, order, key, typeof( Rock.Field.Types.TimeZoneFieldType ).FullName )
+            : base( SystemGuid.FieldType.TIME_ZONE.AsGuid(), name, description, required, defaultTimeZoneId, category, order, key )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TimeZoneFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public TimeZoneFieldAttribute( string name )
+            : base( SystemGuid.FieldType.TIME_ZONE.AsGuid(), name )
         {
         }
     }

@@ -138,7 +138,17 @@ namespace Rock.Attribute
                     string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
                     properties++;
 
-                    entityProperties.Add( new EntityTypeFieldAttribute( "Entity Type", false, "The type of entity that will provide context for this block", false, "Context", 0, propertyKeyName ) );
+                    var newAttribute = new EntityTypeFieldAttribute( "Entity Type" )
+                    {
+                        Category = "Context",
+                        Description = "The type of entity that will provide context for this block",
+                        IncludeGlobalAttributeOption = false,
+                        IsRequired = false,
+                        Key = propertyKeyName,
+                        Order = 0,
+                    };
+
+                    entityProperties.Add( newAttribute );
                 }
             }
 
@@ -155,10 +165,11 @@ namespace Rock.Attribute
             bool customGridColumnsBlock = typeof( Rock.Web.UI.ICustomGridColumns ).IsAssignableFrom( type );
             if ( customGridColumnsBlock || customizedGrid?.IsCustomColumnsSupported == true )
             {
-                entityProperties.Add( new TextFieldAttribute( CustomGridColumnsConfig.AttributeKey, category: "CustomSetting" )
+                entityProperties.Add( new TextFieldAttribute( CustomGridColumnsConfig.AttributeKey )
                 {
                     AllowHtml = true,
                     AllowLava = true,
+                    Category = "CustomSetting",
                 } );
             }
 
@@ -166,13 +177,23 @@ namespace Rock.Attribute
 
             if ( customGridOptionsBlock || customizedGrid?.IsStickyHeaderSupported == true )
             {
-                entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey, category: "CustomSetting" ) );
+                entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey )
+                {
+                    Category = "CustomSetting",
+                } );
             }
 
             if ( customGridOptionsBlock || customizedGrid?.IsCustomActionsSupported == true )
             {
-                entityProperties.Add( new TextFieldAttribute( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey, category: "CustomSetting" ) );
-                entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey, category: "CustomSetting", defaultValue: true ) );
+                entityProperties.Add( new TextFieldAttribute( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey )
+                {
+                    Category = "CustomSetting",
+                } );
+                entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey )
+                {
+                    Category = "CustomSetting",
+                    DefaultBooleanValue = true,
+                } );
             }
 
             // Create any attributes that need to be created
@@ -255,8 +276,7 @@ namespace Rock.Attribute
                     attributeCache.DefaultValue != ( property.DefaultValue ?? string.Empty ) ||
                     attributeCache.Description != ( property.Description ?? string.Empty ) ||
                     attributeCache.Order != property.Order ||
-                    attributeCache.FieldType.Assembly != property.FieldTypeAssembly ||
-                    attributeCache.FieldType.Class != property.FieldTypeClass ||
+                    attributeCache.FieldType.Guid != property.FieldTypeGuid ||
                     attributeCache.IsRequired != property.IsRequired )
                 {
                     updated = true;
@@ -369,12 +389,10 @@ namespace Rock.Attribute
             }
 
             // Try to set the field type by searching for an existing field type with the same assembly and class name
-            if ( attribute.FieldType == null || attribute.FieldType.Assembly != property.FieldTypeAssembly ||
-                attribute.FieldType.Class != property.FieldTypeClass )
+            if ( attribute.FieldType == null || attribute.FieldType.Guid != property.FieldTypeGuid )
             {
-                attribute.FieldType = fieldTypeService.Queryable().FirstOrDefault( f =>
-                    f.Assembly == property.FieldTypeAssembly &&
-                    f.Class == property.FieldTypeClass );
+                attribute.FieldType = fieldTypeService.Queryable()
+                    .FirstOrDefault( f => f.Guid == property.FieldTypeGuid );
             }
 
             // Set all additional settings.

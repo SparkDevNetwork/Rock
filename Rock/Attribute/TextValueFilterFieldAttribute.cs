@@ -36,11 +36,23 @@ namespace Rock.Attribute
         /// <param name="key">The key.</param>
         /// <param name="hideFilterMode">if set to <c>true</c> then the filter mode selection control is hidden.</param>
         /// <param name="fieldTypeClass">The field type class.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public TextValueFilterFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "",
             int order = 0, string key = null, bool hideFilterMode = false, string fieldTypeClass = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.ValueFilterFieldType ).FullName )
+            : base( SystemGuid.FieldType.VALUE_FILTER.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             HideFilterMode = hideFilterMode;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TextFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public TextValueFilterFieldAttribute( string name )
+            : base( SystemGuid.FieldType.VALUE_FILTER.AsGuid(), name )
+        {
+            HideFilterMode = false;
         }
 
         /// <summary>
@@ -48,8 +60,8 @@ namespace Rock.Attribute
         /// </summary>
         public bool HideFilterMode
         {
-            get => FieldConfigurationValues.GetValueOrNull( Field.Types.ValueFilterFieldType.HIDE_FILTER_MODE ).AsBoolean();
-            set => FieldConfigurationValues[Field.Types.ValueFilterFieldType.HIDE_FILTER_MODE] = new Field.ConfigurationValue( value.ToString() );
+            get => FieldConfigurationValues.GetValueOrNull( "hidefiltermode" ).AsBoolean();
+            set => FieldConfigurationValues["hidefiltermode"] = new Field.ConfigurationValue( value.ToString() );
         }
     }
 }

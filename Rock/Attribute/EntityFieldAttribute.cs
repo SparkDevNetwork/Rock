@@ -38,11 +38,23 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public EntityFieldAttribute( string name, string description = "", string entityControlHelpTextFormat = "", bool required = true, string category = "", int order = 0, string key = null )
-            : base( name, description, required, "", category, order, key, typeof( Rock.Field.Types.EntityFieldType ).FullName )
+            : base( SystemGuid.FieldType.ENTITY.AsGuid(), name, description, required, "", category, order, key )
         {
             
-            FieldConfigurationValues.Add( "entityControlHelpTextFormat", new Field.ConfigurationValue( entityControlHelpTextFormat ) );
+            FieldConfigurationValues.AddOrReplace( "entityControlHelpTextFormat", new Field.ConfigurationValue( entityControlHelpTextFormat ) );
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public EntityFieldAttribute( string name )
+            : base( SystemGuid.FieldType.ENTITY.AsGuid(), name )
+        {
+            EntityControlHelpTextFormat = string.Empty;
         }
 
         /// <summary>

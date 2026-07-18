@@ -93,7 +93,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// <value>
         /// The template to use when rendering the content.
         /// </value>
-        protected string Template => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
+        protected string Template => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
 
         #endregion
 

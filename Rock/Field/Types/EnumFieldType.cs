@@ -327,6 +327,8 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
+        [Obsolete( "This method will be removed in the future." )]
+        [RockObsolete( "20.0" )]
         public string GetSerializedValue( T value )
         {
             return ( ( int ) ( object ) value ).ToString();
@@ -338,20 +340,11 @@ namespace Rock.Field.Types
         /// <param name="serialized"></param>
         /// <param name="defaultValue"></param>
         /// <returns></returns>
+        [Obsolete( "Use the GetEnumDeserializedValue method on Rock.Field.Helper instead." )]
+        [RockObsolete( "20.0" )]
         public T GetDeserializedValue( string serialized, T defaultValue )
         {
-            T enumValue;
-
-            var isValid = Enum.TryParse( serialized, out enumValue );
-
-            if ( isValid )
-            {
-                return enumValue;
-            }
-            else
-            {
-                return defaultValue;
-            }
+            return Helper.GetEnumDeserializedValue( serialized, defaultValue );
         }
 
         #endregion

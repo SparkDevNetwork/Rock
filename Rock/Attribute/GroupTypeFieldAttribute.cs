@@ -61,10 +61,21 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         /// <param name="groupTypePurposeValueGuid">The group type purpose value unique identifier.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public GroupTypeFieldAttribute( string name, string description = "", bool required = true, string defaultGroupTypeGuid = "", string category = "", int order = 0, string key = null, string groupTypePurposeValueGuid = "" )
-            : base( name, description, required, defaultGroupTypeGuid, category, order, key, typeof( Rock.Field.Types.GroupTypeFieldType ).FullName )
+            : base( SystemGuid.FieldType.GROUP_TYPE.AsGuid(), name, description, required, defaultGroupTypeGuid, category, order, key )
         {
             GroupTypePurposeValueGuid = groupTypePurposeValueGuid;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupTypeFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public GroupTypeFieldAttribute( string name )
+            : base( SystemGuid.FieldType.GROUP_TYPE.AsGuid(), name )
+        {
         }
     }
 }

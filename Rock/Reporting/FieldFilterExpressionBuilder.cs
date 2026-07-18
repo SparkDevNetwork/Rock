@@ -326,7 +326,9 @@ namespace Rock.Reporting
             // If we are not going to be using this expression with
             // the database then we need to do some special logic for
             // text style filters to make them case-insensitive.
-            if ( rockContext == null && entityField.FieldType.Field is Rock.Field.Types.TextFieldType )
+            var isTextField = entityField.FieldType.Guid == SystemGuid.FieldType.TEXT.AsGuid()
+                || entityField.FieldType.Guid == SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid();
+            if ( rockContext == null && isTextField )
             {
                 filterValues.Add( rule.Value?.ToLower() );
 

@@ -51,7 +51,7 @@ namespace Rock.Achievement.Component
         Order = 1,
         DefaultBooleanValue = false,
         Key = AttributeKey.IncludeChildFinancialAccounts,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox )]
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox )]
 
     [IntegerField(
         "Number to Accumulate",

@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Attribute
 {
     /// <summary>
@@ -68,10 +70,21 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         /// <param name="shorteningSitesOnly">if set to <c>true</c> [shortening sites only].</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public SiteFieldAttribute( string name = "Site", string description = "", bool required = true, string defaultSiteId = "", string category = "", int order = 0, string key = null, bool shorteningSitesOnly = false )
-            : base( name, description, required, defaultSiteId, category, order, key, typeof( Rock.Field.Types.SiteFieldType ).FullName )
+            : base( SystemGuid.FieldType.SITE.AsGuid(), name, description, required, defaultSiteId, category, order, key )
         {
             ShorteningSitesOnly = shorteningSitesOnly;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SiteFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public SiteFieldAttribute( string name )
+            : base( SystemGuid.FieldType.SITE.AsGuid(), name )
+        {
         }
     }
 }

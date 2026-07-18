@@ -37,10 +37,21 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        /// <param name="fieldTypeClass">The field type class.</param>
-        /// <param name="fieldTypeAssembly">The field type assembly.</param>
+        /// <param name="fieldTypeClass">This parameter is ignored.</param>
+        /// <param name="fieldTypeAssembly">This parameter is ignored.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public DocumentTypeFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string fieldTypeClass = null, string fieldTypeAssembly = "Rock" )
-            : base( name, description, required, defaultValue, category, order, key, typeof(Rock.Field.Types.DocumentTypeFieldType).FullName, fieldTypeAssembly )
+            : base( SystemGuid.FieldType.DOCUMENT_TYPE.AsGuid(), name, description, required, defaultValue, category, order, key )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DocumentTypeFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public DocumentTypeFieldAttribute( string name )
+            : base( SystemGuid.FieldType.DOCUMENT_TYPE.AsGuid(), name )
         {
         }
 

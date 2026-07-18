@@ -20,7 +20,6 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Extension;
-using Rock.Field.Types;
 using Rock.Web.Cache;
 
 namespace Rock.Communication.SmsActions
@@ -151,7 +150,7 @@ namespace Rock.Communication.SmsActions
 
             var attribute = action.Attributes.ContainsKey( "PhoneNumbers" ) ? action.Attributes["PhoneNumbers"] : null;
             var phoneNumbers = GetAttributeValue( action, "PhoneNumbers" );
-            var filter = ValueFilterFieldType.GetFilterExpression( attribute?.QualifierValues, phoneNumbers );
+            var filter = Web.UI.Controls.FilterExpression.FromJsonOrNull( phoneNumbers );
 
             return filter != null ? filter.Evaluate( message, "ToNumber" ) : true;
         }

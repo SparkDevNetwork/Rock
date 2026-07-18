@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,8 +22,6 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Field.Types;
-using Rock.Lava;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -54,7 +52,7 @@ namespace Rock.Communication.SmsActions
         Order = 2 )]
 
     [CampusField( "Campus",
-        includeInactive: false,
+        IncludeInactive = false,
         Description = "Overrides the inbound person's primary campus when set. Leave blank to use the person's primary campus.",
         IsRequired = false,
         ForceVisible = true,
@@ -76,7 +74,7 @@ namespace Rock.Communication.SmsActions
         Key = AttributeKey.PassNamelessPerson,
         Category = AttributeCategories.Connection,
         Description = "When true, an inbound message from an unknown phone number is allowed to create a Connection Request against a nameless Person record. When false, such messages are skipped.",
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         Order = 5 )]
 
@@ -135,7 +133,7 @@ namespace Rock.Communication.SmsActions
 
             var attribute = action.Attributes.ContainsKey( AttributeKey.Message ) ? action.Attributes[AttributeKey.Message] : null;
             var msg = GetAttributeValue( action, AttributeKey.Message );
-            var filter = ValueFilterFieldType.GetFilterExpression( attribute?.QualifierValues, msg );
+            var filter = FilterExpression.FromJsonOrNull(  msg );
 
             return filter != null ? filter.Evaluate( message, AttributeKey.Message ) : true;
         }
@@ -145,7 +143,7 @@ namespace Rock.Communication.SmsActions
         {
             errorMessage = string.Empty;
 
-            ConnectionTypeSettingsFieldType.ParseDelimitedGuids(
+            Field.Helper.ParseConnectionTypeSettingsDelimitedGuids(
                 GetAttributeValue( action, AttributeKey.ConnectionTypeSettings ),
                 out _,
                 out var opportunityGuid,

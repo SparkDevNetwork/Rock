@@ -126,6 +126,8 @@ namespace Rock.Field.Types
         /// <summary>
         /// The type of the control (DropDown, CheckBox, Toggle, or Switch) to use to edit the value
         /// </summary>
+        [Obsolete( "Use the BooleanControlType defined in Rock.Enums.Controls instead." )]
+        [RockObsolete( "20.0" )]
         public enum BooleanControlType
         {
             /// <summary>
@@ -384,7 +386,7 @@ namespace Rock.Field.Types
 
             RockDropDownList ddlBooleanControlType = new RockDropDownList();
             controls.Add( ddlBooleanControlType );
-            ddlBooleanControlType.BindToEnum<BooleanControlType>();
+            ddlBooleanControlType.BindToEnum<Rock.Enums.Controls.BooleanControlType>();
             ddlBooleanControlType.Label = "Control Type";
             ddlBooleanControlType.Help = "The type of control to use when editing the value";
             ddlBooleanControlType.AutoPostBack = true;
@@ -407,7 +409,7 @@ namespace Rock.Field.Types
                 "The text to display when value is false (default is 'No').", "No" ) );
 
             configurationValues.Add( ConfigurationKey.BooleanControlType, new ConfigurationValue( "Control Type",
-                "The type of control to use when editing the value", BooleanControlType.DropDown.ConvertToString( false ) ) );
+                "The type of control to use when editing the value", Rock.Enums.Controls.BooleanControlType.DropDown.ConvertToString( false ) ) );
 
             if ( controls != null && controls.Count == 3 )
             {
@@ -501,7 +503,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var booleanControlType = configurationValues.GetValueOrNull( ConfigurationKey.BooleanControlType )?.ConvertToEnum<BooleanControlType>() ?? BooleanControlType.DropDown;
+            var booleanControlType = configurationValues.GetValueOrNull( ConfigurationKey.BooleanControlType )?.ConvertToEnum<Rock.Enums.Controls.BooleanControlType>() ?? Rock.Enums.Controls.BooleanControlType.DropDown;
 
             return CreateBooleanEditControl( configurationValues, id, booleanControlType );
         }
@@ -513,7 +515,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         /// <param name="booleanControlType">Type of the boolean control.</param>
         /// <returns></returns>
-        private Control CreateBooleanEditControl( Dictionary<string, ConfigurationValue> configurationValues, string id, BooleanControlType booleanControlType )
+        private Control CreateBooleanEditControl( Dictionary<string, ConfigurationValue> configurationValues, string id, Rock.Enums.Controls.BooleanControlType booleanControlType )
         {
 
             string yesText = "Yes";
@@ -537,12 +539,12 @@ namespace Rock.Field.Types
 
             Control editControl;
 
-            if ( booleanControlType == BooleanControlType.Checkbox )
+            if ( booleanControlType == Rock.Enums.Controls.BooleanControlType.Checkbox )
             {
                 var checkboxEditControl = new RockCheckBox { ID = id };
                 editControl = checkboxEditControl;
             }
-            else if ( booleanControlType == BooleanControlType.Toggle )
+            else if ( booleanControlType == Rock.Enums.Controls.BooleanControlType.Toggle )
             {
                 var toggleEditControl = new Toggle
                 {

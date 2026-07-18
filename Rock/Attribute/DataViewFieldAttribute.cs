@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using Rock.Field.Types;
 
 namespace Rock.Attribute
 {
@@ -37,13 +36,24 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public DataViewFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string entityTypeName = "", string category = "", int order = 0, string key = null ) : 
-            base( name, description, required, defaultValue, category, order, key, typeof( DataViewFieldType ).FullName )
+            base( SystemGuid.FieldType.DATA_VIEW.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             if ( !string.IsNullOrWhiteSpace( entityTypeName ) )
             {
-                FieldConfigurationValues.Add( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( entityTypeName ) );
+                FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( entityTypeName ) );
             }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DataViewFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public DataViewFieldAttribute( string name )
+            : base( SystemGuid.FieldType.DATA_VIEW.AsGuid(), name )
+        {
         }
 
         /// <summary>

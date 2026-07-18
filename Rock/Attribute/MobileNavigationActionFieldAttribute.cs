@@ -44,8 +44,13 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         public MobileNavigationActionFieldAttribute( string name )
-            : base( name, string.Empty, true, string.Empty, string.Empty, 0, null, typeof( Rock.Field.Types.MobileNavigationActionFieldType ).FullName )
+            : base( SystemGuid.FieldType.MOBILE_NAVIGATION_ACTION.AsGuid(), name )
         {
+            Category = string.Empty;
+            DefaultValue = string.Empty;
+            Description = string.Empty;
+            IsRequired = true;
+            Order = 0;
         }
     }
 }

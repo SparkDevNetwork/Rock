@@ -103,7 +103,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         Description = "Indicates whether or not the 'Transfer' option should be shown.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.ShowTransferOption,
         Order = 6 )]
 
@@ -152,7 +152,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <value>
         /// The activity template.
         /// </value>
-        protected string ActivityTemplate => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKey.ActivityTemplate ) );
+        protected string ActivityTemplate => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKey.ActivityTemplate ) );
 
         /// <summary>
         /// Gets the person profile page unique identifier.

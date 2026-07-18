@@ -30,8 +30,13 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         public CheckinConfigurationTypeFieldAttribute( string name )
-            : base( name, string.Empty, false, string.Empty, string.Empty, 0, null, typeof( Rock.Field.Types.CheckinConfigurationTypeFieldType ).FullName )
+            : base( SystemGuid.FieldType.CHECK_IN_CONFIGURATION_TYPE.AsGuid(), name )
         {
+            Category = string.Empty;
+            DefaultValue = string.Empty;
+            Description = string.Empty;
+            IsRequired = false;
+            Order = 0;
         }
     }
 }

@@ -25,7 +25,6 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -435,7 +434,7 @@ namespace RockWeb.Blocks.Steps
                 var attribute = step.Attributes[attributeCache.Key];
                 var rawValue = step.GetAttributeValue( attributeCache.Key );
 
-                var showCondensed = !( attribute.FieldType.Field is BooleanFieldType );
+                var showCondensed = !( attribute.FieldType.Guid == Rock.SystemGuid.FieldType.BOOLEAN.AsGuid() );
 
                 var formattedValue = attribute.FieldType.Field.FormatValue( null, attribute.EntityTypeId, step.Id, rawValue, attribute.QualifierValues, showCondensed );
 

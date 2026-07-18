@@ -16,8 +16,6 @@
 //
 using System;
 
-using Rock.Field.Types;
-
 namespace Rock.Attribute
 {
     /// <summary>
@@ -37,12 +35,34 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         /// <param name="allowCurrentOption">if set to <c>true</c> [allow current option].</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public DateTimeFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "",
             int order = 0, string key = null, bool allowCurrentOption = false )
-            : base( name, description, required, defaultValue, category, order, key, typeof( DateTimeFieldType ).FullName )
+            : base( SystemGuid.FieldType.DATE_TIME.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             var displayCurrentConfigValue = new Field.ConfigurationValue( allowCurrentOption.ToString() );
-            FieldConfigurationValues.Add( "displayCurrentOption", displayCurrentConfigValue );
+            FieldConfigurationValues.AddOrReplace( "displayCurrentOption", displayCurrentConfigValue );
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DateTimeFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public DateTimeFieldAttribute( string name )
+            : base( SystemGuid.FieldType.DATE_TIME.AsGuid(), name )
+        {
+            IsCurrentAllowed = false;
+        }
+
+        /// <summary>
+        /// Determines if the date field should include an option to select
+        /// the current date.
+        /// </summary>
+        public bool IsCurrentAllowed
+        {
+            get => FieldConfigurationValues.GetValueOrNull( "displayCurrentOption" ).AsBoolean();
+            set => FieldConfigurationValues.AddOrReplace( "displayCurrentOption", new Field.ConfigurationValue( value.ToString() ) );
         }
     }
 }

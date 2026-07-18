@@ -549,12 +549,12 @@ namespace Rock.Rest.v2
             string localityLabel = null;
             string stateLabel = null;
             string postalCodeLabel = null;
-            DataEntryRequirementLevelSpecifier addressLine1Requirement = DataEntryRequirementLevelSpecifier.Optional;
-            DataEntryRequirementLevelSpecifier addressLine2Requirement = DataEntryRequirementLevelSpecifier.Optional;
-            DataEntryRequirementLevelSpecifier cityRequirement = DataEntryRequirementLevelSpecifier.Optional;
-            DataEntryRequirementLevelSpecifier localityRequirement = DataEntryRequirementLevelSpecifier.Optional;
-            DataEntryRequirementLevelSpecifier stateRequirement = DataEntryRequirementLevelSpecifier.Optional;
-            DataEntryRequirementLevelSpecifier postalCodeRequirement = DataEntryRequirementLevelSpecifier.Optional;
+            var addressLine1Requirement = RequirementLevel.Optional;
+            var addressLine2Requirement = RequirementLevel.Optional;
+            var cityRequirement = RequirementLevel.Optional;
+            var localityRequirement = RequirementLevel.Optional;
+            var stateRequirement = RequirementLevel.Optional;
+            var postalCodeRequirement = RequirementLevel.Optional;
 
             var countryValue = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
                 .DefinedValues
@@ -568,14 +568,12 @@ namespace Rock.Rest.v2
                 stateLabel = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressStateLabel ).ToStringOrDefault( "State" );
                 postalCodeLabel = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressPostalCodeLabel ).ToStringOrDefault( "Postal Code" );
 
-                var requirementField = new DataEntryRequirementLevelFieldType();
-
-                addressLine1Requirement = requirementField.GetDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine1Requirement ), DataEntryRequirementLevelSpecifier.Optional );
-                addressLine2Requirement = requirementField.GetDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine2Requirement ), DataEntryRequirementLevelSpecifier.Optional );
-                cityRequirement = requirementField.GetDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressCityRequirement ), DataEntryRequirementLevelSpecifier.Optional );
-                localityRequirement = requirementField.GetDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLocalityRequirement ), DataEntryRequirementLevelSpecifier.Optional );
-                stateRequirement = requirementField.GetDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressStateRequirement ), DataEntryRequirementLevelSpecifier.Optional );
-                postalCodeRequirement = requirementField.GetDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressPostalCodeRequirement ), DataEntryRequirementLevelSpecifier.Optional );
+                addressLine1Requirement = Field.Helper.GetEnumDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine1Requirement ), RequirementLevel.Optional );
+                addressLine2Requirement = Field.Helper.GetEnumDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine2Requirement ), RequirementLevel.Optional );
+                cityRequirement = Field.Helper.GetEnumDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressCityRequirement ), RequirementLevel.Optional );
+                localityRequirement = Field.Helper.GetEnumDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLocalityRequirement ), RequirementLevel.Optional );
+                stateRequirement = Field.Helper.GetEnumDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressStateRequirement ), RequirementLevel.Optional );
+                postalCodeRequirement = Field.Helper.GetEnumDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressPostalCodeRequirement ), RequirementLevel.Optional );
             }
 
             return Ok( new AddressControlConfigurationBag
@@ -594,12 +592,12 @@ namespace Rock.Rest.v2
                 StateLabel = stateLabel,
                 PostalCodeLabel = postalCodeLabel,
 
-                AddressLine1Requirement = ( RequirementLevel ) addressLine1Requirement,
-                AddressLine2Requirement = ( RequirementLevel ) addressLine2Requirement,
-                CityRequirement = ( RequirementLevel ) cityRequirement,
-                LocalityRequirement = ( RequirementLevel ) localityRequirement,
-                StateRequirement = ( RequirementLevel ) stateRequirement,
-                PostalCodeRequirement = ( RequirementLevel ) postalCodeRequirement,
+                AddressLine1Requirement = addressLine1Requirement,
+                AddressLine2Requirement = addressLine2Requirement,
+                CityRequirement = cityRequirement,
+                LocalityRequirement = localityRequirement,
+                StateRequirement = stateRequirement,
+                PostalCodeRequirement = postalCodeRequirement,
             } );
         }
 
@@ -4378,9 +4376,9 @@ namespace Rock.Rest.v2
                     ? AttributeCache.Get( options.UpdateAttributeGuid.Value )
                     : null;
 
-                if ( updateAttribute?.FieldType?.Field is DefinedValueFieldType )
+                if ( updateAttribute?.FieldType?.Guid == SystemGuid.FieldType.DEFINED_VALUE.AsGuid() )
                 {
-                    var needSave = DefinedValueFieldType.AddValueToAttributeConfiguration( updateAttribute.Id, definedValue.Id, rockContext );
+                    var needSave = Field.Helper.AddDefinedValueToAttributeConfiguration( updateAttribute.Id, definedValue.Id, rockContext );
 
                     if ( needSave )
                     {

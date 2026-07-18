@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -618,6 +619,83 @@ namespace Rock.Web.UI.Controls
 
                     RegisterPageRoutePickerJavaScript();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets the selected value in the format that can be stored as an
+        /// attribute value.
+        /// </summary>
+        /// <returns>A string representing the selected value.</returns>
+        [RockInternal( "20.0", keepInternalForever: true )]
+        public string GetValueAsAttributeValue()
+        {
+            var result = string.Empty;
+
+            //// Value is in format "Page.Guid,PageRoute.Guid"
+            //// If only a Page is specified, this is just a reference to a page without a special route
+
+            using ( var rockContext = new RockContext() )
+            {
+                if ( IsPageRoute )
+                {
+                    int? pageRouteId = PageRouteId;
+                    var pageRoute = new PageRouteService( rockContext ).GetNoTracking( pageRouteId ?? 0 );
+                    if ( pageRoute != null )
+                    {
+                        result = string.Format( "{0},{1}", pageRoute.Page.Guid, pageRoute.Guid );
+                    }
+                }
+                else
+                {
+                    var page = new PageService( rockContext ).GetNoTracking( PageId ?? 0 );
+                    if ( page != null )
+                    {
+                        result = page.Guid.ToString();
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Sets the value from an attribute value.
+        /// </summary>
+        /// <param name="value">The value as stored in an attribute value.</param>
+        [RockInternal( "20.0", keepInternalForever: true )]
+        public void SetValueFromAttributeValue( string value )
+        {
+            string[] valuePair = ( value ?? string.Empty ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+
+            Rock.Model.Page page = null;
+            PageRoute pageRoute = null;
+
+            //// Value is in format "Page.Guid,PageRoute.Guid"
+            //// If only the Page.Guid is specified this is just a reference to a page without a special route
+            //// In case the PageRoute record can't be found from PageRoute.Guid (maybe the pageroute was deleted), fall back to the Page without a PageRoute
+
+            using var rockContext = new RockContext();
+
+            if ( valuePair.Length == 2 )
+            {
+                Guid.TryParse( valuePair[1], out var pageRouteGuid );
+                pageRoute = new PageRouteService( rockContext ).Get( pageRouteGuid );
+            }
+
+            if ( pageRoute != null )
+            {
+                SetValue( pageRoute );
+            }
+            else
+            {
+                if ( valuePair.Length > 0 )
+                {
+                    Guid.TryParse( valuePair[0], out var pageGuid );
+                    page = new PageService( rockContext ).Get( pageGuid );
+                }
+
+                SetValue( page );
             }
         }
     }

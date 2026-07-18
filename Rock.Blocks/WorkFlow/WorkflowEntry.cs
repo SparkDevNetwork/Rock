@@ -1548,7 +1548,7 @@ namespace Rock.Blocks.Workflow
                         string formattedValue = null;
 
                         // get formatted value 
-                        if ( attribute.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
+                        if ( attribute.FieldType.Guid == SystemGuid.FieldType.IMAGE.AsGuid() )
                         {
                             formattedValue = field.FormatValueAsHtml( null, attribute.EntityTypeId, activity.Id, value, attribute.QualifierValues, true );
                         }

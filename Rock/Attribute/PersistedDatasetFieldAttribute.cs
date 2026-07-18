@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Field.Types;
-
 namespace Rock.Attribute
 {
     /// <summary>
@@ -27,9 +25,9 @@ namespace Rock.Attribute
         /// Initializes a new instance of the <see cref="PersistedDatasetFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
-        public PersistedDatasetFieldAttribute( string name ) : base( name )
+        public PersistedDatasetFieldAttribute( string name )
+            : base( SystemGuid.FieldType.PERSISTED_DATASET.AsGuid(), name )
         {
-            FieldTypeClass = typeof( PersistedDatasetFieldType ).FullName;
         }
     }
 }

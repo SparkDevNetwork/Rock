@@ -68,7 +68,7 @@ namespace Rock.Workflow.Action
 
             var query = GetAttributeValue( action, "SQLQuery" );
             var parametersValue = GetAttributeValue( action, "Parameters" );
-            var parameterList = new Field.Types.KeyValueListFieldType().GetValuesFromString( null, parametersValue, null, false );
+            var parameterList = Field.Helper.GetKeyValueListValuesFromString( parametersValue, null, false );
 
             var mergeFields = GetMergeFields( action );
             query = query.ResolveMergeFields( mergeFields );

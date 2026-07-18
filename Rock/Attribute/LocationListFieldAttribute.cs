@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-using Rock.Field.Types;
+using System;
 
 namespace Rock.Attribute
 {
@@ -34,6 +34,8 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public LocationListFieldAttribute(
             string name,
             string description = "",
@@ -42,7 +44,16 @@ namespace Rock.Attribute
             string category = "",
             int order = 0,
             string key = null ) :
-            base( name, description, required, defaultValue, category, order, key, typeof( LocationListFieldType ).FullName )
+            base( SystemGuid.FieldType.LOCATION_LIST.AsGuid(), name, description, required, defaultValue, category, order, key )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LocationListFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public LocationListFieldAttribute( string name )
+            : base( SystemGuid.FieldType.LOCATION_LIST.AsGuid(), name )
         {
         }
 
@@ -54,8 +65,8 @@ namespace Rock.Attribute
         /// </value>
         public bool AddressRequired
         {
-            get => FieldConfigurationValues.GetConfigurationValueAsString( LocationListFieldType.ConfigurationKey.AddressRequired ).AsBoolean();
-            set => FieldConfigurationValues[LocationListFieldType.ConfigurationKey.AddressRequired] = new Field.ConfigurationValue( value.ToString() );
+            get => FieldConfigurationValues.GetConfigurationValueAsString( "AddressRequired" ).AsBoolean();
+            set => FieldConfigurationValues["AddressRequired"] = new Field.ConfigurationValue( value.ToString() );
         }
 
         /// <summary>
@@ -66,8 +77,8 @@ namespace Rock.Attribute
         /// </value>
         public bool AllowAddingNewLocations
         {
-            get => FieldConfigurationValues.GetConfigurationValueAsString( LocationListFieldType.ConfigurationKey.AllowAddingNewLocations ).AsBoolean();
-            set => FieldConfigurationValues[LocationListFieldType.ConfigurationKey.AllowAddingNewLocations] = new Field.ConfigurationValue( value.ToString() );
+            get => FieldConfigurationValues.GetConfigurationValueAsString( "AllowAddingNewLocations" ).AsBoolean();
+            set => FieldConfigurationValues["AllowAddingNewLocations"] = new Field.ConfigurationValue( value.ToString() );
         }
 
         /// <summary>
@@ -78,8 +89,8 @@ namespace Rock.Attribute
         /// </value>
         public int? LocationType
         {
-            get => FieldConfigurationValues.GetConfigurationValueAsString( LocationListFieldType.ConfigurationKey.LocationType ).AsIntegerOrNull();
-            set => FieldConfigurationValues[LocationListFieldType.ConfigurationKey.LocationType] = new Field.ConfigurationValue( value.ToStringSafe() );
+            get => FieldConfigurationValues.GetConfigurationValueAsString( "LocationType" ).AsIntegerOrNull();
+            set => FieldConfigurationValues["LocationType"] = new Field.ConfigurationValue( value.ToStringSafe() );
         }
 
         /// <summary>
@@ -90,8 +101,8 @@ namespace Rock.Attribute
         /// </value>
         public bool ParentLocation
         {
-            get => FieldConfigurationValues.GetConfigurationValueAsString( LocationListFieldType.ConfigurationKey.ParentLocation ).AsBoolean();
-            set => FieldConfigurationValues[LocationListFieldType.ConfigurationKey.ParentLocation] = new Field.ConfigurationValue( value.ToStringSafe() );
+            get => FieldConfigurationValues.GetConfigurationValueAsString( "ParentLocation" ).AsBoolean();
+            set => FieldConfigurationValues["ParentLocation"] = new Field.ConfigurationValue( value.ToStringSafe() );
         }
 
         /// <summary>
@@ -102,8 +113,8 @@ namespace Rock.Attribute
         /// </value>
         public bool ShowCityState
         {
-            get => FieldConfigurationValues.GetConfigurationValueAsString( LocationListFieldType.ConfigurationKey.ShowCityState ).AsBoolean();
-            set => FieldConfigurationValues[LocationListFieldType.ConfigurationKey.ShowCityState] = new Field.ConfigurationValue( value.ToString() );
+            get => FieldConfigurationValues.GetConfigurationValueAsString( "ShowCityState" ).AsBoolean();
+            set => FieldConfigurationValues["ShowCityState"] = new Field.ConfigurationValue( value.ToString() );
         }
     }
 }

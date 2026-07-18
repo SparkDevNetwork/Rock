@@ -61,13 +61,12 @@ namespace Rock.Blocks.Types.Mobile.Core
         Order = 1,
         Key = AttributeKey.NoteTypes )]
 
-    [FileField( Rock.SystemGuid.BinaryFiletype.DEFAULT,
+    [ImageField( Rock.SystemGuid.BinaryFiletype.DEFAULT,
         "Default Note Image",
         Description = "This image is displayed next to the note if the author has no profile image.",
         IsRequired = false,
         Key = AttributeKey.DefaultNoteImage,
-        Order = 2,
-        FieldTypeClass = "Rock.Field.Types.ImageFieldType" )]
+        Order = 2 )]
 
     [BooleanField( "Use Template",
         Description = "If enabled, notes will be displayed using the 'Notes Template', allowing you full customization of the layout.",
@@ -245,7 +244,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// <value>
         /// The XAML template to parse on the shell.
         /// </value>
-        protected string NotesTemplate => Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKey.NotesTemplate ) );
+        protected string NotesTemplate => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKey.NotesTemplate ) );
 
         /// <summary>
         /// When in template mode, this is the amount of notes retrieved, when in List mode, this

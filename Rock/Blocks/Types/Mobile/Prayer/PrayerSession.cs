@@ -95,7 +95,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         Description = "Includes prayer requests that are attached to a group.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.IncludeGroupRequests,
         Order = 7 )]
 
@@ -226,7 +226,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// <value>
         /// The template.
         /// </value>
-        protected string Template => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
+        protected string Template => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
 
         /// <summary>
         /// Gets a value indicating whether interactions are created for prayers.
