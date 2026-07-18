@@ -54,6 +54,7 @@ namespace Rock.Blocks.Workflow
 
     [WorkflowTypeField( "Default WorkflowType",
         Description = "The default workflow type to use. If provided the query string will be ignored.",
+        IsRequired = false,
         Key = AttributeKey.DefaultWorkflowType )]
 
     [Rock.SystemGuid.EntityTypeGuid( "1208bfdd-18cf-4539-b36b-9744b10d7635" )]

@@ -106,6 +106,7 @@ namespace Rock.Blocks.Reporting
         Description = "This setting determines what date to use when entering the metric. 'Sunday Date' would use the selected Sunday date. 'Day from Schedule' will use the first day configured from the selected schedule.",
         DefaultValue = "0",
         ListSource = "0^Sunday Date,1^Day from Schedule",
+        IsRequired = false,
         Order = 8 )]
 
     [BooleanField(

@@ -64,6 +64,7 @@ namespace Rock.Attribute
         public BadgesFieldAttribute( string name )
             : base( SystemGuid.FieldType.BADGES.AsGuid(), name )
         {
+            EntityTypeGuid = SystemGuid.EntityType.PERSON;
         }
 
         /// <summary>
