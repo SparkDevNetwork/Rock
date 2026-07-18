@@ -212,33 +212,58 @@ namespace Rock.Blocks.Group
 
         /// <summary>
         /// Loads the people referenced by group member history summaries into
-        /// a lookup keyed by person identifier so events can list names and
-        /// photos without additional queries.
+        /// a lookup keyed by group member identifier so events can list names
+        /// and photos without additional queries.
         /// </summary>
         /// <param name="historySummaryList">The history summaries for the timeline.</param>
         /// <param name="groupMemberEntityTypeId">The GroupMember entity type identifier.</param>
-        /// <returns>A dictionary of people keyed by person identifier.</returns>
+        /// <returns>A dictionary of people keyed by group member identifier.</returns>
         private Dictionary<int, Person> GetMemberPersonLookup( List<HistoryService.HistorySummary> historySummaryList, int groupMemberEntityTypeId )
         {
-            var memberPersonIds = historySummaryList
+            var groupMemberIds = historySummaryList
                 .Where( s => s.EntityTypeId == groupMemberEntityTypeId )
-                .Select( s => ( s.Entity as GroupMember )?.PersonId )
-                .Where( id => id.HasValue )
-                .Select( id => id.Value )
+                .Select( s => s.EntityId )
                 .Distinct()
                 .ToList();
 
-            if ( !memberPersonIds.Any() )
+            if ( !groupMemberIds.Any() )
             {
                 return new Dictionary<int, Person>();
             }
 
-            return new PersonService( RockContext )
-                .Queryable()
+            /*
+                7/17/26 - MSE
+
+                HistoryService populates summary.Entity via GroupMemberService.Queryable(),
+                which excludes archived members. Removing a member from a history-enabled
+                group soft-deletes (archives) the row, so Entity is null and photos were
+                lost. Load GroupMember by Id with archived included, then resolve Person.
+
+                Reason: Show profile photos for removed/archived members on the timeline.
+            */
+            var groupMemberPersonIds = new GroupMemberService( RockContext )
+                .Queryable( includeDeceased: true, includeArchived: true )
                 .AsNoTracking()
-                .Where( p => memberPersonIds.Contains( p.Id ) )
+                .Where( gm => groupMemberIds.Contains( gm.Id ) )
+                .Select( gm => new { gm.Id, gm.PersonId } )
+                .ToList();
+
+            if ( !groupMemberPersonIds.Any() )
+            {
+                return new Dictionary<int, Person>();
+            }
+
+            var personIds = groupMemberPersonIds.Select( gm => gm.PersonId ).Distinct().ToList();
+            var personsById = new PersonService( RockContext )
+                .Queryable( includeDeceased: true )
+                .AsNoTracking()
+                .Where( p => personIds.Contains( p.Id ) )
                 .ToList()
                 .ToDictionary( p => p.Id, p => p );
+
+            return groupMemberPersonIds
+                .Where( gm => personsById.ContainsKey( gm.PersonId ) )
+                .ToDictionary( gm => gm.Id, gm => personsById[gm.PersonId] );
         }
 
         /// <summary>
@@ -248,7 +273,7 @@ namespace Rock.Blocks.Group
         /// <param name="verbGroup">The summaries for one verb and entity type within a day.</param>
         /// <param name="groupEntityTypeId">The Group entity type identifier.</param>
         /// <param name="groupMemberEntityTypeId">The GroupMember entity type identifier.</param>
-        /// <param name="personLookup">The people referenced by member summaries, keyed by person identifier.</param>
+        /// <param name="personLookup">The people referenced by member summaries, keyed by group member identifier.</param>
         /// <param name="groupIdKey">The IdKey of the group whose history is displayed.</param>
         /// <returns>The events describing this group of summaries.</returns>
         private List<GroupHistoryEventBag> GetEvents( HistoryService.HistorySummaryListByEntityTypeAndVerb verbGroup, int groupEntityTypeId, int groupMemberEntityTypeId, Dictionary<int, Person> personLookup, string groupIdKey )
@@ -386,7 +411,7 @@ namespace Rock.Blocks.Group
         /// </summary>
         /// <param name="summaries">The summaries, one per group member.</param>
         /// <param name="eventType">Whether the members were added or removed.</param>
-        /// <param name="personLookup">The people referenced by member summaries, keyed by person identifier.</param>
+        /// <param name="personLookup">The people referenced by member summaries, keyed by group member identifier.</param>
         /// <param name="groupIdKey">The IdKey of the group whose history is displayed.</param>
         /// <returns>The membership events.</returns>
         private List<GroupHistoryEventBag> GetMembershipEvents( List<HistoryService.HistorySummary> summaries, GroupHistoryEventType eventType, Dictionary<int, Person> personLookup, string groupIdKey )
@@ -429,7 +454,7 @@ namespace Rock.Blocks.Group
         /// their own event.
         /// </summary>
         /// <param name="summaries">The summaries, one per member that was updated.</param>
-        /// <param name="personLookup">The people referenced by member summaries, keyed by person identifier.</param>
+        /// <param name="personLookup">The people referenced by member summaries, keyed by group member identifier.</param>
         /// <param name="groupIdKey">The IdKey of the group whose history is displayed.</param>
         /// <returns>The member updated events.</returns>
         private List<GroupHistoryEventBag> GetMemberUpdatedEvents( List<HistoryService.HistorySummary> summaries, Dictionary<int, Person> personLookup, string groupIdKey )
@@ -477,7 +502,7 @@ namespace Rock.Blocks.Group
         /// name is shown in the event title, so no avatar is listed.
         /// </summary>
         /// <param name="summary">The summary for the member's changes.</param>
-        /// <param name="personLookup">The people referenced by member summaries, keyed by person identifier.</param>
+        /// <param name="personLookup">The people referenced by member summaries, keyed by group member identifier.</param>
         /// <param name="groupIdKey">The IdKey of the group whose history is displayed.</param>
         /// <returns>The member updated event.</returns>
         private GroupHistoryEventBag GetMemberUpdatedEvent( HistoryService.HistorySummary summary, Dictionary<int, Person> personLookup, string groupIdKey )
@@ -498,7 +523,7 @@ namespace Rock.Blocks.Group
         /// affected members are listed as avatars.
         /// </summary>
         /// <param name="summaries">The summaries whose changes are identical.</param>
-        /// <param name="personLookup">The people referenced by member summaries, keyed by person identifier.</param>
+        /// <param name="personLookup">The people referenced by member summaries, keyed by group member identifier.</param>
         /// <param name="groupIdKey">The IdKey of the group whose history is displayed.</param>
         /// <returns>The aggregated member updated event.</returns>
         private GroupHistoryEventBag GetAggregatedMemberUpdatedEvent( List<HistoryService.HistorySummary> summaries, Dictionary<int, Person> personLookup, string groupIdKey )
@@ -590,7 +615,21 @@ namespace Rock.Blocks.Group
                 .Select( h => new GroupHistoryChangeBag
                 {
                     ValueName = CleanValueName( h.ValueName ),
-                    NewValue = h.IsSensitive == true ? null : h.NewValue?.Trim().Truncate( MaxChangeValueLength ),
+                    /*
+                        7/17/26 - MSE
+
+                        Attribute history stores FormatValue output (condensed),
+                        which is HTML for field types such as Image and HTML.
+                        TruncateHtml preserves tags so images still render.
+                        SanitizeHtml(strict: false) keeps safe markup (img, p,
+                        strong, etc.) while stripping script/iframe/on* handlers
+                        before the client renders NewValue with v-html.
+
+                        Reason: Plain Truncate breaks mid-tag; v-html needs XSS-safe HTML.
+                    */
+                    NewValue = h.IsSensitive == true
+                        ? null
+                        : h.NewValue?.Trim().TruncateHtml( MaxChangeValueLength ).SanitizeHtml( strict: false ),
                     IsInitialValue = h.Verb == HistoryVerbValue.Add || h.OldValue.IsNullOrWhiteSpace(),
                     IsSensitive = h.IsSensitive == true
                 } )
@@ -622,7 +661,7 @@ namespace Rock.Blocks.Group
         /// back to the summary's caption when the person no longer exists.
         /// </summary>
         /// <param name="summary">The group member summary.</param>
-        /// <param name="personLookup">The people referenced by member summaries, keyed by person identifier.</param>
+        /// <param name="personLookup">The people referenced by member summaries, keyed by group member identifier.</param>
         /// <param name="groupIdKey">The IdKey of the group whose history is displayed.</param>
         /// <returns>The person bag.</returns>
         private GroupHistoryPersonBag GetPersonBag( HistoryService.HistorySummary summary, Dictionary<int, Person> personLookup, string groupIdKey )
@@ -643,8 +682,11 @@ namespace Rock.Blocks.Group
                 { PageParameterKey.GroupMemberId, IdHasher.Instance.GetHash( summary.EntityId ) }
             } );
 
-            var personId = ( summary.Entity as GroupMember )?.PersonId;
-            var person = personId.HasValue ? personLookup.GetValueOrNull( personId.Value ) : null;
+            // Lookup by GroupMember Id (includes archived rows). Entity may be
+            // null when the member was removed, because the default query
+            // filters IsArchived.
+            var person = personLookup.GetValueOrNull( summary.EntityId )
+                ?? ( summary.Entity as GroupMember )?.Person;
 
             if ( person == null )
             {

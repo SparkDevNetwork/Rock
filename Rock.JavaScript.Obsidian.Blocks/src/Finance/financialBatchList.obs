@@ -176,30 +176,29 @@
                       :rowDisabled="onDeleteRowDisabled"
                       @click="onDeleteClick" />
 
-        <template #gridFooterAppend>
-            <div v-if="accountSummaries.length > 0" class="d-flex" style="background-color: var(--color-interface-softest); padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
-                <div class="flex-grow-1"></div>
-                <div>
-                    <SectionHeader title="Totals">
-                        <template #actions>
+        <template #gridFooterAppend v-if="accountSummaries.length > 0">
+            <div class="d-flex justify-content-end">
+                <div class="col-sm-12 col-md-5 pt-3 pb-3">
+                    <ContentSection title="Total Results" disableCollapse>
+                        <template #headerActions>
                             <RockButton btnType="link"
                                         btnSize="xs"
-                                        @click="showAllSummaryAccounts = !showAllSummaryAccounts">
+                                        @click="onToggleShowAllSummaryAccounts">
                                 <template v-if="!showAllSummaryAccounts">Show all</template>
                                 <template v-else>Show top 5</template>
                             </RockButton>
                         </template>
-                    </SectionHeader>
-                    <table>
-                        <tr v-for="account in visibleAccountSummaries">
-                            <td :class="{ 'font-italic': account.isOtherAccount }">{{ account.name }}</td>
-                            <td class="text-right" style="padding-left:52px;">{{ toCurrencyOrNull(account.amount, config.options?.currencyInfo) }}</td>
-                        </tr>
-                        <tr>
-                            <td class="text-bold">Total</td>
-                            <td class="text-bold text-right" style="padding-left:52px;">{{ toCurrencyOrNull(summaryTotal, config.options?.currencyInfo) }}</td>
-                        </tr>
-                    </table>
+                        <div class="account-summary">
+                            <div v-for="account in visibleAccountSummaries" :key="account.idKey" class="d-flex justify-content-between">
+                                <p class="text-muted" :class="{ 'font-italic': account.isOtherAccount }">{{ account.name }}</p>
+                                <p class="text-right">{{ toCurrencyOrNull(account.amount, config.options?.currencyInfo) }}</p>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between text-bold">
+                            <span>Total:</span>
+                            <span class="text-right">{{ toCurrencyOrNull(summaryTotal, config.options?.currencyInfo) }}</span>
+                        </div>
+                    </ContentSection>
                 </div>
             </div>
         </template>
@@ -211,12 +210,18 @@
                        :sourceItems="config.options?.sources ?? []" />
 </template>
 
+<style scoped>
+.account-summary {
+    border-bottom: 1px var(--color-interface-soft) solid;
+}
+</style>
+
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { AttributeColumns, Column, DateColumn, dateValueFilter, LabelColumn, CurrencyColumn, HighlightDetailColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, SelectColumn, pickExistingValueFilter, NumberColumn } from "@Obsidian/Controls/grid";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { FinancialBatchListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchList/financialBatchListOptionsBag";
@@ -658,6 +663,13 @@
      */
     function onDeleteRowDisabled(row: Record<string, unknown>): boolean {
         return (row as Row).status === BatchStatus.Closed;
+    }
+
+    /**
+     * Toggles the summary between showing all accounts and only the top 5.
+     */
+    function onToggleShowAllSummaryAccounts(): void {
+        showAllSummaryAccounts.value = !showAllSummaryAccounts.value;
     }
 
     // #endregion

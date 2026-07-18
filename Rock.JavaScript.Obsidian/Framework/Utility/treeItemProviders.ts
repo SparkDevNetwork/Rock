@@ -643,6 +643,9 @@ export class GroupTreeItemProvider implements ITreeItemProvider {
     /** List of group types GUIDs to limit to groups of those types. */
     public includedGroupTypeGuids: Guid[] = [];
 
+    /** List of group type GUIDs to exclude when no include list is set. */
+    public excludedGroupTypeGuids: Guid[] = [];
+
     /** When true, show no groups by default. */
     public excludeAllByDefault: boolean = false;
 
@@ -654,6 +657,24 @@ export class GroupTreeItemProvider implements ITreeItemProvider {
 
     /** Whether to limit to only groups that have RSVPs enabled. */
     public limitToRSVPEnabled: boolean = false;
+
+    /** Whether to limit results to security-role groups only. */
+    public limitToSecurityRoleGroups: boolean = false;
+
+    /** Optional campus Guid used to filter groups by campus. */
+    public campusGuid: Guid | null = null;
+
+    /** When a campus filter is set, whether to also include groups that have no campus. */
+    public includeNoCampus: boolean = false;
+
+    /** Whether to limit results to public groups only. */
+    public limitToPublic: boolean = false;
+
+    /**
+     * The count mode to attach to each node: 0 = None, 1 = Child Groups,
+     * 2 = Group Members. Counts are written to TreeItemBag.childCount.
+     */
+    public countsType: number = 0;
 
     /**
      * Gets the child items from the server.
@@ -668,10 +689,16 @@ export class GroupTreeItemProvider implements ITreeItemProvider {
             guid: parentGuid,
             rootGroupGuid: this.rootGroupGuid,
             includedGroupTypeGuids: this.includedGroupTypeGuids,
+            excludedGroupTypeGuids: this.excludedGroupTypeGuids,
             excludeAllByDefault: this.excludeAllByDefault,
             includeInactiveGroups: this.includeInactiveGroups,
             limitToSchedulingEnabled: this.limitToSchedulingEnabled,
             limitToRSVPEnabled: this.limitToRSVPEnabled,
+            limitToSecurityRoleGroups: this.limitToSecurityRoleGroups,
+            campusGuid: this.campusGuid,
+            includeNoCampus: this.includeNoCampus,
+            limitToPublic: this.limitToPublic,
+            countsType: this.countsType,
             securityGrantToken: this.securityGrantToken,
             expandToValues
         };

@@ -31,6 +31,12 @@ export type ContentChannelDetailOptionsBag = {
     /** Gets or sets the content channel list. */
     contentChannelList?: ListItemBag[] | null;
 
+    /**
+     * Gets or sets the Content Channel Item attribute keys defined on the
+     * selected Content Channel Type. Channel-level item attributes must not reuse these keys.
+     */
+    contentChannelTypeItemAttributeKeys?: string[] | null;
+
     /** Gets or sets the content channel types. */
     contentChannelTypes?: ListItemBag[] | null;
 

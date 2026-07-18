@@ -81,6 +81,9 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONNECTION_ADD_CONNECTION_REQUEST )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CONNECTION_ADD_CONNECTION_REQUEST )]
+
+    [Obsolete( "Use the new AddConnectionRequest block instead." )]
+    [RockObsolete( "20.0" )]
     public class AddConnectionRequestLegacy : RockBlockType
     {
         #region Keys

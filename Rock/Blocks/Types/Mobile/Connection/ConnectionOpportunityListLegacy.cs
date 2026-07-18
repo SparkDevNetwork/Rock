@@ -78,6 +78,9 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONNECTION_CONNECTION_OPPORTUNITY_LIST_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CONNECTION_CONNECTION_OPPORTUNITY_LIST )]
+
+    [Obsolete( "Use the new ConnectionOpportunityList block instead." )]
+    [RockObsolete( "20.0" )]
     public class ConnectionOpportunityListLegacy : RockBlockType
     {
         #region Block Attributes

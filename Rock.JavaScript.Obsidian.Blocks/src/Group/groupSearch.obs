@@ -3,6 +3,7 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="id"
+          :entityTypeGuid="EntityType.Group"
           itemTerm="Group"
           title="Search Results"
           emptyDataText="No Groups Found"
@@ -24,8 +25,7 @@
                 :filter="textValueFilter"
                 :filterValue="getGroupFilterValue"
                 :quickFilterValue="getGroupFilterValue"
-                :exportValue="getGroupFilterValue"
-                visiblePriority="xs">
+                :exportValue="getGroupFilterValue">
             <template #format="{ row }">
                 <div>
                     <span v-if="row.structure" v-html="row.structure"></span>
@@ -42,20 +42,17 @@
         <TextColumn name="groupType"
                     title="Type"
                     field="groupType"
-                    :filter="textValueFilter"
-                    visiblePriority="md" />
+                    :filter="textValueFilter" />
 
         <NumberColumn name="memberCount"
                       title="Member Count"
                       field="memberCount"
-                      :filter="numberValueFilter"
-                      visiblePriority="md" />
+                      :filter="numberValueFilter" />
 
         <TextColumn name="campus"
                     title="Campus"
                     field="campus"
-                    :filter="textValueFilter"
-                    visiblePriority="lg" />
+                    :filter="textValueFilter" />
     </Grid>
 </template>
 
@@ -67,6 +64,7 @@
         numberValueFilter,
         textValueFilter
     } from "@Obsidian/Controls/grid";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { GroupSearchOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupSearch/groupSearchOptionsBag";

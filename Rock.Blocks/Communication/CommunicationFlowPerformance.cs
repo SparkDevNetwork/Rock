@@ -28,6 +28,7 @@ using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Communication.CommunicationFlowPerformance;
+using Rock.ViewModels.Core.Grid;
 using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -361,6 +362,39 @@ namespace Rock.Blocks.Communication
         }
 
         #endregion
+
+        #region Block Actions
+
+        /// <summary>
+        /// Creates an entity set for the subset of selected rows in the grid.
+        /// </summary>
+        /// <remarks>
+        /// This block derives from <see cref="RockBlockType"/> rather than
+        /// <see cref="RockListBlockType{T}"/>, so it does not inherit the standard
+        /// entity-set action. It is provided here so the Launch Workflow grid action
+        /// can operate on the selected communications.
+        /// </remarks>
+        /// <param name="entitySet">The bag that describes the entity set to create.</param>
+        /// <returns>An action result that contains the identifier of the entity set.</returns>
+        [BlockAction]
+        public BlockActionResult CreateGridEntitySet( GridEntitySetBag entitySet )
+        {
+            if ( entitySet == null )
+            {
+                return ActionBadRequest( "No entity set data was provided." );
+            }
+
+            var rockEntitySet = GridHelper.CreateEntitySet( entitySet );
+
+            if ( rockEntitySet == null )
+            {
+                return ActionBadRequest( "No entities were found to create the set." );
+            }
+
+            return ActionOk( rockEntitySet.Id.ToString() );
+        }
+
+        #endregion Block Actions
 
         #region Helper Classes
 

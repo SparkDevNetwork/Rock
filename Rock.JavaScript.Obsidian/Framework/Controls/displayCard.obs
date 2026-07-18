@@ -4,8 +4,9 @@
          :class="{
             'is-hovering': isHovering,
             'is-selected': isSelected,
-            'clickable': !!props.onClick,
-            'is-compact': isCompact
+            'clickable': !!props.onClick && !disabled,
+            'is-compact': isCompact,
+            'is-disabled': disabled
         }"
          @mouseenter="onMouseEnter"
          @mouseleave="onMouseLeave"
@@ -174,6 +175,13 @@
     background-color: var(--color-info-soft);
 }
 
+/* A disabled card ignores clicks and dims to signal it is not interactive. Slot
+   content is disabled by the consumer, so only the card chrome is dimmed here. */
+.displaycard.is-disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
 /* An opaque surface keeps the band distinct from the selected/hover header tint.
    Spacing is left to the slot content so the expanded region is not opinionated. */
 .displaycard-expanded {
@@ -300,6 +308,16 @@
             default: false
         },
 
+        /**
+         * When true, the card ignores clicks and is visually dimmed. Consumers
+         * remain responsible for disabling any interactive slot content
+         * (checkboxes, action buttons, editors) they provide.
+         */
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         minWidth: {
             type: String as PropType<string>,
             required: false,
@@ -388,13 +406,13 @@
      * when a click handler is defined and apply the "clickable" class.
      */
     function onMainClick(): void {
-        if (props.onClick) {
+        if (props.onClick && !props.disabled) {
             props.onClick();
         }
     }
 
     function onMouseEnter(): void {
-        if (props.onClick) {
+        if (props.onClick && !props.disabled) {
             isHovering.value = true;
         }
     }

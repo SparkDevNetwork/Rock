@@ -7,6 +7,7 @@
                  iconStyle="tile"
                  :isSelected="isSelected"
                  :isExpanded="isSelected && hasAttributes"
+                 :disabled="disabled"
                  :onClick="toggleSelected">
         <template #aside>
             <div class="connection-opportunity-aside">
@@ -16,7 +17,7 @@
                     {{ opportunity.connectionTypeName }}
                 </HighlightLabel>
                 <div @click.stop>
-                    <CheckBox v-model="isSelected" label="" />
+                    <CheckBox v-model="isSelected" label="" :disabled="disabled" />
                 </div>
             </div>
         </template>
@@ -31,6 +32,7 @@
                     <AttributeValuesContainer v-model="attributeValues"
                                               :attributes="category.attributes"
                                               :showCategoryLabel="false"
+                                              :disabled="disabled"
                                               isEditMode />
                 </ContentStack>
             </ContentSection>
@@ -86,6 +88,11 @@
         modelValue: {
             type: Object as PropType<Record<string, string>>,
             default: () => ({})
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -178,6 +185,10 @@
 
     /** Toggles whether this opportunity is selected. */
     function toggleSelected(): void {
+        if (props.disabled) {
+            return;
+        }
+
         isSelected.value = !isSelected.value;
     }
 

@@ -15,12 +15,13 @@
                 <div v-for="row in rows"
                      :key="row.personGuid"
                      class="checkbox">
-                    <label v-tooltip="row.isDisabled ? 'Does Not Meet Attendance Age Minimum' : undefined">
+                    <label>
                         <input type="checkbox"
                                :checked="attendedPersonGuids.includes(row.personGuid)"
                                :disabled="row.isDisabled"
                                @change="onRowChanged(row, $event)" />
-                        <span class="label-text">{{ row.label }}</span>
+                        <span class="label-text"
+                              v-tooltip="row.isDisabled ? 'Does Not Meet Attendance Age Minimum' : undefined">{{ row.label }}</span>
                         <HelpBlock v-if="row.isGuest" text="Relationship: Can Check-In" />
                     </label>
                 </div>

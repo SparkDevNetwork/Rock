@@ -103,35 +103,36 @@
                         changes; when the toolbar collapses (isToolbarCompact) the secondary
                         actions fold in above them.
                     -->
-                    <div v-if="isToolbarOverflowMenuShown" class="dropdown">
-                        <i class="ti ti-dots-vertical cursor-pointer" data-toggle="dropdown"></i>
-                        <ul class="dropdown-menu" :class="{ 'dropdown-menu-right': isToolbarCompact }">
+                    <DropDownContent v-if="isToolbarOverflowMenuShown"
+                                     v-model="isToolbarOverflowMenuOpen"
+                                     enableFlip
+                                     :placement="isToolbarCompact ? 'bottom-end' : 'bottom-start'"
+                                     preventAnchorClickPropagation>
+                        <template #anchor>
+                            <i class="ti ti-dots-vertical cursor-pointer"></i>
+                        </template>
+                        <div class="d-flex flex-column bg-interface-softest dropdown-content text-sm">
                             <template v-if="isToolbarCompact">
-                                <li v-for="action in foldedToolbarActions"
-                                    :key="action.key"
-                                    :class="{ disabled: isToolbarActionDisabled(action) }">
-                                    <button type="button"
-                                            :disabled="isToolbarActionDisabled(action)"
-                                            @click="action.handler()"
-                                            class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold"
-                                            :class="{ 'text-danger': action.isDanger }">
-                                        <i :class="getToolbarMenuIconClass(action)"></i>{{ action.label }}
-                                    </button>
-                                </li>
-                                <li v-if="canEditConnectionRequests" class="divider"></li>
+                                <div v-for="action in foldedToolbarActions"
+                                     :key="action.key"
+                                     class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                                     :class="{ 'text-danger': action.isDanger, disabled: isToolbarActionDisabled(action) }"
+                                     @click.stop="onToolbarMenuActionClick(action)">
+                                    <i :class="getToolbarMenuIconClass(action)"></i>{{ action.label }}
+                                </div>
+                                <div v-if="canEditConnectionRequests" class="dropdown-content-divider"></div>
                             </template>
                             <template v-if="canEditConnectionRequests">
-                                <li v-for="action in stateToolbarActions" :key="action.key">
-                                    <button type="button"
-                                            @click="action.handler()"
-                                            class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold"
-                                            :class="{ 'text-danger': action.isDanger }">
-                                        <i :class="getToolbarMenuIconClass(action)"></i>{{ action.label }}
-                                    </button>
-                                </li>
+                                <div v-for="action in stateToolbarActions"
+                                     :key="action.key"
+                                     class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                                     :class="{ 'text-danger': action.isDanger, disabled: isToolbarActionDisabled(action) }"
+                                     @click.stop="onToolbarMenuActionClick(action)">
+                                    <i :class="getToolbarMenuIconClass(action)"></i>{{ action.label }}
+                                </div>
                             </template>
-                        </ul>
-                    </div>
+                        </div>
+                    </DropDownContent>
                 </div>
             </div>
             <div class="right-actions d-flex align-items-center gap-spacing-md">
@@ -936,6 +937,23 @@
     z-index: 4;
 }
 
+/* A disabled overflow-menu item is muted and non-interactive, matching the disabled toolbar buttons it stands in for. */
+.dropdown-content-item.disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.dropdown-content-item.disabled:hover {
+    background-color: transparent;
+}
+
+/* Separates the folded actions from the state-change actions in the compact overflow menu. */
+.dropdown-content-divider {
+    height: 1px;
+    margin: var(--spacing-xsmall) 0;
+    background-color: var(--color-interface-soft);
+}
+
 :deep(.grid-body) {
     border-bottom-left-radius: var(--rounded-medium);
     border-bottom-right-radius: var(--rounded-medium);
@@ -1043,10 +1061,6 @@ i.disabled {
 
 .text-emerald {
     color: #10B981;
-}
-
-.dropdown-menu {
-    width: 230px;
 }
 
 :deep(.dropdown-min-width) {
@@ -1856,6 +1870,9 @@ i.disabled {
     /** The overflow menu is shown when compact (it holds the folded actions) or when the user can edit (it holds the state changes). */
     const isToolbarOverflowMenuShown = computed<boolean>(() => isToolbarCompact.value || canEditConnectionRequests.value);
 
+    /** True while the toolbar overflow menu (the "..." DropDownContent) is open. */
+    const isToolbarOverflowMenuOpen = ref<boolean>(false);
+
     /**
      * True when an action is unavailable - either it needs edit permission the current user
      * does not have, or it is connection-type-specific and the bulk selection spans multiple
@@ -1877,6 +1894,21 @@ i.disabled {
     function getToolbarMenuIconClass(action: SelectedRowAction): string {
         const colorClass = action.isDanger ? "text-danger" : "text-interface-medium";
         return `${action.iconCssClass} pr-spacing-sm ${colorClass}`;
+    }
+
+    /**
+     * Runs an overflow-menu action and closes the menu. Disabled actions are ignored
+     * so the DropDownContent items behave like the disabled buttons they replaced.
+     * The menu is closed explicitly here because the action handlers open modals
+     * rather than triggering the outside-click that would otherwise dismiss it.
+     */
+    function onToolbarMenuActionClick(action: SelectedRowAction): void {
+        if (isToolbarActionDisabled(action)) {
+            return;
+        }
+
+        isToolbarOverflowMenuOpen.value = false;
+        action.handler();
     }
 
     // #endregion Selected-Row Action Toolbar

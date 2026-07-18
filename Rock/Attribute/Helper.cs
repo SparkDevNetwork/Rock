@@ -167,6 +167,8 @@ namespace Rock.Attribute
             {
                 entityProperties.Add( new TextFieldAttribute( CustomGridColumnsConfig.AttributeKey )
                 {
+                    AllowHtml = true,
+                    AllowLava = true,
                     Category = "CustomSetting",
                 } );
             }

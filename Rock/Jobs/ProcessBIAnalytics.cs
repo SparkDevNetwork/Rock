@@ -886,14 +886,17 @@ UPDATE [AnalyticsSourcePersonHistorical]
                     columnInfo.FromClause = populateAttributeValueFROMClause;
                 }
 
-                // Get the count of existing analytics rows that require updating.
-                var countCandidateRecordsScript = GetPersonUpdateETLCandidateScript( personValueSelectColumns, attributeValueColumns );
-
-                var modifiedRowCount = ( int ) DbService.ExecuteScalar( countCandidateRecordsScript, CommandType.Text, null, _commandTimeout );
-
                 var markAsHistoryScript = GetPersonMarkAsHistoryScript( historyColumns );
-                var updateETLScript = GetPersonUpdateETLScript( attributeValueColumns, personValueSelectColumns );
+                var updateETLScriptForPersonValues = GetPersonUpdateETLScriptForPersonValues( personValueSelectColumns );
                 var processINSERTScript = GetPersonProcessINSERTScript( personValueSelectColumns );
+
+                // Build the attribute-value update as one UPDATE statement per attribute (to allow batch processing
+                // for large numbers of attributes), concatenated so they run as a single command.
+                var updateETLScriptForAttributeValues = string.Empty;
+                foreach ( var attributeValueColumn in attributeValueColumns )
+                {
+                    updateETLScriptForAttributeValues += GetPersonUpdateETLScriptForAttributeValues( new List<ColumnInfo> { attributeValueColumn } );
+                }
 
                 var scriptDeclares = $@"
 DECLARE 
@@ -903,7 +906,7 @@ DECLARE
                 // throw script into logs in case 'Save SQL for Debug' is enabled
                 _personJobStats.SqlLogs.Add( "/* MarkAsHistoryScript */\n" + scriptDeclares + markAsHistoryScript );
                 _personJobStats.SqlLogs.Add( "/* ProcessINSERTScript */\n" + scriptDeclares + processINSERTScript );
-                _personJobStats.SqlLogs.Add( "/* UpdateETLScript */\n" + scriptDeclares + updateETLScript );
+                _personJobStats.SqlLogs.Add( "/* UpdateETLScript */\n" + scriptDeclares + updateETLScriptForPersonValues + "\n" + updateETLScriptForAttributeValues );
 
                 // Mark current records as history if they have changes in any fields that should trigger history.
                 _personJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( scriptDeclares + markAsHistoryScript, CommandType.Text, null, _commandTimeout );
@@ -913,14 +916,30 @@ DECLARE
                 // Attribute values are updated in the next step, to allow batch processing for large numbers of attributes.
                 _personJobStats.RowsInserted += DbService.ExecuteCommand( scriptDeclares + processINSERTScript, CommandType.Text, null, _commandTimeout );
 
-                // Update the current analytics records (CurrentRowIndicator=1) with data from the source tables.
-                DbService.ExecuteCommand( scriptDeclares + updateETLScript, CommandType.Text, null, _commandTimeout );
+                /*
+                    07/10/26 - JMH
 
-                // Get the number of analytics rows updated, excluding any rows that were moved to history.
-                var updatedCount = modifiedRowCount - _personJobStats.RowsMarkedAsHistory;
-                if ( updatedCount > 0 )
+                    Capture the affected row counts directly from the ETL UPDATE statements instead of running a
+                    separate COUNT query first. The prior candidate-count query joined Person to every "Is Analytic"
+                    AttributeValue and, on large systems, could regress to a serial query plan and time out, which
+                    failed the entire job. Its result was used only to report RowsUpdated.
+
+                    The person-property and attribute updates are logged together above as one script to keep the
+                    'Save SQL for Debug' output unchanged, but they are executed separately here so their row counts
+                    can be captured individually: the person-property UPDATE affects one row per changed person
+                    (RowsUpdated), while the per-attribute UPDATEs are tallied under AttributeFieldsUpdated,
+                    consistent with how the Family and Campus analytics already report.
+
+                    Reason: A statistics-only COUNT query could time out and block the job (Fixes #6898).
+                */
+
+                // Update the current person-property values (CurrentRowIndicator=1), counting the rows changed in place.
+                _personJobStats.RowsUpdated += DbService.ExecuteCommand( scriptDeclares + updateETLScriptForPersonValues, CommandType.Text, null, _commandTimeout );
+
+                // Update the current attribute values, skipping when there are no analytic attributes.
+                if ( attributeValueColumns.Any() )
                 {
-                    _personJobStats.RowsUpdated += updatedCount;
+                    _personJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( scriptDeclares + updateETLScriptForAttributeValues, CommandType.Text, null, _commandTimeout );
                 }
             }
         }
@@ -1037,27 +1056,6 @@ AND asph.PersonId NOT IN ( -- Ensure that there isn't already a History Record f
         /// <summary>
         /// Gets the update etl script for Person Analytic Tables
         /// </summary>
-        /// <param name="attributeValueColumns">The attribute value columns.</param>
-        /// <param name="populatePersonValueSELECTColumns">The populate person value select columns.</param>
-        /// <returns></returns>
-        private string GetPersonUpdateETLScript( List<ColumnInfo> attributeValueColumns, List<ColumnInfo> populatePersonValueSELECTColumns )
-        {
-            // Create script to update Person properties.
-            var updateETLScript = GetPersonUpdateETLScriptForPersonValues( populatePersonValueSELECTColumns );
-            updateETLScript += "\n";
-
-            // Add scripts to update Person attributes.
-            foreach ( var attributeValueColumn in attributeValueColumns )
-            {
-                updateETLScript += GetPersonUpdateETLScriptForAttributeValues( new List<ColumnInfo> { attributeValueColumn } );
-            }
-
-            return updateETLScript;
-        }
-
-        /// <summary>
-        /// Gets the update etl script for Person Analytic Tables
-        /// </summary>
         /// <param name="personValueColumns">The populate person value select columns.</param>
         /// <returns></returns>
         private string GetPersonUpdateETLScriptForPersonValues( List<ColumnInfo> personValueColumns )
@@ -1131,62 +1129,6 @@ WHERE asph.CurrentRowIndicator = 1 AND (
             updateETLScript += ")";
 
             return updateETLScript;
-        }
-
-        /// <summary>
-        /// Gets a SQL script to count the number of rows in the analytics table that require updating.
-        /// </summary>
-        /// <param name="propertyColumns">The populate person value select columns.</param>
-        /// <param name="attributeValueColumns">The attribute value columns.</param>
-        /// <returns></returns>
-        private string GetPersonUpdateETLCandidateScript( List<ColumnInfo> propertyColumns, List<ColumnInfo> attributeValueColumns )
-        {
-            var countCandidatePersonScript = @"
-WITH cte1 as (
-    SELECT 
-        p.Id [PersonId],
-        p.PrimaryFamilyId [PrimaryFamilyId],
-        p.Age [Age], 
-";
-
-            countCandidatePersonScript += propertyColumns.Select( a => $"        [{a.ColumnName}]" ).ToList().AsDelimited( ",\n" );
-
-            if ( attributeValueColumns.Any() )
-            {
-                // only need a comma when we have more SELECT clauses to add
-                countCandidatePersonScript += ",\n";
-            }
-            else
-            {
-                countCandidatePersonScript += "\n";
-            }
-
-            countCandidatePersonScript += attributeValueColumns.Select( a => "        " + a.SelectClause ).ToList().AsDelimited( ",\n" );
-            countCandidatePersonScript += "\n";
-
-            countCandidatePersonScript += @"
-    FROM dbo.Person p
-";
-            countCandidatePersonScript += attributeValueColumns.Select( a => "        " + a.FromClause ).ToList().AsDelimited( "\n" );
-            countCandidatePersonScript += @"
-)
-SELECT COUNT(*)
-FROM AnalyticsSourcePersonHistorical asph
-JOIN cte1 ON cte1.PersonId = asph.PersonId
-WHERE asph.CurrentRowIndicator = 1 AND (
-";
-
-            countCandidatePersonScript += propertyColumns.Select( a => $"        isnull(asph.[{a.ColumnName}],{a.IsNullDefaultValue}) != isnull(cte1.[{a.ColumnName}],{a.IsNullDefaultValue})" ).ToList().AsDelimited( " OR \n" );
-            countCandidatePersonScript += " OR \n        isnull(asph.[Age],-1) != isnull(cte1.[Age],-1)";
-            if ( attributeValueColumns.Any() )
-            {
-                countCandidatePersonScript += " OR \n";
-                countCandidatePersonScript += attributeValueColumns.Select( a => $"        isnull(asph.[{a.ColumnName}],{a.IsNullDefaultValue}) != isnull(cte1.[{a.ColumnName}],{a.IsNullDefaultValue})" ).ToList().AsDelimited( " OR \n" );
-            }
-
-            countCandidatePersonScript += ")";
-
-            return countCandidatePersonScript;
         }
 
         #endregion

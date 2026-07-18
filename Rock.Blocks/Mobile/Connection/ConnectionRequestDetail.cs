@@ -1496,6 +1496,98 @@ namespace Rock.Blocks.Mobile.Connection
         }
 
         /// <summary>
+        /// Adds or edits the note on an existing ConnectionRequestStatusHistory
+        /// record (the note explaining why the request moved from one status to
+        /// another). Covers both adding a note where none existed and editing an
+        /// existing one. When the status that ended requires a note, an empty note
+        /// is rejected so the requirement holds regardless of the client. Ports
+        /// the web Connections Hub SaveStatusHistoryNote.
+        /// </summary>
+        /// <param name="request">The status-history note payload.</param>
+        /// <returns>The saved note, echoing back the feed entry key so the shell can refresh the feed.</returns>
+        [BlockAction]
+        public BlockActionResult SaveStatusHistoryNote( SaveStatusHistoryNoteBag request )
+        {
+            if ( request == null || request.StatusHistoryIdKey.IsNullOrWhiteSpace() )
+            {
+                return ActionBadRequest( "Missing request options." );
+            }
+
+            var statusHistoryService = new ConnectionRequestStatusHistoryService( RockContext );
+            var statusHistory = statusHistoryService.Get( request.StatusHistoryIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( statusHistory == null )
+            {
+                return ActionBadRequest( $"{ConnectionRequestStatusHistory.FriendlyTypeName} not found." );
+            }
+
+            if ( !CanCurrentPersonEditStatusHistoryNote( statusHistory ) )
+            {
+                return ActionForbidden( "You are not authorized to edit this note." );
+            }
+
+            // The status that ended governs whether a note is required, matching the status-change save
+            // behavior. Enforce it here so the requirement cannot be bypassed by the client.
+            if ( request.Note.IsNullOrWhiteSpace() && IsNoteRequiredForStatusHistory( statusHistory ) )
+            {
+                return ActionBadRequest( "A note is required." );
+            }
+
+            statusHistory.Note = request.Note;
+
+            RockContext.SaveChanges();
+
+            return ActionOk( new SaveStatusHistoryNoteBag
+            {
+                StatusHistoryIdKey = statusHistory.IdKey,
+                Note = statusHistory.Note,
+                Key = request.Key
+            } );
+        }
+
+        /// <summary>
+        /// Determines whether the current person may add or edit the note on the
+        /// specified status-history record. Delegates to the same permission check
+        /// used when changing a request's status, so anyone who could have made
+        /// the status change can edit its note. Ports the web
+        /// CanCurrentPersonEditStatusHistoryNote.
+        /// </summary>
+        /// <param name="statusHistory">The status history record to evaluate. May be <c>null</c>.</param>
+        /// <returns><c>true</c> if the current person may edit the note; otherwise <c>false</c>.</returns>
+        private bool CanCurrentPersonEditStatusHistoryNote( ConnectionRequestStatusHistory statusHistory )
+        {
+            if ( statusHistory == null || RequestContext.CurrentPerson == null )
+            {
+                return false;
+            }
+
+            var connectionRequest = statusHistory.ConnectionRequest
+                ?? new ConnectionRequestService( RockContext ).Get( statusHistory.ConnectionRequestId );
+
+            if ( connectionRequest == null )
+            {
+                return false;
+            }
+
+            return CanEditConnectionRequest( connectionRequest, out _ );
+        }
+
+        /// <summary>
+        /// Determines whether the status that ended in the specified status-history
+        /// record requires a note (<c>ConnectionStatus.IsNoteRequiredOnCompletion</c>).
+        /// Ports the web IsNoteRequiredForStatusHistory.
+        /// </summary>
+        /// <param name="statusHistory">The status history record to evaluate.</param>
+        /// <returns><c>true</c> if the ended status requires a note; otherwise <c>false</c>.</returns>
+        private bool IsNoteRequiredForStatusHistory( ConnectionRequestStatusHistory statusHistory )
+        {
+            return new ConnectionStatusService( RockContext ).Queryable()
+                .Where( s => s.Id == statusHistory.ConnectionStatusId )
+                .Select( s => s.IsNoteRequiredOnCompletion )
+                .FirstOrDefault();
+        }
+
+        /// <summary>
         /// Gets the full activity feed for a connection request: logged
         /// activities, the requester's activities on other requests of the same
         /// type (when the type enables it), system updates parsed from history,
@@ -1798,8 +1890,15 @@ namespace Rock.Blocks.Mobile.Connection
                     } )
                     .ToList(),
 
-                ActivityCount = new ConnectionRequestActivityService( RockContext ).Queryable()
-                    .Count( a => a.ConnectionRequestId == connectionRequest.Id ),
+                // The footer "Activity (N)" pill reflects the whole feed (logged
+                // activities, request notes, system updates, communications and
+                // status changes), so count the assembled feed entries rather than
+                // only logged activities. Reusing the same builder the feed loads
+                // from guarantees the pill always equals what opening the feed
+                // shows (a plain COUNT can't match, since notes are authorization-
+                // filtered in memory). The empty merge fields are fine here because
+                // only the entry count is used, not the resolved SMS content.
+                ActivityCount = GetActivityEntries( connectionRequest, new Dictionary<string, object>() ).Count,
                 ReminderCount = GetReminderCount( connectionRequest ),
                 AreRemindersEnabled = connectionType.EnabledFeatures.HasFlag( EnabledFeatureFlags.Reminder ),
                 CanEditConnectionRequestNote = CanEditConnectionRequestNote( connectionRequest )
@@ -2835,7 +2934,9 @@ SELECT
     h.[Verb],
     h.[ValueName],
     h.[NewValue],
-    h.[OldValue]
+    h.[OldValue],
+    p.[PhotoId],
+    p.[Gender]
 FROM [History] h
 LEFT JOIN [PersonAlias] pa
     ON pa.[Id] = h.[CreatedByPersonAliasId]
@@ -2852,6 +2953,64 @@ WHERE h.[CategoryId] = @CategoryId
                     new SqlParameter( "@ConnectionRequestEntityTypeId", connectionRequestEntityTypeId ),
                     new SqlParameter( "@RequestId", connectionRequest.Id ) )
                 .ToList();
+
+            // Load the status-change notes (v19+) for this request in one indexed query so the note can be
+            // shown on the corresponding status-change card. There is no foreign key between [History] and
+            // [ConnectionRequestStatusHistory]; the save hook writes a status-history row whose
+            // ConnectionStatusId is the status that *ended* (matching the bracketed id in the History row's
+            // OldValue) with EndDateTime at the moment of the change. IsEndedStatusNoteRequired is projected
+            // here to avoid any per-row database access below. Ports the web Connections Hub logic.
+            var statusHistoryNoteRows = new ConnectionRequestStatusHistoryService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Where( h => h.ConnectionRequestId == connectionRequest.Id )
+                .Select( h => new StatusHistoryNoteRow
+                {
+                    Id = h.Id,
+                    ConnectionStatusId = h.ConnectionStatusId,
+                    EndDateTime = h.EndDateTime,
+                    Note = h.Note,
+                    IsEndedStatusNoteRequired = h.ConnectionStatus.IsNoteRequiredOnCompletion
+                } )
+                .ToList();
+
+            // A status-change note is editable by whoever can change the request's status, so it uses the
+            // same permission check as the status-change action. Computed once for the request.
+            var canEditStatusNote = RequestContext.CurrentPerson != null
+                && CanEditConnectionRequest( connectionRequest, out _ );
+
+            // Group status-history rows by the ended status, oldest first, so that when a request has moved
+            // off the same status more than once each transition pairs with its own note in chronological order.
+            var statusHistoryRowsByEndedStatusId = statusHistoryNoteRows
+                .GroupBy( h => h.ConnectionStatusId )
+                .ToDictionary( g => g.Key, g => new Queue<StatusHistoryNoteRow>( g.OrderBy( h => h.EndDateTime ) ) );
+
+            // Map each status-change History row to its status-history note row (if any), pairing the two
+            // chronologically and rejecting matches whose timestamps are further apart than the tolerance.
+            var statusHistoryNoteByHistoryRowId = new Dictionary<int, StatusHistoryNoteRow>();
+            var statusChangeHistoryRows = historyRows
+                .Where( r => r.ValueName == "ConnectionStatus" && r.Verb != "Add" && r.OldValue.IsNotNullOrWhiteSpace() )
+                .OrderBy( r => r.CreatedDateTime );
+
+            foreach ( var statusChangeHistoryRow in statusChangeHistoryRows )
+            {
+                var endedStatusId = GetTrailingBracketId( statusChangeHistoryRow.OldValue );
+                if ( !endedStatusId.HasValue
+                    || !statusHistoryRowsByEndedStatusId.TryGetValue( endedStatusId.Value, out var candidateQueue )
+                    || candidateQueue.Count == 0 )
+                {
+                    continue;
+                }
+
+                var candidate = candidateQueue.Peek();
+                var historyDateTime = statusChangeHistoryRow.CreatedDateTime ?? candidate.EndDateTime;
+
+                if ( Math.Abs( ( candidate.EndDateTime - historyDateTime ).TotalMinutes ) > StatusHistoryNoteCorrelationToleranceMinutes )
+                {
+                    continue;
+                }
+
+                statusHistoryNoteByHistoryRowId[statusChangeHistoryRow.Id] = candidateQueue.Dequeue();
+            }
 
             entries.AddRange( historyRows.Select( r =>
             {
@@ -2922,6 +3081,46 @@ WHERE h.[CategoryId] = @CategoryId
                             systemUpdateType = MobileSystemUpdateType.DueSoonDateChange;
                             break;
                     }
+                }
+
+                // Status changes surface as card entries (not system updates) so the accompanying note reads
+                // as editable card content. The Verb != "Add" guard excludes the record-creation row, leaving
+                // the ConnectionStatus set / updated / cleared transitions. Ports the web Connections Hub logic.
+                var isStatusChange = r.ValueName == "ConnectionStatus" && r.Verb != "Add";
+
+                if ( isStatusChange )
+                {
+                    // Title describes the status the change landed on (or, for a cleared status, the one it
+                    // left). The author name is carried separately on PersonName, matching the other cards.
+                    var statusChangeTitle = systemUpdateType == MobileSystemUpdateType.StatusCleared
+                        ? previousValue
+                        : newValue;
+
+                    var statusChangeEntry = new ConnectionRequestActivityBag
+                    {
+                        Key = $"{MobileActivityEntryType.StatusChange}_{IdHasher.Instance.GetHash( r.Id )}",
+                        EntryType = MobileActivityEntryType.StatusChange,
+                        EntryDateTime = r.CreatedDateTime?.ToRockDateTimeOffset(),
+                        PersonName = r.CreatedBy.IsNullOrWhiteSpace() ? "Rock" : r.CreatedBy,
+                        PhotoUrl = BuildPersonPhotoUrl( r.PhotoId ),
+                        AuthorGender = ( Rock.Common.Mobile.Enums.Gender ) ( r.Gender ?? 0 ),
+                        Title = statusChangeTitle,
+                        PreviousValue = previousValue,
+                        NewValue = newValue
+                    };
+
+                    // When this change correlates to a status-history record (v19+ updates; the initial status
+                    // set and pre-v19 changes have none) surface its note and the flags the shell needs to
+                    // gate the note add / edit affordance.
+                    if ( statusHistoryNoteByHistoryRowId.TryGetValue( r.Id, out var statusHistoryNote ) )
+                    {
+                        statusChangeEntry.Content = statusHistoryNote.Note;
+                        statusChangeEntry.StatusHistoryIdKey = IdHasher.Instance.GetHash( statusHistoryNote.Id );
+                        statusChangeEntry.IsNoteRequired = statusHistoryNote.IsEndedStatusNoteRequired;
+                        statusChangeEntry.IsEditable = canEditStatusNote;
+                    }
+
+                    return statusChangeEntry;
                 }
 
                 return new ConnectionRequestActivityBag
@@ -3079,6 +3278,25 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
         }
 
         /// <summary>
+        /// Extracts the trailing bracketed id (e.g. the "123" in " [123]") that
+        /// Rock appends to some history values, or <c>null</c> when there is
+        /// none. Ports the web Connections Hub GetTrailingBracketId helper, used
+        /// to read the ended-status id from a status-change History row.
+        /// </summary>
+        /// <param name="value">The history value to read.</param>
+        /// <returns>The trailing bracketed id, or <c>null</c>.</returns>
+        private static int? GetTrailingBracketId( string value )
+        {
+            if ( value.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var match = Regex.Match( value, @"\[(\d+)\]\s*$" );
+            return match.Success ? match.Groups[1].Value.AsIntegerOrNull() : null;
+        }
+
+        /// <summary>
         /// Builds the absolute photo URL for a person's photo, or <c>null</c>
         /// when they have none (callers that show an avatar render the initials
         /// fallback in that case).
@@ -3109,6 +3327,38 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
         #region Supporting Classes
 
         /// <summary>
+        /// The [History] and [ConnectionRequestStatusHistory] rows for a single status change are written by
+        /// the ConnectionRequest save hook but on different contexts, so their timestamps are close but not
+        /// identical. When correlating the two (to attach a status-change note to its History card) this much
+        /// skew is allowed between History.CreatedDateTime and the status-history EndDateTime. The tolerance
+        /// also stops a pre-v19 History row (which has no status-history row) from pairing with an unrelated
+        /// note. Ports the web Connections Hub constant.
+        /// </summary>
+        private const double StatusHistoryNoteCorrelationToleranceMinutes = 5;
+
+        /// <summary>
+        /// A ConnectionRequestStatusHistory row read by <see cref="GetActivityEntries"/> and correlated to a
+        /// status-change History card so its note can be shown and edited.
+        /// </summary>
+        private class StatusHistoryNoteRow
+        {
+            /// <summary>The ConnectionRequestStatusHistory record Id.</summary>
+            public int Id { get; set; }
+
+            /// <summary>The status that ended, which matches the bracketed id in the History row's OldValue.</summary>
+            public int ConnectionStatusId { get; set; }
+
+            /// <summary>When the status ended; used to pair the record with its History row.</summary>
+            public DateTime EndDateTime { get; set; }
+
+            /// <summary>The recorded note, if any.</summary>
+            public string Note { get; set; }
+
+            /// <summary>Whether the status that ended requires a note (ConnectionStatus.IsNoteRequiredOnCompletion).</summary>
+            public bool IsEndedStatusNoteRequired { get; set; }
+        }
+
+        /// <summary>
         /// A history row read by <see cref="GetActivityEntries"/> and mapped to a
         /// system update feed entry.
         /// </summary>
@@ -3127,6 +3377,11 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
             public string NewValue { get; set; }
 
             public string OldValue { get; set; }
+
+            public int? PhotoId { get; set; }
+
+            // Nullable because the author Person is LEFT JOINed and may be absent.
+            public int? Gender { get; set; }
         }
 
         /// <summary>

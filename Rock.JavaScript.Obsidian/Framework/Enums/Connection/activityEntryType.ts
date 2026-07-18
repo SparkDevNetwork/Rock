@@ -33,7 +33,13 @@ export const ActivityEntryType = {
     SystemUpdate: 2,
 
     /** Communication type. */
-    Communication: 3
+    Communication: 3,
+
+    /**
+     * Status change type. Rendered as a card entry so its optional status-change note reads as
+     * editable card content rather than a passive system update line.
+     */
+    StatusChange: 4
 } as const;
 
 /** Activity Entry Types */
@@ -44,7 +50,9 @@ export const ActivityEntryTypeDescription: Record<number, string> = {
 
     2: "System Update",
 
-    3: "Communication"
+    3: "Communication",
+
+    4: "Status Change"
 };
 
 /** Activity Entry Types */

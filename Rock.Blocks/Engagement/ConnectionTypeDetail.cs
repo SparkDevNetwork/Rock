@@ -119,10 +119,62 @@ namespace Rock.Blocks.Engagement
             {
                 ConnectionTypeOptions = connectionTypes,
                 HasActiveAIProvider = AIProviderCache.All( RockContext ).Any( a => a.IsActive ),
-                PersonNoteTypeItems = personNoteTypeItems
+                PersonNoteTypeItems = personNoteTypeItems,
+                OpportunityConnectionRequestAttributeKeys = GetOpportunityConnectionRequestAttributeKeys( currentConnectionTypeId )
             };
 
             return options;
+        }
+
+        /// <summary>
+        /// Gets Connection Request attribute keys defined on any Connection Opportunity
+        /// that belongs to the specified Connection Type.
+        /// </summary>
+        /// <param name="connectionTypeId">The connection type identifier.</param>
+        /// <returns>A distinct list of attribute keys.</returns>
+        private List<string> GetOpportunityConnectionRequestAttributeKeys( int connectionTypeId )
+        {
+            if ( connectionTypeId <= 0 )
+            {
+                return new List<string>();
+            }
+
+            /*
+                7/17/26 - MSE
+
+                Opportunity detail already reserves type-level request attribute keys.
+                The reverse path was open: create the key on an opportunity first, then
+                reuse it on the type. Reserve opportunity keys on the type editor so
+                Keys stay unique across type and opportunity request attributes.
+
+                Reason: Prevent duplicate ConnectionRequest attribute Keys across type and opportunity.
+            */
+            var opportunityIdValues = new ConnectionOpportunityService( RockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( o => o.ConnectionTypeId == connectionTypeId )
+                .Select( o => o.Id.ToString() )
+                .ToList();
+
+            if ( !opportunityIdValues.Any() )
+            {
+                return new List<string>();
+            }
+
+            var connectionRequestEntityTypeId = EntityTypeCache.Get<ConnectionRequest>().Id;
+
+            return new AttributeService( RockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( a =>
+                    a.EntityTypeId == connectionRequestEntityTypeId &&
+                    a.EntityTypeQualifierColumn == "ConnectionOpportunityId" &&
+                    opportunityIdValues.Contains( a.EntityTypeQualifierValue ) &&
+                    a.Key != null &&
+                    a.Key != string.Empty )
+                .Select( a => a.Key )
+                .Distinct()
+                .ToList();
         }
 
         /// <summary>
@@ -159,6 +211,11 @@ namespace Rock.Blocks.Engagement
                 if ( isMissingActivityType )
                 {
                     errorMessage = "At least one activity type is required.";
+                    return false;
+                }
+
+                if ( !ValidateConnectionRequestAttributeKeysAgainstOpportunities( connectionType.Id, bag.ConnectionRequestAttributes, out errorMessage ) )
+                {
                     return false;
                 }
 
@@ -690,6 +747,54 @@ namespace Rock.Blocks.Engagement
 
                 updateEntity( entity, bag );
             }
+        }
+
+        /// <summary>
+        /// Validates that type-level Connection Request attribute keys do not conflict
+        /// with request attributes already defined on any opportunity of this type.
+        /// </summary>
+        /// <param name="connectionTypeId">The connection type identifier.</param>
+        /// <param name="connectionRequestAttributes">The type-level request attributes from the client.</param>
+        /// <param name="errorMessage">The validation error message when invalid.</param>
+        /// <returns><c>true</c> if the keys are valid; otherwise <c>false</c>.</returns>
+        private bool ValidateConnectionRequestAttributeKeysAgainstOpportunities( int connectionTypeId, List<PublicEditableAttributeBag> connectionRequestAttributes, out string errorMessage )
+        {
+            errorMessage = null;
+
+            if ( connectionTypeId <= 0 || connectionRequestAttributes == null || !connectionRequestAttributes.Any() )
+            {
+                return true;
+            }
+
+            var opportunityKeys = GetOpportunityConnectionRequestAttributeKeys( connectionTypeId );
+            if ( !opportunityKeys.Any() )
+            {
+                return true;
+            }
+
+            var opportunityKeySet = new HashSet<string>( opportunityKeys, StringComparer.OrdinalIgnoreCase );
+            var conflictingKeys = connectionRequestAttributes
+                .Where( a => a.Key.IsNotNullOrWhiteSpace() && opportunityKeySet.Contains( a.Key ) )
+                .Select( a => a.Key )
+                .Distinct( StringComparer.OrdinalIgnoreCase )
+                .OrderBy( k => k )
+                .ToList();
+
+            if ( !conflictingKeys.Any() )
+            {
+                return true;
+            }
+
+            if ( conflictingKeys.Count == 1 )
+            {
+                errorMessage = $"A connection request attribute with the key '{conflictingKeys[0]}' already exists on a Connection Opportunity of this type. Please use a different key.";
+            }
+            else
+            {
+                errorMessage = $"The following connection request attribute keys already exist on a Connection Opportunity of this type: {conflictingKeys.AsDelimited( ", " )}. Please use different keys.";
+            }
+
+            return false;
         }
 
         /// <summary>

@@ -78,5 +78,23 @@ namespace Rock.Attribute
                 FieldConfigurationValues.AddOrReplace( IS_PASSWORD_KEY, isPasswordValue );
             }
         }
+
+        /// <summary>
+        /// Indicates whether HTML is allowed in the text field.
+        /// </summary>
+        public bool AllowHtml
+        {
+            get => FieldConfigurationValues.GetValueOrNull( "allowhtml" ).AsBooleanOrNull() ?? false;
+            set => FieldConfigurationValues.AddOrReplace( "allowhtml", new Field.ConfigurationValue( value.ToString() ) );
+        }
+
+        /// <summary>
+        /// Indicates whether Lava formatting and commands are allowed in the text field.
+        /// </summary>
+        public bool AllowLava
+        {
+            get => FieldConfigurationValues.GetValueOrNull( "allowlava" ).AsBooleanOrNull() ?? false;
+            set => FieldConfigurationValues.AddOrReplace( "allowlava", new Field.ConfigurationValue( value.ToString() ) );
+        }
     }
 }

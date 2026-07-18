@@ -47,8 +47,8 @@ The form renders, top to bottom, the following sections. Each section uses the v
 2. **Pick a Campus**. Shown ONLY when more than one active campus exists. Defaults to the campus context if one is set, otherwise the person's primary campus, otherwise the first available. Rendered with the lighter section style.
 3. **Personal Information**. First-time-guest checkbox (conditional, see below), Title, First Name (required), Last Name (required), Suffix, Birthdate, Profile Photo, Marital Status, and a conditional spouse well (Spouse First Name, Spouse Last Name, Spouse Gender) that appears only when Marital Status is "Married."
 4. **Contact Information**. Email (required by default), Spouse Email, Mobile Phone, Spouse Mobile Phone, an SMS-consent checkbox, Address, Preferred Service Time (conditional), and Additional Comments.
-5. **Additional Information** (optional). Person attribute editors for the attributes in the configured `Person Attribute Category`. Hidden when no category is set.
-6. **Connection Opportunities**. A multi-select list of Display Cards, one per available opportunity. Selecting a card (checkbox) requests that opportunity. When a selected opportunity has request attributes configured, the card expands (accordion mode) to show those attribute editors and pushes the remaining cards down.
+5. **Connection Opportunities**. A multi-select list of Display Cards, one per available opportunity. Selecting a card (checkbox) requests that opportunity. When a selected opportunity has request attributes configured, the card expands (accordion mode) to show those attribute editors and pushes the remaining cards down.
+6. **Additional Information** (optional). Person attribute editors for the attributes in the configured `Person Attribute Category`. Hidden when no category is set.
 7. **Footer**. Submit and Clear buttons. The footer MUST remain in the viewport while scrolling (sticky footer). An optional CAPTCHA sits above the footer when `Enable Captcha` is true.
 
 ### Field visibility and gating

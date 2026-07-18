@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Cms.Utm;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Cms;
@@ -525,6 +526,11 @@ Guid - ContentChannelItem Guid";
                 UserAgent = RequestContext?.ClientInformation?.UserAgent,
                 IPAddress = RequestContext?.ClientInformation?.IpAddress
             };
+
+            // The registration request carries the visitor's UTM cookie (the page-render request
+            // strips it from the request collection), so read the UTM values here to attribute them.
+            var utmInfo = UtmHelper.GetUtmCookieDataFromRequest( RequestContext );
+            UtmHelper.AddUtmInfoToInteractionTransactionInfo( info, utmInfo );
 
             new InteractionTransaction( info ).Enqueue();
 

@@ -25,8 +25,8 @@
                     </div>
                 </div>
             </div>
-            <div class="d-flex gap-md h-fit">
-                <DropDownContent v-if="(activityEntry.entryType === ActivityEntryType.RequestNote && canEditNote) || (activityEntry.entryType === ActivityEntryType.Activity && canEditActivity)"
+            <div class="d-flex gap-md h-fit ml-spacing-xs">
+                <DropDownContent v-if="(activityEntry.entryType === ActivityEntryType.RequestNote && canEditNote) || (activityEntry.entryType === ActivityEntryType.Activity && canEditActivity) || (activityEntry.entryType === ActivityEntryType.StatusChange && canEditActivity)"
                                  v-model="isSecondaryActionDropdownOpen"
                                  enableFlip>
                     <template #default>
@@ -35,7 +35,8 @@
                                  @click.stop="onEdit">
                                 Edit
                             </div>
-                            <div class="dropdown-content-item py-spacing-sm px-spacing-md text-small text-semibold text-danger"
+                            <div v-if="activityEntry.entryType !== ActivityEntryType.StatusChange"
+                                 class="dropdown-content-item py-spacing-sm px-spacing-md text-small text-semibold text-danger"
                                  @click.stop="onDelete">
                                 Delete
                             </div>
@@ -58,7 +59,7 @@
             <div class="border rounded py-spacing-tiny">
                 <TextBox v-model="noteText"
                          textMode="multiline"
-                         rules="required"
+                         :rules="noteValidationRules"
                          validationTitle="Note"
                          inputGroupClasses="request-note-editor">
                     <template #inputGroupAppend>
@@ -135,6 +136,7 @@
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { ConnectionRequestNoteBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestNoteBag";
+    import { SaveStatusHistoryNoteBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/saveStatusHistoryNoteBag";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 
     const props = defineProps({
@@ -160,6 +162,7 @@
         (e: "deleteNote", value: string): void;
         (e: "editActivity", value: ActivityEntryBag): void;
         (e: "deleteActivity", value: string): void;
+        (e: "saveStatusHistoryNote", value: SaveStatusHistoryNoteBag): void;
     }>();
 
     defineExpose({
@@ -195,6 +198,21 @@
                 return "added a";
             case ActivityEntryType.Communication:
                 return "sent an";
+            case ActivityEntryType.StatusChange: {
+                const entry = props.activityEntry.cardEntry;
+                if (!isNullOrWhiteSpace(entry?.previousValue) && !isNullOrWhiteSpace(entry?.newValue)) {
+                    return `changed the connection request status from ${entry?.previousValue} to`;
+                }
+                else if (!isNullOrWhiteSpace(props.activityEntry.cardEntry?.previousValue)) {
+                    return `cleared the connection request status, previously`;
+                }
+                else if (!isNullOrWhiteSpace(props.activityEntry.cardEntry?.newValue)) {
+                    return `set the connection request status to`;
+                }
+                else {
+                    return "updated the connection request status";
+                }
+            }
         }
     });
 
@@ -206,13 +224,24 @@
         return RockDateTime.parseISO(props.activityEntry!.entryDateTime!)?.toElapsedString();
     });
 
+    // Request notes are always required. A status-change note is only required when the status it is
+    // attached to is configured to require one (CardEntry.isNoteRequired), so its rule is dynamic.
+    const noteValidationRules = computed(() => {
+        if (props.activityEntry.entryType === ActivityEntryType.StatusChange) {
+            return props.activityEntry.cardEntry?.isNoteRequired ? "required" : "";
+        }
+
+        return "required";
+    });
+
     function onEdit(): void {
         isSecondaryActionDropdownOpen.value = false;
 
         if (props.activityEntry.entryType === ActivityEntryType.Activity) {
             emit("editActivity", props.activityEntry);
         }
-        else if (props.activityEntry.entryType === ActivityEntryType.RequestNote) {
+        else if (props.activityEntry.entryType === ActivityEntryType.RequestNote
+            || props.activityEntry.entryType === ActivityEntryType.StatusChange) {
             isEditingNote.value = true;
             noteText.value = props.activityEntry.cardEntry?.content ?? "";
         }
@@ -223,6 +252,19 @@
     }
 
     function onSaveNote(): void {
+        // A status-change note is saved to its own status-history record, identified by the
+        // StatusHistoryIdKey on the card entry rather than by the feed key.
+        if (props.activityEntry.entryType === ActivityEntryType.StatusChange) {
+            const bag: SaveStatusHistoryNoteBag = {
+                statusHistoryIdKey: props.activityEntry.cardEntry?.statusHistoryIdKey,
+                note: noteText.value,
+                key: props.activityEntry.key
+            };
+
+            emit("saveStatusHistoryNote", bag);
+            return;
+        }
+
         // Extract the note id key.
         const idKey = props.activityEntry.key?.split("_")[1] ?? "";
 
@@ -279,6 +321,10 @@
                 else {
                     iconClass.value = "ti ti-mail";
                 }
+                break;
+            case ActivityEntryType.StatusChange:
+                badgeClasses.value = "bg-interface-softer text-interface-strong";
+                iconClass.value = "ti ti-arrows-left-right";
                 break;
         }
     }, { immediate: true });

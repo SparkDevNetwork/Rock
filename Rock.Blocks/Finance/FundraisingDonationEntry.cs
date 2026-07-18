@@ -92,6 +92,7 @@ namespace Rock.Blocks.Finance
         /// </summary>
         private static class TargetPageParameterKey
         {
+            public const string GroupId = "GroupId";
             public const string GroupMemberId = "GroupMemberId";
             public const string ParticipationMode = "ParticipationMode";
             public const string AccountIds = "AccountIds";
@@ -416,6 +417,7 @@ namespace Rock.Blocks.Finance
 
             var queryParams = new Dictionary<string, string>
             {
+                [TargetPageParameterKey.GroupId] = group.IdKey,
                 [TargetPageParameterKey.GroupMemberId] = groupMember.IdKey,
                 [TargetPageParameterKey.ParticipationMode] = ( ( int ) participationMode ).ToString()
             };
