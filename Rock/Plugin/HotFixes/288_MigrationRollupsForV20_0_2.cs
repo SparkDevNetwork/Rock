@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -69,11 +69,11 @@ namespace Rock.Plugin.HotFixes
         /// <summary>
         /// No longer used.  See enginnering note above.
         /// </summary>
-        private void NA_RemoveObsoleteAppleTVPageListObsidianBlock_Up()
-        {
-            RockMigrationHelper.DeleteBlockType( "a759218b-1c72-446c-8994-8559ba72941e" ); // BlockType: AppleTvPageList (Obsolete)
-            RockMigrationHelper.DeleteEntityType( "4e89a96e-88a2-4ca4-a86b-b9ffdcacf49f" );// EntityType: AppleTvPageList (Obsolete)
-        }
+        //private void NA_RemoveObsoleteAppleTVPageListObsidianBlock_Up()
+        //{
+        //    RockMigrationHelper.DeleteBlockType( "a759218b-1c72-446c-8994-8559ba72941e" ); // BlockType: AppleTvPageList (Obsolete)
+        //    RockMigrationHelper.DeleteEntityType( "4e89a96e-88a2-4ca4-a86b-b9ffdcacf49f" );// EntityType: AppleTvPageList (Obsolete)
+        //}
 
         private void NA_RenameChoppedBlocksForV20_Up()
         {
