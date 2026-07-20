@@ -1316,7 +1316,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             // Load up the activity types for this connection request and pull
             // in the Guid an Name to send to the client.
             var activityTypes = connectionActivityTypeService.Queryable()
-                .Where( a => a.ConnectionTypeId == request.ConnectionOpportunity.ConnectionTypeId )
+                .Where( a => a.ConnectionTypeId == request.ConnectionOpportunity.ConnectionTypeId && a.IsActive )
                 .Select( a => new Common.Mobile.ViewModel.ListItemViewModel
                 {
                     Value = a.Guid.ToString(),
