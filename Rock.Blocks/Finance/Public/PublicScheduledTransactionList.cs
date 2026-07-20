@@ -464,7 +464,7 @@ namespace Rock.Blocks.Finance
         /// <summary>
         /// Builds the DisplayCard description line: e.g.
         /// "Visa Ending in 6789 • Expires 11/28" for credit cards,
-        /// "Checking Account Ending in 2121" for ACH.
+        /// "Bank Account (ACH) Ending in 2121" for ACH.
         /// </summary>
         private static string BuildPaymentDescription( FinancialScheduledTransaction transactionSchedule )
         {
@@ -476,6 +476,7 @@ namespace Rock.Blocks.Finance
 
             var parts = new List<string>();
             var currencyType = paymentDetail.CurrencyTypeValue?.Value;
+            var currencyTypeDescription = paymentDetail.CurrencyTypeValue?.Description;
             var creditCardType = paymentDetail.CreditCardTypeValue?.Value;
             var accountMasked = paymentDetail.AccountNumberMasked;
             var lastFour = ExtractLastFour( accountMasked );
@@ -487,7 +488,11 @@ namespace Rock.Blocks.Finance
             }
             else if ( currencyType.IsNotNullOrWhiteSpace() )
             {
-                parts.Add( lastFour.IsNotNullOrWhiteSpace() ? $"{currencyType} Ending in {lastFour}" : currencyType );
+                // Prefer the admin-configurable Description (e.g. "Bank Account (ACH)")
+                // over the internal Value (e.g. "ACH"), falling back to Value when
+                // Description is blank so the label is never empty.
+                var currencyTypeLabel = currencyTypeDescription.IsNotNullOrWhiteSpace() ? currencyTypeDescription : currencyType;
+                parts.Add( lastFour.IsNotNullOrWhiteSpace() ? $"{currencyTypeLabel} Ending in {lastFour}" : currencyTypeLabel );
             }
 
             // Only credit cards carry expiration; skip for ACH / cash / check.
