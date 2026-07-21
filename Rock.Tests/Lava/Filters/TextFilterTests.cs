@@ -786,5 +786,141 @@ namespace Rock.Tests.Lava.Filters
             TestHelper.AssertTemplateOutput( "Welcome stranger!", "Welcome{{ '' | WithFallback:' back ', ' stranger', 'prepend' }}!" );
         }
 
+        #region Filter Tests: ToMarkdown
+
+        /// <summary>
+        /// An HTML heading followed by plain text should be converted to Markdown heading syntax.
+        /// </summary>
+        [TestMethod]
+        public void ToMarkdown_HtmlHeadingAndText_ProducesMarkdownHeading()
+        {
+            var template = "{{ '<h1>Hello World</h1>Now is the time for all good men...' | ToMarkdown }}";
+            var expected = "# Hello World Now is the time for all good men...";
+
+            TestHelper.AssertTemplateOutput( expected, template, ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// A simple bold tag should convert to Markdown emphasis syntax.
+        /// </summary>
+        [TestMethod]
+        public void ToMarkdown_BoldTag_ProducesMarkdownStrong()
+        {
+            TestHelper.AssertTemplateOutput( "**bold text**", "{{ '<strong>bold text</strong>' | ToMarkdown }}", ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// A simple italic tag should convert to Markdown emphasis syntax.
+        /// </summary>
+        [TestMethod]
+        public void ToMarkdown_ItalicTag_ProducesMarkdownEmphasis()
+        {
+            TestHelper.AssertTemplateOutput( "*italic text*", "{{ '<i>italic text</i>' | ToMarkdown }}", ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// An anchor tag should convert to Markdown link syntax.
+        /// </summary>
+        [TestMethod]
+        public void ToMarkdown_AnchorTag_ProducesMarkdownLink()
+        {
+            TestHelper.AssertTemplateOutput( "[Rock RMS](https://www.rockrms.com)", "{{ '<a href=\"https://www.rockrms.com\">Rock RMS</a>' | ToMarkdown }}", ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// A horizontal rule tag should convert to Markdown HR syntax.
+        /// </summary>
+        [TestMethod]
+        public void ToMarkdown_HorizontalRuleTag_ProducesMarkdownHorizontalRule()
+        {
+            TestHelper.AssertTemplateOutput( "***", "{{ '<hr />' | ToMarkdown }}", ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// A blockquote tag should convert to Markdown blockquote syntax.
+        /// </summary>
+        [TestMethod]
+        public void ToMarkdown_BlockquoteTag_ProducesMarkdownBlockquote()
+        {
+            TestHelper.AssertTemplateOutput( "> Blockquote", "{{ '<blockquote>Blockquote</blockquote>' | ToMarkdown }}", ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// A simple inline code tag should convert to Markdown code syntax.
+        /// </summary>
+        [TestMethod]
+        public void ToMarkdown_InlineCodeTag_ProducesMarkdownCode()
+        {
+            TestHelper.AssertTemplateOutput( "`Person.FirstName` is the Lava property", "{{ '<code>Person.FirstName</code> is the Lava property' | ToMarkdown }}", ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// A preformatted code block should convert to Markdown code block syntax.
+        /// </summary>
+        [TestMethod]
+        public void ToMarkdown_PreCodeTag_ProducesMarkdownPreCode()
+        {
+            TestHelper.AssertTemplateOutput( "```Person.FirstName```", "{{ '<pre><code>Person.FirstName</code></pre>' | ToMarkdown }}", ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// An unordered list should convert to Markdown list syntax.
+        /// </summary>
+        [TestMethod]
+        public void ToMarkdown_UnorderedList_ProducesMarkdownList()
+        {
+            var template = "{{ '<ul><li>One</li><li>Two</li></ul>' | ToMarkdown }}";
+            var expected = "- One - Two";
+
+            TestHelper.AssertTemplateOutput( expected, template, ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// Passing an explicit sourceType of "html" should produce the same result as omitting the parameter.
+        /// </summary>
+        [TestMethod]
+        public void ToMarkdown_ExplicitHtmlSourceType_ProducesMarkdown()
+        {
+            TestHelper.AssertTemplateOutput( "**bold**", "{{ '<b>bold</b>' | ToMarkdown:'html' }}", ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// The sourceType parameter should be treated as case-insensitive.
+        /// </summary>
+        [TestMethod]
+        public void ToMarkdown_MixedCaseSourceType_IsCaseInsensitive()
+        {
+            TestHelper.AssertTemplateOutput( "**bold**", "{{ '<b>bold</b>' | ToMarkdown:'HTML' }}", ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// An empty input string should produce an empty output.
+        /// </summary>
+        [TestMethod]
+        public void ToMarkdown_EmptyInput_ProducesEmptyOutput()
+        {
+            TestHelper.AssertTemplateOutput( "", "{{ '' | ToMarkdown }}" );
+        }
+
+        /// <summary>
+        /// Plain text without any HTML tags should be returned unchanged.
+        /// </summary>
+        [TestMethod]
+        public void ToMarkdown_PlainText_ProducesUnchangedOutput()
+        {
+            TestHelper.AssertTemplateOutput( "Now is the time for all good men.", "{{ 'Now is the time for all good men.' | ToMarkdown }}", ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// An unrecognized sourceType should return the input unchanged (forward-compatibility behavior).
+        /// </summary>
+        [TestMethod]
+        public void ToMarkdown_UnsupportedSourceType_ReturnsInputUnchanged()
+        {
+            TestHelper.AssertTemplateOutput( "<h1>Hello</h1>", "{{ '<h1>Hello</h1>' | ToMarkdown:'unknown' }}", ignoreWhitespace: true );
+        }
+
+        #endregion
+
     }
 }
