@@ -1,37 +1,35 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <template v-if="isBlockVisible">
-        <div class="dropdown js-rock-reminders">
-            <a ref="bellEl"
-               class="rock-bookmark"
-               :class="{ 'active has-reminders': hasAnyCounts }"
-               href="#"
-               @click.prevent="onBellClick">
-                <i class="ti ti-bell"></i>
-                <span v-if="hasAnyCounts" class="indicator-bottom"></span>
-            </a>
+        <DropDownContent v-model="isDropdownOpen" placement="bottom-end" enableFlip>
+            <template #anchor>
+                <a class="rock-bookmark"
+                   :class="{ 'active has-reminders': hasAnyCounts }"
+                   href="#">
+                    <i class="ti ti-bell"></i>
+                    <span v-if="hasAnyCounts" class="indicator-bottom"></span>
+                </a>
+            </template>
 
-            <ul v-if="isDropdownOpen"
-                ref="dropdownEl"
-                class="dropdown-menu dropdown-menu-reminders js-reminders-container"
-                style="display: block">
-                <li v-if="canAddReminder">
-                    <a href="#" @click.prevent="onAddReminderClick">Add Reminder</a>
-                </li>
-                <li>
-                    <a href="#" class="reminder-link-item" @click.prevent="onViewRemindersClick">
-                        <span>View Reminders</span>
-                        <span :class="badgeClassFor(counts.reminders)">{{ counts.reminders }}</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="reminder-link-item" @click.prevent="onViewNotificationsClick">
-                        <span>View Notifications</span>
-                        <span :class="badgeClassFor(counts.notifications)">{{ counts.notifications }}</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
+            <div class="dropdown-content d-flex flex-column bg-interface-softest text-sm">
+                <a v-if="canAddReminder"
+                   href="#"
+                   class="dropdown-content-item px-spacing-md py-spacing-xs"
+                   @click.prevent="onAddReminderClick">Add Reminder</a>
+                <a href="#"
+                   class="dropdown-content-item reminder-link-item px-spacing-md py-spacing-xs"
+                   @click.prevent="onViewRemindersClick">
+                    <span>View Reminders</span>
+                    <span :class="badgeClassFor(counts.reminders)">{{ counts.reminders }}</span>
+                </a>
+                <a href="#"
+                   class="dropdown-content-item reminder-link-item px-spacing-md py-spacing-xs"
+                   @click.prevent="onViewNotificationsClick">
+                    <span>View Notifications</span>
+                    <span :class="badgeClassFor(counts.notifications)">{{ counts.notifications }}</span>
+                </a>
+            </div>
+        </DropDownContent>
 
         <AddReminderModal v-model="isModalOpen"
                           :contextData="contextData"
@@ -45,6 +43,14 @@
 </template>
 
 <style scoped>
+/* These items are anchors (they navigate), but should read as menu rows, not
+   links, so reset the browser/Rock link color to the standard interface text
+   color. */
+.dropdown-content-item {
+    color: var(--color-interface-strong);
+    text-decoration: none;
+}
+
 .reminder-link-item {
     display: flex;
     align-items: center;
@@ -54,9 +60,10 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+    import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";
     import { ReminderLinksInitializationBox } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderLinks/reminderLinksInitializationBox";
     import { ReminderLinksCountsBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderLinks/reminderLinksCountsBag";
     import { ReminderLinksContextDataBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderLinks/reminderLinksContextDataBag";
@@ -90,8 +97,6 @@
     const contextData = ref<ReminderLinksContextDataBag | null>(null);
     const canAddReminder = ref(config.canAddReminder ?? false);
 
-    const bellEl = ref<HTMLAnchorElement | null>(null);
-    const dropdownEl = ref<HTMLUListElement | null>(null);
     const isDropdownOpen = ref(false);
     const isModalOpen = ref(false);
 
@@ -180,12 +185,6 @@
 
     // #region Dropdown open/close
 
-    /** Opens the dropdown and lazily primes context data. */
-    function openDropdown(): void {
-        isDropdownOpen.value = true;
-        void ensureContextData();
-    }
-
     /** Closes the dropdown. */
     function closeDropdown(): void {
         isDropdownOpen.value = false;
@@ -222,38 +221,17 @@
         }
     }
 
+    // DropDownContent owns the open/close state through v-model, so prime the
+    // context data by reacting to the dropdown opening rather than driving it.
+    watch(isDropdownOpen, (isOpen) => {
+        if (isOpen) {
+            void ensureContextData();
+        }
+    });
+
     // #endregion
 
     // #region Event handlers
-
-    /** Toggles the dropdown when the bell icon is clicked. */
-    function onBellClick(): void {
-        if (isDropdownOpen.value) {
-            closeDropdown();
-        }
-        else {
-            openDropdown();
-        }
-    }
-
-    /** Closes the dropdown when a mouse-down occurs outside the bell or menu. */
-    function onDocumentMouseDown(e: MouseEvent): void {
-        if (!isDropdownOpen.value) {
-            return;
-        }
-        const target = e.target as Node;
-        if (bellEl.value?.contains(target) || dropdownEl.value?.contains(target)) {
-            return;
-        }
-        closeDropdown();
-    }
-
-    /** Closes the dropdown on Escape. */
-    function onDocumentKeydown(e: KeyboardEvent): void {
-        if (e.key === "Escape" && isDropdownOpen.value) {
-            closeDropdown();
-        }
-    }
 
     /**
      * Listens for cross-block signals (currently the ReminderList block after
@@ -408,8 +386,6 @@
             refreshTimer = setInterval(refreshCounts, pollingIntervalMs);
         }
 
-        document.addEventListener("mousedown", onDocumentMouseDown);
-        document.addEventListener("keydown", onDocumentKeydown);
         document.addEventListener("visibilitychange", onVisibilityChange);
         window.addEventListener("rock:reminder-counts-changed", onReminderCountsChanged);
     });
@@ -419,8 +395,6 @@
             clearInterval(refreshTimer);
             refreshTimer = null;
         }
-        document.removeEventListener("mousedown", onDocumentMouseDown);
-        document.removeEventListener("keydown", onDocumentKeydown);
         document.removeEventListener("visibilitychange", onVisibilityChange);
         window.removeEventListener("rock:reminder-counts-changed", onReminderCountsChanged);
     });

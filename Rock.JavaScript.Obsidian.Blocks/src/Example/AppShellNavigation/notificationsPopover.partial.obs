@@ -1,0 +1,428 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="np-root">
+        <button ref="triggerRef" type="button" class="np-bell" aria-label="Notifications" @click="onToggle">
+            <i class="ti ti-bell"></i>
+            <span v-if="unreadCount > 0" class="np-dot" aria-hidden="true"></span>
+        </button>
+
+        <div v-if="isOpen" ref="floatingRef" class="np-panel" :style="floatingStyles">
+            <div class="np-header">
+                <div class="np-header-title">
+                    Notifications
+                    <span v-if="unreadCount > 0" class="np-count">{{ unreadCount }}</span>
+                </div>
+                <button type="button" class="np-mark" title="Mark all as read" @click="onMarkAllRead">
+                    <i class="ti ti-checks"></i>
+                </button>
+            </div>
+
+            <div class="np-list">
+                <div v-for="item in items"
+                     :key="item.id"
+                     class="np-item"
+                     :class="{ 'is-unread': item.isUnread }">
+                    <span class="np-icon" :class="`variant-${item.variant}`">
+                        <i :class="item.iconClass"></i>
+                    </span>
+
+                    <div class="np-item-body">
+                        <div class="np-item-titlerow">
+                            <span class="np-item-title">{{ item.title }}</span>
+                            <span v-if="item.badge" class="np-item-badge">{{ item.badge }}</span>
+                            <span v-if="item.isUnread" class="np-unread-dot" aria-hidden="true"></span>
+                        </div>
+                        <p v-if="item.body" class="np-item-text">{{ item.body }}</p>
+
+                        <div v-if="item.meta || item.actions" class="np-item-extra">
+                            <span v-if="item.meta" class="np-meta">
+                                <span class="np-meta-label">{{ item.meta.label }}</span>
+                                <span class="np-meta-value">{{ item.meta.value }}</span>
+                            </span>
+                            <span v-if="item.actions" class="np-actions">
+                                <button v-for="action in item.actions"
+                                        :key="action.label"
+                                        type="button"
+                                        class="app-shell-btn-mini"
+                                        :class="action.variant">{{ action.label }}</button>
+                            </span>
+                        </div>
+
+                        <span class="np-time">{{ item.time }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="np-footer">
+                <button type="button" class="np-viewall">View all notifications</button>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.np-root {
+    display: contents;
+}
+
+.np-bell {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    color: var(--sidebar-foreground);
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-sm);
+    opacity: 0.6;
+    cursor: pointer;
+}
+
+.np-bell:hover {
+    opacity: 1;
+    background-color: var(--sidebar-accent);
+}
+
+.np-bell i {
+    font-size: 18px;
+}
+
+.np-dot {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 6px;
+    height: 6px;
+    background-color: var(--primary);
+    border-radius: 999px;
+}
+
+.np-panel {
+    z-index: 60;
+    width: 340px;
+    background-color: var(--popover);
+    color: var(--popover-foreground);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--dropdown-box-shadow);
+    overflow: hidden;
+}
+
+.np-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+}
+
+.np-header-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.np-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--primary-foreground);
+    background-color: var(--primary);
+    border-radius: 999px;
+}
+
+.np-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    color: var(--muted-foreground);
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+.np-mark:hover {
+    background-color: var(--accent);
+    color: var(--foreground);
+}
+
+.np-list {
+    max-height: 360px;
+    overflow-y: auto;
+}
+
+.np-item {
+    display: flex;
+    gap: 10px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+}
+
+.np-item.is-unread {
+    background-color: color-mix(in oklch, var(--muted) 40%, transparent);
+}
+
+.np-icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+}
+
+.np-icon i {
+    font-size: 16px;
+}
+
+.np-icon.variant-default {
+    color: var(--muted-foreground);
+    background-color: var(--muted);
+}
+
+.np-icon.variant-info {
+    color: var(--info);
+    background-color: color-mix(in oklch, var(--info) 15%, var(--card));
+}
+
+.np-icon.variant-success {
+    color: var(--success);
+    background-color: color-mix(in oklch, var(--success) 15%, var(--card));
+}
+
+.np-icon.variant-warning {
+    color: var(--warning-foreground);
+    background-color: color-mix(in oklch, var(--warning) 18%, var(--card));
+}
+
+.np-icon.variant-destructive {
+    color: var(--destructive);
+    background-color: color-mix(in oklch, var(--destructive) 13%, var(--card));
+}
+
+.np-item-body {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.np-item-titlerow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.np-item-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--foreground);
+}
+
+.np-item-badge {
+    padding: 1px 6px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted-foreground);
+    background-color: var(--muted);
+    border-radius: 999px;
+}
+
+.np-unread-dot {
+    width: 6px;
+    height: 6px;
+    margin-left: auto;
+    background-color: var(--primary);
+    border-radius: 999px;
+}
+
+.np-item-text {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--muted-foreground);
+}
+
+.np-item-extra {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.np-meta {
+    display: inline-flex;
+    height: 18px;
+    overflow: hidden;
+    font-size: 10px;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+
+.np-meta-label {
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    color: var(--muted-foreground);
+    background-color: color-mix(in oklch, var(--muted) 60%, transparent);
+    border-right: 1px solid var(--border);
+}
+
+.np-meta-value {
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    color: var(--foreground);
+}
+
+.np-actions {
+    display: inline-flex;
+    gap: 6px;
+}
+
+.app-shell-btn-mini {
+    height: 24px;
+    padding: 0 10px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+.app-shell-btn-mini.primary {
+    color: var(--primary-foreground);
+    background-color: var(--primary);
+    border: 1px solid var(--primary);
+}
+
+.app-shell-btn-mini.outline {
+    color: var(--foreground);
+    background-color: var(--background);
+    border: 1px solid var(--border);
+}
+
+.np-time {
+    margin-top: 2px;
+    font-size: 11px;
+    color: var(--muted-foreground);
+}
+
+.np-footer {
+    padding: 8px;
+    border-top: 1px solid var(--border);
+}
+
+.np-viewall {
+    width: 100%;
+    height: 32px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--foreground);
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+}
+
+.np-viewall:hover {
+    background-color: var(--accent);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, onBeforeUnmount, ref, watch } from "vue";
+    import { useFloating, autoUpdate, offset, flip, shift } from "@Obsidian/Libs/floating-ui";
+    import { notifications } from "./data.partial";
+
+    // #region Values
+
+    const isOpen = ref(false);
+    const triggerRef = ref<HTMLElement | null>(null);
+    const floatingRef = ref<HTMLElement | null>(null);
+
+    // Local copy so "mark all read" can flip the unread flags.
+    const items = ref(notifications.map((notification) => ({ ...notification })));
+
+    const { floatingStyles } = useFloating(triggerRef, floatingRef, {
+        placement: "bottom-end",
+        strategy: "fixed",
+        whileElementsMounted: autoUpdate,
+        middleware: [offset(8), flip(), shift({ padding: 8 })]
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const unreadCount = computed((): number => items.value.filter((item) => item.isUnread).length);
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onToggle(): void {
+        isOpen.value = !isOpen.value;
+    }
+
+    function onMarkAllRead(): void {
+        items.value = items.value.map((item) => ({ ...item, isUnread: false }));
+    }
+
+    function onDocumentPointerDown(event: PointerEvent): void {
+        const target = event.target as Node;
+        if (triggerRef.value?.contains(target) || floatingRef.value?.contains(target)) {
+            return;
+        }
+
+        isOpen.value = false;
+    }
+
+    function onKeyDown(event: KeyboardEvent): void {
+        if (event.key === "Escape") {
+            isOpen.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(isOpen, (open) => {
+        if (open) {
+            document.addEventListener("pointerdown", onDocumentPointerDown, true);
+            document.addEventListener("keydown", onKeyDown);
+        }
+        else {
+            document.removeEventListener("pointerdown", onDocumentPointerDown, true);
+            document.removeEventListener("keydown", onKeyDown);
+        }
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("pointerdown", onDocumentPointerDown, true);
+        document.removeEventListener("keydown", onKeyDown);
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

@@ -1,0 +1,1507 @@
+// =============================================================================
+// App Shell (app-shell chrome)
+// =============================================================================
+//
+// Ports the "app-shell" layout onto RockNextGen's shell: a fixed inset
+// sidebar (the App Shell Navigation Obsidian block lives in the Navigation
+// zone), a raised rounded content card, and a thin breadcrumb header.
+//
+// This is a standalone experiment: the shell applies whenever Site.Master renders
+// the .app-shell structure (it is not tied to any other experiment toggle). To
+// remove it: revert Site.Master, delete this partial, and remove its @import.
+//
+// The shell reuses the legacy class/id hooks (.navbar-static-side,
+// .rock-top-header, #content-wrapper, .main-content) so fullscreen behavior,
+// theme.js topHeaderOffset(), and the child layouts keep working. Selectors are
+// scoped under .app-shell so they out-specify the stock RockNextGen rules
+// (including the #content-wrapper id rule).
+//
+// All colors and radii consume styles-v2 tokens (never hardcoded), so church
+// brand colors and [theme="dark"] flow through automatically. Fixed pixel
+// dimensions (sidebar width, header height, gaps) are intentional literals.
+// =============================================================================
+
+.page-wrapper.app-shell {
+    // Shell geometry (fixed dimensions are allowed; colors/radii are not).
+    --app-shell-sidebar-width: 260px;
+    --app-shell-sidebar-width-collapsed: 64px;
+    --app-shell-sidebar-width-mobile: 288px;
+    --app-shell-header-height: 48px;
+    --app-shell-gap: 8px;
+
+    // The shell fills the viewport; scrolling happens inside the inset card.
+    display: flex;
+    height: 100vh;
+    // Clear the legacy top padding that reserved space for the old fixed navbar.
+    padding: 0;
+    overflow: hidden;
+    background-color: var(--color-interface-softer);
+}
+
+// -- Color scheme invert (experimental toggle) -------------------------------
+// Default: light-gray shell (--color-interface-softer) behind a white content
+// card (--color-interface-softest). The header toggle sets
+// html[data-app-shell-theme="inverted"] to swap those two neutral shades: a white
+// shell/sidebar behind a light-gray content card. The raised sidebar surfaces
+// (active nav item, search button, spending card) consume --background/--card, so
+// re-pointing those keeps them contrasting against the now-white sidebar. Text
+// stays on the interface-strong/medium tokens, which read on both shades.
+html[data-app-shell-theme="inverted"] .page-wrapper.app-shell {
+    background-color: var(--color-interface-softest);
+}
+
+html[data-app-shell-theme="inverted"] .app-shell #content-wrapper {
+    background-color: var(--color-interface-softer);
+}
+
+html[data-app-shell-theme="inverted"] .app-shell .asn-root {
+    --background: var(--color-interface-softer);
+    --card: var(--color-interface-softer);
+    --popover: var(--color-interface-softer);
+    --sidebar: var(--color-interface-softest);
+}
+
+// -- Sidebar -----------------------------------------------------------------
+// Reuses .navbar-static-side so fullscreen hide + print rules still match.
+.app-shell .navbar-static-side {
+    position: fixed;
+    inset-block: 0;
+    left: 0;
+    top: 0;
+    z-index: 30;
+    // Flex column so the navigation block takes the space above the pinned
+    // account footer (the Login zone). The .app-shell-sidebar-actions cluster is
+    // absolutely positioned and stays out of this flow.
+    display: flex;
+    flex-direction: column;
+    width: var(--app-shell-sidebar-width);
+    // The stock RockNextGen rule sets height: calc(100% - 88px) !important on
+    // .navbar-static-side (at min-width: screen-small) to reserve space for the
+    // legacy fixed top navbar. The shell has no such navbar, so that 88px would
+    // leave a dead gap at the bottom of the sidebar and shorten the scroll budget.
+    // !important is required here only because we are overriding another
+    // !important declaration that specificity alone cannot beat.
+    height: 100vh !important;
+    // Neutralize the same legacy block's leaking margin/radius (it assumes the
+    // old rounded navbar chrome); the shell aside is a transparent full-bleed panel.
+    margin-left: 0;
+    padding: var(--app-shell-gap);
+    overflow: hidden;
+    color: var(--color-interface-strong);
+    background-color: transparent;
+    border: 0;
+    border-radius: 0;
+    transition: width 0.2s linear, transform 0.2s linear;
+}
+
+html[data-app-shell-sidebar="collapsed"] .app-shell .navbar-static-side {
+    width: var(--app-shell-sidebar-width-collapsed);
+}
+
+// The page admin footer (#cms-admin-footer) is a fixed, full-width bar pinned to
+// the bottom for users who can administer the page. It sits above the sidebar
+// (z-index near modal) and, even while invisible at rest (opacity 0 until hover),
+// overlays and captures pointer events over the bottom strip, so it both covers
+// and blocks the account button in the sidebar footer. When that bar is present,
+// reserve space at the bottom of the sidebar so the footer clears it. Scoped via
+// :has so non-admins (no #cms-admin-footer in the DOM) keep the full-height
+// sidebar with no dead gap. The 44px matches the bar's approximate height; bump
+// --app-shell-admin-footer-height if the bar grows.
+.app-shell {
+    --app-shell-admin-footer-height: 44px;
+}
+
+body:has(#cms-admin-footer) .app-shell .navbar-static-side {
+    padding-bottom: calc(var(--app-shell-gap) + var(--app-shell-admin-footer-height));
+}
+
+// The navigation zone takes the space above the account footer and owns its own
+// internal scrolling. It is the flex child that grows; the footer below is fixed
+// size. min-height: 0 lets it shrink so .asn-content can scroll instead of
+// pushing the footer out of the clipped aside.
+.app-shell .navbar-static-side .zone-navigation {
+    position: static;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: visible;
+}
+
+// The account footer (Login zone, hosting the Login Status block) is pinned below
+// the navigation at its natural height.
+.app-shell .navbar-static-side .app-shell-sidebar-footer {
+    flex: 0 0 auto;
+}
+
+// Continue a height: 100% chain from the navigation zone down through the Obsidian
+// mount wrappers so .asn-root fills the flex-sized zone and .asn-content scrolls.
+// The real rendered structure is:
+//   .zone-navigation (this IS the .zone-instance div; CssClass is applied to it)
+//     > .zone-content
+//       > .block-instance
+//         > .block-content
+//           > #obsidian-{guid}
+//             > .obsidian-block-wrapper
+//               > .asn-root
+// Every link between the flex-sized zone and .asn-root must carry height: 100%, or
+// the first one that doesn't collapses to content height and .asn-content stops
+// scrolling: a tall nav then overflows the clipped aside and the bottom-most piece
+// (the spending card, pushed down by .asn-spacer's margin-top: auto) disappears.
+// .zone-content was previously missed because it was written as a child of a nested
+// .zone-instance that does not exist. Scoped to the Navigation zone so it never
+// touches the footer or header-action blocks.
+.app-shell .navbar-static-side .zone-navigation .zone-content,
+.app-shell .navbar-static-side .zone-navigation .block-instance,
+.app-shell .navbar-static-side .zone-navigation .block-content,
+.app-shell .navbar-static-side .zone-navigation [id^="obsidian-"],
+.app-shell .navbar-static-side .zone-navigation .obsidian-block-wrapper,
+.app-shell .navbar-static-side .zone-navigation .obsidian-block {
+    position: static;
+    height: 100%;
+    overflow: visible;
+}
+
+// -- Inset card --------------------------------------------------------------
+// #content-wrapper carries the id, so scoping under .app-shell beats the legacy rule.
+.app-shell #content-wrapper {
+    position: relative;
+    flex: 1 1 auto;
+    display: block;
+    min-width: 0;
+    min-height: 0;
+    margin: var(--app-shell-gap) var(--app-shell-gap) var(--app-shell-gap) var(--app-shell-sidebar-width);
+    background-color: var(--color-interface-softest);
+    border-radius: var(--rounded-xlarge);
+    box-shadow: var(--box-shadow);
+    overflow-x: clip;
+    overflow-y: auto;
+    transition: margin-left 0.2s linear;
+}
+
+html[data-app-shell-sidebar="collapsed"] .app-shell #content-wrapper {
+    margin-left: var(--app-shell-sidebar-width-collapsed);
+}
+
+// -- Header (thin breadcrumb bar inside the card) ----------------------------
+.app-shell .rock-top-header {
+    position: static;
+    inset: auto;
+    z-index: auto;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--app-shell-gap);
+    width: auto;
+    /* Compact breadcrumb bar: half the nominal header height, with the trail
+       vertically centered. Change --app-shell-header-height to rescale the bar. */
+    height: calc(var(--app-shell-header-height) / 2);
+    padding: 0 16px;
+    background-color: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+// Collapse the header bar on the root/home page so it doesn't reserve a bar with
+// only the current page in it. PageBreadCrumbs renders the current (active) page
+// as a plain <li> with no <a>, while every ancestor crumb is an <li> containing an
+// <a>. So "there is at least one ancestor link crumb" is the signal that we are
+// below the root and the trail is worth showing; when none exists (home page, or a
+// page with breadcrumbs disabled) the bar is hidden and the top padding below
+// keeps the content from sitting flush against the card.
+.app-shell .rock-top-header:not(:has(.breadcrumb-item a)) {
+    display: none;
+}
+
+// When the breadcrumb bar is hidden (see above), it no longer provides the top
+// spacing inside the inset card, so add matching padding to keep the content off
+// the rounded top edge. The value mirrors the breadcrumb bar's height so the
+// content starts at the same offset whether or not a trail is shown.
+.app-shell #content-wrapper:not(:has(.breadcrumb-item a)) {
+    padding-top: calc(var(--app-shell-header-height) / 2);
+}
+
+// The app-shell header shows the breadcrumb trail; the big page title is hidden
+// here (content blocks render their own headers where needed).
+.app-shell .rock-top-header #secPageTitle {
+    display: none;
+}
+
+// Real header chrome (bookmark + notifications), relocated into the sidebar
+// header row where the demo notifications button used to sit. Anchored to the
+// top-right of the fixed sidebar, just left of the collapse toggle. The top
+// offset lines the icons up with the vertical center of the header row (aside
+// padding 8 + header padding 8 + half the 40px brand row = 36px center, minus
+// half the 28px button), so they sit level with the collapse toggle.
+.app-shell-sidebar-actions {
+    position: absolute;
+    top: 22px;
+    right: 44px;
+    z-index: 31;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+// Search is already provided by the in-sidebar search trigger; hide the copy
+// that ships in the Header zone.
+.app-shell-sidebar-actions .smartsearch {
+    display: none;
+}
+
+.app-shell-sidebar-actions .zone-content,
+.app-shell-sidebar-actions .block-instance,
+.app-shell-sidebar-actions .block-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+// Present the relocated blocks' triggers as compact, transparent sidebar icon
+// buttons that match the collapse toggle (28px square, muted until hover) so the
+// whole cluster reads as one control group.
+//
+// The :not() guards are essential: these blocks render their own dropdown/popover
+// menus inline (DropDownContent's .floating-dropdown, a legacy .dropdown-menu, or
+// Personal Links' hand-rolled .rock-popover), which are descendants of
+// .app-shell-sidebar-actions. Without the guards, every menu/popover link would be
+// forced into a faded 28px square instead of a full-width row.
+.app-shell-sidebar-actions a:not(.floating-dropdown *):not(.dropdown-menu *):not(.rock-popover *),
+.app-shell-sidebar-actions button:not(.floating-dropdown *):not(.dropdown-menu *):not(.rock-popover *),
+.app-shell-sidebar-actions .btn:not(.floating-dropdown *):not(.dropdown-menu *):not(.rock-popover *) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    color: var(--color-interface-strong);
+    background: transparent;
+    border: 0;
+    border-radius: var(--rounded-small);
+    opacity: 0.6;
+
+    &:hover {
+        opacity: 1;
+        background-color: color-mix(in srgb, var(--color-interface-strongest) 6%, transparent);
+    }
+}
+
+.app-shell-sidebar-actions i:not(.floating-dropdown *):not(.dropdown-menu *):not(.rock-popover *) {
+    font-size: 18px;
+}
+
+// Hide the relocated actions when the sidebar collapses to the icon rail.
+html[data-app-shell-sidebar="collapsed"] .app-shell-sidebar-actions {
+    display: none;
+}
+
+// Restyle Rock's breadcrumb output into the muted app-shell trail.
+.app-shell-breadcrumb {
+    min-width: 0;
+
+    .breadcrumb {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 6px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        background: transparent;
+        font-size: var(--font-size-small);
+
+        // The app-shell trail is text-only; suppress any page/crumb icons.
+        i,
+        img {
+            display: none;
+        }
+
+        > li {
+            display: inline-flex;
+            align-items: center;
+            color: var(--color-interface-medium);
+
+            + li::before {
+                content: "/";
+                padding-right: 6px;
+                color: var(--color-interface-soft);
+            }
+
+            &.active {
+                color: var(--color-interface-strongest);
+                font-weight: var(--font-weight-medium);
+            }
+
+            a {
+                color: var(--color-interface-medium);
+                text-decoration: none;
+
+                &:hover {
+                    color: var(--color-interface-strongest);
+                }
+            }
+        }
+    }
+}
+
+// Keep the header zones (Header/Login) aligned to the right of the trail for any
+// block instances left in place.
+.app-shell .rock-top-header .navbar-zone-header,
+.app-shell .rock-top-header .navbar-zone-login {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+}
+
+.app-shell .rock-top-header .navbar-zone-header + .navbar-zone-login {
+    margin-left: 0;
+}
+
+// -- Content + footer --------------------------------------------------------
+.app-shell .main-content {
+    min-width: 0;
+    margin: 0;
+    padding-right: var(--spacing-medium);
+    padding-left: var(--spacing-medium);
+}
+
+.app-shell .main-footer {
+    padding: 0 16px 16px;
+}
+
+// styles-v2's base .panel-heading / .panel-header has no background of its own,
+// so it inherits the panel's --color-interface-softest and blends flush into the
+// body. Scoped to the shell (not the shared core rule) so only panels rendered
+// inside the app-shell content card get the softer header separation.
+//.app-shell .panel-heading,
+//.app-shell .panel-header {
+//    background-color: var(--color-interface-softer);
+//}
+
+// -- Legacy rail neutralizers ------------------------------------------------
+// The desktop rail hover/flyout does not apply to the new fixed sidebar.
+.app-shell .navbar-static-side.open-secondary-nav,
+.app-shell .navbar-static-side .nav-childpages {
+    display: none;
+}
+
+// -- Themed thin scrollbars --------------------------------------------------
+.app-shell {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--color-interface-medium) 35%, transparent) transparent;
+}
+
+.app-shell *,
+.app-shell #content-wrapper {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--color-interface-medium) 35%, transparent) transparent;
+}
+
+.app-shell ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.app-shell ::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.app-shell ::-webkit-scrollbar-thumb {
+    background-color: color-mix(in srgb, var(--color-interface-medium) 30%, transparent);
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+}
+
+.app-shell ::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in srgb, var(--color-interface-medium) 50%, transparent);
+}
+
+// -- Backdrop for the mobile drawer (hidden on desktop) ----------------------
+.app-shell-scrim {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 25;
+    background-color: color-mix(in srgb, var(--color-interface-strongest) 40%, transparent);
+}
+
+// -- Fullscreen --------------------------------------------------------------
+// FullWorksurface / Rock fullscreen hides the sidebar + header; let the inset
+// fill the viewport with no left margin.
+body.is-fullscreen .app-shell #content-wrapper {
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+// -- Mobile (off-canvas drawer) ----------------------------------------------
+@media (max-width: $screen-medium) {
+    .app-shell .navbar-static-side {
+        width: var(--app-shell-sidebar-width-mobile);
+        transform: translateX(-100%);
+        background-color: var(--color-interface-softest);
+        box-shadow: var(--box-shadow-strong);
+    }
+
+    // On mobile the drawer is full width when shown; ignore collapse.
+    html[data-app-shell-sidebar="collapsed"] .app-shell .navbar-static-side {
+        width: var(--app-shell-sidebar-width-mobile);
+    }
+
+    html[data-app-shell-sidebar-mobile="open"] .app-shell .navbar-static-side {
+        transform: translateX(0);
+    }
+
+    html[data-app-shell-sidebar-mobile="open"] .app-shell-scrim {
+        display: block;
+    }
+
+    .app-shell #content-wrapper,
+    html[data-app-shell-sidebar="collapsed"] .app-shell #content-wrapper {
+        margin-left: var(--app-shell-gap);
+    }
+}
+
+// -- Print -------------------------------------------------------------------
+@media print {
+    .app-shell #content-wrapper {
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+        overflow: visible;
+    }
+}
+
+// =============================================================================
+// App Shell Navigation block (pseudo-static resting state)
+// =============================================================================
+//
+// These styles used to live in scoped <style> blocks inside the block's .obs
+// partials. They are hoisted here (global) so the server-rendered resting markup
+// produced by AppShellNavigation.GetInitialHtmlContent() is fully styled at first
+// paint, before the Vue island mounts. The mounted block reuses the exact same
+// class names, so a single global copy styles both the static markup and the
+// live Vue output with no duplication or drift.
+//
+// Collapse rules key off html[data-app-shell-sidebar="collapsed"] (restored pre-paint
+// by theme.js) rather than the block's own data-collapsed attribute, so the
+// static markup reflects the persisted collapse state immediately, with no flash.
+//
+// All colors and radii consume the styles-v2 tokens bridged onto shadcn-style
+// names on .asn-root, so church brand colors and [theme="dark"] flow through.
+// =============================================================================
+
+.asn-root {
+    // Token bridge: map the shadcn-style token names the ported app-shell partials
+    // consume onto Rock's styles-v2 tokens. These are var() references, not
+    // literal values, so brand colors and [theme="dark"] flow through.
+    --background: var(--color-interface-softest);
+    --foreground: var(--color-interface-strongest);
+    --card: var(--color-interface-softest);
+    --popover: var(--color-interface-softest);
+    --popover-foreground: var(--color-interface-stronger);
+    --muted: var(--color-interface-softer);
+    --muted-foreground: var(--color-interface-medium);
+    --accent: color-mix(in srgb, var(--color-interface-strongest) 6%, transparent);
+    --accent-foreground: var(--color-interface-stronger);
+    --border: var(--color-interface-soft);
+    --primary: var(--color-primary);
+    --primary-foreground: var(--color-interface-softest);
+    --destructive: var(--color-danger-strong);
+    --success: var(--color-success-strong);
+    --warning: var(--color-warning-strong);
+    --warning-foreground: var(--color-warning-strong);
+    --info: var(--color-info-strong);
+    --sidebar: var(--color-interface-softer);
+    --sidebar-foreground: var(--color-interface-strong);
+    --sidebar-accent: color-mix(in srgb, var(--color-interface-strongest) 6%, transparent);
+    --sidebar-accent-foreground: var(--color-interface-stronger);
+    --sidebar-border: var(--color-interface-soft);
+    --radius-sm: var(--rounded-small);
+    --radius-md: var(--rounded-medium);
+    --radius-lg: var(--rounded-large);
+
+    display: flex;
+    flex-direction: column;
+    // Fill the fixed sidebar exactly (its wrapper chain is forced to 100% height
+    // above) so the scrollable content region pins the footer to the bottom
+    // without overflowing the clipped aside.
+    height: 100%;
+    color: var(--sidebar-foreground);
+}
+
+// Header
+.asn-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 8px 4px;
+}
+
+.asn-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 2px;
+    color: var(--sidebar-foreground);
+    text-decoration: none;
+}
+
+// Brand mark: shows the site logo configured in the theme (--logo-image, a white
+// SVG by default) on the primary-color badge, instead of a hard-coded icon. The
+// badge background keeps the white logo legible against the light sidebar.
+.asn-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background-color: var(--primary);
+    background-image: var(--logo-image);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 20px auto;
+    border-radius: var(--radius-md);
+}
+
+.asn-wordmark {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.asn-header-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.asn-collapse-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    color: var(--sidebar-foreground);
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-sm);
+    opacity: 0.6;
+    cursor: pointer;
+}
+
+.asn-collapse-trigger:hover {
+    opacity: 1;
+    background-color: var(--sidebar-accent);
+}
+
+.asn-collapse-trigger i {
+    font-size: 18px;
+    transition: transform 0.2s ease;
+}
+
+// Experimental color-scheme toggle: a small button floated to the bottom-right of
+// the viewport (teleported to body, so it lives outside .asn-root and uses the
+// global interface tokens rather than the sidebar bridge). Styled as a
+// self-contained pill so it stays legible over either the white or gray content.
+.asn-scheme-trigger {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 50;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    color: var(--color-interface-strong);
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: 999px;
+    box-shadow: var(--box-shadow);
+    opacity: 0.85;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.asn-scheme-trigger i {
+    font-size: 18px;
+}
+
+// Content + footer
+.asn-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+// Push the spending card toward the bottom, with a guaranteed gap above it so
+// there is always separation from the navigation, even when the nav is long
+// enough to scroll.
+.asn-spacer {
+    margin-top: auto;
+    padding-top: var(--spacing-large);
+}
+
+// Shared nav primitives
+.asn-group {
+    padding: 8px;
+}
+
+.asn-group-label {
+    display: flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: color-mix(in oklch, var(--sidebar-foreground) 70%, transparent);
+}
+
+.asn-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.asn-menu-item {
+    position: relative;
+}
+
+.asn-menu-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 32px;
+    padding: 0 8px;
+    font-size: 14px;
+    color: color-mix(in oklch, var(--sidebar-accent-foreground) 80%, transparent);
+    text-align: left;
+    text-decoration: none;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.asn-menu-button > i {
+    flex-shrink: 0;
+    font-size: 18px;
+    opacity: 0.6;
+}
+
+.asn-menu-button:hover {
+    color: var(--foreground);
+}
+
+.asn-menu-button:hover > i {
+    opacity: 1;
+}
+
+// Active item gets the raised "card" treatment.
+.asn-menu-button.is-active {
+    color: var(--foreground);
+    background-color: var(--background);
+    border-color: color-mix(in oklch, var(--border) 60%, transparent);
+    box-shadow: var(--box-shadow);
+}
+
+.asn-menu-button.is-active > i {
+    color: var(--primary);
+    opacity: 1;
+}
+
+.asn-chevron {
+    margin-left: auto;
+    font-size: 15px;
+    opacity: 0.6;
+    transition: transform 0.2s ease;
+}
+
+.asn-chevron.is-open {
+    transform: rotate(90deg);
+}
+
+// Expanded top-level dropdown: its contents indent under the parent.
+.asn-submenu {
+    margin: 2px 0 4px;
+    padding-left: 10px;
+}
+
+// Static grouping header for mid-level pages. These are labels, not
+// collapsible items.
+.asn-subgroup-label {
+    display: flex;
+    align-items: center;
+    height: 26px;
+    margin-top: 4px;
+    padding: 0 8px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+}
+
+// Indent the links beneath a grouping header so they read as nested under it.
+.asn-subgroup-label + .asn-menu {
+    padding-left: var(--spacing-xsmall);
+}
+
+// Search trigger
+.asn-search-group {
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.asn-search-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 32px;
+    padding: 0 8px 0 28px;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--foreground);
+    text-align: left;
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--box-shadow);
+    cursor: pointer;
+    transition: width 0.2s linear;
+}
+
+.asn-search-text {
+    flex: 1 1 auto;
+}
+
+.asn-search-icon {
+    position: absolute;
+    top: 50%;
+    left: 8px;
+    font-size: 14px;
+    opacity: 0.5;
+    transform: translateY(-50%);
+}
+
+.asn-kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 20px;
+    min-width: 20px;
+    margin-left: auto;
+    padding: 0 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted-foreground);
+    background-color: var(--muted);
+    border-radius: var(--radius-sm);
+}
+
+// -- Universal (person) search dialog ----------------------------------------
+// A custom centered command-style search dialog (Teleport to body):
+// a rounded card floating over a dimmed backdrop with a single flat row,
+// a leading search glyph, the scope selector as a pill, a borderless input, and a
+// muted close button. The SmartSearch markup + searchField.js control are kept
+// intact (the input stays inside a .smartsearch ancestor, with the data-key /
+// hidden-input / dropdown-menu structure the control reads); the heavy header
+// .smartsearch styling (fixed widths, absolute icon, near-white text, orange
+// focus) is neutralized here.
+.asn-search-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1060;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background-color: color-mix(in srgb, var(--color-interface-strongest) 45%, transparent);
+}
+
+.asn-search-dialog {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 480px;
+    max-width: 100%;
+    height: 56px;
+    padding: 0 14px;
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-large);
+    box-shadow: var(--box-shadow-strong, var(--box-shadow));
+}
+
+.asn-search-dialog-icon {
+    flex-shrink: 0;
+    font-size: 18px;
+    color: var(--color-interface-medium);
+}
+
+// Neutralize the header .smartsearch box; here it is only a flex row wrapping the
+// scope pill and the input.
+.asn-search-dialog .smartsearch.searchinput {
+    position: static;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.asn-search-dialog .smartsearch.searchinput:hover,
+.asn-search-dialog .smartsearch.searchinput:focus-within {
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+// Scope selector, presented as a leading pill. This is the "creative" home for the
+// search-type dropdown app-shell's design has no slot for.
+.asn-search-dialog .smartsearch-type {
+    order: 0;
+    flex-shrink: 0;
+    width: auto;
+    margin: 0;
+    padding: 0;
+}
+
+.asn-search-dialog .smartsearch-type > li.dropdown {
+    position: relative;
+    list-style: none;
+}
+
+.asn-search-dialog .smartsearch-type .dropdown-toggle.navbar-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    width: auto;
+    height: 26px;
+    padding: 0 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-interface-strong);
+    text-align: left;
+    background-color: var(--color-interface-softer);
+    border-radius: var(--rounded-medium);
+    cursor: pointer;
+}
+
+.asn-search-dialog .smartsearch-type .dropdown-toggle.navbar-link:hover {
+    background-color: color-mix(in srgb, var(--color-interface-strongest) 8%, transparent);
+}
+
+.asn-search-dialog .smartsearch-type .dropdown-toggle.navbar-link span {
+    padding: 0;
+}
+
+.asn-search-dialog .smartsearch-type .dropdown-toggle.navbar-link b {
+    width: auto;
+    font-size: 11px;
+    opacity: 0.6;
+}
+
+// Input + the typeahead wrapper searchField.js injects grow to fill the row,
+// borderless and flat with dark (not near-white) text and no focus ring.
+.asn-search-dialog .smartsearch .twitter-typeahead {
+    order: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-right: 0 !important;
+}
+
+.asn-search-dialog .smartsearch input.searchinput,
+.asn-search-dialog .smartsearch input.tt-query {
+    order: 1;
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    height: 40px;
+    padding: 0;
+    font-size: 15px;
+    color: var(--color-interface-strongest);
+    background: transparent;
+    border: 0 !important;
+    box-shadow: none !important;
+
+    &:focus {
+        outline: none;
+        box-shadow: none !important;
+    }
+
+    &::placeholder {
+        color: var(--color-interface-medium);
+    }
+}
+
+// Scope dropdown menu, themed with tokens; opens below the pill.
+.asn-search-dialog .smartsearch-type .dropdown-menu {
+    top: 100%;
+    left: 0;
+    right: auto;
+    margin-top: 8px;
+    padding: 4px;
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-large);
+    box-shadow: var(--dropdown-box-shadow, var(--box-shadow));
+
+    > li > a {
+        display: block;
+        padding: 6px 10px;
+        font-size: 13px;
+        color: var(--color-interface-stronger);
+        border-radius: var(--rounded-small);
+        cursor: pointer;
+
+        &:hover {
+            background-color: color-mix(in srgb, var(--color-interface-strongest) 6%, transparent);
+        }
+    }
+}
+
+// Typeahead suggestions menu, themed to match the dialog.
+.asn-search-dialog .tt-menu,
+.asn-search-dialog .tt-dropdown-menu {
+    width: 100%;
+    margin-top: 8px;
+    padding: 4px;
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft) !important;
+    border-radius: var(--rounded-large);
+    box-shadow: var(--dropdown-box-shadow, var(--box-shadow));
+}
+
+// Muted close button on the right.
+.asn-search-dialog-close {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    color: var(--color-interface-medium);
+    background: transparent;
+    border: 0;
+    border-radius: var(--rounded-small);
+    cursor: pointer;
+
+    &:hover {
+        color: var(--color-interface-strongest);
+        background-color: color-mix(in srgb, var(--color-interface-strongest) 6%, transparent);
+    }
+}
+
+// Dialog open/close transition: backdrop fades, card rises slightly.
+.asn-dialog-enter-active,
+.asn-dialog-leave-active {
+    transition: opacity 0.15s ease;
+}
+
+.asn-dialog-enter-active .asn-search-dialog,
+.asn-dialog-leave-active .asn-search-dialog {
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.asn-dialog-enter-from,
+.asn-dialog-leave-to {
+    opacity: 0;
+}
+
+.asn-dialog-enter-from .asn-search-dialog,
+.asn-dialog-leave-to .asn-search-dialog {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+}
+
+// -- Nav page filter (reactive Vue search over the navigation tree) ----------
+// A Rock TextBox at the top of the Navigation group, restyled to read like a app-shell
+// search field: rounded, flat, a leading search glyph, and no orange focus glow.
+// The whole field is hidden on the collapsed rail via the wrapper's .asn-label
+// class. Colors and radii consume the .asn-root token bridge that the other .asn-*
+// nav primitives use.
+.asn-navsearch-field {
+    position: relative;
+    margin: 4px 8px 8px;
+}
+
+// Leading search glyph overlaid on the input (the TextBox has no icon slot in use).
+.asn-navsearch-icon {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    z-index: 3;
+    font-size: 14px;
+    opacity: 0.5;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+// Neutralize the default form-group spacing so the field sits tight in the sidebar.
+.asn-navsearch.form-group {
+    margin: 0;
+}
+
+// No label is supplied in this context; suppress the empty label slot.
+.asn-navsearch .control-label {
+    display: none;
+}
+
+.asn-navsearch .form-control {
+    height: 32px;
+    // Leave room for the overlaid search glyph on the left. !important is required
+    // because the legacy core .form-control / .input-sm padding (loaded after this
+    // theme) otherwise resets the left padding and the text runs under the icon.
+    padding-left: 34px !important;
+    font-size: 13px;
+    color: var(--foreground);
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    // Rounder than Rock's stock xsmall input radius, matching the search button.
+    border-radius: var(--radius-md);
+    box-shadow: none;
+
+    &::placeholder {
+        color: var(--muted-foreground);
+    }
+
+    // Replace Rock's orange focus border + glow with a subtle neutral border. The
+    // orange focus comes from a legacy core stylesheet (not this theme) whose
+    // .form-control:focus carries !important, so this override must too, matching
+    // the codebase pattern (e.g. .smartsearch input { box-shadow: none !important }).
+    &:focus {
+        border-color: color-mix(in srgb, var(--foreground) 25%, var(--border)) !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
+}
+
+// The clearable "x" the TextBox renders when a query is present; mute it to match.
+.asn-navsearch .clear-icon {
+    opacity: 0.5;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.asn-navsearch-empty {
+    padding: 4px 8px 8px;
+    font-size: 12px;
+    color: var(--muted-foreground);
+}
+
+// The Navigation group label carries a trailing search toggle that reveals the
+// filter field. space-between pushes the toggle to the right of the label text.
+.asn-nav-label {
+    justify-content: space-between;
+}
+
+.asn-nav-search-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-sm);
+    opacity: 0.55;
+    cursor: pointer;
+    transition: opacity 0.15s ease, background-color 0.15s ease;
+
+    &:hover,
+    &.is-active {
+        opacity: 1;
+        background-color: var(--sidebar-accent);
+    }
+}
+
+.asn-nav-search-toggle i {
+    font-size: 15px;
+}
+
+// Reveal transition for the filter field: slide + fade. max-height animates in
+// place of auto height; the field's resting margins (4px 8px 8px) collapse to 0
+// while closed so no gap lingers.
+.asn-navsearch-enter-active,
+.asn-navsearch-leave-active {
+    overflow: hidden;
+    transition: max-height 0.2s ease, opacity 0.2s ease, margin-top 0.2s ease, margin-bottom 0.2s ease, transform 0.2s ease;
+}
+
+.asn-navsearch-enter-from,
+.asn-navsearch-leave-to {
+    max-height: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    opacity: 0;
+    transform: translateY(-4px);
+}
+
+.asn-navsearch-enter-to,
+.asn-navsearch-leave-from {
+    max-height: 52px;
+    opacity: 1;
+}
+
+// Projects group
+.asn-projects-toggle {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+}
+
+.asn-projects-toggle .asn-chevron {
+    margin-left: auto;
+    font-size: 15px;
+    opacity: 0.6;
+    transition: transform 0.2s ease;
+}
+
+.asn-projects-toggle .asn-chevron.is-collapsed {
+    transform: rotate(-90deg);
+}
+
+.asn-donut {
+    flex-shrink: 0;
+    transform: rotate(-90deg);
+}
+
+.asn-donut-track {
+    stroke: color-mix(in oklch, var(--muted-foreground) 20%, transparent);
+}
+
+.asn-project-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+// Per-row action trigger (the dots button revealed on hover).
+.asn-action {
+    position: absolute;
+    top: 50%;
+    right: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    color: var(--sidebar-foreground);
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-sm);
+    opacity: 0;
+    transform: translateY(-50%);
+    cursor: pointer;
+    transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.asn-menu-item:hover .asn-action {
+    opacity: 0.7;
+}
+
+.asn-action:hover {
+    opacity: 1;
+    background-color: var(--sidebar-accent);
+}
+
+// Spending card
+.asn-spending-card {
+    padding: 12px;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+}
+
+.asn-spending-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--warning);
+}
+
+.asn-spending-copy {
+    margin: 6px 0 10px;
+    font-size: 11px;
+    line-height: 1.35;
+    color: var(--muted-foreground);
+}
+
+.asn-spending-track {
+    position: relative;
+    height: 6px;
+    overflow: hidden;
+    background-color: color-mix(in oklch, var(--muted) 55%, transparent);
+    border-radius: var(--radius-sm);
+}
+
+.asn-spending-hatch {
+    position: absolute;
+    inset: 0;
+    color: var(--muted-foreground);
+    opacity: 0.2;
+    background-image: repeating-linear-gradient(-45deg, currentColor 0, currentColor 1px, transparent 0, transparent 4px);
+}
+
+.asn-spending-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background-color: var(--success);
+}
+
+.asn-spending-legend {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.asn-spending-stat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.asn-spending-value {
+    font-weight: 600;
+    color: var(--foreground);
+}
+
+.asn-spending-muted {
+    color: var(--muted-foreground);
+}
+
+// -- Account footer (Login Status block, restyled to match app-shell) -------------
+// The footer hosts the real Login Status block, whose Bootstrap navbar markup is
+// .loginstatus > li.dropdown > a.dropdown-toggle > .loginstatus-wrapper (photo +
+// name) plus a .dropdown-menu. These rules make it read like the account
+// button and float its menu upward, since the footer sits at the viewport bottom.
+.app-shell-sidebar-footer {
+    padding: 8px;
+}
+
+.app-shell-sidebar-footer .loginstatus {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.app-shell-sidebar-footer .loginstatus > li {
+    position: relative;
+    list-style: none;
+    // Stock .navbar-nav > li floats left at >= screen-small; undo it so the single
+    // account row lays out in the block flow and the <ul> keeps its height.
+    float: none;
+}
+
+.app-shell-sidebar-footer .loginstatus .dropdown-toggle,
+.app-shell-sidebar-footer .loginstatus > li > a {
+    display: flex;
+    align-items: center;
+    // Stock .dropdown-toggle.navbar-link sets justify-content: end (right-aligned
+    // header treatment). Force start so the avatar + name read left-to-right.
+    justify-content: flex-start;
+    gap: 8px;
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-interface-strong);
+    text-decoration: none;
+    background: transparent;
+    border: 0;
+    border-radius: var(--rounded-medium);
+    cursor: pointer;
+}
+
+.app-shell-sidebar-footer .loginstatus .dropdown-toggle:hover,
+.app-shell-sidebar-footer .loginstatus > li > a:hover {
+    background-color: color-mix(in srgb, var(--color-interface-strongest) 6%, transparent);
+}
+
+// The stock global .loginstatus .loginstatus-wrapper rule renders a rounded pill
+// (soft background, border-radius 999px) with the photo and name reversed
+// (flex-direction: row-reverse) and its own padding/margin. Neutralize all of
+// that here so the wrapper is a plain left-to-right row inside the button;
+// our higher-specificity selector wins, but only for the properties we restate.
+.app-shell-sidebar-footer .loginstatus .loginstatus-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1 1 auto;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    border-radius: 0;
+}
+
+.app-shell-sidebar-footer .loginstatus .profile-photo {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    // Stock adds margin-right: 12px (and float: left) for the header pill; zero it
+    // so the flex gap is the only spacing between avatar and name.
+    margin: 0;
+    background-color: var(--color-interface-softest);
+    background-size: cover;
+    background-position: center;
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-medium);
+}
+
+// Stock hides the name span (.loginstatus > li > a span { display: none }) because
+// the header pill shows only the photo. Re-assert display so the name shows in the
+// footer button; the collapsed-rail rule below hides it again on the icon rail.
+.app-shell-sidebar-footer .loginstatus .loginstatus-wrapper span {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.app-shell-sidebar-footer .loginstatus .dropdown-toggle > b {
+    // Push the caret to the far right; stock .loginstatus b adds side margins, so
+    // reset them and let auto-left do the alignment.
+    margin: 0 0 0 auto;
+    font-size: 15px;
+    opacity: 0.5;
+}
+
+// The account menu opens upward (the footer sits at the bottom of the viewport).
+.app-shell-sidebar-footer .loginstatus .dropdown-menu {
+    top: auto;
+    bottom: 100%;
+    right: 0;
+    left: 0;
+    min-width: 0;
+    margin: 0 0 6px;
+    padding: 4px;
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-large);
+    box-shadow: var(--dropdown-box-shadow, var(--box-shadow));
+}
+
+.app-shell-sidebar-footer .loginstatus .dropdown-menu > li > a {
+    display: block;
+    padding: 7px 8px;
+    font-size: 13px;
+    color: var(--color-interface-stronger);
+    text-decoration: none;
+    border-radius: var(--rounded-small);
+}
+
+.app-shell-sidebar-footer .loginstatus .dropdown-menu > li > a:hover {
+    background-color: color-mix(in srgb, var(--color-interface-strongest) 6%, transparent);
+}
+
+.app-shell-sidebar-footer .loginstatus .dropdown-menu > li.divider {
+    height: 1px;
+    margin: 4px 0;
+    overflow: hidden;
+    background-color: var(--color-interface-soft);
+}
+
+// Collapsed rail: driven by the html attribute theme.js restores pre-paint, so
+// both the static markup and the mounted block collapse without a flash.
+html[data-app-shell-sidebar="collapsed"] .asn-root {
+    .asn-label {
+        display: none;
+    }
+
+    .asn-header {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .asn-header-actions {
+        flex-direction: column;
+        margin: 0 auto;
+    }
+
+    .asn-collapse-trigger i {
+        transform: rotate(180deg);
+    }
+
+    .asn-menu-button {
+        justify-content: center;
+        padding: 0;
+    }
+
+    .asn-group-label {
+        justify-content: center;
+        padding: 0;
+    }
+
+    .asn-search-btn {
+        width: 32px;
+        padding: 0;
+        justify-content: center;
+    }
+
+    .asn-search-icon {
+        position: static;
+        transform: none;
+    }
+
+    // The projects and spending widgets are hidden entirely on the icon rail.
+    .asn-projects,
+    .asn-spending {
+        display: none;
+    }
+}
+
+// Collapsed account footer: show just the avatar, centered, and hide the name and
+// caret. The footer is a sibling of .asn-root (the Login zone), so this is scoped
+// to the sidebar rather than nested in the .asn-root block above.
+html[data-app-shell-sidebar="collapsed"] .app-shell .app-shell-sidebar-footer .loginstatus .loginstatus-wrapper span,
+html[data-app-shell-sidebar="collapsed"] .app-shell .app-shell-sidebar-footer .loginstatus .dropdown-toggle > b {
+    display: none;
+}
+
+html[data-app-shell-sidebar="collapsed"] .app-shell .app-shell-sidebar-footer .loginstatus .dropdown-toggle,
+html[data-app-shell-sidebar="collapsed"] .app-shell .app-shell-sidebar-footer .loginstatus > li > a {
+    justify-content: center;
+    min-height: 32px;
+    padding: 0;
+}

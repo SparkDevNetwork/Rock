@@ -1,0 +1,130 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="asn-group">
+        <div class="asn-group-label asn-label asn-nav-label">
+            <span>Navigation</span>
+            <button type="button"
+                    class="asn-nav-search-toggle"
+                    :class="{ 'is-active': isSearchVisible }"
+                    :aria-expanded="isSearchVisible"
+                    aria-label="Search pages"
+                    @click="onToggleSearch">
+                <i class="ti ti-search"></i>
+            </button>
+        </div>
+
+        <Transition name="asn-navsearch">
+            <div v-show="isSearchVisible" ref="fieldRef" class="asn-navsearch-field asn-label">
+                <i class="ti ti-filter asn-navsearch-icon"></i>
+                <TextBox v-model="searchQuery"
+                         formGroupClasses="asn-navsearch"
+                         placeholder="Filter pages..."
+                         size="small"
+                         :isClearable="true"
+                         :disableLabel="true" />
+            </div>
+        </Transition>
+
+        <ul class="asn-menu">
+            <NavItem v-for="item in filteredItems"
+                     :key="item.id ?? item.title ?? ''"
+                     :item="item"
+                     :depth="0"
+                     :isFiltering="isFiltering" />
+        </ul>
+
+        <div v-if="isFiltering && filteredItems.length === 0" class="asn-navsearch-empty asn-label">
+            No pages match "{{ searchQuery.trim() }}"
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, ref, type PropType } from "vue";
+    import { AppShellNavItemBag } from "@Obsidian/ViewModels/Blocks/Example/AppShellNavigation/appShellNavItemBag";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NavItem from "./navItem.partial.obs";
+
+    const props = defineProps({
+        items: {
+            type: Array as PropType<AppShellNavItemBag[]>,
+            default: () => []
+        }
+    });
+
+    // #region Values
+
+    const searchQuery = ref("");
+
+    // The filter field is hidden until the search toggle next to the group label
+    // is clicked; it slides open via the "asn-navsearch" transition.
+    const isSearchVisible = ref(false);
+    const fieldRef = ref<HTMLElement | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isFiltering = computed((): boolean => searchQuery.value.trim().length > 0);
+
+    // When filtering, prune the tree to branches that contain a match, keeping the
+    // ancestors of matches so results stay in their navigation context. A branch
+    // whose own title matches keeps all of its children so the whole group can be
+    // browsed. When not filtering, the untouched tree is returned.
+    const filteredItems = computed((): AppShellNavItemBag[] => {
+        if (!isFiltering.value) {
+            return props.items;
+        }
+
+        return pruneItems(props.items, searchQuery.value.trim().toLowerCase());
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onToggleSearch(): void {
+        isSearchVisible.value = !isSearchVisible.value;
+
+        if (isSearchVisible.value) {
+            // Focus the input once the field has slid into view.
+            nextTick(() => {
+                fieldRef.value?.querySelector("input")?.focus();
+            });
+        }
+        else {
+            // Clear the query when hiding so the tree returns to its normal state.
+            searchQuery.value = "";
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Recursively filters the navigation tree to items that match the query or have
+     * a matching descendant. Descent respects displayChildPages so the filter never
+     * surfaces pages the normal nav keeps hidden.
+     */
+    function pruneItems(items: AppShellNavItemBag[], query: string): AppShellNavItemBag[] {
+        const result: AppShellNavItemBag[] = [];
+
+        for (const item of items) {
+            const selfMatches = (item.title ?? "").toLowerCase().includes(query);
+            const canDescend = item.displayChildPages === true && item.children != null && item.children.length > 0;
+            const prunedChildren = canDescend ? pruneItems(item.children ?? [], query) : [];
+
+            if (selfMatches || prunedChildren.length > 0) {
+                result.push({
+                    ...item,
+                    children: selfMatches ? (item.children ?? []) : prunedChildren
+                });
+            }
+        }
+
+        return result;
+    }
+
+    // #endregion Functions
+</script>

@@ -1,0 +1,114 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="asn-root" :data-collapsed="isCollapsed">
+        <div class="asn-header">
+            <a class="asn-brand" :href="homePageUrl" title="Home">
+                <span class="asn-logo"></span>
+                <span class="asn-label asn-wordmark">Rock RMS</span>
+            </a>
+
+            <div class="asn-header-actions">
+                <button type="button" class="asn-collapse-trigger" aria-label="Toggle sidebar" @click="onToggleCollapse">
+                    <i class="ti ti-layout-sidebar"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="asn-content">
+            <SearchTrigger v-if="isSearchEnabled" />
+            <NavMain :items="navItems" />
+            <NavProjects />
+            <div class="asn-spacer">
+                <SpendingCard />
+            </div>
+        </div>
+    </div>
+
+    <!--
+        Experimental color-scheme toggle, floated to the bottom-right of the
+        viewport. Teleported to body so the fixed positioning is not affected by the
+        sidebar's overflow clipping or its mobile transform.
+    -->
+    <Teleport to="body">
+        <button type="button" class="asn-scheme-trigger" aria-label="Toggle color scheme" @click="onToggleScheme">
+            <i class="ti ti-contrast"></i>
+        </button>
+    </Teleport>
+</template>
+
+<script setup lang="ts">
+    /*
+        The sidebar's resting-state styles live globally in the theme's
+        _app-shell.scss (not a scoped <style> block here) so the server-rendered
+        markup from AppShellNavigation.GetInitialHtmlContent() is fully styled at
+        first paint, before this Vue island mounts. This component renders the same
+        class names, so the one global copy styles both.
+    */
+    import { ref } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { AppShellNavigationInitializationBox } from "@Obsidian/ViewModels/Blocks/Example/AppShellNavigation/appShellNavigationInitializationBox";
+    import SearchTrigger from "./AppShellNavigation/searchTrigger.partial.obs";
+    import NavMain from "./AppShellNavigation/navMain.partial.obs";
+    import NavProjects from "./AppShellNavigation/navProjects.partial.obs";
+    import SpendingCard from "./AppShellNavigation/spendingCard.partial.obs";
+
+    const config = useConfigurationValues<AppShellNavigationInitializationBox>();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const storageKey = "app-shell-sidebar-state";
+    const schemeStorageKey = "app-shell-theme";
+
+    const navItems = config.navItems ?? [];
+    const isSearchEnabled = config.isSearchEnabled ?? false;
+    const homePageUrl = config.homePageUrl ?? "/";
+
+    // Initialize from the attribute the theme script restored pre-paint so the
+    // block and the layout agree on the collapsed state without a flash.
+    const isCollapsed = ref(document.documentElement.getAttribute("data-app-shell-sidebar") === "collapsed");
+
+    // Same idea for the color scheme (default vs inverted shell/content shades).
+    const isInverted = ref(document.documentElement.getAttribute("data-app-shell-theme") === "inverted");
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    function onToggleCollapse(): void {
+        isCollapsed.value = !isCollapsed.value;
+
+        const state = isCollapsed.value ? "collapsed" : "expanded";
+
+        // Drive the theme-level layout (aside width, inset margin) and persist.
+        document.documentElement.setAttribute("data-app-shell-sidebar", state);
+        try {
+            localStorage.setItem(storageKey, state);
+        }
+        catch (e) {
+            // Ignore storage failures (private mode); state still applies for the session.
+        }
+    }
+
+    function onToggleScheme(): void {
+        isInverted.value = !isInverted.value;
+
+        // Only the inverted scheme sets an attribute; the default needs none.
+        if (isInverted.value) {
+            document.documentElement.setAttribute("data-app-shell-theme", "inverted");
+        }
+        else {
+            document.documentElement.removeAttribute("data-app-shell-theme");
+        }
+
+        try {
+            localStorage.setItem(schemeStorageKey, isInverted.value ? "inverted" : "default");
+        }
+        catch (e) {
+            // Ignore storage failures (private mode); scheme still applies for the session.
+        }
+    }
+
+    // #endregion Event Handlers
+</script>

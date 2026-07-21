@@ -76,38 +76,56 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
 <body runat="server" id="body">
     <form id="form1" runat="server">
 
-        <div class="page-wrapper">
+        <%--
+            app-shell chrome. The visual treatment lives in
+            Styles/_app-shell.scss and applies wherever this .app-shell
+            structure renders.
 
-            <nav class="navbar navbar-fixed-top rock-top-header">
-                <button type="button" class="navbar-toggle navbar-toggle-side-left collapsed" data-toggle="collapse" data-target=".navbar-static-side">
-                    <div class="hamburger-box">
-                        <div class="hamburger-icon"></div>
+            The original shell zone names (Navigation, Header, Login, Footer),
+            the feature/main content placeholders, and the #content-wrapper /
+            .main-content / #secPageTitle hooks are all preserved so existing page
+            block instances and child layouts keep rendering.
+        --%>
+        <div class="page-wrapper app-shell">
+
+            <%-- Fixed inset sidebar. The App Shell Navigation Obsidian block lives in the
+                 Navigation zone; the real header chrome (bookmark + notifications) is pulled
+                 into the sidebar header row via the Header zone. --%>
+            <aside id="app-shell-sidebar" class="app-shell-sidebar navbar-static-side d-print-none" role="navigation">
+                <div class="app-shell-sidebar-actions d-print-none">
+                    <Rock:Zone Name="Header" runat="server" />
+                </div>
+                <Rock:Zone Name="Navigation" CssClass="zone-navigation" runat="server" />
+
+                <%-- Account menu pinned to the bottom of the sidebar. This is the real
+                     Login Status block (hosted in the Login zone), styled to match the
+                     app-shell footer via _app-shell.scss, rather than being reimplemented
+                     inside the navigation block. --%>
+                <div class="app-shell-sidebar-footer d-print-none">
+                    <Rock:Zone Name="Login" CssClass="zone-login" runat="server" />
+                </div>
+            </aside>
+
+            <%-- Backdrop shown behind the off-canvas drawer on small screens. --%>
+            <div class="app-shell-scrim js-app-shell-scrim" aria-hidden="true"></div>
+
+            <%-- Raised inset card holding the thin header and the page content. --%>
+            <main id="content-wrapper" class="app-shell-inset">
+
+                <nav class="app-shell-header rock-top-header d-print-none">
+                    <div class="app-shell-breadcrumb">
+                        <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
                     </div>
-                </button>
-                <Rock:Lava ID="hlHomeCorner" runat="server">
-                    <a href="{{ '~' | ResolveRockUrl }}" title="Rock RMS" class="navbar-brand-corner no-logo"></a>
-                </Rock:Lava>
 
-                <div id="fixed-header" class="header-content" role="navigation">
-                    <div class="navbar-zone-login"><Rock:Zone Name="Login" runat="server" /></div>
-                    <div class="navbar-zone-header"><Rock:Zone Name="Header" runat="server" /></div>
-
-                    <!-- Page Title -->
+                    <%-- Page Title: hidden in the app-shell header, but kept so the server-side
+                         display logic continues to work. --%>
                     <section id="secPageTitle" class="page-title-display" runat="server">
                         <div class="page-title">
                             <h1 class="title"><Rock:PageIcon ID="PageIcon" runat="server" /> <Rock:PageTitle ID="PageTitle" runat="server" /></h1>
-                            <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
                         </div>
                     </section>
+                </nav>
 
-                </div>
-            </nav>
-
-            <nav class="navbar-default navbar-static-side" role="navigation">
-                <Rock:Zone Name="Navigation" CssClass="zone-navigation" runat="server" />
-            </nav>
-
-            <div id="content-wrapper">
                 <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
 
                 <div class="main-content">
@@ -117,8 +135,21 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                         <Rock:Zone Name="Footer" runat="server" />
                     </div>
                 </div>
-            </div>
+            </main>
 
+        </div>
+
+        <%--
+            Hidden home for the chrome blocks the App Shell Navigation experiment
+            retires (Page Menu, Smart Search). The hotfix migration parks those
+            instances into these zones; rendering them here keeps them out of the
+            page flow instead of orphaning at the bottom. Reversible via the
+            migration's Down(). The Login Status block is NOT parked: it renders in
+            the sidebar footer's Login zone above.
+        --%>
+        <div class="app-shell-parked-zones d-print-none" aria-hidden="true" style="display:none">
+            <Rock:Zone Name="app-shell-parked-Navigation" runat="server" />
+            <Rock:Zone Name="app-shell-parked-Header" runat="server" />
         </div>
 
         <%-- controls for scriptmanager and update panel --%>

@@ -1,0 +1,66 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="asn-group asn-projects">
+        <button type="button"
+                class="asn-group-label asn-projects-toggle asn-label"
+                :aria-expanded="isOpen"
+                @click="onToggle">
+            Active Projects
+            <i class="ti ti-chevron-down asn-chevron" :class="{ 'is-collapsed': !isOpen }"></i>
+        </button>
+
+        <ul v-if="isOpen" class="asn-menu asn-projects-list">
+            <li v-for="project in activeProjects" :key="project.id" class="asn-menu-item">
+                <a href="#"
+                   class="asn-menu-button"
+                   :title="`${project.name} - ${project.progress}% complete`">
+                    <svg width="16" height="16" viewBox="0 0 16 16" class="asn-donut" aria-hidden="true">
+                        <circle cx="8" cy="8" r="6" fill="none" class="asn-donut-track" stroke-width="2.5" />
+                        <circle cx="8" cy="8" r="6" fill="none"
+                                :style="{ stroke: project.color }"
+                                stroke-width="2.5"
+                                stroke-linecap="round"
+                                :stroke-dasharray="circumference"
+                                :stroke-dashoffset="dashOffset(project.progress)" />
+                    </svg>
+                    <span class="asn-label asn-project-name">{{ project.name }}</span>
+                </a>
+                <ItemActionMenu :label="project.name" />
+            </li>
+        </ul>
+    </div>
+</template>
+
+<script setup lang="ts">
+    // Resting-state styles (.asn-projects-*, .asn-donut*) live globally in the
+    // theme's _app-shell.scss so the server-rendered sidebar is styled before
+    // this island mounts. See appShellNavigation.obs for the full rationale.
+    import { ref } from "vue";
+    import { activeProjects } from "./data.partial";
+    import ItemActionMenu from "./itemActionMenu.partial.obs";
+
+    // #region Values
+
+    const isOpen = ref(true);
+    const radius = 6;
+    const circumference = 2 * Math.PI * radius;
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    function onToggle(): void {
+        isOpen.value = !isOpen.value;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    function dashOffset(progress: number): number {
+        const clamped = Math.min(100, Math.max(0, progress));
+        return circumference * (1 - clamped / 100);
+    }
+
+    // #endregion Functions
+</script>

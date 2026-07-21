@@ -1,0 +1,202 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="app-shell-dd">
+        <div ref="triggerRef" class="app-shell-dd-trigger" @click="onToggle">
+            <slot name="trigger" :isOpen="isOpen" />
+        </div>
+
+        <div v-if="isOpen"
+             ref="floatingRef"
+             class="app-shell-dd-menu"
+             :style="menuStyles"
+             @click="onMenuClick">
+            <slot />
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.app-shell-dd {
+    display: contents;
+}
+
+.app-shell-dd-trigger {
+    display: contents;
+}
+
+.app-shell-dd-menu {
+    z-index: 60;
+    min-width: 12rem;
+    padding: 4px;
+    background-color: var(--popover);
+    color: var(--popover-foreground);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--dropdown-box-shadow);
+}
+
+/* Slotted item/label/separator styling (applies to content passed from parents). */
+:slotted(.app-shell-dd-label) {
+    padding: 6px 8px 4px;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--muted-foreground);
+}
+
+:slotted(.app-shell-dd-item) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 7px 8px;
+    font-size: 13px;
+    color: var(--popover-foreground);
+    text-align: left;
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+:slotted(.app-shell-dd-item:hover) {
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+}
+
+:slotted(.app-shell-dd-item > i) {
+    font-size: 15px;
+    opacity: 0.6;
+}
+
+:slotted(.app-shell-dd-item.is-destructive) {
+    color: var(--destructive);
+}
+
+:slotted(.app-shell-dd-item.is-destructive:hover) {
+    background-color: color-mix(in oklch, var(--destructive) 10%, transparent);
+    color: var(--destructive);
+}
+
+:slotted(.app-shell-dd-shortcut) {
+    margin-left: auto;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--muted-foreground);
+}
+
+:slotted(.app-shell-dd-separator) {
+    height: 1px;
+    margin: 4px -4px;
+    background-color: var(--border);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, onBeforeUnmount, onMounted, ref, watch, type PropType } from "vue";
+    import { useFloating, autoUpdate, offset, flip, shift, type Placement } from "@Obsidian/Libs/floating-ui";
+
+    const props = defineProps({
+        placement: {
+            type: String as PropType<Placement>,
+            default: "bottom-start"
+        },
+
+        menuWidth: {
+            type: String as PropType<string | null>,
+            default: null
+        }
+    });
+
+    // #region Values
+
+    const isOpen = ref(false);
+    const triggerRef = ref<HTMLElement | null>(null);
+    const floatingRef = ref<HTMLElement | null>(null);
+
+    // The wrapper uses display:contents (no box), so anchor positioning to the
+    // actual trigger element the caller passed in instead.
+    const referenceEl = ref<HTMLElement | null>(null);
+
+    const { floatingStyles } = useFloating(referenceEl, floatingRef, {
+        placement: props.placement,
+        strategy: "fixed",
+        whileElementsMounted: autoUpdate,
+        middleware: [offset(6), flip(), shift({ padding: 8 })]
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const menuStyles = computed((): Record<string, string> => {
+        const styles: Record<string, string> = { ...floatingStyles.value } as Record<string, string>;
+
+        if (props.menuWidth) {
+            styles.width = props.menuWidth;
+            styles.minWidth = props.menuWidth;
+        }
+
+        return styles;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onToggle(): void {
+        isOpen.value = !isOpen.value;
+    }
+
+    function onMenuClick(event: MouseEvent): void {
+        // Close after selecting an actionable item (labels and separators do not close).
+        const target = event.target as HTMLElement;
+        if (target.closest(".app-shell-dd-item")) {
+            isOpen.value = false;
+        }
+    }
+
+    function onDocumentPointerDown(event: PointerEvent): void {
+        const target = event.target as Node;
+        if (triggerRef.value?.contains(target) || floatingRef.value?.contains(target)) {
+            return;
+        }
+
+        isOpen.value = false;
+    }
+
+    function onKeyDown(event: KeyboardEvent): void {
+        if (event.key === "Escape") {
+            isOpen.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(isOpen, (open) => {
+        if (open) {
+            document.addEventListener("pointerdown", onDocumentPointerDown, true);
+            document.addEventListener("keydown", onKeyDown);
+        }
+        else {
+            document.removeEventListener("pointerdown", onDocumentPointerDown, true);
+            document.removeEventListener("keydown", onKeyDown);
+        }
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        referenceEl.value = (triggerRef.value?.firstElementChild as HTMLElement) ?? triggerRef.value;
+    });
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("pointerdown", onDocumentPointerDown, true);
+        document.removeEventListener("keydown", onKeyDown);
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

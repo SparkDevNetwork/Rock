@@ -1,0 +1,103 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <li class="asn-menu-item">
+        <!-- Top-level item with children: a collapsible dropdown. -->
+        <template v-if="depth === 0 && hasChildren">
+            <button type="button"
+                    class="asn-menu-button"
+                    :class="{ 'is-active': item.isCurrent }"
+                    :aria-expanded="showChildren"
+                    @click="onToggle">
+                <i v-if="item.iconCssClass" :class="item.iconCssClass"></i>
+                <span class="asn-label">{{ item.title }}</span>
+                <i class="ti ti-chevron-right asn-chevron asn-label"
+                   :class="{ 'is-open': showChildren }"></i>
+            </button>
+            <ul v-if="showChildren" class="asn-menu asn-submenu">
+                <NavItem v-for="child in item.children"
+                         :key="child.id ?? child.title ?? ''"
+                         :item="child"
+                         :depth="depth + 1"
+                         :isFiltering="isFiltering" />
+            </ul>
+        </template>
+
+        <!-- Deeper page with children: a static grouping label with its links
+             listed beneath (not a dropdown). -->
+        <template v-else-if="hasChildren">
+            <div class="asn-subgroup-label asn-label">{{ item.title }}</div>
+            <ul class="asn-menu">
+                <NavItem v-for="child in item.children"
+                         :key="child.id ?? child.title ?? ''"
+                         :item="child"
+                         :depth="depth + 1"
+                         :isFiltering="isFiltering" />
+            </ul>
+        </template>
+
+        <!-- Leaf: a navigation link. -->
+        <a v-else
+           :href="item.url ?? '#'"
+           class="asn-menu-button"
+           :class="{ 'is-active': item.isCurrent }">
+            <i v-if="depth === 0 && item.iconCssClass" :class="item.iconCssClass"></i>
+            <span class="asn-label">{{ item.title }}</span>
+        </a>
+    </li>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, type PropType } from "vue";
+    import { AppShellNavItemBag } from "@Obsidian/ViewModels/Blocks/Example/AppShellNavigation/appShellNavItemBag";
+    // Self-import so this component can render its own children recursively.
+    import NavItem from "./navItem.partial.obs";
+
+    const props = defineProps({
+        item: {
+            type: Object as PropType<AppShellNavItemBag>,
+            required: true
+        },
+
+        depth: {
+            type: Number as PropType<number>,
+            default: 0
+        },
+
+        isFiltering: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    // #region Values
+
+    // Only top-level items collapse; expand on load when this branch contains the
+    // current page.
+    const isOpen = ref(props.item.isParentOfCurrent === true || props.item.isCurrent === true);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const hasChildren = computed((): boolean => {
+        return props.item.displayChildPages === true
+            && props.item.children != null
+            && props.item.children.length > 0;
+    });
+
+    // While the nav search is active, matching branches are always expanded so
+    // results stay visible regardless of the item's own collapse state.
+    const showChildren = computed((): boolean => {
+        return props.isFiltering || isOpen.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onToggle(): void {
+        isOpen.value = !isOpen.value;
+    }
+
+    // #endregion Event Handlers
+</script>

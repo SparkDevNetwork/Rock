@@ -61,18 +61,23 @@ function BindNavEvents() {
     topHeaderOffset()
 
     var topHeader = $('.rock-top-header');
-    // create a new resize observer to watch for changes in the top header height
-    var topHeaderResizeObserver = new ResizeObserver(function (entries) {
-        topHeaderOffset()
-    });
-    // start observing the top header element
-    topHeaderResizeObserver.observe(topHeader[0]);
+    if (topHeader.length) {
+      // create a new resize observer to watch for changes in the top header height
+      var topHeaderResizeObserver = new ResizeObserver(function (entries) {
+          topHeaderOffset()
+      });
+      // start observing the top header element
+      topHeaderResizeObserver.observe(topHeader[0]);
+    }
   });
 }
 
 function topHeaderOffset() {
   // watch the .rock-top-header element for changes in height and write the new height to the body element as a css variable
   var topHeader = document.querySelector('.rock-top-header');
+  if (!topHeader) {
+    return;
+  }
   document.body.style.setProperty('--top-header-height', topHeader.offsetHeight + 'px');
   // if the top header is a fixed header, and is not position relative, then also set the --top-header-fixed-height css variable
   // get computed topHeader style and check if position is relative
@@ -86,6 +91,14 @@ function topHeaderOffset() {
   //}
 }
 function navMouseEvents() {
+  // The app-shell sidebar is a fixed panel owned by an Obsidian block, so
+  // the legacy rail hover/flyout behavior does not apply when the shell is
+  // present. Unbind any prior handlers and bail out.
+  if (document.querySelector('.app-shell')) {
+    $('.navbar-side').children('li').off('.sidenav');
+    return;
+  }
+
   var hoverDelay = 50,
   hideDelay = 100;
 
@@ -227,3 +240,99 @@ function HandleBackForwardCache() {
 		}
 	});
 }
+
+/*
+    app-shell sidebar collapse + mobile drawer wiring. The desktop collapse
+    toggle lives in the App Shell Navigation Obsidian block, which writes
+    html[data-app-shell-sidebar] and persists it. This script restores that state
+    before first paint (no flash) and wires the mobile off-canvas drawer (trigger,
+    scrim, Escape), whose markup lives in Site.Master outside the Vue island. The
+    drawer wiring only takes over when the .app-shell structure is present, so
+    stock layouts keep their Bootstrap collapse behavior.
+*/
+(function () {
+    var STORAGE_KEY = "app-shell-sidebar-state";
+    var htmlElement = document.documentElement;
+
+    // Restore persisted desktop collapse state pre-paint (no FOUC). Harmless when
+    // the shell is not present.
+    try {
+        var savedState = localStorage.getItem(STORAGE_KEY);
+        htmlElement.setAttribute("data-app-shell-sidebar", savedState === "collapsed" ? "collapsed" : "expanded");
+    }
+    catch (e) {
+        htmlElement.setAttribute("data-app-shell-sidebar", "expanded");
+    }
+
+    // Restore the persisted shell color scheme pre-paint (no FOUC). The default
+    // scheme (light-gray shell, white content) needs no attribute; only the
+    // inverted scheme (white shell, light-gray content) sets one.
+    try {
+        if (localStorage.getItem("app-shell-theme") === "inverted") {
+            htmlElement.setAttribute("data-app-shell-theme", "inverted");
+        }
+    }
+    catch (e) {
+        // Ignore storage failures; the default scheme applies.
+    }
+
+    function isShell() {
+        return !!document.querySelector(".app-shell");
+    }
+
+    function openDrawer() {
+        htmlElement.setAttribute("data-app-shell-sidebar-mobile", "open");
+    }
+
+    function closeDrawer() {
+        htmlElement.removeAttribute("data-app-shell-sidebar-mobile");
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        var trigger = document.querySelector(".js-app-shell-mobile-trigger");
+        var scrim = document.querySelector(".js-app-shell-scrim");
+        var sidebar = document.getElementById("app-shell-sidebar");
+
+        if (trigger) {
+            trigger.addEventListener("click", function (event) {
+                // When the shell is not present, let Bootstrap's collapse data-api
+                // handle the click instead.
+                if (!isShell()) {
+                    return;
+                }
+
+                // Prevent Bootstrap's delegated collapse handler (bound on
+                // document) from also firing for this click.
+                event.preventDefault();
+                event.stopPropagation();
+
+                if (htmlElement.getAttribute("data-app-shell-sidebar-mobile") === "open") {
+                    closeDrawer();
+                }
+                else {
+                    openDrawer();
+                }
+            });
+        }
+
+        if (scrim) {
+            scrim.addEventListener("click", closeDrawer);
+        }
+
+        // Close the drawer after choosing a navigation destination.
+        if (sidebar) {
+            sidebar.addEventListener("click", function (event) {
+                if (event.target.closest("a")) {
+                    closeDrawer();
+                }
+            });
+        }
+
+        // Escape closes the drawer.
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closeDrawer();
+            }
+        });
+    });
+})();

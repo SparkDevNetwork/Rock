@@ -1,0 +1,36 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DropdownMenu placement="right-start" menuWidth="11rem" class="asn-action-menu">
+        <template #trigger>
+            <button type="button" class="asn-action" :aria-label="`Actions for ${label}`">
+                <i class="ti ti-dots"></i>
+            </button>
+        </template>
+
+        <div class="app-shell-dd-label">Actions</div>
+        <template v-for="action in itemActions" :key="action.id">
+            <div v-if="action.isDestructive" class="app-shell-dd-separator"></div>
+            <button type="button"
+                    class="app-shell-dd-item"
+                    :class="{ 'is-destructive': action.isDestructive }">
+                <i :class="action.iconClass"></i>
+                {{ action.label }}
+            </button>
+        </template>
+    </DropdownMenu>
+</template>
+
+<script setup lang="ts">
+    // Resting-state styles (.asn-action) live globally in the theme's
+    // _app-shell.scss so the server-rendered sidebar is styled before this
+    // island mounts. See appShellNavigation.obs for the full rationale.
+    import { itemActions } from "./data.partial";
+    import DropdownMenu from "./dropdownMenu.partial.obs";
+
+    defineProps({
+        label: {
+            type: String,
+            default: ""
+        }
+    });
+</script>

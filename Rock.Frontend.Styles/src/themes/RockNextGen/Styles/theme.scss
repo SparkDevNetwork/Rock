@@ -560,7 +560,6 @@ a.rock-bookmark {
   justify-content: center;
   width: var(--size);
   height: var(--size);
-  margin: 0 0 0 var(--spacing-small);
   font-size: calc(var(--size) * 0.5);
   background-color: var(--color-interface-softer);
   border: 1px solid var(--color-interface-soft);
@@ -1440,3 +1439,7 @@ $hamburger-spacing: 4px;
   border: none;
   border-radius: 0;
 }
+
+// app-shell chrome (inset sidebar + rounded content card + breadcrumb
+// header). Applies wherever Site.Master renders the .app-shell structure.
+@import "app-shell";

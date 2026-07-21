@@ -1,0 +1,49 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="asn-group asn-spending">
+        <div class="asn-spending-card">
+            <div class="asn-spending-title">Spending Limit</div>
+            <p class="asn-spending-copy">
+                Consumption and balance will be reset at the end of the month
+            </p>
+
+            <div class="asn-spending-track">
+                <div class="asn-spending-hatch" aria-hidden="true"></div>
+                <div class="asn-spending-fill" :style="{ width: `${usedPct}%` }"></div>
+            </div>
+
+            <div class="asn-spending-legend">
+                <div class="asn-spending-stat">
+                    <span class="asn-spending-value">{{ usedPct }}%</span>
+                    <span class="asn-spending-muted">Used</span>
+                </div>
+                <div class="asn-spending-stat">
+                    <span class="asn-spending-value">{{ freePct }}%</span>
+                    <span class="asn-spending-muted">Free</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    // Resting-state styles (.asn-spending-*) live globally in the theme's
+    // _app-shell.scss so the server-rendered sidebar is styled before this
+    // island mounts. See appShellNavigation.obs for the full rationale.
+    import { computed } from "vue";
+
+    // #region Values
+
+    // Static placeholder figures; no Rock backing (see data.partial.ts note).
+    const used = 8240;
+    const total = 10000;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const usedPct = computed((): number => Math.round((used / total) * 100));
+    const freePct = computed((): number => 100 - usedPct.value);
+
+    // #endregion Computed Values
+</script>
