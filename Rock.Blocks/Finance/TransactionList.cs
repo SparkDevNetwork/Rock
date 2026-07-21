@@ -61,26 +61,27 @@ namespace Rock.Blocks.Finance
         Order = 0,
         Key = AttributeKey.DetailPage )]
 
-    [TextField( "Title",
-        Description = "Title to display above the grid. Leave blank to hide.",
+    [TextField( "Grid Header Title",
+        Description = "The grid header title. Defaults to \"Transaction List\" if left blank.",
         IsRequired = false,
+        DefaultValue = "Transaction List",
         Order = 1,
         Key = AttributeKey.Title )]
 
-    [BooleanField( "Show Only Active Accounts on Filter",
-        Description = "If account filter is displayed, only list active accounts",
+    [BooleanField( "Active Accounts Only",
+        Description = "When the account filter is visible, only active accounts are listed.",
         DefaultBooleanValue = false,
         Order = 2,
         Key = AttributeKey.ActiveAccountsOnlyFilter )]
 
     [BooleanField( "Show Images Toggle",
-        Description = "Determines whether the 'Show Images' option is available in the grid options menu.",
+        Description = "Shows a “Show Images” toggle in the grid header which, when enabled, will display any images related to a transaction.",
         DefaultBooleanValue = false,
         Order = 3,
         Key = AttributeKey.ShowImagesToggle )]
 
     [IntegerField( "Image Height",
-        Description = "If the Show Images option is selected, the image height",
+        Description = "The height (in pixels) of transaction images when image display is enabled.",
         IsRequired = false,
         DefaultIntegerValue = 200,
         Order = 4,
@@ -88,7 +89,7 @@ namespace Rock.Blocks.Finance
 
     [DefinedValueField( "Transaction Types",
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE,
-        Description = "Optional list of transaction types to limit the list to (if none are selected all types will be included).",
+        Description = "Filters the list to the selected transaction types. If none are selected, all types are included.",
         IsRequired = false,
         AllowMultiple = true,
         DefaultValue = "",
@@ -96,7 +97,7 @@ namespace Rock.Blocks.Finance
         Key = AttributeKey.TransactionTypes )]
 
     [CustomDropdownListField( "Default Transaction View",
-        Description = "Select whether you want to initially see Transactions or Accounts",
+        Description = "The default view shown when the block loads — Transactions or Accounts.",
         ListSource = "Transactions,Accounts",
         IsRequired = false,
         DefaultValue = "Transactions",
@@ -110,33 +111,33 @@ namespace Rock.Blocks.Finance
         Key = AttributeKey.BatchPage )]
 
     [BooleanField( "Show Foreign Key",
-        Description = "Should the transaction foreign key column be displayed?",
+        Description = "Shows the foreign key column in the transaction grid.",
         DefaultBooleanValue = false,
         Order = 8,
         Key = AttributeKey.ShowForeignKey )]
 
     [BooleanField( "Show Account Summary",
-        Description = "Should the account summary be displayed at the bottom of the list?",
+        Description = "Displays an account summary below the transaction list.",
         DefaultBooleanValue = false,
         Order = 9,
         Key = AttributeKey.ShowAccountSummary )]
 
     [AccountsField( "Accounts",
-        Description = "Limit the results to transactions that match the selected accounts.",
+        Description = "Filters results to transactions associated with the selected accounts.",
         IsRequired = false,
         DefaultValue = "",
         Order = 10,
         Key = AttributeKey.Accounts )]
 
     [BooleanField( "Show Future Transactions",
-        Description = "Should future transactions (transactions scheduled to be charged) be shown in this list?",
+        Description = "Includes transactions scheduled for a future charge date in the list.",
         DefaultBooleanValue = false,
         Order = 11,
         Key = AttributeKey.ShowFutureTransactions )]
 
     [DefinedValueField( "Source Types",
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE,
-        Description = "Optional list of financial source types to limit the list to (if none are selected all types will be included).",
+        Description = "Filters the list to the selected financial source types. If none are selected, all types are included.",
         IsRequired = false,
         AllowMultiple = true,
         DefaultValue = "",
@@ -144,19 +145,19 @@ namespace Rock.Blocks.Finance
         Key = AttributeKey.SourceTypes )]
 
     [BooleanField( "Enable Foreign Currency",
-        Description = "Shows the transaction's currency code field if enabled.",
+        Description = "Displays the currency code column for transactions recorded in a foreign currency.",
         DefaultBooleanValue = false,
         Order = 13,
         Key = AttributeKey.EnableForeignCurrency )]
 
-    [BooleanField( "Show Days Since Last Transaction",
-        Description = "Show the number of days between the transaction and the transaction listed next to the transaction",
+    [BooleanField( "Days Since Last Transaction",
+        Description = "Shows the number of days between each transaction and the one preceding it.",
         DefaultBooleanValue = false,
         Order = 14,
         Key = AttributeKey.ShowDaysSinceLastTransaction )]
 
-    [BooleanField( "Hide Transactions in Pending Batches",
-        Description = "When enabled, transactions in a batch whose status is 'Pending' will be filtered out from the list.",
+    [BooleanField( "Hide Pending Batch Transactions",
+        Description = "Excludes transactions belonging to batches with a Pending status.",
         DefaultBooleanValue = false,
         Order = 15,
         Key = AttributeKey.HideTransactionsInPendingBatches )]
