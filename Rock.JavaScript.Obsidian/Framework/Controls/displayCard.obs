@@ -2,12 +2,14 @@
 <template>
     <div class="displaycard"
          :class="{
-            'is-hovering': isHovering,
-            'is-selected': isSelected,
+            'is-hovering': isHovering && !isRadioSelectable,
+            'is-selected': isSelected && !isRadioSelectable,
             'clickable': !!props.onClick && !disabled,
             'is-compact': isCompact,
             'is-disabled': disabled
         }"
+         :role="isRadioSelectable ? 'radio' : undefined"
+         :aria-checked="isRadioSelectable ? isSelected : undefined"
          @mouseenter="onMouseEnter"
          @mouseleave="onMouseLeave"
          @click="onMainClick">
@@ -92,6 +94,8 @@
                     </div>
                 </slot>
             </div>
+
+            <div v-if="isRadioSelectable" class="displaycard-selection" :class="{ 'is-checked': isSelected }"></div>
         </div>
 
         <TransitionVerticalCollapse v-if="$slots.expanded">
@@ -173,6 +177,19 @@
    header above white content. */
 .displaycard.is-selected {
     background-color: var(--color-info-soft);
+}
+
+.displaycard-selection {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--color-interface-soft);
+}
+
+.displaycard-selection.is-checked {
+    border-color: var(--color-primary);
+    background-image: radial-gradient(circle, var(--color-primary) 0 35%, transparent 36% 100%);
 }
 
 /* A disabled card ignores clicks and dims to signal it is not interactive. Slot
@@ -304,6 +321,20 @@
          * as chosen. Defaults to unselected so existing consumers are unaffected.
          */
         isSelected: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * When true, the card acts as a radio option: it renders a trailing radio
+         * indicator, exposes radio semantics (role/aria-checked) for assistive
+         * tech, and suppresses the soft-info highlight/hover tint so the indicator
+         * is the only selection cue. Selection itself is still handled by the
+         * consumer via <c>onClick</c>, with the chosen card driven by
+         * <c>isSelected</c>. Defaults to false, leaving the standard highlight
+         * behavior so existing consumers are unaffected.
+         */
+        isRadioSelectable: {
             type: Boolean as PropType<boolean>,
             default: false
         },

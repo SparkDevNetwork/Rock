@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, computed, ref, watch, watchEffect } from "vue";
+    import { PropType, computed, ref, watch } from "vue";
     import RockFormField from "./rockFormField.obs";
     import CurrencyBox from "./currencyBox.obs";
     import CampusPicker from "./campusPicker.obs";
@@ -160,7 +160,7 @@
     const isLoading = ref(false);
 
     // Single Account Mode Variables
-    const amount = ref<number | null>();
+    const amount = ref<number | null>(null);
     const selectedAccount = ref<ListItemBag | null>(null);
 
     // Multiple Account Mode Variables
@@ -207,47 +207,54 @@
 
     // #region Watchers
 
+    // Inbound sync: populate the local editable state once the accounts have loaded (or the
+    // entry mode changes), preserving any amounts/accounts already present in the model value
+    // so that an existing transaction can be edited.
     watch([loadedAccountListItems, () => props.accountAmountEntryMode], () => {
-        if (loadedAccountListItems.value && loadedAccountListItems.value.length) {
-            if (props.accountAmountEntryMode === "multipleAccounts") {
-                amounts.value = loadedAccountListItems.value.map(account => {
-                    return {
-                        amount: null,
-                        account,
-                        readOnly: false
-                    };
+        if (!loadedAccountListItems.value || !loadedAccountListItems.value.length) {
+            return;
+        }
+
+        if (props.accountAmountEntryMode === "multipleAccounts") {
+            amounts.value = loadedAccountListItems.value.map(account =>
+                props.modelValue?.find(aa => aa.account?.value === account.value) ?? {
+                    account,
+                    amount: null,
+                    readOnly: false
                 });
-            }
-            else {
-                selectedAccount.value = loadedAccountListItems.value[0];
-            }
+        }
+        else {
+            const current = props.modelValue?.[0];
+            const matchedAccount = current?.account?.value
+                ? loadedAccountListItems.value.find(a => a.value === current.account?.value)
+                : undefined;
+
+            selectedAccount.value = matchedAccount ?? loadedAccountListItems.value[0];
+            amount.value = current?.amount ?? null;
         }
     });
 
-    watch(() => props.hideCampusIfKnown, () => {
-        // We don't want this to be `computed` because we only want to change if hideCampusIfKnow changes because the
-        // campusGuid will get changed, so campusGuid needs to be passed in from the start.
-        hideCampusPicker.value = !!(props.campusGuid && props.hideCampusIfKnown);
-    }, { immediate: true });
-
-    watchEffect(() => {
+    // Outbound sync: rebuild the model value as a brand-new array whenever the local editable state changes.
+    watch([amount, selectedAccount, amounts, () => props.accountAmountEntryMode], () => {
         if (props.accountAmountEntryMode === "singleAccount") {
             internalValue.value = [{
                 account: selectedAccount.value,
-                amount: amount.value || null,
+                amount: amount.value ?? null,
                 readOnly: false
             }];
         }
         else {
-            internalValue.value = amounts.value.map(aa => {
-                return {
-                    amount: aa.amount,
-                    account: aa.account,
-                    readOnly: aa.readOnly
-                };
-            });
+            internalValue.value = amounts.value.map(aa => ({
+                account: aa.account,
+                amount: aa.amount,
+                readOnly: aa.readOnly
+            }));
         }
-    });
+    }, { deep: true });
+
+    watch(() => props.hideCampusIfKnown, () => {
+        hideCampusPicker.value = !!(props.campusGuid && props.hideCampusIfKnown);
+    }, { immediate: true });
 
     watch(() => [props.orderBySelectableAccountsIndex, props.selectableAccountGuids, props.accountHeaderTemplate], () => loadAccountOptions());
 

@@ -1,0 +1,643 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="scheduled-transaction-edit-v2">
+        <NotificationBox v-if="errorMessage" alertType="warning">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <template v-else>
+            <Panel :title="options.panelTitle ?? ''"
+                   :hasTitle="hasPanelTitle"
+                   :class="{ 'panel-chromeless': !hasPanelTitle }">
+                <RockForm @submit="onUpdate">
+                    <ContentSectionContainer :sidebar="false">
+
+                        <ContentSection light v-if="options.isBlockHeaderShown">
+                            <div class="d-flex flex-column align-items-center justify-content-center text-center gap-3">
+                                <h3 class="m-0"><i v-if="options.headerIcon" class="contentsection-header-icon" :class="options.headerIcon"></i></h3>
+                                <h3 class="m-0">{{ options.headerTitle }}</h3>
+                                <p v-if="options.headerDescription" class="text-muted mb-0">{{ options.headerDescription }}</p>
+                            </div>
+                        </ContentSection>
+
+                        <SuccessView v-if="successHtml" :successHtml="successHtml" />
+
+                        <template v-else>
+
+                            <ContentSection v-if="options.isCampusPrompted"
+                                            light
+                                            disableCollapse
+                                            :title="sectionTitle(options.campusSectionTitle)"
+                                            :icon="sectionIcon(options.campusSectionIcon)">
+                                <template v-if="options.isSectionDescriptionShown" #description>
+                                    {{ options.campusSectionDescription }}
+                                </template>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <CampusPicker v-model="campus"
+                                                      label="Campus"
+                                                      showBlankItem
+                                                      forceVisible />
+                                    </div>
+                                </div>
+                            </ContentSection>
+
+                            <ContentSection :title="sectionTitle(options.giftSectionTitle)"
+                                            :icon="sectionIcon(options.giftSectionIcon)"
+                                            :disableCollapse="true">
+
+                                <template v-if="options.isSectionDescriptionShown" #description>
+                                    {{ options.giftSectionDescription }}
+                                </template>
+
+                                <ContentStack>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <CampusAccountAmountPicker v-model="accountAmounts"
+                                                                       :selectableAccountGuids="selectableAccountGuids"
+                                                                       :accountAmountEntryMode="config.bag?.isMultiAccountMode ? 'multipleAccounts' : 'singleAccount'"
+                                                                       hideCampusIfKnown
+                                                                       :rules="amountRules"
+                                                                       :campusGuid="campus?.value ?? null" />
+                                        </div>
+                                    </div>
+
+
+
+                                    <!-- Adds another account row from the remaining available accounts. -->
+                                    <ButtonDropDownList v-if="additionalAccountItems.length > 0"
+                                                        v-model="addAccountSelection"
+                                                        :items="additionalAccountItems"
+                                                        :title="options.addAccountButtonLabel ?? 'Add More Accounts'"
+                                                        selectionStyle="title"
+                                                        @update:modelValue="onAddAccount">
+                                        <template #selectionPrepend>
+                                            <i class="ti ti-plus mr-1"></i>
+                                        </template>
+                                    </ButtonDropDownList>
+                                </ContentStack>
+
+                                <ContentStack>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <DropDownList v-model="frequencyValue"
+                                                          label="Frequency"
+                                                          :items="frequencyOptions"
+                                                          :showBlankItem="false" />
+                                        </div>
+                                    </div>
+
+                                    <div class="row gap-3">
+                                        <div class="col-md-6 d-flex gap-4">
+                                            <DatePicker v-model="nextPaymentDate" :label="`Next ${transactionTerm}`" :rules="nextGiftDateRules" />
+                                            <DatePicker v-if="options.isEndDateEnabled && !isOneTimeFrequency" v-model="endDate" label="End Date" :rules="endDateRules" />
+                                        </div>
+                                    </div>
+
+                                </ContentStack>
+
+                            </ContentSection>
+
+                            <ContentSection :title="sectionTitle(options.paymentSectionTitle)"
+                                            :icon="sectionIcon(options.paymentSectionIcon)"
+                                            :disableCollapse="true">
+
+                                <template v-if="options.isSectionDescriptionShown" #description>
+                                    {{ options.paymentSectionDescription }}
+                                </template>
+
+                                <DisplayCardContainer v-if="!isAddingNewPaymentMethod" role="radiogroup">
+                                    <DisplayCard :title="method.name"
+                                                 v-for="(method, index) in config.bag?.paymentMethods"
+                                                 :key="method.value ?? index"
+                                                 :iconCssClass="method.isCreditCard ? 'ti ti-credit-card' : 'ti ti-building-bank'"
+                                                 iconLabelType="default"
+                                                 :description="formatPaymentMethodDetails(method)"
+                                                 isRadioSelectable
+                                                 :isSelected="selectedPaymentMethodValue === method.value"
+                                                 :onClick="() => onSelectPaymentMethod(method.value)">
+                                    </DisplayCard>
+
+                                    <RockButton :btnType="BtnType.Link"
+                                                :isCompact="true"
+                                                @click="onAddNewPaymentMethod">
+                                        <i class="ti ti-plus mr-1"></i>
+                                        Add Payment Method
+                                    </RockButton>
+                                </DisplayCardContainer>
+
+                                <!-- Adding view: hosted gateway form for entering a brand-new payment method. -->
+                                <div v-else class="payment-method-entry d-flex flex-column gap-4">
+                                    <h5 class="text-semibold">Add Payment Method</h5>
+
+                                    <NotificationBox v-if="gatewayErrorMessage" alertType="danger">
+                                        {{ gatewayErrorMessage }}
+                                    </NotificationBox>
+
+                                    <RockValidation :errors="gatewayValidationErrors" />
+
+                                    <div class="hosted-payment-control">
+                                        <GatewayControl v-if="gatewayControlModel"
+                                                        :gatewayControlModel="gatewayControlModel"
+                                                        :amountToPay="totalAmount"
+                                                        @success="onGatewayTokenReceived"
+                                                        @error="onGatewayError"
+                                                        @validation="onGatewayValidation" />
+                                    </div>
+
+                                    <div class="row">
+                                        <InlineCheckBox v-model="saveAsNewPaymentAccount"
+                                                        label="Save as New Payment Account" />
+
+                                        <TransitionVerticalCollapse>
+                                            <div v-if="saveAsNewPaymentAccount" class="col-md-6">
+                                                <ConditionalWell>
+                                                    <TextBox v-model="savedAccountName"
+                                                             label="Account Name"
+                                                             help="To save this payment information as a saved account, specify a name for the saved account."
+                                                             rules="required" />
+                                                </ConditionalWell>
+                                            </div>
+                                        </TransitionVerticalCollapse>
+                                    </div>
+                                    <div>
+                                        <RockButton :btnType="BtnType.Link" @click="onCancelAddPaymentMethod">
+                                            Cancel
+                                        </RockButton>
+                                    </div>
+                                </div>
+
+                            </ContentSection>
+
+                            <NotificationBox v-if="warningMessage" alertType="validation">
+                                {{ warningMessage }}
+                            </NotificationBox>
+
+                            <div class="actions d-flex justify-content-end">
+                                <RockButton :btnType="BtnType.Primary" type="submit" :disabled="isSaving">
+                                    Update Transaction
+                                </RockButton>
+                            </div>
+                        </template>
+                    </ContentSectionContainer>
+                </RockForm>
+            </Panel>
+        </template>
+    </div>
+</template>
+
+<style scoped>
+:deep(.well) {
+    margin-bottom: 0;
+}
+
+/* When no panel title is configured, drop the panel chrome so the block reads as bare content (matching external site themes that lack panel-block styling). */
+:deep(.panel-chromeless) {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+:deep(.panel-chromeless > .panel-body) {
+    padding: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
+    import { provideSubmitPayment, usePaymentEvents } from "@Obsidian/Core/Controls/financialGateway";
+    import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { ScheduledTransactionEditV2Bag } from "@Obsidian/ViewModels/Blocks/Finance/ScheduledTransactionEditV2/scheduledTransactionEditV2Bag";
+    import { ScheduledTransactionEditV2OptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/ScheduledTransactionEditV2/scheduledTransactionEditV2OptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ButtonDropDownList from "@Obsidian/Controls/buttonDropDownList.obs";
+    import CampusAccountAmountPicker from "@Obsidian/Controls/campusAccountAmountPicker.obs";
+    import GatewayControl from "@Obsidian/Controls/gatewayControl.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockValidation from "@Obsidian/Controls/rockValidation.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import SuccessView from "./ScheduledTransactionEditV2/successView.partial.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DisplayCardContainer from "@Obsidian/Controls/displayCardContainer.obs";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import { ScheduledTransactionPaymentMethodBag } from "@Obsidian/ViewModels/Blocks/Finance/ScheduledTransactionEditV2/scheduledTransactionPaymentMethodBag";
+    import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
+    import { FormError } from "@Obsidian/Utility/form";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
+    import { UpdateScheduledTransactionRequestBag } from "@Obsidian/ViewModels/Blocks/Finance/ScheduledTransactionEditV2/updateScheduledTransactionRequestBag";
+    import { UpdateScheduledTransactionResponseBag } from "@Obsidian/ViewModels/Blocks/Finance/ScheduledTransactionEditV2/updateScheduledTransactionResponseBag";
+    import { Guid } from "@Obsidian/Types";
+
+    // #region Types
+
+    // The account/amount shape expected by CampusAccountAmountPicker's v-model.
+    type AccountAmount = {
+        amount: number | null;
+        account: ListItemBag | null;
+        readOnly: boolean;
+    };
+
+    type PaymentMethodSelection = Guid | "existing";
+
+    // #endregion Types
+
+    const config = useConfigurationValues<CustomBlockBox<ScheduledTransactionEditV2Bag, ScheduledTransactionEditV2OptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const options = config.options ?? {} as ScheduledTransactionEditV2OptionsBag;
+
+    // The word used throughout the block to refer to a financial contribution (e.g. "Gift").
+    const transactionTerm = options.transactionTerm || "Gift";
+
+    const errorMessage = ref(config.bag?.errorMessage ?? "");
+    const warningMessage = ref("");
+    const successHtml = ref("");
+    const isSaving = ref(false);
+
+    const campus = ref<ListItemBag | null>(config.bag?.campus ?? null);
+
+    const selectableAccountGuids = ref<string[]>(config.bag?.selectableAccountGuids ?? []);
+
+    const accountAmounts = ref<AccountAmount[]>((config.bag?.accountAmounts ?? []).map(aa => ({
+        account: aa.accountGuid ? { value: aa.accountGuid, text: aa.accountName ?? undefined } : null,
+        amount: aa.amount ?? null,
+        readOnly: false
+    })));
+
+    const frequencyValue = ref(config.bag?.selectedFrequencyValue ?? "");
+    const nextPaymentDate = ref(config.bag?.nextPaymentDate ?? null);
+    const endDate = ref(config.bag?.endDate ?? null);
+
+    const frequencyOptions = config.bag?.frequencyOptions ?? [];
+
+    // Accounts that can still be added to the gift via the "Add More Accounts" button.
+    const additionalAccountItems = ref<ListItemBag[]>(config.bag?.additionalAccounts ?? []);
+
+    const addAccountSelection = ref("");
+
+    const defaultPaymentMethodValue =
+        (config.bag?.paymentMethods?.find(m => m.isExistingPaymentMethod)?.value
+            ?? config.bag?.paymentMethods?.[0]?.value
+            ?? "existing") as PaymentMethodSelection;
+
+    const selectedPaymentMethodValue = ref<PaymentMethodSelection>(defaultPaymentMethodValue);
+
+    const isAddingNewPaymentMethod = ref(false);
+
+    // New-payment-method entry state, used only while the adding view is active.
+    const saveAsNewPaymentAccount = ref(false);
+    const savedAccountName = ref("");
+    const paymentToken = ref("");
+    const gatewayErrorMessage = ref("");
+    const gatewayValidationErrors = ref<FormError[]>([]);
+
+    // The hosted gateway control injects these providers on mount.
+    const submitGatewayPayment = provideSubmitPayment();
+    const paymentEvents = usePaymentEvents();
+
+    let gatewayCompletionSource: PromiseCompletionSource | undefined;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    // Only wrap the block in a Panel when a title is configured; otherwise render
+    // the content without panel chrome (the panel-block styling is not present on external site themes).
+    const hasPanelTitle = computed((): boolean => !!options.panelTitle);
+
+    const isOneTimeFrequency = computed((): boolean => {
+        return areEqual(frequencyValue.value, DefinedValue.TransactionFrequencyOneTime);
+    });
+
+    // The payment method currently selected in the list, or null when none is selected.
+    const selectedPaymentMethod = computed<ScheduledTransactionPaymentMethodBag | null>(() => {
+        return config.bag?.paymentMethods?.find(m => m.value === selectedPaymentMethodValue.value) ?? null;
+    });
+
+    const totalAmount = computed((): number => {
+        return accountAmounts.value.reduce((sum, aa) => sum + (aa.amount ?? 0), 0);
+    });
+
+    const gatewayControlModel = computed<GatewayControlBag | null>(() => {
+        return config.bag?.gatewayControl ?? null;
+    });
+
+    // Client-side validation rules mirroring the server checks in ValidateUpdateRequest, so
+    // the form gives inline feedback before a round-trip. The server remains authoritative.
+    const amountRules: ValidationRule[] = [validateNoNegativeAmounts];
+    const nextGiftDateRules: ValidationRule[] = ["required", validateNextGiftDateNotBeforeEarliest];
+    const endDateRules: ValidationRule[] = [validateEndDateNotBeforeNextGift];
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Makes the selected account available in the account/amount picker and removes
+     * it from the list of remaining accounts that can still be added.
+     *
+     * @param value The identifier of the account chosen from the dropdown.
+     */
+    function onAddAccount(value: string): void {
+        const item = additionalAccountItems.value.find(a => a.value === value);
+        if (!item) {
+            return;
+        }
+
+        selectableAccountGuids.value = [...selectableAccountGuids.value, value];
+        additionalAccountItems.value = additionalAccountItems.value.filter(a => a.value !== value);
+        addAccountSelection.value = "";
+    }
+
+    /**
+     * Selects the given payment method card.
+     *
+     * @param value The identifier of the chosen payment method.
+     */
+    function onSelectPaymentMethod(value: string | null | undefined): void {
+        selectedPaymentMethodValue.value = (value ?? "existing") as PaymentMethodSelection;
+    }
+
+    /**
+     * Switches the payment section into "add a new payment method" mode, showing the
+     * hosted gateway form in place of the list of existing methods.
+     */
+    function onAddNewPaymentMethod(): void {
+        isAddingNewPaymentMethod.value = true;
+    }
+
+    /**
+     * Returns from the "add new payment method" view back to payment method
+     * selection, leaving the existing selection intact and clearing any entry state.
+     */
+    function onCancelAddPaymentMethod(): void {
+        isAddingNewPaymentMethod.value = false;
+        saveAsNewPaymentAccount.value = false;
+        savedAccountName.value = "";
+        paymentToken.value = "";
+        gatewayErrorMessage.value = "";
+        gatewayValidationErrors.value = [];
+    }
+
+    /**
+     * Handles a successful tokenization from the hosted gateway control.
+     *
+     * @param token The payment token returned by the gateway.
+     */
+    async function onGatewayTokenReceived(token: string): Promise<void> {
+        paymentToken.value = token;
+        gatewayErrorMessage.value = "";
+        gatewayValidationErrors.value = [];
+
+        // The gateway tokenized the new method; complete the update in the same action
+        // (the server exchanges the token for a durable customer reference).
+        await performUpdate();
+
+        gatewayCompletionSource?.resolve();
+    }
+
+    /**
+     * Handles an error raised by the hosted gateway control. Keeps the adding panel open
+     * with the message so the user can correct and retry.
+     *
+     * @param message The error message to display.
+     */
+    function onGatewayError(message: string): void {
+        gatewayErrorMessage.value = message;
+        isSaving.value = false;
+        gatewayCompletionSource?.resolve();
+    }
+
+    /**
+     * Handles validation feedback from the hosted gateway control. Keeps the adding panel
+     * open with the field errors shown.
+     *
+     * @param errors The gateway field validation errors.
+     */
+    function onGatewayValidation(errors: FormError[]): void {
+        gatewayValidationErrors.value = errors;
+        isSaving.value = false;
+        gatewayCompletionSource?.resolve();
+    }
+
+    /**
+     * Submits the changes to the scheduled transaction.
+     *
+     * When entering a new payment method, the hosted gateway is asked to tokenize
+     * the entry first; its success event (onGatewayTokenReceived) then completes the
+     * update. Otherwise (existing method / saved account) the update runs directly.
+     */
+    async function onUpdate(): Promise<void> {
+        warningMessage.value = "";
+
+        if (isAddingNewPaymentMethod.value) {
+            gatewayErrorMessage.value = "";
+            gatewayValidationErrors.value = [];
+            isSaving.value = true;
+            gatewayCompletionSource = new PromiseCompletionSource();
+            submitGatewayPayment();
+
+            return gatewayCompletionSource.promise;
+        }
+
+        // Existing method / saved account: submit directly.
+        await performUpdate();
+    }
+
+    /**
+     * Invokes the server update action for the scheduled transaction, dispatching the
+     * gateway payment lifecycle events so the hosted control can reflect the result.
+     */
+    async function performUpdate(): Promise<void> {
+        isSaving.value = true;
+
+        try {
+            paymentEvents({ type: "submitting" });
+
+            const result = await invokeBlockAction<UpdateScheduledTransactionResponseBag>("UpdateScheduledTransaction", {
+                request: buildUpdateRequest()
+            });
+
+            if (result.isSuccess && result.data?.isSuccess) {
+                paymentEvents({ type: "success" });
+                successHtml.value = result.data.successHtml ?? "";
+            }
+            else {
+                const message = result.data?.errorMessage ?? result.errorMessage ?? "Unable to update the scheduled transaction.";
+                paymentEvents({ type: "failure", errorMessage: message });
+                warningMessage.value = message;
+            }
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    /**
+     * Builds the request payload for the update action. The payment fields vary by the
+     * three cases the server discriminates on:
+     *   - New method  → send the gateway token (and save-account options).
+     *   - Existing    → keep the transaction's current method (send no token/account).
+     *   - Saved account → send the selected saved account's Guid.
+     */
+    function buildUpdateRequest(): UpdateScheduledTransactionRequestBag {
+        const request: UpdateScheduledTransactionRequestBag = {
+            scheduledTransactionGuid: config.bag?.scheduledTransactionGuid,
+            accountAmounts: accountAmounts.value.map(aa => ({
+                accountGuid: aa.account?.value ?? null,
+                accountName: aa.account?.text ?? null,
+                amount: aa.amount ?? null
+            })),
+            frequencyValue: frequencyValue.value,
+            nextPaymentDate: nextPaymentDate.value,
+            endDate: isOneTimeFrequency.value ? null : endDate.value,
+            useExistingPaymentMethod: false,
+            saveMethodToAccount: false
+        };
+
+        if (isAddingNewPaymentMethod.value) {
+            // New payment method: the server exchanges the token for a durable customer
+            // reference, optionally saving it as a named saved account. The gateway control
+            // collects the billing address, so it rides along inside the token.
+            request.gatewayToken = paymentToken.value;
+            request.saveMethodToAccount = saveAsNewPaymentAccount.value;
+            request.savedAccountName = saveAsNewPaymentAccount.value ? savedAccountName.value : null;
+        }
+        else if (selectedPaymentMethod.value?.isExistingPaymentMethod) {
+            // Keep the payment method already on the scheduled transaction.
+            request.useExistingPaymentMethod = true;
+        }
+        else {
+            // Pay with the selected existing saved account.
+            request.savedAccountGuid = toGuidOrNull(selectedPaymentMethod.value?.value);
+        }
+
+        return request;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Returns a section header title only when section headers are enabled; otherwise an
+     * empty string so the ContentSection renders no header (and no description).
+     *
+     * @param title The configured section title.
+     */
+    function sectionTitle(title: string | null | undefined): string {
+        return options.isSectionHeaderShown ? (title ?? "") : "";
+    }
+
+    /**
+     * Returns a section header icon only when section headers are enabled.
+     *
+     * @param icon The configured section icon CSS class.
+     */
+    function sectionIcon(icon: string | null | undefined): string | undefined {
+        return options.isSectionHeaderShown ? (icon ?? undefined) : undefined;
+    }
+
+    /**
+     * Validates that no account has a negative amount allocated.
+     *
+     * @param value The account/amount allocations from the picker.
+     */
+    function validateNoNegativeAmounts(value: unknown): string | boolean {
+        const amounts = value as AccountAmount[] | null;
+        if (amounts?.some(aa => (aa.amount ?? 0) < 0)) {
+            return "Make sure the amount you've entered for each account is a positive amount.";
+        }
+
+        return true;
+    }
+
+    /**
+     * Validates that the next gift date is on or after the gateway's earliest allowed start date.
+     *
+     * @param value The next gift date value from the picker.
+     */
+    function validateNextGiftDateNotBeforeEarliest(value: unknown): string | boolean {
+        const nextValue = value as string | null;
+        const earliestValue = config.bag?.earliestPaymentDate;
+        if (!nextValue || !earliestValue) {
+            return true;
+        }
+
+        const nextDate = RockDateTime.parseISO(nextValue);
+        const earliestDate = RockDateTime.parseISO(earliestValue);
+        if (nextDate && earliestDate && nextDate.date.isEarlierThan(earliestDate.date)) {
+            return `The next ${transactionTerm.toLowerCase()} date must be on or after ${earliestDate.toASPString("M/d/yyyy")}.`;
+        }
+
+        return true;
+    }
+
+    /**
+     * Validates that the end date, when provided, is on or after the next gift date.
+     *
+     * @param value The end date value from the picker.
+     */
+    function validateEndDateNotBeforeNextGift(value: unknown): string | boolean {
+        const endValue = value as string | null;
+        if (!endValue || !nextPaymentDate.value) {
+            return true;
+        }
+
+        const endDateValue = RockDateTime.parseISO(endValue);
+        const nextDate = RockDateTime.parseISO(nextPaymentDate.value);
+        if (endDateValue && nextDate && endDateValue.date.isEarlierThan(nextDate.date)) {
+            return `The end date must be on or after the next ${transactionTerm.toLowerCase()} date.`;
+        }
+
+        return true;
+    }
+
+    /**
+     * Builds the description line shown under a payment method card (card type + last four + expiration).
+     *
+     * @param method The payment method to describe.
+     */
+    function formatPaymentMethodDetails(method: ScheduledTransactionPaymentMethodBag): string {
+        // Strip the mask (asterisks/spaces/x's) down to just the trailing digits.
+        const lastFour = method.accountNumberMasked?.replace(/\D/g, "").slice(-4);
+
+        let details = method.cardType ?? "";
+        if (lastFour) {
+            details = details ? `${details} Ending in ${lastFour}` : `Ending in ${lastFour}`;
+        }
+
+        if (method.isCreditCard && method.expirationDate) {
+            details = details ? `${details} • Expires: ${method.expirationDate}` : `Expires: ${method.expirationDate}`;
+        }
+
+        return details;
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #endregion Lifecycle Hooks
+</script>
