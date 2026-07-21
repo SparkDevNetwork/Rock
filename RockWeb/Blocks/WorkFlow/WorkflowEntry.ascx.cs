@@ -2450,6 +2450,20 @@ namespace RockWeb.Blocks.WorkFlow
                 previousActionGuid = _action.Guid;
             }
 
+            /*
+                07/21/2026 - NA
+
+                Preserve the just-completed action and activity so the Form Builder
+                confirmation and notification email code paths below still have them
+                after HydrateObjects nulls the fields when the workflow completes.
+
+                Reason: Fixes #6922 - the "Form Submission Result" notification email
+                was sending an empty form field list because Action and Activity were
+                null in the merge fields by the time the email was built.
+            */
+            var completedAction = _action;
+            var completedActivity = _activity;
+
             ActionTypeId = null;
             _action = null;
             _actionType = null;
@@ -2490,6 +2504,18 @@ namespace RockWeb.Blocks.WorkFlow
             }
             else
             {
+                /*
+                    07/21/2026 - NA
+
+                    Restore the just-completed action and activity so the Form Builder
+                    confirmation and notification email code paths have Action and
+                    Activity available when building Lava merge fields.
+
+                    Reason: Fixes #6922 - see the matching engineering note above.
+                */
+                _action = _action ?? completedAction;
+                _activity = _activity ?? completedActivity;
+
                 // final form completed
                 LogWorkflowEntryInteraction( _workflow, completionActionTypeId, WorkflowInteractionOperationType.FormCompleted );
 
