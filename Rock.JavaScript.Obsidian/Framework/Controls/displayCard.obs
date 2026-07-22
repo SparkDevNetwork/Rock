@@ -14,11 +14,12 @@
          @mouseleave="onMouseLeave"
          @click="onMainClick">
 
-        <div v-if="isReorderable" class="displaycard-reorder reorder-handle" title="Drag to reorder">
-            <i class="ti ti-grip-vertical"></i>
-        </div>
         <div class="displaycard-main">
             <slot name="prepend" />
+
+            <div v-if="isReorderable" class="displaycard-reorder reorder-handle" title="Drag to reorder">
+                <i class="ti ti-grip-vertical"></i>
+            </div>
 
             <div v-if="badgeText" class="displaycard-badge">
                 <Badge :badgeType="badgeType === 'default' ? undefined : badgeType">{{ badgeText }}</Badge>

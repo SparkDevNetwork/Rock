@@ -107,5 +107,12 @@ namespace Rock.ViewModels.Blocks.Mobile.MobilePageDetail
         /// additional buttons on the block row).
         /// </summary>
         public List<MobilePageBlockActionBag> CustomActions { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current person is authorized
+        /// to administrate the block. Controls whether the Block Settings action is
+        /// shown, since the legacy Block Properties dialog requires administrate rights.
+        /// </summary>
+        public bool CanAdministrate { get; set; }
     }
 }

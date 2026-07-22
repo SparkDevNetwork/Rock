@@ -37,7 +37,8 @@
                 -->
                 <div class="btn-square btn-sm" v-if="!hasCustomActions"></div>
 
-                <RockButton isSquare
+                <RockButton v-if="block.canAdministrate"
+                            isSquare
                             btnSize="sm"
                             btnType="default"
                             title="Block Settings"

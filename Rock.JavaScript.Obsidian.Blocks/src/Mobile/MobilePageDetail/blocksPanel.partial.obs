@@ -275,6 +275,7 @@ body.is-dragging * {
             showOnPhone: true,
             showOnTablet: true,
             requiresNetwork: false,
+            canAdministrate: false,
             customActions: []
         };
     }

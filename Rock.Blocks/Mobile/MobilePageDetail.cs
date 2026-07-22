@@ -58,6 +58,7 @@ namespace Rock.Blocks.Mobile
         Description = "The page used to view or edit layout details.",
         IsRequired = false,
         Key = AttributeKey.LayoutDetailPage,
+        DefaultValue = Rock.SystemGuid.Page.MOBILE_LAYOUT,
         Order = 0 )]
 
     #endregion Block Attributes
@@ -531,7 +532,8 @@ namespace Rock.Blocks.Mobile
                 ShowOnPhone = additionalSettings.ShowOnPhone,
                 ShowOnTablet = additionalSettings.ShowOnTablet,
                 RequiresNetwork = additionalSettings.RequiresNetwork,
-                CustomActions = GetCustomBlockActions( blockCompiledType, block )
+                CustomActions = GetCustomBlockActions( blockCompiledType, block ),
+                CanAdministrate = block.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson )
             };
         }
 

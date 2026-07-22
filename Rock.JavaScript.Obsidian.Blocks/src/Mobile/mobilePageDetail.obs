@@ -24,7 +24,7 @@
                                 btnType="default"
                                 :isLoading="isDeploying"
                                 loadingText="Deploying..."
-                                @click="onDeployClick"><i class="ti ti-upload"></i> Upload</RockButton>
+                                @click="onDeployClick"><i class="ti ti-upload"></i> Deploy</RockButton>
                 </div>
             </div>
 

@@ -39,6 +39,13 @@ export type MobilePageBlockBag = {
     cacheDuration: number;
 
     /**
+     * Gets or sets a value indicating whether the current person is authorized
+     * to administrate the block. Controls whether the Block Settings action is
+     * shown, since the legacy Block Properties dialog requires administrate rights.
+     */
+    canAdministrate: boolean;
+
+    /**
      * Gets or sets the custom actions provided by the block type (rendered as
      * additional buttons on the block row).
      */
