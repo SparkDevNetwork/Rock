@@ -11,8 +11,9 @@
                 :editorHeight="500" />
 
     <p class="text-muted mt-2 mb-0">
-        Write a <code>&lt;template&gt;</code> and a <code>&lt;script&gt;</code> whose default export is a
-        component options object. You may import Rock controls, for example
+        Write a single-file component: a <code>&lt;template&gt;</code>, a
+        <code>&lt;script setup&gt;</code> in plain JavaScript, and an optional
+        <code>&lt;style scoped&gt;</code>. You may import Rock controls, for example
         <code>import RockButton from "@Obsidian/Controls/rockButton.obs";</code>.
     </p>
 </template>

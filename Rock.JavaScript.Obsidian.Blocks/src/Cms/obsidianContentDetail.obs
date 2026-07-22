@@ -78,24 +78,25 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import RockButton from "@Obsidian/Controls/rockButton.obs";
 import RockLabel from "@Obsidian/Controls/rockLabel.obs";
 import { ref } from "vue";
 
-export default {
-    components: { RockButton, RockLabel },
-    setup() {
-        const count = ref(0);
+const count = ref(0);
 
-        function increment() {
-            count.value += 1;
-        }
+function increment() {
+    count.value += 1;
+}
+<\/script>
 
-        return { count, increment };
-    }
-};
-<\/script>`;
+<style scoped>
+.obsidian-content-example {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+</style>`;
 
     const blockError = ref(config.errorMessage ?? "");
     const isEditable = ref(config.isEditable);

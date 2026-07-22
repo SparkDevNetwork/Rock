@@ -20,45 +20,53 @@
 
     The in-browser compile pipeline for the Obsidian Content block. This runs ONLY
     in the administrator's edit path (never for a plain visitor). It compiles an
-    authored template-plus-script source into a SystemJS module string that later
-    loads through Rock's existing loader (so the authored `@Obsidian/...` imports
-    resolve through the import map exactly like any other Obsidian block).
+    authored single-file component into a SystemJS module string that later loads
+    through Rock's existing loader (so the authored `@Obsidian/...` imports resolve
+    through the import map exactly like any other Obsidian block).
 
-    Why SystemJS and not native ESM: Rock resolves bare `@Obsidian/...` specifiers
-    through a SystemJS import map, not a native browser import map, so the stored
-    module must be in SystemJS `System.register` format.
+    Phase 3 uses `@vue/compiler-sfc` (served as the `@Obsidian/Libs/vueCompilerSfc`
+    library bundle, loaded on demand only in edit mode) so authors write a real
+    single-file component: `<template>`, `<script setup>` in plain JavaScript, and
+    `<style scoped>`. `compileScript(..., { inlineTemplate: true })` compiles the
+    template directly into the setup's returned render function and resolves template
+    bindings against the setup scope, so the output is clean ES module code with no
+    `with` block. That output is then transformed to a SystemJS `System.register`
+    module: Rock resolves bare `@Obsidian/...` specifiers through a SystemJS import
+    map, not a native browser import map, so the stored module must be SystemJS format.
 
-    Why FUNCTION mode (not module mode): the shipped compiler asset is the browser
-    build of `@vue/compiler-dom`, which only supports the default "function" codegen
-    mode - it rejects "module" mode and `prefixIdentifiers` at compile time. Function
-    mode emits a render function body that (a) references the Vue runtime through a
-    free `Vue` variable and (b) uses a `with (_ctx)` block. We therefore wrap the
-    emitted code in a non-strict IIFE that receives the Vue runtime namespace, and we
-    deliberately do NOT mark the generated module strict (a `with` statement is illegal
-    in strict mode). The Vue template compiler still runs only here, at save time; the
-    stored module is finished JavaScript that visitors load without any compiler.
+    TypeScript (`lang="ts"`) is intentionally not supported: nothing here surfaces type
+    errors to the author and the types are stripped to run in the browser regardless,
+    so the only effect of supporting it would be shipping a full TypeScript transpiler
+    in the edit path. The legacy options-object `<script>` format still compiles too,
+    because `compileScript` handles both.
 
-    Reason: The browser Vue compiler only supports function mode; confine it to edit.
+    Reason: Real SFC fidelity (script setup, scoped styles) in plain JavaScript.
 */
 
-import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
 import { version as vueVersion } from "vue";
 
 // #region Types
 
-/** The browser build of `@vue/compiler-dom` exposed as a global by the edit-only compiler asset. */
-type VueCompilerDom = {
-    compile: (template: string, options: Record<string, unknown>) => {
-        code: string;
-        errors?: { message?: string; code?: number }[];
-    };
+/** The minimal shape of an SFC descriptor we rely on. */
+type SfcDescriptor = {
+    styles: { content: string; scoped?: boolean }[];
 };
 
-declare global {
-    interface Window {
-        VueCompilerDOM?: VueCompilerDom;
-    }
-}
+/** The subset of the `@vue/compiler-sfc` browser build API this pipeline uses. */
+type SfcCompiler = {
+    parse: (source: string, options: { filename?: string }) => {
+        descriptor: SfcDescriptor;
+        errors?: { message?: string }[];
+    };
+    compileScript: (descriptor: SfcDescriptor, options: { id: string; inlineTemplate?: boolean }) => {
+        content: string;
+    };
+    compileStyle: (options: { source: string; id: string; scoped?: boolean; filename?: string }) => {
+        code: string;
+        errors?: { message?: string }[];
+    };
+    rewriteDefault: (input: string, as: string) => string;
+};
 
 /** A single parsed top-level import statement. */
 type ParsedImport = {
@@ -97,41 +105,53 @@ export type ObsidianContentCompileResult = {
 
 // #region Values
 
-/** The URL of the edit-only compiler asset (a browser build of `@vue/compiler-dom`). */
-const compilerAssetUrl = "/Obsidian/Libs/vueCompiler.js";
+/** The local the compiled component is assigned to inside the generated module. */
+const componentLocal = "__component";
 
-/** The private local the whole Vue runtime namespace is bound to for the render IIFE. */
-const vueRuntimeLocal = "__vueRuntime__";
+/** The loaded compiler, cached after the first load. */
+let compiler: SfcCompiler | null = null;
 
 // #endregion Values
 
 // #region Functions
 
 /**
- * Lazily loads the template compiler asset. This is called only when the block
- * enters edit mode, and never for a plain viewer.
+ * Lazily loads the single-file-component compiler asset. This is called only when the
+ * block enters edit mode, and never for a plain viewer.
  */
 export async function loadCompilerAsync(): Promise<void> {
-    const loaded = await loadJavaScriptAsync(compilerAssetUrl, () => !!window.VueCompilerDOM);
-
-    if (!loaded || !window.VueCompilerDOM) {
-        throw new Error("The template compiler could not be loaded.");
+    if (compiler) {
+        return;
     }
+
+    // Lazily load the compiler library through Rock's loader (this dynamic import is
+    // rewritten to a SystemJS import, so the bundle and its dependencies resolve through
+    // the import map). This only runs in edit mode, never for a plain viewer.
+    const module = await import("@Obsidian/Libs/vueCompilerSfc");
+
+    if (!module || typeof (module as unknown as SfcCompiler).compileScript !== "function") {
+        throw new Error("The single-file-component compiler could not be loaded.");
+    }
+
+    compiler = module as unknown as SfcCompiler;
 }
 
 /**
- * Extracts the inner text of the first `<template>` or `<script>` block from the source.
+ * Produces a stable scope id for the source so the compiled render and the compiled
+ * scoped styles agree, and so identical content dedupes to one injected style tag.
  *
  * @param source The authored source.
- * @param tag The block tag to extract (`template` or `script`).
  *
- * @returns The trimmed inner text, or an empty string if the block is absent.
+ * @returns A short identifier derived from the source.
  */
-function extractBlock(source: string, tag: string): string {
-    const regex = new RegExp("<" + tag + "[^>]*>([\\s\\S]*?)<\\/" + tag + ">", "i");
-    const match = source.match(regex);
+function hashScopeId(source: string): string {
+    let hash = 5381;
 
-    return match ? match[1].trim() : "";
+    for (let index = 0; index < source.length; index++) {
+        hash = ((hash << 5) + hash + source.charCodeAt(index)) >>> 0;
+    }
+
+    return "v" + hash.toString(16);
 }
 
 /**
@@ -212,42 +232,50 @@ function parseClause(clause: string): ImportBinding[] {
 }
 
 /**
- * Assembles a SystemJS `System.register` module from the author's imports, the
- * function-mode render code, and the component options body.
+ * Builds the runtime snippet that injects the compiled styles into the current
+ * document (the host page in view mode, or the preview iframe), guarded so the same
+ * content only injects once.
  *
- * @param imports The author's parsed top-level imports.
- * @param renderCode The function-mode code emitted by the Vue compiler. It ends with
- *  `return function render(...) { ... }` and references a free `Vue`.
- * @param componentBody The component options declaration (`const __component = { ... };`).
+ * @param id The scope id (used for the guard element id).
+ * @param css The compiled CSS.
+ *
+ * @returns A self-invoking style-injection statement.
+ */
+function buildStyleInjection(id: string, css: string): string {
+    const guardId = "ocstyle-" + id;
+
+    return `(function () { var __id = ${JSON.stringify(guardId)}; if (!document.getElementById(__id)) { var __s = document.createElement("style"); __s.id = __id; __s.textContent = ${JSON.stringify(css)}; document.head.appendChild(__s); } })();`;
+}
+
+/**
+ * Assembles the ES module output (whose imports are all simple top-level forms and
+ * whose component has already been rewritten to `const __component = ...`) into a
+ * SystemJS `System.register` module string.
+ *
+ * @param imports The parsed top-level imports.
+ * @param body The module body after imports were stripped (hoisted declarations plus
+ *  the `const __component = ...` declaration).
+ * @param scopeAssign A statement assigning the scope id to the component, or empty.
+ * @param styleInject A statement injecting the compiled styles, or empty.
  *
  * @returns The SystemJS module string.
  */
-function buildSystemJsModule(imports: ParsedImport[], renderCode: string, componentBody: string): string {
+function buildSystemJsModule(imports: ParsedImport[], body: string, scopeAssign: string, styleInject: string): string {
     const specifierOrder: string[] = [];
     const bindingsBySpecifier: Record<string, ImportBinding[]> = {};
     const allLocals: string[] = [];
 
-    const addBinding = (specifier: string, binding: ImportBinding): void => {
-        if (!bindingsBySpecifier[specifier]) {
-            bindingsBySpecifier[specifier] = [];
-            specifierOrder.push(specifier);
+    for (const parsedImport of imports) {
+        if (!bindingsBySpecifier[parsedImport.specifier]) {
+            bindingsBySpecifier[parsedImport.specifier] = [];
+            specifierOrder.push(parsedImport.specifier);
         }
 
-        bindingsBySpecifier[specifier].push(binding);
-        allLocals.push(binding.local);
-    };
-
-    for (const parsedImport of imports) {
         for (const binding of parseClause(parsedImport.clause)) {
-            addBinding(parsedImport.specifier, binding);
+            bindingsBySpecifier[parsedImport.specifier].push(binding);
+            allLocals.push(binding.local);
         }
     }
-
-    // The function-mode render code references a free `Vue`. Bind the whole vue
-    // namespace to a private local and pass it into the render IIFE. This is added
-    // even when the author already imports from vue, and a single deduped `vue`
-    // dependency serves both.
-    addBinding("vue", { local: vueRuntimeLocal, expression: "_m" });
 
     const dependencies = specifierOrder.map(specifier => JSON.stringify(specifier)).join(", ");
     const variableDeclaration = allLocals.length ? "var " + allLocals.join(", ") + ";" : "";
@@ -259,23 +287,19 @@ function buildSystemJsModule(imports: ParsedImport[], renderCode: string, compon
         return "function (_m) { " + assignments + " }";
     }).join(",\n            ");
 
-    // NOTE: this module is intentionally NOT strict mode. The function-mode render
-    // emitted by the browser Vue compiler uses a `with (_ctx)` block, which is illegal
-    // in strict mode, so the render IIFE below must run sloppy.
     return [
         "System.register([" + dependencies + "], function (_export, _context) {",
+        "    \"use strict\";",
         "    " + variableDeclaration,
         "    return {",
         "        setters: [",
         "            " + setters,
         "        ],",
         "        execute: function () {",
-        "            var render = (function (Vue) {",
-        renderCode,
-        "            })(" + vueRuntimeLocal + ");",
-        componentBody,
-        "            __component.render = render;",
-        "            _export(\"default\", __component);",
+        body,
+        scopeAssign,
+        styleInject,
+        `_export("default", ${componentLocal});`,
         "        }",
         "    };",
         "});"
@@ -283,55 +307,73 @@ function buildSystemJsModule(imports: ParsedImport[], renderCode: string, compon
 }
 
 /**
- * Compiles an authored template-plus-script source into a SystemJS module string.
+ * Compiles an authored single-file component into a SystemJS module string.
  *
- * The authored source is a `<template>` block plus a `<script>` block whose body is
- * a plain component options object (`export default { ... }`) with optional simple
- * top-level imports (for example of `@Obsidian/...` controls).
+ * The authored source is a `<template>` block, a `<script setup>` (or legacy options
+ * object `<script>`) block in plain JavaScript, and any number of `<style>` blocks
+ * (scoped or not).
  *
  * @param source The authored source.
  *
  * @returns The compiled module string and the Vue version it targeted.
  */
 export function compileSource(source: string): ObsidianContentCompileResult {
-    if (!window.VueCompilerDOM) {
-        throw new Error("The template compiler has not been loaded.");
+    if (!compiler) {
+        throw new Error("The compiler has not been loaded.");
     }
 
-    const template = extractBlock(source, "template");
-    const script = extractBlock(source, "script");
+    const parsed = compiler.parse(source, { filename: "ObsidianContent.vue" });
 
-    if (!template) {
-        throw new Error("The source must contain a <template> block.");
+    if (parsed.errors && parsed.errors.length > 0) {
+        throw new Error(parsed.errors.map(error => error.message ?? String(error)).join("\n"));
     }
 
-    const { imports: scriptImports, body: scriptBody } = splitImports(script);
+    const descriptor = parsed.descriptor;
+    const id = hashScopeId(source);
+    const scopeId = "data-v-" + id;
 
-    // Function mode is the only mode the browser compiler build supports.
-    const compiled = window.VueCompilerDOM.compile(template, {});
+    // inlineTemplate compiles the template into the returned render function using the
+    // setup bindings, producing clean module output with no `with` block.
+    const compiledScript = compiler.compileScript(descriptor, { id, inlineTemplate: true });
+    const content = compiler.rewriteDefault(compiledScript.content, componentLocal);
 
-    if (compiled.errors && compiled.errors.length > 0) {
-        const message = compiled.errors
-            .map(error => error.message ?? ("Vue compiler error code " + error.code))
-            .join("\n");
-        throw new Error(message);
+    // Compile every style block, scoping the ones marked scoped to this component.
+    let css = "";
+    let hasScopedStyle = false;
+
+    for (const style of descriptor.styles) {
+        if (style.scoped) {
+            hasScopedStyle = true;
+        }
+
+        const compiledStyle = compiler.compileStyle({
+            source: style.content,
+            id,
+            scoped: !!style.scoped,
+            filename: "ObsidianContent.vue"
+        });
+
+        if (compiledStyle.errors && compiledStyle.errors.length > 0) {
+            throw new Error(compiledStyle.errors.map(error => error.message ?? String(error)).join("\n"));
+        }
+
+        css += compiledStyle.code + "\n";
     }
 
-    // `export default { ... }` -> `const __component = { ... }`.
-    const componentBody = scriptBody.replace(/export\s+default\s+/, "const __component = ");
+    const { imports, body } = splitImports(content);
+    const scopeAssign = hasScopedStyle ? `${componentLocal}.__scopeId = ${JSON.stringify(scopeId)};` : "";
+    const styleInject = css.trim() ? buildStyleInjection(id, css) : "";
 
-    const compiledContent = buildSystemJsModule(scriptImports, compiled.code, componentBody);
+    const compiledContent = buildSystemJsModule(imports, body, scopeAssign, styleInject);
 
-    // The Vue compiler only validates the template. Parse the assembled module so a
-    // syntax error in the authored script surfaces as a compile error (and blocks the
-    // save) instead of only failing at render time. Constructing the function parses
-    // the code without executing it.
+    // Parse the assembled module so any remaining syntax problem surfaces as a compile
+    // error (and blocks the save). Constructing the function parses without executing.
     try {
         // eslint-disable-next-line @typescript-eslint/no-implied-eval
         new Function("System", compiledContent);
     }
     catch (e) {
-        throw new Error(e instanceof Error ? e.message : "The script could not be parsed.");
+        throw new Error(e instanceof Error ? e.message : "The compiled module could not be parsed.");
     }
 
     return {
