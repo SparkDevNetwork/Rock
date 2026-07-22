@@ -8,7 +8,8 @@
 
     <CodeEditor v-model="internalSource"
                 mode="html"
-                :editorHeight="500" />
+                :editorHeight="500"
+                :disableValidation="true" />
 
     <p class="text-muted mt-2 mb-0">
         Write a single-file component: a <code>&lt;template&gt;</code>, a

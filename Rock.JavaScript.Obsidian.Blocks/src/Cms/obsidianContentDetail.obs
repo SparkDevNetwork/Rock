@@ -13,6 +13,10 @@
         <div class="mt-3">
             <label class="form-label">Preview</label>
             <PreviewPanel :compiledContent="previewContent" />
+            <p class="text-muted mt-1 mb-0">
+                The preview runs sandboxed, so components that call the Rock API will not load
+                data here. That data appears once you Save and view the page.
+            </p>
         </div>
 
         <template #footerActions>
