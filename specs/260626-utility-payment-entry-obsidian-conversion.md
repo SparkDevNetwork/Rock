@@ -85,6 +85,10 @@ flowchart LR
 | 20 | [Transaction attributes from URL (`Attribute_*` params)](#20-transaction-attributes-from-url) | ✅ | ✅ |
 | 21 | [Block-settings reconciliation](#block-settings-reconciliation) | ✅ | ✅ |
 | 22 | Soft-launch registration (coexist with legacy) | ✅ | ✅ |
+| 23 | Business Work-phone write-back (revisit) | | |
+| 24 | Preload account amounts on transfer (consider) | | |
+| 25 | Use modelValue instead of presetAccountAmounts in UPE (investigate) | | |
+| 26 | WebForms chop (deferred) | | |
 
 Legend: ✅ = complete; 🔄️ = in progress; blank = not started. The **Tested** column is a rollup: a row
 is ✅ only when every one of its sub-feature test items in [Test Plan](#test-plan) passes.
@@ -95,7 +99,10 @@ Each item's remaining work, keyed to the [Implementation Status](#implementation
 Completed work is tracked by the grid markers and the checked [Test Plan](#test-plan) items, not
 restated here.
 
-- **WebForms chop (deferred).** The Obsidian block is soft-launched under a new BlockTypeGuid so it coexists with the legacy WebForms block; the chop's BlockTypeGuid is kept commented-out beside it in `Rock.Blocks/Finance/UtilityPaymentEntry.cs`. At chop time, add a migration that removes the orphaned soft-launch block type (by its Guid) and its attributes and values (each by their respective Guids). Optionally, a more involved and delicate migration could move any "snuck" instances of the old block onto the chopped version; not committed.
+- **23. Business Work-phone write-back (revisit).** When giving as a business, the Work-phone write-back skips saving the entered number if the contact already has a mobile number on file, carried over from the legacy block and documented as a parity flag under [Business giving](#business-giving-give-as-business). This is a bad behavior; if the extended testing window allows, fix it so the business Work phone is saved regardless. See the [Business Work-phone write-back question](https://app.asana.com/1/20866866924293/task/1216405822150745).
+- **24. Preload account amounts on transfer (consider).** The transfer flow does not pre-fill account amounts today ([Test 13](#13-transfer-flow-move-a-scheduled-gift-to-another-gateway)), because the shared `campusAccountAmountPicker` did not rehydrate from an incoming value. That mechanism now exists (the control resolves the amount from its `modelValue`), so the block could seed the transferred schedule's amounts by passing them as the picker's model value. Consider implementing; mind the campus-mapping caveat: a schedule's stored details are the campus child accounts, so seeding may need to reverse-map to the parent account the picker displays (or accept showing the child).
+- **25. Use `modelValue` instead of `presetAccountAmounts` in UPE (investigate).** Now that the shared `campusAccountAmountPicker` resolves amounts from `modelValue` (Carter's approach), investigate whether UPE can seed its accounts and amounts through the `modelValue` and `accounts` props alone and drop the `presetAccountAmounts` prop and its overhead. Quick take: the seeding looks feasible; the snag is read-only locking, which multi-mode already honors from a model entry's `readOnly` but single-mode currently derives only from a preset, so fully dropping presets would need the single-mode resolver to also honor a model-supplied `readOnly` (or keep presets just for locks). Server-side lock enforcement re-parses the URL, so it is unaffected either way.
+- **26. WebForms chop (deferred).** The Obsidian block is soft-launched under a new BlockTypeGuid so it coexists with the legacy WebForms block; the chop's BlockTypeGuid is kept commented-out beside it in `Rock.Blocks/Finance/UtilityPaymentEntry.cs`. At chop time, add a migration that removes the orphaned soft-launch block type (by its Guid) and its attributes and values (each by their respective Guids). Optionally, a more involved and delicate migration could move any "snuck" instances of the old block onto the chopped version; not committed.
 
 ### Page parameters (carry-forward tracking)
 
