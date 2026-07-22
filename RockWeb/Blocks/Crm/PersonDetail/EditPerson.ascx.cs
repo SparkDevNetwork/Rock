@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
@@ -654,11 +655,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                                 }}
                                         }})";
 
+                                        // Encode values that get embedded in the JS string literals so
+                                        // apostrophes in names (e.g., "O'Reilly") don't break the confirm() call.
                                         string givingEnvelopeWarningScript = string.Format(
                                             givingEnvelopeWarningScriptFormat,
-                                            givingEnvelopeWarningText,
+                                            HttpUtility.JavaScriptStringEncode( givingEnvelopeWarningText ),
                                             hfGivingEnvelopeNumberConfirmed.ClientID,
-                                            newEnvelopeNumber );
+                                            HttpUtility.JavaScriptStringEncode( newEnvelopeNumber ) );
 
                                         ScriptManager.RegisterStartupScript( hfGivingEnvelopeNumberConfirmed, hfGivingEnvelopeNumberConfirmed.GetType(), "confirm-envelope-number", givingEnvelopeWarningScript, true );
                                         return false;
