@@ -320,8 +320,22 @@ export function compileSource(source: string): ObsidianContentCompileResult {
     // `export default { ... }` -> `const __component = { ... }`.
     const componentBody = scriptBody.replace(/export\s+default\s+/, "const __component = ");
 
+    const compiledContent = buildSystemJsModule(scriptImports, compiled.code, componentBody);
+
+    // The Vue compiler only validates the template. Parse the assembled module so a
+    // syntax error in the authored script surfaces as a compile error (and blocks the
+    // save) instead of only failing at render time. Constructing the function parses
+    // the code without executing it.
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-implied-eval
+        new Function("System", compiledContent);
+    }
+    catch (e) {
+        throw new Error(e instanceof Error ? e.message : "The script could not be parsed.");
+    }
+
     return {
-        compiledContent: buildSystemJsModule(scriptImports, compiled.code, componentBody),
+        compiledContent,
         vueVersion: vueVersion
     };
 }

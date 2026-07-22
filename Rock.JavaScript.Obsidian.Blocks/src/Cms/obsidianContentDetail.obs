@@ -10,8 +10,14 @@
         <EditPanel v-model="source"
                    :compileError="compileError" />
 
+        <div class="mt-3">
+            <label class="form-label">Preview</label>
+            <PreviewPanel :compiledContent="previewContent" />
+        </div>
+
         <template #footerActions>
             <RockButton btnType="primary"
+                        :disabled="!canSave"
                         :isLoading="isSaving"
                         @click="onSave">Save</RockButton>
             <RockButton btnType="link"
@@ -44,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, onBeforeUnmount, ref, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
@@ -52,8 +58,12 @@
     import { ObsidianContentDetailInitializationBox } from "@Obsidian/ViewModels/Blocks/Cms/ObsidianContentDetail/obsidianContentDetailInitializationBox";
     import { SaveObsidianContentRequestBag } from "@Obsidian/ViewModels/Blocks/Cms/ObsidianContentDetail/saveObsidianContentRequestBag";
     import EditPanel from "./obsidianContentDetail/editPanel.partial.obs";
+    import PreviewPanel from "./obsidianContentDetail/previewPanel.partial.obs";
     import ViewPanel from "./obsidianContentDetail/viewPanel.partial.obs";
-    import { compileSource, loadCompilerAsync } from "./obsidianContentDetail/obsidianContentCompiler.partial";
+    import { compileSource, loadCompilerAsync, ObsidianContentCompileResult } from "./obsidianContentDetail/obsidianContentCompiler.partial";
+
+    /** How long to wait after the last keystroke before recompiling for the live preview. */
+    const compileDebounceMs = 500;
 
     const config = useConfigurationValues<ObsidianContentDetailInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -94,7 +104,10 @@ export default {
     const isSaving = ref(false);
     const source = ref(config.source ?? "");
     const compiledContent = ref(config.compiledContent ?? "");
+    const previewContent = ref("");
     const compileError = ref("");
+    const lastCompile = ref<ObsidianContentCompileResult | null>(null);
+    let compileTimer: number | null = null;
 
     // #endregion Values
 
@@ -102,13 +115,54 @@ export default {
 
     const hasContent = computed((): boolean => !!compiledContent.value);
 
+    const canSave = computed((): boolean => {
+        return isEditing.value && !isSaving.value && compileError.value === "" && lastCompile.value !== null;
+    });
+
     // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Compiles the current source for the live preview, surfacing any compile error
+     * inline. On failure the last good preview is kept so the preview does not blank
+     * out mid-typing.
+     */
+    function runLiveCompile(): void {
+        try {
+            const result = compileSource(source.value);
+
+            lastCompile.value = result;
+            previewContent.value = result.compiledContent;
+            compileError.value = "";
+        }
+        catch (e) {
+            lastCompile.value = null;
+            compileError.value = e instanceof Error ? e.message : "The source could not be compiled.";
+        }
+    }
+
+    /**
+     * Debounces the live compile so it runs shortly after the author stops typing.
+     */
+    function scheduleCompile(): void {
+        if (compileTimer !== null) {
+            window.clearTimeout(compileTimer);
+        }
+
+        compileTimer = window.setTimeout(() => {
+            compileTimer = null;
+            runLiveCompile();
+        }, compileDebounceMs);
+    }
+
+    // #endregion Functions
 
     // #region Event Handlers
 
     /**
-     * Enters edit mode, lazy-loading the compiler assets (only now, only for the
-     * authorized administrator).
+     * Enters edit mode, lazy-loading the compiler asset (only now, only for the
+     * authorized administrator) and compiling once for the initial preview.
      */
     async function onEdit(): Promise<void> {
         isEnteringEdit.value = true;
@@ -121,8 +175,8 @@ export default {
                 source.value = defaultSource;
             }
 
-            compileError.value = "";
             isEditing.value = true;
+            runLiveCompile();
         }
         catch (e) {
             blockError.value = e instanceof Error ? e.message : "The editor could not be loaded.";
@@ -133,21 +187,28 @@ export default {
     }
 
     /**
-     * Compiles the authored source in the browser and, on success, saves both the
-     * source and the compiled output. A compile failure is surfaced inline and blocks
-     * the save.
+     * Recompiles to ensure the stored artifact matches the current source, then saves
+     * both the source and the compiled output. A compile failure is surfaced inline and
+     * blocks the save.
      */
     async function onSave(): Promise<void> {
-        compileError.value = "";
+        // Guarantee the compiled output matches the current source (a debounced compile
+        // may still be pending), and block the save if it does not compile.
+        runLiveCompile();
+
+        const compileResult = lastCompile.value;
+
+        if (compileError.value !== "" || compileResult === null) {
+            return;
+        }
+
         isSaving.value = true;
 
         try {
-            const result = compileSource(source.value);
-
             const bag: SaveObsidianContentRequestBag = {
                 source: source.value,
-                compiledContent: result.compiledContent,
-                compiledVueVersion: result.vueVersion
+                compiledContent: compileResult.compiledContent,
+                compiledVueVersion: compileResult.vueVersion
             };
 
             const response = await invokeBlockAction("SaveContent", { bag });
@@ -157,12 +218,8 @@ export default {
                 return;
             }
 
-            compiledContent.value = result.compiledContent;
+            compiledContent.value = compileResult.compiledContent;
             isEditing.value = false;
-        }
-        catch (e) {
-            // A compile error is expected authoring feedback, not a block error.
-            compileError.value = e instanceof Error ? e.message : "The source could not be compiled.";
         }
         finally {
             isSaving.value = false;
@@ -173,10 +230,35 @@ export default {
      * Leaves edit mode, discarding any unsaved source edits.
      */
     function onCancel(): void {
+        if (compileTimer !== null) {
+            window.clearTimeout(compileTimer);
+            compileTimer = null;
+        }
+
         source.value = config.source ?? "";
         compileError.value = "";
         isEditing.value = false;
     }
 
     // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(source, () => {
+        if (isEditing.value) {
+            scheduleCompile();
+        }
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onBeforeUnmount(() => {
+        if (compileTimer !== null) {
+            window.clearTimeout(compileTimer);
+        }
+    });
+
+    // #endregion Lifecycle Hooks
 </script>

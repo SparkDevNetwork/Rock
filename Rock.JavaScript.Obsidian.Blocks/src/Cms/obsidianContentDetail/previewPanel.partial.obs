@@ -1,0 +1,211 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <iframe ref="frameElement"
+            class="obsidian-content-preview-frame"
+            sandbox="allow-scripts allow-same-origin"></iframe>
+</template>
+
+<style scoped>
+.obsidian-content-preview-frame {
+    width: 100%;
+    min-height: 220px;
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-small, 4px);
+    background: var(--color-interface-softest, #fff);
+}
+</style>
+
+<script setup lang="ts">
+    import { onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+
+    const props = defineProps({
+        /** The compiled SystemJS module string to preview. */
+        compiledContent: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        }
+    });
+
+    // #region Values
+
+    const frameElement = ref<HTMLIFrameElement | null>(null);
+    const isFrameReady = ref(false);
+    let pendingSource: string | null = null;
+
+    // #endregion Values
+
+    // #region Functions
+
+    /*
+        7/22/2026 - CLAUDE
+
+        The preview runs inside a sandboxed iframe (its own document and JS realm) so
+        a half-finished component cannot crash, hang, or mutate the editor page. The
+        iframe mirrors the host page's stylesheets and theme class, bootstraps its own
+        copy of the Obsidian framework, and then waits for the compiled module to arrive
+        by postMessage, so switching previews never reloads the framework.
+
+        Session-isolation note: the sandbox is "allow-same-origin" because the framework
+        assets (obsidian-core, the vendor bundle, and the controls) are served same-origin
+        and SystemJS fetches them with the fetch API, which a null-origin frame cannot do
+        without server CORS support. This isolates crashes, runaway loops, and DOM changes,
+        but not authenticated API calls. Full session isolation needs a CORS-enabled
+        sandbox origin and is deferred with the Phase 4 productionization work.
+
+        Reason: Isolate preview crashes/DOM from the editor; full session isolation deferred.
+    */
+
+    /**
+     * Collects the host page's stylesheets so the preview renders with the same theme,
+     * styles-v2 tokens, and control styles the real page uses.
+     */
+    function collectParentStyles(): string {
+        const parts: string[] = [];
+
+        document.querySelectorAll("link[rel=\"stylesheet\"], style").forEach(node => {
+            if (node.tagName === "LINK") {
+                const href = (node as HTMLLinkElement).href;
+                if (href) {
+                    parts.push(`<link rel="stylesheet" href="${href}">`);
+                }
+            }
+            else {
+                parts.push(`<style>${(node as HTMLStyleElement).textContent ?? ""}</style>`);
+            }
+        });
+
+        return parts.join("\n");
+    }
+
+    /**
+     * Builds the sandboxed iframe document: it mirrors the host page's stylesheets and
+     * theme class, bootstraps its own Obsidian framework, and renders compiled source
+     * that arrives over postMessage.
+     */
+    function buildFrameBootstrap(): string {
+        const headStyles = collectParentStyles();
+        const htmlClass = document.documentElement.className.replace(/"/g, "&quot;");
+
+        return `<!doctype html>
+<html class="${htmlClass}">
+<head>
+<meta charset="utf-8">
+<base href="/">
+${headStyles}
+</head>
+<body style="margin:0">
+<div id="app"></div>
+<script src="/Obsidian/obsidian-core.js"><\/script>
+<script>
+(function () {
+    var appEl = document.getElementById("app");
+    var currentApp = null;
+
+    function showError(message) {
+        if (currentApp) { try { currentApp.unmount(); } catch (e) { /* ignore */ } currentApp = null; }
+        appEl.innerHTML = "";
+        var div = document.createElement("div");
+        div.textContent = message;
+        div.style.cssText = "color:#b91c1c;font-family:sans-serif;font-size:13px;padding:8px;white-space:pre-wrap";
+        appEl.appendChild(div);
+    }
+
+    function render(source) {
+        try {
+            var captured = {};
+            new Function("System", source)({ register: function (deps, declare) { captured.deps = deps; captured.declare = declare; } });
+            if (!captured.declare) { showError("Preview: no module was registered."); return; }
+            Promise.all(captured.deps.map(function (d) { return System.import(d); })).then(function (mods) {
+                var ex = {};
+                var exportFn = function (n, v) { if (typeof n === "object") { for (var k in n) { ex[k] = n[k]; } } else { ex[n] = v; } };
+                var inst = captured.declare(exportFn, { import: function (id) { return System.import(id); } });
+                captured.deps.forEach(function (d, i) { inst.setters[i](mods[i]); });
+                inst.execute();
+                return System.import("vue").then(function (Vue) {
+                    if (currentApp) { try { currentApp.unmount(); } catch (e) { /* ignore */ } }
+                    appEl.innerHTML = "";
+                    currentApp = Vue.createApp(ex.default);
+                    currentApp.config.errorHandler = function (err) { showError("Preview runtime error: " + (err && err.message ? err.message : err)); };
+                    currentApp.mount(appEl);
+                });
+            }).catch(function (e) { showError("Preview error: " + (e && e.message ? e.message : e)); });
+        }
+        catch (e) { showError("Preview error: " + (e && e.message ? e.message : e)); }
+    }
+
+    window.addEventListener("message", function (event) {
+        var data = event.data || {};
+        if (data.type === "obsidian-content-preview-render") { render(String(data.source || "")); }
+    });
+
+    window.Obsidian.init({});
+    window.Obsidian.onReady(function () {
+        (window.parent || window).postMessage({ type: "obsidian-content-preview-ready" }, "*");
+    });
+})();
+<\/script>
+</body>
+</html>`;
+    }
+
+    /**
+     * Sends the compiled source to the iframe to render, queueing it if the iframe has
+     * not signalled that its framework is ready yet.
+     */
+    function postSource(source: string): void {
+        const frameWindow = frameElement.value?.contentWindow;
+
+        if (isFrameReady.value && frameWindow) {
+            frameWindow.postMessage({ type: "obsidian-content-preview-render", source }, window.location.origin);
+        }
+        else {
+            pendingSource = source;
+        }
+    }
+
+    /**
+     * Handles the ready signal from the iframe and flushes any queued source.
+     */
+    function onMessage(event: MessageEvent): void {
+        if (event.source !== frameElement.value?.contentWindow) {
+            return;
+        }
+
+        if (event.data?.type === "obsidian-content-preview-ready") {
+            isFrameReady.value = true;
+
+            if (pendingSource !== null) {
+                postSource(pendingSource);
+                pendingSource = null;
+            }
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.compiledContent, () => {
+        postSource(props.compiledContent ?? "");
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        window.addEventListener("message", onMessage);
+
+        if (frameElement.value) {
+            frameElement.value.srcdoc = buildFrameBootstrap();
+        }
+
+        postSource(props.compiledContent ?? "");
+    });
+
+    onBeforeUnmount(() => {
+        window.removeEventListener("message", onMessage);
+    });
+
+    // #endregion Lifecycle Hooks
+</script>
