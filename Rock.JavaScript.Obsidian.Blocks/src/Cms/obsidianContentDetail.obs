@@ -1,0 +1,182 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError"
+                     alertType="danger">{{ blockError }}</NotificationBox>
+
+    <!-- Edit mode: authorized administrators only. -->
+    <Panel v-else-if="isEditing"
+           title="Obsidian Content"
+           type="block">
+        <EditPanel v-model="source"
+                   :compileError="compileError" />
+
+        <template #footerActions>
+            <RockButton btnType="primary"
+                        :isLoading="isSaving"
+                        @click="onSave">Save</RockButton>
+            <RockButton btnType="link"
+                        :disabled="isSaving"
+                        @click="onCancel">Cancel</RockButton>
+        </template>
+    </Panel>
+
+    <!-- View mode: everyone. -->
+    <template v-else>
+        <div v-if="isEditable"
+             class="text-right mb-2">
+            <RockButton btnType="default"
+                        btnSize="xs"
+                        :isLoading="isEnteringEdit"
+                        @click="onEdit">
+                <i class="ti ti-pencil"></i>
+                {{ hasContent ? "Edit" : "Add Content" }}
+            </RockButton>
+        </div>
+
+        <ViewPanel v-if="hasContent"
+                   :compiledContent="compiledContent" />
+
+        <NotificationBox v-else-if="isEditable"
+                         alertType="info">
+            This block has no content yet. Click <strong>Add Content</strong> to author it.
+        </NotificationBox>
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ObsidianContentDetailInitializationBox } from "@Obsidian/ViewModels/Blocks/Cms/ObsidianContentDetail/obsidianContentDetailInitializationBox";
+    import { SaveObsidianContentRequestBag } from "@Obsidian/ViewModels/Blocks/Cms/ObsidianContentDetail/saveObsidianContentRequestBag";
+    import EditPanel from "./obsidianContentDetail/editPanel.partial.obs";
+    import ViewPanel from "./obsidianContentDetail/viewPanel.partial.obs";
+    import { compileSource, loadCompilerAsync } from "./obsidianContentDetail/obsidianContentCompiler.partial";
+
+    const config = useConfigurationValues<ObsidianContentDetailInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    /** The starter source shown when an author opens an unconfigured block. */
+    const defaultSource = `<template>
+    <div class="obsidian-content-example">
+        <RockLabel>Count is {{ count }}</RockLabel>
+        <RockButton btnType="primary" @click="increment">Add one</RockButton>
+    </div>
+</template>
+
+<script>
+import RockButton from "@Obsidian/Controls/rockButton.obs";
+import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+import { ref } from "vue";
+
+export default {
+    components: { RockButton, RockLabel },
+    setup() {
+        const count = ref(0);
+
+        function increment() {
+            count.value += 1;
+        }
+
+        return { count, increment };
+    }
+};
+<\/script>`;
+
+    const blockError = ref(config.errorMessage ?? "");
+    const isEditable = ref(config.isEditable);
+    const isEditing = ref(false);
+    const isEnteringEdit = ref(false);
+    const isSaving = ref(false);
+    const source = ref(config.source ?? "");
+    const compiledContent = ref(config.compiledContent ?? "");
+    const compileError = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const hasContent = computed((): boolean => !!compiledContent.value);
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Enters edit mode, lazy-loading the compiler assets (only now, only for the
+     * authorized administrator).
+     */
+    async function onEdit(): Promise<void> {
+        isEnteringEdit.value = true;
+        blockError.value = "";
+
+        try {
+            await loadCompilerAsync();
+
+            if (!source.value) {
+                source.value = defaultSource;
+            }
+
+            compileError.value = "";
+            isEditing.value = true;
+        }
+        catch (e) {
+            blockError.value = e instanceof Error ? e.message : "The editor could not be loaded.";
+        }
+        finally {
+            isEnteringEdit.value = false;
+        }
+    }
+
+    /**
+     * Compiles the authored source in the browser and, on success, saves both the
+     * source and the compiled output. A compile failure is surfaced inline and blocks
+     * the save.
+     */
+    async function onSave(): Promise<void> {
+        compileError.value = "";
+        isSaving.value = true;
+
+        try {
+            const result = compileSource(source.value);
+
+            const bag: SaveObsidianContentRequestBag = {
+                source: source.value,
+                compiledContent: result.compiledContent,
+                compiledVueVersion: result.vueVersion
+            };
+
+            const response = await invokeBlockAction("SaveContent", { bag });
+
+            if (!response.isSuccess) {
+                blockError.value = response.errorMessage ?? "The content could not be saved.";
+                return;
+            }
+
+            compiledContent.value = result.compiledContent;
+            isEditing.value = false;
+        }
+        catch (e) {
+            // A compile error is expected authoring feedback, not a block error.
+            compileError.value = e instanceof Error ? e.message : "The source could not be compiled.";
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    /**
+     * Leaves edit mode, discarding any unsaved source edits.
+     */
+    function onCancel(): void {
+        source.value = config.source ?? "";
+        compileError.value = "";
+        isEditing.value = false;
+    }
+
+    // #endregion Event Handlers
+</script>

@@ -845,6 +845,11 @@ namespace Rock.SystemGuid
         public const string OBSIDIAN_FORM_TEMPLATE_DETAIL_BLOCK_TYPE = "4A08BC88-AD45-4106-BDD7-184A14B39B9A";
 
         /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.ObsidianContent"/>
+        /// </summary>
+        public const string OBSIDIAN_CONTENT = "38F182A7-9FE4-4D7B-B483-59F615BDE41C";
+
+        /// <summary>
         /// The guid for the Rock.Model.Note entity
         /// </summary>
         public const string NOTE = "53DC1E78-14A5-44DE-903F-6A2CB02164E7";

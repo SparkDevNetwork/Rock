@@ -1,0 +1,49 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="compileError"
+                     alertType="warning">
+        <strong>Compile error</strong>
+        <pre class="mb-0 mt-1">{{ compileError }}</pre>
+    </NotificationBox>
+
+    <CodeEditor v-model="internalSource"
+                mode="html"
+                :editorHeight="500" />
+
+    <p class="text-muted mt-2 mb-0">
+        Write a <code>&lt;template&gt;</code> and a <code>&lt;script&gt;</code> whose default export is a
+        component options object. You may import Rock controls, for example
+        <code>import RockButton from "@Obsidian/Controls/rockButton.obs";</code>.
+    </p>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        /** The authored source being edited. */
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** A compile error message to surface inline, if any. */
+        compileError: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    // #region Values
+
+    const internalSource = useVModelPassthrough(props, "modelValue", emit);
+
+    // #endregion Values
+</script>
