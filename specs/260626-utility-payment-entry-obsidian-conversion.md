@@ -65,7 +65,7 @@ flowchart LR
 | 3 | [Heading model (block header vs panel title)](#3-heading-model-block-header-vs-panel-title) | ✅ | ✅ |
 | 4 | ["No gateways configured" help](#4-no-gateways-configured-help) | ✅ | ✅ |
 | 5a | [Entry: Campus Information section](#5a-entry-campus-information-section) | ✅ | ✅ |
-| 5b | [Entry: Contribution Information section](#5b-entry-contribution-information-section) | ✅ | |
+| 5b | [Entry: Contribution Information section](#5b-entry-contribution-information-section) | ✅ | ✅ |
 | 5c | [Entry: Contact Information section](#5c-entry-contact-information-section) | ✅ | ✅ |
 | 5d | [Entry: Payment Information section](#5d-entry-payment-information-section) | ✅ | ✅ |
 | 6 | [Confirmation step](#6-confirmation-step) | ✅ | ✅ |
@@ -78,13 +78,13 @@ flowchart LR
 | 13 | [Transfer flow (move a scheduled gift to another gateway)](#13-transfer-flow-move-a-scheduled-gift-to-another-gateway) | ✅ | ✅ |
 | 14 | [Layout Style (Vertical / Fluid)](#14-layout-style-vertical--fluid) | ✅ | ✅ |
 | 15 | [Transaction Header merge fields](#15-transaction-header-merge-fields) | ✅ | ✅ |
-| 16 | [URL account options](#16-url-account-options) | ✅ | |
+| 16 | [URL account options](#16-url-account-options) | ✅ | ✅ |
 | 17 | [Account Campus Context Filter](#17-account-campus-context-filter) | ✅ | ✅ |
 | 18 | [Account Confirmation Email setting](#18-account-confirmation-email-setting) | ✅ | ✅ |
 | 19 | [Page-parameter ID hardening](#19-page-parameter-id-hardening) | ✅ | ✅ |
 | 20 | [Transaction attributes from URL (`Attribute_*` params)](#20-transaction-attributes-from-url) | ✅ | ✅ |
 | 21 | [Block-settings reconciliation](#block-settings-reconciliation) | ✅ | ✅ |
-| 22 | Soft-launch registration (coexist with legacy) + WebForms chop | | |
+| 22 | Soft-launch registration (coexist with legacy) | ✅ | ✅ |
 
 Legend: ✅ = complete; 🔄️ = in progress; blank = not started. The **Tested** column is a rollup: a row
 is ✅ only when every one of its sub-feature test items in [Test Plan](#test-plan) passes.
@@ -95,7 +95,7 @@ Each item's remaining work, keyed to the [Implementation Status](#implementation
 Completed work is tracked by the grid markers and the checked [Test Plan](#test-plan) items, not
 restated here.
 
-- **22. Soft-launch registration**: register the Obsidian block type alongside legacy; stand up a partner test instance; migrate `Show Block Header Section` off for Add Transaction with the chop.
+- **WebForms chop (deferred).** The Obsidian block is soft-launched under a new BlockTypeGuid so it coexists with the legacy WebForms block; the chop's BlockTypeGuid is kept commented-out beside it in `Rock.Blocks/Finance/UtilityPaymentEntry.cs`. At chop time, add a migration that removes the orphaned soft-launch block type (by its Guid) and its attributes and values (each by their respective Guids). Optionally, a more involved and delicate migration could move any "snuck" instances of the old block onto the chopped version; not committed.
 
 ### Page parameters (carry-forward tracking)
 
@@ -221,8 +221,8 @@ Copy and rendering:
 
 - [x] The four combos above match.
 - [x] Mode-independence: dropdown shows in **single** mode AND **multi** mode (subset configured + Allow Additional on).
-- [ ] Multi mode: selecting an account adds a new amount box and **keeps amounts already typed** in the others (merge fix).
-- [ ] Single mode: selecting an account adds it to the account dropdown's options and **keeps the current selection** (merge fix).
+- [x] Multi mode: selecting an account adds a new amount box and **keeps amounts already typed** in the others (merge fix).
+- [x] Single mode: selecting an account adds it to the account dropdown's options and **keeps the current selection** (merge fix).
 - [x] The added account disappears from the add dropdown; when none remain, the dropdown hides.
 - [x] The dropdown's prompt text reflects the `Add Account Button Text` setting.
 
@@ -523,9 +523,9 @@ Each row lists what the diagnostic block should show. "All four" means the HEADE
 ### 16. URL account options
 - [x] `?AccountIds=1,2,3`: exactly those accounts show, ordered by `Account.Order`, replacing the configured `Accounts to Display`.
 - [x] `?AccountGlCodes=40100,40110`: accounts resolved by GL code show (a GL code is treated as unique).
-- [ ] Preset amount (`?AccountIds=1^50`): the amount box is seeded with 50 and stays editable.
-- [ ] Locked amount (`?AccountIds=1^50^false`): the amount is seeded and the box is disabled; `true` or omitted leaves it editable.
-- [ ] Multi mode seeds and locks each box independently. Single mode seeds and locks the selected account; on switching accounts, a read-only preset re-locks and forces its amount, while an editable preset fills only an empty box (a value already entered is kept).
+- [x] Preset amount (`?AccountIds=1^50`): the amount box is seeded with 50 and stays editable.
+- [x] Locked amount (`?AccountIds=1^50^false`): the amount is seeded and the box is disabled; `true` or omitted leaves it editable.
+- [x] Multi mode seeds and locks each box independently. Single mode seeds and locks the selected account; on switching accounts, a read-only preset re-locks and forces its amount, while an editable preset fills only an empty box (a value already entered is kept).
 - [x] `Restrict URL Accounts to Public Only` ON (default): a private account named in the URL does not show and triggers the Invalid Account Message. OFF: it shows (resolved server-side and injected, so it renders even though the shared accounts endpoint would not return a private account).
 - [x] Invalid Account Message fires for any specified account that does not resolve or is not active, in date, and public-when-restricted: a bad id, an unresolvable GL code, an inactive account, an out-of-date account, and a private account when restricted. A blank message shows nothing.
 - [x] Invalid or unresolvable accounts are left out of the picker and the presets (no phantom account, no orphan preset); the message is the only signal.

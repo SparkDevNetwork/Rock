@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, computed, ref, watch, watchEffect } from "vue";
+    import { PropType, computed, ref, watch } from "vue";
     import RockFormField from "./rockFormField.obs";
     import CurrencyBox from "./currencyBox.obs";
     import CampusPicker from "./campusPicker.obs";
@@ -331,7 +331,7 @@
     }, { immediate: true });
 
     // Outbound sync: rebuild the model value as a brand-new array whenever the local editable state changes.
-    watchEffect(() => {
+    watch([amount, selectedAccount, amounts, () => props.accountAmountEntryMode], () => {
         if (props.accountAmountEntryMode === "singleAccount") {
             internalValue.value = [{
                 account: selectedAccount.value,
@@ -348,7 +348,7 @@
                 };
             });
         }
-    });
+    }, { deep: true });
 
     watch(() => [props.orderBySelectableAccountsIndex, props.selectableAccountGuids, props.accountHeaderTemplate, props.accounts], () => loadAccountOptions());
 
