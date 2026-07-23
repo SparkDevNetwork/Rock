@@ -1,0 +1,399 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="account-tree-view">
+        <NotificationBox v-if="errorMessage" alertType="danger" class="mb-0">{{ errorMessage }}</NotificationBox>
+        <Panel :title="blockProperties.panelTitle || 'Accounts'"
+               type="block"
+               hasNoBodyPadding
+               :isCollapsible="false"
+               :isInitiallyCollapsed="false">
+            <template #headerActions>
+                <div class="account-tree-view-actions">
+                    <DropDownMenu v-if="bag.isAddAccountVisible"
+                                  :items="addAccountActions"
+                                  align="right"
+                                  anchorButtonCssClass="btn-link btn-xs"
+                                  :isAnchorButtonOverflow="false">
+                        <i class="ti ti-plus"></i>
+                    </DropDownMenu>
+                    <button type="button"
+                            class="btn btn-link btn-xs"
+                            title="Search"
+                            @click="isSearchOpen = !isSearchOpen">
+                        <i class="ti ti-search"></i>
+                    </button>
+                    <button v-if="blockProperties.showSettingsPanel"
+                            type="button"
+                            class="btn btn-link btn-xs"
+                            title="Options"
+                            @click="isConfigOpen = !isConfigOpen">
+                        <i class="ti ti-dots-vertical"></i>
+                    </button>
+                </div>
+            </template>
+
+            <TransitionVerticalCollapse>
+                <div v-if="isConfigOpen" class="account-tree-view-config">
+                    <Toggle :modelValue="hideInactiveAccounts" label="Show" trueText="Active" falseText="All" btnSize="xs" @update:modelValue="onActiveFilterChanged" />
+                    <RockButton v-if="orderTopLevelUrl"
+                                :btnType="BtnType.Default"
+                                :btnSize="BtnSize.ExtraSmall"
+                                class="text-wrap"
+                                @click="onOrderTopLevel">
+                        Order Top-Level Accounts
+                    </RockButton>
+                </div>
+            </TransitionVerticalCollapse>
+
+            <TransitionVerticalCollapse>
+                <div v-if="isSearchOpen" class="account-tree-view-search">
+                    <div class="input-group input-group-sm">
+                        <input v-model="searchTerm"
+                               type="text"
+                               class="form-control"
+                               placeholder="Quick Find"
+                               @keyup.enter="onSearch()" />
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" title="Search" @click="onSearch()">
+                                <i class="ti ti-search"></i>
+                            </button>
+                        </span>
+                    </div>
+                </div>
+            </TransitionVerticalCollapse>
+
+            <div class="account-tree-view-tree">
+                <p v-if="isSearchActive && searchItems.length === 0" class="pl-3">
+                    No accounts found
+                </p>
+                <TreeList v-else-if="isSearchActive"
+                          key="search"
+                          v-model="selectedKeys"
+                          :items="searchItems"
+                          :initiallyExpanded="searchExpandedKeys"
+                          :selectFirstByDefault="false"
+                          autoExpand
+                          @update:modelValue="onSelect" />
+                <TreeList v-else
+                          key="tree"
+                          v-model="selectedKeys"
+                          :provider="itemProvider"
+                          :initiallyExpanded="initiallyExpanded"
+                          :selectFirstByDefault="false"
+                          autoExpand
+                          @update:modelValue="onSelect"
+                          @treeitem-expanded="onExpand"
+                          @treeitem-collapsed="onCollapse" />
+            </div>
+        </Panel>
+    </div>
+</template>
+
+<style scoped>
+/* remove margin to align with order button */
+:deep(.form-group) {
+    margin-bottom: 0;
+}
+
+.account-tree-view-tree {
+    padding-top: 8px;
+    min-height: 200px;
+    overflow-x: auto;
+}
+
+/* ensure tree items overflow horizontally when necessary */
+.account-tree-view-tree > :deep(div) {
+    overflow-x: visible !important;
+}
+
+.account-tree-view :deep(.panel-header-actions > *) {
+    margin-right: 0 !important;
+}
+
+.account-tree-view-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    padding-right: var(--spacing-xsmall);
+}
+
+.account-tree-view-actions i {
+    color: var(--color-interface-strong);
+    font-size: var(--font-size-small);
+}
+
+.account-tree-view-config,
+.account-tree-view-search {
+    padding: var(--spacing-medium);
+    border-bottom: 1px solid var(--color-interface-soft);
+}
+
+.account-tree-view-config {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--spacing-xsmall);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import TreeList from "@Obsidian/Controls/treeList.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { debounceAsync } from "@Obsidian/Utility/util";
+    import { ICancellationToken } from "@Obsidian/Utility/cancellation";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock, useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { FinancialAccountTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
+    import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { AccountTreeViewBag } from "@Obsidian/ViewModels/Blocks/Finance/AccountTreeView/accountTreeViewBag";
+    import { AccountTreeViewOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/AccountTreeView/accountTreeViewOptionsBag";
+    import { AccountTreeViewBlockAttributesBag } from "@Obsidian/ViewModels/Blocks/Finance/AccountTreeView/accountTreeViewBlockAttributesBag";
+    import { NavigationUrlKey } from "./AccountTreeView/types.partial";
+
+    // #region Values
+
+    const box = useConfigurationValues<CustomBlockBox<AccountTreeViewBag, AccountTreeViewOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const securityGrantToken = useSecurityGrantToken();
+    const reloadBlock = useReloadBlock();
+
+    const bag: AccountTreeViewBag = box.bag ?? {
+        hideInactiveAccounts: true,
+        isAddAccountVisible: false,
+        isAddRootEnabled: false,
+        isAddChildEnabled: false
+    };
+    const blockProperties: AccountTreeViewBlockAttributesBag = box.options?.blockProperties ?? {
+        showSettingsPanel: false,
+        usePublicName: false
+    };
+
+    const errorMessage = ref(bag.errorMessage ?? "");
+
+    const orderTopLevelUrl = box.navigationUrls?.[NavigationUrlKey.OrderTopLevelPage] ?? "";
+
+    const isConfigOpen = ref(false);
+    const isSearchOpen = ref(false);
+
+    const searchTerm = ref("");
+
+    const isSearchActive = ref(false);
+    const searchItems = ref<TreeItemBag[]>([]);
+    const searchExpandedKeys = ref<string[]>([]);
+
+    const hideInactiveAccounts = ref(bag.hideInactiveAccounts === true);
+
+    const selectedKeys = ref<string[]>(bag.selectedAccountGuids ?? []);
+    const initiallyExpanded = ref<string[]>(bag.expandedAccountGuids ?? []);
+    const expandedKeys = ref<string[]>([...(bag.expandedAccountGuids ?? [])]);
+
+    const itemProvider = ref(buildProvider());
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const addAccountActions = computed<MenuAction[]>(() => [
+        {
+            title: "Add Top-Level",
+            type: "default",
+            handler: onAddRoot,
+            disabled: bag.isAddRootEnabled !== true
+        },
+        {
+            title: "Add Child To Selected",
+            type: "default",
+            handler: onAddChild,
+            disabled: selectedKeys.value.length !== 1 || bag.isAddChildEnabled !== true
+        }
+    ]);
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /** Navigates to the selected account (Detail Page, or current page when none is configured). */
+    function onSelect(values: string[]): void {
+        const selectedGuid = values.length > 0 ? values[0] : null;
+        if (!selectedGuid) {
+            return;
+        }
+
+        // Ignore re-selecting the same account, unless a search is active.
+        const currentSelected = bag.selectedAccountGuids?.[0] ?? null;
+        if (currentSelected && selectedGuid.toLowerCase() === currentSelected.toLowerCase() && !isSearchActive.value) {
+            return;
+        }
+
+        navigateToNode(selectedGuid as Guid, emptyGuid);
+    }
+
+    /** Tracks an expanded node so navigate URLs can restore the open state. */
+    function onExpand(item: TreeItemBag): void {
+        if (item.value && !expandedKeys.value.includes(item.value)) {
+            expandedKeys.value = [...expandedKeys.value, item.value];
+        }
+    }
+
+    /** Stops tracking a collapsed node. */
+    function onCollapse(item: TreeItemBag): void {
+        if (item.value) {
+            expandedKeys.value = expandedKeys.value.filter(v => v !== item.value);
+        }
+    }
+
+    /** Adds a top-level account. */
+    function onAddRoot(): void {
+        navigateToNode(emptyGuid, emptyGuid);
+    }
+
+    /** Adds a child of the selected account. */
+    function onAddChild(): void {
+        navigateToNode(emptyGuid, (selectedKeys.value[0] as Guid) ?? emptyGuid);
+    }
+
+    /** Navigates to the Order Top-Level Accounts page. */
+    function onOrderTopLevel(): void {
+        if (orderTopLevelUrl) {
+            window.location.href = orderTopLevelUrl;
+        }
+    }
+
+    /** Persists the active/inactive filter choice and refreshes the tree in place. */
+    async function onActiveFilterChanged(value: boolean): Promise<void> {
+        hideInactiveAccounts.value = value;
+        await savePreferenceAndRebuild();
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /** Configures an account item provider from the block's settings and current filters. */
+    function buildProvider(): FinancialAccountTreeItemProvider {
+        const provider = new FinancialAccountTreeItemProvider();
+        provider.includeInactive = !hideInactiveAccounts.value;
+        provider.displayPublicName = blockProperties.usePublicName === true;
+        provider.securityGrantToken = securityGrantToken.value;
+        return provider;
+    }
+
+    /** Asks the server for the node's Detail Page URL (or add-action URL) and navigates there. */
+    async function navigateToNode(nodeGuid: Guid, parentGuid: Guid): Promise<void> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<string>("GetNavigationUrl", {
+            accountGuid: nodeGuid,
+            parentGuid,
+            expandedGuids: expandedKeys.value
+        });
+
+        if (result.isSuccess && result.data) {
+            window.location.href = result.data;
+            return;
+        }
+
+        errorMessage.value = result.errorMessage
+            || "Could not determine the navigation URL for the selected account.";
+    }
+
+    /** Runs the quick-find search and shows the matches (with their ancestors) as a pruned tree. */
+    async function performSearch(cancellationToken: ICancellationToken): Promise<void> {
+        const trimmed = searchTerm.value.trim();
+        if (trimmed.length === 0) {
+            clearSearch();
+            return;
+        }
+
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<TreeItemBag[]>("GetSearchTree", {
+            searchTerm: trimmed,
+            includeInactive: !hideInactiveAccounts.value
+        });
+
+        // A newer search superseded this one; discard the stale result.
+        if (cancellationToken.isCancellationRequested) {
+            return;
+        }
+
+        if (!result.isSuccess || !result.data) {
+            clearSearch();
+            errorMessage.value = result.errorMessage || "Could not complete the search.";
+            return;
+        }
+
+        searchItems.value = result.data;
+        searchExpandedKeys.value = collectExpandableKeys(result.data);
+        isSearchActive.value = true;
+    }
+
+    /** Debounced quick-find; a newer term supersedes any in-flight search. */
+    const onSearch = debounceAsync(performSearch, { delay: 300 });
+
+    /** Clears the search and returns the body to the lazy provider tree. */
+    function clearSearch(): void {
+        isSearchActive.value = false;
+        searchItems.value = [];
+        searchExpandedKeys.value = [];
+    }
+
+    /** Collects the values of every node that has children so the pruned tree opens fully. */
+    function collectExpandableKeys(items: TreeItemBag[]): string[] {
+        const keys: string[] = [];
+
+        for (const item of items) {
+            if (item.children && item.children.length > 0) {
+                if (item.value) {
+                    keys.push(item.value);
+                }
+
+                keys.push(...collectExpandableKeys(item.children));
+            }
+        }
+
+        return keys;
+    }
+
+    /** Saves the active/inactive preference then re-fetches the tree in place with the new filter. */
+    async function savePreferenceAndRebuild(): Promise<void> {
+        const result = await invokeBlockAction("SetHideInactiveAccounts", { hideInactiveAccounts: hideInactiveAccounts.value });
+
+        if (!result.isSuccess) {
+            errorMessage.value = result.errorMessage || "Could not save the preference.";
+            return;
+        }
+
+        itemProvider.value = buildProvider();
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // Reactive quick-find: search as the term changes, debounced to avoid a request per keystroke.
+    watch(searchTerm, () => {
+        onSearch();
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    // Reload the block when its settings change so the new configuration takes effect.
+    onConfigurationValuesChanged(reloadBlock);
+
+    // #endregion Lifecycle Hooks
+</script>
