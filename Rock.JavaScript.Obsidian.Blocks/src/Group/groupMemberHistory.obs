@@ -15,32 +15,27 @@
                       :enableHoverInfo="true"
                       :showAsLink="true"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getPersonNameFilterValue"
-                      visiblePriority="xs" />
+                      :filterValue="getPersonNameFilterValue" />
 
         <DateColumn name="dateAdded"
                     title="Date Added"
                     field="dateAdded"
-                    :filter="dateValueFilter"
-                    visiblePriority="sm" />
+                    :filter="dateValueFilter" />
 
         <DateColumn name="dateRemoved"
                     title="Date Removed"
                     field="dateRemoved"
-                    :filter="dateValueFilter"
-                    visiblePriority="sm" />
+                    :filter="dateValueFilter" />
 
         <TextColumn name="lastRole"
                     title="Last Role"
                     field="lastRole"
-                    :filter="pickExistingValueFilter"
-                    visiblePriority="md" />
+                    :filter="pickExistingValueFilter" />
 
         <TextColumn name="lastStatus"
                     title="Last Status"
                     field="lastStatus"
-                    :filter="pickExistingValueFilter"
-                    visiblePriority="md" />
+                    :filter="pickExistingValueFilter" />
     </Grid>
 
     <Block v-else-if="isMemberTimelineShown" :title="memberTimelineTitle">
