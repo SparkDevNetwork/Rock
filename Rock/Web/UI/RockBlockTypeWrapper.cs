@@ -98,6 +98,23 @@ namespace Rock.Web.UI
 
                         _cachedRenderContent = sw.ToString();
                     }
+
+                    /*
+                        7/23/26 - MSE
+
+                        A block that returned no markup has chosen to render nothing at
+                        all, so mark the control as not visible. This lets the
+                        RockBlockWrapper suppress the block's Pre-HTML and Post-HTML the
+                        same way it does for a WebForms block that sets Visible = false
+                        (e.g. the Defined Type Check List block when it is empty and
+                        configured with "Hide Block When Empty").
+
+                        Reason: Hide Pre/Post-HTML when an Obsidian block renders no content.
+                    */
+                    if ( _cachedRenderContent.IsNullOrWhiteSpace() )
+                    {
+                        Visible = false;
+                    }
                 } );
 
                 Page.RegisterAsyncTask( pageTask );
