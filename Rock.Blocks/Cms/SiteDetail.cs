@@ -784,6 +784,8 @@ namespace Rock.Blocks.Cms
                 interactionChannelForSite = new InteractionChannel();
                 interactionChannelForSite.ChannelTypeMediumValueId = channelMediumWebsiteValueId;
                 interactionChannelForSite.ChannelEntityId = entity.Id;
+                // Website page views are tied to browser sessions; enable session listing in Interactions.
+                interactionChannelForSite.UsesSession = true;
                 interactionChannelService.Add( interactionChannelForSite );
             }
 
