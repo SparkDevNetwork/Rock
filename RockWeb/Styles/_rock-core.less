@@ -1429,6 +1429,22 @@ div.aspNetDisabled {
   text-align: center;
 }
 
+/*
+    7/23/26 - CLAUDE
+
+    FontAwesome's `.fa`/`.fas`/etc. classes already get `display: inline-block;
+    line-height: 1;` from FontAwesome/_core.less, which keeps their icon boxes
+    square. Tabler's `.ti` class never got the same reset here, so it inherits
+    the page's line-height and renders taller than wide wherever equal padding
+    is applied on all sides (e.g. contentsection-header-icon).
+
+    Reason: matches the reset already applied to `.ti` in styles-v2/icons/_core-icon.scss.
+*/
+.ti {
+  display:      inline-block;
+  line-height:  1;
+}
+
 
 .btn-outline-default {
   .button-outline-variant(@btn-default-color; @btn-default-bg; @btn-default-border);
