@@ -22,7 +22,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -70,6 +72,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -82,6 +85,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> containing the authored Vue source.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Source { get; set; }
 
         /// <summary>
@@ -91,6 +95,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> containing the compiled component module.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string CompiledContent { get; set; }
 
         /// <summary>
@@ -104,6 +109,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string CompiledVueVersion { get; set; }
 
         /// <summary>
