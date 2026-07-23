@@ -327,6 +327,7 @@ Because the contents of this setting will be rendered inside a menu element, it 
 
             // Get addresses
             var workLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() );
+            var previousLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
             if ( workLocationType != null && entity.GivingGroup != null )
             {
                 var location = entity.GivingGroup.GroupLocations
@@ -337,6 +338,23 @@ Because the contents of this setting will be rendered inside a menu element, it 
                 if ( location != null )
                 {
                     bag.AddressAsHtml = location.GetFullStreetAddress().ConvertCrLfToHtmlBr();
+                }
+
+                // Get Previous Addresses (stored as GroupLocation rows with Previous location type)
+                if ( previousLocationType != null )
+                {
+                    var previousLocations = entity.GivingGroup.GroupLocations
+                        .Where( gl => gl.GroupLocationTypeValueId == previousLocationType.Id && gl.Location != null )
+                        .OrderByDescending( gl => gl.CreatedDateTime )
+                        .Select( gl => gl.Location )
+                        .ToList();
+
+                    if ( previousLocations.Any() )
+                    {
+                        bag.PreviousAddress = previousLocations
+                            .Select( a => a.GetFullStreetAddress().ConvertCrLfToHtmlBr() )
+                            .JoinStrings( "<br><br>" );
+                    }
                 }
             }
 
@@ -393,6 +411,7 @@ Because the contents of this setting will be rendered inside a menu element, it 
 
             // Get addresses
             var workLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() );
+            var previousLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
             if ( workLocationType != null && entity.GivingGroup != null )
             {
                 var location = entity.GivingGroup.GroupLocations
@@ -413,17 +432,21 @@ Because the contents of this setting will be rendered inside a menu element, it 
                     };
                 }
 
-                // Get Previous Addresses
-                var previousLocations = new GroupLocationHistoricalService( RockContext )
-                    .Queryable()
-                    .Where( h => h.GroupId == entity.GivingGroup.Id && h.GroupLocationTypeValueId == workLocationType.Id )
-                    .OrderBy( h => h.EffectiveDateTime )
-                    .Select( h => h.Location )
-                    .ToList();
-
-                foreach ( var previousLocation in previousLocations )
+                // Get Previous Addresses (stored as GroupLocation rows with Previous location type)
+                if ( previousLocationType != null )
                 {
-                    bag.PreviousAddress = previousLocation.GetFullStreetAddress().ConvertCrLfToHtmlBr();
+                    var previousLocations = entity.GivingGroup.GroupLocations
+                        .Where( gl => gl.GroupLocationTypeValueId == previousLocationType.Id && gl.Location != null )
+                        .OrderByDescending( gl => gl.CreatedDateTime )
+                        .Select( gl => gl.Location )
+                        .ToList();
+
+                    if ( previousLocations.Any() )
+                    {
+                        bag.PreviousAddress = previousLocations
+                            .Select( a => a.GetFullStreetAddress().ConvertCrLfToHtmlBr() )
+                            .JoinStrings( "<br><br>" );
+                    }
                 }
             }
 
@@ -794,7 +817,11 @@ Because the contents of this setting will be rendered inside a menu element, it 
                 RockContext.SaveChanges();
 
                 // Location
+                // Previous addresses are stored as GroupLocation rows with the Previous location type
+                // (not GroupLocationHistorical) so multiple former addresses can be retained without
+                // colliding on the CurrentRowIndicator unique index. Matches WebForms Business Detail (#5836).
                 int workLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK ).Id;
+                int previousLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS ).Id;
 
                 var groupLocationService = new GroupLocationService( RockContext );
                 var workLocation = groupLocationService.Queryable( "Location" )
@@ -803,39 +830,68 @@ Because the contents of this setting will be rendered inside a menu element, it 
                         gl.GroupLocationTypeValueId == workLocationTypeId )
                     .FirstOrDefault();
 
-                if ( string.IsNullOrWhiteSpace( box.Bag.Address.Street1 ) )
+                // Address may be omitted from the bag; treat null/blank Street1 as clearing the work address.
+                var addressBag = box.Bag.Address;
+                if ( addressBag == null || string.IsNullOrWhiteSpace( addressBag.Street1 ) )
                 {
                     if ( workLocation != null )
                     {
                         if ( box.Bag.SaveFormerAddressAsPreviousAddress )
                         {
-                            GroupLocationHistorical.CreateCurrentRowFromGroupLocation( workLocation, RockDateTime.Now );
+                            // Retype the work location as Previous so it is retained as a former address.
+                            // Previous locations should not remain mailing/mapped (see GroupService.AddNewGroupAddress).
+                            workLocation.GroupLocationTypeValueId = previousLocationTypeId;
+                            workLocation.IsMailingLocation = false;
+                            workLocation.IsMappedLocation = false;
                         }
-
-                        groupLocationService.Delete( workLocation );
+                        else
+                        {
+                            groupLocationService.Delete( workLocation );
+                        }
                     }
                 }
                 else
                 {
-                    var newLocation = new LocationService( RockContext ).Get( box.Bag.Address.Street1, box.Bag.Address.Street2, box.Bag.Address.City, box.Bag.Address.State, box.Bag.Address.PostalCode, box.Bag.Address.Country );
-                    if ( workLocation == null )
-                    {
-                        workLocation = new GroupLocation();
-                        groupLocationService.Add( workLocation );
-                        workLocation.GroupId = adultFamilyMember.Group.Id;
-                        workLocation.GroupLocationTypeValueId = workLocationTypeId;
-                    }
-                    else
-                    {
-                        // Save this to history if the box is checked and the new info is different than the current one.
-                        if ( box.Bag.SaveFormerAddressAsPreviousAddress && newLocation.Id != workLocation.Location.Id )
-                        {
-                            new GroupLocationHistoricalService( RockContext ).Add( GroupLocationHistorical.CreateCurrentRowFromGroupLocation( workLocation, RockDateTime.Now ) );
-                        }
-                    }
+                    GroupLocation currentGroupLocation;
+                    var newLocation = new LocationService( RockContext ).Get(
+                        addressBag.Street1,
+                        addressBag.Street2,
+                        addressBag.City,
+                        addressBag.State,
+                        addressBag.PostalCode,
+                        addressBag.Country );
 
-                    workLocation.Location = newLocation;
-                    workLocation.IsMailingLocation = true;
+                    // LocationService.Get can return null for an unresolvable address; skip location update in that case.
+                    if ( newLocation != null )
+                    {
+                        var saveAsPrevious = box.Bag.SaveFormerAddressAsPreviousAddress
+                            && workLocation != null
+                            && workLocation.Location != null
+                            && newLocation.Id != workLocation.Location.Id;
+
+                        if ( saveAsPrevious )
+                        {
+                            // Keep the former work address as a Previous location, then create a new work row for the new address.
+                            workLocation.GroupLocationTypeValueId = previousLocationTypeId;
+                            workLocation.IsMailingLocation = false;
+                            workLocation.IsMappedLocation = false;
+                        }
+
+                        if ( workLocation == null || saveAsPrevious )
+                        {
+                            currentGroupLocation = new GroupLocation();
+                            groupLocationService.Add( currentGroupLocation );
+                            currentGroupLocation.GroupId = adultFamilyMember.Group.Id;
+                            currentGroupLocation.GroupLocationTypeValueId = workLocationTypeId;
+                        }
+                        else
+                        {
+                            currentGroupLocation = workLocation;
+                        }
+
+                        currentGroupLocation.Location = newLocation;
+                        currentGroupLocation.IsMailingLocation = true;
+                    }
                 }
 
                 RockContext.SaveChanges();
