@@ -17,7 +17,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Reflection;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -66,6 +68,13 @@ namespace Rock.Rest.Utility
 
             // Special check for navigation properties to analytics tables.
             if ( type.Namespace == "Rock.Model" && type.Name.StartsWith( "Analytics" ) )
+            {
+                return true;
+            }
+
+            // Check for types with a [Table] attribute, which indicates it is a
+            // database table and almost certainly a navigation property.
+            if ( type.GetCustomAttribute<TableAttribute>() != null )
             {
                 return true;
             }
