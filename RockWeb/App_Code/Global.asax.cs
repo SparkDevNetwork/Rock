@@ -633,22 +633,65 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_Error( object sender, EventArgs e )
         {
-            bool IsIgnoredException( HttpException ex )
+            /*
+                7/23/26 - CLAUDE
+
+                This walks the whole inner-exception chain (rather than only
+                inspecting the top-level exception) because the noise signatures
+                below are frequently wrapped, e.g. the ViewState HttpException is
+                surfaced as an HttpUnhandledException and the postback
+                ArgumentException can be wrapped as well. Every signature checked
+                here is highly specific, so matching anywhere in the chain does
+                not risk ignoring a genuine application error.
+
+                Reason: Ignore high-volume, zero-diagnostic-value bot exceptions by default.
+            */
+            bool IsIgnoredException( Exception ex )
             {
-                if ( ex != null && ex.Message.IsNotNullOrWhiteSpace() && ex.StackTrace.IsNotNullOrWhiteSpace() )
+                while ( ex != null )
                 {
+                    var message = ex.Message ?? string.Empty;
+                    var stackTrace = ex.StackTrace ?? string.Empty;
+
                     // Ignore errors from SignalR when writing a response.
-                    if ( ex.Message.Contains( "The remote host closed the connection." ) && ex.StackTrace.Contains( "Microsoft.AspNet.SignalR.Owin.ServerResponse.Write" ) )
+                    if ( message.Contains( "The remote host closed the connection." ) && stackTrace.Contains( "Microsoft.AspNet.SignalR.Owin.ServerResponse.Write" ) )
                     {
                         return true;
                     }
 
                     // Ignore errors from the browser closing the connection before
                     // we have finished sending all the data.
-                    if ( ex.Message.Contains( "The remote host closed the connection" ) && ex.StackTrace.Contains( "System.Web.HttpResponse.Flush" ) )
+                    if ( message.Contains( "The remote host closed the connection" ) && stackTrace.Contains( "System.Web.HttpResponse.Flush" ) )
                     {
                         return true;
                     }
+
+                    // Ignore invalid ViewState, which is almost always caused by
+                    // bots POSTing malformed __VIEWSTATE data to WebForms pages.
+                    // The message is required in addition to the type so that a
+                    // "Validation of viewstate MAC failed" ViewStateException is
+                    // NOT swallowed here: that one signals a real web farm
+                    // machineKey misconfiguration and should still be logged.
+                    if ( ex is System.Web.UI.ViewStateException && message.Contains( "Invalid viewstate" ) )
+                    {
+                        return true;
+                    }
+
+                    // The HttpException that wraps a ViewState MAC or
+                    // deserialization failure from the same bot traffic.
+                    if ( message.Contains( "The state information is invalid for this page" ) )
+                    {
+                        return true;
+                    }
+
+                    // The ArgumentException raised when WebForms event validation
+                    // rejects a postback, also overwhelmingly bot-driven.
+                    if ( ex is ArgumentException && message.Contains( "Invalid postback or callback argument" ) )
+                    {
+                        return true;
+                    }
+
+                    ex = ex.InnerException;
                 }
 
                 return false;
@@ -674,19 +717,22 @@ namespace RockWeb
                                 context.Response.StatusCode = 404;
                                 return;
                             }
+                        }
 
-                            if ( IsIgnoredException( httpEx ) )
-                            {
-                                context.ClearError();
-                                context.Response.StatusCode = 200;
-                                return;
-                            }
+                        // Evaluate the ignore list against the raw exception (not
+                        // just HttpExceptions) so bot signatures such as the
+                        // postback ArgumentException are covered as well.
+                        if ( IsIgnoredException( ex ) )
+                        {
+                            context.ClearError();
+                            context.Response.StatusCode = 200;
+                            return;
                         }
                     }
                     catch
                     {
                         // Check again, but don't access the context.
-                        if ( httpEx != null && IsIgnoredException( httpEx ) )
+                        if ( IsIgnoredException( ex ) )
                         {
                             return;
                         }
