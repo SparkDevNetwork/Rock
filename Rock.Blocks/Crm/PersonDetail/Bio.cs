@@ -187,6 +187,7 @@ namespace Rock.Blocks.Crm.PersonDetail
 
     #endregion Block Attributes
 
+    [InitialBlockHeight( 0 )]
     [Rock.Web.UI.ContextAware( typeof( Person ) )]
     [Rock.SystemGuid.EntityTypeGuid( "EA0CF743-D5C9-4B3B-9F21-5766F2F4E678" )]
     // was [Rock.SystemGuid.BlockTypeGuid( "DAAD0340-5CAB-4518-8314-BC39433C8EA5" )]

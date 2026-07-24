@@ -4,11 +4,9 @@
          ref="containerRef"
          class="card card-profile card-profile-bio card-profile-bio-condensed"
          :class="{ deceased: bag.isDeceased }">
-        <div class="profile-image profile-image-sm">
-            <div class="fluid-crop">
-                <img :src="bag.photoUrl ?? ''" alt="" class="img-profile">
-            </div>
-        </div>
+        <PhotoLightbox :photoUrl="bag.photoUrl ?? ''"
+                       :personName="bag.personName ?? ''"
+                       isCondensed />
 
         <div class="profile-data">
             <div v-if="bag.accountProtectionProfileText"
@@ -57,6 +55,7 @@
     import { BioSummaryBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/BioSummary/bioSummaryBag";
     import { BioSummaryOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/BioSummary/bioSummaryOptionsBag";
     import { FamilyMemberBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/BioSummary/familyMemberBag";
+    import PhotoLightbox from "./Bio/photoLightbox.partial.obs";
 
     const config = useConfigurationValues<CustomBlockBox<BioSummaryBag, BioSummaryOptionsBag>>();
 

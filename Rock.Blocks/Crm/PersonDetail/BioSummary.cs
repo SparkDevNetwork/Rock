@@ -58,6 +58,7 @@ namespace Rock.Blocks.Crm.PersonDetail
 
     #endregion Block Attributes
 
+    [InitialBlockHeight( 0 )]
     [Rock.Web.UI.ContextAware( typeof( Person ) )]
     [Rock.SystemGuid.EntityTypeGuid( "17CA6FB3-E714-46CF-9EBF-5BD49A8DDFE8" )]
     // was [Rock.SystemGuid.BlockTypeGuid( "D3946070-E288-4FD7-8B57-B59BD882C89C" )]
@@ -134,7 +135,7 @@ namespace Rock.Blocks.Crm.PersonDetail
 
             box.Bag = new BioSummaryBag
             {
-                PhotoUrl = Person.GetPersonPhotoUrl( person, 400 ) + AvatarStyleQueryString,
+                PhotoUrl = GetPhotoUrl( person ),
                 PersonName = GetPersonName( person ),
                 IsBusiness = person.IsBusiness(),
                 IsDeceased = person.IsDeceased,
@@ -268,6 +269,20 @@ namespace Rock.Blocks.Crm.PersonDetail
         }
 
         /// <summary>
+        /// Gets the URL of the person's profile photo, resolved for the
+        /// current application path and including the standard avatar style
+        /// parameters used on person profile pages.
+        /// </summary>
+        /// <param name="person">The person being viewed.</param>
+        /// <returns>The photo URL including the avatar styling parameters.</returns>
+        private string GetPhotoUrl( Person person )
+        {
+            var photoUrl = RequestContext.ResolveRockUrl( Person.GetPersonPhotoUrl( person, 400 ) );
+
+            return $"{photoUrl}{AvatarStyleQueryString}";
+        }
+
+        /// <summary>
         /// Gets the person's display name. A business record displays its
         /// business name, otherwise the nick name and last name are used with
         /// a formal title prefix when the person's title is marked formal.
@@ -340,14 +355,14 @@ namespace Rock.Blocks.Crm.PersonDetail
                 {
                     PersonIdKey = groupMember.Person.IdKey,
                     FullName = groupMember.Person.FullName,
-                    PhotoUrl = Person.GetPersonPhotoUrl(
+                    PhotoUrl = RequestContext.ResolveRockUrl( Person.GetPersonPhotoUrl(
                         groupMember.Person.Initials,
                         groupMember.Person.PhotoId,
                         groupMember.Person.Age,
                         groupMember.Person.Gender,
                         groupMember.Person.RecordTypeValueId,
                         groupMember.Person.AgeClassification,
-                        400 ) + AvatarStyleQueryString
+                        400 ) ) + AvatarStyleQueryString
                 } )
                 .ToList();
         }
