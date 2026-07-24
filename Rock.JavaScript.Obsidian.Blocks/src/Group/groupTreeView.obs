@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="group-tree-view">
+    <div class="group-tree-view rock-tree-view">
         <NotificationBox v-if="errorMessage" alertType="danger" class="mb-0">{{ errorMessage }}</NotificationBox>
         <Panel :title="panelTitle || 'Groups'"
                :isDrawerOpen="isDrawerOpen"
@@ -12,20 +12,20 @@
                 <DropDownMenu v-if="isAddGroupVisible"
                               :items="addGroupActions"
                               align="right"
-                              anchorButtonCssClass="btn-link btn-xs"
+                              anchorButtonCssClass="btn-panel-action btn-add"
                               :isAnchorButtonOverflow="false">
                     <i class="ti ti-plus"></i>
                 </DropDownMenu>
                 <button v-if="isSearchVisible"
                         type="button"
-                        class="btn btn-link btn-xs"
+                        class="btn btn-panel-action"
                         title="Search"
                         @click="onToggleSearch">
                     <i class="ti ti-search"></i>
                 </button>
                 <button v-if="showSettingsPanel"
                         type="button"
-                        class="btn btn-link btn-xs"
+                        class="btn btn-panel-action"
                         title="Options"
                         @click="onToggleConfig">
                     <i class="ti ti-dots-vertical"></i>
@@ -80,7 +80,7 @@
                 <span class="d-none"></span>
             </template>
 
-            <div class="group-tree-view-tree">
+            <div class="rock-tree-view-tree">
                 <TreeList v-model="selectedKeys"
                           :provider="itemProvider"
                           :initiallyExpanded="initiallyExpanded"
@@ -96,63 +96,17 @@
 </template>
 
 <style scoped>
-/* The panel body is flush. Keep a small gap above the tree, plus a min-height
-   so the tree holds a stable area instead of collapsing to its node count. */
-.group-tree-view-tree {
-    padding-top: 8px;
-    min-height: 200px;
-    overflow-x: auto;
-}
-
-/* The TreeList control clips horizontal overflow and caps its width at 100%, so deeply nested or
-   long-named groups get cut off. Let the tree size to its content (still filling the panel when
-   narrow) so the wrapper shows a horizontal scrollbar when needed. */
-.group-tree-view-tree > :deep(div) {
-    overflow-x: visible !important;
-    max-width: none !important;
-    width: max-content;
-    min-width: 100%;
-}
-
-/* Size, space, and color the header action icons to match the classic tree view control. */
-.group-tree-view :deep(.panel-header-actions > *) {
-    margin-right: 0 !important;
-}
-
-.group-tree-view :deep(.panel-header-actions) {
-    padding-right: 6px !important;
-}
-
-.group-tree-view :deep(.panel-header-actions .btn) {
-    padding-left: 6px !important;
-    padding-right: 6px !important;
-}
-
-.group-tree-view :deep(.panel-header-actions .btn),
-.group-tree-view :deep(.panel-header-actions .btn i) {
-    color: var(--color-interface-strong) !important;
-}
-
-.group-tree-view :deep(.panel-header-actions .btn i) {
-    font-size: 14px !important;
-}
-
 /* Lay out the active drawer content (search or options) in a column. */
 .group-tree-view-drawer {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: var(--spacing-small);
 }
 
 .group-tree-view-config {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-}
-
-/* Keep the Add Group menu items on a single line (e.g. "Add Child To Selected" should not wrap). */
-.group-tree-view :deep(.dropdown-menu button) {
-    white-space: nowrap;
+    gap: var(--spacing-xsmall);
 }
 </style>
 

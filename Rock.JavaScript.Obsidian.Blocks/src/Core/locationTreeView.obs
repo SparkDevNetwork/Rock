@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="location-tree-view">
+    <div class="location-tree-view rock-tree-view">
         <NotificationBox v-if="errorMessage" alertType="danger" class="mb-0">{{ errorMessage }}</NotificationBox>
         <Panel :title="panelTitle || 'Locations'"
                type="block"
@@ -11,13 +11,13 @@
                 <DropDownMenu v-if="isAddLocationVisible"
                               :items="addLocationActions"
                               align="right"
-                              anchorButtonCssClass="btn-link btn-xs"
+                              anchorButtonCssClass="btn-panel-action btn-add"
                               :isAnchorButtonOverflow="false">
                     <i class="ti ti-plus"></i>
                 </DropDownMenu>
             </template>
 
-            <div class="location-tree-view-tree">
+            <div class="rock-tree-view-tree">
                 <TreeList v-model="selectedKeys"
                           :provider="itemProvider"
                           :initiallyExpanded="initiallyExpanded"
@@ -30,54 +30,6 @@
         </Panel>
     </div>
 </template>
-
-<style scoped>
-/* The panel body is flush. Keep a small gap above the tree, plus a min-height
-   so the tree holds a stable area instead of collapsing to its node count. */
-.location-tree-view-tree {
-    padding-top: 8px;
-    min-height: 200px;
-    overflow-x: auto;
-}
-
-/* The TreeList control clips horizontal overflow and caps its width at 100%, so deeply nested or
-   long-named locations get cut off. Let the tree size to its content (still filling the panel when
-   narrow) so the wrapper shows a horizontal scrollbar when needed. */
-.location-tree-view-tree > :deep(div) {
-    overflow-x: visible !important;
-    max-width: none !important;
-    width: max-content;
-    min-width: 100%;
-}
-
-/* Size, space, and color the header action icons to match the classic tree view control. */
-.location-tree-view :deep(.panel-header-actions > *) {
-    margin-right: 0 !important;
-}
-
-.location-tree-view :deep(.panel-header-actions) {
-    padding-right: 6px !important;
-}
-
-.location-tree-view :deep(.panel-header-actions .btn) {
-    padding-left: 6px !important;
-    padding-right: 6px !important;
-}
-
-.location-tree-view :deep(.panel-header-actions .btn),
-.location-tree-view :deep(.panel-header-actions .btn i) {
-    color: var(--color-interface-strong) !important;
-}
-
-.location-tree-view :deep(.panel-header-actions .btn i) {
-    font-size: 14px !important;
-}
-
-/* Keep the Add Location menu items on a single line (e.g. "Add Child To Selected" should not wrap). */
-.location-tree-view :deep(.dropdown-menu button) {
-    white-space: nowrap;
-}
-</style>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";

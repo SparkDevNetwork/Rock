@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="account-tree-view">
+    <div class="account-tree-view rock-tree-view">
         <NotificationBox v-if="errorMessage" alertType="danger" class="mb-0">{{ errorMessage }}</NotificationBox>
         <Panel :title="blockProperties.panelTitle || 'Accounts'"
                type="block"
@@ -8,28 +8,26 @@
                :isCollapsible="false"
                :isInitiallyCollapsed="false">
             <template #headerActions>
-                <div class="account-tree-view-actions">
-                    <DropDownMenu v-if="bag.isAddAccountVisible"
-                                  :items="addAccountActions"
-                                  align="right"
-                                  anchorButtonCssClass="btn-link btn-xs"
-                                  :isAnchorButtonOverflow="false">
-                        <i class="ti ti-plus"></i>
-                    </DropDownMenu>
-                    <button type="button"
-                            class="btn btn-link btn-xs"
-                            title="Search"
-                            @click="isSearchOpen = !isSearchOpen">
-                        <i class="ti ti-search"></i>
-                    </button>
-                    <button v-if="blockProperties.showSettingsPanel"
-                            type="button"
-                            class="btn btn-link btn-xs"
-                            title="Options"
-                            @click="isConfigOpen = !isConfigOpen">
-                        <i class="ti ti-dots-vertical"></i>
-                    </button>
-                </div>
+                <DropDownMenu v-if="bag.isAddAccountVisible"
+                              :items="addAccountActions"
+                              align="right"
+                              anchorButtonCssClass="btn-panel-action btn-add"
+                              :isAnchorButtonOverflow="false">
+                    <i class="ti ti-plus"></i>
+                </DropDownMenu>
+                <button type="button"
+                        class="btn btn-panel-action"
+                        title="Search"
+                        @click="isSearchOpen = !isSearchOpen">
+                    <i class="ti ti-search"></i>
+                </button>
+                <button v-if="blockProperties.showSettingsPanel"
+                        type="button"
+                        class="btn btn-panel-action"
+                        title="Options"
+                        @click="isConfigOpen = !isConfigOpen">
+                    <i class="ti ti-dots-vertical"></i>
+                </button>
             </template>
 
             <TransitionVerticalCollapse>
@@ -62,7 +60,7 @@
                 </div>
             </TransitionVerticalCollapse>
 
-            <div class="account-tree-view-tree">
+            <div class="rock-tree-view-tree">
                 <p v-if="isSearchActive && searchItems.length === 0" class="pl-3">
                     No accounts found
                 </p>
@@ -93,33 +91,6 @@
 /* remove margin to align with order button */
 :deep(.form-group) {
     margin-bottom: 0;
-}
-
-.account-tree-view-tree {
-    padding-top: 8px;
-    min-height: 200px;
-    overflow-x: auto;
-}
-
-/* ensure tree items overflow horizontally when necessary */
-.account-tree-view-tree > :deep(div) {
-    overflow-x: visible !important;
-}
-
-.account-tree-view :deep(.panel-header-actions > *) {
-    margin-right: 0 !important;
-}
-
-.account-tree-view-actions {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xsmall);
-    padding-right: var(--spacing-xsmall);
-}
-
-.account-tree-view-actions i {
-    color: var(--color-interface-strong);
-    font-size: var(--font-size-small);
 }
 
 .account-tree-view-config,
