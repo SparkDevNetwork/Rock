@@ -10,7 +10,7 @@
 
 .ant-select {
   color: var(--color-interface-strongest);
-  font-size: var(--font-size-small);
+  // font-size: var(--font-size-small);
 
   .ant-select-selector {
 
@@ -187,7 +187,7 @@
   padding: 0;
 
   .ant-select-selector {
-    height:           34px !important;
+    height:           100%;
     padding:          var(--spacing-xsmall) var(--spacing-medium) !important;
     border-radius:    var(--rounded-small) !important;
     margin:           0 !important;
@@ -272,14 +272,14 @@
 .ant-select-item-empty {
   padding: var(--spacing-tiny) var(--spacing-small);
   color: var(--color-interface-stronger);
-  font-size: var(--font-size-small);
+  font-size: var(--font-size-regular);
   color: var(--color-interface-stronger);
 }
 
 .ant-select-item {
   padding: var(--spacing-tiny) var(--spacing-small);
   color: var(--color-interface-stronger);
-  font-size: var(--font-size-small);
+  font-size: var(--font-size-regular);
 }
 
 .ant-select-item-group {
