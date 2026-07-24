@@ -34,7 +34,11 @@ export type GroupTreeViewBag = {
     /** Gets or sets the campus Guid used to filter the tree, when a campus filter is active. */
     campusGuid?: Guid | null;
 
-    /** Gets or sets the counts mode: 0 = None, 1 = Child Groups, 2 = Group Members. */
+    /**
+     * Gets or sets the effective counts mode applied to the tree:
+     * 0 = None, 1 = Child Groups, 2 = Group Members. This is the person's
+     * saved preference when one exists, otherwise the block's Initial Count Setting.
+     */
     countsType: number;
 
     /** Gets or sets an error message to display in place of the tree. */
@@ -42,6 +46,13 @@ export type GroupTreeViewBag = {
 
     /** Gets or sets the groups to expand on load. */
     expandedGroupGuids?: Guid[] | null;
+
+    /**
+     * Gets or sets whether the person has a saved counts-type preference for this
+     * block. When false, the Show Count For control should appear empty so the
+     * Initial Count Setting block attribute is in effect.
+     */
+    hasCountsTypePreference: boolean;
 
     /**
      * Gets or sets whether inactive groups are hidden, reflecting the person's saved preference

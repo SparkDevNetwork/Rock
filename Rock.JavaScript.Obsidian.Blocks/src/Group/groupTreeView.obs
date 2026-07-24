@@ -111,7 +111,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, ref, watch } from "vue";
+    import { computed, nextTick, onMounted, ref, watch } from "vue";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
@@ -152,6 +152,7 @@
         hideInactiveGroups: true,
         limitToPublic: false,
         countsType: 0,
+        hasCountsTypePreference: false,
         includeNoCampus: false,
         isAddGroupVisible: false,
         isAddRootEnabled: false,
@@ -161,7 +162,8 @@
         showSettingsPanel: false,
         displayInactiveCampuses: true,
         limitToSecurityRoleGroups: false,
-        disableAutoSelectFirstGroup: false
+        disableAutoSelectFirstGroup: false,
+        initialCountSetting: 0
     };
 
     // Auto-select the first group by navigating immediately when the server supplied a URL.
@@ -191,23 +193,48 @@
     // Preference-backed filter state. Changes save to the server then re-fetch the tree in place.
     const hideInactiveGroups = ref(bag.hideInactiveGroups === true);
     const limitToPublic = ref(bag.limitToPublic === true);
-    const countsType = ref(bag.countsType ? String(bag.countsType) : "");
+    /*
+        Blank Show Count For = no person preference = use Initial Count Setting.
+        Only show a selected value when the person has actually saved a preference.
+    */
+    const countsType = ref(bag.hasCountsTypePreference ? String(bag.countsType ?? 0) : "");
     const campusGuid = ref(bag.campusGuid ?? "");
     const includeNoCampus = ref(bag.includeNoCampus === true);
+    const initialCountSetting = blockProperties.initialCountSetting ?? 0;
+
+    // Tracks the last preference we persisted (null = cleared / use Initial Count Setting).
+    let lastSavedCountsPreference: number | null = bag.hasCountsTypePreference
+        ? (bag.countsType ?? 0)
+        : null;
 
     // Skip the initial watch fires that re-save the values the server just sent.
+    // Must stay true until after mount + nextTick so DropDownList binding cannot
+    // overwrite Initial Count Setting by saving a blank preference too early.
     let suppressPreferenceWatch = true;
 
     const selectedKeys = ref<string[]>(bag.selectedGroupGuids ?? []);
     const initiallyExpanded = ref<string[]>(bag.expandedGroupGuids ?? []);
     const expandedKeys = ref<string[]>([...(bag.expandedGroupGuids ?? [])]);
 
-    const showChildCount = computed(() => (Number(countsType.value) || 0) !== 0);
+    /**
+     * The counts mode actually applied to the tree: the dropdown value when set,
+     * otherwise the Initial Count Setting block attribute.
+     */
+    const effectiveCountsType = computed((): number => {
+        if (countsType.value === "" || countsType.value == null) {
+            return initialCountSetting;
+        }
+
+        return Number(countsType.value) || 0;
+    });
+
+    const showChildCount = computed(() => effectiveCountsType.value !== 0);
     const itemProvider = ref(buildProvider());
 
-    // Only the real count modes are listed; "None" is the empty (blank) value, reachable via
-    // the DropDownList's clear (X) affordance that showBlankItem enables.
+    // Blank (showBlankItem) = clear preference / use Initial Count Setting.
+    // Explicit None / Child Groups / Group Members are saved as preferences.
     const countsTypeItems: ListItemBag[] = [
+        { value: "0", text: "None" },
         { value: "1", text: "Child Groups" },
         { value: "2", text: "Group Members" }
     ];
@@ -340,7 +367,7 @@
         provider.limitToPublic = limitToPublic.value;
         provider.campusGuid = campusGuid.value ? (campusGuid.value as Guid) : null;
         provider.includeNoCampus = includeNoCampus.value;
-        provider.countsType = Number(countsType.value) || 0;
+        provider.countsType = effectiveCountsType.value;
         provider.securityGrantToken = securityGrantToken.value;
         return provider;
     }
@@ -406,7 +433,26 @@
             return;
         }
 
-        savePreferenceAndRebuild("SetCountsType", { countsType: Number(value) || 0 });
+        // Blank = clear preference so Initial Count Setting applies again.
+        if (value === "" || value == null) {
+            if (lastSavedCountsPreference === null) {
+                return;
+            }
+
+            lastSavedCountsPreference = null;
+            savePreferenceAndRebuild("SetCountsType", { countsType: null });
+            return;
+        }
+
+        const nextCountsType = Number(value) || 0;
+
+        // Ignore no-ops during bind so we do not rewrite the same preference.
+        if (lastSavedCountsPreference === nextCountsType) {
+            return;
+        }
+
+        lastSavedCountsPreference = nextCountsType;
+        savePreferenceAndRebuild("SetCountsType", { countsType: nextCountsType });
     });
 
     watch(campusGuid, (value) => {
@@ -431,9 +477,10 @@
 
     // #region Lifecycle Hooks
 
-    // Allow preference watches after the initial binding settles.
-    queueMicrotask(() => {
-        suppressPreferenceWatch = false;
+    onMounted(() => {
+        nextTick(() => {
+            suppressPreferenceWatch = false;
+        });
     });
 
     // Reload the block when its settings change so the new configuration takes effect.

@@ -224,7 +224,8 @@ namespace Rock.Blocks.Group
                     LimitToSecurityRoleGroups = GetAttributeValue( AttributeKey.LimitToSecurityRoleGroups ).AsBoolean(),
                     ShowSettingsPanel = GetAttributeValue( AttributeKey.ShowSettingsPanel ).AsBooleanOrNull() ?? false,
                     DisplayInactiveCampuses = GetAttributeValue( AttributeKey.DisplayInactiveCampuses ).AsBoolean(),
-                    DisableAutoSelectFirstGroup = GetAttributeValue( AttributeKey.DisableAutoSelectFirstGroup ).AsBoolean()
+                    DisableAutoSelectFirstGroup = GetAttributeValue( AttributeKey.DisableAutoSelectFirstGroup ).AsBoolean(),
+                    InitialCountSetting = GetAttributeValue( AttributeKey.InitialCountSetting ).AsInteger()
                 }
             };
         }
@@ -279,11 +280,11 @@ namespace Rock.Blocks.Group
                 hideInactiveGroups = true;
             }
 
-            var countsTypeText = preferences.GetValue( PersonPreferenceKey.CountsType );
-            if ( countsTypeText.IsNullOrWhiteSpace() )
-            {
-                countsTypeText = GetAttributeValue( AttributeKey.InitialCountSetting );
-            }
+            var countsTypePreferenceText = preferences.GetValue( PersonPreferenceKey.CountsType );
+            var hasCountsTypePreference = countsTypePreferenceText.IsNotNullOrWhiteSpace();
+            var countsTypeText = hasCountsTypePreference
+                ? countsTypePreferenceText
+                : GetAttributeValue( AttributeKey.InitialCountSetting );
 
             var countsType = showSettingsPanel ? countsTypeText.AsInteger() : 0;
 
@@ -321,6 +322,7 @@ namespace Rock.Blocks.Group
                 HideInactiveGroups = hideInactiveGroups ?? true,
                 LimitToPublic = limitToPublic,
                 CountsType = countsType,
+                HasCountsTypePreference = showSettingsPanel && hasCountsTypePreference,
                 CampusGuid = campusGuid,
                 IncludeNoCampus = includeNoCampus
             };
@@ -724,15 +726,20 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
-        /// Saves the person's counts-type preference.
+        /// Saves or clears the person's counts-type preference.
         /// </summary>
-        /// <param name="countsType">0 = None, 1 = Child Groups, 2 = Group Members.</param>
+        /// <param name="countsType">
+        /// 0 = None, 1 = Child Groups, 2 = Group Members. Pass <c>null</c> to clear
+        /// the preference so the Initial Count Setting block attribute applies again.
+        /// </param>
         /// <returns>An OK result.</returns>
         [BlockAction]
-        public BlockActionResult SetCountsType( int countsType )
+        public BlockActionResult SetCountsType( int? countsType )
         {
             var preferences = GetBlockPersonPreferences();
-            preferences.SetValue( PersonPreferenceKey.CountsType, countsType.ToString() );
+            preferences.SetValue(
+                PersonPreferenceKey.CountsType,
+                countsType.HasValue ? countsType.Value.ToString() : string.Empty );
             preferences.Save();
 
             return ActionOk();

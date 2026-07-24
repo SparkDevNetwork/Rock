@@ -28,27 +28,54 @@ export type PublicScheduledTransactionListBag = {
     /** Gets or sets the Add button label, formatted as "Create New {Transaction Label}". */
     addButtonText?: string | null;
 
-    /** Gets or sets the block-header supporting text displayed below the title. */
+    /**
+     * Gets or sets the block-header supporting text displayed below the
+     * title when ShowBlockHeader is enabled.
+     */
     blockHeaderDescription?: string | null;
 
-    /** Gets or sets the CSS class of the icon displayed in the block-header tile. */
+    /**
+     * Gets or sets the CSS class of the icon displayed in the block-header
+     * tile when ShowBlockHeader is enabled (e.g. "ti ti-cash").
+     */
     blockHeaderIconCssClass?: string | null;
 
-    /** Gets or sets the block-header title displayed above the list. */
+    /**
+     * Gets or sets the block-header title displayed above the list when
+     * ShowBlockHeader is enabled. Default "Manage Giving Profiles".
+     */
     blockHeaderTitle?: string | null;
 
-    /** Gets or sets the empty-state message, already formatted using the block's Transaction Label setting. */
+    /**
+     * Gets or sets the empty-state message, already formatted using the
+     * block's Transaction Label setting (e.g. "No gifts currently exist.").
+     */
     emptyMessage?: string | null;
 
-    /** Gets or sets a value indicating whether to surface the empty-state message. */
+    /**
+     * Gets or sets a value indicating whether to surface the empty-state
+     * message. False for anonymous viewers (those see a silent block,
+     * matching the original WebForms behavior).
+     */
     isEmpty: boolean;
 
-    /** Gets or sets the list of scheduled-transaction items the current person owns. */
+    /**
+     * Gets or sets the list of scheduled-transaction items the current
+     * person owns (or is on the giving-group / business owner side of).
+     * Empty when the viewer is anonymous or has no active schedules.
+     */
     items?: ScheduledTransactionItemBag[] | null;
 
-    /** Gets or sets a value indicating whether the Add button should appear. */
+    /**
+     * Gets or sets a value indicating whether the Add button should appear.
+     * True only when the New Scheduled Transaction Page attribute is set.
+     */
     showAddButton: boolean;
 
-    /** Gets or sets a value indicating whether to render the block-header section. */
+    /**
+     * Gets or sets a value indicating whether to render the block-header
+     * section (icon + title + description) above the list of scheduled
+     * transactions. Driven by the Show Block Header attribute.
+     */
     showBlockHeader: boolean;
 };

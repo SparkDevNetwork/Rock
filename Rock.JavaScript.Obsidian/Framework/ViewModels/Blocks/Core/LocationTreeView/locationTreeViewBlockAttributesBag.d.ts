@@ -21,7 +21,6 @@
 // </copyright>
 //
 
-
 /** The Location Tree View block's configured settings. */
 export type LocationTreeViewBlockAttributesBag = {
     /** Gets or sets the optional title for the panel that wraps the tree. */
