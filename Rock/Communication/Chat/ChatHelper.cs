@@ -2254,6 +2254,7 @@ namespace Rock.Communication.Chat
                         var membersToCreate = new List<ChatChannelMember>();
                         var membersToUpdate = new Dictionary<ChatChannelMember, ChatChannelMember>();
                         var membersToDelete = new List<string>();
+                        var membersToEnforcePushPreferences = new List<ChatChannelMember>();
 
                         foreach ( var chatChannelMember in command.MembersToCreateOrUpdate )
                         {
@@ -2272,8 +2273,12 @@ namespace Rock.Communication.Chat
                                 }
                                 else
                                 {
-                                    // Add them to the results as an already up-to-date member.
+                                    // Add them to the results as an already up-to-date member. The external chat
+                                    // system's member queries don't return push notification preferences, so we
+                                    // can't detect drift for these otherwise-unchanged members; always re-enforce
+                                    // Rock's push notification mode for them below.
                                     AddMemberToResult( existingMember.Key, ChatSyncType.Skip );
+                                    membersToEnforcePushPreferences.Add( chatChannelMember );
                                 }
                             }
                             else
@@ -2340,6 +2345,18 @@ namespace Rock.Communication.Chat
                             if ( updatedResult?.HasException == true )
                             {
                                 crudExceptions.Add( updatedResult.Exception );
+                            }
+                        }
+
+                        if ( membersToEnforcePushPreferences.Any() )
+                        {
+                            // Created and updated members already had their push notification preferences set by the
+                            // create and update calls above.
+                            var pushPreferenceResult = await ChatProvider.UpdateChatChannelMemberPushPreferencesAsync( membersToEnforcePushPreferences );
+
+                            if ( pushPreferenceResult?.HasException == true )
+                            {
+                                crudExceptions.Add( pushPreferenceResult.Exception );
                             }
                         }
 

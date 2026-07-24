@@ -2177,7 +2177,10 @@ namespace Rock.Communication.Chat
             // --------------------------------------------------------
             // 4) Update member push preferences. Always do this no matter what.
             // We are not tracking the result of this operation, just the exceptions.
-            var pushPreferenceResult = await UpdateChatChannelMemberPushPreferencesAsync( chatChannelMembers.Select( kvp => kvp.Value ).ToList() );
+            // Note that each dictionary key holds the latest (Rock-side) member instance; the value holds the previous
+            // (external chat system) instance, whose push notification mode is never populated and would incorrectly
+            // reset every member to the default mode if sent here.
+            var pushPreferenceResult = await UpdateChatChannelMemberPushPreferencesAsync( chatChannelMembers.Select( kvp => kvp.Key ).ToList() );
             if ( pushPreferenceResult?.HasException == true )
             {
                 exceptions.Add( pushPreferenceResult.Exception );
