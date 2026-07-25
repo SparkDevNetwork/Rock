@@ -1,0 +1,14 @@
+{
+  "solution": {
+    "path": "Rock.sln",
+    "projects": [
+      "Rock\\Rock.csproj",
+      "Rock.Blocks\\Rock.Blocks.csproj",
+      "Rock.Common\\Rock.Common.csproj",
+      "Rock.Enums\\Rock.Enums.csproj",
+      "Rock.Lava.Shared\\Rock.Lava.Shared.csproj",
+      "Rock.Rest\\Rock.Rest.csproj",
+      "Rock.ViewModels\\Rock.ViewModels.csproj"
+    ]
+  }
+}

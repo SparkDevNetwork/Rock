@@ -36,6 +36,13 @@
     <DefineConstants Condition="'$(TargetFramework)' == '' or '$(TargetFramework)' == 'net472'">$(DefineConstants);REVIEW_WEBFORMS</DefineConstants>
   </PropertyGroup>
 
+  <!-- Package output settings. -->
+  <PropertyGroup>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts\</PackageOutputPath>
+    <!-- Prevent the grpc native libraries from being included in the NuGet package. -->
+    <Grpc_SkipNativeLibsCopy>true</Grpc_SkipNativeLibsCopy>
+  </PropertyGroup>
+
   <!-- CopyToRockWeb task and defaults -->
   <UsingTask
       TaskName="Rock.Build.Tasks.CopyToRockWeb"

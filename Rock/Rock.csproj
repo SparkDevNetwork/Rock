@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
+    <PackageId>RockRMS.Rock</PackageId>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <RockWebPath>..\RockWeb</RockWebPath>
     <CopyToRockWeb>True</CopyToRockWeb>
@@ -95,12 +96,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj" />
-    <ProjectReference Include="..\Rock.DownhillCss\Rock.DownhillCss.csproj" />
+    <ProjectReference Include="..\Rock.DownhillCss\Rock.DownhillCss.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj" />
-    <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj" />
+    <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj" />
-    <ProjectReference Include="..\Rock.Lava\Rock.Lava.csproj" />
-    <ProjectReference Include="..\Rock.Version\Rock.Version.csproj" />
+    <ProjectReference Include="..\Rock.Lava\Rock.Lava.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Rock.Version\Rock.Version.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.csproj" />
   </ItemGroup>
 
@@ -199,4 +200,4 @@
     </ItemGroup>
   </Target>
 
-</Project>
+</Project>
