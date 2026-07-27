@@ -68,6 +68,9 @@
 
     <!-- RestSharp 105.2.3. This package can't be updated without it being a breaking change to plugins. -->
     <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-9pq7-rcxv-47vq" />
+
+    <!-- Newer versions of the exporter dropped support for gRPC, so we can't upgrade. -->
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-4625-4j76-fww9" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" Label="Normalise stack trace file locations">
