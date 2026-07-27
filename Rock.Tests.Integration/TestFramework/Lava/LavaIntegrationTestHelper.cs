@@ -24,12 +24,14 @@ using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
+using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Shared.Lava
+namespace Rock.Tests.Integration.TestFramework.Lava
 {
     public class LavaIntegrationTestHelper
     {
@@ -68,7 +70,7 @@ namespace Rock.Tests.Shared.Lava
             if ( FluidEngineIsEnabled )
             {
                 // Initialize the Fluid Engine.
-                _fluidEngine = global::Rock.Lava.LavaService.NewEngineInstance( typeof( FluidEngine ), engineOptions );
+                _fluidEngine = Rock.Lava.LavaService.NewEngineInstance( typeof( FluidEngine ), engineOptions );
                 LavaService.SetCurrentEngine( _fluidEngine );
             }
 
@@ -114,7 +116,7 @@ namespace Rock.Tests.Shared.Lava
         {
             engineOptions = engineOptions ?? new LavaEngineConfigurationOptions();
 
-            var engine = global::Rock.Lava.LavaService.NewEngineInstance( engineType, engineOptions );
+            var engine = Rock.Lava.LavaService.NewEngineInstance( engineType, engineOptions );
             return engine;
         }
 
@@ -170,8 +172,8 @@ namespace Rock.Tests.Shared.Lava
         private static void RegisterFilters( ILavaEngine engine )
         {
             // Register the common Rock.Lava filters first, then overwrite with the web-specific filters.
-            engine.RegisterFilters( typeof( global::Rock.Lava.Filters.TemplateFilters ) );
-            engine.RegisterFilters( typeof( Rock.Lava.LavaFilters ) );
+            engine.RegisterFilters( typeof( Rock.Lava.Filters.TemplateFilters ) );
+            engine.RegisterFilters( typeof( LavaFilters ) );
         }
 
         private static void RegisterTags( ILavaEngine engine )

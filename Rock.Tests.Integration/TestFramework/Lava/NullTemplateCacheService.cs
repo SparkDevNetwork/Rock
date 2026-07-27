@@ -18,7 +18,7 @@ using System;
 
 using Rock.Lava;
 
-namespace Rock.Tests.Shared.Lava
+namespace Rock.Tests.Integration.TestFramework.Lava
 {
     /// <summary>
     /// An implementation of a provider for Lava Template objects that does not perform any caching.

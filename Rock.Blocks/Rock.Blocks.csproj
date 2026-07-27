@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj" />
+    <ProjectReference Include="..\Rock.DownhillCss\Rock.DownhillCss.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj" />
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj" />
     <ProjectReference Include="..\Rock.NCOA\Rock.NCOA.csproj" PrivateAssets="all" />

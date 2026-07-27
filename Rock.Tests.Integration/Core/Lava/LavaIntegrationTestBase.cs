@@ -17,8 +17,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Integration.TestFramework.Lava;
 using Rock.Tests.Shared.Constants;
-using Rock.Tests.Shared.Lava;
 using Rock.Tests.Shared.Utility;
 
 namespace Rock.Tests.Integration.Core.Lava

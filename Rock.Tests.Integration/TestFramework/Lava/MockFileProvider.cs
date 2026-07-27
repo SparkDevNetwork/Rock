@@ -23,7 +23,7 @@ using Microsoft.Extensions.Primitives;
 
 using Rock.Lava;
 
-namespace Rock.Tests.Shared.Lava
+namespace Rock.Tests.Integration.TestFramework.Lava
 {
     public class MockFileProvider : IFileProvider, ILavaFileSystem
     {

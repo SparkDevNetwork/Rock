@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Tests.Shared.Lava
+namespace Rock.Tests.Integration.TestFramework.Lava
 {
     public enum LavaTestOutputMatchTypeSpecifier
     {

@@ -22,8 +22,8 @@ using Rock.Field.Types;
 using Rock.Lava.Fluid;
 using Rock.Tests.Integration.Crm;
 using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Integration.TestFramework.Lava;
 using Rock.Tests.Shared.Constants;
-using Rock.Tests.Shared.Lava;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Tests.Integration.Issues

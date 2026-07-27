@@ -23,7 +23,7 @@ using Rock.Lava.Fluid;
 using Rock.Model;
 using Rock.Tests.Shared.Constants;
 
-namespace Rock.Tests.Shared.Lava
+namespace Rock.Tests.Integration.TestFramework.Lava
 {
     /// <summary>
     /// A set of options for testing the rendering of a Lava template.

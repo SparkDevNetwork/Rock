@@ -26,9 +26,9 @@ using Rock.Lava.Blocks;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
 using Rock.Tests.Integration.TestData.Core;
+using Rock.Tests.Integration.TestFramework.Lava;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.Constants;
-using Rock.Tests.Shared.Lava;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Core.Lava.Commands
