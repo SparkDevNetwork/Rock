@@ -1,0 +1,109 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-6"
+                 v-if="options.filterGroupTypeItems && options.filterGroupTypeItems.length > 0">
+                <DropDownList v-model="internalGroupTypeIdKey"
+                              label="Group Type"
+                              :items="options.filterGroupTypeItems"
+                              :showBlankItem="true"
+                              blankValue="" />
+            </div>
+
+            <div class="col-md-6"
+                 v-if="options.filterPurposeItems && options.filterPurposeItems.length > 0">
+                <DropDownList v-model="internalPurposeIdKey"
+                              label="Group Type Purpose"
+                              :items="options.filterPurposeItems"
+                              :showBlankItem="true"
+                              blankValue="" />
+            </div>
+
+            <div class="col-md-6"
+                 v-if="options.showActiveFilter">
+                <DropDownList v-model="internalActiveStatus"
+                              label="Active Status"
+                              :items="activeStatusItems"
+                              :showBlankItem="false" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { GroupListOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupList/groupListOptionsBag";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<GroupListOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const activeStatusItems: ListItemBag[] = [
+        { value: "all", text: "[All]" },
+        { value: "active", text: "Active" },
+        { value: "inactive", text: "Inactive" }
+    ];
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+    const internalGroupTypeIdKey = ref(props.modelValue.groupTypeIdKey ?? "");
+    const internalPurposeIdKey = ref(props.modelValue.purposeIdKey ?? "");
+    const internalActiveStatus = ref(props.modelValue.activeStatus || "all");
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            groupTypeIdKey: internalGroupTypeIdKey.value,
+            purposeIdKey: internalPurposeIdKey.value,
+            activeStatus: internalActiveStatus.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        internalGroupTypeIdKey.value = props.modelValue.groupTypeIdKey ?? "";
+        internalPurposeIdKey.value = props.modelValue.purposeIdKey ?? "";
+        internalActiveStatus.value = props.modelValue.activeStatus || "all";
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

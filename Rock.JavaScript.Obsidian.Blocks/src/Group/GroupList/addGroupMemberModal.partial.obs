@@ -1,0 +1,246 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Add to Group"
+           saveText="Add"
+           @save="onSave">
+        <NotificationBox v-if="errorMessage"
+                         alertType="warning">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <GroupPicker v-if="isGroupPickerMode"
+                     v-model="selectedGroup"
+                     label="Group"
+                     rules="required"
+                     :includedGroupTypeGuids="options.includedGroupTypeGuids ?? []"
+                     :rootGroupGuid="options.rootGroupGuid ?? null"
+                     @update:modelValue="onGroupChanged" />
+
+        <NotificationBox v-if="hasSyncedRoles"
+                         alertType="info"
+                         heading="Synced Group!">
+            The selected group uses Group Sync. Only roles that are not being synced are listed.
+            Please make sure this person needs to be added manually instead of meeting the sync conditions.
+        </NotificationBox>
+
+        <DropDownList v-else
+                      v-model="selectedGroupIdKey"
+                      label="Group"
+                      rules="required"
+                      :items="options.availableGroups ?? []"
+                      :showBlankItem="true"
+                      blankValue=""
+                      @update:modelValue="onGroupIdKeyChanged" />
+
+
+        <DropDownList v-model="selectedRoleIdKey"
+                      label="Role"
+                      rules="required"
+                      :items="availableRoles"
+                      :showBlankItem="true"
+                      blankValue=""
+                      :disabled="availableRoles.length === 0" />
+    </Modal>
+
+    <Modal v-model="isRestoreVisible"
+           title="Restore Archived Record"
+           saveText="Restore"
+           @save="onRestoreConfirm"
+           @closeModal="onRestoreCancel">
+        <p>{{ restoreMessage }}</p>
+        <template #customButtons>
+            <RockButton btnType="default" @click="onAddWithoutRestore">Don't Restore</RockButton>
+        </template>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { ref, computed, PropType } from "vue";
+    import { GroupListOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupList/groupListOptionsBag";
+    import { GroupListAddGroupMemberRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupList/groupListAddGroupMemberRequestBag";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    /** Shape returned by the parent's AddGroupMember handler. */
+    type AddGroupMemberResponse = {
+        status: string;
+        archivedMemberIdKey?: string;
+        message?: string;
+    };
+
+    type BlockActionResultLike<T> = {
+        isSuccess: boolean;
+        data?: T | null;
+        errorMessage?: string | null;
+    };
+
+    const props = defineProps({
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<GroupListOptionsBag>,
+            required: true
+        },
+
+        /**
+         * Parent-supplied handler that invokes the AddGroupMember block action.
+         * The modal stays presentation-focused; the parent owns the action call.
+         */
+        onAddMember: {
+            type: Function as PropType<(bag: GroupListAddGroupMemberRequestBag) => Promise<BlockActionResultLike<AddGroupMemberResponse>>>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:visible", value: boolean): void;
+        (e: "added"): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const selectedGroup = ref<ListItemBag | null>(null);
+    const selectedGroupIdKey = ref("");
+    const selectedRoleIdKey = ref("");
+    const availableRoles = ref<ListItemBag[]>([]);
+    const hasSyncedRoles = ref(false);
+    const errorMessage = ref("");
+
+    const isRestoreVisible = ref(false);
+    const restoreMessage = ref("");
+    const archivedMemberIdKey = ref("");
+    let pendingBag: GroupListAddGroupMemberRequestBag | null = null;
+
+    const isGroupPickerMode = computed(() => props.options.groupPickerType === "GroupPicker");
+
+    async function loadRoles(groupIdKey: string): Promise<void> {
+        selectedRoleIdKey.value = "";
+        availableRoles.value = [];
+        hasSyncedRoles.value = false;
+
+        if (!groupIdKey) {
+            return;
+        }
+
+        const result = await invokeBlockAction<{ roles: ListItemBag[]; hasSyncedRoles: boolean }>("GetGroupRoles", { groupIdKey });
+        if (result.isSuccess && result.data) {
+            availableRoles.value = result.data.roles;
+            hasSyncedRoles.value = result.data.hasSyncedRoles;
+        }
+    }
+
+    function onGroupChanged(value: ListItemBag | ListItemBag[] | null): void {
+        const group = Array.isArray(value) ? (value[0] ?? null) : value;
+        loadRoles(group?.value ?? "");
+    }
+
+    function onGroupIdKeyChanged(value: string | string[]): void {
+        // DropDownList's update:modelValue is typed as string | string[] for multi-select
+        // support; this instance is single-select, so collapse arrays to their first entry.
+        const idKey = Array.isArray(value) ? (value[0] ?? "") : value;
+        loadRoles(idKey);
+    }
+
+    async function onSave(): Promise<void> {
+        errorMessage.value = "";
+
+        const groupIdKey = isGroupPickerMode.value
+            ? (selectedGroup.value?.value ?? "")
+            : selectedGroupIdKey.value;
+
+        if (!groupIdKey) {
+            errorMessage.value = "Please select a group.";
+            return;
+        }
+
+        if (!selectedRoleIdKey.value) {
+            errorMessage.value = "Please select a role.";
+            return;
+        }
+
+        const bag: GroupListAddGroupMemberRequestBag = {
+            groupIdKey,
+            roleIdKey: selectedRoleIdKey.value,
+            skipArchiveCheck: false
+        };
+
+        const result = await props.onAddMember(bag);
+
+        if (result.isSuccess && result.data) {
+            if (result.data.status === "ArchiveFound") {
+                pendingBag = bag;
+                archivedMemberIdKey.value = result.data.archivedMemberIdKey ?? "";
+                restoreMessage.value = result.data.message ?? "An archived record was found. Do you want to restore it?";
+                isVisible.value = false;
+                isRestoreVisible.value = true;
+                return;
+            }
+
+            resetForm();
+            isVisible.value = false;
+            emit("added");
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "An error occurred while adding the group member.";
+        }
+    }
+
+    async function onRestoreConfirm(): Promise<void> {
+        const result = await invokeBlockAction("RestoreArchivedMember", { archivedMemberIdKey: archivedMemberIdKey.value });
+
+        if (result.isSuccess) {
+            isRestoreVisible.value = false;
+            resetForm();
+            emit("added");
+        }
+        else {
+            isRestoreVisible.value = false;
+            errorMessage.value = result.errorMessage ?? "An error occurred while restoring the archived member.";
+            isVisible.value = true;
+        }
+    }
+
+    function onRestoreCancel(): void {
+        resetForm();
+    }
+
+    async function onAddWithoutRestore(): Promise<void> {
+        isRestoreVisible.value = false;
+
+        if (!pendingBag) {
+            return;
+        }
+
+        const result = await props.onAddMember({ ...pendingBag, skipArchiveCheck: true });
+
+        if (result.isSuccess) {
+            resetForm();
+            emit("added");
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "An error occurred while adding the group member.";
+            isVisible.value = true;
+        }
+    }
+
+    function resetForm(): void {
+        selectedGroup.value = null;
+        selectedGroupIdKey.value = "";
+        selectedRoleIdKey.value = "";
+        availableRoles.value = [];
+        hasSyncedRoles.value = false;
+        errorMessage.value = "";
+        pendingBag = null;
+    }
+</script>
