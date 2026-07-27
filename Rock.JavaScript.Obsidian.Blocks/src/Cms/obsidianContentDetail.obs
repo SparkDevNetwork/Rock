@@ -11,12 +11,23 @@
                    :compileError="compileError" />
 
         <div class="mt-3">
-            <label class="form-label">Preview</label>
-            <PreviewPanel :compiledContent="previewContent" />
-            <p class="text-muted mt-1 mb-0">
-                The preview runs sandboxed, so components that call the Rock API will not load
-                data here. That data appears once you Save and view the page.
-            </p>
+            <div class="d-flex align-items-center justify-content-between">
+                <label class="form-label mb-0">Preview</label>
+                <RockButton btnType="link"
+                            btnSize="xs"
+                            @click="onTogglePreview">
+                    <i :class="isPreviewShown ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
+                    {{ isPreviewShown ? "Hide Preview" : "Show Preview" }}
+                </RockButton>
+            </div>
+
+            <template v-if="isPreviewShown">
+                <PreviewPanel :compiledContent="previewContent" />
+                <p class="text-muted mt-1 mb-0">
+                    The preview runs sandboxed, so components that call the Rock API will not load
+                    data here. That data appears once you Save and view the page.
+                </p>
+            </template>
         </div>
 
         <template #footerActions>
@@ -107,6 +118,18 @@ function increment() {
     const isEditing = ref(false);
     const isEnteringEdit = ref(false);
     const isSaving = ref(false);
+
+    /*
+        7/24/2026 - CLAUDE
+
+        The preview starts hidden so the iframe is not created and the sandboxed copy of
+        the Obsidian framework is not downloaded until the author asks for it. Compiling
+        still runs while the preview is hidden, because inline compile errors and the
+        Save button both depend on it.
+
+        Reason: Avoid loading the preview framework until the author opts in.
+    */
+    const isPreviewShown = ref(false);
     const source = ref(config.source ?? "");
     const compiledContent = ref(config.compiledContent ?? "");
     const previewContent = ref("");
@@ -189,6 +212,18 @@ function increment() {
         finally {
             isEnteringEdit.value = false;
         }
+    }
+
+    /**
+     * Shows or hides the live preview. Showing it recompiles first so the newly created
+     * iframe receives the current source instead of whatever was last compiled.
+     */
+    function onTogglePreview(): void {
+        if (!isPreviewShown.value) {
+            runLiveCompile();
+        }
+
+        isPreviewShown.value = !isPreviewShown.value;
     }
 
     /**
