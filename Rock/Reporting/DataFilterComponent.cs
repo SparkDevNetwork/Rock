@@ -156,7 +156,6 @@ namespace Rock.Reporting
         /// <param name="rockContext">The context to use for any database access that is required.</param>
         /// <param name="requestContext">The context describing the current request.</param>
         /// <returns>An instance of <see cref="DynamicComponentDefinitionBag"/> that describes how to render the UI.</returns>
-        [RockInternal( "17.0" )]
         public virtual DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
             return null;
@@ -172,7 +171,6 @@ namespace Rock.Reporting
         /// <param name="rockContext">The context to use when accessing the database.</param>
         /// <param name="requestContext">The context that describes the current network request being processed.</param>
         /// <returns>A dictionary of values that will be returned to the UI component.</returns>
-        [RockInternal( "17.0" )]
         public virtual Dictionary<string, string> ExecuteComponentRequest( Dictionary<string, string> request, SecurityGrant securityGrant, RockContext rockContext, RockRequestContext requestContext )
         {
             return null;
@@ -188,7 +186,6 @@ namespace Rock.Reporting
         /// <param name="rockContext">The context to use if access to the database is required.</param>
         /// <param name="requestContext">The context that describes the current request.</param>
         /// <returns>A dictionary of strings that will be provided to the Obsidian component.</returns>
-        [RockInternal( "17.0" )]
         public virtual Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
             return new Dictionary<string, string>();
@@ -203,7 +200,6 @@ namespace Rock.Reporting
         /// <param name="rockContext">The context to use if access to the database is required.</param>
         /// <param name="requestContext">The context that describes the current request.</param>
         /// <returns>The string of text that represents the selection which will be written to the database.</returns>
-        [RockInternal( "17.0" )]
         public virtual string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
         {
             return string.Empty;
@@ -218,7 +214,6 @@ namespace Rock.Reporting
         /// <param name="selection">The selection string from the database.</param>
         /// <param name="rockContext">The context to use if access to the database is required.</param>
         /// <returns>The identifier of the related data view or <c>null</c> if there isn't one.</returns>
-        [RockInternal( "18.0" )]
         public virtual int? GetRelatedDataViewId( Type entityType, string selection, RockContext rockContext )
         {
             return null;
