@@ -1281,7 +1281,7 @@ namespace Rock.Web.UI
                                     nbBlockLoad.Dismissable = true;
                                     control = nbBlockLoad;
 
-                                    if ( this.IsPostBack )
+                                    if ( block.BlockType.Path.IsNotNullOrWhiteSpace() && this.IsPostBack )
                                     {
                                         // throw an error on PostBack so that the ErrorPage gets shown (vs nothing happening)
                                         throw;
