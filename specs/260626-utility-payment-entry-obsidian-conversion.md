@@ -99,7 +99,7 @@ Each item's remaining work, keyed to the [Implementation Status](#implementation
 Completed work is tracked by the grid markers and the checked [Test Plan](#test-plan) items, not
 restated here.
 
-- **23. Business Work-phone write-back (revisit).** When giving as a business, the Work-phone write-back skips saving the entered number if the contact already has a mobile number on file, carried over from the legacy block and documented as a parity flag under [Business giving](#business-giving-give-as-business). This is a bad behavior; if the extended testing window allows, fix it so the business Work phone is saved regardless. See the [Business Work-phone write-back question](https://app.asana.com/1/20866866924293/task/1216405822150745).
+- **23. Business Work-phone write-back (revisit with PO).** When giving as a business, the business Work-phone write-back is copied from the individual home/mobile logic and misapplied across two different records: if the business has no Work phone, it looks at the *contact individual's* mobile number, and when that contact has a mobile on file it (a) silently discards the business Work phone the giver just entered and (b) toggles that contact's personal mobile `IsMessagingEnabled` from the business SMS opt-in checkbox (`UtilityPaymentEntry.ascx.cs:3001`). So a giver who has a personal mobile can never set their business's Work phone, and their personal mobile's SMS setting is changed as a side effect. Carried over from the legacy block and documented as a parity flag under [Business giving](#business-giving-give-as-business). Recommendation: save the entered business Work phone to the business regardless and leave the contact's personal mobile untouched. Because that is a giver-visible behavior change (moves cheese), raise it as a Question for PO rather than fixing it unilaterally. See the [Business Work-phone write-back question](https://app.asana.com/1/20866866924293/task/1216405822150745).
 - **24. Preload account amounts on transfer (consider).** The transfer flow does not pre-fill account amounts today ([Test 13](#13-transfer-flow-move-a-scheduled-gift-to-another-gateway)), because the shared `campusAccountAmountPicker` did not rehydrate from an incoming value. That mechanism now exists (the control resolves the amount from its `modelValue`), so the block could seed the transferred schedule's amounts by passing them as the picker's model value. Consider implementing; mind the campus-mapping caveat: a schedule's stored details are the campus child accounts, so seeding may need to reverse-map to the parent account the picker displays (or accept showing the child).
 - **25. Use `modelValue` instead of `presetAccountAmounts` in UPE (investigate).** Now that the shared `campusAccountAmountPicker` resolves amounts from `modelValue` (Carter's approach), investigate whether UPE can seed its accounts and amounts through the `modelValue` and `accounts` props alone and drop the `presetAccountAmounts` prop and its overhead. Quick take: the seeding looks feasible; the snag is read-only locking, which multi-mode already honors from a model entry's `readOnly` but single-mode currently derives only from a preset, so fully dropping presets would need the single-mode resolver to also honor a model-supplied `readOnly` (or keep presets just for locks). Server-side lock enforcement re-parses the URL, so it is unaffected either way.
 - **26. WebForms chop (deferred).** The Obsidian block is soft-launched under a new BlockTypeGuid so it coexists with the legacy WebForms block; the chop's BlockTypeGuid is kept commented-out beside it in `Rock.Blocks/Finance/UtilityPaymentEntry.cs`. At chop time, add a migration that removes the orphaned soft-launch block type (by its Guid) and its attributes and values (each by their respective Guids). Optionally, a more involved and delicate migration could move any "snuck" instances of the old block onto the chopped version; not committed.
@@ -546,7 +546,8 @@ Save-path re-enforcement (crafted-request guard; exercise with a tampered reques
 - [x] Disallowed account (public-only): with `Restrict URL Accounts to Public Only` ON and a URL naming only public accounts, post an amount against a private account's Guid. Submit is rejected with the "not available" error; no charge.
 - [x] Disallowed account (not offered): post an amount against any account Guid not in the URL list or the Add Another Account pool. Same rejection.
 - [x] Add Another Account still works: an account legitimately added from the addable pool is accepted (it is in the allowed set), confirming the guard does not over-reject.
-- [x] No URL options: the guard is inert. A normal configured-account gift (no `AccountIds` / `AccountGlCodes`) submits unchanged.
+- [x] No URL options, crafted disallowed account: with only configured accounts (Allow Additional Accounts off), a request posting an account not in the configured / fallback display list or the addable pool is rejected with the "not available" error and no charge, on confirmation on and off.
+- [x] No over-reject (normal giving still works, no tamper script): a plain gift reaches Success in each setup, (a) configured accounts, (b) no accounts configured (fallback list), (c) Campus Account Mapping on with a campus selected, and (d) after adding an account via Add Another Account.
 
 ### 17. Account Campus Context Filter
 Setup: put a campus context on the page (a Campus Context Setter block, or a page campus context). Configure a subset of accounts in Accounts to Display, mixing accounts tied to a campus with accounts that have no campus; turn on Allow Additional Accounts with the same campus mix in the addable pool.
@@ -652,6 +653,101 @@ Save path:
 Parity flags (do not expect):
 - [x] Business address / phone save under the Work type, not the configured Address Type.
 - [x] Business Work-phone write-back can skip saving the number when the contact already has a mobile on file (legacy behavior, pending the [Business Work-phone write-back question](https://app.asana.com/1/20866866924293/task/1216405822150745)).
+
+### Round 2 (extended-window integration and adversarial cases)
+
+Round 1 above is per-feature and mostly happy-path. These Round 2 cases spend the extended
+testing window where bugs are most likely to remain: feature *combinations*, server-side
+re-enforcement, real hosted gateways (not the Test Gateway), and cross-step state. They are
+cross-cutting, so they do not map to a single Implementation Status grid row and do not change
+its rollup; a failure here points back to the owning row, which drops to blank. They are ordered
+by leverage. No new features are exercised (items 23 to 26 stay out of scope).
+
+**R2-1. Combined money path (worst-case cell).** The mapping / multi-account / business /
+scheduled cells were each verified alone; this runs the nastiest combination as one gift and
+checks where the money lands. Setup: Campus Account Mapping ON; Allow Multiple Accounts ON; Give
+as Business ON; a recurring frequency; two accounts that each have a campus-specific child for the
+selected campus; Show Confirmation Step ON.
+- [x] The confirmation summary shows each account's campus-mapped child name with the correct per-account amount and total.
+- [x] Finish creates a `FinancialScheduledTransaction` authorized to the business, owned (`PersonId`) by the contact individual, with one `ScheduledTransactionDetail` per account filed under the campus child account; amounts and total are correct.
+- [x] No batch is created and no receipt is queued (scheduled path).
+- [x] The business Work address and email write-back land on the business.
+- [x] Business Work phone (known legacy exception, do not fail the row): when the contact individual already has a mobile on file, the entered business Work phone is NOT saved, and instead that contact's personal mobile messaging flag is toggled from the business SMS opt-in. This is the behavior flagged for PO revisit under [item 23](#remaining-work); it is expected today, not a regression.
+
+**R2-2. Real hosted gateway (not the Test Gateway).** The Test Gateway cannot reproduce the
+hosted-field tokenizer teardown; run the state-sensitive paths on a real hosted gateway (MyWell /
+NMI). Skip this case if no real gateway is available in the window.
+- [x] Entry to Next to confirmation to Previous: the card / ACH form re-initializes (no infinite spinner) and typed amounts and contact survive.
+- [x] CAPTCHA enabled: after Previous the CAPTCHA resets and the action button hides until re-solved; the fresh token validates at the second Next.
+- [x] A tokenize / gateway error on entry re-shows the CAPTCHA, hides the button, and remounts the gateway control.
+- [x] Scheduled gift plus Save Payment Method: the saved account created from the schedule is chargeable later from another block (vault-reference reuse holds).
+
+**R2-3. Adversarial server-side sweep (crafted requests).** Run the re-enforcement guards back to
+back with a REST client or dev tools, confirming the client is never trusted. One sitting, one
+tampered request each.
+- [x] Locked URL amount (`^false`): posting a different amount charges the locked value, not the posted one.
+- [x] Disallowed account: posting an amount against an account not in the offered set (URL list, configured / fallback display list, or Add Another Account pool) is rejected with no charge, whether or not URL options are active.
+- [x] Private account with Restrict URL Accounts to Public Only ON: rejected.
+- [x] Anonymous flag with Allow Anonymous Giving OFF: `ShowAsAnonymous` saves false.
+- [x] Disallowed `rckid` (impersonation off, token resolves to a different individual): both `GetConfirmation` and `ProcessTransaction` return the warning and charge nothing.
+- [x] Total over an `AmountLimit` URL parameter: rejected at submit.
+
+**R2-4. Cross-step state and impersonation integrity.** A full round trip under impersonation,
+verifying nothing reverts to the admin and no state is lost. Setup: `rckid` + Staff Impersonation
+ON; Show Confirmation Step ON; CAPTCHA enabled; Allow Multiple Accounts ON.
+- [x] Through Entry to Next to Previous to edit to Next to Finish, the target individual (not the admin) stays the giver: the saved-account list, prefilled contact, authorized alias, and the success `{{ Person }}` merge field are all the target's.
+- [x] Typed amounts and name / email / address survive the Previous, and the updated summary reflects the edit.
+- [x] The CAPTCHA token is consumed at the first Next and is required again after Previous.
+
+**R2-5. Text-to-Give mode as a hard override.** Confirm the mode overrides conflicting settings
+rather than layering onto them. Setup: Text-to-Give Mode ON while Allow Scheduled Gifts ON, Allow
+Business Giving ON, and Staff Impersonation OFF, opened with an `rckid` token.
+- [x] Impersonation is forced on despite Staff Impersonation OFF (the target individual resolves).
+- [x] No frequency / date fields render; no Give-as-Business switch; the action button reads "Give".
+- [x] Success shows the Text-to-Give variant (no manual Save offer); a "Text-To-Give ..." saved account is created and Text-to-Give is configured for the target individual.
+- [x] The server forces an immediate gift: no `FinancialScheduledTransaction` is created even though Allow Scheduled Gifts is on.
+
+**R2-6. Fluid layout full-config visual sweep.** The one layout that reorganizes the DOM; sweep it
+with everything visible across themes and widths. Setup: Layout Style = Fluid; two campuses; Allow
+Multiple Accounts ON; Contact and Payment sections on; Give as Business available; a saved account
+on file.
+- [x] Two columns (left Contribution then Payment, right Contact); the header banner and Test notice span the full width; campus folds into the top of the Contribution card.
+- [x] The business switch, saved-account cards (tile icons), and the CAPTCHA-in-footer all render correctly in the fluid arrangement.
+- [x] External giving theme, dark mode, and narrow width: columns collapse to one stack (Contribution with campus, then Contact, then Payment); no doubled or missing gaps; section titles ellipsis-truncate.
+
+**R2-8. Person matching and duplicate prevention.** Ground truth is the legacy `GetPerson`,
+`GetBusinessContact`, and `GetPersonOrBusiness` in `UtilityPaymentEntry.ascx.cs`; the Obsidian block
+must reproduce their matching decisions. Matching runs only for a not-signed-in (or nameless) giver
+on create; a signed-in or impersonated giver is resolved by id and is never re-matched. This is
+distinct from the double-submit idempotency guard (item 10), which prevents duplicate
+*transactions*; this case is about duplicate *person / business records*. Setup: Test Gateway, Show
+Confirmation Step off; give not-signed-in unless a row says otherwise. Seed the individuals /
+businesses named in each row beforehand so a match is possible.
+
+Individual:
+- [x] Exact match (entered first, last, email, and phone all match an existing individual): the gift authorizes to that existing individual and no duplicate person is created (Round 1 baseline, re-verify here).
+- [x] Match guard: matching is attempted only when first, last, AND email are all entered. With Prompt for Email OFF (email blank), a name that matches an existing individual still creates a NEW person because matching is skipped. Confirm this reproduces legacy and flag it to the PO if it is a surprise (a real duplicate-creation edge).
+- [x] Matched primary email is updated: a name + email that matches an existing individual overwrites that individual's primary email with the entered value (`FindPerson(..., updatePrimaryEmail: true)`).
+- [x] Protection Profile counterpart: if that existing individual has a High or Extreme `AccountProtectionProfile` (duplicate checking disabled by default), the name + email does NOT match despite the score, so its primary email is NOT overwritten and a NEW individual is created instead.
+- [x] Different phone, same first + last + email: resolves to the existing individual; no duplicate is created. The phone does not affect the outcome, first + last + email already scores 45 (at or above the 35 match cutoff) and email fills the single mobile-or-email match component, so a different or blank phone matches identically. Seed one individual, then give with their exact first / last / email and a deliberately different phone; the gift authorizes to that individual.
+- [x] Protection Profile counterpart: if that existing individual has a High or Extreme `AccountProtectionProfile` (duplicate checking disabled by default), the same first + last + email does NOT match despite the score, and a NEW individual is created instead.
+- [x] First name matches the stored First or Nick name only (no nickname lookup): for an existing individual with First Name `Robert`, Nick Name `Bob`, and matching last + email, entering `Robert` or `Bob` resolves to that individual (score 45). Entering `Rob`, a real nickname for Robert but not this person's stored First or Nick name, does NOT match: first + last + email scores 30 (below the 35 cutoff), so a new individual is created. `FindPerson` does a case-insensitive equality check against the stored First Name and Nick Name fields only; it has no table of nickname equivalents.
+- [x] Protection Profile counterpart: if the matched individual (`Robert`, nick `Bob`) has a High or Extreme `AccountProtectionProfile` (duplicate checking disabled by default), entering `Bob` does NOT match and a NEW individual is created.
+- [x] Case and surrounding whitespace in the name or email do not create a duplicate (trimmed, case-insensitive match, per legacy).
+
+Nameless placeholder:
+- [x] Nameless record (e.g. a Give-by-SMS shell with a phone but no name) resolved via `rckid`, entered name matching NO existing person: a real individual is created and the nameless record merges into it (`MergeNamelessPersonToExistingPerson`); the phone and history carry over and the nameless shell is gone.
+- [x] Nameless record resolved via `rckid`, entered name + email matching a DIFFERENT existing individual: the nameless record merges into that existing individual, not a brand-new third record; the gift authorizes to the consolidated individual.
+- [x] Protection Profile counterpart: if that DIFFERENT existing individual has a High or Extreme `AccountProtectionProfile` (duplicate checking disabled by default), the entered name + email does NOT match them; a new individual is created and the nameless record merges into the new individual, not the protected one.
+
+Business:
+- [x] New business: Add New Business with a name matching none of the giver's businesses creates exactly one Business record and adds the giver as its contact.
+- [x] Single-name match: Add New Business selected with a name equal to the giver's one existing business (exact `LastName ==`) reuses that business; no duplicate.
+- [x] Ambiguous name: when 2+ of the giver's businesses share the entered name, no match is made and a new business is created (the `Count() == 1` guard). Confirm this reproduces legacy and note it as a dedupe gap.
+- [x] Selected business by radio always wins over name matching; no new business is created.
+- [x] Business-contact match reuses the individual and DOES update their primary email (parity with legacy): an anonymous business gift whose contact matches an existing individual uses that existing individual as the contact (no new record) and sets their primary email to the entered contact email. `FindPerson(..., updatePrimaryEmail: false)` only skips promoting the entered email during the lookup; `ResolveBusinessContact` then assigns `person.Email` unconditionally, matching legacy `GetBusinessContact` (`person.Email = txtBusinessContactEmail.Text`, `.ascx.cs:2875`), so the email is overwritten either way. Verified: same outcome in legacy.
+- [x] Protection Profile counterpart: if the matched contact individual has a High or Extreme `AccountProtectionProfile` (duplicate checking disabled by default), the contact does NOT match; a new contact individual is created and linked to the business.
+- [x] Giving as a business never runs the individual create / match path (`create && !givingAsBusiness` is false); the giver is attached only as the business contact.
 
 ## Requirements
 

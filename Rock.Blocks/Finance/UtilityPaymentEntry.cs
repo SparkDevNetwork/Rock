@@ -532,7 +532,7 @@ namespace Rock.Blocks.Finance
     [TextField( "Anonymous Giving Tooltip",
         Key = AttributeKey.AnonymousGivingTooltip,
         Description = "The tooltip text shown on the Give Anonymously checkbox.",
-        DefaultValue = "",
+        DefaultValue = "When checked, your name is hidden wherever contributions are shown publicly, such as a fundraising contributor list.",
         Category = AttributeCategory.CustomizeText_ContactInformationSection,
         Order = 3,
         IsRequired = false )]
@@ -987,7 +987,7 @@ namespace Rock.Blocks.Finance
             {% if PaymentDetail.AccountNumberMasked and PaymentDetail.AccountNumberMasked != '' %}
             <tr>
                 <td>Account Number</td>
-                <td class='text-right'>{{ PaymentDetail.AccountNumberMasked }}</td>
+                <td class='text-right'>{% if AccountTypeName and AccountTypeName != '' %}{{ AccountTypeName }} {% endif %}Ending in {{ PaymentDetail.AccountNumberMasked | Right:4 }}</td>
             </tr>
             {% endif %}
             <tr>
@@ -1802,20 +1802,16 @@ namespace Rock.Blocks.Finance
         }
 
         /// <summary>
-        /// Builds the server-authoritative account rules for a submitted gift when URL account options are
-        /// in effect: the accounts the giver is permitted to give to (the URL accounts plus any Add Another
-        /// Account pool) and the amounts locked by a read-only URL account option. Returns null when URL
-        /// account options are not active, leaving the configured-account submit path unchanged.
+        /// Builds the server-authoritative account rules for a submitted gift: the accounts the giver is
+        /// permitted to give to (the displayed accounts, whether resolved from URL options, the configured
+        /// list, or the active/public fallback, plus any Add Another Account pool) and the amounts locked by
+        /// a read-only URL account option. Enforced on every submit so the client-sent account list is never
+        /// trusted; a crafted request cannot give to an account the block never offered.
         /// </summary>
-        /// <returns>The account rules to re-enforce, or null when URL account options are not active.</returns>
-        private AccountSubmitRules BuildUrlAccountSubmitRules()
+        /// <returns>The account rules to re-enforce.</returns>
+        private AccountSubmitRules BuildAccountSubmitRules()
         {
             var accountResolution = ResolveContributionAccounts();
-
-            if ( !accountResolution.HasUrlAccountOptions )
-            {
-                return null;
-            }
 
             // Reuse the exact display resolution so the accounts allowed at submit cannot drift from the
             // accounts presented on entry.
@@ -2524,9 +2520,10 @@ namespace Rock.Blocks.Finance
         {
             var errorMessages = new List<string>();
 
-            // Re-enforce the URL account rules server-side before validating amounts, so a crafted request
-            // cannot override a locked amount or give to an account that was not offered.
-            EnforceUrlAccountRules( request.AccountAmounts, errorMessages );
+            // Re-enforce the account rules server-side before validating amounts, so a crafted request
+            // cannot give to an account the block never offered or override a URL-locked amount. Applies
+            // whether or not URL account options are active; the client-sent account list is never trusted.
+            EnforceAccountRules( request.AccountAmounts, errorMessages );
 
             var enteredAmounts = request.AccountAmounts ?? new List<UtilityPaymentEntryAccountAmountBag>();
 
@@ -2580,19 +2577,19 @@ namespace Rock.Blocks.Finance
         }
 
         /// <summary>
-        /// Re-enforces the URL account rules on a submitted gift server-side, independent of anything the
-        /// client sent: an amount locked by a read-only URL account option is reset to its server value in
-        /// place, and a gift to an account that was not offered yields an error. An offered account is a
-        /// URL account or one from the Add Another Account pool, matching what the giver could select on
-        /// entry; giving to a non-URL account is allowed only when that account is in the addable pool,
-        /// just as it was in the legacy block. Does nothing when URL account options are not active.
+        /// Re-enforces the account rules on a submitted gift server-side, independent of anything the client
+        /// sent: an amount locked by a read-only URL account option is reset to its server value in place,
+        /// and a gift to an account the block did not offer yields an error. An offered account is a
+        /// displayed account (resolved from URL options, the configured list, or the active/public fallback)
+        /// or one from the Add Another Account pool, matching what the giver could select on entry. Applies
+        /// whether or not URL account options are active, so the client-sent account list is never trusted.
         /// </summary>
         /// <param name="accountAmounts">The submitted per-account amounts; locked amounts are corrected in
         /// place.</param>
         /// <param name="errorMessages">The error list a disallowed account is reported to.</param>
-        private void EnforceUrlAccountRules( List<UtilityPaymentEntryAccountAmountBag> accountAmounts, List<string> errorMessages )
+        private void EnforceAccountRules( List<UtilityPaymentEntryAccountAmountBag> accountAmounts, List<string> errorMessages )
         {
-            var submitRules = BuildUrlAccountSubmitRules();
+            var submitRules = BuildAccountSubmitRules();
 
             if ( submitRules == null || accountAmounts == null )
             {
@@ -3165,6 +3162,10 @@ namespace Rock.Blocks.Finance
                 if ( paymentDetail != null )
                 {
                     mergeFields.Add( "PaymentDetail", paymentDetail );
+
+                    // The payment method's account type label (credit card brand when known; blank otherwise).
+                    // Can be expanded to include other account types in the future.
+                    mergeFields.Add( "AccountTypeName", FinancialPaymentDetail.GetCreditCardBrandByTypeId( paymentDetail.CreditCardTypeValueId ) ?? string.Empty );
 
                     if ( paymentDetail.BillingLocation != null || paymentDetail.BillingLocationId.HasValue )
                     {

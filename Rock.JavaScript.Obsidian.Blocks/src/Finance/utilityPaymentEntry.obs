@@ -1348,7 +1348,12 @@ table.utility-payment-entry-summary > tbody > tr:not(.utility-payment-entry-summ
         if (!result.isSuccess || !result.data?.isSuccess) {
             validationErrors.value = toFormErrors(result.data?.errorMessages ?? [result.errorMessage || "There was a problem processing your gift."]);
 
-            if (isConfirmationStepVisible.value) {
+            // Without a confirmation step, a hosted-field gateway is still
+            // visible and needs to be remounted after a failed submit, since
+            // it tears down its tokenizer after tokenizing and would otherwise
+            // be left on a stuck spinner. A CAPTCHA is also re-shown so the
+            // giver must solve it again before retrying.
+            if (!isConfirmationStepShown.value) {
                 resetEntryAfterFailedSubmit();
             }
 
