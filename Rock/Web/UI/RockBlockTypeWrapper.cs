@@ -18,6 +18,7 @@ using System;
 using System.IO;
 using System.Web.UI;
 using Rock.Blocks;
+using Rock.Model;
 
 namespace Rock.Web.UI
 {
@@ -94,9 +95,18 @@ namespace Rock.Web.UI
                 {
                     using ( var sw = new StringWriter() )
                     {
-                        sw.Write( await webBlock.GetControlMarkupAsync() );
+                        try
+                        {
+                            sw.Write( await webBlock.GetControlMarkupAsync() );
 
-                        _cachedRenderContent = sw.ToString();
+                            _cachedRenderContent = sw.ToString();
+                        }
+                        catch ( Exception ex )
+                        {
+                            _cachedRenderContent = $"<div class=\"alert alert-warning\">An error occurred while rendering the block: {ex.Message}</div>";
+
+                            ExceptionLogService.LogException( ex, Context );
+                        }
                     }
                 } );
 
