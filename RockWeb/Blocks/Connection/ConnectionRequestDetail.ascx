@@ -121,7 +121,7 @@
                                     </div>
                                 </div>
 
-                                <asp:Panel runat="server" CssClass="badge-bar margin-b-sm" ID="pnlBadges">
+                                <asp:Panel runat="server" CssClass="badge-bar margin-b-sm d-flex flex-wrap" ID="pnlBadges">
                                     <Rock:BadgeListControl ID="blStatus" runat="server" />
                                 </asp:Panel>
 
