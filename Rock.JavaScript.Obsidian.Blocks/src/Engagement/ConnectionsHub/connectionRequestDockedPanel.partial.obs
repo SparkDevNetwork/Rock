@@ -192,7 +192,7 @@
                                         :isSquare="isDockedBtnIconVisible"
                                         @click="changeRequestState(ConnectionState.Connected)">
                                 <i class="ti ti-circle-check"></i>
-                                <template v-if="!isDockedBtnIconVisible">Complete Request</template>
+                                <span v-if="!isDockedBtnIconVisible" class="pl-spacing-xs">Complete Request</span>
                             </RockButton>
                             <RockButton :btnType="BtnType.Link"
                                         :isSquare="isDockedBtnIconVisible"
@@ -233,7 +233,7 @@
                                             :isSquare="isDockedBtnIconVisible"
                                             @click="() => emit('addActivity')">
                                     <i class="ti ti-activity"></i>
-                                    <template v-if="!isDockedBtnIconVisible"> Add Activity</template>
+                                    <span v-if="!isDockedBtnIconVisible" class="pl-spacing-xs">Add Activity</span>
                                 </RockButton>
                             </div>
                             <div>
