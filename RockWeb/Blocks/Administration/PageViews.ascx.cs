@@ -298,8 +298,8 @@ namespace RockWeb.Blocks.Administration
         {
             if ( _pageCache == null )
             {
-                var pageId = PageParameter( PageParamKey.Page ).AsInteger();
-                _pageCache = PageCache.Get( pageId );
+                var pageKey = PageParameter( PageParamKey.Page );
+                _pageCache = PageCache.Get( pageKey, !this.PageCache.Layout.Site.DisablePredictableIds );
             }
 
             return _pageCache;
