@@ -118,7 +118,7 @@
                             <div class="view-all-button" :class="announcementOverflowContainerClass" v-if="hasAnnouncementOverflow">
                                 <RockButton
                                             btnType="link"
-                                            @click="isViewingAllAnnouncements = !isViewingAllAnnouncements">
+                                            @click="() => { isViewingAllAnnouncements = !isViewingAllAnnouncements; }">
                                     {{ announcementsOverflowText }}<i :class="announcementsOverflowIconClass"></i>
                                 </RockButton>
                             </div>
@@ -174,7 +174,7 @@
                                 <div class="view-all-button" :class="notificationsOverflowContainerClass" v-if="hasNotificationsOverflow">
                                     <RockButton
                                                 btnType="link"
-                                                @click="isViewingAllNotifications = !isViewingAllNotifications">
+                                                @click="() => { isViewingAllNotifications = !isViewingAllNotifications; }">
                                         {{ notificationsOverflowText }}<i :class="notificationsOverflowIconClass"></i>
                                     </RockButton>
                                 </div>
@@ -293,6 +293,14 @@
         </div>
     </div>
 </template>
+
+<style scoped>
+@media (max-width: 768px) {
+    .workspace-navigation-pane-container :deep(.custom-select-expand-icon) {
+        margin-right: 0;
+    }
+}
+</style>
 
 <script setup lang="ts">
     import { Component, computed, defineAsyncComponent, nextTick, onMounted, ref, toValue, watch } from "vue";
@@ -504,7 +512,8 @@
         // First see if everything is completed, if so show the completed screen.
         if (activities.value.every(a => a.completedDate)) {
             showCompletedScreen.value = true;
-            return {} as LearningClassActivityCompletionBag;
+
+            return [...activities.value].reverse().find(a => a.completedDate) ?? ({} as LearningClassActivityCompletionBag);
         }
 
         // If they have a selected activity in the query string, use that.
