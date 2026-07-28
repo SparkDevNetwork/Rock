@@ -23,6 +23,7 @@ export const enum NavigationUrlKey {
     ConnectionsHubBoardViewPage = "ConnectionsHubBoardViewPage",
     ConnectionsHubGridViewPage = "ConnectionsHubGridViewPage",
     OperationalSnapshotPage = "OperationalSnapshotPage",
+    CelebrationsReportPage = "CelebrationsReportPage",
 
     // Connection Opportunity-level URLs.
     OpportunityConnectionsHubListViewPage = "OpportunityConnectionsHubListViewPage",
