@@ -16,6 +16,7 @@
 //
 
 using System.Collections.Generic;
+
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Event.EventItemDetail
@@ -29,5 +30,15 @@ namespace Rock.ViewModels.Blocks.Event.EventItemDetail
         /// Gets or sets the Audiences
         /// </summary>
         public List<ListItemBag> Audiences { get; set; }
+
+        /// <summary>
+        /// Gets or sets the available personalization segment options.
+        /// </summary>
+        public List<ListItemBag> SegmentOptions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the available request filter options.
+        /// </summary>
+        public List<ListItemBag> RequestFilterOptions { get; set; }
     }
 }

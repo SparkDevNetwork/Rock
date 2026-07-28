@@ -27,4 +27,10 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 export type EventItemDetailOptionsBag = {
     /** Gets or sets the Audiences */
     audiences?: ListItemBag[] | null;
+
+    /** Gets or sets the available request filter options. */
+    requestFilterOptions?: ListItemBag[] | null;
+
+    /** Gets or sets the available personalization segment options. */
+    segmentOptions?: ListItemBag[] | null;
 };
