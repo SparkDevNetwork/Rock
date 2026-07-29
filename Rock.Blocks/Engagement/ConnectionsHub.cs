@@ -5498,7 +5498,25 @@ WHERE 1 = 1" );
                     } );
                 }
 
-                if ( workflow.HasActiveEntryForm( RequestContext.CurrentPerson ) )
+                var hasActiveEntryForm = workflow.HasActiveEntryForm( RequestContext.CurrentPerson );
+
+                /*
+                    7/29/2026 - KBH
+
+                    A workflow can also pause on an action that presents its own UI
+                    rather than an entry form, such as Redirect to Page or Show HTML.
+                    Those actions deliberately do nothing when they are processed from
+                    a block action, because they expect the Workflow Entry block to
+                    start them and render the result. Without this check the workflow
+                    was left parked with no way to finish and the individual was told
+                    the workflow had started, so a redirect silently went nowhere.
+
+                    Reason: Redirect workflow action did not navigate when launched from the Connections Hub. (Fixes #6920)
+                */
+                var hasPendingInteractiveAction = !hasActiveEntryForm
+                    && workflow.GetNextInteractiveAction( RequestContext.CurrentPerson, null, false ) != null;
+
+                if ( hasActiveEntryForm || hasPendingInteractiveAction )
                 {
                     var qryParam = new Dictionary<string, string>
                     {
@@ -5507,7 +5525,15 @@ WHERE 1 = 1" );
                     };
 
                     launchWorkflowResultBag.WorkflowEntryPageUrl = this.GetLinkedPageUrl( AttributeKey.WorkflowEntryPage, qryParam );
-                    launchWorkflowResultBag.StatusMessage = $"A '{workflowType.Name}' workflow has been started. The new workflow has an active form that is ready for input.";
+
+                    if ( hasActiveEntryForm )
+                    {
+                        launchWorkflowResultBag.StatusMessage = $"A '{workflowType.Name}' workflow has been started. The new workflow has an active form that is ready for input.";
+                    }
+                    else
+                    {
+                        launchWorkflowResultBag.StatusMessage = $"A '{workflowType.Name}' workflow has been started and needs your attention.";
+                    }
                 }
                 else
                 {
