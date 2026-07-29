@@ -38,7 +38,7 @@
 
             <template #edit>
                 <RockForm ref="editForm" @submit="onFormValid">
-                    <EditPanel v-model="transactionEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
+                    <EditPanel :key="editPanelKey" v-model="transactionEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
                 </RockForm>
             </template>
 
@@ -177,6 +177,9 @@
     });
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    // Bumped after "Save Then Add" to remount the edit panel so child controls (e.g. the person picker's search text) reset for the next entry.
+    const editPanelKey = ref(0);
 
     const baseBlock = useEntityDetailBlock({
         blockConfig: config,
@@ -532,6 +535,9 @@
                 ...transactionEditBag.value,
                 bag: { ...persistedDefaults }
             };
+
+            // Remount the edit panel so child controls reset (clears the lingering person-search text).
+            editPanelKey.value++;
 
             await nextTick();
             if (blockElement.value) {

@@ -85,7 +85,7 @@
                       :filter="pickExistingValueFilter"
                       :filterValue="config.options?.isPersonFilterVisible ? getPersonNameFilterValue : undefined"
                       :quickFilterValue="config.options?.isPersonFilterVisible ? getPersonNameFilterValue : undefined" />
-        <DateTimeColumn name="transactionDateTime" title="Date" field="transactionDateTime" :showSeconds="true" :filter="dateValueFilter" width="200px" />
+        <DateTimeColumn name="transactionDateTime" title="Date" field="transactionDateTime" :filter="dateValueFilter" width="200px" />
 
         <Column name="daysSinceLastTransaction"
                 title="Last Transaction"
@@ -379,7 +379,7 @@
             || !!s.sourceType?.value
             || !!s.transactionCode
             || !!s.foreignKey
-            || !!s.account?.value
+            || !!s.account?.length
             || !!s.transactionType?.value
             || !!s.campusOfBatch?.value
             || !!s.campusOfAccount?.value
@@ -498,17 +498,17 @@
             with contributions to other accounts will still be included but our total
             summary will not account for those contributions.
         */
-        const filteredAccountName = !config.options?.accountConfigured
-            ? gridSettings.value.account?.text
-            : undefined;
+        const filteredAccountNames = !config.options?.accountConfigured
+            ? (gridSettings.value.account ?? []).map(a => a.text).filter((name): name is string => !!name)
+            : [];
 
-        if (filteredAccountName) {
-            entries = entries.filter(entry => entry.name === filteredAccountName);
+        if (filteredAccountNames.length > 0) {
+            entries = entries.filter(entry => filteredAccountNames.includes(entry.name));
         }
 
         accountSummaries.value = entries;
         summaryTotal.value = entries.reduce((sum, entry) => sum + entry.amount, 0);
-        isAccountSummaryFiltered.value = !!filteredAccountName;
+        isAccountSummaryFiltered.value = filteredAccountNames.length > 0;
     }
 
     /**
