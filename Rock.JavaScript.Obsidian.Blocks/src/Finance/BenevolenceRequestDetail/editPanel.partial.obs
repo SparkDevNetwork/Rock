@@ -164,6 +164,16 @@
                              :disabled="isSavingPersonRecord" />
                 </div>
             </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <DefinedValuePicker v-model="requesterRecordSource"
+                                        label="Record Source"
+                                        :definedTypeGuid="DefinedType.RecordSourceType"
+                                        :showBlankItem="true"
+                                        :disabled="isRecordSourceDisabled || isSavingPersonRecord"
+                                        :rules="isRecordSourceDisabled ? '' : 'required'" />
+                </div>
+            </div>
             <div class="row" v-if="!isCreateRecordFromFieldsHidden">
                 <div class="col-md-2">
                     <a class="btn btn-link" @click.prevent="onCreateRecordFromFields">Create Record From Fields</a>
@@ -271,6 +281,8 @@
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import RacePicker from "@Obsidian/Controls/racePicker.obs";
     import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import PhoneNumberBoxWithSms from "@Obsidian/Controls/phoneNumberBoxWithSms.obs";
@@ -364,6 +376,7 @@
     const isAddressFieldDisabled = ref<boolean>(false);
     const isRaceDisabled = ref<boolean>(false);
     const isEthnicityDisabled = ref<boolean>(false);
+    const isRecordSourceDisabled = ref<boolean>(false);
     const isCreateRecordFromFieldsHidden = ref<boolean>(false);
 
     const currentAttachment = ref<ListItemBag | null | undefined>(undefined);
@@ -495,6 +508,16 @@
             requester.value = {
                 ...requester.value,
                 ethnicityGuid: val?.value && val.value !== "" ? val.value : emptyGuid
+            };
+        }
+    });
+
+    const requesterRecordSource = computed<ListItemBag | undefined>({
+        get: () => requester.value.recordSource ?? undefined,
+        set: val => {
+            requester.value = {
+                ...requester.value,
+                recordSource: val ?? null
             };
         }
     });
@@ -710,6 +733,7 @@
             personAliasGuid: emptyGuid,
             raceGuid: emptyGuid,
             ethnicityGuid: emptyGuid,
+            recordSource: props.options.defaultRecordSource ?? null,
         };
     }
 
@@ -795,10 +819,11 @@
         isAddressFieldDisabled.value = value && !!requester.value.location?.addressFields;
         isCreateRecordFromFieldsHidden.value = value && selectedBenevolenceRequester.value.value !== "";
 
-        // We always want to set the race and ethnicity disables to prevent confusion,
-        // since they won't be saved unless a person record is created.
+        // We always want to set the race, ethnicity, and record source disables to prevent
+        // confusion, since they won't be saved unless a person record is created.
         isRaceDisabled.value = value;
         isEthnicityDisabled.value = value;
+        isRecordSourceDisabled.value = value;
     }
 
     // #endregion Functions
@@ -828,6 +853,7 @@
             lastRequesterPersonAliasGuid.value = "";
             requesterRace.value = { value: emptyGuid, text: "" };
             requesterEthnicity.value = { value: emptyGuid, text: "" };
+            requesterRecordSource.value = props.options.defaultRecordSource ?? undefined;
             disableRequesterFields(false);
             return;
         }

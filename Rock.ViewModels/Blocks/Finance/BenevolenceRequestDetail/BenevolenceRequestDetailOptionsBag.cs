@@ -87,6 +87,11 @@ namespace Rock.ViewModels.Blocks.Finance.BenevolenceRequestDetail
         public string EthnicityOptionAttribute { get; set; }
 
         /// <summary>
+        /// Gets or sets the record source that new individuals default to, resolved from the block setting.
+        /// </summary>
+        public ListItemBag DefaultRecordSource { get; set; }
+
+        /// <summary>
         /// Gets or sets the benevolence type.
         /// </summary>
         public List<BenevolenceTypeBag> BenevolenceRequestTypes { get; set; }
