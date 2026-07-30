@@ -410,7 +410,10 @@
     cursor: pointer;
   }
 
-  /* Message Debug Modal */
+}
+
+/* Message Debug Modal */
+.chat-bot-debug-modal {
   .message-debug-log > pre {
     display: grid;
     grid-template-columns: auto auto 1fr;
@@ -420,14 +423,7 @@
 
   .message-debug-tool-calls {
     max-height: calc(100vh - 300px);
-    margin-top: var(--spacing-medium);
     overflow-y: auto;
-  }
-
-  .tool-labels {
-    display: flex;
-    gap: var(--spacing-tiny);
-    margin-right: var(--spacing-xsmall);
   }
 }
 
