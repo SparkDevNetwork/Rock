@@ -577,8 +577,15 @@
      * @param value The account/amount allocations from the picker.
      */
     function validateNoNegativeAmounts(value: unknown): string | boolean {
-        const amounts = value as AccountAmount[] | null;
-        if (amounts?.some(aa => (aa.amount ?? 0) < 0)) {
+        // In single-account mode the picker forwards these rules to its inner account
+        // picker too, whose value is a single account (not an amount array), so ignore
+        // anything that isn't the account/amount array this rule is meant to check.
+        if (!Array.isArray(value)) {
+            return true;
+        }
+
+        const amounts = value as AccountAmount[];
+        if (amounts.some(aa => (aa.amount ?? 0) < 0)) {
             return "Make sure the amount you've entered for each account is a positive amount.";
         }
 
