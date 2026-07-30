@@ -19,11 +19,54 @@ namespace Rock.Migrations
     using System;
     using System.Data.Entity.Migrations;
 
+    using Rock.Migrations.Migrations;
+
     /// <summary>
     ///
     /// </summary>
     public partial class Rollup_20260730 : Rock.Migrations.RockMigration
     {
+        #region 304_FixGivingJourneyStageAttributeValues6913 Guids
+
+        /// <summary>
+        /// The Guid of the "values" AttributeQualifier row for the CurrentJourneyGivingStage person attribute.
+        /// </summary>
+        private const string CurrentGivingJourneyStageValuesQualifierGuid = "1A9213FC-B567-4793-AF57-89F4C443FF02";
+
+        /// <summary>
+        /// The Guid of the "values" AttributeQualifier row for the PreviousJourneyGivingStage person attribute.
+        /// </summary>
+        private const string PreviousGivingJourneyStageValuesQualifierGuid = "4B61627F-3B3A-4150-9F79-01CB023439FC";
+
+        #endregion
+
+        #region 307_SunsetProtectMyMinistry Guids
+
+        /// <summary>
+        /// The full type name of the (now-removed) Protect My Ministry v1 component. This is
+        /// hard-coded here because the class no longer exists in the assembly at the time this
+        /// migration runs on an instance.
+        /// </summary>
+        private const string PmmComponentTypeName = "Rock.Security.BackgroundCheck.ProtectMyMinistry";
+
+        /// <summary>
+        /// Well-known Guids for the artifacts being removed.
+        /// </summary>
+        private const string PmmEntityTypeGuid = "C16856F4-3C6B-4AFB-A0B8-88A303508206";
+        private const string PmmBlockGuid = "63AA839B-B6A1-4A57-A0DC-2F5B6DDA71BE";
+        private const string PmmBlockTypeGuid = "AF36FA7E-BD2A-42A3-AF30-2FEBC1C46663";
+        private const string PmmPageGuid = "E7F4B733-60FF-4FA3-AB17-0832E123F6F2";
+        private const string PmmPageRouteGuid = "2BB14E39-6AEE-4379-8B92-ACB5EF3F700B";
+        private const string PmmMvrJurisdictionDefinedTypeGuid = "2F8821E8-05B9-4CD5-9FA4-303662AAC85D";
+        private const string PmmWorkflowTypeGuid = "16D12EF7-C546-4039-9036-B73D118EDC90";
+
+        /// <summary>
+        /// The system setting key that holds the currently-configured default background check provider.
+        /// </summary>
+        private const string DefaultBackgroundCheckProviderKey = "core_DefaultBackgroundCheckProvider";
+
+        #endregion
+
         /// <summary>
         /// The page that hosts a Content Channel Item Detail block with a malformed breadcrumb setting.
         /// </summary>
@@ -34,6 +77,22 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            // ----------------------------------------------------------------
+            // HotFix data-migrations moved to this EF migration (v20/develop):
+            // ----------------------------------------------------------------
+
+            // v19.3; 304_FixGivingJourneyStageAttributeValues6913.cs
+            ME_FixGivingJourneyStageAttributeValues6913_Up();
+
+            // v19.3; 305_FixFinancialTransactionDetailAuth6886.cs
+            NA_FixFinancialTransactionDetailAuth6886_Up();
+
+            // v19.3; 306_FixEraFamilyAnalyticsWeekBoundaries6902.cs
+            NA_FixEraFamilyAnalyticsWeekBoundaries6902_Up();
+
+            // v20.0; 307_SunsetProtectMyMinistry.cs
+            NA_SunsetProtectMyMinistry_Up();
+
             // ----------------------------------------------------------------
             // Rollup Migrations for v20.0.6
             // ----------------------------------------------------------------
@@ -49,6 +108,231 @@ namespace Rock.Migrations
         {
             // v20.0.6
             MSE_UpdateContentChannelItemBreadcrumbPageSetting_Down();
+        }
+
+        /// <summary>
+        /// Corrects the "values" qualifier on the Current/Previous Giving Journey Stage person
+        /// attributes so the option list matches the <c>GivingJourneyStage</c> enum. Fix for issue #6913.
+        /// </summary>
+        private void ME_FixGivingJourneyStageAttributeValues6913_Up()
+        {
+            /*
+                7/8/26 - ME
+
+                The giving automation overhaul (commit 16c48bfd304ae3d28d8326699988d4911d3c2061)
+                changed the GivingJourneyStage enum ordering (2 = Consistent, 3 = Occasional) but did
+                not update the "values" qualifier on the CurrentJourneyGivingStage and
+                PreviousJourneyGivingStage person attributes, so Lava renders options 2 and 3 swapped.
+                This corrects those two qualifier rows, guarded on the known-bad string so a value an
+                administrator has customized is left untouched.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/6913
+            */
+            Sql( $@"
+UPDATE [AttributeQualifier]
+SET [Value] = '0^Non-Giver, 1^New Giver, 2^Consistent Giver, 3^Occasional Giver, 4^Lapsed Giver, 5^Former Giver'
+WHERE [Guid] IN ( '{CurrentGivingJourneyStageValuesQualifierGuid}', '{PreviousGivingJourneyStageValuesQualifierGuid}' )
+    AND [Value] = '0^Non-Giver, 1^New Giver, 2^Occasional Giver, 3^Consistent Giver, 4^Lapsed Giver, 5^Former Giver';
+" );
+        }
+
+        /// <summary>
+        /// Corrects the security (Auth) records for the FinancialTransactionDetail model to allow
+        /// Financial Admins and Financial Workers to match the FinancialTransaction model so that
+        /// they can use the ModifyEntity Lava commands. Fix for issue #6886.
+        /// </summary>
+        private void NA_FixFinancialTransactionDetailAuth6886_Up()
+        {
+            RockMigrationHelper.AddSecurityAuthForEntityType( "Rock.Model.FinancialTransactionDetail", 1, "Edit", true, "2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9", 0, "20FF56BB-D406-4779-AFDD-7886CD85EAE0" ); // EntityType:Rock.Model.FinancialTransactionDetail Group: 2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9 ( RSR - Finance Worker ),
+            RockMigrationHelper.AddSecurityAuthForEntityType( "Rock.Model.FinancialTransactionDetail", 0, "Edit", true, "6246A7EF-B7A3-4C8C-B1E4-3FF114B84559", 0, "049908E0-50DE-4137-9000-C0DBA9B86A5D" ); // EntityType:Rock.Model.FinancialTransactionDetail Group: 6246A7EF-B7A3-4C8C-B1E4-3FF114B84559 ( RSR - Finance Administration ),
+        }
+
+        /// <summary>
+        /// Updates the [spCrm_FamilyAnalyticsEraDataset], [spCrm_FamilyAnalyticsGiving],
+        /// and [spCrm_FamilyAnalyticsAttendance] stored procedures so that the
+        /// weekly evaluation window uses the SundayDate column for its boundary
+        /// comparisons. Previously the boundaries compared Attendance.StartDateTime
+        /// (which includes a time-of-day) against a Sunday-midnight variable, which
+        /// caused check-ins on the final Sunday of the window to be excluded and
+        /// caused check-ins on the starting boundary Sunday to be incorrectly
+        /// included. The mis-count could complete an eRA Core Step for people who
+        /// were still actively attending and could distort the First/Last CheckIn,
+        /// First/Last Gift, and gift/attendance count attributes. Fix for issue #6902.
+        /// </summary>
+        private void NA_FixEraFamilyAnalyticsWeekBoundaries6902_Up()
+        {
+            Sql( RockMigrationSQL._202607301833333_Rollup_20260730_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsEraDataset );
+            Sql( RockMigrationSQL._202607301833333_Rollup_20260730_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsGiving );
+            Sql( RockMigrationSQL._202607301833333_Rollup_20260730_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsAttendance );
+        }
+
+        /// <summary>
+        /// Sunsets the original Protect My Ministry (v1) background check component in Rock v20.
+        /// Removes the PMM component's EntityType, its admin Page/PageRoute/Block/BlockType, its
+        /// DVR Jurisdiction Codes DefinedType, its component-configuration Attributes and
+        /// AttributeValues, and marks the original "Background Check" WorkflowType inactive
+        /// (renamed to "Background Check (PMM Legacy)"). If the Rock instance still has PMM set
+        /// as the default background check provider when this migration runs, an entry is written
+        /// to the ExceptionLog so operators can see a breadcrumb of what was removed.
+        ///
+        /// The WorkflowType itself is intentionally NOT deleted because historical Workflow rows
+        /// reference it; the deactivation-and-rename approach preserves audit history while making
+        /// it obvious the workflow is legacy. Downstream code paths (BackgroundCheckFieldType,
+        /// BackgroundCheckDocument) still recognize the PMM EntityType GUID so that any legacy
+        /// background-check documents stored in the single-Guid format continue to render.
+        /// </summary>
+        private void NA_SunsetProtectMyMinistry_Up()
+        {
+            NA_LogExceptionIfPmmIsStillTheDefaultProvider();
+            NA_ClearDefaultBackgroundCheckProviderIfPmm();
+            NA_DeactivateAndRenamePmmWorkflowType();
+            NA_DeletePmmComponentAttributesAndValues();
+            NA_DeletePmmAdminPageAndBlocks();
+            NA_DeletePmmMvrJurisdictionDefinedType();
+            NA_DeletePmmEntityType();
+        }
+
+        /// <summary>
+        /// Writes a row to <c>[ExceptionLog]</c> when the PMM v1 component is still configured
+        /// as the default background check provider. This gives operators a breadcrumb that
+        /// their PMM configuration became inoperable when this migration ran.
+        /// </summary>
+        private void NA_LogExceptionIfPmmIsStillTheDefaultProvider()
+        {
+            Sql( $@"
+IF EXISTS (
+    SELECT 1
+    FROM [Attribute]
+    WHERE [EntityTypeId] IS NULL
+      AND [EntityTypeQualifierColumn] = 'SystemSetting'
+      AND [Key] = '{DefaultBackgroundCheckProviderKey}'
+      AND [DefaultValue] = '{PmmComponentTypeName}'
+)
+BEGIN
+    INSERT INTO [ExceptionLog]
+        ( [HasInnerException], [ExceptionType], [Description], [Source],
+          [Guid], [CreatedDateTime], [ModifiedDateTime] )
+    VALUES
+        ( 0,
+          'System.Exception',
+          'The legacy Protect My Ministry (v1) background check provider was removed by the Rock v20 sunset migration while it was still configured as the default background check provider. Configure a supported provider (Checkr, other, etc.) under Admin Tools > System Settings > Background Check.',
+          'Rock.Plugin.HotFixes.SunsetProtectMyMinistry',
+          NEWID(),
+          SYSDATETIME(),
+          SYSDATETIME() );
+END
+" );
+        }
+
+        /// <summary>
+        /// Blanks the <c>core_DefaultBackgroundCheckProvider</c> SystemSetting if (and only if)
+        /// it currently points at the removed PMM v1 type. Other provider selections are left
+        /// alone.
+        /// </summary>
+        private void NA_ClearDefaultBackgroundCheckProviderIfPmm()
+        {
+            Sql( $@"
+UPDATE [Attribute]
+SET [DefaultValue] = ''
+WHERE [EntityTypeId] IS NULL
+  AND [EntityTypeQualifierColumn] = 'SystemSetting'
+  AND [Key] = '{DefaultBackgroundCheckProviderKey}'
+  AND [DefaultValue] = '{PmmComponentTypeName}';
+" );
+        }
+
+        /// <summary>
+        /// The original "Background Check" WorkflowType was authored for PMM v1. Historical
+        /// Workflow instances reference it, so it cannot be safely deleted. This renames it to
+        /// "Background Check (PMM Legacy)" (matching Checkr's existing rename behavior) and
+        /// deactivates it so it no longer surfaces as an active workflow type.
+        /// </summary>
+        private void NA_DeactivateAndRenamePmmWorkflowType()
+        {
+            Sql( $@"
+UPDATE [WorkflowType]
+SET [Name] = 'Background Check (PMM Legacy)',
+    [IsActive] = 0
+WHERE [Guid] = '{PmmWorkflowTypeGuid}';
+" );
+        }
+
+        /// <summary>
+        /// Deletes the PMM component's configuration attributes (UserName, Password, Active,
+        /// Order, TestMode, RequestURL, ReturnURL) and their values, plus the container-side
+        /// componentized attributes qualified by the PMM EntityType Id. Uses joins on the
+        /// EntityType Guid so it works regardless of Id churn between installs.
+        /// </summary>
+        private void NA_DeletePmmComponentAttributesAndValues()
+        {
+            Sql( $@"
+DECLARE @PmmEntityTypeId INT =
+    ( SELECT [Id] FROM [EntityType] WHERE [Guid] = '{PmmEntityTypeGuid}' );
+
+IF @PmmEntityTypeId IS NOT NULL
+BEGIN
+    -- Values for attributes owned by the PMM component EntityType.
+    DELETE av
+    FROM [AttributeValue] av
+    INNER JOIN [Attribute] a ON a.[Id] = av.[AttributeId]
+    WHERE a.[EntityTypeId] = @PmmEntityTypeId;
+
+    DELETE FROM [Attribute]
+    WHERE [EntityTypeId] = @PmmEntityTypeId;
+
+    -- Container-side componentized attributes (""Active"", ""Order"") that live on the
+    -- BackgroundCheckContainer service and are qualified by the PMM EntityType Id.
+    DECLARE @PmmEntityTypeIdText NVARCHAR(50) = CAST( @PmmEntityTypeId AS NVARCHAR(50) );
+
+    DELETE av
+    FROM [AttributeValue] av
+    INNER JOIN [Attribute] a ON a.[Id] = av.[AttributeId]
+    WHERE a.[EntityTypeQualifierColumn] = 'EntityTypeId'
+      AND a.[EntityTypeQualifierValue] = @PmmEntityTypeIdText;
+
+    DELETE FROM [Attribute]
+    WHERE [EntityTypeQualifierColumn] = 'EntityTypeId'
+      AND [EntityTypeQualifierValue] = @PmmEntityTypeIdText;
+END
+" );
+        }
+
+        /// <summary>
+        /// Deletes the placed PMM Settings block, the PMM Settings block type, the PMM admin
+        /// page route, and the PMM admin page itself. Uses <see cref="RockMigrationHelper"/>
+        /// helpers so any related Auth rows are cleaned up too.
+        /// </summary>
+        private void NA_DeletePmmAdminPageAndBlocks()
+        {
+            // Block placed on the PMM admin page.
+            RockMigrationHelper.DeleteBlock( PmmBlockGuid );
+
+            // BlockType for ~/Blocks/Security/BackgroundCheck/ProtectMyMinistrySettings.ascx.
+            RockMigrationHelper.DeleteBlockType( PmmBlockTypeGuid );
+
+            // Route: /admin/system/protect-my-ministry.
+            RockMigrationHelper.DeletePageRoute( PmmPageRouteGuid );
+
+            // Page: Protect My Ministry (under Admin Tools > System Settings).
+            RockMigrationHelper.DeletePage( PmmPageGuid );
+        }
+
+        /// <summary>
+        /// The "Protect My Ministry DVR Jurisdiction Codes" DefinedType and its DefinedValues
+        /// were only used by PMM v1's MVR search feature; no other provider references them.
+        /// </summary>
+        private void NA_DeletePmmMvrJurisdictionDefinedType()
+        {
+            RockMigrationHelper.DeleteDefinedType( PmmMvrJurisdictionDefinedTypeGuid );
+        }
+
+        /// <summary>
+        /// Removes the PMM component EntityType row itself. All attributes/values pointing at
+        /// it were removed by <see cref="NA_DeletePmmComponentAttributesAndValues"/> above.
+        /// </summary>
+        private void NA_DeletePmmEntityType()
+        {
+            RockMigrationHelper.DeleteEntityType( PmmEntityTypeGuid );
         }
 
         /// <summary>

@@ -2207,6 +2207,36 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to the [spCrm_FamilyAnalyticsEraDataset] stored procedure..
+        /// </summary>
+        public static string _202607301833333_Rollup_20260730_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsEraDataset {
+            get {
+                return ResourceManager.GetString("_202607301833333_Rollup_20260730_306_FixEraFamilyAnalyticsWeekBoundaries6902_spC" +
+                        "rm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to the [spCrm_FamilyAnalyticsGiving] stored procedure..
+        /// </summary>
+        public static string _202607301833333_Rollup_20260730_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsGiving {
+            get {
+                return ResourceManager.GetString("_202607301833333_Rollup_20260730_306_FixEraFamilyAnalyticsWeekBoundaries6902_spC" +
+                        "rm_FamilyAnalyticsGiving", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to the [spCrm_FamilyAnalyticsAttendance] stored procedure..
+        /// </summary>
+        public static string _202607301833333_Rollup_20260730_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsAttendance {
+            get {
+                return ResourceManager.GetString("_202607301833333_Rollup_20260730_306_FixEraFamilyAnalyticsWeekBoundaries6902_spC" +
+                        "rm_FamilyAnalyticsAttendance", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] lms_header_min {
