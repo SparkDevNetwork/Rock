@@ -194,6 +194,13 @@
 
 /* ======================= ICON  ======================*/
 @import './icons/core-icon';                //Fully Format.
-@import './font-styling/font-styling-core'  //Fully Format.
+@import './font-styling/font-styling-core'; //Fully Format.
+
+/* ======================= PRINT  ======================*/
+// Must import last. Print rules reset .page-wrapper and #content-wrapper, and
+// media queries add no specificity -- loading before core/layout or the theme
+// stylesheets would let the screen rules win.
+@import 'core/print-extensions';
+
 
 
