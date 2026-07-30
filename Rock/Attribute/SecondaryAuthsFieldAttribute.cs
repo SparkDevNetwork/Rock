@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Attribute
 {
     /// <summary>
@@ -31,8 +33,19 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public SecondaryAuthsFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SecondaryAuthsFieldType ).FullName )
+            : base( SystemGuid.FieldType.SECONDARY_AUTHS.AsGuid(), name, description, required, defaultValue, category, order, key )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SecondaryAuthsFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public SecondaryAuthsFieldAttribute( string name )
+            : base( SystemGuid.FieldType.SECONDARY_AUTHS.AsGuid(), name )
         {
         }
     }

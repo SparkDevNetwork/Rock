@@ -1,0 +1,342 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid v-if="isMembersGridShown"
+          :definition="config.bag?.membersGridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Historical Group Member"
+          :title="membersGridTitle"
+          stickyHeader
+          :showLaunchWorkflow="false"
+          @selectItem="onSelectItem">
+        <PersonColumn name="person"
+                      title="Name"
+                      field="person"
+                      :enableHoverInfo="true"
+                      :showAsLink="true"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getPersonNameFilterValue" />
+
+        <DateColumn name="dateAdded"
+                    title="Date Added"
+                    field="dateAdded"
+                    :filter="dateValueFilter" />
+
+        <DateColumn name="dateRemoved"
+                    title="Date Removed"
+                    field="dateRemoved"
+                    :filter="dateValueFilter" />
+
+        <TextColumn name="lastRole"
+                    title="Last Role"
+                    field="lastRole"
+                    :filter="pickExistingValueFilter" />
+
+        <TextColumn name="lastStatus"
+                    title="Last Status"
+                    field="lastStatus"
+                    :filter="pickExistingValueFilter" />
+    </Grid>
+
+    <Block v-else-if="isMemberTimelineShown" :title="memberTimelineTitle">
+        <template #headerActions>
+            <RockButton v-if="isBackToMembersShown"
+                        btnSize="xs"
+                        @click="onHistoricalMembersClick">
+                <i class="ti ti-chevron-left"></i> Historical Group Members
+            </RockButton>
+        </template>
+
+        <div v-if="isYearPillBarVisible" class="group-member-history-year-pills">
+            <button v-for="year in years"
+                    :key="year"
+                    type="button"
+                    class="group-member-history-year-pill"
+                    :class="{ 'is-active': year === selectedYear }"
+                    @click="onYearPillClick(year)">
+                {{ year }}
+            </button>
+        </div>
+
+        <NotificationBox v-if="!timelineMonths.length" alertType="info">
+            No history is available for this group member.
+        </NotificationBox>
+
+        <div v-else class="group-member-history-timeline">
+            <template v-for="month in timelineMonths" :key="month.key">
+                <h4 :id="month.anchorId ?? undefined" class="group-member-history-month">
+                    <span>{{ month.label }}</span>
+                </h4>
+
+                <TimelineCard v-for="(item, index) in month.days"
+                              :key="item.day.date ?? index"
+                              :day="item.day"
+                              :isRightAligned="item.isRightAligned" />
+            </template>
+        </div>
+    </Block>
+</template>
+
+<style scoped>
+.group-member-history-year-pills {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+    /* The panel heading uses 18px horizontal padding while the panel body
+       uses --spacing-medium, so this bridges the difference to line the
+       first pill up with the panel title. */
+    padding: 4px calc(18px - var(--spacing-medium)) 12px;
+    background-color: var(--color-interface-softest);
+}
+
+.group-member-history-year-pill {
+    padding: 6px 16px;
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-strong);
+    background-color: var(--color-interface-softer);
+    border: 0;
+    border-radius: 4px;
+}
+
+.group-member-history-year-pill.is-active {
+    color: var(--color-primary);
+    background-color: var(--color-primary-soft);
+}
+
+.group-member-history-timeline {
+    position: relative;
+    padding-bottom: 24px;
+}
+
+/* The vertical rail the cards hang off of. */
+.group-member-history-timeline::before {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    content: "";
+    background-color: var(--color-interface-soft);
+}
+
+.group-member-history-month {
+    position: relative;
+    margin: 8px 0 24px;
+    font-size: var(--font-size-h5);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-stronger);
+    text-align: center;
+    scroll-margin-top: 56px;
+}
+
+.group-member-history-month span {
+    display: inline-block;
+    padding: 4px 16px;
+    background-color: var(--color-interface-softest);
+}
+
+@media (max-width: 991px) {
+    .group-member-history-timeline::before {
+        display: none;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, reactive, ref } from "vue";
+    import Block from "@Obsidian/Templates/block";
+    import Grid, { DateColumn, dateValueFilter, PersonColumn, pickExistingValueFilter, TextColumn } from "@Obsidian/Controls/grid";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TimelineCard from "./GroupHistory/timelineCard.partial.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { GroupHistoryDayBag } from "@Obsidian/ViewModels/Blocks/Group/GroupHistory/groupHistoryDayBag";
+    import { GroupMemberHistoryBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberHistory/groupMemberHistoryBag";
+    import { GroupMemberHistoryOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberHistory/groupMemberHistoryOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+
+    // #region Types
+
+    type TimelineDay = {
+        day: GroupHistoryDayBag;
+        isRightAligned: boolean;
+    };
+
+    type TimelineMonth = {
+        key: string;
+        label: string;
+        anchorId: string | null;
+        days: TimelineDay[];
+    };
+
+    // #endregion Types
+
+    // #region Values
+
+    const config = useConfigurationValues<CustomBlockBox<GroupMemberHistoryBag, GroupMemberHistoryOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const activeYear = ref<number | null>(null);
+    const gridDataSource = ref<Promise<GridDataBag>>();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const days = computed((): GroupHistoryDayBag[] => {
+        return config.bag?.timeline ?? [];
+    });
+
+    const isMemberTimelineShown = computed((): boolean => {
+        return config.bag?.isMemberTimelineShown === true;
+    });
+
+    const isMembersGridShown = computed((): boolean => {
+        return !!config.bag && !config.bag.isMemberTimelineShown;
+    });
+
+    const isBackToMembersShown = computed((): boolean => {
+        return config.bag?.isMembersGridShown === true;
+    });
+
+    const membersGridTitle = computed((): string => {
+        return `${config.bag?.groupName ?? "Group"} | Historical Group Members`;
+    });
+
+    const memberTimelineTitle = computed((): string => {
+        return `${config.bag?.groupName ?? "Group"} | ${config.bag?.groupMemberName ?? "Group Member"}`;
+    });
+
+    const timelineMonths = computed((): TimelineMonth[] => {
+        const months: TimelineMonth[] = [];
+        const seenYears = new Set<number>();
+        let dayIndex = 0;
+
+        for (const day of days.value) {
+            const date = day.date ? RockDateTime.parseISO(day.date) : null;
+
+            if (!date) {
+                continue;
+            }
+
+            const key = `${date.year}-${date.month}`;
+            let month = months[months.length - 1];
+
+            if (!month || month.key !== key) {
+                month = {
+                    key,
+                    label: date.toASPString("MMMM yyyy"),
+                    anchorId: seenYears.has(date.year) ? null : `group-member-history-year-${date.year}`,
+                    days: []
+                };
+
+                seenYears.add(date.year);
+                months.push(month);
+            }
+
+            month.days.push({ day, isRightAligned: dayIndex % 2 === 1 });
+            dayIndex++;
+        }
+
+        return months;
+    });
+
+    const years = computed((): number[] => {
+        const list: number[] = [];
+
+        for (const day of days.value) {
+            const date = day.date ? RockDateTime.parseISO(day.date) : null;
+
+            if (date && !list.includes(date.year)) {
+                list.push(date.year);
+            }
+        }
+
+        return list;
+    });
+
+    const isYearPillBarVisible = computed((): boolean => {
+        return years.value.length > 1;
+    });
+
+    const selectedYear = computed((): number | null => {
+        return activeYear.value ?? years.value[0] ?? null;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual. Navigates to the
+     * current page with the selected member's history shown.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        const url = new URL(window.location.href);
+
+        url.searchParams.set("GroupMemberId", key);
+        window.location.href = url.toString();
+    }
+
+    /**
+     * Navigates back to the historical group members grid.
+     */
+    function onHistoricalMembersClick(): void {
+        const url = new URL(window.location.href);
+
+        url.searchParams.delete("GroupMemberId");
+        window.location.href = url.toString();
+    }
+
+    /**
+     * Marks the year as active and scrolls to its most recent activity.
+     */
+    function onYearPillClick(year: number): void {
+        activeYear.value = year;
+        document.getElementById(`group-member-history-year-${year}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Gets the filter value text to use for the name column.
+     *
+     * @param row The row to be filtered.
+     */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["person"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            return reactive(result.data);
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion Functions
+
+    if (isMembersGridShown.value) {
+        gridDataSource.value = loadGridData();
+    }
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

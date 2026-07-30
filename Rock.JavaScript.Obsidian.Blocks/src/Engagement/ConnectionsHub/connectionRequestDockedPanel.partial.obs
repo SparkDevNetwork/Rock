@@ -73,7 +73,7 @@
                                     <div class="text-interface-medium text-sm">{{ requestDetails.requesterPerson.gender }} | {{ requestDetails.requesterPerson.maritalStatus }}</div>
                                 </div>
                             </div>
-                            <div v-if="options?.badgeGuids && options.badgeGuids.length > 0">
+                            <div v-if="options?.badgeGuids && options.badgeGuids.length > 0 && !isDockedBtnIconVisible">
                                 <BadgeList :entityTypeGuid="EntityType.Person"
                                            :entityKey="requestDetails.requesterPerson.idKey ?? ''"
                                            :badgeTypeGuids="options.badgeGuids"
@@ -99,6 +99,12 @@
                                     <i class="ti ti-mail-plus"></i>
                                 </RockButton>
                             </div>
+                        </div>
+                        <div v-if="options?.badgeGuids && options.badgeGuids.length > 0 && isDockedBtnIconVisible" class="px-spacing-md py-spacing-xs">
+                            <BadgeList :entityTypeGuid="EntityType.Person"
+                                       :entityKey="requestDetails.requesterPerson.idKey ?? ''"
+                                       :badgeTypeGuids="options.badgeGuids"
+                                       class="align-items-center justify-content-center flex-wrap" />
                         </div>
                     </template>
                     <template v-if="requestDetails?.personNotes && requestDetails.personNotes.length > 0">
@@ -158,7 +164,7 @@
             </template>
         </template>
         <template #footer>
-            <div class="d-flex align-items-center justify-content-between px-spacing-lg py-spacing-xs bg-interface-softer border-top">
+            <div ref="footerRef" class="d-flex align-items-center justify-content-between px-spacing-lg py-spacing-xs bg-interface-softer border-top">
                 <template v-if="isLoading">
                     <div class="skeleton skeleton-button m-spacing-none"></div>
                 </template>
@@ -168,8 +174,10 @@
                             <RockButton :btnType="BtnType.Primary"
                                         :form="editConnectionRequestFormId"
                                         :disabled="isSaving"
+                                        :isSquare="isDockedBtnIconVisible"
                                         type="submit">
-                                Save
+                                <i v-if="isDockedBtnIconVisible" class="ti ti-device-floppy"></i>
+                                <template v-else>Save</template>
                             </RockButton>
                             <RockButton :btnType="BtnType.Link"
                                         @click="setEditMode(false)">
@@ -181,42 +189,54 @@
                                         :btnType="BtnType.Default"
                                         :disabled="isCompleteButtonDisabled"
                                         :title="completeButtonTooltip"
+                                        :isSquare="isDockedBtnIconVisible"
                                         @click="changeRequestState(ConnectionState.Connected)">
                                 <i class="ti ti-circle-check"></i>
-                                Complete Request
+                                <span v-if="!isDockedBtnIconVisible" class="pl-spacing-xs">Complete Request</span>
                             </RockButton>
                             <RockButton :btnType="BtnType.Link"
+                                        :isSquare="isDockedBtnIconVisible"
                                         @click="emit('deleteRequest')">
-                                Delete
+                                <i v-if="isDockedBtnIconVisible" class="ti ti-trash"></i>
+                                <template v-else>Delete</template>
                             </RockButton>
                         </div>
                     </template>
                     <template v-else-if="canEditConnectionRequest">
-                        <div class="d-flex align-items-center gap-xs">
-                            <RockButton :btnType="BtnType.Primary"
-                                        @click="onEditClick">
-                                Edit
-                            </RockButton>
-                            <template v-if="isRequestActiveOrFutureFollowUp">
+                        <div class="docked-footer-grid">
+                            <div class="d-flex align-items-center gap-xs">
+                                <RockButton :btnType="BtnType.Primary"
+                                            @click="onEditClick"
+                                            :isSquare="isDockedBtnIconVisible">
+                                    <i v-if="isDockedBtnIconVisible" class="ti ti-edit"></i>
+                                    <template v-else>Edit</template>
+                                </RockButton>
+                                <template v-if="isRequestActiveOrFutureFollowUp">
+                                    <RockButton :btnType="BtnType.Default"
+                                                :disabled="isCompleteButtonDisabled"
+                                                :title="completeButtonTooltip"
+                                                :isSquare="isDockedBtnIconVisible"
+                                                @click="changeRequestState(ConnectionState.Connected)">
+                                        <i v-if="isDockedBtnIconVisible" class="ti ti-circle-check"></i>
+                                        <template v-else>Complete</template>
+                                    </RockButton>
+                                    <RockButton :btnType="BtnType.Link"
+                                                :isSquare="isDockedBtnIconVisible"
+                                                @click="() => emit('transferRequest')">
+                                        <i v-if="isDockedBtnIconVisible" class="ti ti-switch-3"></i>
+                                        <template v-else>Transfer</template>
+                                    </RockButton>
+                                </template>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-end">
                                 <RockButton :btnType="BtnType.Default"
-                                            :disabled="isCompleteButtonDisabled"
-                                            :title="completeButtonTooltip"
-                                            @click="changeRequestState(ConnectionState.Connected)">
-                                    Complete
+                                            :isSquare="isDockedBtnIconVisible"
+                                            @click="() => emit('addActivity')">
+                                    <i class="ti ti-activity"></i>
+                                    <span v-if="!isDockedBtnIconVisible" class="pl-spacing-xs">Add Activity</span>
                                 </RockButton>
-                                <RockButton :btnType="BtnType.Link"
-                                            @click="() => emit('transferRequest')">
-                                    Transfer
-                                </RockButton>
-                            </template>
-                        </div>
-                        <div class="d-flex align-items-center gap-xs">
-                            <RockButton :btnType="BtnType.Default"
-                                        @click="() => emit('addActivity')">
-                                <i class="ti ti-activity"></i>
-                                Add Activity
-                            </RockButton>
-                            <div style="min-width: 150px;">
+                            </div>
+                            <div>
                                 <ConnectionStatusButton :isSequentialStatusMode="options?.isSequentialStatusMode"
                                                         :highlightColor="requestDetails?.connectionStatus?.highlightColor"
                                                         :currentStatusName="requestDetails?.connectionStatus?.name"
@@ -225,8 +245,8 @@
                         </div>
                     </template>
                     <template v-else>
-                        <div class="d-flex align-items-center justify-content-end w-100">
-                            <div style="min-width: 150px;">
+                        <div class="d-flex align-items-center w-100">
+                            <div class="docked-status-btn">
                                 <ConnectionStatusButton :isSequentialStatusMode="options?.isSequentialStatusMode"
                                                         :highlightColor="requestDetails?.connectionStatus?.highlightColor"
                                                         :currentStatusName="requestDetails?.connectionStatus?.name"
@@ -338,11 +358,27 @@
     max-width: none;
     border-radius: var(--rounded-small);
 }
+
+/*
+   The footer's action row is a grid so the status button gets its own definite-width track.
+   Because the grid is full width (100% of the definite-width footer), the "25%" in the status
+   track resolves against a real, known width - the same reason the requestTable grid can size
+   a status column and truncate cleanly. A percentage/max-width on the old shrink-to-fit flex
+   group was dropped during content sizing, which reserved the status text's full width and left
+   dead space to the right of the button.
+*/
+.docked-footer-grid {
+    display: grid;
+    grid-template-columns: auto 1fr minmax(150px, 25%);
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    width: 100%;
+}
 </style>
 
 <script setup lang="ts">
     import DockedPanel from "@Obsidian/Controls/Internal/dockedPanel.obs";
-    import { ref, PropType, watch, computed } from "vue";
+    import { ref, PropType, watch, computed, onBeforeUnmount } from "vue";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { ConnectionRequestDetailsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestDetailsBag";
     import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
@@ -464,6 +500,7 @@
     const isLoading = ref(true);
     const isInEditMode = ref<boolean>(false);
     const copyRequestLinkRef = ref<HTMLElement | null>(null);
+    const footerRef = ref<HTMLElement | null>(null);
 
     const viewErrorMessage = ref<string>("");
     const editErrorMessage = ref<string>("");
@@ -474,6 +511,7 @@
 
     const isFullWidth = ref(false);
     const dockedPanelWidth = ref(defaultDockedPanelWidth);
+    const dockedPanelPixelWidth = ref(0);
     const areNotesVisible = ref(false);
     const aiSummary = ref<string>("");
     const aiSummaryError = ref<string>("");
@@ -511,6 +549,25 @@
         }
 
         return parseInt(dockedPanelWidth.value, 10);
+    });
+
+    /**
+     * Indicates whether the docked panel footer buttons should collapse to their icon
+     * (hiding the text label) because the panel is too narrow to comfortably show both.
+     * True when the panel's actual rendered width is narrower than 650px. The width is
+     * measured directly (see the ResizeObserver below) so it stays correct in every mode,
+     * including full-width where the width string is "100%" and cannot be parsed to pixels.
+     */
+    const isDockedBtnIconVisible = computed(() => dockedPanelPixelWidth.value > 0 && dockedPanelPixelWidth.value < 650);
+
+    // Measures the docked panel's actual rendered width. A ResizeObserver is used instead
+    // of parsing the width string because it reports the true pixel width in every mode
+    // (manual resize, window resize, and full-width "100%") and updates reactively whenever
+    // the panel's size changes for any reason.
+    const dockedPanelResizeObserver = new ResizeObserver(entries => {
+        for (const entry of entries) {
+            dockedPanelPixelWidth.value = entry.contentRect.width;
+        }
     });
 
     const isRequestActiveOrFutureFollowUp = computed(() => requestDetails.value?.connectionState === ConnectionState.Active || requestDetails.value?.connectionState === ConnectionState.FutureFollowUp);
@@ -733,5 +790,20 @@
                 fetchAISummary(false);
             }
         }
+    });
+
+    // The footer is rendered inside the docked panel element, so (re-)attach the observer to
+    // the owning panel whenever the footer is mounted or unmounted (panel open/close).
+    watch(footerRef, (footerElement) => {
+        dockedPanelResizeObserver.disconnect();
+
+        const dockedPanelElement = footerElement?.closest(".docked-panel");
+        if (dockedPanelElement) {
+            dockedPanelResizeObserver.observe(dockedPanelElement);
+        }
+    });
+
+    onBeforeUnmount(() => {
+        dockedPanelResizeObserver.disconnect();
     });
 </script>

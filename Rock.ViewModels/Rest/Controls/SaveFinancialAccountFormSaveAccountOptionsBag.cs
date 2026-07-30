@@ -70,6 +70,26 @@ namespace Rock.ViewModels.Rest.Controls
         /// The gateway token.
         /// </value>
         public string GatewayPersonIdentifier { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier of the scheduled transaction to save the payment method from,
+        /// when the gift was a scheduled (recurring) gift. Null for a one-time gift, which is resolved by
+        /// <see cref="TransactionCode"/> instead.
+        /// </summary>
+        /// <value>
+        /// The scheduled transaction unique identifier.
+        /// </value>
+        public Guid? ScheduledTransactionGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier of the system communication used to confirm a newly created
+        /// login when an anonymous giver saves a payment method. Null falls back to the built-in Confirm
+        /// Account system communication.
+        /// </summary>
+        /// <value>
+        /// The confirmation email system communication unique identifier.
+        /// </value>
+        public Guid? ConfirmationEmailTemplateGuid { get; set; }
     }
 
 }

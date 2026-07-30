@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Event.EventItemDetail
@@ -135,5 +136,21 @@ namespace Rock.ViewModels.Blocks.Event.EventItemDetail
         /// The approval text.
         /// </value>
         public string ApprovalText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Guids of the personalization segments this event item is targeted to.
+        /// </summary>
+        public List<Guid> SelectedSegmentGuids { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Guids of the request filters this event item is targeted to.
+        /// </summary>
+        public List<Guid> SelectedRequestFilterGuids { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current individual may change the
+        /// approval status. When <c>false</c>, the approval status is presented read-only.
+        /// </summary>
+        public bool IsApprovalConfigurable { get; set; }
     }
 }

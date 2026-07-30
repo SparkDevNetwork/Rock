@@ -23,7 +23,6 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Reporting;
@@ -475,7 +474,7 @@ namespace Rock.Blocks.Core
             if ( personMatrixAttributes.Any() )
             {
                 // Each matrix has a template. The template defines which attributes make up the values of the matrix
-                var templateKey = MatrixFieldType.ATTRIBUTE_MATRIX_TEMPLATE;
+                var templateKey = "attributematrixtemplate";
                 var templateIds = personMatrixAttributes
                     .Select( a => a.QualifierValues.ContainsKey( templateKey ) ? a.QualifierValues[templateKey].Value : null )
                     .Where( i => i.IsNotNullOrWhiteSpace() );

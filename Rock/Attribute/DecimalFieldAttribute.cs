@@ -34,11 +34,22 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public DecimalFieldAttribute( string name, string description = "", bool required = true, double defaultValue = double.MinValue, string category = "", int order = 0, string key = null )
-            : base( name, description, required, ( defaultValue == double.MinValue ? "" : defaultValue.ToString() ), category, order, key, typeof( Rock.Field.Types.DecimalFieldType ).FullName )
+            : base( SystemGuid.FieldType.DECIMAL.AsGuid(), name, description, required, ( defaultValue == double.MinValue ? "" : defaultValue.ToString() ), category, order, key )
         {
         }
-       
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DecimalFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public DecimalFieldAttribute( string name )
+            : base( SystemGuid.FieldType.DECIMAL.AsGuid(), name )
+        {
+        }
+
         /// <summary>
         /// Gets or sets the default numeric value of the attribute. This is the value that will be used if a specific value has not yet been created.
         /// </summary>

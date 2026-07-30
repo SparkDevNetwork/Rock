@@ -25,6 +25,7 @@ import { Guid } from "@Obsidian/Types";
 import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/connectionStatusBag";
 import { LocationBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/locationBag";
 import { PhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/phoneNumberBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /**
  * Represents a collection of personal information for an individual, including identifiers, contact details, and
@@ -75,6 +76,12 @@ export type PersonBag = {
 
     /** Gets or sets the unique identifier for the race. */
     raceGuid: Guid;
+
+    /**
+     * Gets or sets the record source describing how the person entered Rock. For an existing person this reflects
+     * their current record source; for a new person it seeds the source applied when the record is created.
+     */
+    recordSource?: ListItemBag | null;
 
     /** Gets or sets the Work Phone Number of the person who requested benevolence. */
     workPhoneNumber?: PhoneNumberBag | null;

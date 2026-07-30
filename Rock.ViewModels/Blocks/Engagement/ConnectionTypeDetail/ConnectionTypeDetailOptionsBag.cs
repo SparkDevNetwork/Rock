@@ -40,5 +40,12 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionTypeDetail
         /// Gets or sets the Person Note Type Items to be used when creating Connection Activity Types
         /// </summary>
         public List<ListItemBag> PersonNoteTypeItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Connection Request attribute keys that are already defined
+        /// on any Connection Opportunity under this Connection Type. Type-level request
+        /// attributes must not reuse these keys.
+        /// </summary>
+        public List<string> OpportunityConnectionRequestAttributeKeys { get; set; }
     }
 }

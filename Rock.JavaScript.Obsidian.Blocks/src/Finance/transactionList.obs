@@ -81,11 +81,11 @@
         <PersonColumn name="person"
                       title="Name"
                       field="person"
-                      width="200px"
+                      width="300px"
                       :filter="pickExistingValueFilter"
                       :filterValue="config.options?.isPersonFilterVisible ? getPersonNameFilterValue : undefined"
                       :quickFilterValue="config.options?.isPersonFilterVisible ? getPersonNameFilterValue : undefined" />
-        <DateTimeColumn name="transactionDateTime" title="Date" field="transactionDateTime" :showSeconds="true" :filter="dateValueFilter" width="200px" />
+        <DateTimeColumn name="transactionDateTime" title="Date" field="transactionDateTime" :filter="dateValueFilter" width="200px" />
 
         <Column name="daysSinceLastTransaction"
                 title="Last Transaction"
@@ -299,7 +299,8 @@
     let gridData: GridDataBag | undefined;
     const viewMode = ref<string>(config.options?.viewMode ?? ViewMode.Transactions);
     const pendingViewMode = ref<string | null>(null);
-    const showImages = ref<boolean>(preferences.getValue(PreferenceKey.ShowImages) === "true");
+
+    const showImages = ref<boolean>(config.options?.isImagesToggleVisible === true && preferences.getValue(PreferenceKey.ShowImages) === "true");
     const imageHeight = config.options?.imageHeight ?? 200;
 
     // The widest rendered image measured so far, in pixels. The column grows to fit the widest
@@ -378,7 +379,7 @@
             || !!s.sourceType?.value
             || !!s.transactionCode
             || !!s.foreignKey
-            || !!s.account?.value
+            || !!s.account?.length
             || !!s.transactionType?.value
             || !!s.campusOfBatch?.value
             || !!s.campusOfAccount?.value
@@ -497,17 +498,17 @@
             with contributions to other accounts will still be included but our total
             summary will not account for those contributions.
         */
-        const filteredAccountName = !config.options?.accountConfigured
-            ? gridSettings.value.account?.text
-            : undefined;
+        const filteredAccountNames = !config.options?.accountConfigured
+            ? (gridSettings.value.account ?? []).map(a => a.text).filter((name): name is string => !!name)
+            : [];
 
-        if (filteredAccountName) {
-            entries = entries.filter(entry => entry.name === filteredAccountName);
+        if (filteredAccountNames.length > 0) {
+            entries = entries.filter(entry => filteredAccountNames.includes(entry.name));
         }
 
         accountSummaries.value = entries;
         summaryTotal.value = entries.reduce((sum, entry) => sum + entry.amount, 0);
-        isAccountSummaryFiltered.value = !!filteredAccountName;
+        isAccountSummaryFiltered.value = filteredAccountNames.length > 0;
     }
 
     /**
@@ -759,6 +760,11 @@
         showImages.value = !showImages.value;
         preferences.setValue(PreferenceKey.ShowImages, showImages.value.toString());
         await preferences.save();
+
+        // Reload so the server includes or excludes the image URLs based on the new preference.
+        // The URLs are omitted from the payload while images are hidden, so turning the column on
+        // requires a fresh data load to populate them.
+        gridDataSource.value = loadGridData();
     }
 
     /**

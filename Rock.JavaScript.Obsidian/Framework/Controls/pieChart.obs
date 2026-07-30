@@ -1,6 +1,6 @@
 <template>
     <div class="chart-container" :style="`height: ${height || '100%'}; width: ${width || '100%'};`">
-        <Chart :data="chartData" :options="chartOptions" type="pie" />
+        <Chart :data="chartData" :options="chartOptions" :plugins="[ChartDataLabels]" type="pie" />
     </div>
 </template>
 
@@ -16,7 +16,7 @@
         TitleAlign,
         TooltipCallback
     } from "@Obsidian/Core/Controls/chart";
-    import { ChartData, ChartOptions, TooltipItem, TooltipLabelStyle, ChartDataset, LegendItem } from "@Obsidian/Libs/chart";
+    import { ChartData, ChartOptions, TooltipItem, TooltipLabelStyle, ChartDataset, LegendItem, ChartDataLabels } from "@Obsidian/Libs/chart";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { isNullish } from "@Obsidian/Utility/util";
     import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
@@ -63,6 +63,15 @@
          */
         hideLegend: {
             type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * The inner radius of the pie as a fraction (0-1) of the outer radius.
+         * A value greater than zero renders the pie with a donut hole; for
+         * example, 0.75 leaves a hole 75% the size of the pie.
+         */
+        innerRadius: {
+            type: Number as PropType<number | undefined>
         },
 
         /**
@@ -120,6 +129,15 @@
         series: {
             type: Array as PropType<PieSeries[]>,
             required: true
+        },
+
+        /**
+         * Whether to render each slice's value as a label on the slice itself.
+         *
+         * Off by default so existing consumers are unaffected.
+         */
+        showDataLabels: {
+            type: Boolean as PropType<boolean | undefined>
         },
 
         /**
@@ -277,7 +295,37 @@
             responsive: true,
             maintainAspectRatio: false,
 
+            // Render a donut hole when an inner radius is specified.
+            cutout: props.innerRadius && props.innerRadius > 0
+                ? `${Math.min(Math.max(props.innerRadius, 0), 0.95) * 100}%`
+                : undefined,
+
             plugins: {
+                datalabels: {
+                    // Only render on-slice labels when explicitly requested, so
+                    // other pie chart consumers are unaffected. "auto" lets the
+                    // plugin hide labels that would not fit on small slices.
+                    display: props.showDataLabels ? "auto" : false,
+
+                    color: getCssVar("--color-interface-softest") || "#fff",
+
+                    font: {
+                        family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                        size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
+                        weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
+                    },
+
+                    formatter: (value: number) => {
+                        // Percent charts store decimals (0.1 => 10%); format them
+                        // as a percentage, otherwise show the localized number.
+                        if (props.type === "percent") {
+                            return value.toLocaleString(undefined, { style: "percent", maximumFractionDigits: 2 });
+                        }
+
+                        return value.toLocaleString();
+                    }
+                },
+
                 legend: {
                     align: props.legendAlign ?? defaultLegendAlign,
                     display: !((props.hideLegend ?? defaultLegendIsHidden) === true),

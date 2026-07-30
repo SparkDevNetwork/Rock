@@ -25,7 +25,6 @@ using System.Text;
 using Rock.Attribute;
 using Rock.Enums.Controls;
 using Rock.Enums.Security;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Observability;
 using Rock.Obsidian.UI;
@@ -53,7 +52,7 @@ namespace Rock.Blocks.Security
     [BooleanField( "Enable Person Context",
         Key = AttributeKey.EnablePersonContext,
         Description = @"If enabled and the page has a person context, its value will be used to limit the grid results to only this person, and the ""Person"" column will be hidden.",
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
         IsRequired = false )]
 

@@ -20,9 +20,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Engagement.SignUp.SignUpDetail;
@@ -48,7 +48,7 @@ namespace Rock.Blocks.Engagement.SignUp
     [BooleanField( "Set Page Title",
         Key = AttributeKey.SetPageTitle,
         Description = "When enabled, sets the page title to be the name of the sign-up project.",
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         Order = 1 )]
 

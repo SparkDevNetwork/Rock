@@ -34,54 +34,59 @@ namespace Rock.Attribute
         /// Initializes a new instance of the <see cref="SocialMediaAccountFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="description">The description.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="defaultValue">The default value.</param>
-        /// <param name="socialNetworkName">The name of the socal media network.</param>
-        /// <param name="iconCssClass">The icon that represents the social media network.</param>
-        /// <param name="color">The color to use for making buttons for the social media network.</param>
-        /// <param name="textTemplate">The text template.</param>
-        /// <param name="baseUrl">The base URL.</param>
-        /// <param name="category">The category.</param>
-        /// <param name="order">The order.</param>
-        /// <param name="key">The key.</param>
-        /// <param name="fieldTypeClass">The field type class.</param>
-        internal SocialMediaAccountFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", 
-            string socialNetworkName = "", string iconCssClass = "", string color = "", string textTemplate = "", string baseUrl = "",
-            string category = "", int order = 0, string key = null, string fieldTypeClass = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SocialMediaAccountFieldType ).FullName )
+        internal SocialMediaAccountFieldAttribute( string name )
+            : base( SystemGuid.FieldType.SOCIAL_MEDIA_ACCOUNT.AsGuid(), name )
         {
-
-            if ( !string.IsNullOrWhiteSpace( socialNetworkName ) )
-            {
-                var configValue = new Field.ConfigurationValue( socialNetworkName );
-                FieldConfigurationValues.Add( NAME_KEY, configValue );
-            }
-
-            if ( !string.IsNullOrWhiteSpace( iconCssClass ) )
-            {
-                var configValue = new Field.ConfigurationValue( iconCssClass );
-                FieldConfigurationValues.Add( ICONCSSCLASS_KEY, configValue );
-            }
-
-            if ( !string.IsNullOrWhiteSpace( color ) )
-            {
-                var configValue = new Field.ConfigurationValue( color );
-                FieldConfigurationValues.Add( COLOR_KEY, configValue );
-            }
-
-            if ( !string.IsNullOrWhiteSpace( textTemplate ) )
-            {
-                var configValue = new Field.ConfigurationValue( textTemplate );
-                FieldConfigurationValues.Add( TEXT_TEMPLATE, configValue );
-            }
-
-            if ( !string.IsNullOrWhiteSpace( baseUrl ) )
-            {
-                var configValue = new Field.ConfigurationValue( baseUrl );
-                FieldConfigurationValues.Add( BASEURL, configValue );
-            }
+            SocialNetworkName = string.Empty;
+            IconCssClass = string.Empty;
+            Color = string.Empty;
+            TextTemplate = string.Empty;
+            BaseUrl = string.Empty;
         }
 
+        /// <summary>
+        /// The name of the social media network.
+        /// </summary>
+        public string SocialNetworkName
+        {
+            get => FieldConfigurationValues.GetValueOrNull( NAME_KEY );
+            set => FieldConfigurationValues.AddOrReplace( NAME_KEY, new Field.ConfigurationValue( value ) );
+        }
+
+        /// <summary>
+        /// The icon that represents the social media network.
+        /// </summary>
+        public string IconCssClass
+        {
+            get => FieldConfigurationValues.GetValueOrNull( ICONCSSCLASS_KEY );
+            set => FieldConfigurationValues.AddOrReplace( ICONCSSCLASS_KEY, new Field.ConfigurationValue( value ) );
+        }
+
+        /// <summary>
+        /// The color to use for making buttons for the social media network.
+        /// </summary>
+        public string Color
+        {
+            get => FieldConfigurationValues.GetValueOrNull( COLOR_KEY );
+            set => FieldConfigurationValues.AddOrReplace( COLOR_KEY, new Field.ConfigurationValue( value ) );
+        }
+
+        /// <summary>
+        /// The text template.
+        /// </summary>
+        public string TextTemplate
+        {
+            get => FieldConfigurationValues.GetValueOrNull( TEXT_TEMPLATE );
+            set => FieldConfigurationValues.AddOrReplace( TEXT_TEMPLATE, new Field.ConfigurationValue( value ) );
+        }
+
+        /// <summary>
+        /// The base URL.
+        /// </summary>
+        public string BaseUrl
+        {
+            get => FieldConfigurationValues.GetValueOrNull( BASEURL );
+            set => FieldConfigurationValues.AddOrReplace( BASEURL, new Field.ConfigurationValue( value ) );
+        }
     }
 }

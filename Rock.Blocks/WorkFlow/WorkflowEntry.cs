@@ -717,6 +717,13 @@ namespace Rock.Blocks.Workflow
             IEntity entity = null;
             var processedMultipleInteractiveActions = false;
 
+            // Skip re-processing a completed workflow; doing so would overwrite
+            // CompletedDateTime on the workflow and its activities (Issue #6897).
+            if ( workflow.CompletedDateTime.HasValue )
+            {
+                return GetEndOfWorkflowBag( workflow, null, null, null );
+            }
+
             if ( workflow.Id == 0 )
             {
                 entity = GetInitialWorkflowEntity();
@@ -1541,7 +1548,7 @@ namespace Rock.Blocks.Workflow
                         string formattedValue = null;
 
                         // get formatted value 
-                        if ( attribute.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
+                        if ( attribute.FieldType.Guid == SystemGuid.FieldType.IMAGE.AsGuid() )
                         {
                             formattedValue = field.FormatValueAsHtml( null, attribute.EntityTypeId, activity.Id, value, attribute.QualifierValues, true );
                         }

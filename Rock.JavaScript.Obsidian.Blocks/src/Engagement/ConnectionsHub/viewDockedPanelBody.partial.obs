@@ -273,7 +273,6 @@
                                               @update:modelValue="(isChecked) => updateManualRequirement(manualRequirement, isChecked)" />
                                     <Loading :isLoading="isManualRequirementLoadingRecord[manualRequirement.groupRequirementIdKey]"
                                              isSmall />
-                                    <!-- TODO - Style is messed up. Should really be a toast message -->
                                     <NotificationBox v-if="!isManualRequirementLoadingRecord[manualRequirement.groupRequirementIdKey] && isManualRequirementErrorVisibleRecord[manualRequirement.groupRequirementIdKey]"
                                                      alertType="danger"
                                                      dismissible
@@ -375,7 +374,8 @@
                                   @editNote="(bag) => onEditRequestNote(bag, activityEntry.key)"
                                   @deleteNote="deleteNote"
                                   @editActivity="(entry) => emit('editActivity', entry)"
-                                  @deleteActivity="deleteActivity" />
+                                  @deleteActivity="deleteActivity"
+                                  @saveStatusHistoryNote="(bag) => onSaveStatusHistoryNote(bag, activityEntry.key)" />
                 </template>
             </template>
         </ContentSection>
@@ -499,6 +499,7 @@
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { ConnectionRequestNoteBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestNoteBag";
+    import { SaveStatusHistoryNoteBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/saveStatusHistoryNoteBag";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -587,6 +588,10 @@
         {
             text: pluralize(ActivityEntryTypeDescription[ActivityEntryType.SystemUpdate]),
             value: ActivityEntryType.SystemUpdate.toString()
+        },
+        {
+            text: pluralize(ActivityEntryTypeDescription[ActivityEntryType.StatusChange]),
+            value: ActivityEntryType.StatusChange.toString()
         },
         {
             text: pluralize(ActivityEntryTypeDescription[ActivityEntryType.Communication]),
@@ -762,10 +767,6 @@
         switch (systemUpdateType) {
             case SystemUpdateType.Creation:
                 return "ti ti-plus";
-            case SystemUpdateType.StatusSet:
-            case SystemUpdateType.StatusUpdated:
-            case SystemUpdateType.StatusCleared:
-                return "ti ti-arrows-left-right";
             case SystemUpdateType.StateChange:
                 return "ti ti-bolt";
             case SystemUpdateType.Assignment:
@@ -796,21 +797,6 @@
                     return `<span class="text-semibold">${entry.createdBy}</span> submitted this connection request for ${props.requestDetails?.connectionOpportunityName}.`;
                 }
                 return `This connection request was submitted for ${props.requestDetails?.connectionOpportunityName}.`;
-            case SystemUpdateType.StatusSet:
-                if (isCreatedByPopulated) {
-                    return `<span class="text-semibold">${entry.createdBy}</span> set the connection request status to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
-                }
-                return `The connection request status was set to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
-            case SystemUpdateType.StatusUpdated:
-                if (isCreatedByPopulated) {
-                    return `<span class="text-semibold">${entry.createdBy}</span> changed the connection request status from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
-                }
-                return `The connection request status changed from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
-            case SystemUpdateType.StatusCleared:
-                if (isCreatedByPopulated) {
-                    return `<span class="text-semibold">${entry.createdBy}</span> cleared the connection request status (was <span class="text-semibold">${entry.systemUpdate.previousValue}</span>).`;
-                }
-                return `The connection request status was cleared (was <span class="text-semibold">${entry.systemUpdate.previousValue}</span>).`;
             case SystemUpdateType.StateChange: {
                 const hasPrevious = !isNullOrWhiteSpace(entry.systemUpdate.previousValue);
 
@@ -846,7 +832,6 @@
             case SystemUpdateType.DueDateChange:
             case SystemUpdateType.DueSoonDateChange: {
                 const dateType = entry.systemUpdate.systemUpdateType === SystemUpdateType.DueDateChange ? "Due Date" : "Due Soon Date";
-                // TODO - humanize the dates
                 return `Status change auto-updated <span class="text-semibold">${dateType}</span> for the request from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
             }
             case SystemUpdateType.Completion:
@@ -873,7 +858,7 @@
         return fieldType?.getTextValue?.(rawValue, configValues) ?? rawValue;
     }
 
-    function getRequestMeta(request: AdditionalRequestBag) {
+    function getRequestMeta(request: AdditionalRequestBag): string {
         const parts: string[] = [];
 
         if (request.connectionStatus) {
@@ -921,7 +906,6 @@
         isConnectorDropdownOpen.value = true;
     }
 
-    // TODO - Determine if this needs to be saved immediately
     function updateConnector(connectorKey: string | null | undefined): void {
         if (!connectorKey || isNullOrWhiteSpace(connectorKey)) {
             return;
@@ -977,7 +961,6 @@
         activityCardRefs.value.set(key, el as InstanceType<typeof ActivityCard>);
     }
 
-    // TODO - Move to reusable place?
     /** Adds the tooltip behavior to the element. */
     function addTooltip(element: Element | null): void {
         if (element) {
@@ -1116,6 +1099,39 @@
         }
     }
 
+    async function onSaveStatusHistoryNote(bag: SaveStatusHistoryNoteBag, key: string | null | undefined): Promise<void> {
+        if (!key || isNullOrWhiteSpace(key)) {
+            return;
+        }
+
+        const errorMessage = await saveStatusHistoryNote(bag);
+
+        activityCardRefs.value.get(key)?.processSave(errorMessage);
+    }
+
+    async function saveStatusHistoryNote(bag: SaveStatusHistoryNoteBag): Promise<string | null> {
+        const result = await invokeBlockAction<SaveStatusHistoryNoteBag>("SaveStatusHistoryNote", {
+            bag
+        });
+
+        if (result.isSuccess && result.data) {
+            // The status change entry stays in place; only its note content changes, so patch the
+            // matching entry (located by the echoed feed key) rather than replacing it.
+            const index = activityEntries.value.findIndex(a => a.key === result.data?.key);
+            if (index !== -1) {
+                const cardEntry = activityEntries.value[index].cardEntry;
+                if (cardEntry) {
+                    cardEntry.content = result.data.note ?? null;
+                }
+            }
+
+            return null;
+        }
+        else {
+            return result.errorMessage ?? "An error occurred while saving the note.";
+        }
+    }
+
     async function deleteActivity(activityIdKey: string): Promise<void> {
         const result = await invokeBlockAction<string>("DeleteActivity", {
             activityIdKey
@@ -1144,6 +1160,4 @@
     watch(() => props.requestDetails?.activityEntries, () => {
         activityEntries.value = props.requestDetails?.activityEntries ?? [];
     });
-
-    // TODO - I need to reset state on close/navigate
 </script>

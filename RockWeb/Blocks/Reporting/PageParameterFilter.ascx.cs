@@ -25,7 +25,6 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -414,8 +413,7 @@ namespace RockWeb.Blocks.Reporting
             cbShowFilterButton.Checked = GetAttributeValue( AttributeKey.ShowFilterButton ).AsBoolean();
             rtbFilterButtonText.Text = GetAttributeValue( AttributeKey.FilterButtonText );
             ddlFilterButtonSize.SetValue( GetAttributeValue( AttributeKey.FilterButtonSize ).AsInteger() );
-            var ppFieldType = new PageReferenceFieldType();
-            ppFieldType.SetEditValue( ppRedirectPage, null, GetAttributeValue( AttributeKey.RedirectPage ) );
+            ppRedirectPage.SetValueFromAttributeValue( GetAttributeValue( AttributeKey.RedirectPage ) );
 
             ddlSelectionAction.SelectedValue = GetSelectAction().ConvertToInt().ToString();
 
@@ -439,8 +437,7 @@ namespace RockWeb.Blocks.Reporting
             SetAttributeValue( AttributeKey.ShowFilterButton, cbShowFilterButton.Checked.ToString() );
             SetAttributeValue( AttributeKey.FilterButtonText, rtbFilterButtonText.Text );
             SetAttributeValue( AttributeKey.FilterButtonSize, ddlFilterButtonSize.SelectedValue );
-            var ppFieldType = new PageReferenceFieldType();
-            SetAttributeValue( AttributeKey.RedirectPage, ppFieldType.GetEditValue( ppRedirectPage, null ) );
+            SetAttributeValue( AttributeKey.RedirectPage, ppRedirectPage.GetValueAsAttributeValue() );
             SetAttributeValue( AttributeKey.DoesSelectionCausePostback, ddlSelectionAction.SelectedValue );
 
             SaveAttributeValues();

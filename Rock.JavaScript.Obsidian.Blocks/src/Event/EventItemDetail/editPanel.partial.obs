@@ -1,160 +1,194 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <fieldset>
-        <div class="row">
-            <div class="col-md-6">
-                <TextBox v-model="name"
-                         label="Name"
-                         rules="required" />
+    <ContentSectionContainer :sidebar="false">
+        <ContentSection light>
+            <div class="basic-fields">
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="name"
+                                 label="Name"
+                                 rules="required" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <CheckBox v-model="isActive"
+                                  label="Active" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <ButtonGroup v-if="isApprovalConfigurable"
+                                     v-model="approvalButtonValue"
+                                     label="Status"
+                                     help="Whether this event is approved to appear on its calendars. Changeable only by users with approval rights."
+                                     formGroupClasses="d-flex flex-column align-items-start"
+                                     :items="approvalButtonItems" />
+
+                        <StaticFormControl v-else
+                                           label="Status"
+                                           modelValue=""
+                                           help="Whether this event is approved to appear on its calendars. Changeable only by users with approval rights.">
+                            <HighlightLabel :labelType="readOnlyStatusLabelType">{{ readOnlyStatusText }}</HighlightLabel>
+                        </StaticFormControl>
+
+                        <span v-if="approvalText" class="text-muted small">{{ approvalText }}</span>
+                    </div>
+                </div>
+
+                <TextBox v-model="summary"
+                         label="Summary"
+                         textMode="multiline"
+                         help="A short, plain-text summary shown in event lists and as the page's search-result snippet." />
             </div>
+        </ContentSection>
 
-            <div class="col-md-3">
-                <CheckBox v-model="isActive"
-                          label="Active" />
-            </div>
+        <ContentSection title="Event Item Details"
+                        icon="ti ti-calendar-search">
+            <div class="event-item-details">
+                <HtmlEditor v-model="description"
+                            label="Description"
+                            help="The full content shown on the event's detail page."
+                            :editorHeight="300"
+                            toolbar="light" />
 
-            <div class="col-md-3">
-                <CheckBox v-model="isApproved"
-                          label="Approved" />
-                <span v-if="isApproved" class="small">{{ approvalText }}</span>
-            </div>
-        </div>
-
-        <TextBox v-model="summary"
-                 label="Summary"
-                 textMode="multiline" />
-
-        <HtmlEditor v-model="description"
-                    label="Description"
-                    :editorHeight="100"
-                    toolbar="light" />
-
-        <div class="row">
-            <div class="col-md-6">
-                <h5>Audiences</h5>
-                <Grid light
-                      liveUpdates
-                      keyField="key"
-                      itemTerm="Audience"
-                      :data="audienceGridData"
-                      @addItem="onAddAudience">
-
-                    <TextColumn name="audience"
-                                field="audience"
-                                visiblePriority="xs" />
-
-                    <DeleteColumn :onClick="onDeleteAudience" disableConfirmation />
-                </Grid>
-
-                <CheckBoxList label="Calendars"
-                              v-model="calendars"
-                              rules="required"
-                              help="Calendars that this item should be added to (at least one is required)."
-                              :items="availableCalendars"
-                              horizontal
-                              :repeatColumns="0" />
-
-                <TextBox label="Details Url"
-                         v-model="detailsUrl"
-                         help="A custom URL to use for showing details of the calendar item (if the default item detail page should not be used)." />
-            </div>
-            <div class="col-md-6">
                 <ImageUploader v-model="photo"
                                label="Photo"
+                               help="The image shown with this event in lists and on its detail page."
                                :uploadAsTemporary="true"
                                uploadButtonText="Upload"
                                :showDeleteButton="true" />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="detailsUrl"
+                                 label="Detail Page URL"
+                                 help="A custom URL for this event's detail page, used instead of the site's default." />
+                    </div>
+                </div>
             </div>
-        </div>
+        </ContentSection>
 
-        <Panel v-if="eventItemAttributes.length > 0" title="Event Attribute Values" hasCollapse>
-            <div v-for="eventItemAttribute in eventItemAttributes">
-                <h3>{{ eventItemAttribute.eventCalendarName }}</h3>
-                <AttributeValuesContainer v-if="eventItemAttribute.attributeValues && eventItemAttribute.attributes"
-                                          :showCategoryLabel="false"
-                                          v-model="eventItemAttribute.attributeValues"
-                                          :attributes="eventItemAttribute.attributes"
-                                          isEditMode
-                                          :numberOfColumns="2" />
+        <ContentSection title="Audience &amp; Visibility"
+                        icon="ti ti-calendar-search">
+            <ContentStack title="Calendars &amp; Audiences"
+                          description="Control where this event is published and who it's intended to reach.">
+                <CheckBoxList v-model="calendars"
+                              label="Calendars"
+                              rules="required"
+                              help="The calendars this event appears on. At least one is required."
+                              :items="availableCalendars" />
+
+                <DropDownList v-model="selectedAudienceValues"
+                              label="Audiences"
+                              help="The audiences this event is intended for. Used for filtering and reporting."
+                              :items="availableAudiences"
+                              :multiple="true"
+                              :enhanceForLongLists="true" />
+            </ContentStack>
+
+            <ContentStack title="Personalization"
+                          description="Control when and for whom this event appears by targeting specific audiences and request conditions.">
+                <DropDownList v-model="selectedSegmentGuids"
+                              label="Audience Segments"
+                              help="Limit this event item to specific audience segments."
+                              :items="segmentOptions"
+                              :multiple="true"
+                              :enhanceForLongLists="true" />
+
+                <DropDownList v-model="selectedRequestFilterGuids"
+                              label="Request Filters"
+                              help="Show this event only when certain request conditions are met (such as device or context)."
+                              :items="requestFilterOptions"
+                              :multiple="true"
+                              :enhanceForLongLists="true" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection v-if="eventItemAttributes.length > 0"
+                        title="Event Attribute Values"
+                        icon="ti ti-list-details">
+            <div class="event-attribute-values">
+                <div v-for="eventItemAttribute in eventItemAttributes" :key="eventItemAttribute.eventCalendarName ?? ''">
+                    <h3>{{ eventItemAttribute.eventCalendarName }}</h3>
+                    <AttributeValuesContainer v-if="eventItemAttribute.attributeValues && eventItemAttribute.attributes"
+                                              v-model="eventItemAttribute.attributeValues"
+                                              :showCategoryLabel="false"
+                                              :attributes="eventItemAttribute.attributes"
+                                              isEditMode
+                                              :numberOfColumns="1" />
+                </div>
             </div>
-        </Panel>
+        </ContentSection>
 
-        <Panel title="Event Occurrence Attributes" hasCollapse>
-            <Grid :data="occurenceAttributesGridData" keyField="guid" itemTerm="Event Occurrence Attributes" liveUpdates
-                  light @addItem="onAddAttribute">
-                <ReorderColumn @orderChanged="onOrderChanged" />
+        <ContentSection title="Event Occurrence Attributes"
+                        icon="ti ti-binary-tree-2">
+            <div class="event-occurrence-attributes">
+                <Grid :data="occurenceAttributesGridData" keyField="guid" itemTerm="Event Occurrence Attributes" liveUpdates
+                      light @addItem="onAddAttribute">
+                    <ReorderColumn @orderChanged="onOrderChanged" />
 
-                <TextColumn name="name"
-                            field="name"
-                            title="Attribute" />
+                    <TextColumn name="name"
+                                field="name"
+                                title="Attribute" />
 
-                <TextColumn name="description"
-                            field="description"
-                            title="Description" />
+                    <TextColumn name="description"
+                                field="description"
+                                title="Description" />
 
-                <TextColumn name="fieldType"
-                            field="fieldType"
-                            title="Field Type" />
+                    <TextColumn name="fieldType"
+                                field="fieldType"
+                                title="Field Type" />
 
-                <BooleanColumn name="isRequired"
-                               field="isRequired"
-                               title="Required" />
+                    <BooleanColumn name="isRequired"
+                                   field="isRequired"
+                                   title="Required" />
 
-                <BooleanColumn name="showInGrid"
-                               field="showInGrid"
-                               title="Show in Grid" />
+                    <BooleanColumn name="showInGrid"
+                                   field="showInGrid"
+                                   title="Show in Grid" />
 
-                <BooleanColumn name="allowSearch"
-                               field="allowSearch"
-                               title="Allow Search" />
+                    <BooleanColumn name="allowSearch"
+                                   field="allowSearch"
+                                   title="Allow Search" />
 
-                <EditColumn @click="onEditAttribute" />
+                    <EditColumn @click="onEditAttribute" />
 
-                <DeleteColumn @click="onDeleteAttribute" disableConfirmation />
-            </Grid>
+                    <DeleteColumn @click="onDeleteAttribute" disableConfirmation />
+                </Grid>
 
-            <Modal v-model="isAttributeModalOpen" title="Event Occurrence Attribute" saveText="Save" :onSave="onStartSaveAttribute">
+                <Modal v-model="isAttributeModalOpen" title="Event Occurrence Attribute" saveText="Save" :onSave="onStartSaveAttribute">
 
-                <RockForm v-model:submit="submitEditAttribute" @submit="onSaveAttribute">
-                    <AttributeEditor v-model="occurrenceAttribute" :reservedKeyNames="reservedKeyNames" :attributeEntityTypeGuid="EntityType.EventItemOccurrence" :isAllowSearchVisible="true" />
-                </RockForm>
+                    <RockForm v-model:submit="submitEditAttribute" @submit="onSaveAttribute">
+                        <AttributeEditor v-model="occurrenceAttribute" :reservedKeyNames="reservedKeyNames" :attributeEntityTypeGuid="EntityType.EventItemOccurrence" :isAllowSearchVisible="true" />
+                    </RockForm>
 
-            </Modal>
-        </Panel>
-
-        <Modal v-model="isAudienceModalOpen"
-               title="Select Audience"
-               @save="onSaveAudience"
-               saveText="Save">
-
-            <div>
-                <DropDownList label="Defined Value"
-                              v-model="audience"
-                              :items="computedAudiences"
-                              :multiple="false"
-                              :enhanceForLongLists="false"
-                              :showBlankItem="false" />
+                </Modal>
             </div>
-
-        </Modal>
-    </fieldset>
+        </ContentSection>
+    </ContentSectionContainer>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import Panel from "@Obsidian/Controls/panel.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
     import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { Guid } from "@Obsidian/Types";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { EventItemBag } from "@Obsidian/ViewModels/Blocks/Event/EventItemDetail/eventItemBag";
     import { EventItemDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/EventItemDetail/eventItemDetailOptionsBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
@@ -205,9 +239,9 @@
     const occurrenceAttribute = ref<PublicEditableAttributeBag | null>(null);
     const reservedKeyNames = ref<string[]>([]);
 
-    const audience = ref<string>("");
-    const isAudienceModalOpen = ref(false);
     const audiences = ref(props.modelValue.audiences ?? []);
+    const selectedSegmentGuids = propertyRef<Guid[]>(props.modelValue.selectedSegmentGuids ?? [], "SelectedSegmentGuids");
+    const selectedRequestFilterGuids = propertyRef<Guid[]>(props.modelValue.selectedRequestFilterGuids ?? [], "SelectedRequestFilterGuids");
 
     const eventItemAttributes = ref(props.modelValue.eventCalendarItemAttributes ?? []);
 
@@ -215,37 +249,73 @@
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, isActive, name, summary, isApproved, detailsUrl, photo];
+    const propRefs = [description, isActive, name, summary, isApproved, detailsUrl, photo, selectedSegmentGuids, selectedRequestFilterGuids];
 
-    // #endregion
+    const approvalButtonItems = [
+        { value: "false", text: "Not Approved", selectedBtnType: BtnType.Warning },
+        { value: "true", text: "Approved", selectedBtnType: BtnType.Success }
+    ];
+
+    // #endregion Values
 
     // #region Computed Values
-
-    const audienceGridData = computed((): GridDataBag => {
-        const rows = audiences.value.map((audience: ListItemBag) => toAudienceRowItem(audience));
-        return { rows };
-    });
 
     const occurenceAttributesGridData = computed((): GridDataBag => {
         const rows = (eventOccurenceAttributes.value ?? []).map(x => toAttributeGridRowItem(x));
         return { rows };
     });
 
-    const computedAudiences = computed((): ListItemBag[] => {
-        const selectedAudiences = audiences.value.map(a => a.value);
-        return availableAudiences.value.filter(x => !selectedAudiences.some(sa => sa === x.value)) || [];
+    /**
+     * String adapter for the ButtonGroup, which binds a string while
+     * isApproved is a boolean.
+     */
+    const approvalButtonValue = computed<string>({
+        get(): string {
+            return isApproved.value ? "true" : "false";
+        },
+        set(value: string) {
+            isApproved.value = value === "true";
+        }
     });
 
-    // #endregion
+    /**
+     * Selected audience values for the multi-select, bridged to the persisted
+     * audiences bags.
+     */
+    const selectedAudienceValues = computed<string[]>({
+        get(): string[] {
+            return audiences.value.map(a => a.value).filter((v): v is string => !!v);
+        },
+        set(values: string[]) {
+            audiences.value = values
+                .map(v => availableAudiences.value.find(a => a.value === v))
+                .filter((a): a is ListItemBag => !!a);
+        }
+    });
+
+    /**
+     * Whether the current individual may change the approval status.
+     */
+    const isApprovalConfigurable = computed((): boolean => props.modelValue.isApprovalConfigurable ?? false);
+
+    const segmentOptions = computed((): ListItemBag[] => props.options.segmentOptions ?? []);
+
+    const requestFilterOptions = computed((): ListItemBag[] => props.options.requestFilterOptions ?? []);
+
+    /**
+     * Read-only status label shown when the individual cannot change approval.
+     */
+    const readOnlyStatusText = computed((): string => isApproved.value ? "Approved" : "Not Approved");
+
+    /**
+     * The label type for the read-only status label shown when the individual
+     * cannot change approval.
+     */
+    const readOnlyStatusLabelType = computed((): "success" | "warning" => isApproved.value ? "success" : "warning");
+
+    // #endregion Computed Values
 
     // #region Functions
-
-    function toAudienceRowItem(audience: ListItemBag): Record<string, unknown> {
-        return {
-            key: audience.value,
-            audience: audience.text
-        };
-    }
 
     function toAttributeGridRowItem(bag: EventItemOccurenceAttributeBag): Record<string, unknown> {
         return {
@@ -259,32 +329,9 @@
         };
     }
 
-    // #endregion
+    // #endregion Functions
 
     // #region Event Handlers
-
-    const onSaveAudience = (): void => {
-        isAudienceModalOpen.value = false;
-
-        const audienceValue = audience.value;
-        if (audienceValue && !audiences.value.some(x => x.value === audienceValue)) {
-            const audience = availableAudiences.value.find(x => x.value === audienceValue);
-            if (audience) {
-                audiences.value.push(audience);
-            }
-        }
-
-        audience.value = "";
-    };
-
-    const onAddAudience = (): void => {
-        isAudienceModalOpen.value = true;
-    };
-
-    const onDeleteAudience = async (key: string): Promise<void> => {
-        isAudienceModalOpen.value = false;
-        audiences.value = audiences.value.filter(s => s.value !== key);
-    };
 
     const onAddAttribute = (): void => {
         occurrenceAttribute.value = {} as PublicEditableAttributeBag;
@@ -370,7 +417,9 @@
         return true;
     }
 
-    // #endregion
+    // #endregion Event Handlers
+
+    // #region Watchers
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
@@ -384,6 +433,8 @@
         updateRefValue(detailsUrl, props.modelValue.detailsUrl ?? "");
         updateRefValue(photo, props.modelValue.photo ?? {});
         updateRefValue(audiences, props.modelValue.audiences ?? []);
+        updateRefValue(selectedSegmentGuids, props.modelValue.selectedSegmentGuids ?? []);
+        updateRefValue(selectedRequestFilterGuids, props.modelValue.selectedRequestFilterGuids ?? []);
         updateRefValue(calendars, props.modelValue.calendars ?? []);
         updateRefValue(eventItemAttributes, props.modelValue.eventCalendarItemAttributes ?? []);
     });
@@ -403,6 +454,8 @@
             detailsUrl: detailsUrl.value,
             photo: photo.value,
             audiences: audiences.value,
+            selectedSegmentGuids: selectedSegmentGuids.value,
+            selectedRequestFilterGuids: selectedRequestFilterGuids.value,
             calendars: calendars.value,
             eventCalendarItemAttributes: eventItemAttributes.value
         };
@@ -427,4 +480,6 @@
     // Watch for any changes to props that represent properties and then
     // automatically emit which property changed.
     watchPropertyChanges(propRefs, emit);
+
+    // #endregion Watchers
 </script>

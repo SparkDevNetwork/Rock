@@ -1,54 +1,98 @@
 <template>
-    <Panel v-model:quickFilterValue="internalQuickFilterValue"
+    <Panel :hasTitle="false"
+           v-model:isFullscreen="isFullscreen"
            :type="isBoardView ? 'block' : 'default'"
            :panelBodyCssClass="panelBodyCssClasses"
-           :worksurfaceMode="isBoardView"
-           panelHeaderCssClass="flex-shrink-0">
-        <template #headerActions>
-            <div v-if="groupingFields.length > 1" class="d-flex align-items-center gap-xs">
-                <ButtonDropDownList v-model="groupingKey"
-                                    :items="groupingFields"
-                                    :dropdownClass="viewModeItems.length > 1 ? 'dropdown-right' : ''"
-                                    :btnSize="BtnSize.ExtraSmall">
-                    <template #selectionPrepend>
-                        <i class="ti ti-list-details mr-spacing-tiny"></i>
-                        <span>Group By:</span>
-                    </template>
-                </ButtonDropDownList>
+           :worksurfaceMode="isBoardView">
+        <template #panelHeader>
+            <div class="panel-header grouped-grid-panel-header flex-shrink-0">
+                <h1 class="panel-title grouped-grid-panel-title">
+                    <i v-if="titleIconCssClass" :class="titleIconCssClass"></i>
+                    <span class="grouped-grid-panel-title-text">{{ title }}</span>
+                </h1>
+
+                <div v-if="groupingFields.length > 1"
+                     class="d-flex align-items-center gap-xs mr-3">
+                    <ButtonDropDownList v-if="groupingFields.length > 1"
+                                        v-model="groupingKey"
+                                        :items="groupingFields"
+                                        :btnSize="BtnSize.ExtraSmall">
+                        <template #selectionPrepend>
+                            <i class="ti ti-list-details mr-spacing-tiny"></i>
+                            <span class="group-label">Group By:</span>
+                        </template>
+                    </ButtonDropDownList>
+                </div>
+
+                <div class="grouped-grid-panel-badges mr-3">
+                    <HighlightLabel>
+                        {{ countMessage }}
+                    </HighlightLabel>
+                </div>
+
+                <!-- Forces the header actions onto their own row below the title and count at widths under 610px. Hidden at 610px and up by the scoped media query below. -->
+                <div style="height: 0; border-bottom: 1px solid var(--color-interface-soft); flex-basis: 100%;" class="grouped-grid-panel-header-separator"></div>
+                <div class="flex-grow-1 grouped-grid-panel-header-fill" style="min-width: 1px;"></div>
+
+                <div class="panel-header-actions">
+                    <QuickFilter v-model="internalQuickFilterValue"
+                                 quickFilterButtonClass="btn-panel-action" />
+
+                    <button v-if="props.onPanelSettingsClick"
+                            type="button"
+                            class="btn btn-panel-action"
+                            :class="{ active: panelSettingsActive }"
+                            title="Settings"
+                            @click.prevent.stop="props.onPanelSettingsClick">
+                        <i class="ti ti-adjustments-horizontal"></i>
+                    </button>
+                    <button v-if="props.onSnapshotClick"
+                            type="button"
+                            class="btn btn-panel-action"
+                            :class="{ active: isSnapshotVisible }"
+                            title="Toggle Snapshot"
+                            @click.prevent.stop="props.onSnapshotClick">
+                        <i class="ti ti-chart-bar-popular"></i>
+                    </button>
+                    <button v-if="props.onAddItem"
+                            type="button"
+                            class="btn btn-add btn-panel-action"
+                            title="Add a new item. (Alt+N)"
+                            data-shortcut-key="n"
+                            @click.prevent.stop="props.onAddItem">
+                        <i class="ti ti-square-plus"></i>
+                    </button>
+
+                    <button v-if="hasFullscreen"
+                            type="button"
+                            class="btn btn-panel-action panel-action-fullscreen"
+                            :class="{ active: isFullscreen }"
+                            title="Toggle Fullscreen"
+                            @click.prevent.stop="onFullscreenClick">
+                        <i v-if="isFullscreen" class="ti ti-minimize"></i>
+                        <i v-else class="ti ti-maximize"></i>
+                    </button>
+
+                    <div v-if="hasHeaderSecondaryActions"
+                         class="panel-secondary-actions dropdown">
+                        <button type="button"
+                                class="btn btn-panel-action panel-action-context"
+                                data-toggle="dropdown">
+                            <i class="ti ti-dots-vertical ti-fw"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li v-for="action in headerSecondaryActions"
+                                :key="action.title ?? ''"
+                                :class="getHeaderSecondaryActionItemClass(action)">
+                                <a href="#" @click.prevent="onActionClick(action, $event)">
+                                    <i :class="getHeaderSecondaryActionIconClass(action)"></i>
+                                    {{ action.title }}
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-            <ButtonGroup v-if="viewModeItems.length > 1"
-                         v-model="internalViewMode"
-                         :items="viewModeItems"
-                         :btnSize="BtnSize.ExtraSmall" />
-            <HighlightLabel>
-                {{ countMessage }}
-            </HighlightLabel>
-        </template>
-        <template #postFilterHeaderActions>
-            <button v-if="props.onPanelSettingsClick"
-                    type="button"
-                    class="btn btn-panel-action"
-                    :class="{ active: panelSettingsActive }"
-                    title="Settings"
-                    @click.prevent.stop="props.onPanelSettingsClick">
-                <i class="ti ti-adjustments-horizontal"></i>
-            </button>
-            <button v-if="props.onSnapshotClick"
-                    type="button"
-                    class="btn btn-panel-action"
-                    :class="{ active: isSnapshotVisible }"
-                    title="Toggle Snapshot"
-                    @click.prevent.stop="props.onSnapshotClick">
-                <i class="ti ti-chart-bar-popular"></i>
-            </button>
-            <button v-if="props.onAddItem"
-                    type="button"
-                    class="btn btn-add btn-panel-action"
-                    title="Add a new item. (Alt+N)"
-                    data-shortcut-key="n"
-                    @click.prevent.stop="props.onAddItem">
-                <i class="ti ti-square-plus"></i>
-            </button>
         </template>
         <template #preBody>
             <div>
@@ -60,11 +104,7 @@
                 <transition name="action-toolbar-slide">
                     <div v-if="isSelectedView" class="action-toolbar-slide">
                         <div class="action-toolbar-slide-inner">
-                            <ActionToolbar v-model:groupingKey="groupingKey"
-                                           v-model:viewMode="internalViewMode"
-                                           :viewModeItems="viewModeItems"
-                                           :groupingFields="groupingFields"
-                                           :isSelectedView="isSelectedView">
+                            <ActionToolbar :isSelectedView="isSelectedView">
                                 <template #selectedActionToolbar>
                                     <slot name="selectedActionToolbar" />
                                 </template>
@@ -151,6 +191,97 @@
 .action-toolbar-slide-leave-to {
     grid-template-rows: 0fr;
 }
+
+/*
+    Allow the header to wrap so the full-width break separator can force the
+    actions onto their own line below the title and count on narrow (< 610px)
+    screens, mirroring the standard Obsidian grid header. At 610px and up the
+    separator and fill are hidden (see the media query below) and everything stays
+    on one line, with the title's flex-grow pushing the count and actions right.
+*/
+.grouped-grid-panel-header {
+    flex-wrap: wrap;
+}
+
+/*
+    Free up space for the panel header when we reach smaller screen widths.
+*/
+@media (max-width: 610px) {
+    .group-label {
+        display: none;
+    }
+
+    /*
+        Board view (type="block") pins the header to a fixed height of 56px. Once the
+        header snaps below 610px and the actions wrap onto their own row, that fixed
+        height clips the wrapped content, because the panel hides vertical overflow in
+        worksurface mode. Let the header grow to fit while keeping 56px as the minimum
+        so the single-row bar height is unchanged. Scoped to .panel-block so only board
+        view is affected.
+    */
+    .panel-block > .grouped-grid-panel-header {
+        height: auto;
+        min-height: 56px;
+    }
+}
+
+/*
+    Hide the header break separator and fill at 610px and up so the title, count and
+    actions sit on one line. Below 610px they are visible and force the actions onto
+    their own row. Uses a custom 610px cutoff (matching the action toolbar) rather
+    than the d-md-none utility's 768px.
+*/
+@media (min-width: 610px) {
+
+    .grouped-grid-panel-header-separator,
+    .grouped-grid-panel-header-fill {
+        display: none;
+    }
+}
+
+/* Match the grid's badge row: vertically centered and tall enough to give the
+   title row a consistent height when the actions wrap beneath it. The count
+   must not shrink so that a long title truncates before the count does. */
+.grouped-grid-panel-badges {
+    display: flex;
+    align-items: center;
+    height: 56px;
+    flex-shrink: 0;
+}
+
+/*
+    Truncate the title with an ellipsis instead of letting it grow the header.
+    flex-basis: 0 makes the title claim only the space left over after the count
+    and actions, so a long title ellipsizes within that space rather than pushing
+    the count label (or actions) onto a new line. min-width: 0 is required for a
+    flex item to shrink below its content width.
+*/
+.grouped-grid-panel-title {
+    flex-basis: 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/*
+    Let the actions wrap when they no longer fit on one line - most notably when
+    the quick filter search box expands - the same way the grid's flat header
+    actions wrap.
+
+    height: auto overrides the panel-flex rule that sets the actions to
+    height: 100%. Outside of fullscreen the panel has no definite height, so that
+    100% already collapses to auto; but in fullscreen the panel height is definite
+    and, once the header wraps to multiple rows, the 100% resolves to the full
+    (multi-row) header height. That stretches the actions container over the whole
+    header and floats the buttons in its vertical center. Sizing to content keeps
+    the actions on their own row. The selector is qualified with .panel.panel-flex
+    so it outweighs the equally-structured global rule it is overriding.
+*/
+.panel.panel-flex > .panel-header.grouped-grid-panel-header .panel-header-actions {
+    flex-wrap: wrap;
+    height: auto;
+}
 </style>
 
 <script setup lang="ts">
@@ -162,22 +293,15 @@
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import HighlightLabel from "../highlightLabel.obs";
     import Panel from "../panel.obs";
+    import QuickFilter from "@Obsidian/Controls/Internal/quickFilter.obs";
     import ActionToolbar from "./GroupedPanel/actionToolbar.obs";
     import GroupedListView from "./GroupedPanel/groupedListView.obs";
     import GroupedBoardView from "./GroupedPanel/groupedBoardView.obs";
-    import ButtonGroup from "../buttonGroup.obs";
-    import RockLabel from "../rockLabel.obs";
     import ButtonDropDownList from "../buttonDropDownList.obs";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { GroupedGrid } from "./GroupedPanel/types.partial";
     import TransitionVerticalCollapse from "../transitionVerticalCollapse.obs";
-
-    /** Items used by the view-mode toggle in the action toolbar. */
-    type ViewModeItem = {
-        text: string;
-        value: string;
-        iconCssClass?: string;
-    };
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 
     const props = defineProps({
         groupingKey: {
@@ -219,14 +343,6 @@
         quickFilterValue: {
             type: String as PropType<string | undefined>,
             default: undefined
-        },
-        /**
-         * The items shown in the view-mode toggle. When empty or a single item,
-         * the toggle is hidden.
-         */
-        viewModeItems: {
-            type: Array as PropType<ViewModeItem[]>,
-            default: () => []
         },
         /**
          * The current view-mode value used by the toggle button group. Should
@@ -315,6 +431,30 @@
         isSnapshotVisible: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /** The title text to display in the panel header. */
+        title: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The icon CSS class to display next to the title. */
+        titleIconCssClass: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** True if the panel should show a button to toggle fullscreen mode. */
+        hasFullscreen: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** The list of secondary actions to include in the header's ellipsis menu. */
+        headerSecondaryActions: {
+            type: Array as PropType<PanelAction[]>,
+            required: false
         }
     });
 
@@ -328,7 +468,9 @@
 
     const internalQuickFilterValue = useVModelPassthrough(props, "quickFilterValue", emit);
     const groupingKey = useVModelPassthrough(props, "groupingKey", emit);
-    const internalViewMode = useVModelPassthrough(props, "viewMode", emit);
+
+    /** Tracks fullscreen state, kept in sync with the underlying Panel via v-model. */
+    const isFullscreen = ref(false);
 
     const groupedListViewRef = ref<InstanceType<typeof GroupedListView> | null>(null);
 
@@ -476,6 +618,49 @@
             return `${asFormattedString(filteredCount)} of ${asFormattedString(totalCount)} Total ${pluralize("Request", totalCount)}`;
         }
     });
+
+    /** True if there are any secondary actions to show in the header's ellipsis menu. */
+    const hasHeaderSecondaryActions = computed((): boolean => !!props.headerSecondaryActions && props.headerSecondaryActions.length > 0);
+
+    /** Toggles the panel's fullscreen mode. */
+    function onFullscreenClick(): void {
+        isFullscreen.value = !isFullscreen.value;
+    }
+
+    /**
+     * Builds the icon CSS class for a secondary action, appending a text color
+     * class for non-default action types so, for example, a "danger" action is
+     * tinted red.
+     */
+    function getHeaderSecondaryActionIconClass(action: PanelAction): string {
+        if (!action.iconCssClass) {
+            return "";
+        }
+
+        let iconClass = action.iconCssClass;
+
+        if (action.type !== "default" && action.type !== "link") {
+            iconClass += ` text-${action.type}`;
+        }
+
+        return iconClass;
+    }
+
+    /** Returns the list item class for a secondary action, disabling it when needed. */
+    function getHeaderSecondaryActionItemClass(action: PanelAction): string {
+        return action.disabled ? "disabled" : "";
+    }
+
+    /** Invokes a secondary action's handler unless the action is disabled. */
+    function onActionClick(action: PanelAction, event: Event): void {
+        if (action.disabled) {
+            return;
+        }
+
+        if (action.handler) {
+            action.handler(event);
+        }
+    }
 
     // #endregion
 

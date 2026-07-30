@@ -72,6 +72,12 @@ export type FundraisingOpportunityViewInitializationBox = {
     /** Gets or sets the resolved Participant Lava Template HTML (participant actions and progress bar). */
     participantActionsHtml?: string | null;
 
+    /**
+     * Gets or sets the URL of the current person's avatar, used when adding a new comment
+     * on the Comments tab.
+     */
+    personAvatarUrl?: string | null;
+
     /** Gets or sets the URL of the opportunity photo displayed in the left sidebar. */
     photoUrl?: string | null;
 

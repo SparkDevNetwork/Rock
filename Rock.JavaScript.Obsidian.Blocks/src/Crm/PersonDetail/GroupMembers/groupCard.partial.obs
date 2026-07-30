@@ -1,0 +1,192 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="card card-profile card-family-member panel-widget">
+        <div class="card-header group-hover">
+            <span class="card-title" v-html="group.titleHtml"></span>
+
+            <div class="panel-labels">
+                <a v-if="options.isReorderVisible"
+                   class="btn btn-link btn-xs panel-widget-reorder reorder-handle">
+                    <i class="ti ti-menu-2"></i>
+                </a>
+                <a v-if="options.isEditAllowed && group.groupEditPageUrl"
+                   :href="group.groupEditPageUrl"
+                   accesskey="O"
+                   title="Alt+O"
+                   class="btn btn-default btn-xs btn-square ml-1">
+                    <i class="ti ti-pencil"></i>
+                </a>
+            </div>
+        </div>
+
+        <div v-if="group.headerHtml" v-html="group.headerHtml"></div>
+
+        <div v-if="members.length > 0" class="card-section pb-0">
+            <div class="family-grid">
+                <div v-for="(member, index) in members"
+                     :key="member.personIdKey ?? index"
+                     :class="['family-member', { 'family-member-deceased': member.isDeceased }]">
+                    <a :href="buildPersonProfileUrl(member.personIdKey)" class="photo-link">
+                        <img :src="member.photoUrl ?? undefined" alt="" class="img-cover inset-0">
+                        <div class="photo-shadow inset-0"></div>
+                    </a>
+                    <a :href="buildPersonProfileUrl(member.personIdKey)" class="name-link">
+                        <span class="name">{{ member.displayName }}</span> <span class="person-age">{{ member.age }}</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="hasVisibleAttributes" class="card-section">
+            <span v-if="gridAttributes.length === 0" class="d-flex justify-content-between position-relative">
+                {{ group.groupTypeName }} Attributes
+                <a href="#"
+                   class="stretched-link"
+                   :title="`Show More ${group.groupTypeName} Attributes`"
+                   @click.prevent="onToggleMoreAttributes">
+                    <i :class="isMoreAttributesShown ? 'ti ti-chevron-up' : 'ti ti-chevron-down'"></i>
+                </a>
+            </span>
+            <a v-else-if="moreAttributes.length > 0"
+               href="#"
+               class="pull-right"
+               :title="`Show More ${group.groupTypeName} Attributes`"
+               @click.prevent="onToggleMoreAttributes">
+                <i :class="isMoreAttributesShown ? 'ti ti-chevron-up' : 'ti ti-chevron-down'"></i>
+            </a>
+
+            <dl v-if="gridAttributes.length > 0" class="m-0">
+                <template v-for="(attribute, index) in gridAttributes" :key="index">
+                    <dt>{{ attribute.name }}</dt>
+                    <dd v-html="attribute.formattedValue"></dd>
+                </template>
+            </dl>
+
+            <div v-if="moreAttributes.length > 0 && isMoreAttributesShown" class="mt-2">
+                <dl class="m-0">
+                    <template v-for="(attribute, index) in moreAttributes" :key="index">
+                        <dt>{{ attribute.name }}</dt>
+                        <dd v-html="attribute.formattedValue"></dd>
+                    </template>
+                </dl>
+            </div>
+        </div>
+
+        <div v-if="addresses.length > 0" class="card-section">
+            <div v-for="address in addresses"
+                 :key="address.locationId"
+                 class="profile-row group-hover">
+                <span class="profile-row-icon">
+                    <a :href="address.mapUrl ?? undefined"
+                       title="Map This Address"
+                       class="map"
+                       target="_blank">
+                        <i :class="address.iconCssClass ?? 'ti ti-map-pin'"></i>
+                    </a>
+                </span>
+                <dl class="m-0">
+                    <dt>{{ address.addressTypeName }}</dt>
+                    <dd v-html="address.formattedHtml"></dd>
+                </dl>
+
+                <div class="group-hover-item group-hover-show ml-auto">
+                    <button v-if="options.isAddressVerificationAvailable"
+                            type="button"
+                            class="btn btn-xs btn-square btn-default"
+                            title="Verify Address"
+                            @click="onVerifyAddress(address)">
+                        <i class="ti ti-globe"></i>
+                    </button>
+                    <a v-if="options.isEditAllowed && address.locationSettingsPageUrl"
+                       :href="address.locationSettingsPageUrl"
+                       class="btn btn-xs btn-square btn-default"
+                       title="Configure Location">
+                        <i class="ti ti-settings"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="group.footerHtml" v-html="group.footerHtml"></div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import { GroupAddressBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GroupMembers/groupAddressBag";
+    import { GroupAttributeBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GroupMembers/groupAttributeBag";
+    import { GroupBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GroupMembers/groupBag";
+    import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GroupMembers/groupMemberBag";
+    import { GroupMembersOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GroupMembers/groupMembersOptionsBag";
+    import { buildPersonProfileUrl } from "./utils.partial";
+
+    const props = defineProps({
+        /** The group to display. */
+        group: {
+            type: Object as PropType<GroupBag>,
+            required: true
+        },
+
+        /** The block options that control which actions are available. */
+        options: {
+            type: Object as PropType<GroupMembersOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "verifyLocation", locationId: number): void;
+    }>();
+
+    // #region Values
+
+    const isMoreAttributesShown = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const members = computed((): GroupMemberBag[] => {
+        return props.group.members ?? [];
+    });
+
+    const addresses = computed((): GroupAddressBag[] => {
+        return props.group.addresses ?? [];
+    });
+
+    const gridAttributes = computed((): GroupAttributeBag[] => {
+        return props.group.gridAttributes ?? [];
+    });
+
+    const moreAttributes = computed((): GroupAttributeBag[] => {
+        return props.group.moreAttributes ?? [];
+    });
+
+    const hasVisibleAttributes = computed((): boolean => {
+        return gridAttributes.value.length > 0 || moreAttributes.value.length > 0;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the show-more chevron is clicked. Toggles the visibility of
+     * the attributes that are not marked as grid columns.
+     */
+    function onToggleMoreAttributes(): void {
+        isMoreAttributesShown.value = !isMoreAttributesShown.value;
+    }
+
+    /**
+     * Called when the verify button of an address is clicked. Asks the parent
+     * block to re-verify the address.
+     *
+     * @param address The address to verify.
+     */
+    function onVerifyAddress(address: GroupAddressBag): void {
+        emit("verifyLocation", address.locationId);
+    }
+
+    // #endregion Event Handlers
+</script>

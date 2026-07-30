@@ -35,6 +35,8 @@ export const EditComponent = defineComponent({
 
     props: getFieldEditorProps(),
 
+    emits: ["update:modelValue"],
+
     setup(props, { emit }) {
         const fileValue = ref<ListItemBag>({});
         const entityType = ref<ListItemBag>({});

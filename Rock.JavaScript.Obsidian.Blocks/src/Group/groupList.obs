@@ -1,0 +1,363 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          :itemTerm="options.isPersonMode ? 'Group Membership' : 'Group'"
+          :entityTypeGuid="options.isPersonMode ? EntityType.GroupMember : EntityType.Group"
+          stickyHeader
+          :title="options.panelTitle ?? 'Group List'"
+          liveUpdates
+          :rowClass="rowClass"
+          :tooltipField="options.showDescriptionColumn ? undefined : 'description'"
+          :gridSettings="options.showFilter"
+          :gridSettingsActive="hasActiveFilters"
+          @gridSettingsClick="onGridSettingsClick"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <!-- Name column. When the Display Group Path attribute is on, the full ancestor path is shown as a muted subtitle beneath the name, matching the WebForms template (Name with <small>Path</small>) but with modern typography. Sort and filter remain on Name. -->
+        <Column name="name"
+                title="Name"
+                field="name"
+                :filter="textValueFilter"
+                width="15%"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <div class="d-flex flex-column">
+                    <span>{{ row['name'] }}</span>
+                    <small v-if="options.showGroupPath && row['path']" class="text-muted">{{ row['path'] }}</small>
+                </div>
+            </template>
+        </Column>
+
+        <TextColumn v-if="options.showGroupTypeColumn"
+                    name="groupType"
+                    title="Group Type"
+                    field="groupType"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="md" />
+
+        <TextColumn v-if="options.showDescriptionColumn"
+                    name="description"
+                    title="Description"
+                    field="description"
+                    width="40%"
+                    :filter="textValueFilter"
+                    visiblePriority="lg" />
+
+        <!-- Role — person mode only -->
+        <TextColumn v-if="options.isPersonMode"
+                    name="groupRole"
+                    title="Role"
+                    field="groupRole"
+                    :filter="textValueFilter"
+                    visiblePriority="sm" />
+
+        <!-- Elevated security badge — GroupList mode only, only when block is limited to security role groups -->
+        <Column v-if="options.showElevatedSecurityColumn"
+                name="elevatedSecurityLevel"
+                title="Elevated Security Level"
+                headerClass="text-center"
+                itemClass="justify-content-center"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <span v-if="row['isSecurityRole'] && row['elevatedSecurityLevel'] === 2"
+                      class="label label-danger"
+                      title="Extreme Security">Security Level: Extreme</span>
+                <span v-else-if="row['isSecurityRole'] && row['elevatedSecurityLevel'] === 1"
+                      class="label label-warning"
+                      title="High Security">Security Level: High</span>
+            </template>
+        </Column>
+
+        <!-- Date Added — person mode only. Display as elapsed time (e.g. "17 Minutes Ago") to match the source WebForms block (DateTimeField FormatAsElapsedTime="true"). -->
+        <Column v-if="options.isPersonMode"
+                name="dateAdded"
+                title="Added"
+                field="dateAdded"
+                headerClass="text-right"
+                itemClass="justify-content-end text-right"
+                visiblePriority="md">
+            <template #format="{ row }">
+                {{ formatDateAdded(row['dateAdded']) }}
+            </template>
+        </Column>
+
+        <!-- Member Count — GroupList mode only -->
+        <NumberColumn v-if="!options.isPersonMode && options.showMemberCountColumn"
+                      name="memberCount"
+                      title="Members"
+                      field="memberCount"
+                      :filter="numberValueFilter"
+                      headerClass="text-right w-fit"
+                      itemClass="justify-content-end text-right"
+                      width="150"
+                      visiblePriority="md" />
+
+        <BooleanColumn v-if="options.showSystemColumn"
+                       name="isSystem"
+                       title="System"
+                       field="isSystem"
+                       width="150"
+                       :filter="booleanValueFilter"
+                       headerClass="text-center"
+                       itemClass="justify-content-center text-center"
+                       visiblePriority="xs" />
+
+        <BooleanColumn v-if="options.showActiveStatusColumn"
+                       name="isActive"
+                       title="Active"
+                       field="isActive"
+                       :filter="booleanValueFilter"
+                       headerClass="text-center"
+                       itemClass="justify-content-center text-center"
+                       visiblePriority="xs" />
+
+        <!-- Sync icon column — GroupList mode only, rendered when at least one row is synced. Per-row icon only shows when that row is synced. Person mode shows the sync icon in the delete column instead (see below). -->
+        <Column v-if="!options.isPersonMode && hasSyncedRows"
+                name="syncStatus"
+                title=""
+                width="42"
+                itemClass="grid-columncommand"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <span v-if="row['isSynced']"
+                      class="ti ti-switch-3"
+                      title="Managed by Group Sync"></span>
+            </template>
+        </Column>
+
+        <SecurityColumn v-if="options.showSecurityColumn"
+                        itemTitle="name"
+                        :formatComponent="options.isPersonMode ? GroupSecurityCell : undefined" />
+
+
+        <DeleteColumn :formatComponent="options.isPersonMode ? SyncOrDeleteCell : DeleteOrArchiveCell"
+                      @click="onDeleteClick" />
+    </Grid>
+
+    <GridSettingsModal v-if="options.showFilter"
+                       v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :options="options"
+                       @close="isGridSettingsVisible = false" />
+
+    <AddGroupMemberModal v-if="options.isPersonMode"
+                         v-model:visible="isAddMemberVisible"
+                         :options="options"
+                         :onAddMember="addGroupMember"
+                         @added="onMemberAdded" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { HttpResult } from "@Obsidian/Types/Utility/http";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { BooleanColumn, Column, TextColumn, NumberColumn, textValueFilter, numberValueFilter, booleanValueFilter, pickExistingValueFilter, DeleteColumn, SecurityColumn } from "@Obsidian/Controls/grid";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { GroupListOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupList/groupListOptionsBag";
+    import { GroupListAddGroupMemberRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupList/groupListAddGroupMemberRequestBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey, PreferenceKey, GridSettingsOptions } from "./GroupList/types.partial";
+    import { computed, reactive, ref, watch } from "vue";
+    import GridSettingsModal from "./GroupList/gridSettingsModal.partial.obs";
+    import AddGroupMemberModal from "./GroupList/addGroupMemberModal.partial.obs";
+    import SyncOrDeleteCell from "./GroupList/syncOrDeleteCell.partial.obs";
+    import DeleteOrArchiveCell from "./GroupList/deleteOrArchiveCell.partial.obs";
+    import GroupSecurityCell from "./GroupList/groupSecurityCell.partial.obs";
+
+    /** Shape returned by the AddGroupMember block action. */
+    type AddGroupMemberResponse = {
+        status: string;
+        archivedMemberIdKey?: string;
+        message?: string;
+    };
+
+    const config = useConfigurationValues<ListBlockBox<GroupListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const options = computed(() => config.options ?? {} as GroupListOptionsBag);
+
+    const hasSyncedRows = ref(false);
+
+    const isGridSettingsVisible = ref(false);
+    const isAddMemberVisible = ref(false);
+
+    const gridSettings = ref<GridSettingsOptions>({
+        groupTypeIdKey: preferences.getValue(PreferenceKey.FilterGroupTypeIdKey),
+        purposeIdKey: preferences.getValue(PreferenceKey.FilterPurposeIdKey),
+        activeStatus: preferences.getValue(PreferenceKey.FilterActiveStatus) || "all"
+    });
+
+    const hasActiveFilters = computed(() =>
+        !!gridSettings.value.groupTypeIdKey
+        || !!gridSettings.value.purposeIdKey
+        || (options.value.showActiveFilter && gridSettings.value.activeStatus !== "all")
+    );
+
+    // #endregion
+
+    // #region Functions
+
+    function rowClass(row: Record<string, unknown>): string {
+        return row["isActive"] === false || row["isArchived"] === true
+            ? "is-inactive"
+            : "";
+    }
+
+    function formatDateAdded(value: unknown): string {
+        if (!value) {
+            return "";
+        }
+
+        const iso = value instanceof Date ? value.toISOString() : String(value);
+        return RockDateTime.parseISO(iso)?.toElapsedString() ?? "";
+    }
+
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            hasSyncedRows.value = gridData.rows?.some(r => r["isSynced"] === true) ?? false;
+
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+    // #endregion
+
+    // #region Event Handlers
+
+    function onSelectItem(key: string): void {
+        if (!config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            return;
+        }
+
+        // In person mode the row's "key" is the GroupMember IdKey (so duplicate memberships
+        // in the same group stay unique). Detail-page navigation, however, still expects
+        // the Group IdKey, so look up the row and use its groupIdKey explicitly.
+        const row = gridData?.rows?.find(r => r["idKey"] === key);
+        const groupIdKey = (row?.["groupIdKey"] as string) ?? key;
+        window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", groupIdKey);
+    }
+
+    async function onDeleteClick(key: string): Promise<void> {
+        const row = gridData?.rows?.find(r => r["idKey"] === key);
+        if (!row) {
+            return;
+        }
+
+        const needsArchive = row["needsArchive"] as boolean;
+        const name = row["name"] as string;
+        const memberCount = row["memberCount"] as number;
+        const hasChatChannel = row["hasChatChannel"] === true;
+        const isPersonMode = options.value.isPersonMode;
+
+        let confirmMsg: string;
+        if (isPersonMode) {
+            confirmMsg = needsArchive
+                ? `Are you sure you want to archive this person's membership in "${name}"?`
+                : `Are you sure you want to remove this person from "${name}"?`;
+        }
+        else {
+            confirmMsg = needsArchive
+                ? `Are you sure you want to archive "${name}"?`
+                : `Are you sure you want to delete "${name}"? This action will also remove ${memberCount} ${pluralize("member", memberCount)}.`;
+
+            // Warn when the group has an external chat channel — matches the WebForms
+            // js-has-chat-channel prefix on the confirmation dialog.
+            if (hasChatChannel) {
+                confirmMsg = `This group has a corresponding channel in the external chat system. ${confirmMsg}`;
+            }
+        }
+
+        const confirmed = await confirm(confirmMsg);
+        if (!confirmed) {
+            return;
+        }
+
+        // key is already the correct identifier for the action in either mode:
+        // - person mode: idKey === GroupMember IdKey → DeleteMember(key)
+        // - GroupList mode: idKey === Group IdKey      → Delete(key)
+        const actionName = isPersonMode ? "DeleteMember" : "Delete";
+        const result = await invokeBlockAction<string>(actionName, { key });
+
+        if (result.isSuccess) {
+            if (gridData?.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+                if (index !== -1) {
+                    gridData.rows.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete.");
+        }
+    }
+
+    function onAddItem(): void {
+        if (options.value.isPersonMode) {
+            isAddMemberVisible.value = true;
+        }
+        else {
+            if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+                window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+            }
+        }
+    }
+
+    function onMemberAdded(): void {
+        gridDataSource.value = loadGridData();
+    }
+
+    /*
+        Lifted from the AddGroupMemberModal so the block-action call lives next to the
+        block. The modal still awaits the response (including the "ArchiveFound" status
+        path) so its restore-prompt UX stays self-contained.
+    */
+    async function addGroupMember(bag: GroupListAddGroupMemberRequestBag): Promise<HttpResult<AddGroupMemberResponse>> {
+        return await invokeBlockAction<AddGroupMemberResponse>("AddGroupMember", { bag });
+    }
+
+    function onGridSettingsClick(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterGroupTypeIdKey, gridSettings.value.groupTypeIdKey ?? "");
+        preferences.setValue(PreferenceKey.FilterPurposeIdKey, gridSettings.value.purposeIdKey ?? "");
+        preferences.setValue(PreferenceKey.FilterActiveStatus, gridSettings.value.activeStatus ?? "");
+        await preferences.save();
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>
+
+<style scoped>
+/*
+    Custom columns persisted from the WebForms block with header-class/item-class of
+    "grid-columncommand" receive flex: 1 1 10% from the grid by default because the
+    CustomColumnDefinitionBag has no width field. Override to match the fixed-width
+    command column convention used by built-in columns (delete, security, etc.).
+*/
+:deep(.grid-columncommand) {
+    flex: 0 0 52px !important;
+    min-width: unset !important;
+}
+</style>

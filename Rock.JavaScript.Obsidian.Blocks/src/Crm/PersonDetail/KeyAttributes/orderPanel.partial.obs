@@ -1,0 +1,104 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset class="attribute-values">
+        <div v-dragSource="dragOptions" v-dragTarget="dragOptions">
+            <div v-for="(item, index) in items"
+                 :key="item.guid ?? index"
+                 class="form-group">
+                <i class="ti ti-menu-2 reorder-handle"></i>
+                {{ " " + (item.name ?? "") }}
+            </div>
+        </div>
+
+        <div class="actions">
+            <button type="button" accesskey="s" class="btn btn-primary btn-xs" :disabled="isSaving" @click="onSave">Save</button>
+            <button type="button" accesskey="c" class="btn btn-link btn-xs" @click="onCancel">Cancel</button>
+        </div>
+    </fieldset>
+</template>
+
+<style scoped>
+.reorder-handle {
+    color: var(--color-info-strong);
+    cursor: grab;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder } from "@Obsidian/Directives/dragDrop";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { Guid } from "@Obsidian/Types";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { KeyAttributesViewBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/KeyAttributes/keyAttributesViewBag";
+
+    // #region Types
+
+    type OrderItem = {
+        guid: Guid | null | undefined;
+        name: string | null | undefined;
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        attributes: {
+            type: Object as PropType<Record<string, PublicAttributeBag>>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "saved", value: KeyAttributesViewBag): void;
+        (e: "cancel"): void;
+    }>();
+
+    // #region Values
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // Build the ordered list from the bookmarked attributes, respecting the
+    // display order supplied by the server.
+    const items = ref<OrderItem[]>(
+        Object.values(props.attributes ?? {})
+            .slice()
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .map(a => ({ guid: a.attributeGuid, name: a.name }))
+    );
+    const isSaving = ref(false);
+
+    const dragOptions = useDragReorder(items);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    async function onSave(): Promise<void> {
+        isSaving.value = true;
+
+        try {
+            const orderedAttributeGuids = items.value
+                .map(i => i.guid)
+                .filter((g): g is Guid => !!g);
+
+            const result = await invokeBlockAction<KeyAttributesViewBag>("SaveOrder", { orderedAttributeGuids });
+
+            if (result.isSuccess && result.data) {
+                emit("saved", result.data);
+            }
+            else {
+                await alert(result.errorMessage || "Unable to save the attribute order.");
+            }
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    function onCancel(): void {
+        emit("cancel");
+    }
+
+    // #endregion Event Handlers
+</script>

@@ -12,7 +12,9 @@
                      :secondaryActions="secondaryActions"
                      :title="title"
                      :isExpanded="simulateExpandedSlot"
-                     :onClick="simulateNotClickable ? undefined : onClick">
+                     :isRadioSelectable="simulateRadioSelectable"
+                     :isSelected="isRadioSelected"
+                     :onClick="simulateNotClickable ? undefined : onCardClick">
 
             <template v-if="simulateActionsSlot" #actions>
                 <RockButton :btnType="BtnType.Link" @click.stop="onClick('Subscribe')">Subscribe</RockButton>
@@ -105,6 +107,9 @@
     const title = ref<string>("Growth Metrics");
     const simulateValues = ref<string[]>([]);
 
+    // Tracks the toggled selection state when the card is simulated as radio selectable.
+    const isRadioSelected = ref<boolean>(false);
+
     const primaryActions = computed<MenuAction[] | null>(() => {
         if (!simulateValues.value.includes("primaryActions")) {
             return [];
@@ -169,6 +174,10 @@
         {
             value: "notClickable",
             text: "Not Clickable"
+        },
+        {
+            value: "radioSelectable",
+            text: "Radio Selectable"
         }
     ];
 
@@ -189,6 +198,8 @@
 
     const simulateNotClickable = computed((): boolean => simulateValues.value.includes("notClickable"));
 
+    const simulateRadioSelectable = computed((): boolean => simulateValues.value.includes("radioSelectable"));
+
     const exampleCode = computed<string>(() => {
         return `<DisplayCard aside="${aside.value}"
              asideIconCssClass="${asideIconCssClass.value}"
@@ -200,7 +211,9 @@
              :primaryActions="${JSON.stringify(primaryActions.value, null, 2).replace(/\n/g, "\n                   ").replace(/"/g, "'")}"
              :secondaryActions="${JSON.stringify(secondaryActions.value, null, 2).replace(/\n/g, "\n                   ").replace(/"/g, "'")}"
              title="${title.value}"${simulateExpandedSlot.value ? `
-             :isExpanded="true"` : ""}${!simulateNotClickable.value ? `
+             :isExpanded="true"` : ""}${simulateRadioSelectable.value ? `
+             :isRadioSelectable="true"
+             :isSelected="isSelected"` : ""}${!simulateNotClickable.value ? `
              @click="onClick"` : ""}${anySlotsSimulated.value ? `>${simulateActionsSlot.value ? `
     <template #actions>
         <RockButton :btnType="BtnType.Link" @click.stop="onSubscribe">
@@ -221,6 +234,15 @@
 
     function onClick(item?: string): void {
         alert(`${item ?? "Item"} clicked!`);
+    }
+
+    function onCardClick(): void {
+        if (simulateRadioSelectable.value) {
+            isRadioSelected.value = !isRadioSelected.value;
+            return;
+        }
+
+        onClick();
     }
 
     watch(iconLabelType, (newValue) => {

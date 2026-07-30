@@ -456,7 +456,7 @@ namespace RockWeb.Blocks.Crm
                 return;
             }
 
-            if ( rowValue.PersonProperty.Attribute != null && rowValue.PersonProperty.Attribute.FieldType.Field is Rock.Field.Types.MatrixFieldType )
+            if ( rowValue.PersonProperty.Attribute != null && rowValue.PersonProperty.Attribute.FieldType.Guid == Rock.SystemGuid.FieldType.MATRIX.AsGuid() )
             {
                 personMergeFieldRowEventArgs.SelectionControlType = MergePersonField.SelectionControlType.Checkbox;
                 personMergeFieldRowEventArgs.ContentDisplayType = MergePersonField.ContentDisplayType.ContentWrapper;
@@ -720,7 +720,7 @@ namespace RockWeb.Blocks.Crm
                         foreach ( var property in MergeData.Properties.Where( p => p.Key.StartsWith( "attr_" ) ) )
                         {
                             var attribute = AttributeCache.Get( property.AttributeId.Value );
-                            if ( attribute.FieldType.Field is Rock.Field.Types.MatrixFieldType )
+                            if ( attribute.FieldType.Guid == Rock.SystemGuid.FieldType.MATRIX.AsGuid() )
                             {
                                 MergeAttributeMatrixAttributeValues( rockContext, primaryPerson, property, attribute );
                             }
@@ -2156,7 +2156,7 @@ namespace RockWeb.Blocks.Crm
                 foreach ( var attribute in person.Attributes.OrderBy( a => a.Value.Order ) )
                 {
                     var value = person.GetAttributeValue( attribute.Key );
-                    var condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
+                    var condensed = attribute.Value.FieldType.Guid == Rock.SystemGuid.FieldType.IMAGE.AsGuid();
                     var formattedValue = attribute.Value.FieldType.Field.FormatValue( null, attribute.Value.EntityTypeId, person.Id, value, attribute.Value.QualifierValues, condensed );
 
                     var hasViewPermission = attribute.Value.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson )
@@ -2173,7 +2173,7 @@ namespace RockWeb.Blocks.Crm
                     foreach ( var attribute in groupMember.Attributes.OrderBy( a => a.Value.Order ) )
                     {
                         var value = groupMember.GetAttributeValue( attribute.Key );
-                        var condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
+                        var condensed = attribute.Value.FieldType.Guid == Rock.SystemGuid.FieldType.IMAGE.AsGuid();
                         var formattedValue = attribute.Value.FieldType.Field.FormatValue( null, attribute.Value.EntityTypeId, groupMember.Id, value, attribute.Value.QualifierValues, condensed );
 
                         var hasViewPermission = attribute.Value.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson )
@@ -2218,7 +2218,7 @@ namespace RockWeb.Blocks.Crm
                     foreach ( var attribute in family.Attributes.OrderBy( a => a.Value.Order ) )
                     {
                         string value = family.GetAttributeValue( attribute.Key );
-                        bool condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
+                        bool condensed = attribute.Value.FieldType.Guid == Rock.SystemGuid.FieldType.IMAGE.AsGuid();
                         string formattedValue = attribute.Value.FieldType.Field.FormatValue( null, attribute.Value.EntityTypeId, person.Id, value, attribute.Value.QualifierValues, condensed );
 
                         var hasViewPermission = attribute.Value.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson )
@@ -2313,7 +2313,7 @@ namespace RockWeb.Blocks.Crm
                 if ( personProperty.AttributeId.HasValue )
                 {
                     var attribute = AttributeCache.Get( personProperty.AttributeId.Value );
-                    if ( attribute.FieldType.Field is Rock.Field.Types.MatrixFieldType )
+                    if ( attribute.FieldType.Guid == Rock.SystemGuid.FieldType.MATRIX.AsGuid() )
                     {
                         personProperty.Values.ForEach( v => v.Selected = true );
                     }

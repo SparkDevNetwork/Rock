@@ -46,6 +46,8 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         /// <param name="fieldTypeClass">The field type class.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         protected ValueListFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", string valuePrompt = "", 
             string definedTypeGuid = "", string customValues = "", string category = "", int order = 0, string key = null, string fieldTypeClass = null )
             : base( name, description, required, defaultValue, category, order, key, fieldTypeClass )
@@ -53,7 +55,7 @@ namespace Rock.Attribute
             if ( !string.IsNullOrWhiteSpace( valuePrompt ) )
             {
                 var configValue = new Field.ConfigurationValue( valuePrompt );
-                FieldConfigurationValues.Add( VALUE_PROMPT_KEY, configValue );
+                FieldConfigurationValues.AddOrReplace( VALUE_PROMPT_KEY, configValue );
             }
 
             Guid? guid = definedTypeGuid.AsGuidOrNull();
@@ -63,14 +65,14 @@ namespace Rock.Attribute
                 if ( definedType != null )
                 {
                     var definedTypeConfigValue = new Field.ConfigurationValue( definedType.Id.ToString() );
-                    FieldConfigurationValues.Add( DEFINED_TYPE_KEY, definedTypeConfigValue );
+                    FieldConfigurationValues.AddOrReplace( DEFINED_TYPE_KEY, definedTypeConfigValue );
                 }
             }
 
             if ( !string.IsNullOrWhiteSpace( customValues ) )
             {
                 var configValue = new Field.ConfigurationValue( customValues );
-                FieldConfigurationValues.Add( CUSTOM_VALUES, configValue );
+                FieldConfigurationValues.AddOrReplace( CUSTOM_VALUES, configValue );
             }
         }
 
@@ -87,10 +89,33 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public ValueListFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "",
             string valuePrompt = "", string definedTypeGuid = "", string customValues = "", string category = "", int order = 0, string key = null )
-           : this( name, description, required, defaultValue, valuePrompt, definedTypeGuid, customValues, category, order, key, 
-            typeof( Rock.Field.Types.ValueListFieldType ).FullName )
+           : base( SystemGuid.FieldType.VALUE_LIST.AsGuid(), name )
+        {
+            Category = category;
+            CustomValues = customValues;
+            DefaultValue = defaultValue;
+            DefinedTypeGuid = definedTypeGuid;
+            Description = description;
+            IsRequired = required;
+            ValuePrompt = valuePrompt;
+            Order = order;
+
+            if ( key.IsNotNullOrWhiteSpace() )
+            {
+                Key = key;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ValueListFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public ValueListFieldAttribute( string name )
+           : base( SystemGuid.FieldType.VALUE_LIST.AsGuid(), name )
         {
         }
 
@@ -128,6 +153,61 @@ namespace Rock.Attribute
             set
             {
                 FieldConfigurationValues.AddOrReplace( VALUE_PROMPT_KEY, new Field.ConfigurationValue( value ) );
+            }
+        }
+
+        /// <summary>
+        /// The custom values to display in a list. Format is either
+        /// 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...',
+        /// or a SQL Select statement that returns result set with a 'Value'
+        /// and 'Text' column.
+        /// </summary>
+        public string CustomValues
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( CUSTOM_VALUES );
+            }
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( CUSTOM_VALUES, new Field.ConfigurationValue( value ) );
+            }
+        }
+
+        /// <summary>
+        /// The unique identifier of the defined type that should be used when presenting
+        /// the values to pick from.
+        /// </summary>
+        public string DefinedTypeGuid
+        {
+            get
+            {
+                var configValue = FieldConfigurationValues.GetValueOrNull( DEFINED_TYPE_KEY );
+
+                if ( int.TryParse( configValue, out var id ) && RockApp.Current.IsDatabaseAvailable() )
+                {
+                    var definedType = DefinedTypeCache.Get( id );
+
+                    if ( definedType != null )
+                    {
+                        return definedType.Guid.ToString();
+                    }
+                }
+
+                return null;
+            }
+            set
+            {
+                if ( Guid.TryParse( value, out var guid ) && RockApp.Current.IsDatabaseAvailable() )
+                {
+                    var definedType = DefinedTypeCache.Get( guid );
+
+                    if ( definedType != null )
+                    {
+                        var configValue = new Field.ConfigurationValue( definedType.Id.ToString() );
+                        FieldConfigurationValues.AddOrReplace( DEFINED_TYPE_KEY, configValue );
+                    }
+                }
             }
         }
     }

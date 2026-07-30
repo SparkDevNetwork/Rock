@@ -317,3 +317,18 @@
 }
 
 .global-custom-controls(@enable-global-custom-controls);
+
+
+// ====================== Inline Checkbox ======================
+
+.inline-checkbox {
+  margin-bottom: var(--spacing-medium);
+}
+
+.panel-body,
+.contentsection-body,
+.contentstack-body {
+  .inline-checkbox:first-child {
+    margin-top: 0;
+  }
+}

@@ -260,7 +260,9 @@ namespace Rock.Blocks.Event
         /// <returns></returns>
         private string FormatContentItems( IEnumerable<ContentChannelItem> items )
         {
-            var qryParams = new Dictionary<string, string> { { "ContentItemId", "" } };
+            // autoEdit opens the content item in edit mode, matching the WebForms
+            // behavior where selecting an item from an event went straight to editing.
+            var qryParams = new Dictionary<string, string> { { "ContentItemId", "" }, { "autoEdit", "true" } };
 
             var itemLinks = new List<string>();
             foreach ( var item in items )

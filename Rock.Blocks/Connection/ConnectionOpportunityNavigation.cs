@@ -67,6 +67,12 @@ namespace Rock.Blocks.Connection
         Order = 2,
         IsRequired = true )]
 
+    [LinkedPage( "Celebrations Report Page",
+        Key = AttributeKey.CelebrationsReportPage,
+        Description = "Select the page that the celebrations button should open to view the celebrations report.",
+        Order = 2,
+        IsRequired = false )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "6A3E1450-486E-45CF-8979-E280DACAEFEA" )]
@@ -80,6 +86,8 @@ namespace Rock.Blocks.Connection
             public const string ConnectionsHubPage = "ConnectionsHubPage";
             public const string OperationalSnapshotPage = "OperationalSnapshotPage";
             public const string MyConnectionsPage = "MyConnectionsPage";
+            public const string CelebrationsReportPage = "CelebrationsReportPage";
+
         }
 
         private static class NavigationUrlKey
@@ -87,6 +95,7 @@ namespace Rock.Blocks.Connection
             // Connection Type-level URLs.
             public const string TypeConnectionsHubListViewPage = "TypeConnectionsHubListViewPage";
             public const string TypeOperationalSnapshotPage = "TypeOperationalSnapshotPage";
+            public const string TypeCelebrationsReportPage = "TypeCelebrationsReportPage";
 
             // Connection Opportunity-level URLs.
             public const string OpportunityConnectionsHubListViewPage = "OpportunityConnectionsHubListViewPage";
@@ -103,6 +112,7 @@ namespace Rock.Blocks.Connection
             public const string ConnectionOpportunity = "ConnectionOpportunity";
             public const string Connector = "Connector";
             public const string IsMyConnectionsView = "IsMyConnectionsView";
+            public const string CelebrationsReportConnectionTypeId = "ConnectionTypeId";
         }
 
         private static class PersonPreferenceKey
@@ -423,7 +433,8 @@ namespace Rock.Blocks.Connection
             {
                 IconCssClass = connectionType.IconCssClass,
                 Name = connectionType.Name,
-                EnabledViews = connectionType.EnabledViews
+                EnabledViews = connectionType.EnabledViews,
+                IsCelebrationEnabled = connectionType.EnabledFeatures.HasFlag( EnabledFeatureFlags.Celebration )
             };
         }
 
@@ -740,6 +751,7 @@ namespace Rock.Blocks.Connection
                 // Connection Type-level URLs.
                 [NavigationUrlKey.TypeConnectionsHubListViewPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsHubPage, typeListViewQueryParams ),
                 [NavigationUrlKey.TypeOperationalSnapshotPage] = this.GetLinkedPageUrl( AttributeKey.OperationalSnapshotPage, PageParameterKey.ConnectionType, connectionTypeKey ),
+                [NavigationUrlKey.TypeCelebrationsReportPage] = this.GetLinkedPageUrl( AttributeKey.CelebrationsReportPage, PageParameterKey.CelebrationsReportConnectionTypeId, connectionTypeKey ),
 
                 // Connection Opportunity-level URLs.
                 [NavigationUrlKey.OpportunityConnectionsHubListViewPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsHubPage, opportunityListViewQueryParams ),

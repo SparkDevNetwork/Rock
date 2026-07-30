@@ -398,3 +398,22 @@
 }
 
 // ======================== END MOBILE ADJUSTMENTS =======================
+
+// ======================== PRINT ========================
+
+/*
+    7/30/26 - CLAUDE
+
+    The nav has nothing to act on once printed. It was already absent by
+    accident, since the print page box (~740px) falls under the mobile
+    breakpoint above. Mirrors the styles-v2 copy of this component; keep in sync.
+
+    Reason: Hide the section nav when printing, deliberately.
+*/
+@media print {
+    .contentsection-nav {
+        display: none;
+    }
+}
+
+// ======================== END PRINT ========================

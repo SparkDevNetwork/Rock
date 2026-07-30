@@ -57,8 +57,8 @@ namespace Rock.Blocks.Connection
         Key = AttributeKey.DisplayBanner )]
 
     [CustomDropdownListField( "First Time Guest",
-        Description = "Controls whether the form shows the first-time guest option and whether it is required.",
-        ListSource = ListSource.HideShowRequired,
+        Description = "Controls whether the form shows the first-time guest option.",
+        ListSource = ListSource.HideShow,
         DefaultValue = "Hide",
         IsRequired = false,
         Category = AttributeCategory.BasicSettings,
@@ -73,8 +73,8 @@ namespace Rock.Blocks.Connection
         Key = AttributeKey.FirstTimeGuestOpportunity )]
 
     [CustomDropdownListField( "Title",
-        Description = "Controls whether the form shows the person's title (such as Mr. or Mrs.) and whether it is required.",
-        ListSource = ListSource.HideShowRequired,
+        Description = "Controls whether the form shows the person's title (such as Mr. or Mrs.).",
+        ListSource = ListSource.HideShow,
         DefaultValue = "Hide",
         IsRequired = false,
         Category = AttributeCategory.BasicSettings,
@@ -82,8 +82,8 @@ namespace Rock.Blocks.Connection
         Key = AttributeKey.Title )]
 
     [CustomDropdownListField( "Suffix",
-        Description = "Controls whether the form shows the person's name suffix (such as Jr., Sr., or III), and whether it is required.",
-        ListSource = ListSource.HideShowRequired,
+        Description = "Controls whether the form shows the person's name suffix (such as Jr., Sr., or III).",
+        ListSource = ListSource.HideShow,
         DefaultValue = "Hide",
         IsRequired = false,
         Category = AttributeCategory.BasicSettings,
@@ -190,8 +190,8 @@ namespace Rock.Blocks.Connection
         Key = AttributeKey.SpouseMobilePhone )]
 
     [CustomDropdownListField( "SMS Enabled",
-        Description = "Controls whether the form shows consent to receive text messages and whether it is required.",
-        ListSource = ListSource.HideShowRequired,
+        Description = "Controls whether the form shows consent to receive text messages.",
+        ListSource = ListSource.HideShow,
         DefaultValue = "Show",
         IsRequired = false,
         Category = AttributeCategory.BasicSettings,
@@ -223,7 +223,7 @@ namespace Rock.Blocks.Connection
         Order = 20,
         Key = AttributeKey.EnableCaptcha )]
 
-    [CategoryField( "Person Attribute Category",
+    [AttributeCategoryField( "Person Attribute Category",
         Description = "The category used to determine which person attributes are available on the form.",
         EntityTypeName = "Rock.Model.Person",
         AllowMultiple = false,
@@ -278,12 +278,19 @@ namespace Rock.Blocks.Connection
         Order = 26,
         Key = AttributeKey.RecordSource )]
 
+    [BooleanField( "Exclude Non-Public Connection Request Attributes",
+        Description = "Attributes without 'Public' checked will not be displayed.",
+        DefaultBooleanValue = true,
+        Category = AttributeCategory.BasicSettings,
+        Order = 27,
+        Key = AttributeKey.ExcludeNonPublicAttributes )]
+
     [TextField( "Banner Icon",
         Description = "The icon used to display in the banner.",
         DefaultValue = "ti ti-route-alt-left",
         IsRequired = false,
         Category = AttributeCategory.CustomizeTextBanner,
-        Order = 27,
+        Order = 28,
         Key = AttributeKey.BannerIcon )]
 
     [TextField( "Banner Title",
@@ -291,7 +298,7 @@ namespace Rock.Blocks.Connection
         DefaultValue = "Next Steps",
         IsRequired = false,
         Category = AttributeCategory.CustomizeTextBanner,
-        Order = 28,
+        Order = 29,
         Key = AttributeKey.BannerTitle )]
 
     [TextField( "Banner Description",
@@ -299,7 +306,7 @@ namespace Rock.Blocks.Connection
         DefaultValue = "We want to connect with you and help you take a next step!",
         IsRequired = false,
         Category = AttributeCategory.CustomizeTextBanner,
-        Order = 29,
+        Order = 30,
         Key = AttributeKey.BannerDescription )]
 
     [TextField( "Personal Information Section Title",
@@ -307,7 +314,7 @@ namespace Rock.Blocks.Connection
         DefaultValue = "Personal Information",
         IsRequired = false,
         Category = AttributeCategory.CustomizeTextPersonalInformation,
-        Order = 30,
+        Order = 31,
         Key = AttributeKey.PersonalInformationTitle )]
 
     [TextField( "Personal Information Section Description",
@@ -315,7 +322,7 @@ namespace Rock.Blocks.Connection
         DefaultValue = "Help us get to know you and support you more personally.",
         IsRequired = false,
         Category = AttributeCategory.CustomizeTextPersonalInformation,
-        Order = 31,
+        Order = 32,
         Key = AttributeKey.PersonalInformationDescription )]
 
     [TextField( "Contact Information Section Title",
@@ -323,7 +330,7 @@ namespace Rock.Blocks.Connection
         DefaultValue = "Contact Information",
         IsRequired = false,
         Category = AttributeCategory.CustomizeTextContactInformation,
-        Order = 32,
+        Order = 33,
         Key = AttributeKey.ContactInformationTitle )]
 
     [TextField( "Contact Information Section Description",
@@ -331,7 +338,7 @@ namespace Rock.Blocks.Connection
         DefaultValue = "Provide the best ways for us to stay in touch with you.",
         IsRequired = false,
         Category = AttributeCategory.CustomizeTextContactInformation,
-        Order = 33,
+        Order = 34,
         Key = AttributeKey.ContactInformationDescription )]
 
     [TextField( "Additional Comments Label",
@@ -339,7 +346,7 @@ namespace Rock.Blocks.Connection
         DefaultValue = "Additional Comments",
         IsRequired = false,
         Category = AttributeCategory.CustomizeTextContactInformation,
-        Order = 34,
+        Order = 35,
         Key = AttributeKey.AdditionalCommentsLabel )]
 
     [TextField( "Connection Opportunities Section Title",
@@ -347,7 +354,7 @@ namespace Rock.Blocks.Connection
         DefaultValue = "Connection Opportunities",
         IsRequired = false,
         Category = AttributeCategory.CustomizeTextConnectionOpportunities,
-        Order = 35,
+        Order = 36,
         Key = AttributeKey.ConnectionOpportunitiesTitle )]
 
     [TextField( "Connection Opportunities Section Description",
@@ -355,7 +362,7 @@ namespace Rock.Blocks.Connection
         DefaultValue = "Select the areas where you'd like to get involved.",
         IsRequired = false,
         Category = AttributeCategory.CustomizeTextConnectionOpportunities,
-        Order = 36,
+        Order = 37,
         Key = AttributeKey.ConnectionOpportunitiesDescription )]
 
     [TextField( "Additional Information Section Title",
@@ -363,7 +370,7 @@ namespace Rock.Blocks.Connection
         DefaultValue = "Additional Information",
         IsRequired = false,
         Category = AttributeCategory.CustomizeTextAdditionalInformation,
-        Order = 37,
+        Order = 38,
         Key = AttributeKey.AdditionalInformationTitle )]
 
     [TextField( "Additional Information Section Description",
@@ -371,7 +378,7 @@ namespace Rock.Blocks.Connection
         DefaultValue = "Provide any additional details to help us better understand your request to get connected.",
         IsRequired = false,
         Category = AttributeCategory.CustomizeTextAdditionalInformation,
-        Order = 38,
+        Order = 39,
         Key = AttributeKey.AdditionalInformationDescription )]
 
     [TextField( "Submission Success Section Title",
@@ -379,7 +386,7 @@ namespace Rock.Blocks.Connection
         DefaultValue = "Submitted Connection Request Successfully",
         IsRequired = false,
         Category = AttributeCategory.CustomizeTextSubmissionSuccess,
-        Order = 39,
+        Order = 40,
         Key = AttributeKey.SubmissionSuccessTitle )]
 
     [TextField( "Submission Success Section Description",
@@ -387,7 +394,7 @@ namespace Rock.Blocks.Connection
         DefaultValue = "Thanks for taking a step to get more connected! We'll be in contact soon.",
         IsRequired = false,
         Category = AttributeCategory.CustomizeTextSubmissionSuccess,
-        Order = 40,
+        Order = 41,
         Key = AttributeKey.SubmissionSuccessDescription )]
 
     #endregion Block Attributes
@@ -428,6 +435,7 @@ namespace Rock.Blocks.Connection
             public const string ConnectionStatus = "ConnectionStatus";
             public const string RecordStatus = "RecordStatus";
             public const string RecordSource = "RecordSource";
+            public const string ExcludeNonPublicAttributes = "ExcludeNonPublicAttributes";
             public const string BannerIcon = "BannerIcon";
             public const string BannerTitle = "BannerTitle";
             public const string BannerDescription = "BannerDescription";
@@ -466,6 +474,7 @@ namespace Rock.Blocks.Connection
         private static class ListSource
         {
             public const string HideShowRequired = "Hide,Show,Required";
+            public const string HideShow = "Hide,Show";
         }
 
         #endregion List Sources
@@ -510,7 +519,7 @@ namespace Rock.Blocks.Connection
             SetFieldVisibility( box );
             SetOptions( box );
             SetOpportunities( box );
-            SetPersonAttributes( box );
+            SetPersonAttributes( box, currentPerson );
 
             box.IsFirstTimeGuestOpportunityConfigured = GetAttributeValue( AttributeKey.FirstTimeGuestOpportunity ).AsGuidOrNull().HasValue;
 
@@ -635,7 +644,7 @@ namespace Rock.Blocks.Connection
                     IconCssClass = o.IconCssClass,
                     ConnectionTypeName = o.ConnectionType.Name,
                     ConnectionTypeIconCssClass = o.ConnectionType.IconCssClass,
-                    Attributes = GetPublicOpportunityAttributes( o )
+                    Attributes = GetOfferedOpportunityAttributes( o )
                 } )
                 .ToList();
         }
@@ -643,7 +652,7 @@ namespace Rock.Blocks.Connection
         /// <summary>
         /// Populates the Additional Information person attributes on the box when a category is configured.
         /// </summary>
-        private void SetPersonAttributes( ConnectionRequestEntryInitializationBox box )
+        private void SetPersonAttributes( ConnectionRequestEntryInitializationBox box, Person currentPerson )
         {
             var categoryGuid = GetAttributeValue( AttributeKey.PersonAttributeCategory ).AsGuidOrNull();
 
@@ -662,8 +671,19 @@ namespace Rock.Blocks.Connection
             var person = new Person();
             person.LoadAttributes( RockContext );
 
+            /*
+                07/13/26 - JMH
+
+                Offer the category's person attributes the visitor is authorized to VIEW, rather than only those
+                flagged Public. Person attributes are rarely marked Public, so an IsPublic filter hid the entire
+                Additional Information section. VIEW defaults to allow for anonymous visitors (matching the Family
+                Pre-Registration block), so attributes without an explicit rule render while explicit View denies
+                are still honored. The save path re-applies this same filter with enforceSecurity: false.
+
+                Reason: Gate the category's person attributes by View security, not the Public flag.
+            */
             box.PersonAttributes = person.Attributes.Values
-                .Where( a => a.IsPublic && a.Categories.Any( c => c.Id == category.Id ) )
+                .Where( a => a.Categories.Any( c => c.Id == category.Id ) && a.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 .ToDictionary( a => a.Key, a => PublicAttributeHelper.GetPublicAttributeForEdit( a ) );
         }
 
@@ -728,6 +748,11 @@ namespace Rock.Blocks.Connection
                 bag.BirthDate = person.BirthDate?.ToString( "s" );
             }
 
+            if ( IsShown( box.ProfilePhotoVisibility ) && person.PhotoId.HasValue )
+            {
+                bag.PhotoGuid = new BinaryFileService( RockContext ).Get( person.PhotoId.Value )?.Guid.ToString();
+            }
+
             if ( IsShown( box.MobilePhoneVisibility ) )
             {
                 bag.MobilePhone = GetMobilePhoneBag( person );
@@ -786,6 +811,22 @@ namespace Rock.Blocks.Connection
                 if ( IsShown( box.SpouseMobilePhoneVisibility ) )
                 {
                     bag.SpouseMobilePhone = GetMobilePhoneBag( spouse );
+                }
+            }
+
+            // Pre-populate the visitor's existing values for the offered person attributes so the Additional
+            // Information editors reflect what is already on their record. The filter mirrors SetPersonAttributes.
+            var personAttributeCategoryGuid = GetAttributeValue( AttributeKey.PersonAttributeCategory ).AsGuidOrNull();
+            if ( personAttributeCategoryGuid.HasValue )
+            {
+                var personAttributeCategory = CategoryCache.Get( personAttributeCategoryGuid.Value );
+                if ( personAttributeCategory != null )
+                {
+                    person.LoadAttributes( RockContext );
+
+                    bag.PersonAttributeValues = person.Attributes.Values
+                        .Where( a => a.Categories.Any( c => c.Id == personAttributeCategory.Id ) && a.IsAuthorized( Authorization.VIEW, person ) )
+                        .ToDictionary( a => a.Key, a => PublicAttributeHelper.GetPublicValueForEdit( a, person.GetAttributeValue( a.Key ) ) );
                 }
             }
 
@@ -903,9 +944,13 @@ namespace Rock.Blocks.Connection
         }
 
         /// <summary>
-        /// Gets the public connection request attributes for an opportunity, for use as inline editors.
+        /// Gets the connection request attributes an opportunity offers as inline editors on the form.
         /// </summary>
-        private Dictionary<string, PublicAttributeBag> GetPublicOpportunityAttributes( ConnectionOpportunity opportunity )
+        /// <remarks>
+        /// Attributes without 'Public' checked are excluded when the Exclude Non-Public Connection
+        /// Request Attributes setting is enabled.
+        /// </remarks>
+        private Dictionary<string, PublicAttributeBag> GetOfferedOpportunityAttributes( ConnectionOpportunity opportunity )
         {
             // Both identifiers are required for the connection request attribute inheritance to resolve.
             var connectionRequest = new ConnectionRequest
@@ -916,9 +961,49 @@ namespace Rock.Blocks.Connection
 
             connectionRequest.LoadAttributes( RockContext );
 
+            var excludeNonPublic = GetAttributeValue( AttributeKey.ExcludeNonPublicAttributes ).AsBoolean();
+
             return ( connectionRequest.Attributes?.Values ?? Enumerable.Empty<AttributeCache>() )
-                .Where( a => a.IsPublic )
+                .Where( a => !excludeNonPublic || a.IsPublic )
                 .ToDictionary( a => a.Key, a => PublicAttributeHelper.GetPublicAttributeForEdit( a ) );
+        }
+
+        /// <summary>
+        /// Reads a drop-down list block setting, guaranteeing the result is one of the setting's allowed options.
+        /// </summary>
+        /// <param name="attributeKey">The block setting key.</param>
+        /// <returns>The stored value when it is an allowed option; otherwise the setting's configured default value.</returns>
+        /// <remarks>
+        /// The allowed options and default come from the setting's own declaration, so a stored value that is not a
+        /// current option (for example a value removed from the list, or a hand-edited value) falls back to the default.
+        /// </remarks>
+        private string GetValidatedListSettingValue( string attributeKey )
+        {
+            var value = GetAttributeValue( attributeKey );
+            var attribute = BlockCache.Attributes.GetValueOrNull( attributeKey );
+
+            if ( attribute == null )
+            {
+                return value;
+            }
+
+            // The list source ("value1,value2" or "value1^text1,value2^text2") is stored under the "values" key.
+            var allowedValues = attribute.ConfigurationValues.GetValueOrNull( "values" )
+                .ToStringSafe()
+                .Split( ',' )
+                .Select( option => option.Split( '^' )[0].Trim() )
+                .Where( option => option.IsNotNullOrWhiteSpace() )
+                .ToList();
+
+            // A non-list source (such as a SQL-backed list) yields no options to validate against; leave the value as-is.
+            if ( !allowedValues.Any() )
+            {
+                return value;
+            }
+
+            return allowedValues.Contains( value, StringComparer.OrdinalIgnoreCase )
+                ? value
+                : attribute.DefaultValue;
         }
 
         /// <summary>
@@ -926,7 +1011,7 @@ namespace Rock.Blocks.Connection
         /// </summary>
         private ConnectionRequestEntryFieldVisibility GetFieldVisibility( string attributeKey )
         {
-            var value = GetAttributeValue( attributeKey );
+            var value = GetValidatedListSettingValue( attributeKey );
 
             switch ( value )
             {
@@ -1099,13 +1184,29 @@ namespace Rock.Blocks.Connection
                 var campusId = bag.CampusGuid.HasValue ? CampusCache.Get( bag.CampusGuid.Value )?.Id : null;
                 var currentPerson = GetCurrentPerson();
 
-                var person = currentPerson ?? new PersonService( RockContext ).FindPerson(
-                    new PersonService.PersonMatchQuery( bag.FirstName, bag.LastName, bag.Email, bag.MobilePhone?.Number ),
-                    updatePrimaryEmail: false );
+                /*
+                    07/13/26 - JMH
+
+                    Only an authenticated visitor may update an existing Person. An anonymous submission is not
+                    matched against existing people at all: a crafted payload carrying a victim's name, email, and
+                    phone would otherwise let a stranger overwrite that person's contact info, an account-takeover
+                    vector. Anonymous visitors always get a new Person (a duplicate for staff to merge later),
+                    mirroring the "create a new record unless updates are explicitly allowed" posture of the
+                    Family Pre-Registration block.
+
+                    Reason: Never let an anonymous submission mutate a matched person; create a duplicate instead.
+                */
+                var person = currentPerson;
 
                 if ( person == null || !person.PrimaryAliasId.HasValue )
                 {
                     person = CreateNewPerson( bag, campusId );
+                }
+                else
+                {
+                    // The authenticated visitor keeps their existing record, so refresh the shown demographic fields
+                    // from the submission. Without this, a logged-in person's update would be silently dropped.
+                    UpdatePersonDemographics( person, bag );
                 }
 
                 if ( IsFieldShown( AttributeKey.MobilePhone ) && bag.MobilePhone != null && bag.MobilePhone.Number.IsNotNullOrWhiteSpace() )
@@ -1115,7 +1216,15 @@ namespace Rock.Blocks.Connection
 
                 if ( IsFieldShown( AttributeKey.ProfilePhoto ) && bag.PhotoGuid.IsNotNullOrWhiteSpace() && Guid.TryParse( bag.PhotoGuid, out var photoGuid ) )
                 {
-                    person.PhotoId = new BinaryFileService( RockContext ).GetId( photoGuid );
+                    var photoBinaryFile = new BinaryFileService( RockContext ).Get( photoGuid );
+
+                    if ( photoBinaryFile != null )
+                    {
+                        person.PhotoId = photoBinaryFile.Id;
+
+                        // A newly uploaded photo starts out temporary; keep it now that it is in use so RockCleanup does not purge it.
+                        photoBinaryFile.IsTemporary = false;
+                    }
                 }
 
                 // Persist the preferred service time (a Schedule) only when the field is offered
@@ -1189,6 +1298,62 @@ namespace Rock.Blocks.Connection
         }
 
         /// <summary>
+        /// Updates a matched or logged-in person's demographic fields from the submitted values, for shown fields only.
+        /// </summary>
+        /// <remarks>
+        /// A brand-new person receives these in <see cref="CreateNewPerson"/>; this keeps an existing person's record
+        /// in sync with the form. Only values that were actually provided are applied, so a blank submission never
+        /// clears a value already on the record.
+        /// </remarks>
+        private void UpdatePersonDemographics( Person person, ConnectionRequestEntryRequestBag bag )
+        {
+            if ( IsFieldShown( AttributeKey.Title ) )
+            {
+                var titleValueId = GetDefinedValueId( bag.Title );
+                if ( titleValueId.HasValue )
+                {
+                    person.TitleValueId = titleValueId;
+                }
+            }
+
+            if ( IsFieldShown( AttributeKey.Suffix ) )
+            {
+                var suffixValueId = GetDefinedValueId( bag.Suffix );
+                if ( suffixValueId.HasValue )
+                {
+                    person.SuffixValueId = suffixValueId;
+                }
+            }
+
+            if ( IsFieldShown( AttributeKey.MaritalStatus ) )
+            {
+                var maritalStatusValueId = GetDefinedValueId( bag.MaritalStatus );
+                if ( maritalStatusValueId.HasValue )
+                {
+                    person.MaritalStatusValueId = maritalStatusValueId;
+                }
+            }
+
+            if ( IsFieldShown( AttributeKey.Gender ) )
+            {
+                var gender = bag.Gender.ConvertToEnumOrNull<Gender>();
+                if ( gender.HasValue && gender.Value != Gender.Unknown )
+                {
+                    person.Gender = gender.Value;
+                }
+            }
+
+            if ( IsFieldShown( AttributeKey.Birthdate ) )
+            {
+                var birthDate = bag.BirthDate.AsDateTime();
+                if ( birthDate.HasValue )
+                {
+                    person.SetBirthDate( birthDate );
+                }
+            }
+        }
+
+        /// <summary>
         /// Saves the Additional Information person attribute values from the submitted form.
         /// </summary>
         private void SavePersonAttributeValues( ConnectionRequestEntryRequestBag bag, Person person, Person currentPerson )
@@ -1198,8 +1363,8 @@ namespace Rock.Blocks.Connection
                 return;
             }
 
-            // Only the public person attributes in the configured category were offered on the form. Filtering the
-            // submitted values to that set keeps a crafted payload from writing arbitrary person attributes.
+            // Only the configured category's person attributes the visitor may view were offered on the form. Filtering
+            // the submitted values to that set keeps a crafted payload from writing arbitrary person attributes.
             var categoryGuid = GetAttributeValue( AttributeKey.PersonAttributeCategory ).AsGuidOrNull();
 
             if ( !categoryGuid.HasValue )
@@ -1217,7 +1382,7 @@ namespace Rock.Blocks.Connection
             person.LoadAttributes( RockContext );
 
             var allowedKeys = person.Attributes.Values
-                .Where( a => a.IsPublic && a.Categories.Any( c => c.Id == category.Id ) )
+                .Where( a => a.Categories.Any( c => c.Id == category.Id ) && a.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 .Select( a => a.Key )
                 .ToHashSet();
 
@@ -1331,7 +1496,7 @@ namespace Rock.Blocks.Connection
                 inactive opportunity, an opportunity under an inactive connection type, or an opportunity whose
                 connection type was never made available through this block's Connection Types setting. Each
                 opportunity is validated against the configured set (with its ConnectionType eagerly loaded so
-                the active/Guid checks are reliable) before a request is built, and only the public request
+                the active/Guid checks are reliable) before a request is built, and only the request
                 attributes the form actually offered are accepted.
 
                 Reason: Do not trust client-submitted opportunities or attribute values.
@@ -1367,7 +1532,7 @@ namespace Rock.Blocks.Connection
                 request.LoadAttributes( RockContext );
 
                 // Only attributes the form offered for this opportunity may be set.
-                var allowedAttributeKeys = GetPublicOpportunityAttributes( opportunity ).Keys.ToHashSet();
+                var allowedAttributeKeys = GetOfferedOpportunityAttributes( opportunity ).Keys.ToHashSet();
                 var allowedAttributeValues = ( selected.AttributeValues ?? new Dictionary<string, string>() )
                     .Where( kvp => allowedAttributeKeys.Contains( kvp.Key ) )
                     .ToDictionary( kvp => kvp.Key, kvp => kvp.Value );

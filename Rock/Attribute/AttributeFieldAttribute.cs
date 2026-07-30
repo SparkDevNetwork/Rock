@@ -38,7 +38,7 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         public AttributeFieldAttribute( string name )
-            : this( "", name )
+            : base( SystemGuid.FieldType.ATTRIBUTE.AsGuid(), name )
         {
         }
 
@@ -54,14 +54,16 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public AttributeFieldAttribute( string entityTypeGuid, string name = "", string description = "", bool required = true, bool allowMultiple = false, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.AttributeFieldType ).FullName )
+            : base( SystemGuid.FieldType.ATTRIBUTE.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             var entityTypeConfigValue = new Field.ConfigurationValue( entityTypeGuid );
-            FieldConfigurationValues.Add( ENTITY_TYPE_KEY, entityTypeConfigValue );
+            FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_KEY, entityTypeConfigValue );
 
             var allowMultipleConfigValue = new Field.ConfigurationValue( allowMultiple.ToString() );
-            FieldConfigurationValues.Add( ALLOW_MULTIPLE_KEY, allowMultipleConfigValue );
+            FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, allowMultipleConfigValue );
 
             if ( string.IsNullOrWhiteSpace( Name ) && RockApp.Current.IsDatabaseAvailable() )
             {
@@ -89,17 +91,19 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public AttributeFieldAttribute( string entityTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string description = "", bool required = true, bool allowMultiple = false, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.AttributeFieldType ).FullName )
+            : base( SystemGuid.FieldType.ATTRIBUTE.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             var entityTypeConfigValue = new Field.ConfigurationValue( entityTypeGuid );
-            FieldConfigurationValues.Add( ENTITY_TYPE_KEY, entityTypeConfigValue );
+            FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_KEY, entityTypeConfigValue );
 
             var allowMultipleConfigValue = new Field.ConfigurationValue( allowMultiple.ToString() );
-            FieldConfigurationValues.Add( ALLOW_MULTIPLE_KEY, allowMultipleConfigValue );
+            FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, allowMultipleConfigValue );
 
             var entityTypeQualifierColumnConfigValue = new Field.ConfigurationValue( entityTypeQualifierColumn );
-            FieldConfigurationValues.Add( QUALIFIER_COLUMN_KEY, entityTypeQualifierColumnConfigValue );
+            FieldConfigurationValues.AddOrReplace( QUALIFIER_COLUMN_KEY, entityTypeQualifierColumnConfigValue );
 
             if ( entityTypeQualifierColumn.EndsWith( "Id" ) && entityTypeQualifierValue.AsGuid() != Guid.Empty && RockApp.Current.IsDatabaseAvailable() )
             {
@@ -120,7 +124,7 @@ namespace Rock.Attribute
                                 var entity = getMethod.Invoke( serviceInstance, new object[] { entityTypeQualifierValue.AsGuid() } ) as Rock.Data.IEntity;
                                 if ( entity != null )
                                 {
-                                    FieldConfigurationValues.Add( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( entity.Id.ToString() ) );
+                                    FieldConfigurationValues.AddOrReplace( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( entity.Id.ToString() ) );
                                 }
                             }
                         }
@@ -130,7 +134,7 @@ namespace Rock.Attribute
             else
             {
                 var entityTypeQualifierValueConfigValue = new Field.ConfigurationValue( entityTypeQualifierValue );
-                FieldConfigurationValues.Add( QUALIFIER_VALUE_KEY, entityTypeQualifierValueConfigValue );
+                FieldConfigurationValues.AddOrReplace( QUALIFIER_VALUE_KEY, entityTypeQualifierValueConfigValue );
             }
 
             if ( string.IsNullOrWhiteSpace( Name ) && RockApp.Current.IsDatabaseAvailable() )

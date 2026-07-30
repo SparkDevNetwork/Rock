@@ -183,7 +183,7 @@ namespace Rock.Workflow
                             }
                             else if ( attribute.FieldTypeId == FieldTypeCache.Get( SystemGuid.FieldType.SSN.AsGuid() ).Id )
                             {
-                                value = Rock.Field.Types.SSNFieldType.UnencryptAndClean( value );
+                                value = Rock.Field.Helper.UnencryptAndCleanSocialSecurityNumber( value );
                             }
                         }
                     }
@@ -290,7 +290,7 @@ namespace Rock.Workflow
         */
 
         /// <summary>
-        /// Sets the workflow attribute value. If the attribute field type is an <see cref="Field.Types.EncryptedTextFieldType"/> the value will be encrypted.
+        /// Sets the workflow attribute value. If the attribute field type is an <c>Field.Types.EncryptedTextFieldType</c> the value will be encrypted.
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="key">The key.</param>
@@ -306,7 +306,7 @@ namespace Rock.Workflow
         }
 
         /// <summary>
-        /// Sets the workflow attribute value. If the attribute field type is an <see cref="Field.Types.EncryptedTextFieldType"/> or <see cref="Field.Types.SSNFieldType"/> the value will be encrypted.
+        /// Sets the workflow attribute value. If the attribute field type is an <c>Field.Types.EncryptedTextFieldType</c> or <c>Field.Types.SSNFieldType</c> the value will be encrypted.
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="guid">The unique identifier.</param>
@@ -316,7 +316,7 @@ namespace Rock.Workflow
             var attr = AttributeCache.Get( guid );
             if ( attr != null )
             {
-                if ( attr.FieldType.Field is Field.Types.EncryptedTextFieldType || attr.FieldType.Field is Field.Types.SSNFieldType )
+                if ( attr.FieldType.Guid == SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid() || attr.FieldType.Guid == SystemGuid.FieldType.SSN.AsGuid() )
                 {
                     value = Security.Encryption.EncryptString( value );
                 }
@@ -332,7 +332,7 @@ namespace Rock.Workflow
 
                      Reason: To address issue #6377 by storing only the Date portion of the value.
                 */
-                if ( attr.FieldType.Field.GetType() == typeof( Field.Types.DateFieldType ) )
+                if ( attr.FieldType.Guid == SystemGuid.FieldType.DATE.AsGuid() )
                 {
                     var dateValue = value.AsDateTime();
                     if ( dateValue != null )

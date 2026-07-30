@@ -364,7 +364,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gets the Check-in page guid
-        /// ParentPage: 
+        /// ParentPage:
         /// </summary>
         public const string CHECK_IN_ROOT = "CDF2C599-D341-42FD-B7DC-CD402EA96050";
 
@@ -999,7 +999,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gets the External Homepage page guid
-        /// ParentPage: 
+        /// ParentPage:
         /// </summary>
         public const string EXTERNAL_HOMEPAGE = "85F25819-E948-4960-9DDF-00F54D32444E";
 
@@ -1253,7 +1253,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gets the Internal Homepage page guid
-        /// ParentPage: 
+        /// ParentPage:
         /// </summary>
         public const string INTERNAL_HOMEPAGE = "20F97A93-7949-4C2A-8A5E-C756FE8585CA";
 
@@ -2173,5 +2173,10 @@ namespace Rock.SystemGuid
         /// The Ncoa Process Page
         /// </summary>
         public const string NCOA_PROCESS = "56EDE500-CEE6-41F4-B724-E44E66A4432F";
+
+        /// <summary>
+        /// The Mobile Page Layout Detail Page
+        /// </summary>
+        public const string MOBILE_LAYOUT = "5583A55D-7398-48E9-971F-6A1EF8158943";
     }
 }

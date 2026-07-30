@@ -41,7 +41,7 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         public DefinedValueFieldAttribute( string name )
-            : this(  "", name )
+            : base( SystemGuid.FieldType.DEFINED_VALUE.AsGuid(), name )
         {
         }
 
@@ -57,6 +57,8 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public DefinedValueFieldAttribute( string definedTypeGuid, string name = "", string description = "", bool required = true, bool allowMultiple = false, string defaultValue = "", string category = "", int order = 0, string key = null )
              : this( definedTypeGuid, name, description, required, allowMultiple, false, defaultValue, category, order, key )
         {
@@ -75,8 +77,10 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public DefinedValueFieldAttribute( string definedTypeGuid, string name, string description, bool required, bool allowMultiple, bool enhanced, string defaultValue, string category, int order, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.DefinedValueFieldType ).FullName )
+            : base( SystemGuid.FieldType.DEFINED_VALUE.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             this.DefinedTypeGuid = definedTypeGuid;
             this.AllowMultiple = allowMultiple;
@@ -110,8 +114,10 @@ namespace Rock.Attribute
         /// <param name="key">The key.</param>
         /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
         /// <param name="displayDescription">if set to <c>true</c> [display description].</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public DefinedValueFieldAttribute( string definedTypeGuid, string name, string description, bool required, bool allowMultiple, bool enhanced, string defaultValue, string category, int order, string key = null, bool includeInactive = false, bool displayDescription = true )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.DefinedValueFieldType ).FullName )
+            : base( SystemGuid.FieldType.DEFINED_VALUE.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
             this.DefinedTypeGuid = definedTypeGuid;
             this.AllowMultiple = allowMultiple;

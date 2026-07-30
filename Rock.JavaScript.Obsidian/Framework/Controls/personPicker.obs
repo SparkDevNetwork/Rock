@@ -4,7 +4,7 @@
         <template #default>
             <div v-if="!isInputHidden" class="control-wrapper">
                 <div class="picker picker-select person-picker">
-                    <a class="picker-label" href="#" @click.prevent.stop="togglePopup">
+                    <a class="picker-label form-control" href="#" @click.prevent.stop="togglePopup">
                         <i class="ti ti-user ti-fw"></i>
                         <span class="selected-name">{{ selectedName }}</span>
                         <button role="button" type="button" aria-label="Clear selection" v-if="showClear" class="btn picker-select-none" @click.prevent.stop="onClear">

@@ -52,7 +52,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Determines if the input label for the search box should be displayed.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.ShowSearchLabel,
         Order = 1 )]
 
@@ -109,7 +109,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Determines if the keyboard should auto-focus into the search field when the page is attached.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.AutoFocusKeyboard,
         Order = 9 )]
 
@@ -276,7 +276,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// Gets the result item template.
         /// </summary>
         /// <value>The result item template.</value>
-        protected string ResultItemTemplate => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKey.ResultItemTemplate ) );
+        protected string ResultItemTemplate => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKey.ResultItemTemplate ) );
 
         /// <summary>
         /// Gets the detail navigation action.

@@ -14,7 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Field.Types;
+using System;
+
+using Rock.Configuration;
 using Rock.Model;
 
 namespace Rock.Attribute
@@ -35,13 +37,63 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public MatrixFieldAttribute( string attributeMatrixTemplateGuid, string name, string description = "", bool required = true, string category = "", int order = 0, string key = null )
-            : base( name, description, required, null, category, order, key, typeof( MatrixFieldType ).FullName )
+            : base( SystemGuid.FieldType.MATRIX.AsGuid(), name, description, required, null, category, order, key )
         {
             var attributeMatrixTemplate = new AttributeMatrixTemplateService( new Data.RockContext() ).Get( attributeMatrixTemplateGuid.AsGuid() );
             if ( attributeMatrixTemplate != null )
             {
-                FieldConfigurationValues.Add( MatrixFieldType.ATTRIBUTE_MATRIX_TEMPLATE, new Field.ConfigurationValue( attributeMatrixTemplate.Id.ToString() ) );
+                FieldConfigurationValues.AddOrReplace( "attributematrixtemplate", new Field.ConfigurationValue( attributeMatrixTemplate.Id.ToString() ) );
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MatrixFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public MatrixFieldAttribute( string name )
+            : base( SystemGuid.FieldType.MATRIX.AsGuid(), name )
+        {
+        }
+
+        /// <summary>
+        /// The unique identifier of the Attribute Matrix Template that should
+        /// be used for this field.
+        /// </summary>
+        public string AttributeMatrixTemplateGuid
+        {
+            get
+            {
+                var configValue = FieldConfigurationValues.GetValueOrNull( "attributematrixtemplate" );
+
+                if ( int.TryParse( configValue, out var id ) && RockApp.Current.IsDatabaseAvailable() )
+                {
+                    using var rockContext = RockApp.Current.CreateRockContext();
+                    var attributeMatrixTemplate = new AttributeMatrixTemplateService( rockContext ).Get( id );
+
+                    if ( attributeMatrixTemplate != null )
+                    {
+                        return attributeMatrixTemplate.Guid.ToString();
+                    }
+                }
+
+                return null;
+            }
+            set
+            {
+                if ( Guid.TryParse( value, out var guid ) && RockApp.Current.IsDatabaseAvailable() )
+                {
+                    using var rockContext = RockApp.Current.CreateRockContext();
+                    var attributeMatrixTemplate = new AttributeMatrixTemplateService( rockContext ).Get( guid );
+
+                    if ( attributeMatrixTemplate != null )
+                    {
+                        var configValue = new Field.ConfigurationValue( attributeMatrixTemplate.Id.ToString() );
+                        FieldConfigurationValues.AddOrReplace( "attributematrixtemplate", configValue );
+                    }
+                }
             }
         }
     }

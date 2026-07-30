@@ -1290,6 +1290,12 @@ namespace Rock.Blocks.Finance
             {
                 var detail = dbDetails.FirstOrDefault( d => d.Guid == row.Guid );
 
+                var hasAmount = row.Amount != 0m || ( row.FeeCoverageAmount ?? 0m ) != 0m;
+                if ( detail == null && !hasAmount )
+                {
+                    continue;
+                }
+
                 if ( detail == null )
                 {
                     detail = new FinancialTransactionDetail

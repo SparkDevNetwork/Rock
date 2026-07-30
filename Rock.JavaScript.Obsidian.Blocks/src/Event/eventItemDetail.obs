@@ -79,7 +79,9 @@
         "photo",
         "summary",
         "audiences",
-        "calendars"
+        "calendars",
+        "selectedSegmentGuids",
+        "selectedRequestFilterGuids"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(eventItemEditBag, validProperties, invokeBlockAction), undefined, true);
@@ -114,31 +116,31 @@
 
         if (eventItemViewBag.value?.isActive === true) {
             labels.push({
-                iconCssClass: "ti ti-bulb-filled",
+                iconCssClass: "ti ti-bolt",
                 title: "Active",
-                type: "success"
+                type: "info"
             });
         }
         else {
             labels.push({
-                iconCssClass: "ti ti-bulb",
+                iconCssClass: "ti ti-bolt",
                 title: "Inactive",
-                type: "danger"
+                type: "default"
             });
         }
 
         if (eventItemViewBag.value?.isApproved === true) {
             labels.push({
                 title: "Approved",
-                type: "info",
-                iconCssClass: "ti ti-check"
+                type: "success",
+                iconCssClass: "ti ti-circle-check"
             });
         }
         else {
             labels.push({
                 title: "Not Approved",
                 type: "warning",
-                iconCssClass: "ti ti-clock"
+                iconCssClass: "ti ti-circle"
             });
         }
 

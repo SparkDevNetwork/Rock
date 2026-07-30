@@ -112,5 +112,11 @@ namespace Rock.ViewModels.Blocks.Cms.ContentChannelDetail
         /// load so dropdown selections persist before the async fetch completes.
         /// </summary>
         public List<ListItemBag> ContentLibraryInheritedItemAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Content Channel Item attribute keys defined on the
+        /// selected Content Channel Type. Channel-level item attributes must not reuse these keys.
+        /// </summary>
+        public List<string> ContentChannelTypeItemAttributeKeys { get; set; }
     }
 }

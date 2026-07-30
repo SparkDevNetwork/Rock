@@ -32,6 +32,12 @@
     </Panel>
 </template>
 
+<style scoped>
+:deep(.question-response-text) {
+    white-space: pre-wrap;
+}
+</style>
+
 <script setup lang="ts">
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import LiveEventTab from "./ExperienceManager/liveEventTab.partial.obs";

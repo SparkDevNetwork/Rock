@@ -59,7 +59,7 @@ export type GridSettingsOptions = {
     sourceType?: ListItemBag | null;
     transactionCode?: string | null;
     foreignKey?: string | null;
-    account?: ListItemBag;
+    account?: ListItemBag[];
     transactionType?: ListItemBag | null;
     campusOfBatch?: ListItemBag;
     campusOfAccount?: ListItemBag;

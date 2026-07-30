@@ -16,6 +16,8 @@
 
 using System;
 
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Finance.BenevolenceRequestDetail
 {
     /// <summary>
@@ -135,5 +137,11 @@ namespace Rock.ViewModels.Blocks.Finance.BenevolenceRequestDetail
         /// Gets or sets the unique identifier for the ethnicity.
         /// </summary>
         public Guid EthnicityGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the record source describing how the person entered Rock. For an existing person this reflects
+        /// their current record source; for a new person it seeds the source applied when the record is created.
+        /// </summary>
+        public ListItemBag RecordSource { get; set; }
     }
 }

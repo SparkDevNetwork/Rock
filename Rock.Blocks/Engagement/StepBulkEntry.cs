@@ -23,7 +23,6 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks.Engagement.StepBulkEntry;
@@ -110,10 +109,10 @@ namespace Rock.Blocks.Engagement
 
             // Parse block settings.
             var stepProgramStepTypeSettingValue = GetAttributeValue( AttributeKey.StepProgramStepType );
-            StepProgramStepTypeFieldType.ParseDelimitedGuids( stepProgramStepTypeSettingValue, out var settingProgramGuid, out var settingTypeGuid );
+            Field.Helper.ParseStepProgramStepTypeDelimitedGuids( stepProgramStepTypeSettingValue, out var settingProgramGuid, out var settingTypeGuid );
 
             var stepStatusSettingValue = GetAttributeValue( AttributeKey.StepProgramStepStatus );
-            StepProgramStepStatusFieldType.ParseDelimitedGuids( stepStatusSettingValue, out var statusSettingProgramGuid, out var settingStatusGuid );
+            Field.Helper.ParseStepProgramStatusDelimitedGuids( stepStatusSettingValue, out var statusSettingProgramGuid, out var settingStatusGuid );
 
             // Resolve step program guid from settings or page parameters.
             Guid? resolvedProgramGuid = null;

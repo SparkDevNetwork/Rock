@@ -1,0 +1,87 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="persondetails-grouplist"
+         v-dragSource="dragOptions"
+         v-dragTarget="dragOptions">
+        <GroupCard v-for="(group, index) in groups"
+                   :key="group.idKey ?? index"
+                   :group="group"
+                   :options="options"
+                   @verifyLocation="onVerifyLocation" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder } from "@Obsidian/Directives/dragDrop";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { GroupBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GroupMembers/groupBag";
+    import { GroupMembersBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GroupMembers/groupMembersBag";
+    import { GroupMembersOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GroupMembers/groupMembersOptionsBag";
+    import GroupCard from "./GroupMembers/groupCard.partial.obs";
+
+    // #region Values
+
+    const config = useConfigurationValues<CustomBlockBox<GroupMembersBag, GroupMembersOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+
+    const groups = ref<GroupBag[]>(config.bag?.groups ?? []);
+    const options: GroupMembersOptionsBag = config.options ?? {
+        isEditAllowed: false,
+        isAddressVerificationAvailable: false,
+        isReorderVisible: false
+    };
+
+    const dragOptions = useDragReorder(groups, onGroupReordered);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when a group card has been dragged to a new position. Persists
+     * the new display order.
+     *
+     * @param group The group that was moved.
+     */
+    async function onGroupReordered(group: GroupBag): Promise<void> {
+        const newIndex = groups.value.indexOf(group);
+
+        const result = await invokeBlockAction("ReorderGroup", {
+            groupIdKey: group.idKey,
+            newIndex: newIndex
+        });
+
+        if (!result.isSuccess) {
+            await alert(result.errorMessage || "Unable to reorder the groups.");
+            reloadBlock();
+        }
+    }
+
+    /**
+     * Called when the verify button of an address is clicked. Re-verifies the
+     * address and refreshes the displayed groups, since verification can
+     * standardize the address.
+     *
+     * @param locationId The identifier of the location to verify.
+     */
+    async function onVerifyLocation(locationId: number): Promise<void> {
+        const result = await invokeBlockAction<GroupMembersBag>("VerifyLocation", {
+            locationId: locationId
+        });
+
+        if (result.isSuccess && result.data) {
+            groups.value = result.data.groups ?? [];
+        }
+        else {
+            await alert(result.errorMessage || "Unable to verify the address.");
+        }
+    }
+
+    // #endregion Event Handlers
+
+    onConfigurationValuesChanged(reloadBlock);
+</script>

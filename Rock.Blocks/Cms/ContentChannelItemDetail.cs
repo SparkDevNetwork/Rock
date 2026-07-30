@@ -229,6 +229,14 @@ namespace Rock.Blocks.Cms
                     return;
                 }
 
+                var isAutoEditRequested = PageParameter( PageParameterKey.AutoEdit ).AsBoolean();
+                if ( isAutoEditRequested && !box.IsEditable )
+                {
+                    box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( ContentChannelItem.FriendlyTypeName );
+                    box.Options = new ContentChannelItemDetailOptionsBag { IsUnauthorizedErrorShown = true };
+                    return;
+                }
+
                 box.Entity = GetEntityBagForView( entity );
             }
             else
@@ -633,13 +641,17 @@ namespace Rock.Blocks.Cms
                     structuredContentHelper.ApplyDatabaseChanges( structuredContentChanges, RockContext );
                 }
 
-                // Assigns a new item's Id so co-saves below can key on entity.Id.
-                RockContext.SaveChanges();
-
+                // Attach the client's staged slugs before the save so they insert together with
+                // the item. The ContentChannelItem PostSave hook then sees an existing slug and
+                // skips auto-generating one, so a new item never ends up with a duplicate; when
+                // nothing was staged the hook still supplies a slug.
                 if ( isNewItem )
                 {
                     ApplyStagedSlugs( entity, box.Bag );
                 }
+
+                // Assigns a new item's Id so co-saves below can key on entity.Id.
+                RockContext.SaveChanges();
 
                 entity.SaveAttributeValues( RockContext );
 
@@ -2249,7 +2261,10 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
-        /// Persists the bag's staged slug rows for a new item, inside the Save transaction after the first SaveChanges.
+        /// Stages a new item's client-supplied URL slugs onto the entity before the Save transaction's
+        /// first SaveChanges, so they are inserted together with the item. Because a slug then already
+        /// exists when the ContentChannelItem PostSave hook runs, the hook skips auto-generating one,
+        /// so the item never ends up with a duplicate. When no slug was staged the hook supplies one.
         /// </summary>
         private void ApplyStagedSlugs( ContentChannelItem entity, ContentChannelItemBag bag )
         {
@@ -2260,9 +2275,32 @@ namespace Rock.Blocks.Cms
 
             var slugService = new ContentChannelItemSlugService( RockContext );
 
+            /*
+                7/8/26 - MSE
+
+                Slugs are linked through the navigation property and inserted with the item (which has
+                no Id yet), rather than saved individually afterward, so the ContentChannelItem PostSave
+                hook sees an existing slug and does not auto-generate a duplicate. The channel-uniqueness
+                check runs against the database, which cannot see the sibling slugs being inserted in the
+                same batch, so a payload with duplicate slugs is de-duped here rather than colliding on
+                the channel's unique-slug index at insert time.
+
+                Reason: Prevent a duplicate auto-generated slug alongside the person's chosen slug on a new item.
+            */
+            var appliedSlugs = new HashSet<string>( StringComparer.OrdinalIgnoreCase );
+
             foreach ( var stagedSlug in bag.UrlSlugs.Where( s => s.Id == 0 ) )
             {
-                slugService.SaveSlug( entity.Id, entity.ContentChannelId, stagedSlug.Slug, null );
+                var uniqueSlug = slugService.GetUniqueSlugForContentChannel( stagedSlug.Slug, entity.ContentChannelId, null );
+
+                if ( uniqueSlug.IsNotNullOrWhiteSpace() && appliedSlugs.Add( uniqueSlug ) )
+                {
+                    slugService.Add( new ContentChannelItemSlug
+                    {
+                        ContentChannelItem = entity,
+                        Slug = uniqueSlug
+                    } );
+                }
             }
         }
 

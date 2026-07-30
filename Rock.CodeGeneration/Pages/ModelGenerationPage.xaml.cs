@@ -599,7 +599,6 @@ namespace Rock.CodeGeneration.Pages
                             "Rock.Field.Types.EnumFieldType`1._EnumValues",
                             "Rock.Financial.TestGateway.MostRecentException",
                             "Rock.Financial.TestRedirectionGateway.MostRecentException",
-                            "Rock.Security.BackgroundCheck.ProtectMyMinistry._httpStatusCode",
                             "Rock.Security.ExternalAuthentication.Twitter._oauthToken",
                             "Rock.Security.ExternalAuthentication.Twitter._oauthTokenSecret",
                             "Rock.Security.ExternalAuthentication.Twitter._returnUrl",

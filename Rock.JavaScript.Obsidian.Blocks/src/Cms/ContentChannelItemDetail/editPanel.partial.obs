@@ -523,24 +523,38 @@
 
     // #region Event Handlers
 
-    let isAutoSeedingSlug = false;
-    /**
-     * Auto-seeds the first URL slug from the title on blur. Fires only when no
-     * slugs exist yet and the title is non-empty. Stages a candidate for new items
-     * (no write) and persists immediately for existing items.
-     */
-    async function onTitleBlur(): Promise<void> {
-        const titleValue = title.value.trim();
+    // Guards the Title-blur slug seed against overlapping runs.
+    let isSeedingSlug = false;
 
-        // Parity condition (slug.js:50): seed only when zero slugs exist and the
-        // title is non-empty. The inverse is the early return.
-        if (isAutoSeedingSlug || urlSlugs.value.length !== 0 || titleValue === "") {
+    /**
+     * Auto-generates the first URL slug from the Title when the Title loses focus,
+     * so a new item shows its slug as soon as the person moves on. Seeds only when
+     * no slug exists yet and the Title is non-empty.
+     *
+     * When focus is moving to a button or link (Save, Cancel, the slug Add
+     * affordance, etc.) the seed is skipped. Those are actions rather than the
+     * next field, and for Save in particular, inserting a slug row here would push
+     * the Save button out from under the pointer between mousedown and mouseup and
+     * swallow the click. The ContentChannelItem save hook generates the slug from
+     * the Title on save, so skipping the client seed loses nothing.
+     */
+    async function onTitleBlur(event: FocusEvent): Promise<void> {
+        if (isSeedingSlug || urlSlugs.value.length !== 0 || title.value.trim() === "") {
             return;
         }
 
-        isAutoSeedingSlug = true;
+        // Focus heading to an action (button/link), not the next field: leave the
+        // slug to the server so the click that caused this blur is not disrupted.
+        const focusTarget = event.relatedTarget;
+        if (focusTarget instanceof HTMLButtonElement || focusTarget instanceof HTMLAnchorElement) {
+            return;
+        }
+
+        isSeedingSlug = true;
 
         try {
+            const titleValue = title.value.trim();
+
             if (itemIdKey.value === "") {
                 // New item: compute a unique candidate and stage it (no write).
                 const result = await invoker.getUniqueSlug({ idKey: "", slug: titleValue, contentChannelItemSlugId: null });
@@ -559,7 +573,7 @@
             }
         }
         finally {
-            isAutoSeedingSlug = false;
+            isSeedingSlug = false;
         }
     }
 

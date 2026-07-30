@@ -441,7 +441,7 @@ namespace Rock.Blocks.Cms
 
             foreach ( var attribute in channelAttributes )
             {
-                if ( attribute.FieldType.Class == typeof( Rock.Field.Types.MediaElementFieldType ).FullName )
+                if ( attribute.FieldType.Guid == SystemGuid.FieldType.MEDIA_ELEMENT.AsGuid() )
                 {
                     mediaElementAttributes.Add( new ListItemBag() { Text = attribute.Name, Value = attribute.Guid.ToStringSafe() } );
                 }

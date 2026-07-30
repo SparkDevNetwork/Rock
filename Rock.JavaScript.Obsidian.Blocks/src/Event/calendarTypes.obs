@@ -1,0 +1,104 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel type="block"
+           title="Event Calendars"
+           titleIconCssClass="ti ti-border-all"
+           class="list-as-blocks">
+        <template #headerActions>
+            <div class="d-flex gap-x-1">
+                <RockButton :btnType="BtnType.Default"
+                            :btnSize="BtnSize.ExtraSmall"
+                            isSquare
+                            @click="onAttributesClick">
+                    <i class="ti ti-settings"></i>
+                </RockButton>
+
+                <RockButton v-if="config.bag?.canAdministrate"
+                            :btnType="BtnType.Default"
+                            :btnSize="BtnSize.ExtraSmall"
+                            isSquare
+                            @click="onAddClick">
+                    <i class="ti ti-plus"></i>
+                </RockButton>
+            </div>
+        </template>
+
+        <ul v-if="calendars.length > 0">
+            <li v-for="(calendar, index) in calendars" :key="calendar.idKey ?? index">
+                <a href="#" @click.prevent="onCalendarClick(calendar)">
+                    <i :class="calendar.iconCssClass || 'ti ti-calendar'"></i>
+                    <h3>{{ calendar.name }}</h3>
+                </a>
+            </li>
+        </ul>
+
+        <NotificationBox v-else :alertType="AlertType.Info">
+            There are no calendars to display.
+        </NotificationBox>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import { NavigationUrlKey } from "./CalendarTypes/types.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { useConfigurationValues, useReloadBlock, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { CalendarTypesBag } from "@Obsidian/ViewModels/Blocks/Event/CalendarTypes/calendarTypesBag";
+    import { CalendarTypesCalendarBag } from "@Obsidian/ViewModels/Blocks/Event/CalendarTypes/calendarTypesCalendarBag";
+    import { CalendarTypesOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/CalendarTypes/calendarTypesOptionsBag";
+
+    const config = useConfigurationValues<CustomBlockBox<CalendarTypesBag, CalendarTypesOptionsBag>>();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Computed Values
+
+    /** The event calendar tiles the current person is authorized to view. */
+    const calendars = computed((): CalendarTypesCalendarBag[] => {
+        return config.bag?.calendars ?? [];
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /** Navigates to the detail page for the clicked calendar. */
+    function onCalendarClick(calendar: CalendarTypesCalendarBag): void {
+        navigateToDetail(calendar.idKey ?? "");
+    }
+
+    /** Navigates to the detail page to add a new calendar. */
+    function onAddClick(): void {
+        navigateToDetail("0");
+    }
+
+    /** Navigates to the calendar attributes configuration page. */
+    function onAttributesClick(): void {
+        const attributesUrl = config.navigationUrls?.[NavigationUrlKey.CalendarAttributesPage];
+
+        if (attributesUrl) {
+            window.location.href = attributesUrl;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /** Navigates to the detail page, substituting the calendar key into the URL. */
+    function navigateToDetail(key: string): void {
+        const detailUrl = config.navigationUrls?.[NavigationUrlKey.DetailPage];
+
+        if (detailUrl) {
+            window.location.href = detailUrl.replace("((Key))", key);
+        }
+    }
+
+    // #endregion Functions
+</script>

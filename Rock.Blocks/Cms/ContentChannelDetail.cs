@@ -131,10 +131,92 @@ namespace Rock.Blocks.Cms
                 ContentChannelList = GetContentChannelList( rockContext ),
                 CurrentPageUrl = this.GetCurrentPageUrl().UrlEncode(),
                 DisableContentField = entity.ContentChannelType?.DisableContentField ?? false,
-                ContentLibraryInheritedItemAttributes = GetContentLibraryInheritedItemAttributes( entity.ContentChannelTypeId, rockContext )
+                ContentLibraryInheritedItemAttributes = GetContentLibraryInheritedItemAttributes( entity.ContentChannelTypeId, rockContext ),
+                ContentChannelTypeItemAttributeKeys = GetContentChannelTypeItemAttributeKeys( entity.ContentChannelTypeId, rockContext )
             };
 
             return options;
+        }
+
+        /// <summary>
+        /// Gets Content Channel Item attribute keys defined on the specified Content Channel Type.
+        /// </summary>
+        /// <param name="contentChannelTypeId">The content channel type identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>A distinct list of attribute keys.</returns>
+        private List<string> GetContentChannelTypeItemAttributeKeys( int contentChannelTypeId, RockContext rockContext )
+        {
+            if ( contentChannelTypeId <= 0 )
+            {
+                return new List<string>();
+            }
+
+            /*
+                7/17/26 - MSE
+
+                Content Channel Item attributes can be defined on both the type and the channel.
+                Reserve type-level keys when editing channel item attributes so the same Key
+                cannot be introduced from either side (matching Connection Type/Opportunity).
+
+                Reason: Prevent duplicate ContentChannelItem attribute Keys across type and channel.
+            */
+            var contentChannelItemEntityTypeId = EntityTypeCache.Get<ContentChannelItem>().Id;
+
+            return new AttributeService( rockContext )
+                .GetByEntityTypeId( contentChannelItemEntityTypeId, true )
+                .AsNoTracking()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( contentChannelTypeId.ToString() ) &&
+                    a.Key != null &&
+                    a.Key != string.Empty )
+                .Select( a => a.Key )
+                .Distinct()
+                .ToList();
+        }
+
+        /// <summary>
+        /// Validates that channel item attribute keys do not conflict with item attributes
+        /// already defined on the content channel type.
+        /// </summary>
+        private bool ValidateItemAttributeKeysAgainstType( ContentChannel contentChannel, List<PublicEditableAttributeBag> itemAttributes, out string errorMessage )
+        {
+            errorMessage = null;
+
+            if ( itemAttributes == null || !itemAttributes.Any() || contentChannel.ContentChannelTypeId <= 0 )
+            {
+                return true;
+            }
+
+            var typeKeys = GetContentChannelTypeItemAttributeKeys( contentChannel.ContentChannelTypeId, RockContext );
+            if ( !typeKeys.Any() )
+            {
+                return true;
+            }
+
+            var typeKeySet = new HashSet<string>( typeKeys, StringComparer.OrdinalIgnoreCase );
+            var conflictingKeys = itemAttributes
+                .Where( a => a.Key.IsNotNullOrWhiteSpace() && typeKeySet.Contains( a.Key ) )
+                .Select( a => a.Key )
+                .Distinct( StringComparer.OrdinalIgnoreCase )
+                .OrderBy( k => k )
+                .ToList();
+
+            if ( !conflictingKeys.Any() )
+            {
+                return true;
+            }
+
+            if ( conflictingKeys.Count == 1 )
+            {
+                errorMessage = $"An item attribute with the key '{conflictingKeys[0]}' already exists on the Content Channel Type. Please use a different key.";
+            }
+            else
+            {
+                errorMessage = $"The following item attribute keys already exist on the Content Channel Type: {conflictingKeys.AsDelimited( ", " )}. Please use different keys.";
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -874,6 +956,11 @@ namespace Rock.Blocks.Cms
                 return ActionBadRequest( validationMessage );
             }
 
+            if ( !ValidateItemAttributeKeysAgainstType( entity, box.Bag.ItemAttributes, out validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
             var isNew = entity.Id == 0;
 
             // Validate that content library attribute guids reference
@@ -987,6 +1074,31 @@ namespace Rock.Blocks.Cms
             }
 
             return ActionOk( GetContentLibraryInheritedItemAttributes( contentChannelTypeId.Value, RockContext ) );
+        }
+
+        /// <summary>
+        /// Gets Content Channel Item attribute keys defined on the selected Content Channel Type
+        /// so the channel item attribute editor can reserve them.
+        /// </summary>
+        /// <param name="guid">The selected content channel type guid.</param>
+        [BlockAction]
+        public BlockActionResult GetContentChannelTypeItemAttributeKeys( string guid )
+        {
+            var contentChannelTypeGuid = guid.AsGuidOrNull();
+            if ( !contentChannelTypeGuid.HasValue )
+            {
+                return ActionOk( new List<string>() );
+            }
+
+            var contentChannelTypeId = new ContentChannelTypeService( RockContext )
+                .GetSelect( contentChannelTypeGuid.Value, t => ( int? ) t.Id );
+
+            if ( !contentChannelTypeId.HasValue )
+            {
+                return ActionOk( new List<string>() );
+            }
+
+            return ActionOk( GetContentChannelTypeItemAttributeKeys( contentChannelTypeId.Value, RockContext ) );
         }
 
         /// <summary>

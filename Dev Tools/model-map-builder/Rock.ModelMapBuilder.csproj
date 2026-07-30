@@ -1,0 +1,44 @@
+<!--
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//</copyright>
+-->
+
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <RootNamespace>Rock.ModelMapBuilder</RootNamespace>
+    <AssemblyName>Rock.ModelMapBuilder</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <!--
+        This tool loads Rock's internal configuration types (RockApp, HostingSettings,
+        etc.) to stand up a headless RockApp. Building against the source Rock.csproj
+        guarantees it always reflects over this checkout's Rock.dll.
+    -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Rock\Rock.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Match the version Rock.csproj resolves to avoid a conflicting graph. -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
+  </ItemGroup>
+
+</Project>

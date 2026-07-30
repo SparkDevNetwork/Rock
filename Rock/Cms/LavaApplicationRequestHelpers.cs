@@ -65,6 +65,17 @@ namespace Rock.Cms
                 .ToDictionary( h => h, h => request.Headers[h] );
             dictionary.Add( "Headers", headers );
 
+            // Friendly client type derived from the client hint header so shared
+            // endpoints can branch per platform. The header is spoofable, so this
+            // is a rendering hint only and must never gate authorization. A string
+            // rather than a boolean so future clients (TV, Kiosk) can be added
+            // without breaking existing templates.
+            var helixClient = request.Headers["X-Helix-Client"].ToStringSafe();
+            var clientType = helixClient.Equals( "RockMobile", StringComparison.OrdinalIgnoreCase )
+                ? "Mobile"
+                : "Web";
+            dictionary.Add( "ClientType", clientType );
+
             try
             {
                 // Add the cookies. We need to check each cookie before adding in case there is more than one cookie with the same name.

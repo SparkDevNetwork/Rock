@@ -1143,5 +1143,35 @@ namespace Rock.Plugin.HotFixes {
                 return ResourceManager.GetString("_299_FixAnalyticsETLFamilyOperatorPrecedence_spAnalytics_ETL_Family", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up the ALTER PROCEDURE script for [spCrm_FamilyAnalyticsEraDataset]
+        ///   that fixes the week-boundary comparison (issue #6902).
+        /// </summary>
+        public static string _306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsEraDataset {
+            get {
+                return ResourceManager.GetString("_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up the ALTER PROCEDURE script for [spCrm_FamilyAnalyticsGiving]
+        ///   that fixes the week-boundary comparison (issue #6902).
+        /// </summary>
+        public static string _306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsGiving {
+            get {
+                return ResourceManager.GetString("_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsGiving", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up the ALTER PROCEDURE script for [spCrm_FamilyAnalyticsAttendance]
+        ///   that fixes the week-boundary comparison (issue #6902).
+        /// </summary>
+        public static string _306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsAttendance {
+            get {
+                return ResourceManager.GetString("_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsAttendance", resourceCulture);
+            }
+        }
     }
 }

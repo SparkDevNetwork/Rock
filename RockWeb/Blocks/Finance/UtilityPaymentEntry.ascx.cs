@@ -1252,6 +1252,34 @@ mission. We are so grateful for your commitment.</p>
                 }
             }
 
+            // If this is a transfer (page params carried Transfer=true and
+            // ScheduledTransactionGuid, and InitializeTransfer resolved a
+            // schedule), pre-populate the account amounts from the schedule's
+            // existing details so the transfer form arrives pre-filled. Also
+            // add any of the schedule's accounts that aren't already in the
+            // block's selectable list so they can be rendered (mirrors the
+            // AvailableAccounts.Except / SelectedAccounts.AddRange behavior
+            // that TransactionEntry.ascx.cs used to do). URL-provided amounts
+            // (populated above from ParseAccountUrlOptions) take precedence
+            // over the transfer amounts if both were supplied.
+            if ( accountAmounts == null && _scheduledTransactionToBeTransferred != null )
+            {
+                var transferAccountAmounts = _scheduledTransactionToBeTransferred.ScheduledTransactionDetails
+                    .GroupBy( d => d.AccountId )
+                    .Select( g => new CampusAccountAmountPicker.AccountIdAmount( g.Key, g.Sum( d => d.Amount ) ) )
+                    .ToArray();
+
+                foreach ( var transferAccountId in transferAccountAmounts.Select( a => a.AccountId ) )
+                {
+                    if ( !selectableAccountIds.Contains( transferAccountId ) )
+                    {
+                        selectableAccountIds.Add( transferAccountId );
+                    }
+                }
+
+                accountAmounts = transferAccountAmounts;
+            }
+
             caapPromptForAccountAmounts.SelectableAccountIds = selectableAccountIds.ToArray();
 
             ConfigureAvailableAccounts( rockContext );

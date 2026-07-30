@@ -2482,15 +2482,28 @@ namespace Rock.Blocks.Group
 
             // A present ParentGroupId means the user arrived from the tree view,
             // so return them to the parent group (preserving the expanded tree
-            // state) rather than the list page. A root-level add (ParentGroupId 0)
-            // clears the selection instead of selecting a group.
-            var parentGroupId = PageParameter( PageParameterKey.ParentGroupId ).AsIntegerOrNull();
-            if ( parentGroupId.HasValue )
+            // state) rather than the list page. A root-level add (ParentGroupId 0
+            // or an unresolvable empty parent) clears the selection instead of
+            // selecting a group.
+            //
+            // ParentGroupId may be a raw integer (legacy WebForms tree), an IdKey
+            // (Obsidian Group Tree View), or a Guid — resolve the same way Add
+            // mode pre-populates the parent.
+            var parentGroupParam = PageParameter( PageParameterKey.ParentGroupId );
+            if ( parentGroupParam.IsNotNullOrWhiteSpace() )
             {
                 var qryParams = new Dictionary<string, string>();
-                if ( parentGroupId.Value > 0 )
+
+                // "0" is the explicit root-level add marker (no parent to select).
+                if ( parentGroupParam != "0" )
                 {
-                    qryParams[PageParameterKey.GroupId] = Rock.Utility.IdHasher.Instance.GetHash( parentGroupId.Value );
+                    var parentGroup = new GroupService( RockContext )
+                        .Get( parentGroupParam, !PageCache.Layout.Site.DisablePredictableIds );
+
+                    if ( parentGroup != null )
+                    {
+                        qryParams[PageParameterKey.GroupId] = parentGroup.IdKey;
+                    }
                 }
 
                 var expandedIds = PageParameter( PageParameterKey.ExpandedIds );
@@ -4430,7 +4443,13 @@ namespace Rock.Blocks.Group
                 .Select( c => new GroupLinkageBag
                 {
                     Name = c.Title,
-                    Url = this.GetLinkedPageUrl( AttributeKey.ContentItemPage, "ContentItemId", c.IdKey )
+                    // Open the content item in edit mode, matching the WebForms
+                    // behavior for items selected from an event linkage.
+                    Url = this.GetLinkedPageUrl( AttributeKey.ContentItemPage, new Dictionary<string, string>
+                    {
+                        { "ContentItemId", c.IdKey },
+                        { "autoEdit", "true" }
+                    } )
                 } )
                 .Where( l => l.Url.IsNotNullOrWhiteSpace() )
                 .ToList();

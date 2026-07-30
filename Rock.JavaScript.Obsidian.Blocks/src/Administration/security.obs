@@ -425,10 +425,11 @@
         await loadRoleActions();
     }
 
-    /** Reveals the Add User form. */
+    /** Reveals the Add User form. The previously picked person is intentionally kept
+        so re-opening the form (even from another action tab) shows them pre-loaded in
+        the picker, matching the legacy block's ViewState behavior. */
     function showAddUser(): void {
         isPickerExpanded.value = false;
-        selectedPerson.value = undefined;
         addMode.value = "user";
     }
 

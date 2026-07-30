@@ -175,6 +175,15 @@ namespace Rock.Crm.ConnectionStatusChangeReport
                 personQuery = personQuery.Where( x => x.ConnectionStatusValueId == toConnectionStatusId );
             }
 
+            /*
+                7/17/26 - MSE
+
+                Without PhotoId, GetGridPerson / Person.PhotoUrl has nothing to
+                hand GetAvatar.ashx, so the Results grid only shows initials even
+                when the person has a profile photo.
+
+                Reason: New-person change events were missing PhotoId.
+            */
             var eventsData = personQuery
                 .Select( x => new ConnectionStatusChangeEventData
                 {
@@ -185,7 +194,8 @@ namespace Rock.Crm.ConnectionStatusChangeReport
                     OldRawData = string.Empty,
                     NewRawData = ( x.ConnectionStatusValueId == null ? string.Empty : x.ConnectionStatusValueId.ToString() ),
                     EventDate = x.CreatedDateTime ?? DateTime.MinValue,
-                    CreatedBy = x.CreatedByPersonAlias.Name
+                    CreatedBy = x.CreatedByPersonAlias.Name,
+                    PhotoId = x.PhotoId
                 } ).ToList();
 
 

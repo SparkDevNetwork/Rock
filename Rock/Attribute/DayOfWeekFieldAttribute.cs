@@ -35,9 +35,21 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public DayOfWeekFieldAttribute( string name = "Day of Week", string description = "", bool required = true, DayOfWeek defaultValue = DayOfWeek.Sunday, string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue.ConvertToInt().ToString(), category, order, key, typeof( Rock.Field.Types.DayOfWeekFieldType ).FullName )
+            : base( SystemGuid.FieldType.DAY_OF_WEEK.AsGuid(), name, description, required, defaultValue.ConvertToInt().ToString(), category, order, key )
         {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DayOfWeekFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public DayOfWeekFieldAttribute( string name )
+            : base( SystemGuid.FieldType.DAY_OF_WEEK.AsGuid(), name )
+        {
+            DefaultValue = DayOfWeek.Sunday.ConvertToInt().ToString();
         }
     }
 }
