@@ -29,6 +29,12 @@ export type UpdateScheduledTransactionRequestBag = {
     /** Gets or sets the account/amount allocations to save. */
     accountAmounts?: ScheduledTransactionAccountAmountBag[] | null;
 
+    /**
+     * Gets or sets the unique identifier of the selected campus. Used for campus account
+     * mapping so a parent account can be routed to its campus-specific child account.
+     */
+    campusGuid?: Guid | null;
+
     /** Gets or sets the optional end date for the recurring gift. */
     endDate?: string | null;
 

@@ -615,7 +615,7 @@ namespace Rock.Blocks.Finance
             }
 
             var targetPersonCampus = targetPerson?.GetCampus();
-            if ( targetPersonCampus != null )
+            if ( bag.Campus == null && targetPersonCampus != null )
             {
                 bag.Campus = new ListItemBag { Value = targetPersonCampus.Guid.ToString(), Text = targetPersonCampus.Name };
             }
@@ -718,6 +718,71 @@ namespace Rock.Blocks.Finance
         }
 
         /// <summary>
+        /// Determines whether campus account mapping applies, based on the block's Campus Account
+        /// Mapping setting. "Enabled" always maps; "Disabled" never maps; "UseFinancialAccount"
+        /// maps only when one of the involved accounts (or its parent) opts into campus child
+        /// accounts. Mirrors the resolution the WebForms block applied to the picker's
+        /// <c>UseAccountCampusMappingLogic</c> property.
+        /// </summary>
+        /// <param name="involvedAccountGuids">The account Guids relevant to the decision (the transaction's accounts on load, or the requested accounts on save).</param>
+        /// <returns><c>true</c> when campus child account mapping should be applied.</returns>
+        private bool IsCampusAccountMappingEnabled( IEnumerable<Guid> involvedAccountGuids )
+        {
+            var setting = GetAttributeValue( AttributeKey.UseAccountCampusMappingLogic );
+
+            if ( setting == "Enabled" )
+            {
+                return true;
+            }
+
+            if ( setting == "UseFinancialAccount" )
+            {
+                return involvedAccountGuids.Any( guid =>
+                {
+                    var account = FinancialAccountCache.Get( guid );
+                    return account?.UsesCampusChildAccounts == true
+                        || account?.ParentAccount?.UsesCampusChildAccounts == true;
+                } );
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Resolves the account that should be displayed for a transaction detail's account. When
+        /// campus mapping applies, a gift stored on a campus-specific child account is displayed
+        /// under its parent (with the campus surfaced separately); a child account that is itself
+        /// explicitly selectable is shown as-is. Mirrors the WebForms
+        /// <c>CampusAccountAmountPicker.GetDisplayedAccountFromSelectedAccount</c> logic.
+        /// </summary>
+        /// <param name="selectedAccount">The account the transaction detail is stored on.</param>
+        /// <param name="selectableAccountGuids">The accounts that are explicitly selectable.</param>
+        /// <param name="isCampusAccountMappingEnabled">Whether campus mapping is active for this transaction.</param>
+        /// <returns>The account to display and hold the allocation.</returns>
+        private FinancialAccountCache GetDisplayedAccountForEdit( FinancialAccountCache selectedAccount, List<Guid> selectableAccountGuids, bool isCampusAccountMappingEnabled )
+        {
+            // Without mapping (and unless the parent opts into campus child accounts) the account is shown as-is.
+            if ( !isCampusAccountMappingEnabled && selectedAccount.ParentAccount?.UsesCampusChildAccounts != true )
+            {
+                return selectedAccount;
+            }
+
+            // An explicitly selectable account is shown as itself, even when it is a child account.
+            if ( selectableAccountGuids.Contains( selectedAccount.Guid ) )
+            {
+                return selectedAccount;
+            }
+
+            // A child account is folded up to its parent for display.
+            if ( selectedAccount.ParentAccount != null )
+            {
+                return selectedAccount.ParentAccount;
+            }
+
+            return selectedAccount;
+        }
+
+        /// <summary>
         /// Populates the account-related bag fields: the selectable accounts, the pool of
         /// additional accounts that can be added on demand, the current amount allocations,
         /// and whether multiple accounts may be used. Mirrors the account setup in the
@@ -728,61 +793,66 @@ namespace Rock.Blocks.Finance
         /// <returns><c>true</c> when at least one account is selectable; otherwise <c>false</c> with <see cref="ScheduledTransactionEditV2Bag.ErrorMessage"/> set.</returns>
         private bool TryPopulateAccounts( FinancialScheduledTransaction scheduledTransaction, ScheduledTransactionEditV2Bag bag )
         {
-            var accountCampusMappingLogicSetting = GetAttributeValue( AttributeKey.UseAccountCampusMappingLogic );
             var currentTransactionAccountGuids = scheduledTransaction.ScheduledTransactionDetails.Select( d => d.Account.Guid ).ToList();
-
-            bool useAccountCampusMappingLogic;
-            if ( accountCampusMappingLogicSetting == "Enabled" )
-            {
-                useAccountCampusMappingLogic = true;
-            }
-            else if ( accountCampusMappingLogicSetting == "UseFinancialAccount" && currentTransactionAccountGuids.Any() )
-            {
-                useAccountCampusMappingLogic = currentTransactionAccountGuids.Any( accountGuid =>
-                {
-                    var account = FinancialAccountCache.Get( accountGuid );
-                    return account?.UsesCampusChildAccounts == true
-                        || account?.ParentAccount?.UsesCampusChildAccounts == true;
-                } );
-            }
-            else
-            {
-                useAccountCampusMappingLogic = false;
-            }
 
             var selectableAccountGuids = GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList();
 
-            /* Match Webforms account selection behavior when campus mapping is enabled.
-             *
-             * When configured correctly, only parent Financial Accounts are added to the
-             * selectable list. The Account Picker displays child account transactions under
-             * their mapped parent account.
-             *
-             * If misconfigured (for example, the parent account is not included), a
-             * transaction tied to a child account would otherwise have no selectable
-             * account. In that case, the child account is added to the selectable list so
-             * the transaction remains editable.
-             */
-            foreach ( var currentTransactionAccountGuid in currentTransactionAccountGuids )
-            {
-                var parentAccount = FinancialAccountCache.Get( currentTransactionAccountGuid )?.ParentAccount;
+            var isCampusAccountMappingEnabled = IsCampusAccountMappingEnabled( currentTransactionAccountGuids );
 
-                var isParentSelectable = parentAccount != null && selectableAccountGuids.Contains( parentAccount.Guid );
-                var requiresAccountCampusMappingLogicForThisAccount = parentAccount?.UsesCampusChildAccounts == true;
-
-                var shouldAlwaysAddBecauseNoCampusChildLogic =
-                    accountCampusMappingLogicSetting == "UseFinancialAccount"
-                    && !requiresAccountCampusMappingLogicForThisAccount;
-
-                var shouldAddCurrentAccount =
-                    !useAccountCampusMappingLogic
-                    || shouldAlwaysAddBecauseNoCampusChildLogic
-                    || !isParentSelectable;
-
-                if ( shouldAddCurrentAccount && !selectableAccountGuids.Contains( currentTransactionAccountGuid ) )
+            // Resolve the account each detail would display under. When campus mapping is active a
+            // gift stored on a campus-specific child account would normally fold up to its parent.
+            var detailDisplays = scheduledTransaction.ScheduledTransactionDetails
+                .Select( detail => new
                 {
-                    selectableAccountGuids.Add( currentTransactionAccountGuid );
+                    Detail = detail,
+                    Account = FinancialAccountCache.Get( detail.Account.Guid )
+                } )
+                .Where( x => x.Account != null )
+                .Select( x => new
+                {
+                    x.Detail,
+                    x.Account,
+                    DisplayedAccount = GetDisplayedAccountForEdit( x.Account, selectableAccountGuids, isCampusAccountMappingEnabled )
+                } )
+                .ToList();
+
+            // A displayed account is "contested" when more than one detail resolves to it (a
+            // parent's own gift plus a folding child, or two campus children of one parent).
+            // Folding those together would merge distinct allocations onto a single row, losing or
+            // misrepresenting an amount, so contested details are shown as their own accounts.
+            var contestedDisplayedAccountIds = new HashSet<int>(
+                detailDisplays
+                    .GroupBy( x => x.DisplayedAccount.Id )
+                    .Where( g => g.Count() > 1 )
+                    .Select( g => g.Key ) );
+
+            // Build one row per detail, folding a child onto its parent only when unambiguous.
+            // Every shown account is forced into the selectable list so its allocation stays
+            // editable rather than being silently dropped.
+            var displayedAccountAmounts = new List<ScheduledTransactionAccountAmountBag>();
+            Guid? mappedCampusGuid = null;
+
+            foreach ( var item in detailDisplays )
+            {
+                var showAsIs = contestedDisplayedAccountIds.Contains( item.DisplayedAccount.Id );
+                var accountToShow = showAsIs ? item.Account : item.DisplayedAccount;
+
+                if ( accountToShow.Id != item.Account.Id && item.Account.CampusId.HasValue )
+                {
+                    mappedCampusGuid = item.Account.Campus?.Guid;
                 }
+
+                if ( !selectableAccountGuids.Contains( accountToShow.Guid ) )
+                {
+                    selectableAccountGuids.Add( accountToShow.Guid );
+                }
+
+                displayedAccountAmounts.Add( new ScheduledTransactionAccountAmountBag
+                {
+                    AccountGuid = accountToShow.Guid.ToString(),
+                    AccountName = accountToShow.PublicName,
+                    Amount = item.Detail.Amount
+                } );
             }
 
             var additionalAccountGuids = new List<Guid>();
@@ -826,14 +896,17 @@ namespace Rock.Blocks.Finance
                 .Select( a => new ListItemBag { Value = a.Guid.ToString(), Text = a.PublicName } )
                 .ToList();
 
-            bag.AccountAmounts = scheduledTransaction.ScheduledTransactionDetails
-                .Select( d => new ScheduledTransactionAccountAmountBag
+            bag.AccountAmounts = displayedAccountAmounts;
+
+            // Surface the campus of a campus-mapped gift so the campus selector reflects it.
+            if ( mappedCampusGuid.HasValue )
+            {
+                var mappedCampus = CampusCache.Get( mappedCampusGuid.Value );
+                if ( mappedCampus != null )
                 {
-                    AccountGuid = d.Account.Guid.ToString(),
-                    AccountName = d.Account.PublicName,
-                    Amount = d.Amount
-                } )
-                .ToList();
+                    bag.Campus = new ListItemBag { Value = mappedCampus.Guid.ToString(), Text = mappedCampus.Name };
+                }
+            }
 
             // Multi-account mode is forced on when the transaction already spans multiple accounts,
             // otherwise it follows the block setting.
@@ -1231,6 +1304,16 @@ namespace Rock.Blocks.Finance
                 return true;
             }
 
+            var requestAccountGuids = request.AccountAmounts
+                .Where( a => a.AccountGuid.IsNotNullOrWhiteSpace() )
+                .Select( a => a.AccountGuid.AsGuid() )
+                .ToList();
+
+            var isCampusAccountMappingEnabled = IsCampusAccountMappingEnabled( requestAccountGuids );
+            var campus = request.CampusGuid.HasValue ? CampusCache.Get( request.CampusGuid.Value ) : null;
+
+            var resolvedAmounts = new List<(int AccountId, decimal Amount)>();
+
             foreach ( var accountAmount in request.AccountAmounts )
             {
                 if ( !accountAmount.Amount.HasValue || accountAmount.Amount.Value == 0 )
@@ -1238,15 +1321,28 @@ namespace Rock.Blocks.Finance
                     continue;
                 }
 
-                var accountId = FinancialAccountCache.Get( accountAmount.AccountGuid.AsGuid() )?.Id;
-                if ( !accountId.HasValue )
+                var account = FinancialAccountCache.Get( accountAmount.AccountGuid.AsGuid() );
+                if ( account == null )
                 {
                     errorMessage = "One or more of the selected accounts could not be found.";
                     return false;
                 }
 
-                selectedAccountAmounts.Add( (accountId.Value, accountAmount.Amount.Value) );
+                // When campus mapping applies, route the gift to the campus-specific child account
+                // for the selected campus. With no campus (or no matching child) the account is
+                // used as-is.
+                var shouldMap = isCampusAccountMappingEnabled || account.UsesCampusChildAccounts;
+                var resolvedAccountId = shouldMap
+                    ? account.GetMappedAccountForCampus( campus, forceChildAccounts: true ).Id
+                    : account.Id;
+
+                resolvedAmounts.Add( (resolvedAccountId, accountAmount.Amount.Value) );
             }
+
+            selectedAccountAmounts = resolvedAmounts
+                .GroupBy( a => a.AccountId )
+                .Select( g => (AccountId: g.Key, Amount: g.Sum( x => x.Amount )) )
+                .ToList();
 
             return true;
         }
@@ -1446,6 +1542,9 @@ namespace Rock.Blocks.Finance
             }
 
             Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftUpdated ) );
+
+            // fetch the newly saved scheduled transaction so all nav properties are available for lava template
+            scheduledTransaction = GetScheduledTransaction( scheduledTransaction.Guid );
 
             var mergeFields = RequestContext.GetCommonMergeFields( RequestContext.CurrentPerson );
             mergeFields.Add( "Transaction", scheduledTransaction );
