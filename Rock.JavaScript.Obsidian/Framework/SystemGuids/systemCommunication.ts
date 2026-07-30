@@ -37,8 +37,6 @@ export const SystemCommunication = {
     ConfigExceptionNotification: "75CB0A4A-B1C5-4958-ADEB-8621BD231520",
     /** Gets the template guid for the Job Notification communication */
     ConfigJobNotification: "691FEA1B-E5C4-4BF8-A7CD-C588F5C63CA8",
-    /** Gets the template guid for digital signature invite */
-    DigitalSignatureInvite: "791F2DE4-5A59-60AE-4F2F-FDC3EBC4FFA9",
     /** Gets the template guid for  */
     FinanceExpiringCreditCard: "C07ACD2E-7B9D-400A-810F-BC0EBB9A60DD",
     /** Gets the template guid for  */

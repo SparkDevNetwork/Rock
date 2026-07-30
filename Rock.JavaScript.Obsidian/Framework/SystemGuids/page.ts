@@ -285,7 +285,7 @@ export const Page = {
     CheckInRockSettings: "66C5DD58-094C-4FF9-9AFB-44801FCFCC2D",
     /**
      * Gets the Check-in page guid
-     * ParentPage: 
+     * ParentPage:
      */
     CheckInRoot: "CDF2C599-D341-42FD-B7DC-CD402EA96050",
     /**
@@ -713,7 +713,7 @@ export const Page = {
     ExternalApplications: "5A676DCC-37F0-4624-8CCD-408A5A471D8A",
     /**
      * Gets the External Homepage page guid
-     * ParentPage: 
+     * ParentPage:
      */
     ExternalHomepage: "85F25819-E948-4960-9DDF-00F54D32444E",
     /**
@@ -932,7 +932,7 @@ export const Page = {
     HtmleditorRockmergefieldPluginFrame: "1FC09F0D-72F2-44E6-9D16-2884F9AF33DD",
     /**
      * Gets the Internal Homepage page guid
-     * ParentPage: 
+     * ParentPage:
      */
     InternalHomepage: "20F97A93-7949-4C2A-8A5E-C756FE8585CA",
     /**
@@ -1047,6 +1047,8 @@ export const Page = {
      * ParentPage: Reporting
      */
     Metrics: "78D84825-EB1A-43C6-9AD5-5F0F84CC9A53",
+    /** The Mobile Page Layout Detail Page */
+    MobileLayout: "5583A55D-7398-48E9-971F-6A1EF8158943",
     /** The mobile site pages */
     MobileSitePages: "37E21200-DF91-4426-89CC-7D067237A037",
     /**
