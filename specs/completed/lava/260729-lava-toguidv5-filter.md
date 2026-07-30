@@ -168,4 +168,4 @@ Rejected for this change. That guide lists `Rock/Lava/Filters/LavaFilters.Identi
 - [RFC 4122 Section 4.1.3](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.3), the version field definition this implementation stamps. Referenced as a standards document, not a project requirements source.
 - `Rock/Lava/Filters/LavaFilters.cs:2547`, the `AddToMergeFields` precedent for an intentionally undocumented filter.
 - `Rock.Lava.Fluid/FluidEngine.cs:474`, where a filter's Lava name is derived from its method name.
-- [docs/lava/writing-filters.md](../docs/lava/writing-filters.md), the internal guide for authoring filters. Not updated by this change; see Considered but Rejected.
+- [docs/lava/writing-filters.md](../../../docs/lava/writing-filters.md), the internal guide for authoring filters. Not updated by this change; see Considered but Rejected.
