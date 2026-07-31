@@ -37,8 +37,8 @@
             </div>
         </template>
 
-        <template #gridHeaderPrepend>
-            <NotificationBox v-if="config.options?.showClosedBatchWarning"
+        <template #gridHeaderPrepend v-if="config.options?.showClosedBatchWarning">
+            <NotificationBox
                              alertType="info"
                              heading="Note"
                              class="mb-0">
@@ -46,7 +46,7 @@
             </NotificationBox>
         </template>
 
-        <template #actionToolbar>
+        <template v-if="hasToolbarActions" #actionToolbar>
             <div v-if="isMoveToBatchAvailable" class="d-flex align-items-center gap-2 flex-grow-1">
                 <span class="text-nowrap">Move to Batch</span>
                 <div class="move-to-batch-group">
@@ -367,6 +367,14 @@
     const isMoveToBatchAvailable = computed((): boolean => {
         return !!config.options?.isMoveToBatchVisible
             && viewMode.value === ViewMode.Transactions;
+    });
+
+    /**
+     * Whether any selection action (Move to Batch or Reassign) will render in the toolbar. When
+     * false, the action toolbar is not provided at all so no empty toolbar appears for selected rows.
+     */
+    const hasToolbarActions = computed((): boolean => {
+        return isMoveToBatchAvailable.value || !!config.options?.isReassignVisible;
     });
 
     const hasSettingsFilters = computed((): boolean => {
