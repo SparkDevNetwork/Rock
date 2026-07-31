@@ -109,33 +109,43 @@ namespace Rock.Jobs
 
             if ( job != null && job.Guid != Rock.SystemGuid.ServiceJob.JOB_PULSE.AsGuid() )
             {
-                var now = RockDateTime.Now;
-                job.LastStatus = "Running";
-                job.LastStatusMessage = "Started at " + now.ToString();
+                // An exception escaping this listener would prevent Quartz from moving the job's trigger out of its
+                // Blocked state, permanently stopping the job until Rock restarts. A bookkeeping failure is logged
+                // instead so the job still runs.
+                try
+                {
+                    var now = RockDateTime.Now;
+                    job.LastStatus = "Running";
+                    job.LastStatusMessage = "Started at " + now.ToString();
 
-                /* 
-                     5/25/2023 - JMH
-                     
-                     Before the job executes, a partial "started" ServiceJobHistory record is created.
-                     After the job is executed, the ServiceJobHistory record's status, started,
-                     and stopped date times will be updated to match the job's last run.
-                     
-                     The job scheduler does not expose the job execution's actual start or stop time,
-                     but it does expose the execution's run duration (in seconds) once the job is executed
-                     (available in the "JobWasExecuted" callback).
-                     
-                     In the "JobWasExecuted" callback, we update the ServiceJob.LastRunDurationSeconds value
-                     to the actual run duration returned by the scheduler, and the ServiceJob.LastRunDateTime
-                     to the current system time. The last run start time is not stored in the ServiceJob.
-                     
-                     Lastly, the ServiceJobHistory data will be updated to match the ServiceJob's last run data.
-                     
-                     Reason: Rock Jobs Scheduler                     
-                 */
-                var jobHistoryService = new ServiceJobHistoryService( rockContext );
-                jobHistoryService.AddStartedServiceJobHistory( job, now );
+                    /*
+                         5/25/2023 - JMH
 
-                rockContext.SaveChanges();
+                         Before the job executes, a partial "started" ServiceJobHistory record is created.
+                         After the job is executed, the ServiceJobHistory record's status, started,
+                         and stopped date times will be updated to match the job's last run.
+
+                         The job scheduler does not expose the job execution's actual start or stop time,
+                         but it does expose the execution's run duration (in seconds) once the job is executed
+                         (available in the "JobWasExecuted" callback).
+
+                         In the "JobWasExecuted" callback, we update the ServiceJob.LastRunDurationSeconds value
+                         to the actual run duration returned by the scheduler, and the ServiceJob.LastRunDateTime
+                         to the current system time. The last run start time is not stored in the ServiceJob.
+
+                         Lastly, the ServiceJobHistory data will be updated to match the ServiceJob's last run data.
+
+                         Reason: Rock Jobs Scheduler
+                     */
+                    var jobHistoryService = new ServiceJobHistoryService( rockContext );
+                    jobHistoryService.AddStartedServiceJobHistory( job, now );
+
+                    rockContext.SaveChanges();
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( new Exception( $"Unable to record the started status for the '{job.Name}' job (ID: {job.Id}).", ex ), null );
+                }
             }
 
 #pragma warning disable CS0612 // Type or member is obsolete
@@ -304,24 +314,53 @@ namespace Rock.Jobs
                 );
             }
 
-            rockContext.SaveChanges();
-
-            // Add job history
-            var serviceJobHistoryService = new ServiceJobHistoryService( rockContext );
-            var lastRunJobHistory = serviceJobHistoryService.GetServiceJobHistoryForLastRun( job );
-            serviceJobHistoryService.AddCompletedServiceJobHistory( job );
-
-            if ( lastRunJobHistory?.Status == "Running" )
+            // An exception escaping this listener would prevent Quartz from moving the job's trigger out of its
+            // Blocked state, permanently stopping the job until Rock restarts. Each bookkeeping step below is
+            // guarded independently so a failure is logged instead of thrown and does not skip the remaining steps.
+            try
             {
-                lastRunJobHistory.Status = "Incomplete";
+                rockContext.SaveChanges();
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( new Exception( $"Unable to save the last run details for the '{job.Name}' job (ID: {job.Id}).", ex ), null );
             }
 
-            rockContext.SaveChanges();
+            // Add job history
+            try
+            {
+                // A separate context is used so a failure saving the last run details above cannot poison the
+                // history write.
+                using ( var historyRockContext = new RockContext() )
+                {
+                    var serviceJobHistoryService = new ServiceJobHistoryService( historyRockContext );
+                    var lastRunJobHistory = serviceJobHistoryService.GetServiceJobHistoryForLastRun( job );
+                    serviceJobHistoryService.AddCompletedServiceJobHistory( job );
+
+                    if ( lastRunJobHistory?.Status == "Running" )
+                    {
+                        lastRunJobHistory.Status = "Incomplete";
+                    }
+
+                    historyRockContext.SaveChanges();
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( new Exception( $"Unable to add the job history record for the '{job.Name}' job (ID: {job.Id}).", ex ), null );
+            }
 
             // send notification
             if ( sendMessage )
             {
-                SendNotificationMessage( jobException, job );
+                try
+                {
+                    SendNotificationMessage( jobException, job );
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( new Exception( $"Unable to send the notification message for the '{job.Name}' job (ID: {job.Id}).", ex ), null );
+                }
             }
         }
 
