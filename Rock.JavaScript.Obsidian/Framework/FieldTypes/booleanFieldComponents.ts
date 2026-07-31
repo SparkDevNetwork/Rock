@@ -16,7 +16,7 @@
 //
 import { defineComponent, ref, computed, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
-import { asTrueFalseOrNull, asBoolean } from "@Obsidian/Utility/booleanUtils";
+import { asTrueFalseOrNull, asBoolean, asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 import { ConfigurationKey } from "./booleanField.partial";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import Toggle from "@Obsidian/Controls/toggle.obs";
@@ -124,6 +124,30 @@ export const EditComponent = defineComponent({
                 emit("update:modelValue", asTrueFalseOrNull(internalBooleanValue.value) || "");
             }
         });
+
+        /*
+            7/31/26 - MSE
+
+            A toggle or checkbox renders a blank value as "No" / unchecked,
+            but no change event fires unless the person interacts, so an
+            attribute's default value could save as blank while the editor
+            showed "No". Emit the displayed state up front so the saved
+            default matches it, like the WebForms control did. Limited to
+            default value entry because other consumers (registration entry,
+            bulk update) hydrate defaults into blank values after mount and
+            an early emit would clobber them.
+
+            Reason: Boolean attribute default values were saving as blank.
+        */
+        watch(booleanControlType, () => {
+            const isBlankValue = asBooleanOrNull(props.modelValue) === null;
+
+            if (props.dataEntryMode === "defaultValue"
+                && booleanControlType.value !== BooleanControlType.DropDown
+                && isBlankValue) {
+                emit("update:modelValue", asTrueFalseOrNull(internalBooleanValue.value) || "");
+            }
+        }, { immediate: true });
 
         watch(() => props.modelValue, () => {
             internalValue.value = asTrueFalseOrNull(props.modelValue) || "";
