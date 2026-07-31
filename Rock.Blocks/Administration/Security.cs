@@ -614,8 +614,8 @@ namespace Rock.Blocks.Administration
             var itemRules = itemAuths.Select( a => new AuthRule( a ) ).ToList();
 
             var parentRules = new List<ParentAuthRule>();
-            AddParentRules( authService, itemRules, parentRules, securedEntity.ParentAuthorityPre, action, false );
-            AddParentRules( authService, itemRules, parentRules, securedEntity.ParentAuthority, action, true );
+            var hasCircularReference = AddParentRules( authService, itemRules, parentRules, securedEntity.ParentAuthorityPre, action, false );
+            hasCircularReference = AddParentRules( authService, itemRules, parentRules, securedEntity.ParentAuthority, action, true ) || hasCircularReference;
 
             var hasAllUsersEntry = itemRules.Any( r => r.SpecialRole == SpecialRole.AllUsers )
                 || parentRules.Any( r => r.Rule.SpecialRole == SpecialRole.AllUsers );
@@ -627,11 +627,20 @@ namespace Rock.Blocks.Administration
                 noMatchMessage = $"The permission list does not include an \"All Users\" entry. Non-matching people will be {allowedOrDenied} access.";
             }
 
+            // Let the administrator know the inherited permissions cannot be fully trusted
+            // until the circular reference in the data is corrected.
+            string circularReferenceMessage = null;
+            if ( hasCircularReference )
+            {
+                circularReferenceMessage = "A circular reference was detected in this item's inherited security (an item is its own parent authority). The inherited permissions shown may be incomplete and security may not evaluate correctly until the circular reference is corrected.";
+            }
+
             return new SecurityActionDataBag
             {
                 ItemRules = BuildItemRulesGrid( itemAuths ),
                 ParentRules = BuildParentRulesGrid( parentRules ),
-                NoMatchMessage = noMatchMessage
+                NoMatchMessage = noMatchMessage,
+                CircularReferenceMessage = circularReferenceMessage
             };
         }
 
@@ -645,44 +654,61 @@ namespace Rock.Blocks.Administration
         /// <param name="parent">The parent authority to inspect.</param>
         /// <param name="action">The action being inspected.</param>
         /// <param name="recurse">Whether to continue up the chain from this parent.</param>
-        private void AddParentRules( AuthService authService, List<AuthRule> itemRules, List<ParentAuthRule> parentRules, ISecured parent, string action, bool recurse )
+        /// <returns><c>true</c> if a circular reference was detected in the parent authority chain; otherwise <c>false</c>.</returns>
+        private bool AddParentRules( AuthService authService, List<AuthRule> itemRules, List<ParentAuthRule> parentRules, ISecured parent, string action, bool recurse )
         {
-            if ( parent == null )
+            /*
+                7/31/2026 - MSE
+
+                The parent authority chain is walked iteratively with a visited list instead of
+                recursively so that a circular chain (e.g. a category whose parent category is
+                itself) cannot recurse until the stack overflows. A stack overflow cannot be
+                caught and terminates the entire worker process. When a circular chain is
+                detected the walk stops and reports it so the administrator can be warned.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/6949
+            */
+            var visitedAuthorities = new HashSet<string>();
+
+            while ( parent != null )
             {
-                return;
-            }
-
-            var entityType = EntityTypeCache.Get( parent.TypeId );
-
-            foreach ( var auth in authService.GetAuths( parent.TypeId, parent.Id, action ) )
-            {
-                var rule = new AuthRule( auth );
-
-                var alreadyOnItem = itemRules.Any( r =>
-                    r.SpecialRole == rule.SpecialRole &&
-                    r.PersonId == rule.PersonId &&
-                    r.GroupId == rule.GroupId );
-
-                var alreadyInherited = parentRules.Any( r =>
-                    r.Rule.SpecialRole == rule.SpecialRole &&
-                    r.Rule.PersonId == rule.PersonId &&
-                    r.Rule.GroupId == rule.GroupId );
-
-                if ( !alreadyOnItem && !alreadyInherited )
+                if ( !visitedAuthorities.Add( $"{parent.TypeId}|{parent.Id}" ) )
                 {
-                    var friendlyName = entityType?.FriendlyName ?? entityType?.Name;
-                    parentRules.Add( new ParentAuthRule
-                    {
-                        Rule = rule,
-                        EntityTitle = $"{parent} <small>({friendlyName})</small>".TrimStart()
-                    } );
+                    // This authority was already visited, so the chain is circular.
+                    return true;
                 }
+
+                var entityType = EntityTypeCache.Get( parent.TypeId );
+
+                foreach ( var auth in authService.GetAuths( parent.TypeId, parent.Id, action ) )
+                {
+                    var rule = new AuthRule( auth );
+
+                    var alreadyOnItem = itemRules.Any( r =>
+                        r.SpecialRole == rule.SpecialRole &&
+                        r.PersonId == rule.PersonId &&
+                        r.GroupId == rule.GroupId );
+
+                    var alreadyInherited = parentRules.Any( r =>
+                        r.Rule.SpecialRole == rule.SpecialRole &&
+                        r.Rule.PersonId == rule.PersonId &&
+                        r.Rule.GroupId == rule.GroupId );
+
+                    if ( !alreadyOnItem && !alreadyInherited )
+                    {
+                        var friendlyName = entityType?.FriendlyName ?? entityType?.Name;
+                        parentRules.Add( new ParentAuthRule
+                        {
+                            Rule = rule,
+                            EntityTitle = $"{parent} <small>({friendlyName})</small>".TrimStart()
+                        } );
+                    }
+                }
+
+                parent = recurse ? parent.ParentAuthority : null;
             }
 
-            if ( recurse )
-            {
-                AddParentRules( authService, itemRules, parentRules, parent.ParentAuthority, action, true );
-            }
+            return false;
         }
 
         /// <summary>

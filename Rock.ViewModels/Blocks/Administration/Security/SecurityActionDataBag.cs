@@ -41,5 +41,13 @@ namespace Rock.ViewModels.Blocks.Administration.Security
         /// A <c>null</c> value indicates the warning should not be shown.
         /// </summary>
         public string NoMatchMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the warning shown when a circular reference was detected
+        /// in the entity's parent authority chain, meaning the inherited rules
+        /// shown may be incomplete. A <c>null</c> value indicates the warning
+        /// should not be shown.
+        /// </summary>
+        public string CircularReferenceMessage { get; set; }
     }
 }

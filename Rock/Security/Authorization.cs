@@ -488,7 +488,8 @@ namespace Rock.Security
         /// <returns></returns>
         public static bool Authorized( ISecured entity, string action, SpecialRole specialRole )
         {
-            return ItemAuthorized( entity, action, specialRole, true, true ) ?? entity.IsAllowedByDefault( action );
+            int recursiveCallCount = 0;
+            return ItemAuthorized( entity, action, specialRole, true, true, ref recursiveCallCount ) ?? entity.IsAllowedByDefault( action );
         }
 
         /// <summary>
@@ -1152,8 +1153,9 @@ namespace Rock.Security
         /// <param name="specialRole">The special role.</param>
         /// <param name="isRootEntity">if set to <c>true</c> [is root entity].</param>
         /// <param name="checkParentAuthority">if set to <c>true</c> [check parent authority].</param>
+        /// <param name="recursiveCallCount">The recursive call count.</param>
         /// <returns></returns>
-        private static bool? ItemAuthorized( ISecured entity, string action, SpecialRole specialRole, bool isRootEntity, bool checkParentAuthority )
+        private static bool? ItemAuthorized( ISecured entity, string action, SpecialRole specialRole, bool isRootEntity, bool checkParentAuthority, ref int recursiveCallCount )
         {
             var entityTypeId = entity.TypeId;
 
@@ -1188,6 +1190,25 @@ namespace Rock.Security
                 return authorized;
             }
 
+            /*
+                7/31/2026 - MSE
+
+                Guard against infinite recursion the same way the Person overload of this method
+                does. A circular parent authority chain (e.g. a category whose parent category is
+                itself) would otherwise recurse until the stack overflows, which cannot be caught
+                and terminates the entire worker process. In that situation, treat it as if no
+                rules were found and return null.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/6949
+            */
+            const long maxRecursiveCallCount = 100;
+            if ( recursiveCallCount > maxRecursiveCallCount )
+            {
+                return null;
+            }
+
+            recursiveCallCount++;
+
             // If no match was found for the selected user on the current entity instance, check to see if the instance
             // has a parent authority defined and if so evaluate that entities authorization rules.  If there is no
             // parent authority return the default authorization
@@ -1200,12 +1221,12 @@ namespace Rock.Security
 
             if ( isRootEntity && entity.ParentAuthorityPre != null )
             {
-                parentAuthorized = ItemAuthorized( entity.ParentAuthorityPre, action, specialRole, false, false );
+                parentAuthorized = ItemAuthorized( entity.ParentAuthorityPre, action, specialRole, false, false, ref recursiveCallCount );
             }
 
             if ( !parentAuthorized.HasValue && entity.ParentAuthority != null )
             {
-                parentAuthorized = ItemAuthorized( entity.ParentAuthority, action, specialRole, false, true );
+                parentAuthorized = ItemAuthorized( entity.ParentAuthority, action, specialRole, false, true, ref recursiveCallCount );
             }
 
             return parentAuthorized;
