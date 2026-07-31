@@ -67,7 +67,7 @@
                                           help="Determines the type of group. This value cannot be changed after the group is created."
                                           :items="allowedGroupTypeItems"
                                           rules="required"
-                                          :showBlankItem="true" />
+                                          :showBlankItem="allowedGroupTypeItems.length !== 1" />
 
                             <NotificationBox v-if="allowedGroupTypeWarning" ref="emptyGroupTypeWarningElement" alertType="warning">
                                 {{ allowedGroupTypeWarning }}
