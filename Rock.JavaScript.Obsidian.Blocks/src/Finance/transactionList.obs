@@ -74,10 +74,10 @@
             </RockButton>
 
         </template>
+        <SelectColumn />
 
         <TextColumn name="transactionIdKey" field="transactionIdKey" :hideOnScreen="true" />
 
-        <SelectColumn v-if="isMoveToBatchAvailable || config.options?.isReassignVisible" />
         <PersonColumn name="person"
                       title="Name"
                       field="person"
