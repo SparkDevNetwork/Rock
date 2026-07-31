@@ -58,8 +58,10 @@
         <Column v-if="options.showElevatedSecurityColumn"
                 name="elevatedSecurityLevel"
                 title="Elevated Security Level"
+                field="elevatedSecurityLevel"
                 headerClass="text-center"
                 itemClass="justify-content-center"
+                width="200px"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <span v-if="row['isSecurityRole'] && row['elevatedSecurityLevel'] === 2"
@@ -93,7 +95,7 @@
                       headerClass="text-right w-fit"
                       itemClass="justify-content-end text-right"
                       width="150"
-                      visiblePriority="md" />
+                      visiblePriority="xs" />
 
         <BooleanColumn v-if="options.showSystemColumn"
                        name="isSystem"

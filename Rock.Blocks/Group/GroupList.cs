@@ -31,6 +31,7 @@ using Rock.ViewModels.Blocks.Group.GroupList;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using System.Data.Entity;
 
 namespace Rock.Blocks.Group
 {
@@ -658,6 +659,8 @@ namespace Rock.Blocks.Group
             // Compute per-row CanDelete, NeedsArchive, path, and display name.
             var showGroupPath = GetAttributeValue( AttributeKey.DisplayGroupPath ).AsBoolean();
 
+            var hasBlockEditAuth = BlockCache.IsAuthorized( Authorization.EDIT, currentPerson );
+
             foreach ( var row in rows )
             {
                 // Apply "GROUP - " prefix for security role groups shown alongside other types.
@@ -685,7 +688,8 @@ namespace Rock.Blocks.Group
                 if ( !IsPersonMode )
                 {
                     row.HasChatChannel = chatChannelGroupIds != null && chatChannelGroupIds.Contains( row.Id );
-                    row.CanDelete = !row.IsSystem
+                    row.CanDelete = hasBlockEditAuth
+                        && !row.IsSystem
                         && !row.IsArchived
                         && group != null
                         && group.IsAuthorized( Authorization.EDIT, currentPerson );
@@ -865,6 +869,7 @@ namespace Rock.Blocks.Group
 
             var qry = new GroupService( RockContext )
                 .Queryable()
+                .AsNoTracking()
                 .Where( g => groupTypeIds.Contains( g.GroupTypeId ) && ( !onlySecurityGroups || g.IsSecurityRole ) );
 
             if ( limitToActiveStatus == "active" )
@@ -874,8 +879,8 @@ namespace Rock.Blocks.Group
 
             var currentPerson = RequestContext.CurrentPerson;
             return qry
-                .OrderBy( g => g.Name )
                 .ToList()
+                .OrderBy( g => g.Name )
                 .Where( g => g.IsAuthorized( Authorization.EDIT, currentPerson )
                     || g.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson ) )
                 .Select( g => new ListItemBag { Value = g.IdKey, Text = g.Name } )
@@ -906,7 +911,8 @@ namespace Rock.Blocks.Group
                 return ActionBadRequest( "System groups cannot be deleted." );
             }
 
-            if ( !group.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                || !group.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( "You are not authorized to delete this group." );
             }
