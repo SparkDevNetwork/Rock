@@ -542,10 +542,15 @@ namespace RockWeb.Blocks.Administration
                 rGrid.DataBind();
 
                 var parentRules = new List<MyAuthRule>();
-                AddParentRules( authService, itemRules, parentRules, iSecured.ParentAuthorityPre, CurrentAction, false );
-                AddParentRules( authService, itemRules, parentRules, iSecured.ParentAuthority, CurrentAction, true );
+                var hasCircularReference = AddParentRules( authService, itemRules, parentRules, iSecured.ParentAuthorityPre, CurrentAction, false );
+                hasCircularReference = AddParentRules( authService, itemRules, parentRules, iSecured.ParentAuthority, CurrentAction, true ) || hasCircularReference;
                 rGridParentRules.DataSource = parentRules;
                 rGridParentRules.DataBind();
+
+                // Let the administrator know the inherited permissions cannot be fully trusted
+                // until the circular reference in the data is corrected.
+                nbCircularReferenceMessage.Text = "A circular reference was detected in this item's inherited security (an item is its own parent authority). The inherited permissions shown may be incomplete and security may not evaluate correctly until the circular reference is corrected.";
+                nbCircularReferenceMessage.Visible = hasCircularReference;
 
                 var hasAllUsersEntry = itemRules.Any( r => r.SpecialRole == SpecialRole.AllUsers )
                     || parentRules.Any( r => r.AuthRule.SpecialRole == SpecialRole.AllUsers );
@@ -575,10 +580,30 @@ namespace RockWeb.Blocks.Administration
         /// <param name="parent">The parent.</param>
         /// <param name="action">The action.</param>
         /// <param name="recurse">if set to <c>true</c> [recurse].</param>
-        private void AddParentRules( AuthService authService, List<AuthRule> itemRules, List<MyAuthRule> parentRules, ISecured parent, string action, bool recurse )
+        /// <returns><c>true</c> if a circular reference was detected in the parent authority chain; otherwise <c>false</c>.</returns>
+        private bool AddParentRules( AuthService authService, List<AuthRule> itemRules, List<MyAuthRule> parentRules, ISecured parent, string action, bool recurse )
         {
-            if ( parent != null )
+            /*
+                7/31/2026 - MSE
+
+                The parent authority chain is walked iteratively with a visited list instead of
+                recursively so that a circular chain (e.g. a category whose parent category is
+                itself) cannot recurse until the stack overflows. A stack overflow cannot be
+                caught and terminates the entire worker process. When a circular chain is
+                detected the walk stops and reports it so the administrator can be warned.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/6949
+            */
+            var visitedAuthorities = new HashSet<string>();
+
+            while ( parent != null )
             {
+                if ( !visitedAuthorities.Add( $"{parent.TypeId}|{parent.Id}" ) )
+                {
+                    // This authority was already visited, so the chain is circular.
+                    return true;
+                }
+
                 var entityType = EntityTypeCache.Get( parent.TypeId );
                 foreach ( var auth in authService.GetAuths( parent.TypeId, parent.Id, action ) )
                 {
@@ -599,11 +624,10 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
 
-                if ( recurse )
-                {
-                    AddParentRules( authService, itemRules, parentRules, parent.ParentAuthority, action, true );
-                }
+                parent = recurse ? parent.ParentAuthority : null;
             }
+
+            return false;
         }
 
         private void BindActions()

@@ -117,9 +117,13 @@
     async function onSave(): Promise<void> {
         errorMessage.value = "";
 
+        const isEditing = props.blockState === BlockState.EditCategory;
+
         const bag: UpdateFormCategoryBag = {
-            categoryGuid: props.blockState === BlockState.EditCategory ? props.selectedCategoryGuid : null,
-            parentCategoryGuid: props.addNewCategoryAsChild ? props.selectedCategoryGuid : null,
+            categoryGuid: isEditing ? props.selectedCategoryGuid : null,
+            // A parent category only applies when adding. Sending one while editing would
+            // ask the server to make the category its own parent.
+            parentCategoryGuid: !isEditing && props.addNewCategoryAsChild ? props.selectedCategoryGuid : null,
             name: name.value,
             description: description.value,
             iconCssClass: iconCssClass.value,
