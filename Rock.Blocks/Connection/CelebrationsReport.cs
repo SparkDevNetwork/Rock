@@ -214,8 +214,13 @@ namespace Rock.Blocks.Connection
                 return new NoteService( rockContext ).Queryable().Where( n => false );
             }
 
+            // Exclude notes with empty text: the Connections Hub leaves an empty-text note behind
+            // when a celebration is cleared and treats those as "no celebration", so they are not real entries.
             var noteQuery = new NoteService( rockContext ).Queryable()
-                .Where( n => n.NoteTypeId == celebrationNoteType.Id && n.EntityId != null );
+                .Where( n => n.NoteTypeId == celebrationNoteType.Id
+                    && n.EntityId != null
+                    && n.Text != null
+                    && n.Text.Trim() != "" );
 
             var dateRange = FilterDateRange.ToActualDateRange();
             var connectionTypeGuid = FilterConnectionTypeGuid;
@@ -241,7 +246,6 @@ namespace Rock.Blocks.Connection
             noteQuery = noteQuery.Where( n => validConnectionRequestIds.Contains( n.EntityId.Value ) );
 
             return noteQuery
-                .Include( n => n.EditedByPersonAlias.Person )
                 .Include( n => n.CreatedByPersonAlias.Person );
         }
 
@@ -258,6 +262,7 @@ namespace Rock.Blocks.Connection
                 .Queryable()
                 .Include( cr => cr.PersonAlias.Person.ConnectionStatusValue )
                 .Include( cr => cr.ConnectionOpportunity.ConnectionType )
+                .Include( cr => cr.ConnectorPersonAlias )
                 .Where( cr => connectionRequestIdQuery.Contains( cr.Id ) )
                 .ToDictionary( cr => cr.Id );
 
@@ -280,14 +285,15 @@ namespace Rock.Blocks.Connection
             return new GridBuilder<Note>()
                 .WithBlock( this )
                 .AddTextField( "idKey", n => n.IdKey )
-                .AddDateTimeField( "date", n => GetConnectionRequest( n )?.CreatedDateTime )
+                .AddDateTimeField( "date", n => n.CreatedDateTime )
                 .AddPersonField( "requester", n => GetConnectionRequest( n )?.PersonAlias?.Person )
                 .AddTextField( "type", n => GetConnectionRequest( n )?.ConnectionOpportunity?.ConnectionType?.Name )
                 .AddTextField( "opportunity", n => GetConnectionRequest( n )?.ConnectionOpportunity?.Name )
                 .AddTextField( "storyDetails", n => n.Text )
-                .AddTextField( "storyAuthorName", n => n.EditedByPersonAlias?.Person?.FullName ?? n.CreatedByPersonAlias?.Person?.FullName )
-                .AddTextField( "storyAuthorPersonAliasGuid", n => ( n.EditedByPersonAlias ?? n.CreatedByPersonAlias )?.Guid.ToString() )
-                .AddTextField( "connectionRequestIdKey", n => GetConnectionRequest( n )?.IdKey );
+                .AddTextField( "storyAuthorName", n => n.CreatedByPersonAlias?.Person?.FullName )
+                .AddTextField( "storyAuthorPersonAliasGuid", n => n.CreatedByPersonAlias?.Guid.ToString() )
+                .AddTextField( "connectionRequestIdKey", n => GetConnectionRequest( n )?.IdKey )
+                .AddField( "canEdit", n => GetConnectionRequest( n )?.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) ?? false );
         }
 
         /// <summary>
@@ -300,36 +306,48 @@ namespace Rock.Blocks.Connection
             {
                 var note = new NoteService( rockContext ).Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-                if ( note == null )
+                if ( note?.EntityId == null )
                 {
                     return ActionNotFound();
                 }
 
-                if ( !note.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                // Enforce the same entity-level security the Connections Hub uses: edit rights come from
+                // the parent Connection Request (which inherits from its Opportunity/Type and grants the
+                // assigned connector edit when request security is enabled), not from the block itself.
+                var connectionRequest = new ConnectionRequestService( rockContext ).Queryable()
+                    .Include( cr => cr.ConnectionOpportunity.ConnectionType )
+                    .Include( cr => cr.ConnectorPersonAlias )
+                    .FirstOrDefault( cr => cr.Id == note.EntityId.Value );
+
+                if ( connectionRequest == null )
+                {
+                    return ActionNotFound();
+                }
+
+                if ( !connectionRequest.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
                     return ActionForbidden();
                 }
 
                 note.Text = text;
-                note.EditedDateTime = RockDateTime.Now;
 
                 PersonAlias savedAlias = null;
 
                 if ( authorPersonAliasGuid.HasValue )
                 {
                     savedAlias = new PersonAliasService( rockContext ).Get( authorPersonAliasGuid.Value );
-                    note.EditedByPersonAliasId = savedAlias?.Id;
+                    note.CreatedByPersonAliasId = savedAlias?.Id;
                 }
                 else
                 {
-                    note.EditedByPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
+                    note.CreatedByPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
                 }
 
                 rockContext.SaveChanges();
 
-                if ( savedAlias == null && note.EditedByPersonAliasId.HasValue )
+                if ( savedAlias == null && note.CreatedByPersonAliasId.HasValue )
                 {
-                    savedAlias = new PersonAliasService( rockContext ).Get( note.EditedByPersonAliasId.Value );
+                    savedAlias = new PersonAliasService( rockContext ).Get( note.CreatedByPersonAliasId.Value );
                 }
 
                 return ActionOk( new
