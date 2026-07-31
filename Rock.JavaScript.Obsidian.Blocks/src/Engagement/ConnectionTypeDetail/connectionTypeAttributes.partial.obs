@@ -3,7 +3,13 @@
     <ContentStack title="Attribute List"
                   description="Define custom attributes for this connection type to store configuration details. Note: After adding new attributes, save the Connection Type before setting their values."
                   headerLocation="top">
-        <Grid :data="gridData" keyField="guid" itemTerm="Type Attribute" liveUpdates light @addItem="onAdd">
+        <Grid :data="gridData"
+              keyField="guid"
+              itemTerm="Type Attribute"
+              :entityTypeGuid="EntityType.Attribute"
+              liveUpdates
+              light
+              @addItem="onAdd">
             <ReorderColumn @orderChanged="onOrderChanged" />
             <TextColumn name="name" field="name" title="Attribute" />
             <TextColumn name="description" field="description" title="Description" />

@@ -25,7 +25,12 @@
     </ContentStack>
 
     <ContentStack title="Configure Request Attributes" description="Configure the connection request attributes that should be available for connection requests associated with this opportunity." headerLocation="top">
-        <Grid :data="gridData" keyField="guid" itemTerm="Connection Request Attribute" liveUpdates light
+        <Grid :data="gridData"
+              keyField="guid"
+              itemTerm="Connection Request Attribute"
+              :entityTypeGuid="EntityType.Attribute"
+              liveUpdates
+              light
               @addItem="onAdd">
 
             <ReorderColumn v-if="options?.isReOrderColumnVisible" @orderChanged="onOrderChanged" />
