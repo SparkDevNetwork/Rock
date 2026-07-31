@@ -8,7 +8,7 @@
           stickyHeader
           liveUpdates
           :showLaunchWorkflow="false"
-          gridSettingsm
+          gridSettings
           :gridSettingsActive="hasSettingsFilters"
           @gridSettingsClick="onGridSettingsClick"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
@@ -17,6 +17,7 @@
         <PersonColumn name="authorized"
                       title="Contributor"
                       field="authorized"
+                      width="200px"
                       :filter="pickExistingValueFilter"
                       :filterValue="getPersonFilterValue"
                       :quickFilterValue="getPersonFilterValue" />
