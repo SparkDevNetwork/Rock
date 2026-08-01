@@ -1,0 +1,1046 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rock Agent Chat Framework: Implementation Plan</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <style>
+:root {
+  /* Apple-inspired neutral palette */
+  --c-primary:   #1D1D1F;
+  --c-accent:    #0071E3;
+  --c-accent-2:  #0060C7;
+  --c-accent-3:  #2D8CE8;
+  --c-accent-4:  #C8DFFB;
+  --c-muted:     #6E6E73;
+  --c-muted-2:   #8E8E93;
+  --c-muted-3:   #AEAEB2;
+  --c-success:   #28CD41;
+  --c-warning:   #FF9F0A;
+  --c-danger:    #FF3B30;
+  --c-info:      #32ADE6;
+  --n-0:   #FFFFFF;
+  --n-50:  #F5F5F7;
+  --n-100: #EBEBF0;
+  --n-200: #D2D2D7;
+  --n-300: #AEAEB2;
+  --n-400: #8E8E93;
+  --n-500: #6E6E73;
+  --n-600: #48484A;
+  --n-700: #3A3A3C;
+  --n-800: #2C2C2E;
+  --n-900: #1D1D1F;
+  --font:         -apple-system, 'SF Pro Text', system-ui, sans-serif;
+  --font-heading: -apple-system, 'SF Pro Display', system-ui, sans-serif;
+  --font-mono:    'SF Mono', ui-monospace, Menlo, monospace;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px;
+  --s5:24px; --s6:32px; --s7:48px; --s8:64px;
+  --r-sm:4px; --r-md:8px; --r-lg:12px; --r-xl:16px;
+  --sh-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+  --sh-md: 0 4px 12px rgba(0,0,0,.10), 0 2px 4px rgba(0,0,0,.04);
+  --header-bg:    #1C2B4A;
+  --header-color: var(--n-0);
+  --header-meta:  #7A93BC;
+  --header-eye:   #89B4E8;
+  --tab-active:   var(--c-accent);
+  --stat-color:   var(--c-primary);
+  --bar-fill:     var(--c-accent);
+  --recommend-bg: var(--c-accent);
+  --logo-display: none;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--n-800);
+  background: var(--n-50);
+  padding: var(--s5) var(--s4);
+}
+
+.container { max-width: 880px; margin: 0 auto; }
+
+.doc-header {
+  background: var(--header-bg);
+  color: var(--header-color);
+  border-radius: var(--r-lg);
+  padding: var(--s6) var(--s6) var(--s5);
+  margin-bottom: var(--s6);
+}
+.doc-header .eyebrow {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--header-eye);
+  margin-bottom: var(--s2);
+}
+.doc-header h1 {
+  font-family: var(--font-heading);
+  font-size: 30px; font-weight: 700; line-height: 1.15;
+  margin-bottom: var(--s2);
+  letter-spacing: -.01em;
+}
+.doc-meta { font-size: 13px; color: var(--header-meta); }
+
+.section { margin-top: 72px; margin-bottom: var(--s6); }
+.section-num {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--c-accent);
+  margin-bottom: var(--s1);
+}
+.section > h2 {
+  font-family: var(--font-heading);
+  font-size: 22px; font-weight: 700;
+  color: var(--n-800); line-height: 1.2;
+  border-bottom: 2px solid var(--n-200);
+  padding-bottom: var(--s3);
+  margin-top: 0;
+}
+
+h2 { font-family: var(--font-heading); font-size: 22px; font-weight: 700; color: var(--n-800); margin: var(--s6) 0 var(--s3); border-bottom: 2px solid var(--n-200); padding-bottom: var(--s3); }
+h3 { font-family: var(--font-heading); font-size: 17px; font-weight: 600; color: var(--n-700); margin: var(--s5) 0 var(--s2); }
+h4 { font-size: 14px; font-weight: 700; color: var(--n-600); text-transform: uppercase; letter-spacing: .05em; margin: var(--s4) 0 var(--s2); }
+p  { color: var(--n-700); margin-bottom: var(--s3); line-height: 1.65; max-width: 68ch; }
+ul, ol { color: var(--n-700); padding-left: var(--s5); margin-bottom: var(--s3); }
+li { margin-bottom: var(--s1); line-height: 1.55; }
+a  { color: var(--c-accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+hr { border: none; border-top: 1px solid var(--n-200); margin: var(--s5) 0; }
+strong { font-weight: 600; color: var(--n-800); }
+
+.page-nav {
+  background: var(--n-0);
+  border: 1px solid var(--n-200);
+  border-radius: var(--r-md);
+  padding: var(--s4) var(--s5);
+  margin-bottom: var(--s5);
+  font-size: 13px;
+}
+.page-nav-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--c-muted); margin-bottom: var(--s2); }
+.page-nav ol { padding-left: var(--s4); margin: 0; }
+.page-nav li { margin-bottom: 2px; }
+.page-nav a { color: var(--c-accent); }
+
+.card {
+  background: var(--n-0);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-sm);
+  border: 1px solid var(--n-200);
+  padding: var(--s6);
+  margin-bottom: var(--s5);
+}
+.card-title {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase;
+  color: var(--c-muted);
+  margin-bottom: var(--s5);
+  padding-bottom: var(--s3);
+  border-bottom: 1px solid var(--n-200);
+}
+
+.stat-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: var(--s4);
+  margin-bottom: var(--s6);
+}
+.stat {
+  background: var(--n-0); border: 1px solid var(--n-200);
+  border-radius: var(--r-md); padding: var(--s4); box-shadow: var(--sh-sm);
+}
+.stat-value { font-size: 28px; font-weight: 700; color: var(--stat-color); line-height: 1; }
+.stat-label { font-size: 12px; color: var(--n-500); margin-top: var(--s1); }
+
+.badge {
+  display: inline-flex; align-items: center;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 999px; white-space: nowrap;
+}
+.badge-blue    { background: #EFF6FF; color: #1D4ED8; }
+.badge-green   { background: #F0FDF4; color: #166534; }
+.badge-yellow  { background: #FFFBEB; color: #92400E; }
+.badge-red     { background: #FEF2F2; color: #991B1B; }
+.badge-gray    { background: var(--n-100); color: var(--n-600); }
+.badge-sky     { background: #F0F9FF; color: #0369A1; }
+.badge-purple  { background: #F5F3FF; color: #6D28D9; }
+
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th {
+  text-align: left; font-size: 11px; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase;
+  color: var(--n-500); padding: var(--s2) var(--s3);
+  border-bottom: 2px solid var(--n-200);
+}
+td { padding: var(--s3); border-bottom: 1px solid var(--n-100); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--n-50); }
+
+.timeline { position: relative; padding-left: var(--s7); }
+.timeline::before {
+  content: ''; position: absolute; left: 15px; top: 6px; bottom: 6px;
+  width: 2px; background: var(--n-200);
+}
+.timeline-item { position: relative; margin-bottom: var(--s5); }
+.timeline-dot {
+  position: absolute; left: calc(-1 * var(--s7) + 7px); top: 4px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--c-accent); border: 3px solid var(--n-0);
+  box-shadow: 0 0 0 2px var(--c-accent);
+}
+.timeline-dot.pending { background: var(--n-300); box-shadow: 0 0 0 2px var(--n-300); }
+.timeline-label { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--c-muted); margin-bottom: 2px; }
+.timeline-title { font-size: 16px; font-weight: 600; color: var(--n-800); }
+.timeline-body  { font-size: 14px; color: var(--n-500); margin-top: 2px; line-height: 1.55; }
+.timeline-tags  { margin-top: var(--s2); display: flex; gap: var(--s1); flex-wrap: wrap; }
+
+.compare { display: grid; gap: var(--s5); }
+.compare.two   { grid-template-columns: 1fr 1fr; }
+.compare-col {
+  background: var(--n-0); border: 1px solid var(--n-200);
+  border-radius: var(--r-lg); padding: var(--s6); box-shadow: var(--sh-sm);
+}
+.compare-col.recommended {
+  border-color: var(--c-accent);
+  box-shadow: 0 0 0 2px var(--c-accent-4), var(--sh-md);
+}
+.compare-col-num   { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--c-muted); margin-bottom: var(--s1); }
+.compare-col-title { font-size: 18px; font-weight: 700; color: var(--n-800); margin-bottom: var(--s3); }
+.compare-col-body  { font-size: 14px; color: var(--n-600); line-height: 1.6; }
+.compare-pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); margin-top: var(--s4); }
+.pro-con-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: var(--s2); }
+.pro-con-label.pro { color: var(--c-success); }
+.pro-con-label.con { color: var(--c-danger); }
+.pro-con-list { list-style: none; font-size: 13px; color: var(--n-600); padding: 0; }
+.pro-con-list li { padding: 2px 0; }
+.recommended-label {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  background: var(--recommend-bg); color: var(--n-0);
+  padding: 2px 8px; border-radius: 999px; margin-bottom: var(--s3);
+}
+
+.question-list { display: grid;
+  grid-template-columns: 32px minmax(200px, 260px) 1fr;
+  column-gap: var(--s4); row-gap: 0; align-items: start;
+  margin: var(--s5) 0; }
+.question-list-eyebrow { grid-column: 1 / -1;
+  font-size: 11px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--c-muted);
+  padding-bottom: var(--s3); border-bottom: 1px solid var(--n-200); }
+.question-item { display: contents; }
+.question-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--c-accent-4); color: var(--c-accent);
+  font-size: 13px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-top: var(--s4); }
+.question-text { font-size: 14px; font-weight: 600; color: var(--n-800);
+  line-height: 1.55; padding: var(--s4) 0;
+  border-top: 1px solid var(--n-200); }
+.answer-text  { font-size: 14px; color: var(--n-500); line-height: 1.6;
+  padding: var(--s4) 0; border-top: 1px solid var(--n-200); }
+.question-list .question-item:first-of-type .question-text,
+.question-list .question-item:first-of-type .answer-text { border-top: none; }
+.question-list .question-item:first-of-type .question-num { margin-top: var(--s3); }
+
+details {
+  border: 1px solid var(--n-200); border-radius: var(--r-md);
+  margin-bottom: var(--s3); overflow: hidden;
+}
+summary {
+  padding: var(--s3) var(--s4); font-weight: 600; font-size: 14px;
+  cursor: pointer; list-style: none;
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--n-50); color: var(--n-800); user-select: none;
+}
+summary::-webkit-details-marker { display: none; }
+summary::after { content: '▾'; font-size: 12px; color: var(--n-400); transition: transform .2s; }
+details[open] summary::after { transform: rotate(-180deg); }
+details[open] summary { background: var(--n-0); }
+.details-body { padding: var(--s4); font-size: 14px; color: var(--n-700); line-height: 1.6; }
+
+.code-file {
+  background: var(--n-900);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  margin: var(--s4) 0;
+}
+.code-file-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--s2) var(--s4);
+  background: #21252b;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.code-filename {
+  font-family: var(--font-mono); font-size: 12px;
+  color: #9da5b4; font-weight: 500;
+}
+pre { counter-reset: line-num; }
+pre.has-line-numbers {
+  margin: 0; border-radius: 0; padding: 0;
+  font-size: 13px; line-height: 1.65; overflow-x: auto;
+}
+.code-line {
+  display: block;
+  padding: 0 var(--s4) 0 0;
+  padding-left: 3.8em;
+  position: relative;
+  counter-increment: line-num;
+  min-height: 1.65em;
+}
+.code-line:first-child { padding-top: var(--s3); }
+.code-line:last-child  { padding-bottom: var(--s3); }
+.code-line::before {
+  content: counter(line-num);
+  position: absolute; left: 0; width: 3em;
+  text-align: right; padding-right: .6em;
+  color: #4b5263; font-size: .85em;
+  user-select: none; pointer-events: none;
+  border-right: 1px solid #2c313a;
+}
+pre:not(.has-line-numbers) {
+  background: #282c34; color: #abb2bf;
+  border-radius: var(--r-md); padding: var(--s4);
+  overflow-x: auto; font-family: var(--font-mono);
+  font-size: 13px; line-height: 1.65; margin: var(--s3) 0;
+}
+.file-card pre, .file-card pre:not(.has-line-numbers) { margin: 0; padding: 0; border-radius: 0; }
+pre .hljs { padding: 0; }
+code {
+  font-family: var(--font-mono); font-size: .875em;
+  background: var(--n-100); color: var(--c-primary);
+  padding: 1px 5px; border-radius: var(--r-sm);
+}
+pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+.file-card {
+  border: 1px solid var(--n-200); border-radius: var(--r-lg);
+  margin-bottom: var(--s5); overflow: hidden;
+  scroll-margin-top: var(--s5);
+}
+.file-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--s3) var(--s4);
+  background: var(--n-100); border-bottom: 1px solid var(--n-200);
+}
+.file-head-name { font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--n-800); }
+
+.callout {
+  display: flex; gap: var(--s3); padding: var(--s5);
+  border-radius: var(--r-md); margin: var(--s5) 0;
+  font-size: 14px; line-height: 1.55;
+}
+.callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.callout.info    { background: #EFF6FF; border-left: 4px solid var(--c-info); }
+.callout.warning { background: #FFFBEB; border-left: 4px solid var(--c-warning); }
+.callout.danger  { background: #FEF2F2; border-left: 4px solid var(--c-danger); }
+.callout.success { background: #F0FDF4; border-left: 4px solid var(--c-success); }
+.callout-title   { font-weight: 700; margin-bottom: 2px; font-size: 14px; color: var(--n-800); }
+
+.bar-chart { display: flex; flex-direction: column; gap: var(--s2); }
+.bar-row   { display: flex; align-items: center; gap: var(--s3); }
+.bar-label { width: 150px; text-align: right; color: var(--n-500); flex-shrink: 0; font-size: 12px; }
+.bar-track { flex: 1; height: 22px; background: var(--n-100); border-radius: var(--r-sm); overflow: hidden; }
+.bar-fill  { height: 100%; background: var(--bar-fill); border-radius: var(--r-sm); }
+.bar-val   { width: 80px; color: var(--n-600); font-weight: 600; flex-shrink: 0; font-size: 12px; }
+
+.arch { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.5; background: #282c34; color: #abb2bf; border-radius: var(--r-md); padding: var(--s5); overflow-x: auto; margin: var(--s4) 0; }
+.arch b { color: #61afef; font-weight: 600; }
+.arch i { color: #98c379; font-style: normal; }
+.arch em { color: #e5c07b; font-style: normal; }
+
+@media (max-width: 640px) {
+  .compare.two { grid-template-columns: 1fr; }
+  .stat-bar { grid-template-columns: 1fr 1fr; }
+  .compare-pros-cons { grid-template-columns: 1fr; }
+  .question-list { grid-template-columns: 28px 1fr; column-gap: var(--s3); }
+  .question-list .question-num  { grid-column: 1; }
+  .question-list .question-text { grid-column: 2; }
+  .question-list .answer-text   { grid-column: 2; padding-top: 0; border-top: none; }
+  body { padding: var(--s3); }
+  .doc-header { padding: var(--s4); }
+  .doc-header h1 { font-size: 24px; }
+  .bar-label { width: 90px; }
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <header class="doc-header">
+      <div class="eyebrow">Implementation Plan · Rock AI</div>
+      <h1>Rock Agent Chat Framework</h1>
+      <p class="doc-meta">A Vercel AI SDK + AI Elements clone on Obsidian and the Microsoft Agent Framework · August 1, 2026 · Prepared for Jon Edmiston</p>
+    </header>
+
+    <nav class="page-nav">
+      <div class="page-nav-label">On this page</div>
+      <ol>
+        <li><a href="#summary">Executive summary</a></li>
+        <li><a href="#concept-map">Concept map: AI SDK to Rock</a></li>
+        <li><a href="#inventory">What Rock already has (and what it doesn't)</a></li>
+        <li><a href="#architecture">Target architecture</a></li>
+        <li><a href="#protocol">The stream protocol (the linchpin)</a></li>
+        <li><a href="#use-agent-chat">useAgentChat: the AI SDK UI analog</a></li>
+        <li><a href="#elements">Obsidian AI Elements: the control library</a></li>
+        <li><a href="#orchestration">Backend orchestration and the Agent Framework move</a></li>
+        <li><a href="#phases">Phased delivery plan</a></li>
+        <li><a href="#risks">Issues we will face</a></li>
+        <li><a href="#effort">Level of effort</a></li>
+        <li><a href="#questions">Open questions</a></li>
+      </ol>
+    </nav>
+
+    <div class="stat-bar">
+      <div class="stat">
+        <div class="stat-value">~70%</div>
+        <div class="stat-label">of raw plumbing already in Rock</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">4</div>
+        <div class="stat-label">delivery phases, each independently shippable</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">15&ndash;22</div>
+        <div class="stat-label">dev-weeks total (one senior dev)</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">3</div>
+        <div class="stat-label">high-severity risks to manage</div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <div class="section" id="summary">
+      <div class="section-num">01</div>
+      <h2>Executive Summary</h2>
+    </div>
+
+    <div class="callout success">
+      <div class="callout-icon">✅</div>
+      <div>
+        <div class="callout-title">Verdict: very feasible, and mostly a formalization job</div>
+        Rock already ships a working streaming agent chat block (<code>chatBot.obs</code> + <code>ChatBot.cs</code>) with SSE token streaming end to end, an agent runtime with tools, skills, sessions, anchors, and auto-summarization, and a complete chat visual language in SCSS. What Rock does <strong>not</strong> have is what the Vercel AI SDK actually is: a <strong>typed stream protocol</strong>, a <strong>reusable client composable</strong>, and a <strong>composable component library</strong>. The plan below extracts and formalizes those three layers rather than building a chat product from scratch.
+      </div>
+    </div>
+
+    <p>The Vercel AI SDK is really four products. Each has a natural Rock analog, and each maps to one phase of this plan:</p>
+    <ul>
+      <li><strong>AI SDK Core</strong> (<code>streamText</code>, tool calling, agents) &rarr; Rock's agent runtime, upgraded from Semantic Kernel to the <strong>Microsoft Agent Framework</strong> (1.0 GA April 2026, runs on <code>net472</code>).</li>
+      <li><strong>UI Message Stream Protocol</strong> (typed parts: text-delta, tool-call, reasoning, data, finish) &rarr; a new typed SSE event contract replacing today's <code>{ message, tool, logs }</code> blob.</li>
+      <li><strong>AI SDK UI</strong> (<code>useChat</code>) &rarr; a <code>useAgentChat()</code> Obsidian composable in the Framework project.</li>
+      <li><strong>AI Elements</strong> (Conversation, Message, PromptInput, Reasoning, Tool, Sources...) &rarr; a shared library of <code>.obs</code> controls under <code>Framework/Controls/AI/</code>.</li>
+    </ul>
+    <p>Rock has one structural advantage Vercel does not: agent tools already return <strong>structured, typed results</strong> (<code>PersonResult</code>, <code>GroupResult</code>, <code>FinancialTransactionResult</code>, 24 entity result classes). That makes true generative UI (a person card, a giving summary chart, a group roster rendered inline in the conversation) a first-class capability instead of a JSON-parsing hack. This is the single biggest payoff of the whole effort.</p>
+
+    <div class="callout warning">
+      <div class="callout-icon">⚠️</div>
+      <div>
+        <div class="callout-title">One structural constraint shapes everything</div>
+        The concrete agent runtime (<code>ChatAgent</code> implementation, <code>ChatAgentBuilder</code>, all skill components) lives in <code>Rock.AI.Agent</code>, a <strong>separate assembly that is not in this repository</strong> (confirmed by <code>InternalsVisibleTo</code> in <code>Rock/Properties/AssemblyInfo.cs:19</code> and the absence of any concrete implementations in-repo). Everything in this plan that touches the orchestration loop, including the Agent Framework migration, requires coordinated changes in that closed repo. The protocol, composable, and control library phases do <strong>not</strong>; they build against the abstract surface in <code>Rock/AI/Agent/</code>.
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <div class="section" id="concept-map">
+      <div class="section-num">02</div>
+      <h2>Concept Map: AI SDK to Rock</h2>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Vercel concept</th><th>What it does</th><th>Rock analog (proposed)</th><th>Status today</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>AI SDK Core</strong><br><code>streamText</code>, <code>generateObject</code>, tools</td>
+            <td style="font-size:13px;color:var(--n-500);">Provider-agnostic model calls, tool loop, structured output</td>
+            <td><code>ChatAgent</code> runtime on Microsoft Agent Framework; <code>AgentProviderComponent</code> keyed per <code>ModelServiceRole</code></td>
+            <td><span class="badge badge-yellow">Partial</span></td>
+          </tr>
+          <tr>
+            <td><strong>UI Message Stream</strong><br>typed SSE parts</td>
+            <td style="font-size:13px;color:var(--n-500);">Wire protocol between server loop and client state</td>
+            <td>New <code>AgentStreamEvent</code> bag family in <code>Rock.ViewModels</code>, emitted over the existing SSE block-action transport</td>
+            <td><span class="badge badge-red">Missing</span></td>
+          </tr>
+          <tr>
+            <td><strong>AI SDK UI</strong><br><code>useChat</code>, transports</td>
+            <td style="font-size:13px;color:var(--n-500);">Client state machine: messages, status, send, stop, regenerate</td>
+            <td><code>useAgentChat()</code> composable in <code>Framework/Utility/agentChat.ts</code> with a pluggable transport</td>
+            <td><span class="badge badge-red">Missing</span></td>
+          </tr>
+          <tr>
+            <td><strong>AI Elements</strong><br>~30 shadcn components</td>
+            <td style="font-size:13px;color:var(--n-500);">Composable chat UI: Conversation, Message, PromptInput, Tool, Reasoning, Sources, CodeBlock, Artifact</td>
+            <td><code>Framework/Controls/AI/*</code> family of <code>.obs</code> controls, styled by the existing <code>_blocks-ai.scss</code> design language</td>
+            <td><span class="badge badge-yellow">Block-local only</span></td>
+          </tr>
+          <tr>
+            <td><strong>Vercel Workflows</strong><br><code>"use workflow"</code> durable steps</td>
+            <td style="font-size:13px;color:var(--n-500);">Durable, resumable long-running orchestration</td>
+            <td>Agent Framework graph workflows + a new <code>AIAgentRun</code> entity, Rock Jobs for execution, RealTime topic for progress push</td>
+            <td><span class="badge badge-red">Missing</span></td>
+          </tr>
+          <tr>
+            <td><strong>Generative UI</strong><br>tool parts rendered as components</td>
+            <td style="font-size:13px;color:var(--n-500);">Render tool results as rich interactive components</td>
+            <td>Structured <code>AgentToolResult</code> payloads (already typed!) mapped to Rock entity controls (<code>personAvatar</code>, <code>personLink</code>, badge bars)</td>
+            <td><span class="badge badge-yellow">Data exists, never rendered</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ============================================================ -->
+    <div class="section" id="inventory">
+      <div class="section-num">03</div>
+      <h2>What Rock Already Has (and What It Doesn't)</h2>
+    </div>
+
+    <h3>Existing assets: the head start is real</h3>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Asset</th><th>Where</th><th>Why it matters</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>SSE streaming, end to end</strong></td>
+            <td style="font-family:var(--font-mono);font-size:12px;">Rock.Blocks/ServerSentEventsBlockActionResult.cs<br>Framework/Utility/http.ts (doStreamingApiCall)<br>Framework/Utility/block.ts (useInvokeStreamingBlockAction)</td>
+            <td style="font-size:13px;">Server writes <code>IAsyncEnumerable&lt;T&gt;</code> as SSE; client consumes a typed <code>ReadableStream&lt;T&gt;</code> via axios fetch adapter + <code>EventSourceStream</code> + JSON decode. POST-based, so request bodies work (unlike EventSource). The transport layer is done.</td>
+          </tr>
+          <tr>
+            <td><strong>A working streaming chat block</strong></td>
+            <td style="font-family:var(--font-mono);font-size:12px;">src/AI/chatBot.obs + ChatBot/ (6 files)<br>Rock.Blocks/AI/ChatBot.cs</td>
+            <td style="font-size:13px;">Token-append loop, session sidebar, docked drawer mode, auto-growing composer, markdown rendering, debug modal. The reference implementation and first consumer of the new library.</td>
+          </tr>
+          <tr>
+            <td><strong>Agent runtime surface</strong></td>
+            <td style="font-family:var(--font-mono);font-size:12px;">Rock/AI/Agent/ (39 files)</td>
+            <td style="font-size:13px;"><code>ChatAgent.GetStreamingChatMessageResponsesAsync()</code> is the single streaming primitive. Tools, skills, prompt tools, Lava tools, parameter schemas, security, context anchors, MCP server endpoint.</td>
+          </tr>
+          <tr>
+            <td><strong>Structured tool results</strong></td>
+            <td style="font-family:var(--font-mono);font-size:12px;">Rock/AI/Agent/Classes/Entity/ (24 classes)<br>AgentToolResult.cs (fluent builder)</td>
+            <td style="font-size:13px;">Typed results with history-content separation (rich payload to caller, compact form into context). Purpose-built for generative UI; currently unrendered.</td>
+          </tr>
+          <tr>
+            <td><strong>Persistence model</strong></td>
+            <td style="font-family:var(--font-mono);font-size:12px;">Rock/Model/AI/ (AIAgent, AIAgentSession, AIAgentSessionHistory, AIAgentSessionAnchor, AISkill, AISkillTool)</td>
+            <td style="font-size:13px;">Message table with token accounting, context-window membership (<code>IsCurrentlyInContext</code>), and auto-summarization rows (<code>IsSummary</code>).</td>
+          </tr>
+          <tr>
+            <td><strong>Chat design language</strong></td>
+            <td style="font-family:var(--font-mono);font-size:12px;">Rock.Frontend.Styles/.../_blocks-ai.scss (475 lines)</td>
+            <td style="font-size:13px;">Message bubbles, composer pill, session list, docked panel, anchors, debug chips, all on CSS variables. Needs polish (author-flagged), not invention.</td>
+          </tr>
+          <tr>
+            <td><strong>Rendering utilities</strong></td>
+            <td style="font-family:var(--font-mono);font-size:12px;">Framework/Libs/marked.ts, highlightJs.ts, sse.ts<br>Framework/Controls/copyButton.obs, Internal/dockedPanel.obs</td>
+            <td style="font-size:13px;">marked v16, highlight.js, copy button, resizable docked drawer: the raw ingredients of Response, CodeBlock, and Actions elements.</td>
+          </tr>
+          <tr>
+            <td><strong>RealTime (SignalR)</strong></td>
+            <td style="font-family:var(--font-mono);font-size:12px;">Rock/RealTime/ + Framework/Utility/realTime.ts</td>
+            <td style="font-size:13px;">Topics with <code>Person(int)</code> targeting and channels. Unused by AI today; the natural transport for durable/background agent runs and multi-tab sync.</td>
+          </tr>
+          <tr>
+            <td><strong>MCP endpoint</strong></td>
+            <td style="font-family:var(--font-mono);font-size:12px;">Rock.Rest/v2/McpController.cs, Rock/AI/Agent/Mcp/</td>
+            <td style="font-size:13px;">Agents are already exposed as MCP servers with per-audience JSON projections. The "agents as a platform" story is underway.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>The gap list: what the AI SDK has that Rock lacks</h3>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th style="width:32px;">#</th><th>Gap</th><th>Evidence</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td><strong>No typed stream protocol.</strong> The SSE stream carries only <code>{ message, tool, logs }</code>. No text/tool/reasoning/data/error/finish parts, no event names, no event IDs, no resume.</td><td style="font-size:12px;font-family:var(--font-mono);">ChatBot.cs:508&ndash;607, ChatBot/types.d.ts</td></tr>
+          <tr><td>2</td><td><strong>Tool calls recovered by regex over log strings.</strong> The debug view parses Semantic Kernel <code>ILogger</code> messages like <code>"Function X invoking."</code> client-side, and only in debug mode.</td><td style="font-size:12px;font-family:var(--font-mono);">ChatBot/tools.partial.ts:22&ndash;30</td></tr>
+          <tr><td>3</td><td><strong>No message identity.</strong> <code>AIAgentSessionHistory.Id</code> never reaches the client, which blocks regenerate, edit, branch, and feedback.</td><td style="font-size:12px;font-family:var(--font-mono);">ChatBot.cs:391&ndash;408</td></tr>
+          <tr><td>4</td><td><strong>No cancellation.</strong> The client has <code>ICancellationToken</code> plumbing and <code>ChatAgent</code> accepts a token, but <code>SendMessage</code> never threads one through. No stop button exists.</td><td style="font-size:12px;font-family:var(--font-mono);">ChatBot.cs SendMessage</td></tr>
+          <tr><td>5</td><td><strong>All chat UI is block-local.</strong> Nothing under <code>Framework/Controls/</code> is reusable chat UI; other blocks cannot embed a conversation.</td><td style="font-size:12px;font-family:var(--font-mono);">src/AI/ChatBot/*</td></tr>
+          <tr><td>6</td><td><strong>Unsanitized markdown via <code>v-html</code></strong>, and highlight.js is not wired into marked's code renderer.</td><td style="font-size:12px;font-family:var(--font-mono);">messageList.partial.obs</td></tr>
+          <tr><td>7</td><td><strong>Naive auto-scroll.</strong> Force-scrolls to bottom on every chunk; no "user scrolled up" detection, no scroll-to-bottom affordance.</td><td style="font-size:12px;font-family:var(--font-mono);">chatBot.obs (5 call sites)</td></tr>
+          <tr><td>8</td><td><strong>Streaming is block-action only.</strong> <code>ServerSentEventsBlockActionResult</code> is <code>internal</code> to Rock.Blocks; plugins and REST v2 controllers cannot stream.</td><td style="font-size:12px;font-family:var(--font-mono);">ServerSentEventsBlockActionResult.cs</td></tr>
+          <tr><td>9</td><td><strong>Bags are hand-mirrored.</strong> ChatBot bags are private nested classes with a hand-written <code>.d.ts</code>, outside the ViewModels codegen.</td><td style="font-size:12px;font-family:var(--font-mono);">ChatBot.cs:868&ndash;996, ChatBot/types.d.ts</td></tr>
+          <tr><td>10</td><td><strong>No durable/background runs.</strong> A stream dies with its HTTP request; nothing resumes, no out-of-band progress, no multi-step background agents.</td><td style="font-size:12px;font-family:var(--font-mono);">no AI RealTime topic exists</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ============================================================ -->
+    <div class="section" id="architecture">
+      <div class="section-num">04</div>
+      <h2>Target Architecture</h2>
+    </div>
+
+    <p>Five layers, mirroring the AI SDK's separation. The protocol layer in the middle is the contract everything else composes against.</p>
+
+    <div class="arch">┌─────────────────────────────────────────────────────────────────┐
+│  <b>Obsidian AI Elements</b>  (Framework/Controls/AI/*.obs)            │
+│  Conversation · Message · Response · PromptInput · Tool ·       │
+│  Reasoning · Sources · CodeBlock · Actions · EntityCard · ...   │
+├─────────────────────────────────────────────────────────────────┤
+│  <b>useAgentChat()</b>  (Framework/Utility/agentChat.ts)               │
+│  messages · status · sendMessage · stop · regenerate · resume   │
+│  Transport: <i>BlockActionSseTransport</i> (default)                   │
+│             <i>RealTimeTopicTransport</i>   (durable runs)             │
+├─────────────────────────────────────────────────────────────────┤
+│  <em>Agent UI Stream Protocol</em>  (Rock.ViewModels/AI/AgentStream/*)   │
+│  start · text-delta · reasoning-delta · tool-input ·            │
+│  tool-output · entity-result · error · usage · finish           │
+├─────────────────────────────────────────────────────────────────┤
+│  <b>Server orchestration</b>  (Rock.Blocks + Rock/AI/Agent)            │
+│  AgentChatStreamer: ChatAgent stream → protocol events          │
+│  Cancellation · message IDs · persistence of parts              │
+├─────────────────────────────────────────────────────────────────┤
+│  <b>Agent runtime</b>  (Rock.AI.Agent assembly, external repo)         │
+│  today: Semantic Kernel 1.67 → target: MS Agent Framework 1.x   │
+│  Skills · Tools · MCP · sessions · auto-summarize · workflows   │
+└─────────────────────────────────────────────────────────────────┘</div>
+
+    <p>Two deliberate decisions:</p>
+    <ul>
+      <li><strong>The protocol is defined in <code>Rock.ViewModels</code></strong>, not hand-written <code>.d.ts</code>, so the TypeScript types are code-generated and any block or plugin gets them for free. This also fixes gap #9.</li>
+      <li><strong>An <code>AgentChatStreamer</code> adapter in <code>Rock.Blocks</code> (or <code>Rock/AI/Agent</code>) translates the runtime's stream into protocol events.</strong> This isolates the closed-assembly boundary: when <code>Rock.AI.Agent</code> later emits richer events natively (first-class tool results, reasoning), the adapter shrinks and nothing above it changes.</li>
+    </ul>
+
+    <!-- ============================================================ -->
+    <div class="section" id="protocol">
+      <div class="section-num">05</div>
+      <h2>The Stream Protocol (the Linchpin)</h2>
+    </div>
+
+    <p>Everything hangs off this contract. It is a direct adaptation of the AI SDK's UI Message Stream to Rock idioms: C# bags with a discriminator, camelCase JSON, SSE framing that the existing transport already handles.</p>
+
+    <div class="file-card">
+      <div class="file-head"><span class="file-head-name">Rock.ViewModels/AI/AgentStream/AgentStreamEventBag.cs (proposed shape, TS projection shown)</span></div>
+      <pre><code class="language-typescript">// Discriminated union, one SSE "data:" frame per event.
+type AgentStreamEvent =
+    | { type: "start"; messageIdKey: string; sessionIdKey: string }
+    | { type: "text-delta"; delta: string }
+    | { type: "reasoning-delta"; delta: string }                       // future: thinking models
+    | { type: "tool-input-start"; toolCallId: string; toolName: string;
+        preamble: string }                                             // "Looking up Ted Decker..."
+    | { type: "tool-input-delta"; toolCallId: string; delta: string }
+    | { type: "tool-output"; toolCallId: string; status: ToolStatus;
+        resultType: string;                                            // "PersonResult", "SummaryResult", ...
+        output: unknown }                                              // audience-filtered JSON
+    | { type: "entity-result"; toolCallId: string;                     // generative UI hook
+        entityTypeGuid: Guid; items: EntityResultBag[] }
+    | { type: "data"; dataType: string; data: unknown }                // app-defined parts
+    | { type: "usage"; inputTokens: number; outputTokens: number }
+    | { type: "error"; message: string; isRetryable: boolean }
+    | { type: "finish"; finishReason: "stop" | "toolCalls" | "cancelled" | "error" };</code></pre>
+    </div>
+
+    <p>Server-side work in this phase:</p>
+    <ul>
+      <li><strong>Emit real SSE fields.</strong> Today only bare <code>data:</code> lines are written. Add <code>event:</code> names and monotonic <code>id:</code> values so <code>Last-Event-ID</code> resume becomes possible, and fix the technically malformed <code>data: [DONE]\n</code> terminator (single newline) in <code>ServerSentEventsBlockActionResult.cs</code>.</li>
+      <li><strong>Thread cancellation.</strong> Pass the request's <code>CancellationToken</code> into <code>GetStreamingChatMessageResponsesAsync()</code> so a client disconnect or stop button actually stops the model call (gap #4, today it burns tokens to completion).</li>
+      <li><strong>Surface message identity.</strong> Return <code>IdKey</code> for every persisted <code>AIAgentSessionHistory</code> row; persist tool-call parts (structured, in <code>AdditionalSettingsJson</code> or a new column) so a reloaded session renders identically to a live one.</li>
+      <li><strong>Graduate the streaming result for plugins.</strong> Promote <code>ServerSentEventsBlockActionResult&lt;T&gt;</code> from <code>internal</code> to <code>[RockInternal]</code>-public, and add a REST v2 streaming result that reuses <code>PushStreamContent</code> + <code>ScopedPushStreamContent</code> (the DI-scope keeper in <code>Rock.Rest/Handler/</code>) for headless consumers.</li>
+      <li><strong>Replace the log-regex tool detection.</strong> Move the parsing of tool activity server-side into <code>AgentChatStreamer</code> as an interim step; the durable fix (native tool-result events from the runtime) lands with the Agent Framework migration in Phase 4.</li>
+    </ul>
+
+    <!-- ============================================================ -->
+    <div class="section" id="use-agent-chat">
+      <div class="section-num">06</div>
+      <h2>useAgentChat: the AI SDK UI Analog</h2>
+    </div>
+
+    <p>One composable owns the client state machine, exactly like <code>useChat</code>. Blocks stop hand-rolling reader loops.</p>
+
+    <div class="file-card">
+      <div class="file-head"><span class="file-head-name">Rock.JavaScript.Obsidian/Framework/Utility/agentChat.ts (proposed API)</span></div>
+      <pre><code class="language-typescript">export function useAgentChat(options: AgentChatOptions): AgentChat;
+
+interface AgentChatOptions {
+    transport?: IAgentChatTransport;        // default: block-action SSE
+    sessionIdKey?: string;                  // resume an existing session
+    onToolCall?: (part: ToolCallPart) =&gt; void | Promise&lt;unknown&gt;;  // client-side tools
+    onError?: (error: AgentChatError) =&gt; void;
+    experimentalThrottleMs?: number;        // batch re-renders during fast streams
+}
+
+interface AgentChat {
+    messages: Ref&lt;AgentUiMessage[]&gt;;        // parts-based, mirrors UIMessage
+    status: Ref&lt;"ready" | "submitted" | "streaming" | "error"&gt;;
+    usage: Ref&lt;UsageInfo | null&gt;;
+    sendMessage(text: string, files?: FileAttachment[]): Promise&lt;void&gt;;
+    stop(): void;                           // aborts via ICancellationToken
+    regenerate(messageIdKey?: string): Promise&lt;void&gt;;
+    loadSession(sessionIdKey: string): Promise&lt;void&gt;;
+    startNewSession(): Promise&lt;void&gt;;
+    addAnchor(entityTypeName: string, entityId: number): Promise&lt;void&gt;;
+}</code></pre>
+    </div>
+
+    <p>A block then becomes declarative composition, the way an AI Elements app looks in React:</p>
+
+    <div class="file-card">
+      <div class="file-head"><span class="file-head-name">chatBot.obs after refactor (illustrative)</span></div>
+      <pre><code class="language-html">&lt;AiConversation :messages="chat.messages.value" :status="chat.status.value"&gt;
+    &lt;template #message="{ message }"&gt;
+        &lt;AiMessage :message="message"&gt;
+            &lt;AiResponse v-for="part in textParts(message)" :markdown="part.text" /&gt;
+            &lt;AiTool v-for="part in toolParts(message)" :part="part"&gt;
+                &lt;AiEntityResult v-if="part.entityItems" :items="part.entityItems" /&gt;
+            &lt;/AiTool&gt;
+            &lt;AiActions :message="message" @copy="..." @regenerate="chat.regenerate" /&gt;
+        &lt;/AiMessage&gt;
+    &lt;/template&gt;
+&lt;/AiConversation&gt;
+
+&lt;AiPromptInput :status="chat.status.value"
+               @submit="chat.sendMessage"
+               @stop="chat.stop" /&gt;</code></pre>
+    </div>
+
+    <p>The transport interface is small (start a stream, yield events, abort), which is what lets a <code>RealTimeTopicTransport</code> slot in later for durable runs without touching any component.</p>
+
+    <!-- ============================================================ -->
+    <div class="section" id="elements">
+      <div class="section-num">07</div>
+      <h2>Obsidian AI Elements: the Control Library</h2>
+    </div>
+
+    <p>New family under <code>Framework/Controls/AI/</code>, styled by extending <code>_blocks-ai.scss</code> into a proper component stylesheet. Ship the essentials first; the checklist below maps each control to its AI Elements counterpart and its Rock ingredients.</p>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Control</th><th>AI Elements analog</th><th>Rock ingredients / notes</th><th>Wave</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>aiConversation.obs</code></td><td>Conversation</td><td style="font-size:13px;">Proper stick-to-bottom: track user scroll, pin only when at bottom, floating scroll-to-bottom button. Replaces the naive force-scroll.</td><td><span class="badge badge-blue">1</span></td></tr>
+          <tr><td><code>aiMessage.obs</code></td><td>Message</td><td style="font-size:13px;">Role layouts from <code>.message-user</code> / <code>.message-assistant</code>; avatar via <code>personAvatar.obs</code> or agent <code>AvatarBinaryFile</code>.</td><td><span class="badge badge-blue">1</span></td></tr>
+          <tr><td><code>aiResponse.obs</code></td><td>Response</td><td style="font-size:13px;">marked + <strong>DOMPurify sanitization</strong> (new <code>Libs/dompurify.ts</code>) + highlight.js wired into the code renderer. Fixes gap #6.</td><td><span class="badge badge-blue">1</span></td></tr>
+          <tr><td><code>aiPromptInput.obs</code></td><td>PromptInput</td><td style="font-size:13px;">Extract the auto-grow composer from <code>footerActions.partial.obs</code>; add stop button, attachment slot (<code>fileUploader.obs</code>), suggestion chips, anchor chips.</td><td><span class="badge badge-blue">1</span></td></tr>
+          <tr><td><code>aiCodeBlock.obs</code></td><td>CodeBlock</td><td style="font-size:13px;">highlight.js + <code>copyButton.obs</code>. Rendered by <code>aiResponse</code> for fenced blocks.</td><td><span class="badge badge-blue">1</span></td></tr>
+          <tr><td><code>aiLoader.obs</code></td><td>Loader</td><td style="font-size:13px;">Thinking/typing indicator; exists as <code>.message-thinking</code>, extract it.</td><td><span class="badge badge-blue">1</span></td></tr>
+          <tr><td><code>aiTool.obs</code></td><td>Tool</td><td style="font-size:13px;">Collapsible tool-call chrome: preamble while running, status badge (<code>ToolStatus</code>), input/output inspection. Powered by real protocol events, not log regex.</td><td><span class="badge badge-sky">2</span></td></tr>
+          <tr><td><code>aiEntityResult.obs</code></td><td><em>(no equivalent!)</em></td><td style="font-size:13px;"><strong>Rock's differentiator.</strong> Renders <code>PersonResult</code> as a person card, <code>GroupResult</code> as a group row, <code>FinancialTransactionResult</code> as a transaction line, with reference routes as links. Registry maps <code>resultType</code> to renderer, plugins can register their own.</td><td><span class="badge badge-sky">2</span></td></tr>
+          <tr><td><code>aiActions.obs</code></td><td>Actions</td><td style="font-size:13px;">Copy, regenerate, thumbs up/down per message. Needs message IdKeys from Phase 1.</td><td><span class="badge badge-sky">2</span></td></tr>
+          <tr><td><code>aiSessionList.obs</code></td><td><em>(app-level in Vercel)</em></td><td style="font-size:13px;">Extract from <code>sessionList.partial.obs</code>: rename, delete, relative dates.</td><td><span class="badge badge-sky">2</span></td></tr>
+          <tr><td><code>aiContext.obs</code></td><td>Context</td><td style="font-size:13px;">Token usage meter from <code>usage</code> events + <code>AutoSummarizeThreshold</code>.</td><td><span class="badge badge-sky">2</span></td></tr>
+          <tr><td><code>aiReasoning.obs</code></td><td>Reasoning</td><td style="font-size:13px;">Collapsible thinking display; protocol part exists from day one, renderer lands when a reasoning-capable provider does.</td><td><span class="badge badge-purple">3</span></td></tr>
+          <tr><td><code>aiSources.obs</code> / <code>aiInlineCitation.obs</code></td><td>Sources, InlineCitation</td><td style="font-size:13px;">Backed by <code>WithReferenceRoute()</code> data already emitted by tools.</td><td><span class="badge badge-purple">3</span></td></tr>
+          <tr><td><code>aiSuggestion.obs</code></td><td>Suggestion</td><td style="font-size:13px;">Prompt suggestion chips above the composer; agent-configurable.</td><td><span class="badge badge-purple">3</span></td></tr>
+          <tr><td><code>aiArtifact.obs</code></td><td>Artifact</td><td style="font-size:13px;">Side-panel workspace via <code>dockedPanel.obs</code> for generated Lava/HTML/SQL with preview.</td><td><span class="badge badge-purple">3</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-icon">💡</div>
+      <div>
+        <div class="callout-title">Proof of the library: chatBot.obs becomes the first consumer</div>
+        Phase 3 ends by rebuilding the existing Chat Bot block as a thin composition of these controls. Same behavior, dramatically less block-local code, and every future surface (a person-profile copilot panel, a finance assistant, an admin "ask Rock" bar) composes the same parts.
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <div class="section" id="orchestration">
+      <div class="section-num">08</div>
+      <h2>Backend Orchestration and the Agent Framework Move</h2>
+    </div>
+
+    <p>You said you're happy to move from Semantic Kernel to the newer Microsoft agent platform. The timing is good: the <strong>Microsoft Agent Framework hit 1.0 (production GA) in April 2026</strong>, it is the convergence of Semantic Kernel and AutoGen, and critically its packages multi-target <code>net472</code> / <code>netstandard2.0</code>, so it runs inside Rock's WebForms host. Rock already ships <code>Microsoft.Extensions.AI</code> 10.0.1, which is the abstraction layer MAF is built on.</p>
+
+    <div class="compare two">
+      <div class="compare-col">
+        <div class="compare-col-num">Option A</div>
+        <div class="compare-col-title">Stay on Semantic Kernel 1.67</div>
+        <div class="compare-col-body">Keep the current runtime, build the protocol/UI layers on top, revisit later.</div>
+        <div class="compare-pros-cons">
+          <div>
+            <div class="pro-con-label pro">Pros</div>
+            <ul class="pro-con-list"><li>Zero runtime risk now</li><li>No closed-repo coordination</li><li>Phases 1&ndash;3 unaffected</li></ul>
+          </div>
+          <div>
+            <div class="pro-con-label con">Cons</div>
+            <ul class="pro-con-list"><li>SK agent APIs are in maintenance mode; MS steers new work to MAF</li><li>Tool events stay log-string based</li><li>No graph workflow story</li></ul>
+          </div>
+        </div>
+      </div>
+      <div class="compare-col recommended">
+        <div class="recommended-label">Recommended</div>
+        <div class="compare-col-num">Option B</div>
+        <div class="compare-col-title">Migrate to Microsoft Agent Framework in Phase 4</div>
+        <div class="compare-col-body">Swap the internals of the <code>Rock.AI.Agent</code> assembly to MAF (<code>ChatClientAgent</code> over <code>IChatClient</code>), keeping Rock's abstract surface (<code>ChatAgent</code>, <code>AgentTool</code>, <code>AgentToolResult</code>) stable so blocks and skills don't churn.</div>
+        <div class="compare-pros-cons">
+          <div>
+            <div class="pro-con-label pro">Pros</div>
+            <ul class="pro-con-list"><li>1.0 GA, runs on net472</li><li>Native streaming agent updates (typed tool events, no regex)</li><li>Graph workflows = the Vercel Workflows analog</li><li>Built on Microsoft.Extensions.AI already in RockWeb/Bin</li><li>OpenTelemetry hooks match Rock's observability</li></ul>
+          </div>
+          <div>
+            <div class="pro-con-label con">Cons</div>
+            <ul class="pro-con-list"><li>Requires the external Rock.AI.Agent repo</li><li>PromptExecutionSettings to ChatOptions semantic mapping</li><li>Token accounting parity must be re-verified</li></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Durable orchestration (the Vercel Workflows analog)</h3>
+    <p>Vercel's <code>"use workflow"</code> gives durable, resumable execution with per-step retry. Rock's equivalent composes from parts it already owns:</p>
+    <ul>
+      <li><strong>MAF graph workflows</strong> define multi-agent / multi-step orchestrations (sequential, concurrent, handoff) with checkpointing, inside the agent runtime.</li>
+      <li>A new <strong><code>AIAgentRun</code> entity</strong> records a run's status, current step, checkpoint state, and results, giving admin visibility and resumability across app-pool recycles (Rock's version of "survives deploys").</li>
+      <li><strong>Rock Jobs / transactions</strong> execute long-running runs off the request thread, with the existing retry conventions per step.</li>
+      <li>A new <strong><code>AgentRunTopic</code> RealTime topic</strong> pushes progress and results to the owning person (<code>Clients.Person(personId)</code>), which is how a chat session shows "your background task finished" and how the <code>RealTimeTopicTransport</code> feeds the same UI components without an open HTTP stream.</li>
+    </ul>
+    <p>This is deliberately staged last: it delivers the most new capability but depends on the protocol, the composable, and the runtime migration underneath it.</p>
+
+    <!-- ============================================================ -->
+    <div class="section" id="phases">
+      <div class="section-num">09</div>
+      <h2>Phased Delivery Plan</h2>
+    </div>
+
+    <p>Each phase ships value on its own and hardens the layer below it. Phases 1&ndash;3 need only this repository; Phase 4 requires the <code>Rock.AI.Agent</code> repo.</p>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-label">Phase 1 · ~3&ndash;4 weeks</div>
+        <div class="timeline-title">Stream protocol + server plumbing</div>
+        <div class="timeline-body">Define <code>AgentStreamEvent</code> bags in Rock.ViewModels with codegen. Build <code>AgentChatStreamer</code>. Add SSE event names/IDs, fix the [DONE] terminator, thread cancellation, surface message IdKeys, persist tool parts. Graduate the streaming result for plugin/REST use. Retrofit <code>ChatBot.SendMessage</code> to emit the new protocol (old shape kept during transition).</div>
+        <div class="timeline-tags"><span class="badge badge-gray">Rock.ViewModels</span><span class="badge badge-gray">Rock.Blocks</span><span class="badge badge-gray">Rock.Rest</span></div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-label">Phase 2 · ~2&ndash;3 weeks</div>
+        <div class="timeline-title">useAgentChat composable + transport abstraction</div>
+        <div class="timeline-body">Client state machine (messages, status, usage), send/stop/regenerate/loadSession, parts-based message model, error handling, render throttling, optimistic user messages. <code>IAgentChatTransport</code> with the block-action SSE implementation.</div>
+        <div class="timeline-tags"><span class="badge badge-gray">Rock.JavaScript.Obsidian</span></div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-label">Phase 3 · ~4&ndash;6 weeks</div>
+        <div class="timeline-title">Obsidian AI Elements control library</div>
+        <div class="timeline-body">Wave 1 and 2 controls (conversation, message, response with sanitized markdown + highlighted code, prompt input with stop/attachments, tool display, entity-result generative UI, actions, session list, context meter). Componentize <code>_blocks-ai.scss</code> and finish the flagged rough edges. Rebuild chatBot.obs on the library as the proof.</div>
+        <div class="timeline-tags"><span class="badge badge-gray">Framework/Controls/AI</span><span class="badge badge-gray">Rock.Frontend.Styles</span></div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot pending"></div>
+        <div class="timeline-label">Phase 4 · ~4&ndash;6 weeks + external coordination</div>
+        <div class="timeline-title">Agent Framework migration + durable workflows</div>
+        <div class="timeline-body">Swap Rock.AI.Agent internals from SK to MAF behind the stable abstract surface; native typed tool/usage events replace the interim adapter parsing. Add <code>AIAgentRun</code>, job-based execution, <code>AgentRunTopic</code>, and the RealTime transport for background/durable agent runs.</div>
+        <div class="timeline-tags"><span class="badge badge-gray">Rock.AI.Agent (external)</span><span class="badge badge-gray">Rock/RealTime</span><span class="badge badge-gray">Rock.Migrations</span></div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot pending"></div>
+        <div class="timeline-label">Ongoing · ~2&ndash;3 weeks spread across phases</div>
+        <div class="timeline-title">Hardening, docs, tests</div>
+        <div class="timeline-body">Protocol unit tests, streaming integration tests, XSS review of the markdown path, docs under <code>docs/ai/</code>, plugin-author guide for custom transports, tools, and entity-result renderers.</div>
+        <div class="timeline-tags"><span class="badge badge-gray">Rock.Tests</span><span class="badge badge-gray">docs/ai</span></div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <div class="section" id="risks">
+      <div class="section-num">10</div>
+      <h2>Issues We Will Face</h2>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Issue</th><th>Severity</th><th>Mitigation</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Closed <code>Rock.AI.Agent</code> assembly.</strong> The orchestration loop, all skill components, and the provider registration live outside this repo. Native protocol events and the MAF migration cannot land without it.</td>
+            <td><span class="badge badge-red">High</span></td>
+            <td style="font-size:13px;">Design the <code>AgentChatStreamer</code> adapter so Phases 1&ndash;3 need zero changes there; schedule Phase 4 with whoever owns that repo. Confirm ownership early (open question #1).</td>
+          </tr>
+          <tr>
+            <td><strong>net472 ceiling.</strong> WebForms host, SignalR 2.x, no HTTP/2 server push, older TLS/socket behavior. MAF supports net472, but its ASP.NET Core hosting niceties (native SSE results, DI integration) don't apply; everything goes through <code>PushStreamContent</code>.</td>
+            <td><span class="badge badge-red">High</span></td>
+            <td style="font-size:13px;">Rock has already solved the hard parts (<code>ScopedPushStreamContent</code> keeps DI scopes alive). Keep the protocol transport-agnostic so a future ASP.NET Core host swaps the writer, not the contract. The dual-target <code>#if WEBFORMS</code> aliasing convention in Rock.Rest must be followed in any new controller.</td>
+          </tr>
+          <tr>
+            <td><strong>SSE through IIS and proxies.</strong> Response buffering, dynamic compression, and idle timeouts can stall or batch token streams; multi-minute agent runs can hit request timeouts.</td>
+            <td><span class="badge badge-red">High</span></td>
+            <td style="font-size:13px;">Disable buffering/compression for <code>text/event-stream</code>, emit keep-alive comments, document reverse-proxy requirements. For anything long-running, hand off to the durable-run path (job + RealTime) instead of stretching HTTP.</td>
+          </tr>
+          <tr>
+            <td><strong>XSS via streamed markdown.</strong> Model output rendered through <code>v-html</code> is attacker-influenceable (prompt injection through tool data), and today it is unsanitized.</td>
+            <td><span class="badge badge-yellow">Medium</span></td>
+            <td style="font-size:13px;">DOMPurify in <code>aiResponse.obs</code> as a non-negotiable default; sanitize on every incremental render, not just the final text. Security review as part of Phase 3 exit.</td>
+          </tr>
+          <tr>
+            <td><strong>Protocol versioning and back-compat.</strong> Once plugins consume the stream and the composable, the event contract is a public API under Rock's strict compatibility rules.</td>
+            <td><span class="badge badge-yellow">Medium</span></td>
+            <td style="font-size:13px;">Ship behind <code>[RockInternal]</code> for one release cycle, include a protocol version in the <code>start</code> event, additive-only evolution after graduation.</td>
+          </tr>
+          <tr>
+            <td><strong>SK to MAF semantic drift.</strong> <code>PromptExecutionSettings</code> to <code>ChatOptions</code>, keyed <code>IChatCompletionService</code> to <code>IChatClient</code>, token usage metrics, and tool-choice behavior all shift subtly.</td>
+            <td><span class="badge badge-yellow">Medium</span></td>
+            <td style="font-size:13px;">Golden-transcript tests: run recorded conversations against both runtimes and diff messages, tool calls, and token counts before cutover. The abstract surface means blocks never see the swap.</td>
+          </tr>
+          <tr>
+            <td><strong>Web farm behavior.</strong> SSE streams pin to one server (fine), but RealTime push for durable runs needs the Azure SignalR backplane story validated, and session state must stay DB-backed (it already is).</td>
+            <td><span class="badge badge-yellow">Medium</span></td>
+            <td style="font-size:13px;">Rock.csproj already references <code>Microsoft.Azure.SignalR.AspNet</code>; include a farm test pass in Phase 4.</td>
+          </tr>
+          <tr>
+            <td><strong>Session reload fidelity.</strong> Tool messages are persisted but filtered out of history today, and parts aren't stored, so a reloaded session would lose tool cards.</td>
+            <td><span class="badge badge-yellow">Medium</span></td>
+            <td style="font-size:13px;">Phase 1 persists parts alongside text; the history query returns them keyed by message IdKey.</td>
+          </tr>
+          <tr>
+            <td><strong>Rock Store packaging.</strong> Any new binary (MAF packages, DOMPurify is JS so exempt) must be added to the <code>PackageInstall.cs</code> bin blacklist or plugin installs can clobber it.</td>
+            <td><span class="badge badge-green">Low</span></td>
+            <td style="font-size:13px;">Checklist item in the Phase 4 PR template.</td>
+          </tr>
+          <tr>
+            <td><strong>Naming collision.</strong> "Chat" already means the Stream.io person-to-person feature (<code>ChatMessage</code>, <code>ChatChannel</code>, <code>ChatController</code>).</td>
+            <td><span class="badge badge-green">Low</span></td>
+            <td style="font-size:13px;">Prefix everything <code>Agent*</code> / <code>AiAgent*</code> (<code>AgentStreamEvent</code>, <code>useAgentChat</code>, <code>AgentRunTopic</code>), matching the existing <code>AIAgent*</code> entities.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ============================================================ -->
+    <div class="section" id="effort">
+      <div class="section-num">11</div>
+      <h2>Level of Effort</h2>
+    </div>
+
+    <p>Estimates assume one senior developer already fluent in Rock conventions (Obsidian, bags, migrations). Ranges reflect protocol design churn (P1), design polish depth (P3), and external-repo coordination (P4).</p>
+
+    <div class="card">
+      <div class="card-title">Dev-weeks by phase (midpoints shown)</div>
+      <div class="bar-chart">
+        <div class="bar-row">
+          <div class="bar-label">P1 · Protocol</div>
+          <div class="bar-track"><div class="bar-fill" style="width:58%"></div></div>
+          <div class="bar-val">3&ndash;4 wks</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">P2 · useAgentChat</div>
+          <div class="bar-track"><div class="bar-fill" style="width:42%"></div></div>
+          <div class="bar-val">2&ndash;3 wks</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">P3 · Elements library</div>
+          <div class="bar-track"><div class="bar-fill" style="width:83%"></div></div>
+          <div class="bar-val">4&ndash;6 wks</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">P4 · MAF + workflows</div>
+          <div class="bar-track"><div class="bar-fill" style="width:83%"></div></div>
+          <div class="bar-val">4&ndash;6 wks</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Hardening + docs</div>
+          <div class="bar-track"><div class="bar-fill" style="width:42%"></div></div>
+          <div class="bar-val">2&ndash;3 wks</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Scenario</th><th>Scope</th><th>Effort</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Minimum lovable</strong></td>
+            <td style="font-size:13px;">Phases 1&ndash;3: typed protocol, composable, wave 1+2 controls, rebuilt Chat Bot with stop/regenerate/tool cards/entity results. Still on Semantic Kernel.</td>
+            <td><strong>9&ndash;13 dev-weeks</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Full vision</strong></td>
+            <td style="font-size:13px;">Everything above plus MAF migration, durable runs, RealTime transport, wave 3 controls.</td>
+            <td><strong>15&ndash;22 dev-weeks</strong></td>
+          </tr>
+          <tr>
+            <td><strong>With two developers</strong></td>
+            <td style="font-size:13px;">P2/P3 (frontend) parallelize cleanly against P1-tail/P4 (backend) after the protocol freezes at the end of P1.</td>
+            <td><strong>~10&ndash;12 calendar weeks</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-icon">💡</div>
+      <div>
+        <div class="callout-title">Sequencing advice</div>
+        Freeze the protocol first and treat it as the deliverable of record; every downstream week is cheap or expensive depending on how well Phase 1 lands. If calendar pressure forces a cut, wave 3 controls and SSE resume (Last-Event-ID) are the safest deferrals; cancellation, sanitization, and message identity are not.
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <div class="section" id="questions">
+      <div class="section-num">12</div>
+      <h2>Open Questions</h2>
+    </div>
+
+    <div class="question-list">
+      <div class="question-list-eyebrow">To resolve before Phase 1 ends</div>
+      <div class="question-item">
+        <div class="question-num">1</div>
+        <div class="question-text">Who owns the Rock.AI.Agent repo, and can Phase 4 get on its roadmap?</div>
+        <div class="answer-text">The MAF migration and native tool-event emission both land there. If it's Spark core team territory, this plan's Phase 4 becomes a joint effort; if Triumph has commit access, it's ours to schedule.</div>
+      </div>
+      <div class="question-item">
+        <div class="question-num">2</div>
+        <div class="question-text">Is the plugin surface a v1 goal?</div>
+        <div class="answer-text">Graduating the streaming result, the protocol bags, and the composable to plugin-visible API is cheap in code but expensive in compatibility promises. Recommendation: build it public-shaped, ship it <code>[RockInternal]</code>, graduate after one release.</div>
+      </div>
+      <div class="question-item">
+        <div class="question-num">3</div>
+        <div class="question-text">Which surfaces beyond the Chat Bot block are in scope?</div>
+        <div class="answer-text">A person-profile copilot panel, an admin-bar "ask Rock" launcher, and block-embedded assistants all become one-day builds once the library exists, but knowing the first target shapes wave 2 control priorities (entity results vs. artifacts).</div>
+      </div>
+      <div class="question-item">
+        <div class="question-num">4</div>
+        <div class="question-text">Do we need multi-provider model routing at launch?</div>
+        <div class="answer-text"><code>ModelServiceRole</code> has a single <code>Default</code> value today. MAF's <code>IChatClient</code> makes per-role routing (fast model for summarize, strong model for chat) straightforward; deciding now avoids a schema change later.</div>
+      </div>
+      <div class="question-item">
+        <div class="question-num">5</div>
+        <div class="question-text">How aggressive should the docked-mode rework be?</div>
+        <div class="answer-text">The current docked bootstrap serializes <code>outerHTML</code> into sessionStorage with a MutationObserver, which is fragile. Rebuilding it on the composable + RealTime session sync is cleaner but adds roughly a week to Phase 3.</div>
+      </div>
+    </div>
+
+    <hr>
+    <p style="font-size:12px;color:var(--n-400);">Sources: repository analysis of <code>SparkDevNetwork/Rock</code> (branch <code>claude/vercel-ai-sdk-clone-plan-prjyb8</code>), <a href="https://ai-sdk.dev">ai-sdk.dev</a>, <a href="https://elements.ai-sdk.dev">elements.ai-sdk.dev</a>, <a href="https://vercel.com/workflows">vercel.com/workflows</a>, <a href="https://learn.microsoft.com/en-us/agent-framework/overview/">Microsoft Agent Framework overview</a>, <a href="https://www.nuget.org/packages/Microsoft.Agents.AI/">Microsoft.Agents.AI on NuGet</a>.</p>
+
+  </div>
+  <script>
+    if (typeof hljs !== 'undefined') {
+      document.querySelectorAll('pre code[class*="language-"]').forEach(block => {
+        hljs.highlightElement(block);
+        const lines = block.innerHTML.split('\n');
+        if (lines[lines.length - 1].trim() === '') lines.pop();
+        block.innerHTML = lines
+          .map(line => `<span class="code-line">${line || ' '}</span>`)
+          .join('');
+        block.closest('pre').classList.add('has-line-numbers');
+      });
+    }
+  </script>
+</body>
+</html>
