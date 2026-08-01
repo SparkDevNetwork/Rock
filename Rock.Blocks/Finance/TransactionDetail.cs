@@ -241,6 +241,19 @@ namespace Rock.Blocks.Finance
         }
 
         /// <summary>
+        /// Determines whether a transaction may be edited based on its batch status. A transaction
+        /// cannot be edited when it belongs to a batch that is closed or automated. Transactions
+        /// with no batch (e.g. a new transaction) are considered editable.
+        /// </summary>
+        /// <param name="entity">The transaction to evaluate.</param>
+        /// <returns><c>true</c> if the transaction's batch permits editing; otherwise <c>false</c>.</returns>
+        private static bool IsBatchEditAllowed( FinancialTransaction entity )
+        {
+            return entity?.Batch == null
+                || ( entity.Batch.Status != BatchStatus.Closed && !entity.Batch.IsAutomated );
+        }
+
+        /// <summary>
         /// Sets the initial entity state of the box. Populates the Entity or
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
@@ -286,8 +299,7 @@ namespace Rock.Blocks.Finance
             // Check if allowed to edit based on batch status if user has permissions to edit.
             if ( box.IsEditable)
             {
-                box.Options.CanEdit = entity?.Batch == null
-                    || ( entity.Batch.Status != BatchStatus.Closed && !entity.Batch.IsAutomated );
+                box.Options.CanEdit = IsBatchEditAllowed( entity );
             }
 
             PrepareDetailBox( box, entity );
@@ -381,7 +393,7 @@ namespace Rock.Blocks.Finance
                 ForeignKey = transaction.ForeignKey,
                 PaymentDetail = GetPaymentDetailBag( transaction.FinancialPaymentDetail, creditCardGuid ),
                 RefundDetails = GetRefundDetailBag( transaction.RefundDetails ),
-                AuthorizedPerson = GetAuthorizedPersonBag( transaction.AuthorizedPersonAlias?.Person ),
+                AuthorizedPerson = GetAuthorizedPersonBag( transaction.AuthorizedPersonAlias ),
                 ScheduledTransaction = transaction.ScheduledTransaction != null
                     ? GetScheduledTransactionBag( transaction.ScheduledTransaction )
                     : null,
@@ -864,13 +876,15 @@ namespace Rock.Blocks.Finance
         }
 
         /// <summary>
-        /// Maps a <see cref="Person"/> to an <see cref="AuthorizedPersonBag"/> that provides
+        /// Maps a <see cref="PersonAlias"/> to an <see cref="AuthorizedPersonBag"/> that provides
         /// display data for the authorized-by section of the view panel.
         /// </summary>
-        /// <param name="person">The person; may be <c>null</c>.</param>
-        /// <returns>An <see cref="AuthorizedPersonBag"/>, or <c>null</c> if <paramref name="person"/> is <c>null</c>.</returns>
-        private AuthorizedPersonBag GetAuthorizedPersonBag( Person person )
+        /// <param name="personAlias">The authorized person alias; may be <c>null</c>.</param>
+        /// <returns>An <see cref="AuthorizedPersonBag"/>, or <c>null</c> if <paramref name="personAlias"/> or its person is <c>null</c>.</returns>
+        private AuthorizedPersonBag GetAuthorizedPersonBag( PersonAlias personAlias )
         {
+            var person = personAlias?.Person;
+
             if ( person == null )
             {
                 return null;
@@ -880,7 +894,7 @@ namespace Rock.Blocks.Finance
 
             var authorizedPersonBag = new AuthorizedPersonBag
             {
-                Guid = person.Guid,
+                Guid = personAlias.Guid,
                 Id = person.Id,
                 Name = person.FullName,
                 Email = person.Email,
@@ -1573,10 +1587,29 @@ namespace Rock.Blocks.Finance
                 return actionError;
             }
 
+            // Guard against edits to an existing transaction whose batch is closed or automated.
+            // The UI hides the Edit button in this case; this enforces the same rule server-side.
+            if ( !IsBatchEditAllowed( entity ) )
+            {
+                return ActionBadRequest( "This transaction cannot be edited because its batch is closed or automated." );
+            }
+
             // Update the entity instance from the information in the bag.
             if ( !UpdateEntityFromBox( entity, box ) )
             {
                 return ActionBadRequest( "Invalid data." );
+            }
+
+            // For a new transaction the target batch is only known after the bag has been applied.
+            // Reject adding into a closed or automated batch (mirrors WebForms hiding the Add button).
+            if ( entity.Id == 0 && entity.BatchId.HasValue )
+            {
+                var targetBatch = new FinancialBatchService( RockContext ).Get( entity.BatchId.Value );
+
+                if ( targetBatch != null && ( targetBatch.Status == BatchStatus.Closed || targetBatch.IsAutomated ) )
+                {
+                    return ActionBadRequest( "A transaction cannot be added to a closed or automated batch." );
+                }
             }
 
             // Ensure everything is valid before saving.
@@ -1805,11 +1838,6 @@ namespace Rock.Blocks.Finance
             if ( !IsOrganizationCurrency( transaction.ForeignCurrencyCodeValueId ) )
             {
                 return ActionBadRequest( "Refunds are not supported for transactions in foreign currencies." );
-            }
-
-            if ( transaction.Batch != null && ( transaction.Batch.Status == BatchStatus.Closed || transaction.Batch.IsAutomated ) )
-            {
-                return ActionBadRequest( "Refunds are not allowed for transactions in a closed or automated batch." );
             }
 
             var canProcess = !string.IsNullOrWhiteSpace( transaction.TransactionCode ) && transaction.FinancialGateway != null;
