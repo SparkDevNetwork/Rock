@@ -237,7 +237,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="automationTriggerId">The identifier of the trigger.</param>
         /// <param name="request">The <see cref="AutomationRequest"/> that contains the details from the trigger.</param>
-        internal static void ExecuteEvents( int automationTriggerId, AutomationRequest request )
+        public static void ExecuteEvents( int automationTriggerId, AutomationRequest request )
         {
             if ( !_executors.TryGetValue( automationTriggerId, out var triggerExecutors ) )
             {
