@@ -60,9 +60,9 @@ namespace Rock.Cms
 
             // Add the headers
             var headers = request.Headers.Cast<string>()
-                .Where( h => !h.Equals( "Authorization", StringComparison.InvariantCultureIgnoreCase ) )
-                .Where( h => !h.Equals( "Cookie", StringComparison.InvariantCultureIgnoreCase ) )
-                .ToDictionary( h => h, h => request.Headers[h] );
+                .Where( h => !h.Equals( "Authorization", StringComparison.OrdinalIgnoreCase ) )
+                .Where( h => !h.Equals( "Cookie", StringComparison.OrdinalIgnoreCase ) )
+                .ToDictionary( h => h, h => request.Headers[h], StringComparer.OrdinalIgnoreCase );
             dictionary.Add( "Headers", headers );
 
             // Friendly client type derived from the client hint header so shared
