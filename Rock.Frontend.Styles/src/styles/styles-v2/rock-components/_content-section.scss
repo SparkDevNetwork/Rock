@@ -127,8 +127,14 @@
     padding-top: var(--spacing-large);
 }
 
+// Make the body flush vertically, no padding. See PersonalizationSegmentDetail for example.
+.contentsection.body-flush-vertical {
 
-
+    .contentsection-body {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+}
 
 /* OVERFLOW BODY */
 

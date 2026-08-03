@@ -43,6 +43,11 @@ namespace Rock.Jobs
         private ILogger _logger;
 
         /// <summary>
+        /// The execution context key that carries the Id of the ServiceJobHistory record created when the job started.
+        /// </summary>
+        private const string ServiceJobHistoryIdKey = "Rock.ServiceJobHistoryId";
+
+        /// <summary>
         /// Get the name of the <see cref="IJobListener"/>.
         /// </summary>
         public string Name
@@ -138,9 +143,12 @@ namespace Rock.Jobs
                          Reason: Rock Jobs Scheduler
                      */
                     var jobHistoryService = new ServiceJobHistoryService( rockContext );
-                    jobHistoryService.AddStartedServiceJobHistory( job, now );
+                    var jobHistory = jobHistoryService.AddStartedServiceJobHistory( job, now );
 
                     rockContext.SaveChanges();
+
+                    // Carry the history record's Id to JobWasExecuted so the same record can be completed by primary key.
+                    context.Put( ServiceJobHistoryIdKey, jobHistory.Id );
                 }
                 catch ( Exception ex )
                 {
@@ -334,12 +342,16 @@ namespace Rock.Jobs
                 using ( var historyRockContext = new RockContext() )
                 {
                     var serviceJobHistoryService = new ServiceJobHistoryService( historyRockContext );
-                    var lastRunJobHistory = serviceJobHistoryService.GetServiceJobHistoryForLastRun( job );
-                    serviceJobHistoryService.AddCompletedServiceJobHistory( job );
+                    var jobHistory = GetStartedServiceJobHistory( context, serviceJobHistoryService, job );
 
-                    if ( lastRunJobHistory?.Status == "Running" )
+                    if ( jobHistory != null )
                     {
-                        lastRunJobHistory.Status = "Incomplete";
+                        serviceJobHistoryService.CompleteServiceJobHistory( jobHistory, job );
+                    }
+                    else
+                    {
+                        // Fall back to finding (or creating) the history record by timestamp matching.
+                        serviceJobHistoryService.AddCompletedServiceJobHistory( job );
                     }
 
                     historyRockContext.SaveChanges();
@@ -362,6 +374,47 @@ namespace Rock.Jobs
                     ExceptionLogService.LogException( new Exception( $"Unable to send the notification message for the '{job.Name}' job (ID: {job.Id}).", ex ), null );
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the ServiceJobHistory record created when this execution started, using the Id carried in the
+        /// execution context. Returns null if the Id is missing or the record cannot be found, in which case the
+        /// caller should fall back to timestamp matching.
+        /// </summary>
+        /// <param name="context">The execution context.</param>
+        /// <param name="serviceJobHistoryService">The job history service.</param>
+        /// <param name="job">The job.</param>
+        /// <returns>The started job history record, or null if it could not be found.</returns>
+        private ServiceJobHistory GetStartedServiceJobHistory( IJobExecutionContext context, ServiceJobHistoryService serviceJobHistoryService, ServiceJob job )
+        {
+            var jobHistoryId = context.Get( ServiceJobHistoryIdKey ) as int?;
+
+            if ( !jobHistoryId.HasValue )
+            {
+                // The pulse job never creates a started history record, so a missing Id is expected for it.
+                if ( job.Guid != Rock.SystemGuid.ServiceJob.JOB_PULSE.AsGuid() )
+                {
+                    Logger.LogWarning( "Job ID: {jobId}, no ServiceJobHistory Id was found in the execution context. Falling back to timestamp matching.", job.Id );
+                }
+
+                return null;
+            }
+
+            var jobHistory = serviceJobHistoryService.Get( jobHistoryId.Value );
+
+            if ( jobHistory == null )
+            {
+                Logger.LogWarning( "Job ID: {jobId}, ServiceJobHistory Id {jobHistoryId} was not found. Waiting briefly and retrying once.", job.Id, jobHistoryId.Value );
+                System.Threading.Thread.Sleep( 250 );
+                jobHistory = serviceJobHistoryService.Get( jobHistoryId.Value );
+
+                if ( jobHistory == null )
+                {
+                    Logger.LogWarning( "Job ID: {jobId}, ServiceJobHistory Id {jobHistoryId} was still not found after retrying. Falling back to timestamp matching.", job.Id, jobHistoryId.Value );
+                }
+            }
+
+            return jobHistory;
         }
 
         private static void SendNotificationMessage( JobExecutionException jobException, ServiceJob job )
