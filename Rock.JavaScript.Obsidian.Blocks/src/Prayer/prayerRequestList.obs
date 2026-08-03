@@ -10,14 +10,15 @@
           :entityTypeGuid="EntityType.PrayerRequest"
           stickyHeader
           liveUpdates
-          gridSettings
+          :gridSettings="config.options?.isGridFilterVisible ?? true"
           :gridSettingsActive="hasSettingsFilters"
           @gridSettingsClick="onGridSettingsClick"
           @selectItem="onSelectItem"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined">
         <SelectColumn />
 
-        <TextColumn name="fullName"
+        <TextColumn v-if="config.options?.isNameColumnVisible"
+                    name="fullName"
                     title="Name"
                     field="fullName"
                     :filter="textValueFilter"
@@ -50,19 +51,24 @@
                     width="70%"
                     visiblePriority="xs" />
 
-        <NumberColumn name="prayerCount"
-                      title="Prayer Count"
-                      field="prayerCount"
-                      :filter="numberValueFilter"
-                      width="145px"
-                      visiblePriority="sm" />
+        <Column v-if="config.options?.isPrayerCountColumnVisible"
+                name="prayerCount"
+                title="Prayer Count"
+                field="prayerCount"
+                :filter="numberValueFilter"
+                width="145px"
+                visiblePriority="sm">
+            <template #format="{ row }">{{ formatCount(row.prayerCount) }}</template>
+        </Column>
 
-        <NumberColumn name="flagCount"
-                      title="Flag Count"
-                      field="flagCount"
-                      :filter="numberValueFilter"
-                      width="130px"
-                      visiblePriority="sm" />
+        <Column name="flagCount"
+                title="Flag Count"
+                field="flagCount"
+                :filter="numberValueFilter"
+                width="130px"
+                visiblePriority="sm">
+            <template #format="{ row }">{{ formatCount(row.flagCount) }}</template>
+        </Column>
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
@@ -98,14 +104,15 @@
 
     <GridSettingsModal v-model="gridSettings"
                        v-model:visible="isGridSettingsVisible"
-                       :defaultSlidingDateRange="defaultSlidingDateRange" />
+                       :defaultSlidingDateRange="defaultSlidingDateRange"
+                       :isPublicOnly="config.options?.isPublicOnly ?? false" />
 </template>
 
 <script setup lang="ts">
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, NumberColumn, TextColumn, textValueFilter, DeleteColumn, SelectColumn, DateColumn, dateValueFilter, numberValueFilter, booleanValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, Column, TextColumn, textValueFilter, DeleteColumn, SelectColumn, DateColumn, dateValueFilter, numberValueFilter, booleanValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import Toggle from "@Obsidian/Controls/toggle.obs";
@@ -185,6 +192,21 @@
      */
     function getIsApprovedExportValue(row: Record<string, unknown>): string {
         return row.isApproved ? "True" : "False";
+    }
+
+    /**
+     * Formats a prayer count / flag count for display. The server coalesces null
+     * counts to 0 so that numeric column filters (e.g. "Less Than 2") include
+     * requests that have never been prayed for or flagged. This helper hides
+     * those zero values from the UI so the column still reads as empty for
+     * "no activity yet" rows, matching how the webforms block presented them.
+     */
+    function formatCount(value: unknown): string {
+        if (typeof value !== "number" || value === 0) {
+            return "";
+        }
+
+        return value.toLocaleString();
     }
 
     /**

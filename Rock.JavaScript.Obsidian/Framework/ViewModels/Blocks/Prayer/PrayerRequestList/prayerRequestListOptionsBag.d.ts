@@ -30,8 +30,39 @@ export type PrayerRequestListOptionsBag = {
     isCampusColumnVisible: boolean;
 
     /**
-     * Gets or sets a value indicating whether the current person is authorized
-     * to approve prayer requests (via the block's "Approve" security action).
+     * Gets or sets a value indicating whether the grid filter (settings)
+     * button should be visible. This is controlled by the block's "Show Grid
+     * Filter" setting.
+     */
+    isGridFilterVisible: boolean;
+
+    /**
+     * Gets or sets a value indicating whether the Name column should be visible.
+     * This is false when the block is scoped to a person via context, since every
+     * row would show the same name in that case.
+     */
+    isNameColumnVisible: boolean;
+
+    /**
+     * Gets or sets a value indicating whether the Prayer Count column should
+     * be visible. This is controlled by the block's "Show Prayer Count" setting.
+     */
+    isPrayerCountColumnVisible: boolean;
+
+    /**
+     * Gets or sets a value indicating whether the block is configured to only
+     * show public prayer requests. When true, the query is forced to public
+     * requests only and the Public / Private filter in the grid settings is
+     * hidden from the individual. Controlled by the block's "Show Public Only"
+     * setting.
+     */
+    isPublicOnly: boolean;
+
+    /**
+     * Gets or sets a value indicating whether the Approved column should be
+     * shown. This is true when the block's "Show 'Approved' column" setting is
+     * enabled AND the current person is authorized to approve prayer requests
+     * (via the block's "Approve" security action).
      */
     showIsApprovedColumn: boolean;
 };
