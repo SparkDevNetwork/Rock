@@ -515,7 +515,7 @@ namespace Rock.WebFarm
                 return;
             }
 
-            if ( senderNodeName == NodeName )
+            if ( IsCurrentNode( senderNodeName ) )
             {
                 // Don't talk to myself
                 return;
@@ -547,13 +547,13 @@ namespace Rock.WebFarm
                 return;
             }
 
-            if ( senderNodeName == NodeName )
+            if ( IsCurrentNode( senderNodeName ) )
             {
                 // Don't talk to myself
                 return;
             }
 
-            if ( !recipientNodeName.IsNullOrWhiteSpace() && recipientNodeName != NodeName )
+            if ( !recipientNodeName.IsNullOrWhiteSpace() && !IsCurrentNode( recipientNodeName ) )
             {
                 // This message is not for me
                 return;
@@ -634,8 +634,8 @@ namespace Rock.WebFarm
             {
                 var webFarmNodeService = new WebFarmNodeService( rockContext );
                 var nodes = webFarmNodeService.Queryable().ToList();
-                var thisNode = nodes.FirstOrDefault( wfn => wfn.NodeName == NodeName );
-                var otherNodes = nodes.Where( wfn => wfn.NodeName != NodeName );
+                var thisNode = nodes.FirstOrDefault( wfn => IsCurrentNode( wfn.NodeName ) );
+                var otherNodes = nodes.Where( wfn => !IsCurrentNode( wfn.NodeName ) );
 
                 if ( !thisNode.IsLeader )
                 {
@@ -1029,6 +1029,18 @@ namespace Rock.WebFarm
             var webFarmNodeService = new WebFarmNodeService( rockContext );
             var webFarmNode = webFarmNodeService.Queryable().Single( wfn => wfn.NodeName == nodeName );
             return webFarmNode;
+        }
+
+        /// <summary>
+        /// Returns <c>true</c> if the supplied node name refers to the current node.
+        /// Comparison is case-insensitive to match SQL Server's default collation, so
+        /// stored WebFarmNode rows and the in-process <see cref="NodeName"/> stay in sync
+        /// even when their casing differs.
+        /// </summary>
+        /// <param name="nodeName">The node name to test.</param>
+        private static bool IsCurrentNode( string nodeName )
+        {
+            return string.Equals( nodeName, NodeName, StringComparison.OrdinalIgnoreCase );
         }
 
         /// <summary>
