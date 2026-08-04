@@ -96,15 +96,20 @@
                                     <span v-if="!transaction.isActive" class="text-xs text-warning text-nowrap">
                                         Inactive
                                     </span>
+                                    <span v-else-if="transaction.savedAccountLastErrorCode"
+                                          v-tooltip="scheduledTransactionErrorTooltip(transaction)"
+                                          class="text-xs text-danger text-nowrap">
+                                        Error
+                                    </span>
                                 </span>
                                 <span class="scheduled-total font-weight-semibold text-sm d-block">
-                                    {{ toCurrencyOrNull(transaction.totalAmount) }}
+                                    {{ toCurrencyOrNull(transaction.totalAmount, transaction.currencyInfo) }}
                                 </span>
                                 <div class="rollover-item mt-3">
                                     <button class="btn btn-sm btn-link text-muted py-0 px-1" type="button" @click.prevent="editScheduledTransaction(transaction)" title="Edit Scheduled Transaction">
                                         <i class="ti ti-pencil"></i>
                                     </button>
-                                    <button v-if="transaction.isActive" class="btn btn-sm btn-link text-muted py-0 px-1 ml-1 js-inactivate-scheduled-transaction" type="button" @click.prevent="inactivateScheduledTransaction(transaction)" title="Inactivate Scheduled Transaction">
+                                    <button v-if="transaction.isActive && transaction.isInactivateSupported" class="btn btn-sm btn-link text-muted py-0 px-1 ml-1 js-inactivate-scheduled-transaction" type="button" @click.prevent="inactivateScheduledTransaction(transaction)" title="Inactivate Scheduled Transaction">
                                         <i class="ti ti-x"></i>
                                     </button>
                                 </div>
@@ -142,10 +147,12 @@
                                 <div v-if="account.isExpired" class="text-danger text-xs">
                                     Expired
                                 </div>
-                                <div v-else-if="account.lastErrorCode" class="text-danger text-xs">
-                                    {{ `Error: ${account.lastErrorCode} on ${formatDate(account.lastErrorCodeDateTime ?? null)}` }}
+                                <div v-else-if="account.lastErrorCode"
+                                     v-tooltip="savedAccountErrorTooltip(account)"
+                                     class="text-danger text-xs">
+                                    Error
                                 </div>
-                                <div v-else-if="accountIsInUse(account.id.toString())" class="text-success text-xs">
+                                <div v-else-if="accountIsInUse(account.id)" class="text-success text-xs">
                                     In Use
                                 </div>
                                 <div v-else-if="account.isDefault" class="text-muted text-xs">
@@ -155,7 +162,7 @@
                                     Not In Use
                                 </div>
                                 <div class="rollover-item">
-                                    <button v-if="!account.isDefault && !accountIsInUse(account.id.toString())" class="btn btn-sm btn-link text-muted py-0 px-1 js-delete-saved-account" type="button" @click.prevent="deleteSavedAccount(account)">
+                                    <button v-if="!account.isDefault && !accountIsInUse(account.id)" class="btn btn-sm btn-link text-muted py-0 px-1 js-delete-saved-account" type="button" @click.prevent="deleteSavedAccount(account)">
                                         <i class="ti ti-x"></i>
                                     </button>
                                 </div>
@@ -261,6 +268,7 @@
     import { DateTimeFormat, RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
     import { areEqual } from "@Obsidian/Utility/guid";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
 
     // #region Values
 
@@ -287,10 +295,15 @@
     const showInactiveText = computed(() => showInactive.value ? "Hide Inactive" : "Show Inactive");
 
     const savedAccountOptions = computed(() => {
-        if (savedAccounts.value.length === 0) {
+        // Text-To-Give can only use accounts on a gateway that implements
+        // IAutomatedGatewayComponent, so filter out the rest even though they
+        // still appear in the visible Saved Accounts list.
+        const eligibleAccounts = savedAccounts.value.filter(a => a.isSupportedForTextToGive);
+
+        if (eligibleAccounts.length === 0) {
             return [{ text: "No Saved Accounts", value: "", disabled: true }];
         }
-        return savedAccounts.value.map(account => {
+        return eligibleAccounts.map(account => {
             const expirationDate = account.financialPaymentDetail?.expirationDate ? ` (${account.financialPaymentDetail.expirationDate})` : "";
             return {
                 text: `${account.name}${expirationDate}`,
@@ -541,11 +554,34 @@
         }));
     }
 
-    function accountIsInUse(accountId: string | null | undefined): boolean {
+    // Matches by saved account ID rather than name so that renamed accounts,
+    // duplicate names, or unnamed accounts don't produce false positives.
+    function accountIsInUse(savedAccountId: number): boolean {
         return scheduledTransactions.value.some(transaction =>
-            transaction.isActive &&
-            transaction.savedAccountName === savedAccounts.value.find(a => a.id.toString() === accountId)?.name
+            transaction.isActive && transaction.savedAccountId === savedAccountId
         );
+    }
+
+    // Builds the tooltip shown on the red "Error" chip for a scheduled
+    // transaction whose backing saved account has recorded an error.
+    function scheduledTransactionErrorTooltip(transaction: FinancialScheduledTransactionBag): string {
+        if (!transaction.savedAccountLastErrorCode) {
+            return "";
+        }
+
+        const errorDate = formatDate(transaction.savedAccountLastErrorCodeDateTime ?? null);
+        return `The associated account has ${transaction.savedAccountLastErrorCode}${errorDate ? ` on ${errorDate}` : ""}.`;
+    }
+
+    // Builds the tooltip shown on the red "Error" chip for a saved account
+    // that has recorded a gateway error on its last use.
+    function savedAccountErrorTooltip(account: FinancialPersonSavedAccountBag): string {
+        if (!account.lastErrorCode) {
+            return "";
+        }
+
+        const errorDate = formatDate(account.lastErrorCodeDateTime ?? null);
+        return `${account.lastErrorCode}${errorDate ? ` on ${errorDate}` : ""}.`;
     }
 
     function toggleShowInactive(): void {
@@ -553,27 +589,34 @@
         loadScheduledTransactions();
     }
 
-    function calculateDuration(startDate, endDate): string {
+    // Produces the same shape of output as the WebForms block's
+    // TimeSpan.Humanize() call: a single largest unit with correct
+    // singular/plural agreement (e.g. "1 year", "3 months", "2 weeks",
+    // "5 days"). Falls back to "0 days" for same-day or reversed ranges so
+    // the pledge row never renders a bare unit-less number.
+    function calculateDuration(startDate: string, endDate: string): string {
         const start = new Date(startDate);
         const end = new Date(endDate);
-        const differenceInTime = end.getTime() - start.getTime();
-        const differenceInDays = differenceInTime / (1000 * 3600 * 24);
+        const totalDays = Math.max(0, Math.floor((end.getTime() - start.getTime()) / (1000 * 3600 * 24)));
 
-        if (differenceInDays < 7) {
-            return `${Math.round(differenceInDays)} days`;
+        const pluralize = (count: number, unit: string): string => `${count} ${unit}${count === 1 ? "" : "s"}`;
+
+        const years = Math.floor(totalDays / 365);
+        if (years >= 1) {
+            return pluralize(years, "year");
         }
-        else if (differenceInDays < 30) {
-            const weeks = Math.round(differenceInDays / 7);
-            return `${weeks} week${weeks > 1 ? "s" : ""}`;
+
+        const months = Math.floor(totalDays / 30);
+        if (months >= 1) {
+            return pluralize(months, "month");
         }
-        else if (differenceInDays < 365) {
-            const months = Math.round(differenceInDays / 30);
-            return `${months} month${months > 1 ? "s" : ""}`;
+
+        const weeks = Math.floor(totalDays / 7);
+        if (weeks >= 1) {
+            return pluralize(weeks, "week");
         }
-        else {
-            const years = Math.round(differenceInDays / 365);
-            return `${years} year${years > 1 ? "s" : ""}`;
-        }
+
+        return pluralize(totalDays, "day");
     }
 
     onConfigurationValuesChanged(async () => {
