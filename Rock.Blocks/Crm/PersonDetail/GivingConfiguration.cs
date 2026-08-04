@@ -8,6 +8,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Financial;
+using Rock.Utility;
 using Rock.ViewModels.Blocks.Crm.PersonDetail.GivingConfiguration;
 
 namespace Rock.Blocks.Crm.PersonDetail
@@ -178,11 +179,13 @@ namespace Rock.Blocks.Crm.PersonDetail
                 return new List<FinancialPersonSavedAccountBag>();
             }
 
+            // The visible saved-accounts list shows every saved account the
+            // person has (with a payment detail attached), not just the ones
+            // whose gateway supports Text-To-Give. This mirrors the WebForms
+            // block: users need to see and be able to delete cards even when
+            // the gateway is no longer supported. The Text-To-Give dropdown
+            // filters this list on the client using IsSupportedForTextToGive.
             var supportedGatewayIds = GetSupportedGatewayIds();
-            if ( supportedGatewayIds == null || !supportedGatewayIds.Any() )
-            {
-                return new List<FinancialPersonSavedAccountBag>();
-            }
 
             var service = new FinancialPersonSavedAccountService( RockContext );
 
@@ -190,9 +193,7 @@ namespace Rock.Blocks.Crm.PersonDetail
                 .GetByPersonId( personId.Value )
                 .Include( sa => sa.FinancialPaymentDetail )
                 .AsNoTracking()
-                .Where( sa =>
-                    sa.FinancialGatewayId.HasValue &&
-                    supportedGatewayIds.Contains( sa.FinancialGatewayId.Value ) )
+                .Where( sa => sa.FinancialPaymentDetail != null )
                 .OrderBy( sa => sa.IsDefault )
                 .ThenByDescending( sa => sa.CreatedDateTime )
                 .ToList();
@@ -203,10 +204,14 @@ namespace Rock.Blocks.Crm.PersonDetail
                 Guid = sa.Guid,
                 Name = sa.Name,
                 IsDefault = sa.IsDefault,
+                LastErrorCode = sa.LastErrorCode,
+                LastErrorCodeDateTime = sa.LastErrorCodeDateTime,
                 IsExpired = sa.FinancialPaymentDetail?.CardExpirationDate.HasValue == true && sa.FinancialPaymentDetail.CardExpirationDate.Value < RockDateTime.Now,
+                IsSupportedForTextToGive = sa.FinancialGatewayId.HasValue && supportedGatewayIds.Contains( sa.FinancialGatewayId.Value ),
                 FinancialPaymentDetail = new FinancialPaymentDetailBag
                 {
                     CurrencyType = sa.FinancialPaymentDetail?.CurrencyTypeValue?.Value,
+                    CurrencyTypeGuid = sa.FinancialPaymentDetail?.CurrencyTypeValue?.Guid,
                     CreditCardType = sa.FinancialPaymentDetail?.CreditCardTypeValue?.Value,
                     AccountNumberMasked = sa.FinancialPaymentDetail?.AccountNumberMasked,
                     ExpirationDate = sa.FinancialPaymentDetail?.ExpirationDate,
@@ -217,8 +222,12 @@ namespace Rock.Blocks.Crm.PersonDetail
 
         private FinancialPersonSavedAccountBag GetDefaultSavedAccount( int? personId )
         {
+            // The Text-To-Give default only makes sense for accounts whose
+            // gateway supports it, so restrict to those. Matches the WebForms
+            // behavior where GetDefaultSavedAccount was sourced from the
+            // supported-gateway list.
             var savedAccounts = GetSavedAccounts( personId );
-            return savedAccounts?.FirstOrDefault( sa => sa.IsDefault );
+            return savedAccounts?.FirstOrDefault( sa => sa.IsDefault && sa.IsSupportedForTextToGive );
         }
 
         private FinancialAccountBag GetDefaultFinancialAccount( int? personId )
@@ -500,54 +509,72 @@ namespace Rock.Blocks.Crm.PersonDetail
             var scheduledTransactions = qry.ToList();
             financialScheduledTransactionService.GetStatus( scheduledTransactions, true );
 
-            var transactionBags = scheduledTransactions.Select( st => new FinancialScheduledTransactionBag
+            var transactionBags = scheduledTransactions.Select( st =>
             {
-                Id = st.Id,
-                Guid = st.Guid,
-                IsActive = st.IsActive,
-                StartDate = st.StartDate,
-                AuthorizedPersonAlias = new PersonAliasBag
+                var savedAccount = st.FinancialPaymentDetail?.FinancialPersonSavedAccount;
+                var isInactivateSupported = st.FinancialGateway?.GetGatewayComponent()?.UpdateScheduledPaymentSupported ?? false;
+                var currencyCodeInfo = new RockCurrencyCodeInfo( st.ForeignCurrencyCodeValueId );
+
+                return new FinancialScheduledTransactionBag
                 {
-                    Id = st.AuthorizedPersonAlias.Id,
-                    PersonId = st.AuthorizedPersonAlias.PersonId,
-                    Person = new PersonBag
+                    Id = st.Id,
+                    Guid = st.Guid,
+                    IsActive = st.IsActive,
+                    IsInactivateSupported = isInactivateSupported,
+                    StartDate = st.StartDate,
+                    AuthorizedPersonAlias = new PersonAliasBag
                     {
-                        Id = st.AuthorizedPersonAlias.Person.Id,
-                        LastName = st.AuthorizedPersonAlias.Person.LastName,
-                        NickName = st.AuthorizedPersonAlias.Person.NickName
-                    }
-                },
-                ScheduledTransactionDetails = st.ScheduledTransactionDetails.Select( std => new FinancialScheduledTransactionDetailBag
-                {
-                    Account = new FinancialAccountBag
+                        Id = st.AuthorizedPersonAlias.Id,
+                        PersonId = st.AuthorizedPersonAlias.PersonId,
+                        Person = new PersonBag
+                        {
+                            Id = st.AuthorizedPersonAlias.Person.Id,
+                            LastName = st.AuthorizedPersonAlias.Person.LastName,
+                            NickName = st.AuthorizedPersonAlias.Person.NickName
+                        }
+                    },
+                    ScheduledTransactionDetails = st.ScheduledTransactionDetails.Select( std => new FinancialScheduledTransactionDetailBag
                     {
-                        Id = std.Account.Id,
-                        PublicName = std.Account.PublicName
-                    }
-                } ).ToList(),
-                AccountSummary = st.ScheduledTransactionDetails
-            .Select( d => new AccountSummaryBag
-            {
-                IsOther = accountGuids.Any() && !accountGuids.Contains( d.Account.Guid ),
-                Order = d.Account.Order,
-                Name = d.Account.Name
-            } )
-            .OrderBy( d => d.IsOther )
-            .ThenBy( d => d.Order )
-            .Select( d => d.IsOther ? "Other" : d.Name )
-            .ToList(),
-                NextPaymentDate = st.NextPaymentDate,
-                TotalAmount = st.TotalAmount,
-                ForeignCurrencyCodeValueId = st.ForeignCurrencyCodeValueId,
-                FrequencyText = st.TransactionFrequencyValue?.Value,
-                FinancialPaymentDetail = new FinancialPaymentDetailBag
-                {
-                    CurrencyType = st.FinancialPaymentDetail?.CurrencyTypeValue?.Value,
-                    CreditCardType = st.FinancialPaymentDetail?.CreditCardTypeValue?.Value,
-                    AccountNumberMasked = st.FinancialPaymentDetail?.AccountNumberMasked,
-                    ExpirationDate = st.FinancialPaymentDetail?.ExpirationDate
-                },
-                SavedAccountName = st.FinancialPaymentDetail?.FinancialPersonSavedAccount?.Name
+                        Account = new FinancialAccountBag
+                        {
+                            Id = std.Account.Id,
+                            PublicName = std.Account.PublicName
+                        }
+                    } ).ToList(),
+                    AccountSummary = st.ScheduledTransactionDetails
+                        .Select( d => new AccountSummaryBag
+                        {
+                            IsOther = accountGuids.Any() && !accountGuids.Contains( d.Account.Guid ),
+                            Order = d.Account.Order,
+                            Name = d.Account.Name
+                        } )
+                        .OrderBy( d => d.IsOther )
+                        .ThenBy( d => d.Order )
+                        .Select( d => d.IsOther ? "Other" : d.Name )
+                        .ToList(),
+                    NextPaymentDate = st.NextPaymentDate,
+                    TotalAmount = st.TotalAmount,
+                    ForeignCurrencyCodeValueId = st.ForeignCurrencyCodeValueId,
+                    CurrencyInfo = new Rock.ViewModels.Utility.CurrencyInfoBag
+                    {
+                        Symbol = currencyCodeInfo.Symbol,
+                        DecimalPlaces = currencyCodeInfo.DecimalPlaces,
+                        SymbolLocation = currencyCodeInfo.SymbolLocation
+                    },
+                    FrequencyText = st.TransactionFrequencyValue?.Value,
+                    FinancialPaymentDetail = new FinancialPaymentDetailBag
+                    {
+                        CurrencyType = st.FinancialPaymentDetail?.CurrencyTypeValue?.Value,
+                        CurrencyTypeGuid = st.FinancialPaymentDetail?.CurrencyTypeValue?.Guid,
+                        CreditCardType = st.FinancialPaymentDetail?.CreditCardTypeValue?.Value,
+                        AccountNumberMasked = st.FinancialPaymentDetail?.AccountNumberMasked,
+                        ExpirationDate = st.FinancialPaymentDetail?.ExpirationDate
+                    },
+                    SavedAccountName = savedAccount?.Name,
+                    SavedAccountId = savedAccount?.Id,
+                    SavedAccountLastErrorCode = savedAccount?.LastErrorCode,
+                    SavedAccountLastErrorCodeDateTime = savedAccount?.LastErrorCodeDateTime
+                };
             } ).ToList();
 
             return ActionOk( new { Transactions = transactionBags, HasInactiveTransactions = hasInactiveTransactions } );
