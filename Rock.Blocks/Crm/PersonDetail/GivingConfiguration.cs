@@ -207,6 +207,7 @@ namespace Rock.Blocks.Crm.PersonDetail
                 FinancialPaymentDetail = new FinancialPaymentDetailBag
                 {
                     CurrencyType = sa.FinancialPaymentDetail?.CurrencyTypeValue?.Value,
+                    CurrencyTypeGuid = sa.FinancialPaymentDetail?.CurrencyTypeValue?.Guid,
                     CreditCardType = sa.FinancialPaymentDetail?.CreditCardTypeValue?.Value,
                     AccountNumberMasked = sa.FinancialPaymentDetail?.AccountNumberMasked,
                     ExpirationDate = sa.FinancialPaymentDetail?.ExpirationDate,
@@ -543,6 +544,7 @@ namespace Rock.Blocks.Crm.PersonDetail
                 FinancialPaymentDetail = new FinancialPaymentDetailBag
                 {
                     CurrencyType = st.FinancialPaymentDetail?.CurrencyTypeValue?.Value,
+                    CurrencyTypeGuid = st.FinancialPaymentDetail?.CurrencyTypeValue?.Guid,
                     CreditCardType = st.FinancialPaymentDetail?.CreditCardTypeValue?.Value,
                     AccountNumberMasked = st.FinancialPaymentDetail?.AccountNumberMasked,
                     ExpirationDate = st.FinancialPaymentDetail?.ExpirationDate

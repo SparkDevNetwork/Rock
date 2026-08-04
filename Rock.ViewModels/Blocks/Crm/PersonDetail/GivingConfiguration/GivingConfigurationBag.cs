@@ -281,6 +281,15 @@ namespace Rock.ViewModels.Blocks.Crm.PersonDetail.GivingConfiguration
         /// </summary>
         /// <value>The currency type.</value>
         public string CurrencyType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier of the currency type defined value.
+        /// This allows the client to reliably distinguish between payment methods
+        /// (e.g., Credit Card vs. ACH vs. Apple Pay) without matching on the
+        /// display string, which is not locale- or configuration-stable.
+        /// </summary>
+        /// <value>The currency type defined value GUID.</value>
+        public Guid? CurrencyTypeGuid { get; set; }
         /// <summary>
         /// Gets or sets the credit card type.
         /// </summary>

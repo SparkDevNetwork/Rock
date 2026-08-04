@@ -21,6 +21,8 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
+
 /** Contains the financial payment detail data for the person or business. */
 export type FinancialPaymentDetailBag = {
     /** Gets or sets the masked account number. */
@@ -34,6 +36,14 @@ export type FinancialPaymentDetailBag = {
 
     /** Gets or sets the currency type. */
     currencyType?: string | null;
+
+    /**
+     * Gets or sets the unique identifier of the currency type defined value.
+     * This allows the client to reliably distinguish between payment methods
+     * (e.g., Credit Card vs. ACH vs. Apple Pay) without matching on the
+     * display string, which is not locale- or configuration-stable.
+     */
+    currencyTypeGuid?: Guid | null;
 
     /** Gets or sets the expiration date. */
     expirationDate?: string | null;
