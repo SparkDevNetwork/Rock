@@ -499,12 +499,14 @@ namespace Rock.Blocks.CheckIn
     </div>
     <div class='col-md-6 rapid-attendance-entry-phone-numbers'>
         {% for phone in Person.PhoneNumbers -%}
-            {% if phone.IsUnlisted != true -%}
-                <a href='tel:{{ phone.NumberFormatted }}'>{{ phone.NumberFormatted }}</a>
-            {%- else -%}
-                Unlisted
+            {% if phone.NumberTypeValue.IsActive == true -%}
+                {% if phone.IsUnlisted != true -%}
+                    <a href='tel:{{ phone.NumberFormatted }}'>{{ phone.NumberFormatted }}</a>
+                {%- else -%}
+                    Unlisted
+                {%- endif %}
+                <small>({{ phone.NumberTypeValue.Value }})</small><br>
             {%- endif %}
-            <small>({{ phone.NumberTypeValue.Value }})</small><br>
         {%- endfor %}
     </div>
 </div>";
