@@ -996,9 +996,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var phoneNumbers = new List<PhoneNumber>();
             var phoneNumberTypes = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
-            if ( phoneNumberTypes.DefinedValues.Any() )
+
+            // Only show active phone types. An admin can reactivate the type if they
+            // need to view or edit a value stored against an inactive type.
+            var activePhoneNumberTypes = phoneNumberTypes.DefinedValues
+                .Where( dv => dv.IsActive )
+                .ToList();
+
+            if ( activePhoneNumberTypes.Any() )
             {
-                foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues )
+                foreach ( var phoneNumberType in activePhoneNumberTypes )
                 {
                     var phoneNumber = Person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberType.Id );
                     if ( phoneNumber == null )

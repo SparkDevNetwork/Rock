@@ -906,8 +906,17 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             var phoneNumberTypes = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
             if ( phoneNumberTypes.DefinedValues.Any() )
             {
-                var phoneNumberTypeIds = phoneNumberTypes.DefinedValues.Select( a => a.Id ).ToList();
-                phoneNumbers = phoneNumbers.OrderBy( a => phoneNumberTypeIds.IndexOf( a.NumberTypeValueId.Value ) );
+                // Only display numbers whose phone type is currently active. Numbers whose
+                // type has been deactivated remain in the database and are still editable
+                // via the Edit Person block, but should not appear on the profile bio.
+                var activePhoneNumberTypeIds = phoneNumberTypes.DefinedValues
+                    .Where( dv => dv.IsActive )
+                    .Select( dv => dv.Id )
+                    .ToList();
+
+                phoneNumbers = phoneNumbers
+                    .Where( a => a.NumberTypeValueId.HasValue && activePhoneNumberTypeIds.Contains( a.NumberTypeValueId.Value ) )
+                    .OrderBy( a => activePhoneNumberTypeIds.IndexOf( a.NumberTypeValueId.Value ) );
             }
 
             // if phoneNumbers exist then bind

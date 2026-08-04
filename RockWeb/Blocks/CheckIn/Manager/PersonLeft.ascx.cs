@@ -628,7 +628,19 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     }
                 }
 
-                var phoneNumbers = person.PhoneNumbers.Where( p => !p.IsUnlisted ).ToList();
+                // Exclude phone numbers whose type has been deactivated so they don't
+                // appear alongside active phone numbers on the check-in Person Profile.
+                var activePhoneNumberTypeIds = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) )
+                    .DefinedValues
+                    .Where( dv => dv.IsActive )
+                    .Select( dv => dv.Id )
+                    .ToList();
+
+                var phoneNumbers = person.PhoneNumbers
+                    .Where( p => !p.IsUnlisted
+                                 && p.NumberTypeValueId.HasValue
+                                 && activePhoneNumberTypeIds.Contains( p.NumberTypeValueId.Value ) )
+                    .ToList();
                 rptrPhones.DataSource = phoneNumbers;
                 rptrPhones.DataBind();
                 pnlContact.Visible = phoneNumbers.Any() || lEmail.Visible;

@@ -416,7 +416,9 @@ namespace RockWeb.Blocks.CheckIn
     </div>
     <div class='col-md-6'>
         {% for phone in Person.PhoneNumbers %}
-        {% if phone.IsUnlisted != true %}<a href='tel:{{ phone.NumberFormatted}}'>{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small><br />
+            {% if phone.NumberTypeValue.IsActive == true %}
+                {% if phone.IsUnlisted != true %}<a href='tel:{{ phone.NumberFormatted}}'>{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small><br />
+            {% endif %}
 		{% endfor %}
     </div>
 </div>
