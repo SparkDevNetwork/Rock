@@ -175,15 +175,15 @@
                                 <Column name="processingFees"
                                         title="Processing Fees">
                                     <template #format="{ row }">
-                                        <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.processingFees) }}</strong>
-                                        <template v-else>{{ toCurrencyOrNull(row.processingFees) }}</template>
+                                        <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.processingFees, options.currencyInfo) }}</strong>
+                                        <template v-else>{{ toCurrencyOrNull(row.processingFees, options.currencyInfo) }}</template>
                                     </template>
                                 </Column>
                                 <Column name="amount"
                                         title="Amount">
                                     <template #format="{ row }">
-                                        <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.amount) }}</strong>
-                                        <template v-else>{{ toCurrencyOrNull(row.amount) }}</template>
+                                        <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.amount, options.currencyInfo) }}</strong>
+                                        <template v-else>{{ toCurrencyOrNull(row.amount, options.currencyInfo) }}</template>
                                     </template>
                                 </Column>
                                 <AttributeColumns :attributes="allocationAttributeFields" :filter="undefined" />
@@ -377,7 +377,7 @@ strong {
             dateTime: RockDateTime.parseISO(refund.date ?? "")?.toASPString("g") ?? "",
             transactionReference: refund.transactionCode,
             reason: refund.reason,
-            amount: `${toCurrencyOrNull(refund.amount)}`
+            amount: `${toCurrencyOrNull(refund.amount, props.options.currencyInfo)}`
         }));
 
         return { rows };
@@ -389,7 +389,7 @@ strong {
             idKey: transaction.idKey,
             dateTime: RockDateTime.parseISO(transaction.transactionDateTime ?? "")?.toASPString("G") ?? "",
             transactionReference: transaction.transactionReference,
-            amount: toCurrencyOrNull(transaction.amount)
+            amount: toCurrencyOrNull(transaction.amount, props.options.currencyInfo)
         }));
 
         return { rows };

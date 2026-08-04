@@ -185,6 +185,14 @@ namespace Rock.Blocks.Finance
 
             options.CarryOverAccount = GetAttributeValue( AttributeKey.CarryOverAccount ).AsBoolean();
 
+            var currencyInfo = new Rock.Utility.RockCurrencyCodeInfo();
+            options.CurrencyInfo = new Rock.ViewModels.Utility.CurrencyInfoBag
+            {
+                Symbol = currencyInfo.Symbol,
+                DecimalPlaces = currencyInfo.DecimalPlaces,
+                SymbolLocation = currencyInfo.SymbolLocation
+            };
+
             return options;
         }
 
@@ -1653,32 +1661,6 @@ namespace Rock.Blocks.Finance
                 Bag = bag,
                 ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
             } );
-        }
-
-        /// <summary>
-        /// Deletes the specified entity.
-        /// </summary>
-        /// <param name="key">The identifier of the entity to be deleted.</param>
-        /// <returns>A string that contains the URL to be redirected to on success.</returns>
-        [BlockAction]
-        public BlockActionResult Delete( string key )
-        {
-            var entityService = new FinancialTransactionService( RockContext );
-
-            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
-            {
-                return actionError;
-            }
-
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
-            {
-                return ActionBadRequest( errorMessage );
-            }
-
-            entityService.Delete( entity );
-            RockContext.SaveChanges();
-
-            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>

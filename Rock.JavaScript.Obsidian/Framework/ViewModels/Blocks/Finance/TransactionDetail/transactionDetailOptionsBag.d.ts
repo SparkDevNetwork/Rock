@@ -21,6 +21,8 @@
 // </copyright>
 //
 
+import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
+
 /** The additional configuration options for the Transaction Detail block. */
 export type TransactionDetailOptionsBag = {
     /**
@@ -63,6 +65,12 @@ export type TransactionDetailOptionsBag = {
      * used to populate the foreign currency picker.
      */
     currencyCodesGuid?: string | null;
+
+    /**
+     * Gets or sets the organization's configured currency information (symbol, decimal
+     * places, symbol location) used to format amounts displayed by the block.
+     */
+    currencyInfo?: CurrencyInfoBag | null;
 
     /**
      * Gets or sets the Guid of the Financial Currency Type defined type,

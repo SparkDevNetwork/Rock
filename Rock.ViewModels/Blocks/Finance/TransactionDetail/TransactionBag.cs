@@ -169,11 +169,6 @@ namespace Rock.ViewModels.Blocks.Finance.TransactionDetail
         public decimal? TotalFeeCoverageAmount { get; set; }
 
         /// <summary>
-        /// Gets or sets the total foreign currency amount.
-        /// </summary>
-        public decimal? TotalForeignCurrencyAmount { get; set; }
-
-        /// <summary>
         /// Gets or sets the foreign key string used for integrations with external systems.
         /// </summary>
         public string ForeignKey { get; set; }

@@ -95,18 +95,18 @@
 
                         <Column title="Processing Fees" name="feeAmount">
                             <template #format="{ row }">
-                                <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.feeAmount) }}</strong>
+                                <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.feeAmount, options.currencyInfo) }}</strong>
                                 <template v-else>
-                                    {{ toCurrencyOrNull(row.feeAmount) }}
+                                    {{ toCurrencyOrNull(row.feeAmount, options.currencyInfo) }}
                                 </template>
                             </template>
                         </Column>
 
                         <Column title="Amount" name="amount">
                             <template #format="{ row }">
-                                <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.amount) }}</strong>
+                                <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.amount, options.currencyInfo) }}</strong>
                                 <template v-else>
-                                    {{ toCurrencyOrNull(row.amount) }}
+                                    {{ toCurrencyOrNull(row.amount, options.currencyInfo) }}
                                 </template>
                             </template>
                         </Column>
