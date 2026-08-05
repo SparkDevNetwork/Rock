@@ -207,7 +207,11 @@ namespace Rock.Blocks.Finance
         {
             errorMessage = null;
 
-            if ( financialTransaction.BatchId == null || financialTransaction.BatchId == 0 )
+            // Only a new transaction is required to have a batch. An existing transaction may
+            // legitimately have no batch (e.g. a gateway transaction not yet downloaded into one),
+            // so editing it must not be blocked. This matches the legacy new-transaction-only check.
+            if ( financialTransaction.Id == 0
+                && ( financialTransaction.BatchId == null || financialTransaction.BatchId == 0 ) )
             {
                 errorMessage = "New transactions can only be added to an existing batch.";
                 return false;
@@ -1171,7 +1175,7 @@ namespace Rock.Blocks.Finance
                 }
             }
 
-            if( box.Bag.BatchId != null )
+            if ( entity.Id == 0 && box.Bag.BatchId != null )
             {
                 entity.BatchId = box.Bag.BatchId;
             }
