@@ -193,7 +193,7 @@ namespace Rock.Blocks.Event
             return new GridBuilder<FinancialTransaction>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
-                .AddTextField( "person", a => a.AuthorizedPersonAlias?.Person?.FullNameReversed )
+                .AddPersonField( "person", a => a.AuthorizedPersonAlias?.Person )
                 .AddDateTimeField( "transactionDateTime", a => a.TransactionDateTime )
                 .AddField( "totalAmount", a => a.TotalAmount )
                 .AddTextField( "paymentMethod", a => a.FinancialPaymentDetail?.CurrencyAndCreditCardType )

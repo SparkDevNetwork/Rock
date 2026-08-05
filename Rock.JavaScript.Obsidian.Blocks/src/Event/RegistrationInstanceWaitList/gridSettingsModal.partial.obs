@@ -1,0 +1,80 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <SlidingDateRangePicker v-model="dateRange"
+                                label="Registration Date Range" />
+    </Modal>
+</template>
+
+<style></style>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    // #region Values
+
+    const dateRange = ref<SlidingDateRange | null>(props.modelValue.dateRange);
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            dateRange: dateRange.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        dateRange.value = props.modelValue.dateRange;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+
+    // #endregion Watchers
+</script>

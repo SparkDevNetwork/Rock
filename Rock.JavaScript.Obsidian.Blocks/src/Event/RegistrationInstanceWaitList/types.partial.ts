@@ -19,19 +19,13 @@ import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
 
 export const enum NavigationUrlKey {
     RegistrationPage = "RegistrationPage",
-    GroupPlacementPage = "GroupPlacementPage",
-    GroupDetailPage = "GroupDetailPage",
     PersonProfilePage = "PersonProfilePage"
 }
 
 export const enum PreferenceKey {
-    FilterDateRange = "filter-date-range",
-    FilterInGroup = "filter-in-group",
-    FilterSignedDocument = "filter-signed-document"
+    FilterDateRange = "filter-date-range"
 }
 
 export type GridSettingsOptions = {
     dateRange: SlidingDateRange | null;
-    inGroup: string;
-    signedDocument: string;
 };
