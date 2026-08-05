@@ -416,6 +416,21 @@ namespace RockWeb.Blocks.Core
             public Person CurrentPerson;
 
             /// <summary>
+            /// The distinct <c>RelatedEntityId</c>s referenced by the current filtered history query, grouped
+            /// by <c>RelatedEntityTypeId</c>. Populated on demand by <see cref="EnsureRelatedEntityLookup"/>.
+            /// </summary>
+            private Dictionary<int, HashSet<int>> _referencedRelatedEntityIdsByType;
+
+            /// <summary>
+            /// Related entities referenced by the current filtered history query that still exist in the
+            /// database, keyed by <c>RelatedEntityTypeId</c> then by <c>RelatedEntityId</c>. Populated on
+            /// demand by <see cref="EnsureRelatedEntityLookup"/> and shared by the authorization filter and
+            /// the caption link-formatting so both only require a single lookup per related entity type
+            /// instead of one per history row.
+            /// </summary>
+            private Dictionary<int, Dictionary<int, IEntity>> _existingRelatedEntitiesByType;
+
+            /// <summary>
             /// Returns the total number of items that match the filter criteria.
             /// </summary>
             /// <returns></returns>
@@ -495,7 +510,19 @@ namespace RockWeb.Blocks.Core
             {
                 var rockContext = new RockContext();
 
+                // Discard any related-entity lookup that a prior GetTotalItemCount call may have populated
+                // under a different RockContext. This keeps the entity references we use for the auth
+                // check bound to the same context that loaded them.
+                _referencedRelatedEntityIdsByType = null;
+                _existingRelatedEntitiesByType = null;
+
                 var historyQry = GetOrderedHistoryQuery( rockContext );
+
+                // GetOrderedHistoryQuery only populates the shared related-entity lookup when the auth
+                // filter branch runs (target entity is Person). For other targets we still need the lookup
+                // so GetFormattedCaption can decide, without a per-row DB roundtrip, whether the related
+                // entity still exists and therefore whether the caption should be rendered as a link.
+                EnsureRelatedEntityLookup( new HistoryService( rockContext ), historyQry );
 
                 var qryPerson = new PersonService( rockContext ).Queryable( true, true );
 
@@ -646,7 +673,7 @@ namespace RockWeb.Blocks.Core
                         
                         Verb = x.HistoryEntryValues.OrderBy( h => h.Id ).FirstOrDefault()?.Verb,
                         Caption = x.HistoryEntryValues.OrderBy( h => h.Id ).FirstOrDefault()?.Caption,
-                        FormattedCaption = HistoryLogListItemInfo.GetFormattedCaption( x.HistoryEntryValues.OrderBy( h => h.Id ).FirstOrDefault()?.Caption, x.CategoryId, x.EntityId, x.RelatedEntityTypeId, x.RelatedEntityId ),
+                        FormattedCaption = HistoryLogListItemInfo.GetFormattedCaption( x.HistoryEntryValues.OrderBy( h => h.Id ).FirstOrDefault()?.Caption, x.CategoryId, x.EntityId, x.RelatedEntityTypeId, x.RelatedEntityId, RelatedEntityExists( x.RelatedEntityTypeId, x.RelatedEntityId ) ),
                         ValueName = x.HistoryEntryValues.OrderBy( h => h.Id ).FirstOrDefault()?.ValueName
                     } )
                 .ToList();
@@ -686,8 +713,13 @@ namespace RockWeb.Blocks.Core
                     historyQry = historyQry.Where( a => ( a.RelatedEntityTypeId == attributeEntity.Id ) ? allowedAttributeIds.Contains( a.RelatedEntityId.Value ) : true );
 
                     // as per issue #5332(https://github.com/SparkDevNetwork/Rock/issues/5332), ensure user is Authorized to view related entity.
-                    var allowedRelatedEntityIds = GetAuthorizedRelatedEntityIds( historyService, historyQry ).ToList();
-                    historyQry = historyQry.Where( a => !a.RelatedEntityId.HasValue || allowedRelatedEntityIds.Contains( a.RelatedEntityId.Value ) );
+                    // Only exclude related entities that still exist and are not authorized. If the related entity no longer
+                    // exists (e.g., a deleted UserLogin), keep the history so the audit trail of the deletion is preserved.
+                    var disallowedRelatedEntityIds = GetUnauthorizedRelatedEntityIds( historyService, historyQry ).ToList();
+                    if ( disallowedRelatedEntityIds.Any() )
+                    {
+                        historyQry = historyQry.Where( a => !a.RelatedEntityId.HasValue || !disallowedRelatedEntityIds.Contains( a.RelatedEntityId.Value ) );
+                    }
                 }
                 else
                 {
@@ -775,31 +807,178 @@ namespace RockWeb.Blocks.Core
             }
 
             /// <summary>
-            /// Gets the ids of related entities the current user is authorized to view.
+            /// Populates <see cref="_referencedRelatedEntityIdsByType"/> and
+            /// <see cref="_existingRelatedEntitiesByType"/> from the filtered history query. Idempotent:
+            /// subsequent calls no-op so the authorization filter and the caption link-formatting can share
+            /// a single set of lookups.
+            /// </summary>
+            /// <param name="historyService">The history service used to build entity queries.</param>
+            /// <param name="historyQry">The filtered history query whose related entities should be loaded.</param>
+            private void EnsureRelatedEntityLookup( HistoryService historyService, IQueryable<History> historyQry )
+            {
+                if ( _referencedRelatedEntityIdsByType != null )
+                {
+                    return;
+                }
+
+                _referencedRelatedEntityIdsByType = new Dictionary<int, HashSet<int>>();
+                _existingRelatedEntitiesByType = new Dictionary<int, Dictionary<int, IEntity>>();
+
+                // Fetch the distinct (RelatedEntityTypeId, RelatedEntityId) pairs referenced by the filtered
+                // history in a single roundtrip.
+                var referencedRefs = historyQry
+                    .Where( h => h.RelatedEntityTypeId.HasValue && h.RelatedEntityId.HasValue )
+                    .Select( h => new { TypeId = h.RelatedEntityTypeId.Value, Id = h.RelatedEntityId.Value } )
+                    .Distinct()
+                    .ToList();
+
+                foreach ( var typeGroup in referencedRefs.GroupBy( r => r.TypeId ) )
+                {
+                    var relatedEntityTypeId = typeGroup.Key;
+                    var referencedIds = new HashSet<int>( typeGroup.Select( r => r.Id ) );
+                    _referencedRelatedEntityIdsByType[relatedEntityTypeId] = referencedIds;
+
+                    // Load the entities of this type that actually still exist. Anything referenced by
+                    // history but missing from this dictionary has been deleted.
+                    var idsForQuery = referencedIds.ToList();
+                    var entitiesById = historyService.GetEntityQuery( relatedEntityTypeId ).AsNoTracking()
+                        .Where( a => idsForQuery.Contains( a.Id ) )
+                        .AsEnumerable()
+                        .ToDictionary( k => k.Id, v => v );
+
+                    _existingRelatedEntitiesByType[relatedEntityTypeId] = entitiesById;
+                }
+            }
+
+            /// <summary>
+            /// Returns whether the specified related entity was still present in the database at the time
+            /// <see cref="EnsureRelatedEntityLookup"/> ran. Returns <c>false</c> when the lookup has not been
+            /// built yet, when either input is null, or when the referenced entity has been deleted.
+            /// </summary>
+            /// <param name="relatedEntityTypeId">The related entity type id from the history record.</param>
+            /// <param name="relatedEntityId">The related entity id from the history record.</param>
+            private bool RelatedEntityExists( int? relatedEntityTypeId, int? relatedEntityId )
+            {
+                if ( _existingRelatedEntitiesByType == null || !relatedEntityTypeId.HasValue || !relatedEntityId.HasValue )
+                {
+                    return false;
+                }
+
+                return _existingRelatedEntitiesByType.TryGetValue( relatedEntityTypeId.Value, out var byId )
+                    && byId.ContainsKey( relatedEntityId.Value );
+            }
+
+            /// <summary>
+            /// Gets the ids of related entities the current user is NOT authorized to view. For entities that
+            /// still exist, this uses the full <see cref="ISecured.IsAuthorized(string, Person)"/> check (which
+            /// honors the parent authority chain). For entities that have been deleted, the parent chain can no
+            /// longer be walked, so this falls back to any direct Auth rules recorded against the
+            /// (RelatedEntityTypeId, RelatedEntityId) tuple, which remain in the Authorization cache and are
+            /// still meaningful.
             /// </summary>
             /// <param name="historyService">The history service.</param>
             /// <param name="historyQry">The history qry.</param>
             /// <returns></returns>
-            private List<int> GetAuthorizedRelatedEntityIds( HistoryService historyService, IQueryable<History> historyQry )
+            private List<int> GetUnauthorizedRelatedEntityIds( HistoryService historyService, IQueryable<History> historyQry )
             {
-                var relatedEntityIds = new List<int>();
-                var relatedEntityTypeIdList = historyQry.Where( a => a.RelatedEntityTypeId.HasValue ).Select( a => a.RelatedEntityTypeId.Value ).Distinct().ToList();
+                EnsureRelatedEntityLookup( historyService, historyQry );
 
-                // find all the EntityTypes that are used as the History.RelatedEntityTypeId records
-                foreach ( var relatedEntityTypeId in relatedEntityTypeIdList )
+                var unauthorizedRelatedEntityIds = new List<int>();
+
+                foreach ( var kvp in _referencedRelatedEntityIdsByType )
                 {
-                    // for each entityType, query whatever it is (for example Person) so that we can get that Entity and its Id to check if the current user can view it.
-                    var entityLookup = historyService.GetEntityQuery( relatedEntityTypeId ).AsNoTracking()
-                        .Where( a => historyQry.Any( h => h.RelatedEntityTypeId == relatedEntityTypeId && h.RelatedEntityId == a.Id ) )
-                        .AsEnumerable()
-                        .ToDictionary( k => k.Id, v => v );
+                    var relatedEntityTypeId = kvp.Key;
+                    var referencedIds = kvp.Value;
+                    var entityLookup = _existingRelatedEntitiesByType[relatedEntityTypeId];
 
-                    var authorizedEntitiesLookup = entityLookup.Where( el => !( el.Value is ISecured secured ) || secured.IsAuthorized( Authorization.VIEW, CurrentPerson ) ).ToList();
-
-                    relatedEntityIds.AddRange( authorizedEntitiesLookup.Select( e => e.Key ) );
+                    foreach ( var relatedEntityId in referencedIds )
+                    {
+                        if ( entityLookup.TryGetValue( relatedEntityId, out var entity ) )
+                        {
+                            // Entity still exists: use the full IsAuthorized check (walks ParentAuthority).
+                            // Non-ISecured entities are treated as authorized, matching prior behavior.
+                            if ( entity is ISecured secured && !secured.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                            {
+                                unauthorizedRelatedEntityIds.Add( relatedEntityId );
+                            }
+                        }
+                        else
+                        {
+                            // Entity has been deleted. Fall back to any direct Auth rules cached against this
+                            // (EntityTypeId, EntityId). This keeps a targeted Deny in effect against the history
+                            // of a deleted entity while still allowing history for deletions that had no
+                            // restrictive rules to show through.
+                            if ( IsDeniedByDirectAuthRules( relatedEntityTypeId, relatedEntityId, Authorization.VIEW, CurrentPerson ) )
+                            {
+                                unauthorizedRelatedEntityIds.Add( relatedEntityId );
+                            }
+                        }
+                    }
                 }
 
-                return relatedEntityIds;
+                return unauthorizedRelatedEntityIds;
+            }
+
+            /// <summary>
+            /// Evaluates the direct Auth rules cached against the specified (entity type, entity id, action)
+            /// tuple and returns <c>true</c> when the first matching rule for the given person is a Deny.
+            /// Used as a fallback when the underlying entity has been deleted and its parent authority chain
+            /// can no longer be walked. Returns <c>false</c> when there are no rules or the first match is an
+            /// Allow.
+            /// </summary>
+            /// <param name="entityTypeId">The related entity type id from the history record.</param>
+            /// <param name="entityId">The related entity id from the history record.</param>
+            /// <param name="action">The action being evaluated (typically <see cref="Authorization.VIEW"/>).</param>
+            /// <param name="person">The person the rules are being evaluated for.</param>
+            private static bool IsDeniedByDirectAuthRules( int entityTypeId, int entityId, string action, Person person )
+            {
+                var rules = Authorization.AuthRules( entityTypeId, entityId, action );
+                if ( rules == null || rules.Count == 0 )
+                {
+                    return false;
+                }
+
+                // Mirrors the ordered evaluation in Authorization.ItemAuthorized: the first rule that matches
+                // the person or one of their roles wins, regardless of whether it is an Allow or a Deny.
+                var personGuid = person?.Guid;
+                foreach ( var rule in rules )
+                {
+                    var isMatch = false;
+
+                    switch ( rule.SpecialRole )
+                    {
+                        case SpecialRole.AllUsers:
+                            isMatch = true;
+                            break;
+                        case SpecialRole.AllAuthenticatedUsers:
+                            isMatch = personGuid.HasValue;
+                            break;
+                        case SpecialRole.AllUnAuthenticatedUsers:
+                            isMatch = !personGuid.HasValue;
+                            break;
+                        case SpecialRole.None:
+                            if ( person != null && rule.PersonId.HasValue && rule.PersonId.Value == person.Id )
+                            {
+                                isMatch = true;
+                            }
+                            else if ( rule.GroupId.HasValue )
+                            {
+                                var role = RoleCache.Get( rule.GroupId.Value );
+                                if ( role != null && role.IsPersonInRole( personGuid ) )
+                                {
+                                    isMatch = true;
+                                }
+                            }
+                            break;
+                    }
+
+                    if ( isMatch )
+                    {
+                        return rule.AllowOrDeny == 'D';
+                    }
+                }
+
+                return false;
             }
 
             #region Support Classes
@@ -982,7 +1161,15 @@ namespace RockWeb.Blocks.Core
                 /// </value>
                 public string FormattedCaption { get; set; }
 
-                public static string GetFormattedCaption( string caption, int categoryId, int entityId, int? relatedEntityTypeId, int? relatedEntityId )
+                /// <summary>
+                /// Builds the (possibly linked) caption for a history row. When <paramref name="relatedEntityExists"/>
+                /// is <c>true</c> and the category's URL mask contains <c>{0}</c>, the caption is wrapped in an
+                /// anchor tag pointing at the related entity. The caller is expected to have already resolved
+                /// whether the related entity still exists (e.g., via <see cref="RelatedEntityExists"/>), which
+                /// replaces the per-row <see cref="Reflection.GetIEntityForEntityType(Type, int)"/> lookup that
+                /// used to happen here.
+                /// </summary>
+                public static string GetFormattedCaption( string caption, int categoryId, int entityId, int? relatedEntityTypeId, int? relatedEntityId, bool relatedEntityExists )
                 {
                     if ( categoryId == 0 )
                     {
@@ -996,14 +1183,7 @@ namespace RockWeb.Blocks.Core
                     }
 
                     string virtualUrl = string.Empty;
-                    IEntity iEntity = null;
-                    if ( relatedEntityTypeId.HasValue && relatedEntityId.HasValue )
-                    {
-                        var relatedEntityType = EntityTypeCache.Get( relatedEntityTypeId.Value );
-                        iEntity = Reflection.GetIEntityForEntityType( relatedEntityType.GetEntityType(), relatedEntityId.Value );
-                    }
-
-                    if ( urlMask.Contains( "{0}" ) && iEntity != null )
+                    if ( urlMask.Contains( "{0}" ) && relatedEntityTypeId.HasValue && relatedEntityId.HasValue && relatedEntityExists )
                     {
                         string p1 = relatedEntityId.Value.ToString();
                         string p2 = entityId.ToString();
