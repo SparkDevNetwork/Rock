@@ -49,7 +49,7 @@ namespace Rock.Blocks.Workflow
     /// </summary>
 
     [DisplayName( "Workflow Entry" )]
-    [Category( "Worfklow" )]
+    [Category( "Workflow" )]
     [Description( "Used to enter information for a workflow that has interactive elements." )]
     [IconCssClass( "ti ti-settings-cog" )]
     [ConfigurationChangedReload( BlockReloadMode.Block )]
@@ -272,7 +272,6 @@ namespace Rock.Blocks.Workflow
 
             public const string GroupId = "GroupId";
             public const string PersonId = "PersonId";
-            public const string InteractionStartDateTime = "InteractionStartDateTime";
 
             // NOTE that the actual parameter for CampusId and CampusGuid is just 'Campus', but making them different internally to make it clearer
             public const string CampusId = "Campus";
