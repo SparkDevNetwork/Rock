@@ -256,10 +256,21 @@ namespace Rock.Web.Cache
         /// Gets whether the cross-site forgery protection is on or not.
         /// </summary>
         public bool EnableCrossSiteForgeryProtection
-        { 
+        {
             get
             {
                 return this.EndpointAdditionalSettings.EnableCrossSiteForgeryProtection;
+            }
+        }
+
+        /// <summary>
+        /// Gets the content type that the endpoint's response should be returned as.
+        /// </summary>
+        public string ContentType
+        {
+            get
+            {
+                return this.EndpointAdditionalSettings.ContentType;
             }
         }
 

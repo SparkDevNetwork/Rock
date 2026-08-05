@@ -26,6 +26,11 @@ namespace Rock.Cms
         /// Determines if cross-site forgery protection should be enabled.
         /// </summary>
         public bool EnableCrossSiteForgeryProtection { get; set; } = true;
+
+        /// <summary>
+        /// Determines the content type returned by the endpoint's response.
+        /// </summary>
+        public string ContentType { get; set; } = "text/html";
     }
 
 }

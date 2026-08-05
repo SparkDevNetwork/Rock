@@ -53,6 +53,10 @@ namespace Rock.AI.Agent
     [AgentSkillName( "ObsidianVibeCoding" )]
     [AgentPurpose( "Author and edit the Vue source rendered by an Obsidian Content block placement." )]
     [AgentUsage( "Use to read or replace the authored source of an Obsidian Content block the user is building. The block must already exist on a page; identify it by its block id." )]
+    [AgentUsage( "When the component needs data, create a Lava endpoint with the LavaData skill's CreateLavaEndpoint tool. Do not search Rock for an existing REST endpoint: writing Lava lets you return exactly the shape the component renders, with permissions decided when the endpoint is created." )]
+    [AgentUsage( "Group all of one block's endpoints under a single Lava application named after the dashboard, by passing the same applicationSlug to every CreateLavaEndpoint call. Security and configuration rigging are then set once for the whole block." )]
+    [AgentUsage( "In the component, import { useLavaApp } from '@Obsidian/Utility/lavaApp', bind the application once with useLavaApp('application-slug'), then call lavaApp.invoke('endpoint-slug'). Never hand-roll the endpoint URL, the CSRF header, or the JSON parsing: the helper is a framework import so a fix there reaches components that are already compiled and stored." )]
+    [AgentUsage( "invoke returns the same shape as invokeBlockAction. Check isSuccess before reading data, show errorMessage when it fails, and render an empty state rather than an error when the call succeeds but legitimately has no rows." )]
     [Rock.SystemGuid.EntityTypeGuid( "4C833FA4-A7EF-4D49-9549-B24CBB629A73" )]
     [Rock.SystemGuid.AgentSkillGuid( "647770A9-F3D7-4924-B046-5C9C43959ECB" )]
     internal class ObsidianVibeCodingSkill : AgentSkillComponent
