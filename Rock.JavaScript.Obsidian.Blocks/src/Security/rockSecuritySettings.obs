@@ -134,6 +134,7 @@
                             <NumberBox v-model="bag.passwordlessSignInDailyIpThrottle"
                                        label="Passwordless Sign-In Daily IP Throttle"
                                        help="The maximum number of passwordless attempts that are allowed from a single IP address in a single day."
+                                       placeholder="1000"
                                        rules="required"
                                        :minimumValue="1" />
                         </div>
@@ -142,6 +143,7 @@
                                        label="Passwordless Session Duration"
                                        help="The amount of time in minutes that a passwordless session is valid."
                                        inputGroupClasses="input-width-md"
+                                       placeholder="120"
                                        rules="required"
                                        :minimumValue="1">
                                 <template #inputGroupAppend>
