@@ -332,7 +332,15 @@ namespace Rock.Blocks.Core
                             ValueName = h.ValueName,
                             OldValue = h.OldValue,
                             RelatedData = h.RelatedData,
-                            EntityTypeId = h.EntityTypeId
+                            EntityTypeId = h.EntityTypeId,
+
+                            // EntityId and CreatedByPersonAliasId are read by SummaryHtml for the
+                            // ConnectionRequest* verbs (see History.Logic.cs). Without them, SummaryHtml
+                            // ends up calling PersonService.Get(0) / PersonAliasService.Get(0) once per
+                            // history row, producing a wasted DB roundtrip that returns null and appends
+                            // nothing to the summary.
+                            EntityId = h.EntityId,
+                            CreatedByPersonAliasId = h.CreatedByPersonAliasId
                         }.SummaryHtml )
                         .ToList();
 
@@ -569,14 +577,76 @@ namespace Rock.Blocks.Core
                 // Load the entities of this type that actually still exist. Anything referenced by
                 // history but missing from this dictionary has been deleted.
                 var idsForQuery = referencedIds.ToList();
-                var entitiesById = historyService.GetEntityQuery( relatedEntityTypeId )
-                    .AsNoTracking()
-                    .Where( a => idsForQuery.Contains( a.Id ) )
-                    .AsEnumerable()
-                    .ToDictionary( k => k.Id, v => v );
+                var entitiesById = LoadExistingRelatedEntities( historyService, relatedEntityTypeId, idsForQuery );
 
                 _existingRelatedEntitiesByType[relatedEntityTypeId] = entitiesById;
             }
+        }
+
+        /// <summary>
+        /// Materializes the related entities of the given type whose ids appear in <paramref name="idsForQuery"/>,
+        /// keyed by id. Applies type-specific eager-loading for navigation properties that certain entity
+        /// types walk from their <see cref="ISecured.ParentAuthority"/> getters, so the
+        /// <see cref="ISecured.IsAuthorized(string, Person)"/> check does not trigger one lazy-load DB
+        /// roundtrip per entity even when all of those entities point at the same parent (e.g., seven
+        /// Communications that all resolve to CommunicationTemplate 5).
+        /// </summary>
+        /// <param name="historyService">The history service (used for its <see cref="RockContext"/> and generic entity queries).</param>
+        /// <param name="relatedEntityTypeId">The related entity type id.</param>
+        /// <param name="idsForQuery">The ids of the related entities to load.</param>
+        /// <returns>The loaded entities, keyed by id.</returns>
+        private static Dictionary<int, IEntity> LoadExistingRelatedEntities( HistoryService historyService, int relatedEntityTypeId, List<int> idsForQuery )
+        {
+            var entityType = EntityTypeCache.Get( relatedEntityTypeId )?.GetEntityType();
+            var rockContext = historyService.Context as RockContext;
+
+            // Intentionally NOT calling .AsNoTracking() on the branches that use .Include(). In EF6,
+            // AsNoTracking prevents .Include from marking the eager-loaded nav property as "loaded" on
+            // the proxy, so the proxy still lazy-loads on first access even though the data is already
+            // materialized. Tracking here is safe because this block never calls SaveChanges. See the
+            // comment on Rock.Data.Service<T>.Queryable() for the same warning.
+            if ( entityType == typeof( Rock.Model.Communication ) && rockContext != null )
+            {
+                return new CommunicationService( rockContext ).Queryable()
+                    .Include( c => c.CommunicationTemplate )
+                    .Include( c => c.SystemCommunication )
+                    .Where( c => idsForQuery.Contains( c.Id ) )
+                    .AsEnumerable()
+                    .ToDictionary( c => c.Id, c => ( IEntity ) c );
+            }
+
+            if ( entityType == typeof( LearningClass ) && rockContext != null )
+            {
+                return new LearningClassService( rockContext ).Queryable()
+                    .Include( l => l.LearningCourse.LearningProgram )
+                    .Where( l => idsForQuery.Contains( l.Id ) )
+                    .AsEnumerable()
+                    .ToDictionary( l => l.Id, l => ( IEntity ) l );
+            }
+
+            if ( entityType == typeof( Step ) && rockContext != null )
+            {
+                return new StepService( rockContext ).Queryable()
+                    .Include( s => s.StepType.StepProgram )
+                    .Where( s => idsForQuery.Contains( s.Id ) )
+                    .AsEnumerable()
+                    .ToDictionary( s => s.Id, s => ( IEntity ) s );
+            }
+
+            if ( entityType == typeof( ConnectionRequest ) && rockContext != null )
+            {
+                return new ConnectionRequestService( rockContext ).Queryable()
+                    .Include( cr => cr.ConnectionOpportunity.ConnectionType )
+                    .Include( cr => cr.ConnectorPersonAlias )
+                    .Where( cr => idsForQuery.Contains( cr.Id ) )
+                    .AsEnumerable()
+                    .ToDictionary( cr => cr.Id, cr => ( IEntity ) cr );
+            }
+
+            return historyService.GetEntityQuery( relatedEntityTypeId ).AsNoTracking()
+                .Where( a => idsForQuery.Contains( a.Id ) )
+                .AsEnumerable()
+                .ToDictionary( k => k.Id, v => v );
         }
 
         /// <summary>
