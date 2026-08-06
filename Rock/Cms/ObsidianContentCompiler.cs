@@ -119,6 +119,37 @@ var System = {
 
         #endregion Constants
 
+        #region Fields
+
+        /// <summary>
+        /// An explicit physical path to the compiler bundle, used by tests. When
+        /// null the bundle is resolved from the web root at compile time.
+        /// </summary>
+        private readonly string _bundlePhysicalPath;
+
+        #endregion Fields
+
+        #region Constructors
+
+        /// <summary>
+        /// Creates a compiler that resolves the bundle from the web root.
+        /// </summary>
+        public ObsidianContentCompiler()
+        {
+        }
+
+        /// <summary>
+        /// Creates a compiler that reads the bundle from an explicit physical
+        /// path. This exists for tests, which run without a hosted web root.
+        /// </summary>
+        /// <param name="bundlePhysicalPath">The physical path of the compiler bundle.</param>
+        internal ObsidianContentCompiler( string bundlePhysicalPath )
+        {
+            _bundlePhysicalPath = bundlePhysicalPath;
+        }
+
+        #endregion Constructors
+
         #region Methods
 
         /// <summary>
@@ -135,7 +166,7 @@ var System = {
                 return ObsidianContentCompileResult.Failure( "No source was provided." );
             }
 
-            var bundlePath = RockApp.Current.MapPath( CompilerBundleVirtualPath );
+            var bundlePath = _bundlePhysicalPath ?? RockApp.Current.MapPath( CompilerBundleVirtualPath );
 
             if ( !File.Exists( bundlePath ) )
             {
