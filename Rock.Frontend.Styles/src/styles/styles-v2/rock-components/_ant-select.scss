@@ -10,7 +10,6 @@
 
 .ant-select {
   color: var(--color-interface-strongest);
-  // font-size: var(--font-size-small);
 
   .ant-select-selector {
 
@@ -39,9 +38,15 @@
     }
 
     &.ant-select-sm:not(.ant-select-customize-input) {
+      font-size: var(--font-size-small);
 
       .ant-select-selector {
         padding: 0 var(--spacing-xsmall);
+
+        .ant-select-selection-item {
+          line-height: 30px;
+        }
+
       }
 
       &.ant-select-show-arrow {

@@ -15,7 +15,8 @@
             <CampusContextPicker v-if="showCampus"
                                  :campusStatusFilter="campusStatusFilter"
                                  :campusTypeFilter="campusTypeFilter"
-                                 @isVisible="isCampusPickerVisible = $event" />
+                                 @isVisible="isCampusPickerVisible = $event"
+                                 class="ant-select-sm" />
 
             <slot name="rightContent" />
         </div>
