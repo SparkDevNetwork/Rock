@@ -17,12 +17,15 @@
 
 using System;
 using System.ComponentModel;
-using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Microsoft.Extensions.DependencyInjection;
 
 using Rock.Attribute;
-using Rock.Store;
-using Rock.ViewModels.Blocks.Store.LinkOrganization;
-using Rock.ViewModels.Utility;
+using Rock.Configuration;
+using Rock.Configuration.ConnectedServices;
 
 namespace Rock.Blocks.Store
 {
@@ -64,144 +67,131 @@ namespace Rock.Blocks.Store
         #region Methods
 
         /// <inheritdoc/>
-        public override object GetObsidianBlockInitialization()
+        public override async Task<object> GetObsidianBlockInitializationAsync()
         {
-            var box = new LinkOrganizationInitializationBox
-            {
-                ContinueUrl = GetContinueUrl()
-            };
+            var requestId = PageParameter( "request_id" );
+            var status = PageParameter( "status" );
 
-            return box;
+            if ( requestId.IsNotNullOrWhiteSpace() && status.IsNotNullOrWhiteSpace() )
+            {
+                var cts = new CancellationTokenSource( 10_000 );
+
+                return await ProcessCallback( requestId, status, cts.Token );
+            }
+
+            return new InitializationBag();
         }
 
-        /// <summary>
-        /// Resolves the URL to navigate to once the store has been configured.
-        /// Uses the ReturnUrl page parameter when supplied, otherwise falls
-        /// back to the Rock Shop home page.
-        /// </summary>
-        /// <returns>The continue URL.</returns>
-        private string GetContinueUrl()
+        private async Task<InitializationBag> ProcessCallback( string requestId, string status, CancellationToken cancellationToken )
         {
-            var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
+            if ( status != "success" )
+            {
+                return new InitializationBag
+                {
+                    ErrorMessage = "An error occurred trying to link your organization. Please try again in a little while."
+                };
+            }
 
-            return returnUrl.IsNotNullOrWhiteSpace() ? returnUrl : DefaultContinueUrl;
+            try
+            {
+                var provider = RockApp.Current.GetRequiredService<ConnectedServicesProvider>();
+                var result = await provider.CompleteLinkOrganizationAsync( requestId, cancellationToken );
+
+                if ( result.Context.IsNotNullOrWhiteSpace() )
+                {
+                    RequestContext.Response.RedirectToUrl( result.Context );
+                }
+                else
+                {
+                    RequestContext.Response.RedirectToUrl( DefaultContinueUrl );
+                }
+
+                return new InitializationBag();
+            }
+            catch ( Exception ex )
+            {
+                if ( ex is HttpRequestException httpEx && httpEx.InnerException != null )
+                {
+                    ex = httpEx.InnerException;
+                }
+
+                return new InitializationBag
+                {
+                    ErrorMessage = $"An error occurred trying to contact the remote server. Please try again in a little while. {ex.Message}"
+                };
+            }
         }
 
         #endregion Methods
 
         #region Block Actions
 
-        /// <summary>
-        /// Retrieves the organizations tied to the supplied store account.
-        /// </summary>
-        /// <param name="bag">The username and password to authenticate with.</param>
-        /// <returns>The next step to display along with any organizations found.</returns>
         [BlockAction]
-        public BlockActionResult RetrieveOrganizations( RetrieveOrganizationsRequestBag bag )
+        public async Task<BlockActionResult> StartLink( string callbackUrl )
         {
-            var errorMessage = "";
-            var warningMessage = "";
-
-            var organizationService = new OrganizationService();
-            var organizations = organizationService.GetOrganizations( bag.Username, bag.Password, out errorMessage ).ToList();
-
-            if( errorMessage.IsNotNullOrWhiteSpace() )
+            try
             {
-                return ActionBadRequest( errorMessage );
-            }
+                var provider = RockApp.Current.GetRequiredService<ConnectedServicesProvider>();
 
-            if ( !organizations.Any() )
-            {
-                var canAuthenticate = new StoreService().AuthenicateUser( bag.Username, bag.Password );
-                if( canAuthenticate )
+                if ( !provider.IsOrganizationLinked() && provider.IsLegacyOrganizationLinked() )
                 {
-                   warningMessage = @"It appears that no organizations have been configured for this account. You can 
-                                set up an organization on the Rock RMS website. Simply log in and then select 'My Account' from the dropdown in the top right
-                                corner or see the <a href='https://www.rockrms.com/RockShopHelp'>Rock Shop Help Page</a>." ;
-                }
-                else
-                {
-                    warningMessage = @"The username/password provided did not match a user on the Rock RMS website. Be sure
-                    you provide a valid account from this site. If you would like to create an account or retrieve your password please <a href='https://www.rockrms.com/Login'>
-                    visit the Rock RMS website</a> or see the <a href='https://www.rockrms.com/RockShopHelp'>Rock Shop Help Page</a>.";
+                    try
+                    {
+                        var upgradeCts = new CancellationTokenSource( 5_000 );
+                        var result = await provider.UpgradeLegacyIdentifierAsync( upgradeCts.Token );
+                        var upgradeReturnUrl = PageParameter( PageParameterKey.ReturnUrl );
+
+                        if ( upgradeReturnUrl.IsNotNullOrWhiteSpace() )
+                        {
+                            return ActionOk( upgradeReturnUrl );
+                        }
+                        else
+                        {
+                            return ActionOk( DefaultContinueUrl );
+                        }
+                    }
+                    catch
+                    {
+                        // Intentionally ignored, fall through to full link flow.
+                    }
                 }
 
-                return ActionOk( new RetrieveOrganizationsResponseBag
+                var originalReturnUrl = PageParameter( PageParameterKey.ReturnUrl );
+                var uri = new UriBuilder( callbackUrl );
+                var parameters = uri.Query.ParseQueryString();
+
+                parameters.Remove( PageParameterKey.ReturnUrl );
+                parameters.Remove( "request_id" );
+                parameters.Remove( "status" );
+
+                uri.Query = parameters.ToString();
+
+                var returnUrl = uri.ToString();
+                var cts = new CancellationTokenSource( 5_000 );
+                var redirectUrl = await provider.StartLinkOrganizationAsync( returnUrl, originalReturnUrl, cts.Token );
+
+                return ActionOk( redirectUrl );
+            }
+            catch ( Exception ex )
+            {
+                if ( ex is HttpRequestException httpEx && httpEx.InnerException != null )
                 {
-                    WarningMessage = warningMessage
-                } );
+                    ex = httpEx.InnerException;
+                }
+
+                return ActionInternalServerError( $"An error occurred trying to contact the remote server. Please try again in a little while. {ex.Message}" );
             }
-
-            var organizationKey = StoreService.GetOrganizationKey();
-            Organization selectedOrganization = null;
-
-            if ( organizationKey.IsNotNullOrWhiteSpace() )
-            {
-                selectedOrganization = organizations.FirstOrDefault( o => o.Key == organizationKey );
-            }
-            else if ( organizations.Count == 1 )
-            {
-                selectedOrganization = organizations.First();
-            }
-
-            // No single organization could be determined; let the user choose.
-            if ( selectedOrganization == null )
-            {
-                return ActionOk( new RetrieveOrganizationsResponseBag
-                {
-                    NextStep = "SelectOrganization",
-                    Organizations = organizations
-                        .Select( o => new ListItemBag { Value = o.Key, Text = o.Name } )
-                        .ToList()
-                } );
-            }
-
-            StoreService.SetOrganizationKey( selectedOrganization.Key );
-
-            return ActionOk( new RetrieveOrganizationsResponseBag
-            {
-                NextStep = "AverageWeeklyAttendance"
-            } );
-        }
-
-        /// <summary>
-        /// Persists the organization the user selected from the list.
-        /// </summary>
-        /// <param name="organizationKey">The key of the chosen organization.</param>
-        /// <returns>An empty OK result.</returns>
-        [BlockAction]
-        public BlockActionResult SelectOrganization( string organizationKey )
-        {
-            if ( organizationKey.IsNullOrWhiteSpace() )
-            {
-                return ActionBadRequest( "No organization was selected." );
-            }
-
-            StoreService.SetOrganizationKey( organizationKey );
-
-            return ActionOk();
-        }
-
-        /// <summary>
-        /// Saves the organization's average weekly attendance to the store.
-        /// </summary>
-        /// <param name="bag">The credentials, organization key, and attendance.</param>
-        /// <returns>The result of the save operation.</returns>
-        [BlockAction]
-        public BlockActionResult SaveAttendance( SaveAttendanceRequestBag bag )
-        {
-            var averageWeeklyAttendance = bag.AverageWeeklyAttendance;
-
-            var result = new OrganizationService().SetOrganizationSize( bag.Username, bag.Password, StoreService.GetOrganizationKey(), averageWeeklyAttendance );
-
-            if( result.HasError )
-            {
-                return ActionBadRequest( result.ErrorResponse );
-            }
-
-            return ActionOk( result.Result?.Name );
         }
 
         #endregion Block Actions
+
+        #region Support Classes
+
+        private class InitializationBag
+        {
+            public string ErrorMessage { get; set; }
+        }
+
+        #endregion
     }
 }
