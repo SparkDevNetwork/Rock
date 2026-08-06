@@ -106,7 +106,19 @@ Full cold path per request, create through dispose:
 | 9.3 KB | 1587 ms | 20.7 KB |
 | 27.8 KB | 3699 ms | 59.9 KB |
 
-**Cost scales linearly with source size above a fixed floor.** The data fits `450 ms + 120 ms per KB` closely (predicted 521 / 721 / 1512 / 3636 against measured 523 / 761 / 1587 / 3699). There is no quadratic knee. A typical authored component of 1 to 5 KB lands between 550 ms and 1.1 s. The 10 second timeout in Phase 2 gives headroom to roughly 75 KB of source.
+**Cost scales linearly with source size above a fixed floor.** The synthetic data fits `450 ms + 120 ms per KB` closely (predicted 521 / 721 / 1512 / 3636 against measured 523 / 761 / 1587 / 3699). There is no quadratic knee.
+
+**Validated against real authored components** (exported from a development database, which is the number to trust). Real code compiles roughly 1.7x faster than the synthetic fixtures, because those fixtures were unusually dense in `v-for` and `computed` constructs relative to ordinary markup:
+
+| Real source | Synthetic model predicted | Actually measured |
+|---|---|---|
+| 14.97 KB | 2246 ms | **1307 ms** |
+| 21.37 KB | 3014 ms | **1759 ms** |
+| 29.89 KB | 4036 ms | **2375 ms** |
+
+Refit on real content: **`235 ms + 72 ms per KB`**, an almost exact linear fit (predicts 1765 / 2375 against measured 1759 / 2375). Use this model, not the synthetic one.
+
+**Sizing consequences.** Real authored components reach ~30 KB, considerably larger than early estimates assumed, so do not size limits against a 2 to 5 KB assumption. At the refit rate the 10 second timeout in Phase 2 allows roughly **135 KB** of source, and the largest observed real component consumes about 24% of that budget. The timeout is appropriately sized; revisit it only if authored components routinely exceed 50 KB.
 
 Do not quote a single figure without its source size. In particular, the 425 ms seen in the Phase 4 test output belongs to the broken-template test, which throws at `parse` and never reaches template or style compilation, so it measures the cost of failing rather than the cost of compiling.
 
@@ -300,6 +312,7 @@ Held as fallback only. Real native binaries per architecture and deploy friction
 
 ## Related
 
+- [obsidian-content-sizes.sql](artifacts/260806-jint-in-process-obsidian-compile-plan/obsidian-content-sizes.sql) (diagnostic query: per-block source and compiled sizes, expansion ratio, estimated compile time, and an uncompiled-block detector)
 - [260804-vibe-coding-findings.md](260804-vibe-coding-findings.md) (the gap analysis this plan answers)
 - [260722-mcp-driven-obsidian-content-vibe-coding.md](260722-mcp-driven-obsidian-content-vibe-coding.md) (the MCP authoring design; its GetCompiler tool is superseded by this plan)
 - [260721-obsidian-content-block-and-component-model.md](260721-obsidian-content-block-and-component-model.md) (the block and entity this builds on)
