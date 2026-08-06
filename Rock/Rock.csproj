@@ -33,6 +33,7 @@
     <PackageReference Include="IdentityModel" Version="3.0.0" />
     <PackageReference Include="ImageResizer" Version="4.2.8" />
     <PackageReference Include="jQuery" Version="1.12.4" />
+    <PackageReference Include="Jint" Version="4.15.3" />
     <PackageReference Include="Lucene.Net.Expressions" Version="4.8.0-beta00005" />
     <PackageReference Include="Lucene.Net.QueryParser" Version="4.8.0-beta00005" />
     <PackageReference Include="MassTransit.Azure.ServiceBus.Core" Version="8.2.5" />
