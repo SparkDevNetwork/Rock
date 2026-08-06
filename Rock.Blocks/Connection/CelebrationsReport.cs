@@ -48,6 +48,7 @@ namespace Rock.Blocks.Connection
     [LinkedPage( "Connection Request Detail Page",
         Description = "The page that will show the connection request details.",
         Key = AttributeKey.ConnectionRequestDetailPage,
+        DefaultValue = Rock.SystemGuid.Page.CONNECTION_REQUEST_DETAIL,
         IsRequired = false )]
 
     [CustomizedGrid]
