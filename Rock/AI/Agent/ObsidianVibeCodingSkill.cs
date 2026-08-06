@@ -57,6 +57,28 @@ namespace Rock.AI.Agent
         (compiler bundle not deployed) says so honestly instead of promising it.
 
         Reason: Server-side compile so repo-less MCP clients get a real feedback loop.
+
+        8/6/2026 - CLAUDE
+
+        Control discovery is delegated to the Rock knowledge base (knowledge.rockrms.com)
+        rather than reimplemented here. That service already indexes every Framework
+        Controls .obs file with a semantic description, a role classification, per-release
+        version scoping, and a raw-source URL, which is the search-then-fetch shape an
+        agent needs and is expensive to reproduce.
+
+        This is instruction-level composition across two MCP servers, not an integration:
+        Rock cannot see or verify the knowledge base's tools, so the usages below name
+        tools that only resolve when the client has both servers connected. The fallback
+        is stated explicitly in the usages so an agent without it says so rather than
+        inventing control APIs from the control's name, which is the failure mode that
+        produces components that compile and then render wrong.
+
+        GetRockVersion exists to make those lookups version-correct. The knowledge base
+        is scoped per Rock release, so an unscoped query silently answers for whatever
+        release that service considers current, which is the wrong answer for any church
+        not on it.
+
+        Reason: Reuse the knowledge base for control discovery instead of rebuilding it.
     */
 
     /// <summary>
@@ -72,6 +94,11 @@ namespace Rock.AI.Agent
     [AgentUsage( "Group all of one block's endpoints under a single Lava application named after the dashboard, by passing the same applicationSlug to every CreateLavaEndpoint call. Security and configuration rigging are then set once for the whole block." )]
     [AgentUsage( "In the component, import { useLavaApp } from '@Obsidian/Utility/lavaApp', bind the application once with useLavaApp('application-slug'), then call lavaApp.invoke('endpoint-slug'). Never hand-roll the endpoint URL, the CSRF header, or the JSON parsing: the helper is a framework import so a fix there reaches components that are already compiled and stored." )]
     [AgentUsage( "invoke returns the same shape as invokeBlockAction. Check isSuccess before reading data, show errorMessage when it fails, and render an empty state rather than an error when the call succeeds but legitimately has no rows." )]
+    [AgentUsage( "Before writing a component, find the controls you need with the Rock knowledge base's search_code tool, passing source_type 'obs'. Search by concept, for example 'person picker' or 'grid with columns', rather than by a guessed filename." )]
+    [AgentUsage( "Read a control's real API by fetching the file_url returned with each search result. The defineProps block is the authoritative list of props, their types, and their defaults, and the JSDoc comments above them explain what each one does. Never infer a control's props from its name or from a different control." )]
+    [AgentUsage( "Call GetRockVersion first and pass that version to every knowledge base lookup. The knowledge base is scoped per Rock release, so an unscoped query answers for a release this instance may not be running. If a prop you found does not exist when the source fails to compile, suspect a version mismatch before anything else." )]
+    [AgentUsage( "Controls under Framework/Controls/Internal/ are internal to Rock and are not meant for authored content. Prefer a top-level control, and if only an Internal one fits, tell the user before you use it." )]
+    [AgentUsage( "If the knowledge base is not available to you, say so and ask the user how to proceed. Do not guess a control's props, and do not fall back to writing plain HTML in place of a Rock control without telling the user that is what you are doing." )]
     [Rock.SystemGuid.EntityTypeGuid( "4C833FA4-A7EF-4D49-9549-B24CBB629A73" )]
     [Rock.SystemGuid.AgentSkillGuid( "647770A9-F3D7-4924-B046-5C9C43959ECB" )]
     internal class ObsidianVibeCodingSkill : AgentSkillComponent
@@ -88,6 +115,28 @@ namespace Rock.AI.Agent
         #endregion Constants
 
         #region Tools
+
+        /// <summary>
+        /// Reports the Rock version this instance is running, so an agent can scope
+        /// external control and API lookups to the release actually deployed here.
+        /// </summary>
+        /// <returns>The semantic version number of this Rock instance.</returns>
+        [AgentToolName( "GetRockVersion" )]
+        [AgentToolPreamble( "Checking the Rock version." )]
+        [AgentUsage( "Call this before looking up any control, filter, or API in the Rock knowledge base, and pass the returned version to that lookup. Control APIs change between releases, so an unscoped lookup can describe props this instance does not have." )]
+        [AgentUsage( "This is the version of the Rock instance you are connected to. It is not the newest Rock release, and it is not the version any documentation defaults to." )]
+        [Rock.SystemGuid.AgentToolGuid( "3E7A1C42-8B95-4D06-A1F3-2C64D9B7E508" )]
+        public AgentToolResult GetRockVersion()
+        {
+            // No authorization gate: the version is already visible to anonymous
+            // visitors in page markup and asset fingerprints, so this exposes nothing
+            // that is not public, and every control lookup depends on it.
+            return Success( new
+            {
+                Version = Rock.VersionInfo.VersionInfo.GetRockSemanticVersionNumber(),
+                FullVersion = Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber()
+            } );
+        }
 
         /// <summary>
         /// Reads the current authored source for a block placement so the agent can
