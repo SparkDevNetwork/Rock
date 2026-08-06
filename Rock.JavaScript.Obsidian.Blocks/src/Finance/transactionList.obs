@@ -136,8 +136,8 @@
                 :filter="numberValueFilter"
                 v-if="!config.options?.isBatchContext">
             <template #format="{ row }">
-                <a v-if="config.navigationUrls?.[NavigationUrlKey.BatchPage] && row.batchId"
-                   :href="config.navigationUrls[NavigationUrlKey.BatchPage].replace('((Key))', String(row.batchId))">{{ row.batchId }}</a>
+                <a v-if="config.navigationUrls?.[NavigationUrlKey.BatchPage] && row.batchIdKey"
+                   :href="config.navigationUrls[NavigationUrlKey.BatchPage].replace('((Key))', String(row.batchIdKey))">{{ row.batchId }}</a>
                 <span v-else>{{ row.batchId }}</span>
             </template>
         </Column>
