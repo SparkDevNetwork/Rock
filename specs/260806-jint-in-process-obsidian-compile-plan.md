@@ -93,15 +93,22 @@ The gate result and timings are reported. Nothing is committed in this phase.
 
 Jint 4.15.3 (ships `lib/net462`, runs on net472; pin this version in Phase 2) ran the shipped `vueCompilerSfc.js` bundle on the first try. The bundle registers with an empty dependency array, so no `vue` stub is needed, and it already exports `version` ("3.3.10", matching the lockfile), confirming the Phase 1 version assumption.
 
-Timings, Release build:
+Timings, Release build. The figures below were re-measured after Phase 1 against the real shipped bundle, with the .NET JIT warmed, which is what a long-running IIS worker actually experiences. Earlier spike numbers (bundle load of 1000 ms or more) included first-time JIT of Jint's own code in a fresh console process and overstate the steady-state cost.
 
-| Stage | Time |
-|---|---|
-| Engine create | 125 ms |
-| Shim execute | 309 ms |
-| Bundle parse + execute (740KB) | 1085 ms |
-| Compile (template + script setup) | 679 ms first, 193 ms warm |
-| Full cold path, create through dispose | 607 to 878 ms |
+Fixed cost, independent of content: **208 to 288 ms** to create the engine, load the 742KB bundle, and dispose.
+
+Full cold path per request, create through dispose:
+
+| Source size | Total | Output module |
+|---|---|---|
+| 604 chars | 523 ms | 2.3 KB |
+| 2.4 KB | 761 ms | 6.1 KB |
+| 9.3 KB | 1587 ms | 20.7 KB |
+| 27.8 KB | 3699 ms | 59.9 KB |
+
+**Cost scales linearly with source size above a fixed floor.** The data fits `450 ms + 120 ms per KB` closely (predicted 521 / 721 / 1512 / 3636 against measured 523 / 761 / 1587 / 3699). There is no quadratic knee. A typical authored component of 1 to 5 KB lands between 550 ms and 1.1 s. The 10 second timeout in Phase 2 gives headroom to roughly 75 KB of source.
+
+Do not quote a single figure without its source size. In particular, the 425 ms seen in the Phase 4 test output belongs to the broken-template test, which throws at `parse` and never reaches template or style compilation, so it measures the cost of failing rather than the cost of compiling.
 
 Both fixtures produced real render output (scoped style fixture emitted the `data-v-` scope id and compiled CSS), `new Function` works (production uses it for parse validation), and a broken fixture surfaced a clean compiler message ("Interpolation end sign was not found.").
 
