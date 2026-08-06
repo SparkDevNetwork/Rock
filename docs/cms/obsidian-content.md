@@ -1,16 +1,18 @@
 ---
 title: Obsidian Content
-last_updated: 2026-08-03
+last_updated: 2026-08-06
 status: prototype (unmerged, branch `feature-kh-obsidian-content`)
 related_files:
   - Rock/AI/Agent/ObsidianVibeCodingSkill.cs
   - Rock/AI/Agent/PageBuilderSkill.cs
+  - Rock/Cms/ObsidianContentCompiler.cs
   - Rock/Model/CMS/ObsidianContent/ObsidianContent.cs
   - Rock/Model/CMS/ObsidianContent/ObsidianContentService.cs
   - Rock.Blocks/Cms/ObsidianContentDetail.cs
   - Rock.JavaScript.Obsidian.Blocks/src/Cms/obsidianContentDetail.obs
   - Rock.JavaScript.Obsidian.Blocks/src/Cms/obsidianContentDetail/obsidianContentCompiler.partial.ts
   - Rock.JavaScript.Obsidian.Blocks/src/Cms/obsidianContentDetail/viewPanel.partial.obs
+  - Rock.JavaScript.Obsidian/Framework/Libs/obsidianContentCompiler.ts
   - Rock.JavaScript.Obsidian/System/core.ts
   - Rock.Rest/v2/ControlsController.cs
   - Rock.Migrations/Migrations/202607221200000_AddObsidianContent.cs
@@ -22,7 +24,7 @@ related_files:
 
 ## What It Is
 
-An admin drops one **Obsidian Content Detail** block on a page and writes a Vue component right there. The code is turned into a loadable module in the admin's own browser, then saved to the database next to the original source. Visitors get only the finished module. No repo file, no Rock build.
+An admin drops one **Obsidian Content Detail** block on a page and writes a Vue component right there. The code is turned into a loadable module (in the admin's browser when saved from the editor, or on the server when saved through MCP), then stored in the database next to the original source. Visitors get only the finished module. No repo file, no Rock build.
 
 The MCP layer lets Claude do the same thing from a chat, without anyone opening the editor.
 
@@ -34,8 +36,8 @@ flowchart TD
     B --> C["2. Claude finds the controls to use"]
     C --> D["3. Claude finds the API to pull data from"]
     D --> E["4. Claude writes the Vue component"]
-    E --> F["5. Claude compiles it to a SystemJS module"]
-    F --> G["6. Claude saves source plus compiled output"]
+    E --> F["5. Claude saves the source"]
+    F --> G["6. The server compiles it to a SystemJS module and stores both"]
     G --> H["7. Page renders it for every visitor"]
 ```
 
@@ -44,10 +46,9 @@ flowchart TD
 | 1. Place the block | `FindPage`, `CreatePage`, `AddBlock` | Works |
 | 2. Find controls | `ListObsidianControls`, `GetObsidianControl` | Not built. Claude reads the repo instead. |
 | 3. Find APIs | `SearchRockApis` | Not built. Claude reads the repo instead. |
-| 5. Get the compiler | `GetCompiler` | Not built. Claude reads the repo instead. |
-| 6. Save | `SetContentSource` (and `GetContentSource` to re-read) | Works |
+| 5 and 6. Save and compile | `SetContentSource` (and `GetContentSource` to re-read) | Works. The server compiles source-only saves itself. |
 
-The pattern is hard to miss: three of the five tools are unbuilt, and Claude works around all three the same way, by reading the Rock repo off disk. That is why the whole flow works from Claude Code today and would not work at all from Claude Desktop.
+Two of the tools are unbuilt, and Claude works around both the same way, by reading the Rock repo off disk. Discovery (controls and data) is the remaining gap for a repo-less client; the compile step no longer is one, because the server does it.
 
 Everything rides Rock's existing MCP endpoint at `/api/v2/mcp/{slug}`. Each tool is a C# method with an `[AgentToolGuid]`, and gets the acting person from `AgentRequestContext`. Writing is admin-gated.
 
@@ -130,18 +131,18 @@ The authoring contract is narrow, and Claude has to stay inside it:
 
 ---
 
-### Step 5: Compiling it
+### Steps 5 and 6: Compiling it
 
-Rock has no JavaScript engine and will not get one, so the compiled module has to come from the client.
+**The server compiles.** There is exactly one compiler implementation, the [obsidianContentCompiler](../../Rock.JavaScript.Obsidian/Framework/Libs/obsidianContentCompiler.ts) library bundle, and it runs in two hosts:
 
-**How Claude does it today, with the repo:**
+- **The browser editor** loads it on demand through the import map (edit mode only, never for a visitor) and compiles on save.
+- **The server** runs the same built bundle (`~/Obsidian/Libs/obsidianContentCompiler.js`) inside a [Jint](https://github.com/sebastienros/jint) JavaScript engine via [ObsidianContentCompiler.cs](../../Rock/Cms/ObsidianContentCompiler.cs) whenever `SetContentSource` receives source without compiled output.
 
-1. **Read the assembler.** [obsidianContentCompiler.partial.ts](../../Rock.JavaScript.Obsidian.Blocks/src/Cms/obsidianContentDetail/obsidianContentCompiler.partial.ts) is the exact pipeline the browser edit path uses.
-2. **Use the compiler already on disk.** `@vue/compiler-sfc` sits in `Rock.JavaScript.Obsidian/node_modules/` at version `3.3.10`, the same version Rock bundles for the browser. Version lockstep comes free, because it is the same install.
-3. **Make it runnable under Node.** Strip the TypeScript types, and drop the `import { version } from "vue"` line since the version is known.
-4. **Run `compileSource` over the authored source** and take the resulting module string.
+Because both hosts run the same bundle, the same source always produces the same module. The engine is created per compile and disposed afterward (steady-state memory cost is zero; the measured cold path is under a second), it is constrained by a timeout and a recursion limit, and it only ever compiles, never executes, the output. A client that can compile (Claude Code with the repo) may still supply `compiledContent` itself; both paths store the same thing.
 
-**What the assembler actually does,** in order:
+Two Jint-specific constraints live in the bundle and must stay there: source map generation is disabled (Jint's `Function.prototype.toString` returns `[native code]`, which breaks `source-map-js` regenerating its own sort function), and the Vue version comes from `@vue/compiler-sfc`'s own `version` export rather than an `import` from `vue`, keeping the bundle dependency-free so the server needs no import map.
+
+**What the compiler actually does,** in order:
 
 1. `parse()` the single-file component into a descriptor. Parse errors stop here.
 2. Hash the source into a scope id, used for scoped styles and to dedupe injected style tags.
@@ -153,27 +154,26 @@ Rock has no JavaScript engine and will not get one, so the compiled module has t
 
 The output has to be SystemJS format rather than normal ESM because Rock resolves `@Obsidian/...` through a SystemJS alias map, not a browser import map. A native `import()` of those names would simply fail.
 
-**Why this runs fine outside a browser.** The compiler is Node-native and the assembler is pure string manipulation. The only `document` reference is *inside the generated output string*, and that runs later in the visitor's browser, never during the compile. The Phase 0 spike confirmed this end to end under Node 20, including a headless render of the result.
-
-**Without a repo, this is where it stops.** There is no assembler to read and no version to pin against. `GetCompiler` would return the assembler as runnable JavaScript plus the pinned version. It is not built, even though `SetContentSource`'s own tool text already tells clients to use it.
+**Why this runs fine outside a browser.** The compiler is Node-native and the assembler is pure string manipulation. The only `document` reference is *inside the generated output string*, and that runs later in the visitor's browser, never during the compile.
 
 ---
 
-### Step 6: Saving it
+### Saving it
 
 `SetContentSource(blockId, source, compiledContent?, compiledVueVersion?)`.
 
-The server does three checks, in this order:
+The server checks, in this order:
 
 1. **Is there source at all.**
 2. **If compiled output was supplied:** a version string must be present, and the payload must match `^\s*System\.register\s*\(\s*\[`.
 3. **Is the caller allowed:** EDIT authorization on that block, using `AgentRequestContext.CurrentPerson`.
+4. **If no compiled output was supplied:** the server compiles the source itself (see above). On success the compiled module and its Vue version are stored alongside the source. **On failure nothing is stored** and the tool returns the compiler's error text, so the agent fixes the source and retries. A saved-but-blank block with no error anywhere was the failure mode this replaced.
 
 Then it upserts the row through `GetOrCreateByBlockId` and stamps `CompiledDateTime`.
 
-Note what the server does **not** do: it never runs the module. It cannot, having no JavaScript engine. Whether the code actually works is the client's responsibility, which is the reason a fallback was planned.
+The server still never **runs** the module; it compiles it. Whether the code behaves correctly at render time remains the author's responsibility.
 
-**The fallback that does not exist.** Send source with no compiled output and the tool replies that the content "will render after an administrator next views the page." Nothing implements that. The row saves, the page renders nothing, and no error is raised anywhere.
+**The one uncompiled path left:** when the compiler bundle itself is not deployed (a half-built instance), the source-only save still succeeds so work is not lost, and the tool says plainly that the content will not render until an administrator opens the editor and saves there. No compile-on-view is promised, because none exists.
 
 ---
 
@@ -219,16 +219,17 @@ One row per block placement, in `[ObsidianContent]`.
 | Entity and service | [ObsidianContent.cs](../../Rock/Model/CMS/ObsidianContent/ObsidianContent.cs), [ObsidianContentService.cs](../../Rock/Model/CMS/ObsidianContent/ObsidianContentService.cs) |
 | Block (C#) | [ObsidianContentDetail.cs](../../Rock.Blocks/Cms/ObsidianContentDetail.cs) |
 | Block (Vue) and partials | [obsidianContentDetail.obs](../../Rock.JavaScript.Obsidian.Blocks/src/Cms/obsidianContentDetail.obs) |
-| Compiler | [obsidianContentCompiler.partial.ts](../../Rock.JavaScript.Obsidian.Blocks/src/Cms/obsidianContentDetail/obsidianContentCompiler.partial.ts) |
+| Compiler (shared lib, both hosts) | [obsidianContentCompiler.ts](../../Rock.JavaScript.Obsidian/Framework/Libs/obsidianContentCompiler.ts) |
+| Compiler loader (browser edit path) | [obsidianContentCompiler.partial.ts](../../Rock.JavaScript.Obsidian.Blocks/src/Cms/obsidianContentDetail/obsidianContentCompiler.partial.ts) |
+| Compile service (server, Jint) | [ObsidianContentCompiler.cs](../../Rock/Cms/ObsidianContentCompiler.cs) |
 | Alias map and loader | [System/core.ts](../../Rock.JavaScript.Obsidian/System/core.ts) |
 | Control endpoints | [Rock.Rest/v2/ControlsController.cs](../../Rock.Rest/v2/ControlsController.cs) |
 | Migration | [202607221200000_AddObsidianContent.cs](../../Rock.Migrations/Migrations/202607221200000_AddObsidianContent.cs) |
 
 ## Gaps
 
-1. **No discovery tools.** Claude finds controls and APIs by reading the repo. Works from Claude Code, impossible from anywhere else.
-2. **`GetCompiler` is not built,** so a client without the repo cannot compile. Clients with the repo work fine.
-3. **Compile-on-view does not exist,** but `SetContentSource` says it does. Source-only saves render nothing, silently.
-4. **No Vue version check** anywhere, on save or on render. `SetContentSource` stores whatever version string it is handed.
-5. **The editor's preview note is wrong.** It claims API calls will not work in the preview. They do: `useHttp()` falls back to the real functions and the frame is same-origin. The preview isolates crashes and DOM changes, not the login session.
-6. **The branch is 124 commits behind `develop`.** The migration's EF snapshot needs regenerating with `Add-Migration`.
+1. **No discovery tools.** Claude finds controls and APIs by reading the repo. Works from Claude Code, impossible from anywhere else. This is now the only thing keeping the flow off Claude Chat and Claude Desktop.
+2. **No Vue version check on render.** The server stamps the compile-time version on saves it compiles, but client-supplied versions are stored as given and nothing validates at render time.
+3. **The editor's preview note is wrong.** It claims API calls will not work in the preview. They do: `useHttp()` falls back to the real functions and the frame is same-origin. The preview isolates crashes and DOM changes, not the login session.
+4. **The branch is 124 commits behind `develop`.** The migration's EF snapshot needs regenerating with `Add-Migration`.
+5. **The block's own editor still compiles client-side.** Harmless (it runs the same shared bundle), but consolidating its save path onto the server compiler is a future cleanup.
