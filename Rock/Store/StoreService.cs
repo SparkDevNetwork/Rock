@@ -20,6 +20,7 @@ using System.Web;
 
 using RestSharp;
 
+using Rock.Configuration;
 
 namespace Rock.Store
 {
@@ -55,6 +56,11 @@ namespace Rock.Store
         /// <returns></returns>
         public bool AuthenicateUser( string username, string password, out string errorResponse )
         {
+            if ( RockApp.Current.InitializationSettings.DeploymentEnvironment == Enums.Configuration.DeploymentEnvironment.Demo )
+            {
+                throw new InvalidOperationException( "Rock Shop services are not available in the demo environment." );
+            }
+
             errorResponse = string.Empty;
 
             string encodedUserName = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( username ) ) );
@@ -83,6 +89,11 @@ namespace Rock.Store
         /// <returns></returns>
         public PurchaseResponse Purchase( string username, string password, int packageId, out string errorResponse )
         {
+            if ( RockApp.Current.InitializationSettings.DeploymentEnvironment == Enums.Configuration.DeploymentEnvironment.Demo )
+            {
+                throw new InvalidOperationException( "Rock Shop services are not available in the demo environment." );
+            }
+
             errorResponse = string.Empty;
 
             // setup REST call
