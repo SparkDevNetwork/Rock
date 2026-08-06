@@ -450,5 +450,25 @@ namespace Rock.SystemKey
         /// configuration options in the UI.
         /// </summary>
         public const string TRAILBLAZER_MODE = "core_TrailblazerMode";
+
+        /// <summary>
+        /// The JSON that represents the connected services settings for the
+        /// Rock installation. The settings contains the options that have been
+        /// set by the administrator.
+        /// </summary>
+        public const string CONNECTED_SERVICES_MANIFEST = "core_ConnectedServicesManifest";
+
+        /// <summary>
+        /// The JSON that represents the connected services configuration for the
+        /// Rock installation. The configuration contains the data provided by
+        /// the API service.
+        /// </summary>
+        public const string CONNECTED_SERVICES_CONFIGURATION = "core_ConnectedServicesConfiguration";
+
+        /// <summary>
+        /// The JSON that represents the connected services authentication for
+        /// linking the Rock installation to a Spark organization.
+        /// </summary>
+        public const string CONNECTED_SERVICES_AUTH = "core_ConnectedServicesAuth";
     }
 }
