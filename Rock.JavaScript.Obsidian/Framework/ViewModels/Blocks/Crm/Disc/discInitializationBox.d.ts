@@ -27,6 +27,12 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Contains all the initial configuration data required to render the Disc block. */
 export type DiscInitializationBox = {
+    /**
+     * Gets or sets the identifier of the assessment record the results should be saved to.
+     * A value of zero indicates that a new assessment should be created when the test is completed.
+     */
+    assessmentId: number;
+
     /** Gets or sets whether the individual can retake the test. */
     canRetakeTest: boolean;
 

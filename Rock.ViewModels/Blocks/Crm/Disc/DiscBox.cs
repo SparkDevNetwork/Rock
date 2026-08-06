@@ -33,6 +33,12 @@ namespace Rock.ViewModels.Blocks.Crm.Disc
         public DateTime? StartDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the identifier of the assessment record the results should be saved to.
+        /// A value of zero indicates that a new assessment should be created when the test is completed.
+        /// </summary>
+        public int AssessmentId { get; set; }
+
+        /// <summary>
         /// Gets or sets the date the assessment was last saved.
         /// </summary>
         public DateTime? LastSavedDate { get; set; }
