@@ -1753,8 +1753,8 @@ namespace Rock.Web.UI
             foreach ( string param in PageParameter( "context", true ).Split( delim, StringSplitOptions.RemoveEmptyEntries ) )
             {
                 string contextItem = Rock.Security.Encryption.DecryptString( param );
-                string[] parts = contextItem.Split( '|' );
-                if ( parts.Length == 2 )
+                string[] parts = contextItem?.Split( '|' );
+                if ( parts != null && parts.Length == 2 )
                 {
                     keyEntityDictionary.AddOrReplace( parts[0], new Data.KeyEntity( parts[1] ) );
                 }

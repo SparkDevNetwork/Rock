@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 
 using Rock.Attribute;
+using Rock.Enums.Configuration;
 
 namespace Rock.Configuration
 {
@@ -178,5 +179,12 @@ namespace Rock.Configuration
         /// </remarks>
         [RockInternal( "1.16.6" )]
         string AnalyticsConnectionString { get; }
+
+        /// <summary>
+        /// The deployment environment for the current Rock instance. This can
+        /// be used to determine if the application is running in a production
+        /// or staging environment.
+        /// </summary>
+        DeploymentEnvironment DeploymentEnvironment { get; }
     }
 }

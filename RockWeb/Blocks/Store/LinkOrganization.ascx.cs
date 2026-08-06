@@ -14,16 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
+using Microsoft.Extensions.DependencyInjection;
 
 using Rock;
+using Rock.Configuration;
+using Rock.Configuration.ConnectedServices;
 using Rock.Model;
-using Rock.Store;
+
+using System;
+using System.ComponentModel;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web.UI;
 
 namespace RockWeb.Blocks.Store
 {
@@ -36,34 +39,6 @@ namespace RockWeb.Blocks.Store
     [Rock.SystemGuid.BlockTypeGuid( "41DFED6E-2ECD-4198-80C3-816B27241EB4" )]
     public partial class LinkOrganization : Rock.Web.UI.RockBlock
     {
-        #region Fields
-
-        // used for private variables
-
-        #endregion
-
-        #region Properties
-
-        // used for public / protected properties
-        private string Password
-        {
-            get
-            {
-                var password = ViewState["password"].ToString();
-                if ( password.IsNotNullOrWhiteSpace() )
-                {
-                    password = Rock.Security.Encryption.DecryptString( password );
-                }
-
-                return password;
-            }
-            set
-            {
-                ViewState["password"] = Rock.Security.Encryption.EncryptString( value );
-            }
-        }
-        #endregion
-
         #region Base Control Methods
 
         //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
@@ -88,13 +63,22 @@ namespace RockWeb.Blocks.Store
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            var requestId = PageParameter( "request_id" );
+            var status = PageParameter( "status" );
+
+            if ( !IsPostBack && requestId.IsNotNullOrWhiteSpace() && status.IsNotNullOrWhiteSpace() )
+            {
+                Page.RegisterAsyncTask( new PageAsyncTask( async ( cancellationToken ) =>
+                {
+                    await ProcessCallback( requestId, status, cancellationToken );
+                } ) );
+            }
         }
 
         #endregion
 
         #region Events
-
-        // handlers called by the controls on your block
 
         /// <summary>
         /// Handles the BlockUpdated event of the control.
@@ -106,57 +90,62 @@ namespace RockWeb.Blocks.Store
 
         }
 
-        protected void btnRetrieveOrganization_Click( object sender, EventArgs e )
+        protected async void btnStart_Click( object sender, EventArgs e )
         {
-            // get organizations
-            string errorMessage = string.Empty;
-
-            OrganizationService organizationService = new OrganizationService();
-            Password = txtPassword.Text;
-            var organizations = organizationService.GetOrganizations( txtUsername.Text, Password, out errorMessage ).ToList();
-            if ( organizations.Count == 0 )
+            try
             {
-                ProcessNoResults();
-                return;
-            }
+                var provider = RockApp.Current.GetRequiredService<ConnectedServicesProvider>();
 
-            var organizationKey = StoreService.GetOrganizationKey();
-            Organization selectedOrganization = null;
-            if ( organizationKey.IsNotNullOrWhiteSpace() )
+                if ( !provider.IsOrganizationLinked() && provider.IsLegacyOrganizationLinked() )
+                {
+                    try
+                    {
+                        var upgradeCts = new CancellationTokenSource( 5_000 );
+                        var result = await provider.UpgradeLegacyIdentifierAsync( upgradeCts.Token );
+                        var upgradeReturnUrl = PageParameter( "ReturnUrl" );
+
+                        if ( upgradeReturnUrl.IsNotNullOrWhiteSpace() )
+                        {
+                            RequestContext.Response.RedirectToUrl( upgradeReturnUrl );
+                        }
+                        else
+                        {
+                            RequestContext.Response.RedirectToUrl( "/RockShop" );
+                        }
+
+                        return;
+                    }
+                    catch
+                    {
+                        // Intentionally ignored, fall through to full link flow.
+                    }
+                }
+
+                var originalReturnUrl = PageParameter( "ReturnUrl" );
+                var uri = new UriBuilder( RequestContext.RequestUri );
+                var parameters = uri.Query.ParseQueryString();
+
+                parameters.Remove( "ReturnUrl" );
+                parameters.Remove( "request_id" );
+                parameters.Remove( "status" );
+
+                uri.Query = parameters.ToString();
+
+                var returnUrl = uri.ToString();
+                var cts = new CancellationTokenSource( 5_000 );
+                var redirectUrl = await provider.StartLinkOrganizationAsync( returnUrl, originalReturnUrl, cts.Token );
+
+                RequestContext.Response.RedirectToUrl( redirectUrl );
+            }
+            catch ( Exception ex )
             {
-                selectedOrganization = organizations.FirstOrDefault( o => o.Key == organizationKey );
+                if ( ex is HttpRequestException httpEx && httpEx.InnerException != null )
+                {
+                    ex = httpEx.InnerException;
+                }
+
+                nbStartError.Text = $"<p>An error occurred trying to contact the remote server. Please try again in a little while.</p><p>{ex.Message.EncodeHtml()}</p>";
             }
-            else if ( organizations.Count == 1 )
-            {
-                selectedOrganization = organizations.FirstOrDefault();
-            }
-
-            if ( selectedOrganization == null )
-            {
-                ProcessMultipleOrganizations( organizations );
-                return;
-            }
-
-            SetOrganization( selectedOrganization );
-        }
-
-        protected void rblOrganizations_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            btnSelectOrganization.Enabled = true;
-        }
-
-        protected void btnSelectOrganization_Click( object sender, EventArgs e )
-        {
-            Organization organization = new Organization();
-            organization.Key = rblOrganizations.SelectedValue;
-            organization.Name = rblOrganizations.SelectedItem.Text;
-            SetOrganization( organization );
-        }
-
-        protected void btnSelectOrganizationCancel_Click( object sender, EventArgs e )
-        {
-            pnlSelectOrganization.Visible = false;
-            pnlAuthenicate.Visible = true;
         }
 
         protected void btnContinue_Click( object sender, EventArgs e )
@@ -176,74 +165,39 @@ namespace RockWeb.Blocks.Store
 
         #region Methods
 
-        private void SetOrganization( Organization organization )
+        private async Task ProcessCallback( string requestId, string status, CancellationToken cancellationToken )
         {
-            StoreService.SetOrganizationKey( organization.Key );
-
-            pnlAuthenicate.Visible = false;
-            pnlSelectOrganization.Visible = false;
-            pnlAverageWeeklyAttendance.Visible = true;
-            pnlComplete.Visible = false;
-        }
-
-        private void ProcessNoResults()
-        {
-            string errorMessage = string.Empty;
-
-            // first check that the username/password they provided are correct
-            bool canAuthicate = new StoreService().AuthenicateUser( txtUsername.Text, Password );
-
-            if ( canAuthicate )
+            if ( status != "success" )
             {
-                lMessages.Text = @"<div class='alert alert-warning margin-t-md'>It appears that no organizations have been configured for this account. You can 
-                                set up an organization on the Rock RMS website. Simply log in and then select 'My Account' from the dropdown in the top right
-                                corner or see the <a href='https://www.rockrms.com/RockShopHelp'>Rock Shop Help Page</a>.</div>";
-            }
-            else
-            {
-                lMessages.Text = @"<div class='alert alert-warning margin-t-md'>The username/password provided did not match a user on the Rock RMS website. Be sure
-                    you provide a valid account from this site. If you would like to create an account or retrieve your password please <a href='https://www.rockrms.com/Login'>
-                    visit the Rock RMS website</a> or see the <a href='https://www.rockrms.com/RockShopHelp'>Rock Shop Help Page</a>.</div>";
+                nbStartError.Text = $"<p>An error occurred trying to link your organization. Please try again in a little while.</p>";
+                return;
             }
 
-        }
+            try
+            {
+                var provider = RockApp.Current.GetRequiredService<ConnectedServicesProvider>();
+                var result = await provider.CompleteLinkOrganizationAsync( requestId, cancellationToken );
 
-        private void ProcessMultipleOrganizations( List<Organization> organizations )
-        {
-            pnlAuthenicate.Visible = false;
-            pnlSelectOrganization.Visible = true;
-            rblOrganizations.DataSource = organizations;
-            rblOrganizations.DataTextField = "Name";
-            rblOrganizations.DataValueField = "Key";
-            rblOrganizations.DataBind();
+                if ( result.Context.IsNotNullOrWhiteSpace() )
+                {
+                    RequestContext.Response.RedirectToUrl( result.Context );
+                }
+                else
+                {
+                    RequestContext.Response.RedirectToUrl( "/RockShop" );
+                }
+            }
+            catch ( Exception ex )
+            {
+                if ( ex is HttpRequestException httpEx && httpEx.InnerException != null )
+                {
+                    ex = httpEx.InnerException;
+                }
+
+                nbStartError.Text = $"<p>An error occurred trying to contact the remote server. Please try again in a little while.</p><p>{ex.Message.EncodeHtml()}</p>";
+            }
         }
 
         #endregion
-
-        protected void btnSaveAttendance_Click( object sender, EventArgs e )
-        {
-            var averageWeeklyAttendance = nbAverageWeeklyAttendance.IntegerValue;
-
-            if ( averageWeeklyAttendance == null )
-            {
-                // error message
-                return;
-            }
-
-            var result = new OrganizationService().SetOrganizationSize( txtUsername.Text, Password, StoreService.GetOrganizationKey(), averageWeeklyAttendance.Value );
-            if ( result.HasError )
-            {
-                // Show error
-                return;
-            }
-
-            lCompleteMessage.Text = string.Format( "<div class='alert alert-success margin-t-md'><strong>Success!</strong> We were able to configure the store for use by {0}.</div>", result.Result.Name );
-
-            pnlAuthenicate.Visible = false;
-            pnlSelectOrganization.Visible = false;
-            pnlAverageWeeklyAttendance.Visible = false;
-            pnlComplete.Visible = true;
-
-        }
     }
 }

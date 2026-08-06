@@ -1,0 +1,277 @@
+<template>
+    <div style="border: 1px solid var(--color-interface-soft); border-radius: var(--rounded-xsmall)">
+        <DisplayCard iconCssClass="ti ti-robot"
+                     title="Rock IQ"
+                     :description="description">
+            <template #rightMiddleSection>
+                <div class="service-code-details">
+                    <div v-if="configuration"
+                         style="display: flex; flex-direction: column; align-items: flex-end;">
+                        <span v-if="configuration.usageError"
+                              v-tooltip="configuration.usageError"
+                              class="label label-warning">Usage Unavailable</span>
+                        <template v-else>
+                            <span>Monthly Usage: {{ toCurrencyOrNull(configuration.monthlyUsage) }}</span>
+                            <span>Balance Remaining: {{ toCurrencyOrNull(configuration.balanceRemaining) }}</span>
+                        </template>
+                    </div>
+
+                    <span v-if="configuration" class="badge badge-info">{{ configuration?.bundleName }}</span>
+
+                    <RockButton btnType="link"
+                                autoDisable
+                                @click="onUpdateClick">
+                        {{ configuration ? "Update" : "Enable" }}
+                    </RockButton>
+                </div>
+            </template>
+        </DisplayCard>
+
+        <TransitionVerticalCollapse>
+            <div v-if="isConfiguring">
+                <div style="padding: var(--spacing-large);">
+                    <RockForm ref="editForm"
+                              @submit="onSaveConfiguration">
+                        <RadioButtonList v-model="editBundleId"
+                                         label="Plan"
+                                         help="Select the plan that best fits your organization's needs."
+                                         rules="required"
+                                         :items="bundleItems" />
+
+                        <hr />
+
+                        <div v-if="isOneTimeBoostVisible" class="form-group">
+                            <Toggle v-model="isOneTimeBoost"
+                                    trueText="Add One-time Boost"
+                                    falseText="Set Monthly Limit"
+                                    btnSize="md" />
+                        </div>
+
+                        <template v-if="!isOneTimeBoost">
+                            <div style="max-width: 200px;">
+                                <CurrencyBox v-model="editMonthlySpendLimit"
+                                             label="Monthly Spend Limit"
+                                             help="When a new billing cycle starts, your account will be recharged up to this amount. If your balance already meets or exceeds this amount then no charge will be made."
+                                             rules="required"
+                                             :minimumValue="1">
+                                    <template #inputGroupAppend>
+                                        <span class="input-group-addon">/mo</span>
+                                    </template>
+                                </CurrencyBox>
+                            </div>
+
+                            <p>
+                                Usage pauses automatically when this limit is reached. The new amount takes effect on the next billing cycle.
+                            </p>
+
+                            <RockFormFieldError label="Authorization" :error="editAuthorize ? '' : 'is required'" />
+                            <div class="checkbox">
+                                <label title="">
+                                    <input type="checkbox" v-model="editAuthorize" />
+                                    <span class="label-text ">
+                                        I authorize Spark Development Network to charge my payment method on file for Rock IQ usage up to my monthly spending limit.
+                                        I agree to the <a href="http://rockrms.com/spark-connected-services/agreements/rock-iq" target="_blank">Terms and Conditions</a> and understand I can adjust or disable this at any time from my organization settings.
+                                    </span>
+                                </label>
+                            </div>
+                        </template>
+
+                        <template v-else>
+                            <div style="max-width: 200px;">
+                                <CurrencyBox v-model="editBoostAmount"
+                                             label="Boost Amount"
+                                             help="This is a one-time charge to boost your account balance."
+                                             rules="required"
+                                             :minimumValue="1">
+                                    <template #inputGroupAppend>
+                                        <span class="input-group-addon">/mo</span>
+                                    </template>
+                                </CurrencyBox>
+                            </div>
+
+                            <p>
+                                The amount above will be added to your current balance.
+                            </p>
+
+                            <RockFormFieldError label="Authorization" :error="editAuthorize ? '' : 'is required'" />
+                            <InlineCheckbox v-model="editAuthorize"
+                                            label="I authorize Spark Development Network to charge my payment method on file for a one-time boost for Rock IQ usage."
+                                            rules="required" />
+                        </template>
+
+                        <div class="service-actions">
+                            <div class="primary-actions">
+                                <RockButton btnType="primary"
+                                            autoDisable
+                                            autoLoading
+                                            @click="editForm?.submitForm">
+                                    {{ isOneTimeBoost ? "Purchase Boost" : "Save" }}
+                                </RockButton>
+
+                                <RockButton type="button"
+                                            btnType="link"
+                                            @click="onCancelConfigurationClick">
+                                    Cancel
+                                </RockButton>
+                            </div>
+
+                            <div class="secondary-actions">
+                                <RockButton v-if="isAlreadyEnabled"
+                                            type="button"
+                                            btnType="warning"
+                                            autoDisable
+                                            autoLoading
+                                            @click="onDisableConfigurationClick">
+                                    Disable
+                                </RockButton>
+                            </div>
+                        </div>
+                    </RockForm>
+                </div>
+            </div>
+        </TransitionVerticalCollapse>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import InlineCheckbox from "@Obsidian/Controls/inlineCheckbox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockFormFieldError from "@Obsidian/Controls/rockFormFieldError.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { computed, PropType, ref } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import { RockIntelligenceOptionsBag } from "@Obsidian/ViewModels/Blocks/Administration/SparkConnectedServices/rockIntelligenceOptionsBag";
+    import { RockIntelligenceConfigurationBag } from "@Obsidian/ViewModels/Blocks/Administration/SparkConnectedServices/rockIntelligenceConfigurationBag";
+    import { SaveRockIntelligenceResponseBag } from "@Obsidian/ViewModels/Blocks/Administration/SparkConnectedServices/saveRockIntelligenceResponseBag";
+    import { OneTimeBoostStatus } from "./types.partial";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<RockIntelligenceConfigurationBag | null>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:configuration", value: RockIntelligenceConfigurationBag | null): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const editForm = ref<InstanceType<typeof RockForm> | null>(null);
+
+    const isAlreadyEnabled = computed(() => !!props.configuration);
+    const isConfiguring = ref(false);
+    const isOneTimeBoostVisible = ref(false);
+    const isOneTimeBoost = ref(false);
+    const editBundleId = ref<string>(props.configuration?.bundleIdentifier ?? "");
+    const editMonthlySpendLimit = ref<number | null>(null);
+    const editBoostAmount = ref<number | null>(null);
+    const editAuthorize = ref<boolean>(false);
+    const bundleItems = ref<ListItemBag[]>([]);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const description = computed((): string => {
+        if (props.configuration?.monthlySpendingLimit !== undefined && props.configuration?.monthlySpendingLimit !== null) {
+            return `Monthly Spending Limit: ${toCurrencyOrNull(props.configuration.monthlySpendingLimit)}.`;
+        }
+        else {
+            return "Empower your organization with the latest AI superpowers.";
+        }
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    async function onUpdateClick(): Promise<void> {
+        const result = await invokeBlockAction<RockIntelligenceOptionsBag>("GetRockIntelligenceConfigurationOptions");
+
+        if (result.isSuccess && result.data) {
+            editBundleId.value = result.data.selectedBundleId ?? "";
+            bundleItems.value = result.data.bundles ?? [];
+            editMonthlySpendLimit.value = result.data.spendingLimit ?? null;
+            editAuthorize.value = false;
+
+            isOneTimeBoostVisible.value = !!result.data.selectedBundleId;
+            isOneTimeBoost.value = false;
+            editBoostAmount.value = null;
+            isConfiguring.value = true;
+        }
+        else {
+            await alert(result.errorMessage || "An unknown error occurred trying to edit the Rock Intelligence configuration.");
+        }
+    }
+
+    function onCancelConfigurationClick(): void {
+        isConfiguring.value = false;
+    }
+
+    async function onSaveConfiguration(): Promise<void> {
+        const data = {
+            bundleIdentifier: editBundleId.value,
+            monthlySpendLimit: !isOneTimeBoost.value ? editMonthlySpendLimit.value ?? null : null,
+            oneTimeBoost: isOneTimeBoost.value ? editBoostAmount.value ?? null : null,
+        };
+
+        const result = await invokeBlockAction<SaveRockIntelligenceResponseBag>("SaveRockIntelligence", data);
+
+        if (!result.isSuccess) {
+            await alert(result.errorMessage || "An unknown error occurred trying to save the Rock Intelligence configuration.");
+            return;
+        }
+
+        // If a boost was attempted, surface any non-Complete outcome with a
+        // message before continuing. The configuration is emitted in all
+        // successful-response cases so the view reflects current state.
+        const boostStatus = result.data?.boostStatus as OneTimeBoostStatus | undefined;
+
+        if (boostStatus === OneTimeBoostStatus.Pending) {
+            await alert(result.data?.boostMessage || "The one-time boost payment is pending.");
+        }
+        else if (boostStatus === OneTimeBoostStatus.Declined || boostStatus === OneTimeBoostStatus.Error) {
+            await alert(result.data?.boostMessage || "The one-time boost could not be applied.");
+        }
+
+        emit("update:configuration", result.data?.configuration ?? null);
+        isConfiguring.value = false;
+    }
+
+    async function onDisableConfigurationClick(): Promise<void> {
+        if (!await confirm("AI features in Rock will no longer be available, are you sure you want to disable Rock Intelligence?")) {
+            return;
+        }
+
+        const data = {
+            bundleIdentifier: null,
+            monthlySpendLimit: null,
+            oneTimeBoost: null,
+        };
+
+        const result = await invokeBlockAction<RockIntelligenceConfigurationBag>("SaveRockIntelligence", data);
+
+        if (result.isSuccess) {
+            emit("update:configuration", null);
+            isConfiguring.value = false;
+        }
+        else {
+            await alert(result.errorMessage || "An unknown error occurred trying to save the Rock Intelligence configuration.");
+        }
+    }
+
+    // #endregion
+</script>
