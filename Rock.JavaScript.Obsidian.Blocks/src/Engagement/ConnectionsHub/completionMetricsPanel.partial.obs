@@ -21,24 +21,6 @@
 </template>
 
 <style scoped>
-.completion-metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--spacing-medium);
-}
-
-@media (max-width: 1000px) {
-    .completion-metrics-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 500px) {
-    .completion-metrics-grid {
-        grid-template-columns: repeat(1, 1fr);
-    }
-}
-
 .kpi-tile {
     display: flex;
     flex-direction: column;
