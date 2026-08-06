@@ -1173,5 +1173,18 @@ namespace Rock.Plugin.HotFixes {
                 return ResourceManager.GetString("_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsAttendance", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Follow-up ALTER PROCEDURE script for [spCrm_FamilyAnalyticsEraDataset]
+        ///   that aligns the giving and attendance temp-table pre-filters to the
+        ///   SundayDate week-boundary logic used everywhere else in the procedure
+        ///   and switches GETDATE() to dbo.RockGetDate() so timestamps honor
+        ///   Rock's configured time zone (issue #6902).
+        /// </summary>
+        public static string _311_FixEraFamilyAnalyticsWeekBoundariesFollowup6902_spCrm_FamilyAnalyticsEraDataset {
+            get {
+                return ResourceManager.GetString("_311_FixEraFamilyAnalyticsWeekBoundariesFollowup6902_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
     }
 }

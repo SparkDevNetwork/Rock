@@ -1,0 +1,85 @@
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+using System;
+
+namespace Rock.Plugin.HotFixes
+{
+    /// <summary>
+    /// Backfills the ParentEntityId and ParentEntityTypeId columns on BinaryFile rows that
+    /// belong to a SignatureDocument but were created without those parent-entity references,
+    /// so that BinaryFile.ParentEntityAllowsView (used by GetFile.ashx) can delegate authorization
+    /// to the SignatureDocumentTemplate ACL. Fix for issue #6928.
+    /// </summary>
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 312, "19.5" )]
+    public class FixSignatureDocumentBinaryFileParentEntity6928 : Migration
+    {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            /*
+                8/5/26 - NA
+
+                The 2023 fix for issue #5599 (commit fe56f8318f, Rock v16.1) established that a
+                signed document's BinaryFile should link back to its SignatureDocumentTemplate via
+                ParentEntityId / ParentEntityTypeId so that BinaryFile.ParentEntityAllowsView can
+                delegate authorization to the template. That fix only patched
+                Rock.Blocks/Event/RegistrationEntry.cs, leaving two other creation paths --
+                RockWeb/Blocks/WorkFlow/WorkflowEntry.ascx.cs and
+                Rock/Workflow/Action/WorkflowControl/ElectronicSignature.cs.CreateSignedDocumentPdf
+                -- still emitting BinaryFiles with NULL parent-entity columns. As a result, direct
+                downloads via GetFile.ashx bypassed the template ACL for any file created through
+                those paths (and for any pre-v16.1 file regardless of path), letting a person view
+                a signed document that the template ACL had explicitly denied them.
+
+                Both source paths are fixed in this branch. This migration backfills the historical
+                BinaryFile rows so their parent-entity link matches what future rows will have. It
+                only touches rows where at least one of the two columns is NULL, so any manual
+                customization is preserved.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/6928
+            */
+            Sql( @"
+DECLARE @SignatureDocumentTemplateEntityTypeId INT = (
+    SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.SignatureDocumentTemplate'
+);
+
+IF @SignatureDocumentTemplateEntityTypeId IS NOT NULL
+BEGIN
+    UPDATE bf
+    SET    bf.[ParentEntityTypeId] = @SignatureDocumentTemplateEntityTypeId,
+           bf.[ParentEntityId]     = sd.[SignatureDocumentTemplateId]
+    FROM   [BinaryFile] bf
+    INNER JOIN [SignatureDocument] sd ON sd.[BinaryFileId] = bf.[Id]
+    WHERE  ( bf.[ParentEntityTypeId] IS NULL OR bf.[ParentEntityId] IS NULL )
+        AND sd.[SignatureDocumentTemplateId] IS NOT NULL;
+END
+" );
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            //
+        }
+    }
+}
