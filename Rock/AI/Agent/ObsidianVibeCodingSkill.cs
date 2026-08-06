@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Text.RegularExpressions;
 
 using Rock.AI.Agent.Annotations;
+using Rock.Cms;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -42,6 +43,20 @@ namespace Rock.AI.Agent
         the block's compile-on-view fallback.
 
         Reason: MCP-driven authoring of Obsidian Content, reusing the block's save path.
+
+        8/6/2026 - CLAUDE
+
+        The "no JavaScript engine" rationale above is superseded: the server now
+        compiles source-only saves itself through ObsidianContentCompiler, which runs
+        the same compiler bundle as the block's editor inside a Jint engine (see spec
+        260806). A failed compile stores nothing and returns the compiler's errors so
+        the agent can fix the source, because a saved-but-blank block with no error
+        was the exact failure this feature exists to kill. Client-supplied compiled
+        output still works unchanged, and the shape validation on it remains
+        non-executing. Compile-on-view still does not exist; the only fallback path
+        (compiler bundle not deployed) says so honestly instead of promising it.
+
+        Reason: Server-side compile so repo-less MCP clients get a real feedback loop.
     */
 
     /// <summary>
@@ -122,13 +137,13 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <param name="blockId">The id of the Obsidian Content block placement.</param>
         /// <param name="source">The authored Vue source.</param>
-        /// <param name="compiledContent">The client-compiled SystemJS module, or null to store source only.</param>
+        /// <param name="compiledContent">The client-compiled SystemJS module, or null to have the server compile the source.</param>
         /// <param name="compiledVueVersion">The Vue version the client compiled against. Required when <paramref name="compiledContent"/> is provided.</param>
         /// <returns>A success result, or an error describing why the content was rejected.</returns>
         [AgentToolName( "SetContentSource" )]
         [AgentToolPreamble( "Saving the Obsidian content source." )]
         [AgentUsage( "blockId is the block placement to write; source is the authored Vue single-file-component." )]
-        [AgentUsage( "Provide compiledContent (and compiledVueVersion) when you have compiled the source yourself with the compiler from GetCompiler; otherwise pass source only and the block compiles on the next administrator view." )]
+        [AgentUsage( "Pass source only: the server compiles it and either stores the result or returns the compile errors for you to fix and retry. Nothing is stored when the compile fails. Provide compiledContent (and compiledVueVersion) only if you compiled the source yourself; most clients should not." )]
         [Rock.SystemGuid.AgentToolGuid( "26FFEE94-4868-4DEC-BE40-68FBE30DAEB8" )]
         public AgentToolResult SetContentSource( string blockId, string source, string compiledContent = null, string compiledVueVersion = null )
         {
@@ -151,7 +166,7 @@ namespace Rock.AI.Agent
 
                 if ( !SystemRegisterShape.IsMatch( compiledContent ) )
                 {
-                    return Error( "compiledContent does not look like a compiled component module. Compile the source with the compiler from GetCompiler." );
+                    return Error( "compiledContent does not look like a compiled component module. Pass source only and let the server compile it." );
                 }
             }
 
@@ -174,6 +189,34 @@ namespace Rock.AI.Agent
                     return Error( "You are not authorized to edit this content." );
                 }
 
+                // When the client did not compile the source itself, compile it here so
+                // the agent gets real compile errors back while it can still fix them.
+                // A failed compile stores nothing: a saved-but-blank block with no error
+                // anywhere is the exact failure mode this path exists to prevent.
+                var isServerCompilerUnavailable = false;
+
+                if ( !hasCompiled )
+                {
+                    var compileResult = new ObsidianContentCompiler().CompileSource( source );
+
+                    if ( compileResult.IsSuccess )
+                    {
+                        compiledContent = compileResult.CompiledContent;
+                        compiledVueVersion = compileResult.VueVersion;
+                        hasCompiled = true;
+                    }
+                    else if ( compileResult.IsBundleMissing )
+                    {
+                        // A half-deployed instance should not lose the ability to save
+                        // source, but the caller must hear the honest consequence below.
+                        isServerCompilerUnavailable = true;
+                    }
+                    else
+                    {
+                        return Error( "The source failed to compile. Fix the source and call SetContentSource again. Compiler errors:\n" + string.Join( "\n", compileResult.Errors ) );
+                    }
+                }
+
                 var service = new ObsidianContentService( rockContext );
                 var content = service.GetOrCreateByBlockId( block.Id );
 
@@ -186,11 +229,11 @@ namespace Rock.AI.Agent
 
                 var result = Success( new { block.IdKey } );
 
-                // When the client could not compile, tell it how the content becomes live so
-                // it can set expectations with the user.
-                if ( !hasCompiled )
+                // Only the bundle-missing fallback stores uncompiled source; be honest
+                // about what that means instead of promising a compile that never runs.
+                if ( isServerCompilerUnavailable )
                 {
-                    result.WithInstructions( "Source saved without compiled output. The content will render after an administrator next views the page, or once you provide compiledContent." );
+                    result.WithInstructions( "Source saved without compiled output because this server's compiler bundle is not deployed. The content will not render until an administrator opens the block's editor and saves it there, which compiles it in the browser. Tell the user this plainly." );
                 }
 
                 return result;
