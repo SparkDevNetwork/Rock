@@ -283,32 +283,105 @@ namespace Rock.Model
                     .Select( m => m.GroupRoleId ) )
                 {
                     var role = groupType.Roles.FirstOrDefault( r => r.Id == roleId );
-                    if ( role != null )
+                    if ( role != null && DoesRoleGrantAction( role, action ) )
                     {
-                        if ( action == Authorization.VIEW && ( role.CanView || role.CanTakeAttendance ) )
-                        {
-                            return true;
-                        }
-
-                        if ( action == Authorization.MANAGE_MEMBERS && ( role.CanEdit || role.CanManageMembers ) )
-                        {
-                            return true;
-                        }
-
-                        if ( action == Authorization.EDIT && role.CanEdit )
-                        {
-                            return true;
-                        }
-
-                        if ( action == Authorization.TAKE_ATTENDANCE && ( role.CanEdit || role.CanTakeAttendance ) )
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
             }
 
             return authorized;
+        }
+
+        /// <summary>
+        /// Determines whether the specified action is authorized for the person, using a caller-supplied
+        /// lookup of the person's active group-member roles instead of querying the database per group.
+        /// </summary>
+        /// <remarks>
+        /// This is a batched-data variant of <see cref="IsAuthorized(string, Person)"/>. The normal
+        /// authorization rules (security roles and inherited authority) are evaluated identically; only the
+        /// group-member-role grant check differs: it reads from <paramref name="personActiveRoleIdsByGroupId"/>
+        /// rather than opening a <see cref="RockContext"/> and querying GroupMember. Callers that need to
+        /// authorize many groups for a single person should prefetch that lookup once (a single query keyed
+        /// by GroupId) and pass it in, avoiding the N+1 database round-trips the per-group overload incurs.
+        /// </remarks>
+        /// <param name="action">The action to check (e.g. <see cref="Authorization.EDIT"/>).</param>
+        /// <param name="person">The person to check authorization for.</param>
+        /// <param name="personActiveRoleIdsByGroupId">
+        /// The person's active group-member role ids keyed by GroupId. A group with no entry is treated as
+        /// the person having no active membership in that group.
+        /// </param>
+        /// <returns><c>true</c> if the person is authorized to perform the action; otherwise <c>false</c>.</returns>
+        internal bool IsAuthorized( string action, Person person, IReadOnlyDictionary<int, List<int>> personActiveRoleIdsByGroupId )
+        {
+            // Check to see if user is authorized using normal authorization rules. This is cache-based
+            // (security roles and inherited authority) and does not hit the database.
+            bool authorized = base.IsAuthorized( action, person );
+
+            if ( authorized || person == null )
+            {
+                return authorized;
+            }
+
+            var groupType = GroupTypeCache.Get( this.GroupTypeId );
+
+            if ( groupType == null )
+            {
+                return authorized;
+            }
+
+            // If the person has no prefetched active membership in this group, no group-member role can grant auth.
+            if ( personActiveRoleIdsByGroupId == null
+                || !personActiveRoleIdsByGroupId.TryGetValue( this.Id, out var roleIds )
+                || roleIds == null )
+            {
+                return authorized;
+            }
+
+            // Evaluate the person's active roles against the group type's roles, using the same grant
+            // rules as the database-backed overload.
+            foreach ( int roleId in roleIds )
+            {
+                var role = groupType.Roles.FirstOrDefault( r => r.Id == roleId );
+                if ( role != null && DoesRoleGrantAction( role, action ) )
+                {
+                    return true;
+                }
+            }
+
+            return authorized;
+        }
+
+        /// <summary>
+        /// Determines whether the specified group type role grants the specified authorization action.
+        /// Shared by the database-backed and prefetched <c>IsAuthorized</c> overloads so both apply identical rules.
+        /// </summary>
+        /// <param name="role">The group type role to evaluate.</param>
+        /// <param name="action">The authorization action being checked.</param>
+        /// <returns><c>true</c> if the role grants the action; otherwise <c>false</c>.</returns>
+        private static bool DoesRoleGrantAction( GroupTypeRoleCache role, string action )
+        {
+            if ( action == Authorization.VIEW )
+            {
+                return role.CanView || role.CanTakeAttendance;
+            }
+
+            if ( action == Authorization.MANAGE_MEMBERS )
+            {
+                return role.CanEdit || role.CanManageMembers;
+            }
+
+            if ( action == Authorization.EDIT )
+            {
+                return role.CanEdit;
+            }
+
+            if ( action == Authorization.TAKE_ATTENDANCE )
+            {
+                return role.CanEdit || role.CanTakeAttendance;
+            }
+
+            return false;
         }
 
         #endregion
