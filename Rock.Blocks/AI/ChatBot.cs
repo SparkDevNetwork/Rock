@@ -25,6 +25,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Rock;
 using Rock.AI.Agent;
 using Rock.Attribute;
+using Rock.Configuration;
+using Rock.Configuration.ConnectedServices;
 using Rock.Enums.AI.Agent;
 using Rock.Enums.Cms;
 using Rock.Model;
@@ -65,7 +67,7 @@ namespace Rock.Blocks.AI
     {
         #region Constants
 
-        private static string DockedChatBotInitScript = @"(function () {
+        private static readonly string DockedChatBotInitScript = @"(function () {
     const panelContent = sessionStorage.getItem(""Rock.AI.ChatBot.DockedChat"");
 
     if (!panelContent) {
@@ -101,7 +103,7 @@ namespace Rock.Blocks.AI
                 document.body.dataset.dockedPanelMode = ""push"";
                 document.body.appendChild(dockedElement);
 
-                dockedElement.querySelector("".messages-container"").scrollTop = panelData.scrollTop;
+                dockedElement.querySelector("".conversation-container"").scrollTop = panelData.scrollTop;
             }
 
             if (!updatedIcon) {
@@ -262,6 +264,19 @@ namespace Rock.Blocks.AI
                 errorConfiguration = new Dictionary<string, object>
                 {
                     ["error"] = "The AI Agent Provider is not configured. Please contact your system administrator.",
+                    ["isDockedMode"] = IsDockedMode,
+                };
+
+                return false;
+            }
+
+            var csp = RockApp.Current.GetRequiredService<ConnectedServicesProvider>();
+
+            if ( csp.GetConfiguration()?.RockIntelligence?.Bundle?.Settings?.ApiKey.IsNotNullOrWhiteSpace() != true )
+            {
+                errorConfiguration = new Dictionary<string, object>
+                {
+                    ["error"] = "The Rock IQ service is not enabled. Please contact your system administrator.",
                     ["isDockedMode"] = IsDockedMode,
                 };
 
