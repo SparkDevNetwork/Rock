@@ -40,6 +40,14 @@ namespace Rock.Lava.Blocks
     {
         string _markup = string.Empty;
 
+        /// <inheritdoc />
+        /// <remarks>
+        /// The content of a sql block is a SQL statement, not Lava. Without this override,
+        /// nesting {% sql %} inside a {% lava %} tag causes lines like "SELECT ..." to be
+        /// parsed as unknown Lava tags.
+        /// </remarks>
+        public override bool IsContentLavaCode => false;
+
         /// <summary>
         /// Initializes the specified tag name.
         /// </summary>

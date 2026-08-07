@@ -32,6 +32,13 @@ namespace Rock.Lava.Blocks
         private RuntimeType _runtimeType = RuntimeType.SCRIPT;
         private List<string> _imports = new List<string>();
 
+        /// <inheritdoc />
+        /// <remarks>
+        /// The content of an execute block is C# code, not Lava. It must not be parsed
+        /// with {% liquid %} body semantics when this block is nested inside a {% lava %} tag.
+        /// </remarks>
+        public override bool IsContentLavaCode => false;
+
         /// <summary>
         /// Initializes the specified tag name.
         /// </summary>
