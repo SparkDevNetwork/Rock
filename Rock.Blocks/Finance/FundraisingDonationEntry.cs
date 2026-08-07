@@ -314,15 +314,15 @@ namespace Rock.Blocks.Finance
 
             members.LoadAttributes<GroupMember>( RockContext );
 
-            // Participants who opted out of public contribution requests are excluded from every mode.
+            if ( participationMode == ParticipationType.Family )
+            {
+                return BuildFamilyParticipantOptions( members );
+            }
+
+            // Individual participation excludes members who opted out of public contribution requests.
             var eligibleMembers = members
                 .Where( m => !m.GetAttributeValue( FundraisingAttributeKey.DisablePublicContributionRequests ).AsBoolean() )
                 .ToList();
-
-            if ( participationMode == ParticipationType.Family )
-            {
-                return BuildFamilyParticipantOptions( eligibleMembers );
-            }
 
             return BuildIndividualParticipantOptions( eligibleMembers );
         }
@@ -344,9 +344,9 @@ namespace Rock.Blocks.Finance
         }
 
         /// <summary>
-        /// Builds one participant option per family, grouping eligible members by their primary family.
+        /// Builds one participant option per family, grouping the active members by their primary family.
         /// </summary>
-        /// <param name="members">The eligible group members.</param>
+        /// <param name="members">The active group members, including any who opted out of public contribution requests.</param>
         /// <returns>The participant options.</returns>
         private List<ListItemBag> BuildFamilyParticipantOptions( List<GroupMember> members )
         {
