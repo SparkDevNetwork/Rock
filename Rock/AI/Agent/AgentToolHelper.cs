@@ -671,9 +671,34 @@ namespace Rock.AI.Agent
                 entity.LoadAttributes( _rockContext );
             }
 
+            return GetAvailableAttributes( entity.Attributes.Values, enforceSecurity );
+        }
+
+        /// <summary>
+        /// Gets the attributes that are available from an already resolved set of
+        /// attribute definitions.
+        /// </summary>
+        /// <remarks>
+        /// This exists for callers that work from an entity type rather than an
+        /// entity instance, where there is no object to hang <c>LoadAttributes</c>
+        /// on. It shares the visibility and authorization filtering with the
+        /// entity overload deliberately: a second copy of those filters would
+        /// drift, and when it drifted it would leak attribute definitions the
+        /// person is not allowed to see.
+        /// </remarks>
+        /// <param name="attributes">The attribute definitions to describe.</param>
+        /// <param name="enforceSecurity">Determines if security should be enforced or not.</param>
+        /// <returns>A collection of results describing the attributes the current person may see.</returns>
+        public ICollection<AttributeResult> GetAvailableAttributes( IEnumerable<AttributeCache> attributes, bool enforceSecurity = true )
+        {
+            if ( attributes == null )
+            {
+                return Array.Empty<AttributeResult>();
+            }
+
             var isInternal = _agentRequestContext.AudienceType == AudienceType.Internal;
 
-            return entity.Attributes.Values
+            return attributes
                 .Where( a => isInternal || a.IsPublic )
                 .Where( a => !enforceSecurity || a.IsAuthorized( Authorization.VIEW, _agentRequestContext.CurrentPerson ) )
                 .Select( a =>
