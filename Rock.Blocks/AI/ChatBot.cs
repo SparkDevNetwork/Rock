@@ -47,10 +47,10 @@ namespace Rock.Blocks.AI
     [SupportedSiteTypes( SiteType.Web )]
     [ConfigurationChangedReload( BlockReloadMode.Block )]
 
-    [CustomDropdownListField( "Agent",
-        Description = "The AI agent to use for this chat bot.",
-        IsRequired = true,
-        Key = AttributeKey.Agent,
+    [CustomDropdownListField( "Default Agent",
+        Description = "The default AI agent to use for this chat bot. If not specified then the first available chat agent will be used.",
+        IsRequired = false,
+        Key = AttributeKey.DefaultAgent,
         ListSource = "SELECT [Guid] AS [Value], [Name] AS [Text] FROM [AIAgent] ORDER BY [Name]",
         Order = 0 )]
 
@@ -143,7 +143,7 @@ namespace Rock.Blocks.AI
         /// </summary>
         private static class AttributeKey
         {
-            public const string Agent = "Agent";
+            public const string DefaultAgent = "DefaultAgent";
             public const string DockedMode = "DockedMode";
         }
 
@@ -213,11 +213,27 @@ namespace Rock.Blocks.AI
             return await GetConfigurationBag();
         }
 
+        private AIAgentCache GetConfiguredAgent()
+        {
+            var agentGuid = GetAttributeValue( AttributeKey.DefaultAgent ).AsGuidOrNull();
+
+            if ( agentGuid.HasValue )
+            {
+                return agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+            }
+            else
+            {
+                return AIAgentCache.All( RockContext )
+                    .Where( a => a.AgentType == AgentType.Chat
+                        && a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                    .OrderBy( a => a.Id )
+                    .FirstOrDefault();
+            }
+        }
+
         private bool TryGetConfiguredAgent( out AIAgentCache agentCache, out object errorConfiguration )
         {
-            var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
-
-            agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+            agentCache = GetConfiguredAgent();
 
             if ( agentCache == null )
             {
@@ -507,8 +523,7 @@ namespace Rock.Blocks.AI
         [BlockAction]
         public async Task<BlockActionResult> SendMessage( SendMessageRequestBag request )
         {
-            var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
-            var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+            var agentCache = GetConfiguredAgent();
 
             if ( agentCache == null )
             {
@@ -613,8 +628,7 @@ namespace Rock.Blocks.AI
         [BlockAction]
         public async Task<BlockActionResult> StartNewSession()
         {
-            var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
-            var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+            var agentCache = GetConfiguredAgent();
 
             if ( agentCache == null )
             {
@@ -649,8 +663,7 @@ namespace Rock.Blocks.AI
         [BlockAction]
         public BlockActionResult LoadSession( string sessionIdKey )
         {
-            var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
-            var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+            var agentCache = GetConfiguredAgent();
             var sessionId = IdHasher.Instance.GetId( sessionIdKey ) ?? 0;
 
             if ( agentCache == null )
@@ -694,8 +707,7 @@ namespace Rock.Blocks.AI
         [BlockAction]
         public BlockActionResult ClearSession( string sessionIdKey )
         {
-            var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
-            var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+            var agentCache = GetConfiguredAgent();
             var sessionId = IdHasher.Instance.GetId( sessionIdKey ) ?? 0;
 
             if ( agentCache == null )
@@ -742,8 +754,7 @@ namespace Rock.Blocks.AI
         [BlockAction]
         public BlockActionResult DeleteSession( string sessionIdKey )
         {
-            var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
-            var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+            var agentCache = GetConfiguredAgent();
             var sessionId = IdHasher.Instance.GetId( sessionIdKey ) ?? 0;
 
             if ( agentCache == null )
@@ -785,8 +796,7 @@ namespace Rock.Blocks.AI
         [BlockAction]
         public async Task<BlockActionResult> CreateAnchor( string sessionIdKey, string entityTypeName, int entityId )
         {
-            var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
-            var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+            var agentCache = GetConfiguredAgent();
             var sessionId = IdHasher.Instance.GetId( sessionIdKey ) ?? 0;
 
             if ( agentCache == null )
@@ -833,8 +843,7 @@ namespace Rock.Blocks.AI
         [BlockAction]
         public async Task<BlockActionResult> DeleteAnchor( string sessionIdKey, int entityTypeId )
         {
-            var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
-            var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+            var agentCache = GetConfiguredAgent();
             var sessionId = IdHasher.Instance.GetId( sessionIdKey ) ?? 0;
 
             if ( agentCache == null )
