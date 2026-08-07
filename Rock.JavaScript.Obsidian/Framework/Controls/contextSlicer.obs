@@ -60,6 +60,7 @@
     height: 30px;
     border-color: var(--color-interface-softer);
     background-color: var(--color-interface-softer) !important;
+    font-size: var(--font-size-small);
 }
 
 .contextslicer > .contextslicer-content .ant-select-selector {
