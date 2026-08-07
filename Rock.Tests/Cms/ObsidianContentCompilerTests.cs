@@ -17,6 +17,7 @@
 
 using System;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -63,6 +64,72 @@ onMounted(() => {
 </style>
 ";
 
+        /// <summary>
+        /// A reduction of the component that terminated the worker process: nested
+        /// v-for, object literals inside :class and :style bindings, event
+        /// modifiers, and async functions in the setup block.
+        /// </summary>
+        private const string ComplexSource = @"<template>
+    <div class=""board"">
+        <div v-for=""status in statuses""
+             :key=""status.id""
+             class=""column""
+             :class=""{ 'column-over': dropTargetId === status.id }""
+             @dragover.prevent=""onDragOver(status.id)""
+             @drop.prevent=""onDrop(status.id)"">
+            <span :style=""{ backgroundColor: status.color || '#bfbfbf' }""></span>
+            <div v-for=""item in cardsFor(status.id)""
+                 :key=""item.id""
+                 class=""card""
+                 :class=""{ 'card-dragging': draggingId === item.id }""
+                 @dragstart=""onDragStart(item.id)"">
+                <div>{{ item.name }}</div>
+                <div v-if=""item.note"">{{ item.note }}</div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup>
+import { computed, onMounted, ref, watch } from ""vue"";
+
+const statuses = ref([]);
+const items = ref([]);
+const draggingId = ref(null);
+const dropTargetId = ref(null);
+const selectedId = ref("""");
+
+const grouped = computed(function () {
+    const map = {};
+    statuses.value.forEach(function (s) { map[s.id] = []; });
+    items.value.forEach(function (i) { if (map[i.statusId]) { map[i.statusId].push(i); } });
+    return map;
+});
+
+function cardsFor(id) { return grouped.value[id] || []; }
+function onDragStart(id) { draggingId.value = id; }
+function onDragOver(id) { dropTargetId.value = id; }
+
+async function load() {
+    try {
+        const found = items.value.find(function (i) { return i.id === draggingId.value; });
+        if (found) { found.statusId = dropTargetId.value; }
+    }
+    catch (e) {
+        return null;
+    }
+}
+
+async function onDrop(id) {
+    dropTargetId.value = null;
+    await load();
+}
+
+watch(selectedId, function () { load(); });
+onMounted(function () { load(); });
+</script>
+";
+
         private const string BrokenSource = @"<template>
     <div>
         <span>{{ count </span>
@@ -102,6 +169,53 @@ const count = 1;
             Assert.IsFalse( result.IsSuccess );
             Assert.IsFalse( result.IsBundleMissing );
             Assert.IsTrue( result.Errors.Count > 0, "A failed compile must carry the compiler's error text." );
+        }
+
+        [TestMethod]
+        public void CompileSource_WithStructurallyComplexSource_DoesNotExhaustTheStack()
+        {
+            // Regression: this shape (nested v-for, object literals in :class and
+            // :style bindings, event modifiers, several async functions) needed about
+            // 900 KB of stack against a 1 MB default and terminated the worker process
+            // with an uncatchable StackOverflowException. Byte count is not the risk
+            // factor here, structural depth is, so this fixture is deliberately small.
+            var compiler = new ObsidianContentCompiler( GetBundlePathOrInconclusive() );
+
+            var result = compiler.CompileSource( ComplexSource );
+
+            Assert.IsTrue( result.IsSuccess, "Compile failed: " + string.Join( "; ", result.Errors ) );
+            Assert.IsTrue( Regex.IsMatch( result.CompiledContent, @"^\s*System\.register\s*\(\s*\[" ) );
+        }
+
+        [TestMethod]
+        public void CompileSource_WithDeeplyNestedTemplate_FailsWithoutKillingTheProcess()
+        {
+            // The compile runs on a dedicated large-stack thread; without it a
+            // template this deep terminates the process rather than returning. The
+            // assertion is deliberately weak: either outcome is acceptable as long
+            // as control returns here at all.
+            var compiler = new ObsidianContentCompiler( GetBundlePathOrInconclusive() );
+            var deep = new StringBuilder();
+
+            deep.AppendLine( "<template>" );
+            for ( var i = 0; i < 400; i++ )
+            {
+                deep.Append( "<div>" );
+            }
+            deep.Append( "x" );
+            for ( var i = 0; i < 400; i++ )
+            {
+                deep.Append( "</div>" );
+            }
+            deep.AppendLine();
+            deep.AppendLine( "</template>" );
+            deep.AppendLine( "<script setup>" );
+            deep.AppendLine( "const x = 1;" );
+            deep.AppendLine( "</script>" );
+
+            var result = compiler.CompileSource( deep.ToString() );
+
+            Assert.IsNotNull( result, "The compiler must return a result rather than terminating the process." );
         }
 
         [TestMethod]

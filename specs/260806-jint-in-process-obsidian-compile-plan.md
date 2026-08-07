@@ -205,9 +205,36 @@ Behavior:
 
 Read the bundle file contents once per call (no caching of the file either; it changes on deploy and this path is cold).
 
+### 2.3 Stack safety (added after a production crash)
+
+**The engine must run on a dedicated thread with a 16 MB stack.** This is not optional hardening; the original implementation shipped without it and terminated a worker process.
+
+`StackOverflowException` cannot be caught in .NET. It bypasses every `try/catch` and kills the process, so under IIS it takes down every request on the site rather than failing one save. The only defense is to keep the compiler from reaching the end of the stack.
+
+**Cause: frame amplification.** Jint is a tree-walking interpreter, so one JavaScript call frame costs many native frames. The compiler bundle contains recursive-descent parsers written in JavaScript (Babel for the script block, the template AST walk, and a final parse of the generated module), so those parsers run at an amplified frame cost.
+
+Measured against the component that crashed production:
+
+| Thread stack | Result |
+|---|---|
+| 1024 KB (.NET default) | Compiles, 1223 ms |
+| 896 KB | Compiles, 1275 ms |
+| 768 KB and below | **Process terminates** |
+
+So a moderately complex component needs about **900 KB** against a **1 MB** default, leaving roughly 128 KB of margin. An ASP.NET request consumes more than that in pipeline frames before reaching this code, which is why the same source compiles in a standalone console harness and dies under IIS.
+
+Two conclusions that matter more than the fix:
+
+- **Stack requirement does not track source size.** A 30 KB component compiled fine; the 10 KB one that crashed did not. Structural depth drives stack use, so the timing model in the Phase 0 results says nothing about stack safety.
+- **`LimitRecursion` does not help.** It counts JavaScript frames; the recursion that exhausts the stack is inside the engine. Verified by experiment: a limit of 64 still allowed the process to die. Keep it for runaway authored recursion, but never cite it as protection against this.
+
+Also rejected: a pre-flight nesting-depth guard. The crashing component had a maximum nesting depth of 7, against a crash threshold near 175, so such a guard would have defended a vector nobody hit while giving false confidence about the real one.
+
+**This mitigation is not a proof.** 16 MB is about eighteen times the measured requirement, but any sufficiently deep input can still exhaust any fixed stack, and the failure stays uncatchable. **Compiling in a short-lived child process is the only complete answer and remains an open decision**, listed under Open Questions.
+
 ### Done when
 
-The service class exists, compiles conceptually against the patterns above, and has zero class-level state. Offer a build; do not run one.
+The service class exists, the engine runs only on the dedicated large-stack thread, and the class has zero class-level state. Offer a build; do not run one.
 
 ---
 
@@ -278,6 +305,16 @@ Do not revisit these.
 | Browser editor keeps compiling client-side | Consolidating the block's own save path onto the server compiler is a future cleanup, not this plan. |
 | The server never executes compiled output | Compilation only. The output runs in browsers, gated by the same authorization as today. |
 | Everything internal, `[RockInternal( "18.0" )]` where visible | The API surface is unconfirmed; graduate later per the RockInternal convention. |
+
+## Open Questions
+
+### Should the compile run in a child process?
+
+The dedicated 16 MB thread (Phase 2.3) closes the margin by roughly eighteen times but cannot eliminate the failure class: `StackOverflowException` is uncatchable, so any input deep enough to exhaust any fixed stack still terminates the worker and every request on the site with it.
+
+Compiling in a short-lived child process is the only complete answer. A crash then kills the child, and the service returns a normal compile error. The cost is process management in the request path, which is the same objection raised against a Node sidecar, though a transient .NET child is a materially smaller commitment than a persistent external service.
+
+This belongs alongside the hosted-compiler decision, because "can authoring take the site down" is the kind of risk a product owner should weigh rather than an implementer.
 
 ## Considered but Rejected
 

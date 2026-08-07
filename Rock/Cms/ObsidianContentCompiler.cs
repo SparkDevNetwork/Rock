@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 using Jint;
 using Jint.Runtime;
@@ -53,6 +54,39 @@ namespace Rock.Cms
         bundle itself.
 
         Reason: Server-side compile for repo-less MCP authoring clients.
+
+        8/6/2026 - CLAUDE
+
+        The compile runs on a dedicated thread with a 16 MB stack because it can
+        otherwise overflow the stack, and a StackOverflowException cannot be caught
+        in .NET: it terminates the worker process, taking every request on the site
+        with it rather than failing the one save.
+
+        The cause is frame amplification. Jint is a tree-walking interpreter, so a
+        single JavaScript call frame costs many native frames, and the compiler
+        bundle contains recursive-descent parsers written in JavaScript (Babel for
+        the script block, the template AST walk, then a final parse of the generated
+        module). Measured: a moderately complex component needs about 900 KB of
+        stack against a 1 MB default, and an ASP.NET request has already consumed
+        part of that budget before this code runs. The same source compiles in a
+        standalone console harness and dies under IIS for exactly that reason.
+
+        Two things this is NOT:
+
+        - It is not a size problem. A 30 KB component compiled fine while a 10 KB
+          one overflowed. Structural depth drives stack use, not byte count, so the
+          timing model in the spec says nothing about stack safety.
+        - It is not solved by LimitRecursion. That counts JavaScript frames; the
+          recursion that exhausts the stack is inside the engine. Setting it to 64
+          still allowed the process to die.
+
+        This is a mitigation, not a proof. It closes the margin by roughly eighteen
+        times, but any input that recurses deeply enough can still reach the end of
+        any fixed stack, and the failure remains uncatchable. Compiling in a
+        short-lived child process is the only complete answer, and is an open
+        question rather than a decision.
+
+        Reason: An uncatchable stack overflow here would kill the whole worker.
     */
 
     /// <summary>
@@ -79,9 +113,33 @@ namespace Rock.Cms
         private static readonly TimeSpan CompileTimeout = TimeSpan.FromSeconds( 10 );
 
         /// <summary>
-        /// The maximum script recursion depth. The compiler's parser recurses on
-        /// nested expressions, so this is deliberately roomy.
+        /// <para>
+        /// The stack size of the dedicated compile thread. Measured requirement for
+        /// a moderately complex component (nested v-for, object literals in
+        /// bindings, several async functions) is about 900 KB, against a default
+        /// thread stack of 1 MB, and an ASP.NET request has already consumed part
+        /// of that before the compile begins. 16 MB is roughly eighteen times the
+        /// measured need.
+        /// </para>
+        /// <para>
+        /// This is reserved address space, not committed memory: pages commit only
+        /// as the stack is actually used, so an idle or shallow compile costs
+        /// nothing near this figure.
+        /// </para>
         /// </summary>
+        private const int CompileThreadStackBytes = 16 * 1024 * 1024;
+
+        /// <summary>
+        /// The maximum script recursion depth.
+        /// </summary>
+        /// <remarks>
+        /// This does NOT protect against the stack overflow this class guards
+        /// against, and must not be relied on for that. It counts JavaScript call
+        /// frames, while the recursion that exhausts the stack happens inside the
+        /// engine's own evaluator and parser. Verified by experiment: a value of 64
+        /// still let the process die. The dedicated thread stack is the real
+        /// defense; this only bounds runaway recursion in authored code.
+        /// </remarks>
         private const int CompileRecursionLimit = 1024;
 
         /// <summary>
@@ -174,9 +232,45 @@ var System = {
             }
 
             // Read per call rather than caching; the file changes on deploy and
-            // this path is cold by design.
+            // this path is cold by design. Done on the calling thread so any file
+            // or path problem is reported normally rather than from the worker.
             var bundle = File.ReadAllText( bundlePath );
 
+            // Run the engine on a dedicated thread with a large stack. A stack
+            // overflow cannot be caught in .NET, so it would terminate the whole
+            // worker process rather than failing this one request; the only real
+            // defense is to make the stack big enough that the compiler cannot
+            // reach the end of it. See CompileThreadStackBytes for the measurements.
+            ObsidianContentCompileResult result = null;
+
+            var worker = new Thread( () => result = RunEngine( bundle, source ), CompileThreadStackBytes )
+            {
+                IsBackground = true,
+                Name = "ObsidianContentCompile"
+            };
+
+            worker.Start();
+
+            // The engine's own timeout should end the work well before this, so
+            // this join only bounds the case where the engine fails to honor it.
+            // The thread is background, so a wedged worker cannot hold up shutdown.
+            if ( !worker.Join( CompileTimeout + TimeSpan.FromSeconds( 5 ) ) )
+            {
+                return ObsidianContentCompileResult.Failure( "Compilation did not finish within the allowed time and was abandoned." );
+            }
+
+            return result ?? ObsidianContentCompileResult.Failure( "The compiler returned no result." );
+        }
+
+        /// <summary>
+        /// Runs the compiler bundle in a JavaScript engine. Always called on the
+        /// dedicated large-stack thread, never directly.
+        /// </summary>
+        /// <param name="bundle">The compiler bundle source.</param>
+        /// <param name="source">The authored Vue single-file-component source.</param>
+        /// <returns>The result of the compile attempt.</returns>
+        private ObsidianContentCompileResult RunEngine( string bundle, string source )
+        {
             try
             {
                 using ( var engine = new Engine( options => options
