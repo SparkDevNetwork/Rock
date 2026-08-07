@@ -8052,6 +8052,7 @@ namespace Rock.Rest.v2
                     var treeViewItem = new TreeItemBag();
                     treeViewItem.Value = location.Guid.ToString();
                     treeViewItem.Text = location.Name;
+                    treeViewItem.IsActive = location.IsActive;
                     locationNameList.Add( treeViewItem );
 
                     if ( autoExpandGuids.Contains( location.Guid ) )
@@ -8068,7 +8069,7 @@ namespace Rock.Rest.v2
                 .Where( l =>
                     l.ParentLocationId.HasValue &&
                     resultIds.Contains( l.ParentLocationId.Value ) &&
-                    l.IsActive
+                    ( includeInactive || l.IsActive )
                 )
                 .Select( l => l.ParentLocation.Guid )
                 .Distinct()
