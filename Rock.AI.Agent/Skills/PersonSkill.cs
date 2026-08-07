@@ -159,6 +159,7 @@ internal sealed partial class PersonSkill : AgentSkillComponent
         var personResult = new PersonDetailResult
         {
             Id = person.Id,
+            Guid = person.Guid,
             FirstName = person.FirstName,
             NickName = person.NickName,
             LastName = person.LastName,

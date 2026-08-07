@@ -76,6 +76,7 @@ internal sealed partial class EventRegistrationSkill
         var result = new RegistrationInstanceResult
         {
             Id = registrationInstance.Id,
+            Guid = registrationInstance.Guid,
             Name = registrationInstance.Name,
             RegistrationTemplate = new RegistrationTemplateResult
             {

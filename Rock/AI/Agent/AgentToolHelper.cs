@@ -682,15 +682,39 @@ namespace Rock.AI.Agent
                     {
                         Key = a.Key,
                         Name = a.Name,
+                        Guid = a.Guid,
+                        Description = a.Description.IsNullOrWhiteSpace() ? null : a.Description,
+                        Order = a.Order,
                         IsRequired = a.IsRequired,
                         IsReadOnly = enforceSecurity && !a.IsAuthorized( Authorization.EDIT, _agentRequestContext.CurrentPerson ),
                     };
+
+                    if ( a.FieldType != null )
+                    {
+                        // Built with an object initializer rather than the three
+                        // argument constructor, which does not assign its guid.
+                        attr.FieldType = new KeyNameResult
+                        {
+                            Id = a.FieldType.Id,
+                            Guid = a.FieldType.Guid,
+                            Name = a.FieldType.Name
+                        };
+                    }
 
                     if ( a.FieldType?.Field is Field.FieldType fieldType )
                     {
                         var hints = fieldType.GetFieldHints( a.ConfigurationValues );
 
                         attr.ValueFormat = hints?.ValueFormat.ToStringOrDefault( null );
+
+                        // Only report completeness when there is a list for it to
+                        // describe. A false value with no values reads as "there
+                        // are more values elsewhere", which is not what it means.
+                        if ( hints?.Values != null )
+                        {
+                            attr.Values = hints.Values;
+                            attr.IsCompleteList = hints.IsCompleteList;
+                        }
                     }
 
                     return attr;

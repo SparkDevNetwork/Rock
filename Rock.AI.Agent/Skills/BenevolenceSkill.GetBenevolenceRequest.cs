@@ -54,6 +54,7 @@ internal sealed partial class BenevolenceSkill
         var result = new BenevolenceRequestResult
         {
             Id = benevolenceRequest.Id,
+            Guid = benevolenceRequest.Guid,
             Person = PersonResult.NameOnly( benevolenceRequest.RequestedByPersonAlias ),
             FirstName = benevolenceRequest.FirstName,
             LastName = benevolenceRequest.LastName,
