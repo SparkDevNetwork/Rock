@@ -130,7 +130,7 @@
     const submitForm = ref(false);
     const showAuditDetailsModal = ref(false);
     const isCompiling = ref(false);
-    const siteUrl = ref(siteViewBag.value?.siteUrl ?? "/");
+    const siteUrl = computed((): string => siteViewBag.value?.siteUrl ?? "/");
     const isShowing = ref(false);
     const alertType = ref<ModalAlertType>();
     const compileMessage = ref("");

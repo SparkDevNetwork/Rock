@@ -65,18 +65,6 @@
     </Modal>
 </template>
 
-<style scoped>
-/* Suppress labels rendered by inner filter components since we already display the attribute name via RockLabel. */
-.attribute-filter-group :deep(.field-criteria .form-group > .control-label) {
-    display: none;
-}
-
-.attribute-filter-group :deep(.field-criteria > div) {
-    display: block;
-    float: left;
-}
-</style>
-
 <script setup lang="ts">
     import Modal from "@Obsidian/Controls/modal.obs";
     import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";

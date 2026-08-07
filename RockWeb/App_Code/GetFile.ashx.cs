@@ -103,12 +103,29 @@ namespace RockWeb
                 if ( binaryFile != null )
                 {
                     binaryFile.BinaryFileType = binaryFile.BinaryFileType ?? new BinaryFileTypeService( rockContext ).Get( binaryFile.BinaryFileTypeId.Value );
-                    //UserLogin currentUser = UserLoginService.GetCurrentUser();
-                    var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
-                    Person currentPerson = currentUser?.Person;
+
+                    // Resolve the current person from the request's HttpContext directly rather than via
+                    // UserLoginService.GetCurrentUser(). That helper reads identity through HttpContext.Current /
+                    // Thread.CurrentPrincipal, which is not reliable inside this IHttpAsyncHandler's EndProcessRequest
+                    // continuation: the ADO.NET completion callback runs on a thread pool worker where
+                    // HttpContext.Current can be null and Thread.CurrentPrincipal may not carry the request's identity.
+                    // The passed-in `context` (via IAsyncResult.AsyncState) IS the request's HttpContext, so read
+                    // Identity.Name from it and translate "rckipid=<token>" ourselves via PersonTokenService.
+                    Person currentPerson = null;
+                    var identityName = context.User?.Identity?.Name ?? string.Empty;
+                    if ( identityName.StartsWith( "rckipid=" ) )
+                    {
+                        var personToken = new PersonTokenService( rockContext ).GetByImpersonationToken( identityName.Substring( 8 ) );
+                        currentPerson = personToken?.PersonAlias?.Person;
+                    }
+                    else if ( identityName.IsNotNullOrWhiteSpace() )
+                    {
+                        currentPerson = new UserLoginService( rockContext ).GetByUserName( identityName )?.Person;
+                    }
+
                     var parentEntityAllowsView = binaryFile.ParentEntityAllowsView( currentPerson );
 
-                    // If no parent entity is specified then check if there is scecurity on the BinaryFileType
+                    // If no parent entity is specified then check if there is security on the BinaryFileType
                     // Use BinaryFileType.RequiresViewSecurity because checking security for every file is slow (~40ms+ per request)
                     if ( parentEntityAllowsView == null && requiresViewSecurity )
                     {

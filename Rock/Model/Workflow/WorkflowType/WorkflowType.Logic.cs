@@ -29,24 +29,47 @@ namespace Rock.Model
     public partial class WorkflowType
     {
         #region ISecured
+
+        /*
+             8/7/2026 - NA
+
+             ⚠ SECURITY NOTICE ⚠
+
+             If the model implements custom ISecured behavior, the corresponding
+             {Entity}Cache class MUST implement the same security logic.
+
+             ModelCache<T>.SetFromEntity() only snapshots SupportedActions. Security
+             methods such as ParentAuthority, ParentAuthorityPre, IsAuthorized, and
+             IsAllowedByDefault are NOT copied automatically. If the cache does not
+             override them, it will fall back to ModelCache defaults and may evaluate
+             permissions differently than the model.
+
+             Reason: Prevent security mismatches between model entities and cache objects.
+        */
+
         /// <summary>
-        /// Gets the parent security authority for the DataView which is its Category
+        /// Gets the parent security authority for the WorkflowType which is its Category
         /// </summary>
         /// <value>
-        /// The parent authority of the DataView.
+        /// The parent authority of the WorkflowType.
         /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                if ( this.Category != null )
-                {
-                    return this.Category;
-                }
+        public override Security.ISecured ParentAuthority => Category ?? base.ParentAuthority;
 
-                return base.ParentAuthority;
-            }
-        }
+        /*
+            8/7/2026 - NA
+
+            Historical note: an earlier version of this file stated that WorkflowType
+            should never have a ParentAuthority. That policy was intentionally reversed
+            by the work for GitHub issue #6712, which added Category as the
+            ParentAuthority above so Workflow Type security honors its Category. See:
+            https://www.rockrms.com/tech-bulletin/workflow-form-builder-security-now-honors-category-permissions
+
+            Do not remove the ParentAuthority override without also updating that bulletin.
+
+            (Note: only ParentAuthority is set to the Category; ParentAuthorityPre is
+            intentionally NOT set, to avoid the sub-category editability problem
+            described in GitHub issue #5537.)
+        */
 
         #endregion ISecured
 
@@ -73,15 +96,19 @@ namespace Rock.Model
         #endregion Properties
 
         /*
-            9/13/2023 - PA
+            8/7/2026 - NA
 
-            WorkflowType should never be having a ParentAuthority or a ParentAuthorityPre.
-            WorflowType is the ParentAuthority of Workflow. Let say, if we were to set the ParentAuthority on the
-            WorkflowType to be Category, then anyone who has the edit on the Category would be able to edit the running
-            Workflows in the Category which is not the desired behavior. Similarly the ParentAuthorityPre were to be set to
-            Category, we would run into issues like https://github.com/SparkDevNetwork/Rock/issues/5537 where the forms in
-            the sub categories become uneditable.
+            Historical note: an earlier version of this file stated that WorkflowType
+            should never have a ParentAuthority. That policy was intentionally reversed
+            by the work for GitHub issue #6712, which added Category as the
+            ParentAuthority above so Workflow Type security honors its Category. See:
+            https://www.rockrms.com/tech-bulletin/workflow-form-builder-security-now-honors-category-permissions
 
+            Do not remove the ParentAuthority override without also updating that bulletin.
+
+            (Note: only ParentAuthority is set to the Category; ParentAuthorityPre is
+            intentionally NOT set, to avoid the sub-category editability problem
+            described in GitHub issue #5537.)
         */
 
         #region Public Methods

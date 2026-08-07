@@ -32,7 +32,7 @@
 <script setup lang="ts">
     import { computed } from "vue";
     import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
-    import { PackageCategoryListBox } from "@Obsidian/ViewModels/Blocks/Store/PackageCategoryListBox";
+    import { PackageCategoryListBox } from "@Obsidian/ViewModels/Blocks/Store/packageCategoryListBox";
     import { PackageCategoryListItemBag } from "@Obsidian/ViewModels/Blocks/Store/packageCategoryListItemBag";
 
     const config = useConfigurationValues<PackageCategoryListBox>();

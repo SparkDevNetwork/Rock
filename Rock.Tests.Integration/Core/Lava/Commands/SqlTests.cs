@@ -188,6 +188,38 @@ Main Campus;Stepping Stone;
 
             TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
+
+        /// <summary>
+        /// Verifies that a {% sql %} block nested inside a {% lava %} tag executes the
+        /// SQL and returns results, rather than misparsing lines like "SELECT ..." as
+        /// unknown Lava tags. Regression test for the "Lava block SQL error" reported
+        /// against Rock v20.0.
+        /// </summary>
+        [TestMethod]
+        public void SqlBlock_NestedInsideLavaTag_ExecutesQueryAndReturnsResults()
+        {
+            // The sql block's content is SQL, not Lava. When wrapped in a {% lava %} tag
+            // the parser must treat that content as opaque text rather than parsing it as
+            // a {% liquid %} body (which would misread "SELECT" as an unknown tag).
+            var input = @"
+{% lava
+    sql return:'results'
+        SELECT   [NickName], [LastName]
+        FROM     [Person]
+        WHERE    [LastName] = 'Decker'
+        AND      [NickName] IN ('Ted', 'Alex')
+        ORDER BY [NickName]
+    endsql
+%}
+{% for item in results %}{{ item.NickName }}_{{ item.LastName }};{% endfor %}
+";
+
+            var expectedOutput = @"Alex_Decker;Ted_Decker;";
+
+            var options = new LavaTestRenderOptions { EnabledCommands = "Sql" };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
     }
 
     #region SQL Timeout Tests

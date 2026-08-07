@@ -6,6 +6,7 @@
 // =============================================================
 // Table of Content
 //  + Connection Request Entry
+//  + Connection Hub
 // =============================================================
 
 
@@ -82,3 +83,1379 @@
 }
 
 // ================END CONNECTION REQUEST ENTRY==========================
+
+
+// ================ CONNECTION HUB =========================
+
+// Shared with the docked panel (a Teleport target outside .connections-hub), so it stays unnested.
+.connectionstatus-button {
+    cursor: pointer;
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+    padding: var(--spacing-tiny) var(--spacing-xsmall);
+    border-radius: var(--rounded-huge);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-softest);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-small);
+    font-size: var(--font-size-small);
+
+    i {
+      position: absolute;
+      right: var(--spacing-small);
+    }
+
+    span {
+        display: inline-block;
+        text-align: center;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        max-width: calc(100% - 40px);
+        text-align: center;
+    }
+}
+
+// Shared across both the main hub grid/board and the docked panel (a Teleport target), so these stay unnested.
+.text-emerald {
+    color: var(--color-positive-6) !important;
+}
+
+.text-slate {
+    color: #64748B;
+}
+
+// Modifiers of the shared "dropdown-content-item" concept used throughout Connections Hub, including the docked panel.
+.dropdown-content-item {
+    padding: var(--spacing-small) var(--spacing-medium);
+
+    &.disabled {
+        opacity: 0.5;
+        cursor: default;
+
+        &:hover {
+            background-color: transparent;
+        }
+    }
+
+    &.selected {
+        color: var(--color-interface-strong);
+        font-weight: var(--font-weight-semibold);
+        background-color: var(--color-info-soft);
+    }
+
+    // From viewDockedPanelBody.partial.obs
+    &--connector {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xsmall);
+        background-color: var(--color-interface-softest);
+        font-weight: var(--font-weight-regular);
+    }
+
+    &--activity-filter {
+        font-size: var(--font-size-small);
+        font-weight: var(--font-weight-semibold);
+    }
+
+    // From connectionsHub.obs
+    &--menu-action {
+        padding: var(--spacing-xsmall) var(--spacing-medium);
+        font-weight: var(--font-weight-semibold);
+
+        i {
+            padding-right: var(--spacing-small);
+            color: var(--color-interface-medium);
+        }
+    }
+
+    &--danger {
+        color: var(--color-danger-strong);
+
+        i {
+            color: var(--color-danger-strong);
+        }
+    }
+}
+
+// From viewDockedPanelBody.partial.obs; extended by connectionsHub.obs
+.dropdown-content {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-interface-softest);
+    font-size: var(--font-size-small);
+}
+
+// From connectionsHub.obs
+.dropdown-anchor-icon {
+    cursor: pointer;
+}
+
+/* Separates the folded actions from the state-change actions in the compact overflow menu. */
+.dropdown-content-divider {
+    height: 1px;
+    margin: var(--spacing-xsmall) 0;
+    background-color: var(--color-interface-soft);
+}
+
+// Sent through the Modal control (Teleport), so these stay unnested rather than living under .connections-hub.
+.recipients-email-error {
+    color: var(--color-danger-strong);
+    margin-bottom: var(--spacing-medium);
+}
+
+.recipients-sms-error {
+    color: var(--color-danger-strong);
+    margin-bottom: var(--spacing-medium);
+}
+
+// From changeStateModal.partial.obs
+.change-state-modal-body-text {
+    margin-bottom: var(--spacing-small);
+    color: var(--color-interface-medium);
+}
+
+.change-state-modal-failing-notice {
+    margin-top: var(--spacing-xsmall);
+
+    &-icon {
+        color: var(--color-primary);
+        padding-right: var(--spacing-tiny);
+    }
+}
+
+// From viewOptionsModal.partial.obs
+// Suppress labels rendered by inner filter components since we already display the attribute name via RockLabel.
+.attribute-filter-group {
+    .field-criteria {
+        > div {
+            display: block;
+            float: left;
+        }
+
+        .form-group > .control-label {
+            display: none;
+        }
+    }
+}
+
+// Everything below renders in place under the main Connections Hub view (connectionsHub.obs's root .connections-hub
+// wrapper), so it's safe to scope with real nesting instead of living at the stylesheet's top level.
+.connections-hub {
+    .type-icon-container {
+        width: 36px;
+        height: 36px;
+        padding: var(--spacing-xsmall);
+        background-color: var(--color-interface-softer);
+        border-radius: var(--rounded-small);
+
+        .type-icon {
+            font-size: 20px;
+        }
+    }
+
+    .skeleton-board {
+        display: flex;
+        gap: var(--spacing-large);
+        overflow-x: hidden;
+        height: 100%;
+
+        &-column {
+            flex: 0 0 380px;
+            width: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-small);
+            padding: var(--spacing-medium);
+            background-color: var(--color-interface-softer);
+            border-radius: var(--rounded-large);
+
+            .skeleton-heading {
+                background-color: var(--color-interface-soft);
+                border-radius: var(--rounded-small);
+                flex-shrink: 0;
+                margin: var(--spacing-small) 0;
+            }
+        }
+
+        &-card {
+            height: 180px;
+            background-color: var(--color-interface-soft);
+            border-radius: var(--rounded-small);
+        }
+    }
+
+    // From connectionsHub.obs
+    .skeleton-grid {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .skeleton-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-medium);
+
+        &-item {
+            height: 300px;
+            border-radius: var(--rounded-small);
+        }
+    }
+
+    .snapshot-container {
+        padding: var(--spacing-large);
+        background-color: var(--color-interface-softer);
+        border-bottom: 1px solid var(--color-interface-soft);
+
+        .header {
+            color: var(--color-interface-strong);
+            font-size: var(--font-size-h6);
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--spacing-medium);
+        }
+
+        .subtext {
+            color: var(--color-interface-medium);
+        }
+    }
+
+    .border-left-divider {
+        border-left: 1px solid var(--color-interface-softer);
+    }
+
+    .activity-metric {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+
+        // From connectionsHub.obs
+        &--date {
+            color: var(--color-interface-strong);
+        }
+
+        &--count {
+            color: var(--color-interface-medium);
+        }
+    }
+
+    .skeleton-grid-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--spacing-small) var(--spacing-medium);
+        border-bottom: 1px solid var(--color-interface-softer);
+
+        // From connectionsHub.obs
+        &--alt {
+            background-color: var(--color-interface-softer);
+        }
+
+        .skeleton {
+            background-color: var(--color-interface-soft);
+            margin: var(--spacing-xsmall);
+        }
+    }
+
+    .empty-list {
+        min-height: calc(70vh - 200px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-xsmall);
+
+        // From connectionsHub.obs
+        &-icon {
+            font-size: 20px;
+            color: var(--color-interface-medium);
+        }
+
+        &-message {
+            color: var(--color-interface-medium);
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-h5);
+        }
+
+        &-cta {
+            color: var(--color-link);
+            cursor: pointer;
+        }
+    }
+
+    // From connectionsHub.obs
+    .grid-empty-column {
+        text-align: center;
+        padding: var(--spacing-medium);
+        border: 1px solid var(--color-interface-soft);
+        border-radius: var(--rounded-small);
+    }
+
+    .connections-hub-view-toggle {
+        flex-grow: 1;
+    }
+
+    .selected-count {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-tiny);
+
+        &-label {
+            color: var(--color-info-strong);
+            margin-bottom: 0;
+        }
+
+        &-badge {
+            font-weight: var(--font-weight-semibold);
+            background-color: var(--color-info-strong);
+        }
+    }
+
+    .toolbar-primary-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xsmall);
+    }
+
+    .toolbar-communication-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xsmall);
+        padding-left: var(--spacing-medium);
+    }
+
+    .toolbar-management-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-medium);
+        padding-left: var(--spacing-medium);
+    }
+
+    .toolbar-clear-selection {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-small);
+
+        i {
+            cursor: pointer;
+        }
+    }
+
+    .left-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-medium);
+
+        @media (max-width: 1190px) {
+            .activity-btn-label {
+                display: none;
+            }
+
+            .activity-btn i {
+                padding: 0;
+            }
+        }
+    }
+
+    .right-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-medium);
+
+        @media (max-width: 1418px) {
+            .activity-btn-label {
+                display: none;
+            }
+
+            .activity-btn i {
+                padding: 0;
+            }
+        }
+    }
+
+    .grid-opportunity-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-tiny);
+
+        &-label {
+            font-size: var(--font-size-xsmall);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-interface-strong);
+        }
+    }
+
+    .grid-cell-subtext {
+        font-size: var(--font-size-small);
+        color: var(--color-interface-medium);
+    }
+
+    .grid-activity-cell {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-tiny);
+    }
+
+    .grid-activity-count-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-tiny);
+    }
+
+    .grid-group-cell {
+        &--archived {
+            opacity: 0.8;
+        }
+
+        i {
+            color: var(--color-interface-medium);
+        }
+    }
+
+    .grid-status-cell {
+        width: 100%;
+
+        &-state-label {
+            font-size: var(--font-size-small);
+            text-align: center;
+            font-weight: var(--font-weight-semibold);
+
+            &--future-follow-up {
+                color: var(--color-info-strong);
+            }
+        }
+    }
+
+    .grid-due-date-label {
+        &--completed-early {
+            color: var(--color-positive-6);
+            font-weight: var(--font-weight-semibold);
+        }
+
+        &--neutral {
+            color: var(--color-interface-strong);
+        }
+
+        &--due-soon {
+            color: var(--color-warning-strong);
+            font-weight: var(--font-weight-semibold);
+        }
+
+        &--overdue {
+            color: var(--color-danger-strong);
+            font-weight: var(--font-weight-semibold);
+        }
+    }
+
+    .grid-action-icon {
+        cursor: pointer;
+
+        &--active {
+            color: var(--color-info-strong);
+        }
+    }
+
+    .panel-icon {
+        display: inline-block;
+    }
+
+    .connections-hub-list-grid {
+        border: 0;
+        margin-bottom: 0;
+    }
+
+    .connections-hub-slicer {
+        > .contextslicer-title {
+            flex-grow: 0;
+        }
+
+        > .contextslicer-content {
+            flex: 1;
+        }
+    }
+
+    /* The .grid-cell class sets overflow: hidden. This prevents the dropdown menu from working within the cell. This class will set overflow: visible for any grid column with the itemClass "grid-cell-overflow" */
+    .grid-cell.grid-cell-overflow {
+        overflow: visible;
+    }
+
+    /* The dropdown content within the action-toolbar needs to have a greater z index then the grid column header (currently 3). */
+    .action-toolbar .floating-dropdown {
+        z-index: 4;
+    }
+
+    /* The dropdown content within the List View needs to have a greater z index then the grid column header (currently 3). */
+    .grid-cell-overflow .floating-dropdown {
+        z-index: 4;
+    }
+
+    .grid-body {
+        border-bottom-left-radius: var(--rounded-medium);
+        border-bottom-right-radius: var(--rounded-medium);
+    }
+
+    .dropdown-min-width {
+        min-width: var(--vs-dropdown-min-width);
+    }
+
+    i.disabled {
+        color: var(--color-interface-medium);
+        cursor: not-allowed;
+    }
+
+    .activity-btn i {
+        padding-right: var(--spacing-tiny);
+    }
+
+    .flyout-footer-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        &-laststatus {
+            justify-content: flex-end;
+        }
+    }
+
+    // Board View
+    .connection-request-card {
+        cursor: pointer;
+
+        /*
+            4/21/26 - KBH
+
+            Mirrors the old `opacity: 0.5` look using a semi-transparent rgba overlay
+            in an ::after pseudo-element. The overlay paints above the card's content
+            and washes it toward white, but the floating dropdown (z-index: 3 from
+            dropDownContent.obs) stacks above the overlay and stays at full contrast.
+            `pointer-events: none` lets clicks pass through to the card below.
+
+            Reason: `opacity` and `filter` on the card root both cascade into the
+            dropdown subtree and can't be overridden on descendants. An rgba overlay
+            avoids the cascade entirely.
+        */
+        &.completed {
+            position: relative;
+
+            &::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background-color: color-mix(in srgb, var(--color-interface-softest) 50%, transparent);
+                border-radius: inherit;
+                pointer-events: none;
+            }
+        }
+
+        &.selected {
+            box-shadow: 0 0 0 1px var(--color-primary);
+        }
+
+        &-subheader {
+            padding: var(--spacing-xsmall) var(--spacing-small);
+            text-align: center;
+            font-size: var(--font-size-small);
+            font-weight: var(--font-weight-semibold);
+        }
+
+        &-footer {
+            padding: var(--spacing-small) var(--spacing-medium);
+            border-top: 1px solid var(--color-interface-soft);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            &-info {
+                display: flex;
+                align-items: center;
+                gap: var(--spacing-small);
+                font-size: var(--font-size-small);
+                color: var(--color-interface-medium);
+
+                &-item {
+                    display: flex;
+                    align-items: center;
+                    gap: var(--spacing-tiny);
+                }
+            }
+        }
+    }
+
+    // My Connections View
+    .completion-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--spacing-medium);
+
+        @media (max-width: 1000px) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (max-width: 500px) {
+            grid-template-columns: repeat(1, 1fr);
+        }
+    }
+}
+
+.docked-panel-header {
+
+  // From connectionRequestDockedPanel.partial.obs
+  .request-breadcrumb {
+    cursor: pointer;
+
+    &:hover {
+      color: var(--color-link);
+      text-decoration: underline;
+    }
+
+    &--ellipsis {
+      display: flex;
+      align-items: flex-end;
+    }
+  }
+
+  .docked-panel-nav {
+    display: flex;
+    gap: var(--spacing-small);
+
+    .disabled {
+      cursor: default;
+      color: var(--color-interface-medium);
+    }
+  }
+
+  .docked-panel-header-skeleton {
+    .skeleton {
+      background: var(--color-interface-soft);
+    }
+
+    .skeleton-heading {
+      max-width: none;
+      margin: 0;
+      border-radius: var(--rounded-small);
+    }
+
+    &--edit {
+      padding: var(--spacing-medium);
+    }
+
+    &-info {
+      background-color: var(--color-interface-softer);
+      padding: var(--spacing-large) var(--spacing-medium);
+
+      &-row {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-small);
+
+        .skeleton-avatar {
+          flex-shrink: 0;
+        }
+
+        &-text {
+          width: 100%;
+
+          .skeleton-text:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+    }
+  }
+
+  .person-details {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .person-note-container {
+    background-color: var(--color-interface-softest);
+    max-height: 400px;
+    overflow-y: auto;
+    border-bottom: 1px solid var(--color-interface-soft);
+
+    .note-item {
+      padding: var(--spacing-medium);
+      border-bottom: 1px solid var(--color-interface-soft);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xsmall);
+
+      &:last-child {
+        border: none;
+      }
+
+      &-content {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xsmall);
+
+        &-details {
+          display: flex;
+          flex-direction: column;
+
+          &-name {
+            font-weight: var(--font-weight-semibold);
+            line-height: var(--line-height-tight);
+          }
+
+          &-info {
+            display: flex;
+            gap: var(--spacing-tiny);
+
+            &-type,
+            &-datetime {
+              font-size: var(--font-size-small);
+              color: var(--color-interface-medium);
+            }
+          }
+        }
+      }
+    }
+
+    .request-note-editor .form-control {
+      border: none;
+      border-radius: 0;
+      border-bottom: 1px solid var(--color-interface-soft);
+      box-shadow: none;
+    }
+  }
+}
+
+// From connectionRequestDockedPanel.partial.obs
+.docked-panel-header-connection-request {
+  &-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-medium);
+
+    &-title {
+      font-size: var(--font-size-h5);
+      font-weight: var(--font-weight-semibold);
+    }
+  }
+
+  &-content {
+    padding-top: var(--spacing-xsmall);
+    background-color: var(--color-interface-softer);
+  }
+
+  &-toolbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 var(--spacing-small);
+
+    &-actions {
+      display: flex;
+      gap: var(--spacing-small);
+    }
+  }
+
+  &-breadcrumbs {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-tiny);
+    flex-wrap: wrap;
+    font-size: var(--font-size-small);
+  }
+
+  &-person {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-xsmall) var(--spacing-medium);
+
+    &-info {
+      display: flex;
+      gap: var(--spacing-small);
+    }
+
+    &-actions {
+      display: flex;
+      padding: var(--spacing-large) 0;
+      gap: var(--spacing-xsmall);
+    }
+
+    &-meta {
+      font-size: var(--font-size-small);
+      color: var(--color-interface-medium);
+    }
+  }
+
+  &-badge-list {
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  &-badges {
+    padding: var(--spacing-xsmall) var(--spacing-medium);
+  }
+
+  &-notes-toggle {
+    background-color: var(--color-info-soft);
+    padding: var(--spacing-tiny) 0;
+
+    &-label {
+      width: 100%;
+      text-align: center;
+      cursor: pointer;
+      color: var(--color-link);
+      font-size: var(--font-size-small);
+    }
+  }
+}
+
+.docked-panel-body {
+
+  // From connectionRequestDockedPanel.partial.obs
+  .docked-panel-body-skeleton {
+    padding: var(--spacing-medium);
+    height: 100%;
+  }
+
+  .connections-hub-docked-panel-body-edit {
+    padding: var(--spacing-medium);
+  }
+
+  .connections-hub-docked-panel-body-view {
+    padding: var(--spacing-medium);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xlarge);
+
+    .additional-request {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .person-dropdown {
+      display: flex;
+      flex-direction: column;
+      min-width: 200px;
+      max-height: 40vh;
+      overflow-y: auto;
+    }
+
+    .w-fit {
+      width: fit-content;
+    }
+
+    .h-fit {
+      height: fit-content;
+    }
+
+    // From viewDockedPanelBody.partial.obs
+    .static-control,
+    .static-control .form-control-static,
+    .static-control .form-control-static p {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      min-height: unset;
+    }
+
+    .static-control-value {
+      color: var(--color-interface-stronger);
+    }
+
+    .ai-summary-card {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xsmall);
+      padding: var(--spacing-small);
+      background-color: var(--color-interface-softer);
+      border: 1px solid var(--color-info-soft);
+      border-radius: var(--rounded-small);
+
+      i {
+        font-size: var(--font-size-h4);
+      }
+
+      .skeleton {
+        background: var(--color-interface-soft);
+      }
+
+      &-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--color-info-strong);
+
+        &-title {
+          display: flex;
+          gap: var(--spacing-xsmall);
+          align-items: center;
+          font-weight: var(--font-weight-semibold);
+          font-size: var(--font-size-small);
+        }
+
+        &-action {
+          cursor: pointer;
+        }
+      }
+    }
+
+    .additional-requests-card {
+      border: 1px solid var(--color-interface-soft);
+      border-radius: var(--rounded-small);
+      padding: var(--spacing-small);
+
+      &-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--spacing-tiny);
+
+        &-title {
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-tiny);
+          color: var(--color-interface-strong);
+
+          i {
+            font-size: var(--font-size-h4);
+          }
+
+          div {
+            font-size: var(--font-size-small);
+            font-weight: var(--font-weight-semibold);
+          }
+        }
+
+        &-toggle {
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-xsmall);
+        }
+      }
+
+      &-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-tiny);
+
+        &--expanded {
+          padding-top: var(--spacing-tiny);
+        }
+
+        &-item-name {
+          color: var(--color-link);
+          font-size: var(--font-size-small);
+          padding-right: var(--spacing-small);
+          cursor: pointer;
+        }
+
+        &-item-meta {
+          color: var(--color-interface-medium);
+          font-size: var(--font-size-xsmall);
+        }
+      }
+    }
+
+    .connection-request-header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-large);
+
+      &-icon--active {
+        color: var(--color-info-strong);
+      }
+    }
+
+    .connection-request-state-label {
+      font-weight: var(--font-weight-semibold);
+
+      &--future-follow-up {
+        color: var(--color-info-strong);
+      }
+    }
+
+    .connection-request-due-date {
+      &--completed-early {
+        color: var(--color-positive-6);
+      }
+
+      &--neutral {
+        color: var(--color-interface-medium);
+      }
+
+      &--due-soon {
+        color: var(--color-warning-strong);
+      }
+
+      &--overdue {
+        color: var(--color-danger-strong);
+      }
+    }
+
+    .connection-request-badge-bar {
+      border-top: 1px solid var(--color-interface-soft);
+      border-bottom: 1px solid var(--color-interface-soft);
+      padding: var(--spacing-xsmall) var(--spacing-medium);
+    }
+
+    .connection-request-detail-stack {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-medium);
+    }
+
+    .connection-request-connector {
+      display: flex;
+      flex-direction: column;
+
+      &-anchor {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xsmall);
+        cursor: not-allowed;
+
+        &--editable {
+          cursor: pointer;
+        }
+
+        &-label {
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-tiny);
+        }
+      }
+    }
+
+    .connection-request-detail-meta {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-tiny);
+
+      &-item {
+        color: var(--color-interface-medium);
+      }
+    }
+
+    .placement-group-detail {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-medium);
+
+      &-row {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xsmall);
+      }
+
+      &-requirements {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-xsmall);
+      }
+
+      &-requirement {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xsmall);
+
+        &-saved {
+          color: var(--color-success-strong);
+        }
+      }
+    }
+
+    .activity-filter-anchor {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-tiny);
+      color: var(--color-primary);
+      cursor: pointer;
+    }
+
+    .activity-add-note-form {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xsmall);
+    }
+
+    .activity-system-update {
+      display: flex;
+      gap: var(--spacing-xsmall);
+      color: var(--color-interface-medium);
+      font-size: var(--font-size-small);
+
+      &-highlight {
+        font-weight: var(--font-weight-semibold);
+      }
+
+      &-icon {
+        display: flex;
+        justify-content: center;
+        background-color: var(--color-interface-softest);
+        color: var(--color-interface-medium);
+
+        &--completed {
+          color: var(--color-success-strong);
+        }
+      }
+    }
+
+    .action-items {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--spacing-xsmall);
+
+      &-primary {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
+
+      &-row {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+        gap: var(--spacing-xsmall);
+
+        &--expanded {
+          margin-top: var(--spacing-xsmall);
+        }
+      }
+
+      &-toggle {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xsmall);
+      }
+    }
+
+    .activity-card {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xsmall);
+      padding: var(--spacing-small);
+      background-color: var(--color-interface-softest);
+      border: 1px solid var(--color-interface-soft);
+      border-radius: var(--rounded-medium);
+
+      &-header {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      &-person {
+        display: flex;
+      }
+
+      &-system-avatar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        padding: var(--spacing-tiny);
+        margin-right: var(--spacing-xsmall);
+        background-color: var(--color-interface-soft);
+        border-radius: 50%;
+      }
+
+      &-details {
+        display: flex;
+        flex-direction: column;
+      }
+
+      &-text {
+        color: var(--color-interface-strong);
+
+        &-highlight {
+          font-weight: var(--font-weight-semibold);
+        }
+      }
+
+      &-meta {
+        display: flex;
+        color: var(--color-interface-medium);
+
+        &-separator {
+          padding: 0 var(--spacing-tiny);
+        }
+      }
+
+      &-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-medium);
+        height: fit-content;
+        margin-left: var(--spacing-xsmall);
+      }
+
+      &-badge-icon {
+        display: flex;
+        justify-content: center;
+      }
+
+      &-menu {
+        background-color: var(--color-interface-softest);
+      }
+
+      &-menu-item {
+        padding: var(--spacing-small) var(--spacing-medium);
+        font-size: var(--font-size-small);
+        font-weight: var(--font-weight-semibold);
+      }
+
+      &-note-editor {
+        padding: var(--spacing-tiny) 0;
+        border-radius: var(--rounded-small);
+
+        &-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: var(--spacing-xsmall);
+          padding: var(--spacing-xsmall);
+        }
+      }
+
+      &-attachments {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-tiny);
+      }
+    }
+  }
+}
+
+// From connectionRequestDockedPanel.partial.obs
+.docked-panel-footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-xsmall) var(--spacing-large);
+  background-color: var(--color-interface-softer);
+  border-top: 1px solid var(--color-interface-soft);
+
+  /*
+     The footer's action row is a grid so the status button gets its own definite-width track.
+     Because the grid is full width (100% of the definite-width footer), the "25%" in the status
+     track resolves against a real, known width - the same reason the requestTable grid can size
+     a status column and truncate cleanly. A percentage/max-width on the old shrink-to-fit flex
+     group was dropped during content sizing, which reserved the status text's full width and left
+     dead space to the right of the button.
+  */
+  .docked-footer-grid {
+    display: grid;
+    grid-template-columns: auto 1fr minmax(150px, 25%);
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    width: 100%;
+  }
+
+  .docked-panel-footer-button-group {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+
+    &--end {
+      justify-content: flex-end;
+    }
+  }
+
+  .docked-panel-footer-button-label {
+    padding-left: var(--spacing-xsmall);
+  }
+
+  .docked-panel-footer-status {
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+}
+
+.request-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xsmall);
+  max-height: 30vh;
+  overflow: auto;
+
+  &-item {
+    background-color: var(--color-interface-softer);
+    padding: var(--spacing-small) var(--spacing-medium);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-small);
+
+    &-person {
+      display: flex;
+      align-items: center;
+
+      &-details {
+        display: flex;
+        flex-direction: column;
+
+        &-name {
+          font-weight: var(--font-weight-semibold);
+        }
+
+        &-info {
+          color: var(--color-interface-medium);
+        }
+      }
+    }
+
+    &-opportunity {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+
+      &-source {
+        color: var(--color-interface-medium);
+        font-size: var(--font-size-small);
+      }
+    }
+
+    &-date,
+    &-connector {
+      display: flex;
+      align-items: center;
+
+      i {
+        margin-right: var(--spacing-tiny);
+      }
+    }
+
+    &-status {
+      display: block;
+      align-self: center;
+      pointer-events: none;
+    }
+  }
+}
+
+.connection-request-send-sms-modal {
+
+  .button-list {
+
+    &-item {
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+      min-width: 0;
+    }
+
+    &-text {
+      display: block;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+// ================ END CONNECTION HUB =========================

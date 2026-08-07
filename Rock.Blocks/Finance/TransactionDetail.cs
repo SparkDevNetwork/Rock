@@ -185,6 +185,14 @@ namespace Rock.Blocks.Finance
 
             options.CarryOverAccount = GetAttributeValue( AttributeKey.CarryOverAccount ).AsBoolean();
 
+            var currencyInfo = new Rock.Utility.RockCurrencyCodeInfo();
+            options.CurrencyInfo = new Rock.ViewModels.Utility.CurrencyInfoBag
+            {
+                Symbol = currencyInfo.Symbol,
+                DecimalPlaces = currencyInfo.DecimalPlaces,
+                SymbolLocation = currencyInfo.SymbolLocation
+            };
+
             return options;
         }
 
@@ -199,7 +207,11 @@ namespace Rock.Blocks.Finance
         {
             errorMessage = null;
 
-            if ( financialTransaction.BatchId == null || financialTransaction.BatchId == 0 )
+            // Only a new transaction is required to have a batch. An existing transaction may
+            // legitimately have no batch (e.g. a gateway transaction not yet downloaded into one),
+            // so editing it must not be blocked. This matches the legacy new-transaction-only check.
+            if ( financialTransaction.Id == 0
+                && ( financialTransaction.BatchId == null || financialTransaction.BatchId == 0 ) )
             {
                 errorMessage = "New transactions can only be added to an existing batch.";
                 return false;
@@ -1163,7 +1175,7 @@ namespace Rock.Blocks.Finance
                 }
             }
 
-            if( box.Bag.BatchId != null )
+            if ( entity.Id == 0 && box.Bag.BatchId != null )
             {
                 entity.BatchId = box.Bag.BatchId;
             }
@@ -1653,32 +1665,6 @@ namespace Rock.Blocks.Finance
                 Bag = bag,
                 ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
             } );
-        }
-
-        /// <summary>
-        /// Deletes the specified entity.
-        /// </summary>
-        /// <param name="key">The identifier of the entity to be deleted.</param>
-        /// <returns>A string that contains the URL to be redirected to on success.</returns>
-        [BlockAction]
-        public BlockActionResult Delete( string key )
-        {
-            var entityService = new FinancialTransactionService( RockContext );
-
-            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
-            {
-                return actionError;
-            }
-
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
-            {
-                return ActionBadRequest( errorMessage );
-            }
-
-            entityService.Delete( entity );
-            RockContext.SaveChanges();
-
-            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>

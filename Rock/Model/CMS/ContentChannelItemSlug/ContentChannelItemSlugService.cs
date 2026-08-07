@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Rock.Data;
@@ -81,8 +83,6 @@ namespace Rock.Model
         /// <returns></returns>
         private string GetUniqueSlug( string slug, int? contentChannelItemSlugId, int? contentChannelId )
         {
-            bool isValid = false;
-
             slug = MakeSlugValid( slug );
 
             // If MakeSlugValid removes all the characters then just return null.
@@ -92,13 +92,35 @@ namespace Rock.Model
             }
 
             int intialSlugLength = slug.Length;
-            int paddedNumber = 0;
-            do
+
+            // Fetch every existing slug that could collide (the base slug itself, or any
+            // "{base}-{n}" numbered variant) in a single query, then walk the number
+            // in memory. The previous implementation issued a separate SELECT per
+            // candidate slug inside the loop, so a content channel with several
+            // thousand items sharing the same base slug would issue several thousand
+            // round trips and take 30+ seconds to save a single new item.
+            var takenSlugsQuery = this
+                .Queryable()
+                .Where( b => !contentChannelItemSlugId.HasValue || b.Id != contentChannelItemSlugId.Value )
+                .Where( b => b.Slug == slug || b.Slug.StartsWith( slug + "-" ) );
+
+            if ( contentChannelId != null )
             {
-                string customSlug = slug;
+                takenSlugsQuery = takenSlugsQuery.Where( b => b.ContentChannelItem.ContentChannelId == contentChannelId );
+            }
+
+            // Slugs are stored lowercase (see MakeSlugValid), but use an
+            // ordinal-ignore-case set so the in-memory comparison matches SQL
+            // Server's default case-insensitive collation.
+            var takenSlugs = new HashSet<string>( takenSlugsQuery.Select( b => b.Slug ), StringComparer.OrdinalIgnoreCase );
+
+            int paddedNumber = 0;
+            while ( true )
+            {
+                var customSlug = slug;
                 if ( paddedNumber > 0 )
                 {
-                    string paddedString = string.Format( "-{0}", paddedNumber );
+                    var paddedString = string.Format( "-{0}", paddedNumber );
                     if ( intialSlugLength + paddedString.Length > 200 )
                     {
                         customSlug = slug.Left( intialSlugLength + paddedString.Length - 200 ) + paddedString;
@@ -109,28 +131,13 @@ namespace Rock.Model
                     }
                 }
 
-                var qry = this
-                    .Queryable()
-                    .Where( b => ( ( contentChannelItemSlugId.HasValue && b.Id != contentChannelItemSlugId.Value ) || !contentChannelItemSlugId.HasValue ) )
-                    .Where( b => b.Slug == customSlug );
-
-                if ( contentChannelId != null )
+                if ( !takenSlugs.Contains( customSlug ) )
                 {
-                    qry = qry.Where( b => b.ContentChannelItem.ContentChannelId == contentChannelId );
+                    return customSlug;
                 }
 
-                isValid = !qry.Any();
-                if ( !isValid )
-                {
-                    paddedNumber += 1;
-                }
-                else
-                {
-                    slug = customSlug;
-                }
-            } while ( !isValid );
-
-            return slug;
+                paddedNumber += 1;
+            }
         }
 
         /// <summary>

@@ -182,7 +182,7 @@
 
     /** The label text to display on the amount input control. */
     const amountLabel = computed((): string => {
-        return props.configuration[ComponentConfigurationKey.AmountLabel] ?? "Amount";
+        return props.configuration[ComponentConfigurationKey.AmountLabel] || "Amount";
     });
 
     /** The label text to display on the save account checkbox. */

@@ -5,7 +5,8 @@
            :isSaveButtonDisabled="isSendDisabled"
            saveText="Send"
            title="Send SMS"
-           @save="onSend">
+           @save="onSend"
+           modalContentClasses="connection-request-send-sms-modal">
         <PillList :modelValue="communicationRecipients ?? []"
                   :disabled="isSending"
                   canExpand
@@ -15,7 +16,7 @@
                 <Pill :disabled="isSending"
                       :tooltip="getRecipientTooltip(item)"
                       :tokenType="getRecipientTokenType(item)">
-                    <img :src="item?.photoUrl ?? undefined" style="border-radius: 24px; width: 24px; height: 24px" />
+                    <img :src="item?.photoUrl ?? undefined" style="border-radius: var(--rounded-huge); width: 24px; height: 24px" />
                     <span class="item-content">{{ item.name }}</span>
                 </Pill>
             </template>
@@ -35,10 +36,11 @@
             </div>
         </div>
 
-        <div class="row">
+        <div v-if="smsSnippets.length > 0" class="row">
             <div class="col-sm-12">
                 <RockButton btnType="link"
-                            class="text-small"
+                            class="btn-sm"
+                            style="margin-bottom: var(--spacing-tiny);"
                             @click="areSnippetsShown = !areSnippetsShown">{{ showHideSnippetsText }}<i :class="areSnippetsShown ? 'ti ti-chevron-up' : 'ti ti-chevron-down'"></i></RockButton>
             </div>
         </div>
@@ -71,12 +73,6 @@
     </Modal>
 </template>
 
-<style scoped>
-.recipients-sms-error {
-    color: var(--color-danger-strong);
-    margin-bottom: var(--spacing-medium);
-}
-</style>
 
 <script setup lang="ts">
     import { PropType, watch, computed, ref } from "vue";

@@ -27,12 +27,6 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 /** The additional configuration options for the Group List block. */
 export type GroupListOptionsBag = {
     /**
-     * Gets or sets the available groups for the add-member dropdown picker.
-     * Only populated when IsPersonMode is true and GroupPickerType is "Dropdown".
-     */
-    availableGroups?: ListItemBag[] | null;
-
-    /**
      * Gets or sets the available group type items for the filter panel.
      * Only populated when ShowFilter is true and more than one group type is available.
      */

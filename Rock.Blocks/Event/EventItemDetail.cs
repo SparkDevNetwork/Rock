@@ -1040,8 +1040,26 @@ namespace Rock.Blocks.Event
                 rockContext.WrapTransaction( () =>
                 {
                     rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
 
+                    /*
+                        8/6/26 - NA
+
+                        This block previously called entity.SaveAttributeValues( rockContext )
+                        here, but that call was removed as part of the fix for issue #6962.
+                        The original WebForms EventItemDetail block did not call it either;
+                        it was added by mistake when the block was rewritten in Obsidian.
+
+                        EventItem implements IHasInheritedAttributes and its Attributes
+                        collection includes EventCalendarItem-scoped attributes, so
+                        Helper.SaveAttributeValues wrote those inherited values back with
+                        EntityId = EventItem.Id instead of the EventCalendarItem.Id, which
+                        corrupted attribute values on unrelated events and caused the Index
+                        Content Collections job to fail with a duplicate key error. Calendar-
+                        item attribute values are persisted correctly by the per-
+                        EventCalendarItem loop below and must not be persisted here.
+
+                        Reason: https://github.com/SparkDevNetwork/Rock/issues/6962
+                    */
                     foreach ( EventCalendarItem eventCalendarItem in entity.EventCalendarItems )
                     {
                         var eventCalendarAttribute = box.Entity.EventCalendarItemAttributes.Find( a => a.EventCalendarGuid == eventCalendarItem.EventCalendar?.Guid );

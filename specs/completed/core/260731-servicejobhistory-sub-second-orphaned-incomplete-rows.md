@@ -15,7 +15,7 @@ contributors: []
 
 Rock writes one ServiceJobHistory row per job run: it inserts the row when the job starts and updates that same row when the job finishes. Nothing links the two callbacks, so the completion side re-finds the row by comparing timestamps. For jobs that finish in under ~1.7 ms the stored start time (SQL `datetime`, 3.33 ms resolution) can round past the in-memory finish time, the lookup misses, and Rock inserts a duplicate row while abandoning the original. The fix passes the row's primary key through Quartz's execution context so the completion callback updates the exact row, with the timestamp logic retained only as a fallback.
 
-The fix itself lands in the v19.x hotfix branch; this spec lives in develop as the decision record.
+The fix itself lands in the v19.5 hotfix branch; this spec lives in develop as the decision record.
 
 ## Problem Statement
 
@@ -80,7 +80,7 @@ Resilience requirements from the PO review:
 
 `AddStartedServiceJobHistory` already returns the created entity (ServiceJobHistoryService.cs:93), so the Id is available immediately after `SaveChanges`.
 
-As implemented on the v19.x hotfix branch:
+As implemented on the v19.5 hotfix branch:
 
 - The brief wait is a 250 ms `Thread.Sleep` between the two lookup attempts, with a distinct log warning before the retry and another if the retry also misses.
 - The missing-Id warning is suppressed for the pulse job. `JobWasExecuted` fires for it every 30 seconds, but `JobToBeExecuted` never creates a started row for it, so a literal warning would be continuous noise; the pulse job silently uses the fallback as it always has.

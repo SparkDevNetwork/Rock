@@ -654,7 +654,17 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     }
                 }
 
+                // Exclude phone numbers whose type has been deactivated so they don't
+                // appear alongside active phone numbers on the check-in Person Profile.
+                var activePhoneNumberTypeIds = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) )
+                    .DefinedValues
+                    .Where( dv => dv.IsActive )
+                    .Select( dv => dv.Id )
+                    .ToList();
+
                 var phoneNumbers = person.PhoneNumbers
+                    .Where( p => p.NumberTypeValueId.HasValue
+                                 && activePhoneNumberTypeIds.Contains( p.NumberTypeValueId.Value ) )
                     .Select( p => new PhoneNumberDisplay
                     {
                         Id = p.Id,

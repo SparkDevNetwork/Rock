@@ -780,9 +780,10 @@ namespace Rock.Blocks.Core
         /// the entity-node "Add" affordance when the tree shows categorized entities.
         /// </summary>
         /// <param name="selectedGuid">The selected category or entity; empty to add without a parent.</param>
+        /// <param name="expandedGuids">The categories currently expanded in the tree, re-emitted so the Detail Page can restore the open state.</param>
         /// <returns>The add URL, or a bad-request result when no Detail Page is configured.</returns>
         [BlockAction]
-        public BlockActionResult GetAddEntityUrl( Guid selectedGuid )
+        public BlockActionResult GetAddEntityUrl( Guid selectedGuid, List<Guid> expandedGuids )
         {
             var pageParameterKey = GetAttributeValue( AttributeKey.PageParameterKey ).IfEmpty( DefaultPageParameterKey );
             var qryParams = new Dictionary<string, string> { [pageParameterKey] = "0" };
@@ -800,6 +801,19 @@ namespace Rock.Blocks.Core
             if ( parentCategoryId.HasValue )
             {
                 qryParams[PageParameterKey.ParentCategoryId] = parentCategoryId.Value.ToString();
+            }
+
+            // Carry the expanded categories through so the tree restores its open state after the add,
+            // matching the category-add path and the WebForms lbAddItem behavior.
+            var expandedIds = ( expandedGuids ?? new List<Guid>() )
+                .Select( guid => CategoryCache.Get( guid )?.Id )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value.ToString() )
+                .Distinct()
+                .ToList();
+            if ( expandedIds.Any() )
+            {
+                qryParams[PageParameterKey.ExpandedIds] = string.Join( ",", expandedIds );
             }
 
             var url = this.GetLinkedPageUrl( AttributeKey.DetailPage, qryParams );

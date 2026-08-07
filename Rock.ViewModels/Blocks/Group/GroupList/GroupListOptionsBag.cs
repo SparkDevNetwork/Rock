@@ -132,11 +132,5 @@ namespace Rock.ViewModels.Blocks.Group.GroupList
         /// Gets or sets the available group type purpose items for the filter panel.
         /// </summary>
         public List<ListItemBag> FilterPurposeItems { get; set; }
-
-        /// <summary>
-        /// Gets or sets the available groups for the add-member dropdown picker.
-        /// Only populated when IsPersonMode is true and GroupPickerType is "Dropdown".
-        /// </summary>
-        public List<ListItemBag> AvailableGroups { get; set; }
     }
 }
