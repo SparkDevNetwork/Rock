@@ -5,6 +5,7 @@
               canAdd
               canRemove
               canExpand
+              rules="required"
               @add="onAdd"
               @remove="onRemove">
         <template #item="{ item, disabled, canRemove, remove }">
@@ -14,7 +15,7 @@
                   :tooltip="getPersonTooltip(item)"
                   @remove="remove()">
                 <img :src="item.photoUrl ?? undefined"
-                     style="border-radius: 24px; width: 24px; height: 24px" />
+                     style="border-radius: var(--rounded-huge); width: 24px; height: 24px" />
                 <span>{{ item.name }}</span>
             </Pill>
         </template>

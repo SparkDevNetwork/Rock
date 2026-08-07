@@ -44,15 +44,15 @@ namespace Rock.Blocks.Engagement
     #region Block Attributes
 
     [StepProgramStepTypeField(
-        name: "Step Program and Type",
-        Description = "The step program and step type to use to add a new step. Leave this empty to allow the user to choose.",
+        name: "Default Step Type",
+        Description = "The step type new steps will use. Selecting a step type also fixes the step program. Leave blank to let the user choose the program and type.",
         IsRequired = false,
         Order = 1,
         Key = AttributeKey.StepProgramStepType )]
 
     [StepProgramStepStatusField(
-        name: "Step Program and Status",
-        Description = "The step program and step status to use to add a new step. Leave this empty to allow the user to choose.",
+        name: "Default Step Status",
+        Description = "The status new steps will use. If this belongs to a different program than the step type above, it's ignored. Leave blank to let the user choose the status.",
         IsRequired = false,
         Order = 2,
         Key = AttributeKey.StepProgramStepStatus )]
