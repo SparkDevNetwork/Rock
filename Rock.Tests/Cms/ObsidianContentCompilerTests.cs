@@ -130,6 +130,27 @@ onMounted(function () { load(); });
 </script>
 ";
 
+        /// <summary>
+        /// A component with a plain, UNSCOPED style block. This is the shape that
+        /// puts the style injection directly against the component declaration.
+        /// </summary>
+        private const string UnscopedStyleSource = @"<template>
+    <div class=""plain"">{{ label }}</div>
+</template>
+
+<style>
+.plain {
+    padding: 12px;
+}
+</style>
+
+<script setup>
+import { ref } from ""vue"";
+
+const label = ref(""hello"");
+</script>
+";
+
         private const string BrokenSource = @"<template>
     <div>
         <span>{{ count </span>
@@ -216,6 +237,33 @@ const count = 1;
             var result = compiler.CompileSource( deep.ToString() );
 
             Assert.IsNotNull( result, "The compiler must return a result rather than terminating the process." );
+        }
+
+        [TestMethod]
+        public void CompileSource_WithUnscopedStyle_TerminatesTheStatementBeforeStyleInjection()
+        {
+            // Regression: the component is emitted as `const __component = { ... }`
+            // with no trailing semicolon, and the style injection begins with `(`.
+            // JavaScript reads that as a call rather than inserting a semicolon, so
+            // the module loaded and then threw "is not a function" at runtime.
+            //
+            // A scoped style masked this, because the scope-id assignment sits
+            // between the two and starts with an identifier. Only an UNSCOPED style
+            // puts the two statements directly against each other, which is why
+            // every earlier fixture passed.
+            var compiler = new ObsidianContentCompiler( GetBundlePathOrInconclusive() );
+
+            var result = compiler.CompileSource( UnscopedStyleSource );
+
+            Assert.IsTrue( result.IsSuccess, "Compile failed: " + string.Join( "; ", result.Errors ) );
+
+            var injectionIndex = result.CompiledContent.IndexOf( "(function () { var __id", StringComparison.Ordinal );
+            Assert.IsTrue( injectionIndex > 0, "The compiled output should contain the style injection." );
+
+            var beforeInjection = result.CompiledContent.Substring( 0, injectionIndex ).TrimEnd();
+            Assert.IsTrue( beforeInjection.EndsWith( ";", StringComparison.Ordinal ),
+                "The statement before the style injection must be terminated, otherwise the component object is invoked as a function. Tail was: "
+                    + beforeInjection.Substring( Math.Max( 0, beforeInjection.Length - 40 ) ) );
         }
 
         [TestMethod]

@@ -212,6 +212,33 @@ function buildStyleInjection(id: string, css: string): string {
 }
 
 /**
+ * Ensures a generated statement block is terminated, so whatever follows it cannot
+ * be absorbed into it by automatic semicolon insertion.
+ *
+ * `compileScript` emits the component as `const __component = { ... }` with no
+ * trailing semicolon. JavaScript does NOT insert one before a line starting with
+ * `(` or `[`, because those read as a call or an index on the preceding
+ * expression, so `const __component = {...}` followed by the style injection's
+ * `(function () { ... })();` parses as an attempt to invoke the component object.
+ * That produces a module which compiles, stores, and loads, then throws
+ * "is not a function" at runtime. Terminating here removes the hazard for every
+ * following statement rather than relying on what happens to come next.
+ *
+ * @param code The generated code block.
+ *
+ * @returns The block, guaranteed to end in a semicolon when it has content.
+ */
+function terminateStatement(code: string): string {
+    const trimmed = code.trimEnd();
+
+    if (!trimmed || trimmed.endsWith(";")) {
+        return trimmed;
+    }
+
+    return trimmed + ";";
+}
+
+/**
  * Assembles the ES module output (whose imports are all simple top-level forms and
  * whose component has already been rewritten to `const __component = ...`) into a
  * SystemJS `System.register` module string.
@@ -260,9 +287,9 @@ function buildSystemJsModule(imports: ParsedImport[], body: string, scopeAssign:
         "            " + setters,
         "        ],",
         "        execute: function () {",
-        body,
-        scopeAssign,
-        styleInject,
+        terminateStatement(body),
+        terminateStatement(scopeAssign),
+        terminateStatement(styleInject),
         `_export("default", ${componentLocal});`,
         "        }",
         "    };",
