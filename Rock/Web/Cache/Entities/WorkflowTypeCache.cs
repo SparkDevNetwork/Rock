@@ -315,6 +315,24 @@ namespace Rock.Web.Cache
 
         #endregion
 
+        #region ISecured
+
+        /*
+             8/7/2026 - NA
+
+             ⚠ SECURITY NOTICE ⚠
+
+             If the model implements custom ISecured behavior, the corresponding
+             {Entity}Cache class MUST implement the same security logic.
+
+             Reason: Prevent security mismatches between model entities and cache objects.
+        */
+
+        /// <inheritdoc cref="Rock.Model.WorkflowType.ParentAuthority"/>
+        public override Security.ISecured ParentAuthority => Category ?? base.ParentAuthority;
+
+        #endregion ISecured
+
         #region Public Methods
 
         /// <summary>
