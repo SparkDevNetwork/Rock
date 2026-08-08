@@ -167,9 +167,16 @@ namespace Rock.Blocks.Event
                 // Get the Registration Ids
                 var registrationIds = paymentRegistrations.ConvertAll( r => r.Id );
 
-                // Get all the transactions relate to these registrations
+                // Get all the transactions relate to these registrations.
+                // Eager-load the navigation properties the grid reads per row
+                // ( authorized person, payment detail, transaction details ) so they
+                // are not lazy-loaded one row at a time.
                 qry = new FinancialTransactionService( RockContext )
                     .Queryable().AsNoTracking()
+                    .Include( t => t.AuthorizedPersonAlias.Person )
+                    .Include( t => t.FinancialPaymentDetail.CurrencyTypeValue )
+                    .Include( t => t.FinancialPaymentDetail.CreditCardTypeValue )
+                    .Include( t => t.TransactionDetails )
                     .Where( t => t.TransactionDetails
                         .Any( d =>
                             d.EntityTypeId.HasValue &&
