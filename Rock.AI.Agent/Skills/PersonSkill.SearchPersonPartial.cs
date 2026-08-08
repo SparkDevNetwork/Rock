@@ -77,7 +77,7 @@ internal sealed partial class PersonSkill
 
         // Get results
         var results = searchQueryable
-            .Select( p => new PersonResult
+            .Select( p => new PersonDetailResult
             {
                 Id = p.Id,
                 FirstName = p.FirstName,

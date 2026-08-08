@@ -74,7 +74,7 @@ internal sealed partial class PersonSkill : AgentSkillComponent
     /// </summary>
     /// <param name="results"></param>
     /// <returns></returns>
-    private List<PersonResult> AppendExtendedProperties( List<PersonResult> results )
+    private List<PersonDetailResult> AppendExtendedProperties( List<PersonDetailResult> results )
     {
         // Get configuration for the family roles and marital status
         var childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
@@ -131,7 +131,7 @@ internal sealed partial class PersonSkill : AgentSkillComponent
                                             && m.PersonId != result.Id
                                             && m.MaritalStatusGuid == marriedMaritalStatusGuid
                                             && ( !isBibleStrictSpouse || m.Gender != result.Gender || m.Gender == Gender.Unknown || result.Gender == Gender.Unknown ) )
-                                         .Select( m => new PersonResult { NickName = m.NickName, LastName = m.LastName, Id = m.PersonId, Suffix = m.Suffix, Age = m.Age, IncludeProfileLink = true } )
+                                         .Select( m => new PersonDetailResult { NickName = m.NickName, LastName = m.LastName, Id = m.PersonId, Suffix = m.Suffix, Age = m.Age, IncludeProfileLink = true } )
                                          .FirstOrDefault();
             }
         }
@@ -149,14 +149,14 @@ internal sealed partial class PersonSkill : AgentSkillComponent
         => new SqlParameter( key, value ?? ( object ) DBNull.Value );
 
     /// <summary>
-    /// Gets the <see cref="PersonResult"/> object for the primary person
+    /// Gets the <see cref="PersonDetailResult"/> object for the primary person
     /// being queried.
     /// </summary>
     /// <param name="person">The person object that was originally queried for.</param>
-    /// <returns>An instance of <see cref="PersonResult"/> that represents the person.</returns>
-    internal static PersonResult GetPrimaryPersonResult( Model.Person person, bool publicProfile = false )
+    /// <returns>An instance of <see cref="PersonDetailResult"/> that represents the person.</returns>
+    internal static PersonDetailResult GetPrimaryPersonResult( Model.Person person, bool publicProfile = false )
     {
-        var personResult = new PersonResult
+        var personResult = new PersonDetailResult
         {
             Id = person.Id,
             FirstName = person.FirstName,
@@ -194,7 +194,7 @@ internal sealed partial class PersonSkill : AgentSkillComponent
         return personResult;
     }
 
-    internal static void PopulatePhoneNumbers( PersonResult profileResult, Model.Person person )
+    internal static void PopulatePhoneNumbers( PersonDetailResult profileResult, Model.Person person )
     {
         profileResult.PhoneNumbers = person.PhoneNumbers
             .Select( n => new PhoneNumberResult
@@ -210,7 +210,7 @@ internal sealed partial class PersonSkill : AgentSkillComponent
             } ).ToList();
     }
 
-    internal static void PopulateAddresses( PersonResult profileResult, Model.Group family )
+    internal static void PopulateAddresses( PersonDetailResult profileResult, Model.Group family )
     {
         profileResult.Addresses = family
             .GroupLocations.Select( l => new LocationResult
@@ -246,21 +246,21 @@ internal sealed partial class PersonSkill : AgentSkillComponent
         return result;
     }
 
-    internal static void PopulateAdults( PersonResult profileResult, Model.Group family, Action<Model.Person, PersonResult> setCustomValues = null )
+    internal static void PopulateAdults( PersonDetailResult profileResult, Model.Group family, Action<Model.Person, PersonResult> setCustomValues = null )
     {
         profileResult.AdultsInFamily = family.Members.Where( m => m.Person.AgeClassification == AgeClassification.Adult )
             .Select( m => GetFamilyMemberResult( m.Person, setCustomValues ) )
             .ToList();
     }
 
-    internal static void PopulateChildren( PersonResult profileResult, Model.Group family, Action<Model.Person, PersonResult> setCustomValues = null )
+    internal static void PopulateChildren( PersonDetailResult profileResult, Model.Group family, Action<Model.Person, PersonResult> setCustomValues = null )
     {
         profileResult.ChildrenInFamily = family.Members.Where( m => m.Person.AgeClassification == AgeClassification.Child )
             .Select( m => GetFamilyMemberResult( m.Person, setCustomValues ) )
             .ToList();
     }
 
-    internal static void PopulateSpouse( PersonResult profileResult, Model.Person person, Action<Model.Person, PersonResult> setCustomValues = null )
+    internal static void PopulateSpouse( PersonDetailResult profileResult, Model.Person person, Action<Model.Person, PersonResult> setCustomValues = null )
     {
         var spouse = person.GetSpouse();
 

@@ -99,7 +99,7 @@ internal class AgentRequestContextImplementation : AgentRequestContext
     public override RockContext RockContext { get; }
 
     /// <inheritdoc/>
-    public override ChatAgent ChatAgent => _chatAgent;
+    internal override ChatAgent ChatAgent => _chatAgent;
 
     #endregion
 

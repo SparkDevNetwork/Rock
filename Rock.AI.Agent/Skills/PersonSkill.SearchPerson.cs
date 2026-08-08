@@ -99,7 +99,7 @@ internal sealed partial class PersonSkill
         // Get search results. Returning an anonymous type as some of the values needed will
         // not be returned to the client.
         var results = searchQueryable
-            .Select( p => new PersonResult
+            .Select( p => new PersonDetailResult
             {
                 Id = p.Id,
                 FirstName = p.FirstName,

@@ -250,7 +250,7 @@ internal sealed partial class PersonSkill
             return helper.ErrorResult;
         }
 
-        return Success( new PersonResult
+        return Success( new PersonDetailResult
         {
             Id = person.Id,
             FirstName = person.FirstName,
