@@ -306,11 +306,7 @@ namespace Rock.Blocks.AI
             {
                 var settings = agentSkill.GetAdditionalSettings<AgentSkillSettings>();
 
-                bag.EnabledTools = agentSkill.AISkill
-                    .AISkillTools
-                    .Select( f => f.Guid )
-                    .Where( g => !settings.DisabledTools.Contains( g ) )
-                    .ToList();
+                bag.EnabledTools = settings.EnabledTools;
 
                 if ( agentSkill.AISkill.CodeEntityTypeId.HasValue )
                 {
@@ -646,11 +642,7 @@ namespace Rock.Blocks.AI
 
             var settings = agentSkill.GetAdditionalSettings<AgentSkillSettings>();
 
-            settings.DisabledTools = agentSkill.AISkill
-                .AISkillTools
-                .Select( f => f.Guid )
-                .Where( g => !bag.EnabledTools.Contains( g ) )
-                .ToList();
+            settings.EnabledTools = bag.EnabledTools;
 
             if ( agentSkill.AISkill.CodeEntityTypeId.HasValue )
             {

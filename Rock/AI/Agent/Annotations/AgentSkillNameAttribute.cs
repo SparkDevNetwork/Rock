@@ -20,7 +20,7 @@ namespace Rock.AI.Agent.Annotations
     /// generated based on the class name.
     /// </summary>
     [System.AttributeUsage( System.AttributeTargets.Class, Inherited = false, AllowMultiple = false )]
-    internal class AgentSkillNameAttribute : System.Attribute
+    public class AgentSkillNameAttribute : System.Attribute
     {
         /// <summary>
         /// The name of the skill.

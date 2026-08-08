@@ -20,7 +20,7 @@ namespace Rock.SystemGuid
     /// an AI agent function.
     /// </summary>
     [System.AttributeUsage( System.AttributeTargets.Method, Inherited = false, AllowMultiple = false )]
-    internal class AgentToolGuidAttribute : RockGuidAttribute
+    public class AgentToolGuidAttribute : RockGuidAttribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AgentSkillGuidAttribute"/> class.

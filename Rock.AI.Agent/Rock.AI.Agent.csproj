@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>12</LangVersion>
+    <RockWebPath>..\RockWeb</RockWebPath>
+    <CopyToRockWeb>True</CopyToRockWeb>
+  </PropertyGroup>
+
+  <!--<PropertyGroup>
+    <RockWebPath>..\..\Rock\RockWeb</RockWebPath>
+    <AdditionalAssembliesToCopy>Azure.AI.OpenAI.dll;Microsoft.Extensions.AI.OpenAI.dll;Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll;Microsoft.SemanticKernel.Connectors.OpenAI.dll;OpenAI.dll</AdditionalAssembliesToCopy>
+    <AdditionalAssembliesToCopy>$(AdditionalAssembliesToCopy);Microsoft.Extensions.Caching.Memory.dll</AdditionalAssembliesToCopy>
+    <AdditionalAssembliesToCopy>$(AdditionalAssembliesToCopy);Microsoft.ML.Tokenizers.dll;Microsoft.ML.Tokenizers.Data.O200kBase.dll</AdditionalAssembliesToCopy>
+    <AdditionalAssembliesToCopy>$(AdditionalAssembliesToCopy);Microsoft.Recognizers.Definitions.dll;Microsoft.Recognizers.Text.DataTypes.TimexExpression.dll;Microsoft.Recognizers.Text.DateTime.dll;Microsoft.Recognizers.Text.dll;Microsoft.Recognizers.Text.Number.dll;Microsoft.Recognizers.Text.NumberWithUnit.dll</AdditionalAssembliesToCopy>
+    <AdditionalAssembliesToCopy>$(AdditionalAssembliesToCopy);Microsoft.SemanticKernel.dll;Microsoft.SemanticKernel.Core.dll</AdditionalAssembliesToCopy>
+    <CopyToRockWeb>true</CopyToRockWeb>
+  </PropertyGroup>-->
+
+  <ItemGroup>
+    <Compile Update="Skills\*.*.cs">
+      <DependentUpon>$([System.IO.Path]::GetFileNameWithoutExtension('%(Identity)').Split('.')[0]).cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="1.0.2" />
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.67.1" />
+    <PackageReference Include="Microsoft.Recognizers.Text" Version="1.8.13" />
+    <PackageReference Include="Microsoft.Recognizers.Text.DateTime" Version="1.8.13" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rock\Rock.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.ComponentModel.Composition" />
+  </ItemGroup>
+
+</Project>

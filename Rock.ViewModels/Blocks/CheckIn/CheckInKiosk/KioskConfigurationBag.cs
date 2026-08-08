@@ -33,10 +33,22 @@ namespace Rock.ViewModels.Blocks.CheckIn.CheckInKiosk
         public WebKioskBag Kiosk { get; set; }
 
         /// <summary>
+        /// The campus identifier. This is used to provide a CSS class name to
+        /// the kiosk for customization.
+        /// </summary>
+        public int? CampusId { get; set; }
+
+        /// <summary>
         /// Gets or sets the check-in template.
         /// </summary>
         /// <value>The check-in template.</value>
         public ConfigurationTemplateBag Template { get; set; }
+
+        /// <summary>
+        /// The check-in template identifier. This is used to provide a CSS class name to
+        /// the kiosk for customization.
+        /// </summary>
+        public int? TemplateId { get; set; }
 
         /// <summary>
         /// Gets or sets the enabled areas.

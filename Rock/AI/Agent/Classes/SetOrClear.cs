@@ -24,7 +24,7 @@ namespace Rock.AI.Agent.Classes
     /// <remarks>
     /// Null instance ⇒ no change. <see cref="ClearValue"/> takes precedence over <see cref="Value"/>.
     /// </remarks>
-    internal class SetOrClear<T>
+    public class SetOrClear<T>
     {
         /// <summary>
         /// The value to set when <see cref="ClearValue"/> is false. Ignored when clearing.
