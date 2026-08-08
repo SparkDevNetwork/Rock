@@ -5817,6 +5817,51 @@ END
         }
 
         /// <summary>
+        /// Adds the AISkill security authentication. Set GroupGuid to null when setting to a special role
+        /// </summary>
+        /// <param name="skillGuid">The skill unique identifier.</param>
+        /// <param name="order">The order of the auth record. Specify <see cref="int.MaxValue"/> to append to the end of the rule list.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForAISkill( string skillGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
+        {
+            AddSecurityAuthForEntityBase( "Rock.Model.AISkill", "AISkill", skillGuid, order, action, allow, groupGuid, ( Rock.Model.SpecialRole ) specialRole, authGuid );
+        }
+
+        /// <summary>
+        /// Adds the AISkillTool security authentication. Set GroupGuid to null when setting to a special role
+        /// </summary>
+        /// <param name="skillToolGuid">The skill tool unique identifier.</param>
+        /// <param name="order">The order of the auth record. Specify <see cref="int.MaxValue"/> to append to the end of the rule list.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForAISkillTool( string skillToolGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
+        {
+            AddSecurityAuthForEntityBase( "Rock.Model.AISkillTool", "AISkillTool", skillToolGuid, order, action, allow, groupGuid, ( Rock.Model.SpecialRole ) specialRole, authGuid );
+        }
+
+        /// <summary>
+        /// Adds the AIAgent security authentication. Set GroupGuid to null when setting to a special role
+        /// </summary>
+        /// <param name="agentGuid">The agent unique identifier.</param>
+        /// <param name="order">The order of the auth record. Specify <see cref="int.MaxValue"/> to append to the end of the rule list.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForAIAgent( string agentGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
+        {
+            AddSecurityAuthForEntityBase( "Rock.Model.AIAgent", "AIAgent", agentGuid, order, action, allow, groupGuid, ( Rock.Model.SpecialRole ) specialRole, authGuid );
+        }
+
+        /// <summary>
         /// Deletes the security auth record.
         /// </summary>
         /// <param name="guid">The GUID.</param>
