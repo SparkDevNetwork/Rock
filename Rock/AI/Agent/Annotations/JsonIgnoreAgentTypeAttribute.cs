@@ -21,7 +21,7 @@ namespace Rock.AI.Agent.Annotations
     /// Marks a property as ignored when being serialized for the specified
     /// type of agent.
     /// </summary>
-    internal class JsonIgnoreAgentTypeAttribute : System.Attribute
+    public class JsonIgnoreAgentTypeAttribute : System.Attribute
     {
         /// <summary>
         /// The type of agent that will cause the property to be ignored.

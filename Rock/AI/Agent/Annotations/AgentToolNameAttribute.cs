@@ -20,7 +20,7 @@ namespace Rock.AI.Agent.Annotations
     /// one will be generated based on the method name.
     /// </summary>
     [System.AttributeUsage( System.AttributeTargets.Method, Inherited = false, AllowMultiple = false )]
-    internal class AgentToolNameAttribute : System.Attribute
+    public class AgentToolNameAttribute : System.Attribute
     {
         /// <summary>
         /// The name of the tool.

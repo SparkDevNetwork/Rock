@@ -20,7 +20,7 @@ namespace Rock.AI.Agent.Classes.Entity
     /// <summary>
     /// Represents a single attribute to the agent.
     /// </summary>
-    internal class AttributeResult
+    public class AttributeResult
     {
         /// <summary>
         /// The name of the attribute.

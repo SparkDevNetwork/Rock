@@ -37,7 +37,7 @@ namespace Rock.AI.Agent
     /// - Properties are marked <see langword="internal"/> but included in JSON via <see cref="JsonIncludeAttribute"/> to minimize public surface area.
     /// - This class should not be made public, instead make the IAgentToolResult public.
     /// </remarks>
-    internal sealed class AgentToolResult
+    public sealed class AgentToolResult
     {
         #region Properties
 

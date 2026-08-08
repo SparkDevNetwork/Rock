@@ -1,0 +1,260 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Microsoft.SemanticKernel;
+
+using Rock.AI.Agent.Mcp.Protocol;
+using Rock.Enums.AI.Agent;
+
+namespace Rock.AI.Agent.Mcp;
+
+/// <summary>
+/// Implementation of an MCP Server that processes requests from MCP clients
+/// and maps those requests to the appropriate functions in the ChatAgent.
+/// </summary>
+internal class McpServer : IMcpServer
+{
+    #region Methods
+
+    /// <inheritdoc/>
+    public async Task<McpResponse> HandleRequestAsync( ChatAgent agent, McpRequest request, CancellationToken cancellationToken )
+    {
+        if ( agent is not ChatAgentImplementation chatAgent  )
+        {
+            throw new ArgumentOutOfRangeException( nameof( agent ), $"Parameter must be of type {typeof( ChatAgentImplementation ).FullName}." );
+        }
+
+        var serializerOptions = AgentSerializerOptions.GetOptions( AgentType.Mcp, chatAgent.AgentConfiguration.AudienceType );
+        var rpcRequest = new JsonRpcRequest( request.Content, serializerOptions );
+        var response = await HandleRequestAsync( chatAgent, rpcRequest, serializerOptions, cancellationToken );
+
+        if ( response == null )
+        {
+            return new McpResponse();
+        }
+
+        var ms = new MemoryStream();
+
+        response.ToJson( ms, serializerOptions );
+
+        ms.Position = 0;
+
+        return new McpResponse
+        {
+            Content = ms
+        };
+    }
+
+    /// <summary>
+    /// Handles the request by processing the method specified in the request.
+    /// </summary>
+    /// <param name="agent">The agent that will handle tool related requests.</param>
+    /// <param name="request">The object that represents the request from the client.</param>
+    /// <param name="serializerOptions">The options that will be used when serializing and deserializing JSON data.</param>
+    /// <param name="cancellationToken">A token that indicates if the request should be cancelled.</param>
+    /// <returns>The response to the request.</returns>
+    internal async Task<JsonRpcResult> HandleRequestAsync( ChatAgentImplementation agent, JsonRpcRequest request, JsonSerializerOptions serializerOptions, CancellationToken cancellationToken )
+    {
+        if ( request.Method.StartsWith( "notifications/" ) || !request.Id.HasValue )
+        {
+            // Indicate no response should be sent.
+            return null;
+        }
+        else if ( request.Method == "initialize" )
+        {
+            return ProcessInitialize( request, agent );
+        }
+        else if ( request.Method == "ping" )
+        {
+            return request.CreateResult( new Dictionary<string, object>() );
+        }
+        else if ( request.Method == "tools/list" )
+        {
+            return ProcessToolsList( request, agent );
+        }
+        else if ( request.Method == "tools/call" )
+        {
+            return await ProcessToolsCallAsync( request, agent, serializerOptions, cancellationToken );
+        }
+        else
+        {
+            return request.CreateErrorResult( JsonRpcErrorCode.MethodNotFound, $"Method '{request.Method}' not found." );
+        }
+    }
+
+    /// <summary>
+    /// Processes an "initialize" JSON-RPC request and generates a response
+    /// containing server capabilities and information.
+    /// </summary>
+    /// <param name="rpcRequest">The JSON-RPC request to process.</param>
+    /// <returns>A <see cref="JsonRpcResult"/> containing the server's protocol version, capabilities, and server information.
+    private JsonRpcResult ProcessInitialize( JsonRpcRequest rpcRequest, ChatAgentImplementation agent )
+    {
+        var parameters = rpcRequest.GetParameters<InitializeParameters>();
+
+        var version = "2025-06-18";
+
+        if ( parameters.ProtocolVersion == "2025-03-26" )
+        {
+            version = "2025-03-26";
+        }
+
+        var instructions = agent.AgentConfiguration.Instructions;
+
+        foreach ( var plugin in agent.Kernel.Plugins )
+        {
+            if ( plugin.Description.IsNotNullOrWhiteSpace() )
+            {
+                instructions += "\n" + plugin.Description;
+            }
+        }
+
+        var response = new InitializeResult
+        {
+            ProtocolVersion = version,
+            Capabilities = new Dictionary<string, Capability>
+            {
+                { "tools", new Capability() },
+            },
+            ServerInfo = new Implementation
+            {
+                Name = $"Rock RMS: {agent.AgentConfiguration.Name}",
+                Version = VersionInfo.VersionInfo.GetRockSemanticVersionNumber(),
+            },
+            Instructions = instructions
+        };
+
+        return rpcRequest.CreateResult( response );
+    }
+
+    /// <summary>
+    /// Processes a request to retrieve a list of available tools and their metadata.
+    /// </summary>
+    /// <param name="rpcRequest">The JSON-RPC request to process.</param>
+    /// <param name="agent">The chat agent providing access to the kernel and plugins.</param>
+    /// <returns>A <see cref="JsonRpcResult"/> containing a list of tools and their metadata.</returns>
+    private JsonRpcResult ProcessToolsList( JsonRpcRequest rpcRequest, ChatAgentImplementation agent )
+    {
+        var parameters = rpcRequest.GetParameters<ListToolsParameters>();
+
+        var tools = new List<Tool>();
+
+        foreach ( var plugin in agent.Kernel.Plugins )
+        {
+            foreach ( var function in plugin )
+            {
+                var tool = new Tool
+                {
+                    Name = $"{plugin.Name}__{function.Name}",
+                    Title = function.Name.SplitCase(),
+                    Description = function.Description,
+                    InputSchema = function.JsonSchema
+                };
+
+                tool.Annotations = new ToolAnnotations
+                {
+                    Title = tool.Title,
+                };
+
+                tools.Add( tool );
+            }
+        }
+
+        var response = new ListToolsResult
+        {
+            Tools = tools
+        };
+
+        return rpcRequest.CreateResult( response );
+    }
+
+    /// <summary>
+    /// Processes a tools call request by invoking the specified tool function and returning the result.
+    /// </summary>
+    /// <param name="rpcRequest">The JSON-RPC request containing the tool call details.</param>
+    /// <param name="agent">The chat agent responsible for providing the kernel for tool invocation.</param>
+    /// <param name="serializerOptions">The options to use when deserializing the arguments and serializing the response.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A <see cref="JsonRpcResult"/> containing the result of the tool function invocation.</returns>
+    private async Task<JsonRpcResult> ProcessToolsCallAsync( JsonRpcRequest rpcRequest, ChatAgentImplementation agent, JsonSerializerOptions serializerOptions, CancellationToken cancellationToken )
+    {
+        var parameters = rpcRequest.GetParameters<CallToolParameters>();
+
+        if ( parameters.Name == null )
+        {
+            return rpcRequest.CreateErrorResult( JsonRpcErrorCode.InvalidParams, "Missing or invalid request parameters." );
+        }
+
+        var functionNameComponents = parameters.Name.Split( new string[] { "__" }, 2, StringSplitOptions.RemoveEmptyEntries );
+
+        if ( functionNameComponents.Length != 2 )
+        {
+            return rpcRequest.CreateErrorResult( JsonRpcErrorCode.InvalidParams, "Tool name was not valid." );
+        }
+
+        var pluginName = functionNameComponents[0];
+        var functionName = functionNameComponents[1];
+
+        var kernel = agent.Kernel;
+        KernelArguments args;
+
+        try
+        {
+            args = JsonSerializer.Deserialize<KernelArguments>( parameters.Arguments.GetRawText(), serializerOptions );
+
+            foreach ( var key in args.Keys.ToList() )
+            {
+                args[key] = args[key]?.ToString();
+            }
+        }
+        catch
+        {
+            return rpcRequest.CreateErrorResult( JsonRpcErrorCode.InvalidParams, "Invalid tool call arguments." );
+        }
+
+        var result = await kernel.InvokeAsync<object>( pluginName, functionName, args, cancellationToken );
+        var response = new CallToolResult();
+
+        if ( result is string )
+        {
+            response.Content.Add( new Protocol.TextContent
+            {
+                Text = result.ToString()
+            } );
+        }
+        else if ( result != null )
+        {
+            response.Content.Add( new Protocol.TextContent
+            {
+                Text = JsonSerializer.Serialize( result, serializerOptions )
+            } );
+
+            response.StructuredContent = result;
+        }
+
+        return rpcRequest.CreateResult( response );
+    }
+
+    #endregion
+}

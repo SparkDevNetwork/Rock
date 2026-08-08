@@ -124,6 +124,12 @@ namespace Rock.Blocks.AI
         }
 
         /// <inheritdoc/>
+        protected override IQueryable<AIAgent> GetOrderedListQueryable( IQueryable<AIAgent> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( a => a.Name );
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<AIAgent> GetGridBuilder()
         {
             return new GridBuilder<AIAgent>()

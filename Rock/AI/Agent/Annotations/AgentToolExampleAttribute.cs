@@ -19,7 +19,7 @@ namespace Rock.AI.Agent.Annotations
     /// Provides an example to the language model of how to call the tool.
     /// </summary>
     [System.AttributeUsage( System.AttributeTargets.Method, Inherited = false, AllowMultiple = true )]
-    internal class AgentToolExampleAttribute : System.Attribute
+    public class AgentToolExampleAttribute : System.Attribute
     {
         /// <summary>
         /// The example of how to use the tool.

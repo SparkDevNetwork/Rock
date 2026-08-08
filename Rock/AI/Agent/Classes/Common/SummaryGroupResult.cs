@@ -25,7 +25,7 @@ namespace Rock.AI.Agent.Classes.Common
     /// object. Each grouping can also optionally contain child groupings
     /// that further break down the results.
     /// </summary>
-    internal class SummaryGroupResult
+    public class SummaryGroupResult
     {
         /// <summary>
         /// The entity id. This will not be show in the JSON output.

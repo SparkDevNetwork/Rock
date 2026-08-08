@@ -42,7 +42,7 @@ namespace Rock.AI.Agent
     /// Each individual tool must be decorated with <see cref="SystemGuid.AgentToolGuidAttribute"/>.
     /// </para>
     /// </summary>
-    internal abstract class AgentSkillComponent : LightComponent
+    public abstract class AgentSkillComponent : LightComponent
     {
         #region Constants
 
@@ -109,7 +109,7 @@ namespace Rock.AI.Agent
         /// supported.
         /// </summary>
         /// <returns>A collection of <see cref="AgentTool"/> objects that represent the dynamic tools.</returns>
-        public virtual IReadOnlyCollection<AgentTool> GetDymanicTools() => Array.Empty<AgentTool>();
+        internal virtual IReadOnlyCollection<AgentTool> GetDymanicTools() => Array.Empty<AgentTool>();
 
         /// <summary>
         /// Creates a <see cref="ToolStatus.Success"/> result with no content.

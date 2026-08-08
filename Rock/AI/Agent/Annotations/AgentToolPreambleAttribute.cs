@@ -20,7 +20,7 @@ namespace Rock.AI.Agent.Annotations
     /// the agent UI when the tool is being called.
     /// </summary>
     [System.AttributeUsage( System.AttributeTargets.Method, Inherited = false, AllowMultiple = false )]
-    internal class AgentToolPreambleAttribute : System.Attribute
+    public class AgentToolPreambleAttribute : System.Attribute
     {
         /// <summary>
         /// The preamble of the tool.
