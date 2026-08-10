@@ -369,7 +369,7 @@
                                   :connectionRequestIdKey="requestDetails?.connectionRequestIdKey ?? ''"
                                   :activityEntry="activityEntry"
                                   :ref="(el) => setActivityCardRef(activityEntry.key, el)"
-                                  :canEditActivity="canEditConnectionRequest"
+                                  :canEditActivity="activityEntry.cardEntry?.canEdit ?? false"
                                   :canEditNote="canEditConnectionRequestNote"
                                   @editNote="(bag) => onEditRequestNote(bag, activityEntry.key)"
                                   @deleteNote="deleteNote"

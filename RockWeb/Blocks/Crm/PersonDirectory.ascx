@@ -6,6 +6,7 @@
         <script>
             Sys.Application.add_load( function () {
                 $("div.photo-round").lazyload({
+                    container: $('#content-wrapper')[0] || window,
                     effect: "fadeIn"
                 });
             });

@@ -46,10 +46,6 @@ namespace Rock.Blocks.Engagement
     [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
-    #region Block Attributes
-
-    #endregion
-
     [Rock.SystemGuid.EntityTypeGuid( "8b22d387-c8f3-41ff-99ef-ee4f088610a1" )]
     [Rock.SystemGuid.BlockTypeGuid( "eddfcaff-70aa-4791-b051-6567b37518c4" )]
     public class AchievementTypeDetail : RockEntityDetailBlockType<AchievementType, AchievementTypeBag>, IBreadCrumbBlock
@@ -87,8 +83,8 @@ namespace Rock.Blocks.Engagement
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
             var key = pageReference.GetPageParameter( PageParameterKey.AchievementTypeId );
-            var achievementTypeId = Rock.Utility.IdHasher.Instance.GetId( key ) ?? key.AsInteger();
-            var achievementType = AchievementTypeCache.Get( achievementTypeId );
+
+            var achievementType = AchievementTypeCache.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
             var breadCrumbs = new List<IBreadCrumb>();
             var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
@@ -251,7 +247,20 @@ namespace Rock.Blocks.Engagement
                 AchievementSuccessWorkflowType = entity.AchievementSuccessWorkflowType.ToListItemBag(),
                 AllowOverAchievement = entity.AllowOverAchievement,
                 AlternateImageBinaryFile = entity.AlternateImageBinaryFile.ToListItemBag(),
-                Attempts = entity.Attempts.ToListItemBagList(),
+
+                /*
+                    6/30/26 - MSE
+
+                    The full attempt collection is intentionally omitted from the bag. Materializing
+                    entity.Attempts loaded every attempt row (hundreds of thousands) on each page load,
+                    which made the detail page time out for high-volume achievement types. The attempts
+                    are shown by the separate Achievement Attempt List block instead.
+
+                    // Attempts = entity.Attempts.ToListItemBagList(),
+
+                    Reason: https://github.com/SparkDevNetwork/Rock/issues/6899
+                */
+
                 BadgeLavaTemplate = entity.BadgeLavaTemplate,
                 Category = entity.Category.ToListItemBag(),
                 CustomSummaryLavaTemplate = entity.CustomSummaryLavaTemplate,
@@ -397,7 +406,7 @@ namespace Rock.Blocks.Engagement
             return true;
         }
 
-        // <inheritdoc/>
+        /// <inheritdoc/>
         protected override AchievementType GetInitialEntity()
         {
             return GetInitialEntity<AchievementType, AchievementTypeService>( RockContext, PageParameterKey.AchievementTypeId );
@@ -415,7 +424,7 @@ namespace Rock.Blocks.Engagement
             };
         }
 
-        // <inheritdoc/>
+        /// <inheritdoc/>
         protected override bool TryGetEntityForEditAction( string idKey, out AchievementType entity, out BlockActionResult error )
         {
             var entityService = new AchievementTypeService( RockContext );
@@ -528,8 +537,8 @@ namespace Rock.Blocks.Engagement
         private AchievementTypeCache GetAchievementTypeCache()
         {
             var key = PageParameter( PageParameterKey.AchievementTypeId );
-            var achievementTypeId = Rock.Utility.IdHasher.Instance.GetId( key ) ?? key.AsInteger();
-            return AchievementTypeCache.Get( achievementTypeId );
+
+            return AchievementTypeCache.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
         }
 
         /// <summary>
@@ -539,21 +548,22 @@ namespace Rock.Blocks.Engagement
         /// <returns>
         ///   <c>true</c> if [is attribute included] [the specified attribute]; otherwise, <c>false</c>.
         /// </returns>
-        private bool IsAttributeIncluded( AttributeCache attribute )
+        private static bool IsAttributeIncluded( AttributeCache attribute )
         {
             return attribute.Key != "Order" && attribute.Key != "Active";
         }
 
         /// <summary>
-        /// Marks the old image as temporary.
+        /// Marks the old image as temporary when it is being replaced by a different file.
         /// </summary>
-        /// <param name="oldbinaryFileId">The binary file identifier.</param>
+        /// <param name="oldBinaryFileId">The current (old) binary file identifier.</param>
+        /// <param name="newBinaryFileId">The new binary file identifier replacing the old one.</param>
         /// <param name="binaryFileService">The binary file service.</param>
-        private void MarkOldImageAsTemporary( int? oldbinaryFileId, int? newBinaryFileId, BinaryFileService binaryFileService )
+        private static void MarkOldImageAsTemporary( int? oldBinaryFileId, int? newBinaryFileId, BinaryFileService binaryFileService )
         {
-            if ( oldbinaryFileId != newBinaryFileId )
+            if ( oldBinaryFileId != newBinaryFileId )
             {
-                var oldImageTemplatePreview = binaryFileService.Get( oldbinaryFileId ?? 0 );
+                var oldImageTemplatePreview = binaryFileService.Get( oldBinaryFileId ?? 0 );
                 if ( oldImageTemplatePreview != null )
                 {
                     // the old image won't be needed anymore, so make it IsTemporary and have it get cleaned up later
@@ -586,12 +596,17 @@ namespace Rock.Blocks.Engagement
         private IQueryable<AchievementAttempt> GetChartQuery()
         {
             var achievementType = GetAchievementTypeCache();
+
+            if ( achievementType == null )
+            {
+                return Enumerable.Empty<AchievementAttempt>().AsQueryable();
+            }
+
             var attemptService = new AchievementAttemptService( RockContext );
-            var query = attemptService.Queryable().AsNoTracking().Where( saa =>
+            return attemptService.Queryable().AsNoTracking().Where( saa =>
                 saa.AchievementTypeId == achievementType.Id &&
                 saa.IsSuccessful &&
                 saa.AchievementAttemptEndDateTime.HasValue );
-            return query;
         }
 
         /// <summary>
@@ -621,18 +636,44 @@ namespace Rock.Blocks.Engagement
                 successDateQuery = successDateQuery.Where( d => d < endDate );
             }
 
-            Func<DateTime, DateTime> groupByExpression;
+            /*
+                6/30/26 - MSE
+
+                Group the success dates in the database instead of calling .ToList() and grouping in
+                memory, which loaded every attempt date and timed out on high-volume achievement types.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/6899
+            */
+            List<IChartJsTimeSeriesDataPoint> dataPoints;
 
             if ( isYearly )
             {
-                groupByExpression = dt => new DateTime( dt.Year, dt.Month, 1 );
+                // The yearly view plots one point per month, so aggregate by year and month in SQL.
+                dataPoints = successDateQuery
+                    .GroupBy( d => new { d.Year, d.Month } )
+                    .Select( g => new { g.Key.Year, g.Key.Month, Count = g.Count() } )
+                    .ToList()
+                    .Select( g => ( IChartJsTimeSeriesDataPoint ) new ChartJsTimeSeriesDataPoint
+                    {
+                        DateTime = new DateTime( g.Year, g.Month, 1 ),
+                        Value = g.Count
+                    } )
+                    .ToList();
             }
             else
             {
-                groupByExpression = dt => dt.Date;
+                // The daily view plots one point per day, so aggregate by year, month, and day in SQL.
+                dataPoints = successDateQuery
+                    .GroupBy( d => new { d.Year, d.Month, d.Day } )
+                    .Select( g => new { g.Key.Year, g.Key.Month, g.Key.Day, Count = g.Count() } )
+                    .ToList()
+                    .Select( g => ( IChartJsTimeSeriesDataPoint ) new ChartJsTimeSeriesDataPoint
+                    {
+                        DateTime = new DateTime( g.Year, g.Month, g.Day ),
+                        Value = g.Count
+                    } )
+                    .ToList();
             }
-
-            var groupedSuccessData = successDateQuery.ToList().GroupBy( groupByExpression );
 
             // Initialize a new Chart Factory.
             var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>
@@ -648,11 +689,7 @@ namespace Rock.Blocks.Engagement
             {
                 Name = "Successful",
                 BorderColor = ChartJsConstants.Colors.Green,
-                DataPoints = groupedSuccessData.Select( g => ( IChartJsTimeSeriesDataPoint ) new ChartJsTimeSeriesDataPoint
-                {
-                    DateTime = g.Key,
-                    Value = g.Count()
-                } ).ToList()
+                DataPoints = dataPoints
             } );
 
             return factory;
@@ -676,7 +713,6 @@ namespace Rock.Blocks.Engagement
                 EnsureCurrentImageIsNotMarkedAsTemporary( entity.ImageBinaryFileId, binaryFileService );
             }
         }
-
 
         /// <summary>
         /// Saves the alternate image.
@@ -704,26 +740,39 @@ namespace Rock.Blocks.Engagement
         /// <param name="entity">The entity.</param>
         private void SavePrerequisites( ValidPropertiesBox<AchievementTypeBag> box, AchievementType entity )
         {
-            // Upsert Prerequisites
             var prerequisiteService = new AchievementTypePrerequisiteService( RockContext );
+            var selectedGuids = box.Bag.Prerequisites ?? new List<string>();
 
-            // Remove existing prerequisites that are not selected
-            var removePrerequisiteAchievementTypes = entity.Prerequisites
-                .Where( statp => !box.Bag.Prerequisites.Contains( statp.PrerequisiteAchievementType.Guid.ToString() ) ).ToList();
+            // Remove existing prerequisites that are no longer selected.
+            var removePrerequisites = entity.Prerequisites
+                .Where( p => !selectedGuids.Contains( p.PrerequisiteAchievementType.Guid.ToString() ) )
+                .ToList();
 
-            foreach ( var prerequisite in removePrerequisiteAchievementTypes )
+            foreach ( var prerequisite in removePrerequisites )
             {
                 entity.Prerequisites.Remove( prerequisite );
                 prerequisiteService.Delete( prerequisite );
             }
 
-            // Add selected achievement types prerequisites that are not existing
-            var addPrerequisiteAchievementTypeIds = entity.Prerequisites
-                .Where( statp => !box.Bag.Prerequisites.Any( statGuid => statGuid == statp.PrerequisiteAchievementType.Guid.ToString() ) )
-                .Select( statp => statp.PrerequisiteAchievementType.Guid )
+            /*
+                6/30/26 - MSE
+
+                Add the selected prerequisites that do not already exist. The previous implementation
+                iterated entity.Prerequisites (the existing rows) instead of the selected guids, so the
+                "add" set was always empty and a newly selected prerequisite was silently dropped on save.
+
+                Reason: Newly selected achievement prerequisites were never persisted.
+            */
+            var existingGuids = entity.Prerequisites
+                .Select( p => p.PrerequisiteAchievementType.Guid.ToString() )
                 .ToList();
 
-            var prerequisiteTypes = new AchievementTypeService( RockContext ).GetByGuids( addPrerequisiteAchievementTypeIds );
+            var addGuids = selectedGuids
+                .Where( guid => !existingGuids.Contains( guid ) )
+                .Select( guid => guid.AsGuid() )
+                .ToList();
+
+            var prerequisiteTypes = new AchievementTypeService( RockContext ).GetByGuids( addGuids );
 
             foreach ( var prerequisiteAchievementType in prerequisiteTypes )
             {
@@ -789,7 +838,7 @@ namespace Rock.Blocks.Engagement
                 var achievementTypeService = new AchievementTypeService( RockContext );
                 var existingEntity = achievementTypeService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
 
-                if ( existingEntity.ComponentEntityTypeId == entityType.Id )
+                if ( existingEntity != null && existingEntity.ComponentEntityTypeId == entityType.Id )
                 {
                     achievementType = existingEntity;
                 }
@@ -903,11 +952,15 @@ namespace Rock.Blocks.Engagement
                 entity.AchieverEntityTypeId = configuration.AchieverEntityTypeCache.Id;
             }
                 
-            // Now that the component attributes are saved, generate the config JSON from the component
+            // Now that the component attributes are saved, generate the config JSON from the component.
             var updatedCacheItem = AchievementTypeCache.Get( entity.Id );
-            var component = updatedCacheItem.AchievementComponent;
-            var configDictionary = component.GenerateConfigFromAttributeValues( updatedCacheItem );
-            entity.ComponentConfigJson = configDictionary.ToJson();
+            var component = updatedCacheItem?.AchievementComponent;
+
+            if ( component != null )
+            {
+                var configDictionary = component.GenerateConfigFromAttributeValues( updatedCacheItem );
+                entity.ComponentConfigJson = configDictionary.ToJson();
+            }
 
             RockContext.SaveChanges();
 
@@ -971,20 +1024,22 @@ namespace Rock.Blocks.Engagement
                 return ActionNotFound();
             }
 
-            using ( RockContext rockContext = new RockContext() )
+            var achievementTypeService = new AchievementTypeService( RockContext );
+            var achievementType = achievementTypeService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( achievementType == null )
             {
-                var achievementTypeService = new AchievementTypeService( rockContext );
-                var achievementType = achievementTypeService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
-
-                if ( !achievementType.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, GetCurrentPerson() ) )
-                {
-                    return ActionUnauthorized( "You are not authorized to rebuild this item." );
-                }
-
-                AchievementTypeService.Process( achievementType.Id );
-
-                return ActionOk( "The achievement type rebuild was successful!" );
+                return ActionNotFound();
             }
+
+            if ( !achievementType.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, GetCurrentPerson() ) )
+            {
+                return ActionUnauthorized( "You are not authorized to rebuild this item." );
+            }
+
+            AchievementTypeService.Process( achievementType.Id );
+
+            return ActionOk( "The achievement type rebuild was successful!" );
         }
 
         /// <summary>
@@ -995,15 +1050,6 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult RefreshChart( string dateRange )
         {
-            var query = GetChartQuery();
-            var hasData = query?.Any() == true;
-
-            if ( !hasData )
-            {
-                return ActionNotFound();
-            }
-
-            // Get chart data and set visibility of related elements.
             var chartFactory = GetChartJsFactory( dateRange );
 
             if ( !chartFactory.HasData )

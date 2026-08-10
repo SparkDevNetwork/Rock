@@ -117,6 +117,12 @@ namespace Rock.Blocks.Engagement
             options.IsGroupPlacementEnabled = connectionType?.EnabledFeatures.HasFlag( EnabledFeatureFlags.GroupPlacement ) ?? false;
             options.IsReOrderColumnVisible = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
+            options.AllActiveCampuses = CampusCache.All()
+                .Where( c => c.IsActive ?? true )
+                .OrderBy( c => c.Order )
+                .ThenBy( c => c.Name )
+                .ToListItemBagList();
+
             return options;
         }
 
@@ -962,6 +968,27 @@ namespace Rock.Blocks.Engagement
                         .Where( id => id.HasValue )
                         .Select( id => id.Value )
                         .ToList();
+
+                    /*
+                        5/27/26 - MSE
+
+                        When the user leaves the Campuses selection empty, fall back to all active
+                        campuses. This preserves the pre-v19 ( WebForms ) behavior where "no campuses
+                        selected" implicitly meant "all campuses", which is what makes the per-campus
+                        Default Connector dropdowns persistable.
+
+                        Without this, the user can pick a Default Connector for a campus but it gets
+                        silently dropped because no ConnectionOpportunityCampus row exists to hang it on.
+
+                        Reason: https://github.com/SparkDevNetwork/Rock/issues/6840
+                    */
+                    if ( !incomingCampusIds.Any() )
+                    {
+                        incomingCampusIds = CampusCache.All()
+                            .Where( c => c.IsActive ?? true )
+                            .Select( c => c.Id )
+                            .ToList();
+                    }
 
                     SyncRelatedEntities(
                         connectionOpportunityCampusService,

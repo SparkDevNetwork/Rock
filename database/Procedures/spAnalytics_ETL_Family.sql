@@ -168,7 +168,7 @@ BEGIN
     FROM AnalyticsSourceFamilyHistorical fh
     JOIN #AnalyticsSourceFamily t ON t.FamilyId = fh.FamilyId
         AND fh.CurrentRowIndicator = 1
-    WHERE 
+    WHERE (
         ISNULL(fh.[FamilyTitle], '') != ISNULL(t.FamilyTitle, '')
         OR ISNULL(fh.[CampusId], 0) != ISNULL(t.CampusId, 0)
         OR ISNULL(fh.[ConnectionStatus], '') != ISNULL(t.ConnectionStatus, '')
@@ -179,12 +179,13 @@ BEGIN
         OR fh.[IsEra] != t.IsEra
         OR ISNULL(fh.[MailingAddressLocationId], 0) != ISNULL(t.MailingAddressLocationId, 0)
         OR ISNULL(fh.[MappedAddressLocationId], 0) != ISNULL(t.MappedAddressLocationId, 0)
-AND fh.FamilyId NOT IN ( -- Ensure that there isn't already a History Record for the current EtlDate 
-    SELECT FamilyId
-    FROM AnalyticsSourceFamilyHistorical x
-    WHERE CurrentRowIndicator = 0
-        AND [ExpireDate] = @EtlDate
-    )
+        )
+        AND fh.FamilyId NOT IN ( -- Ensure that there isn't already a History Record for the current EtlDate
+            SELECT FamilyId
+            FROM AnalyticsSourceFamilyHistorical x
+            WHERE CurrentRowIndicator = 0
+                AND [ExpireDate] = @EtlDate
+            )
 	
 	-- Insert Families that don't have a "CurrentRowIndicator" Row yet (either it was marked as history, or they are a new family)
     INSERT INTO AnalyticsSourceFamilyHistorical (

@@ -51,6 +51,11 @@ namespace Rock.Lava
         /// </summary>
         private static readonly ConcurrentDictionary<PropertyInfo, bool> _isLavaPropertyCache = new ConcurrentDictionary<PropertyInfo, bool>();
 
+        /// <summary>
+        /// The field key used to store the shared RockContext in the Lava context.
+        /// </summary>
+        internal static readonly string RockContextFieldKey = "rock_context";
+
         #region Constructors
 
         static LavaHelper()
@@ -67,14 +72,14 @@ namespace Rock.Lava
         /// <returns></returns>
         public static RockContext GetRockContextFromLavaContext( ILavaRenderContext context )
         {
-            var rockContext = context?.GetInternalField( "rock_context", null ) as RockContext;
+            var rockContext = context?.GetInternalField( RockContextFieldKey, null ) as RockContext;
 
             if ( rockContext == null )
             {
                 rockContext = RockApp.Current.CreateRockContext();
                 if ( context != null )
                 {
-                    context.SetInternalField( "rock_context", rockContext );
+                    context.SetInternalField( RockContextFieldKey, rockContext );
                 }
             }
 

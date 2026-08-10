@@ -294,6 +294,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the fiscal week number in year.
         /// </summary>
+        /// <remarks>This is the same value as FiscalWeek and may be marked obsolete in the future.</remarks>
         /// <value>
         /// The fiscal week number in year.
         /// </value>

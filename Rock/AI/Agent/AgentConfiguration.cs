@@ -91,7 +91,7 @@ namespace Rock.AI.Agent
             Skills = skills ?? new List<SkillConfiguration>();
 
             var settings = agent.GetAdditionalSettings<ChatAgentSettings>();
-            AutoSummarizeThreshold = settings.AutoSummarizeThreshold;
+            AutoSummarizeThreshold = settings.AutoSummarizeThreshold ?? 60_000;
             Role = settings.Role;
             CurrentPersonTemplate = settings.CurrentPersonTemplate;
         }
@@ -123,7 +123,7 @@ namespace Rock.AI.Agent
             AgentId = agentId;
             AgentType = agentType;
             AudienceType = audienceType;
-            AutoSummarizeThreshold = settings.AutoSummarizeThreshold;
+            AutoSummarizeThreshold = settings.AutoSummarizeThreshold ?? 60_000;
             Name = name;
             Provider = provider;
             Instructions = instructions ?? string.Empty;

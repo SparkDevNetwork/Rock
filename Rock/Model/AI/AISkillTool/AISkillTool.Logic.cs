@@ -17,6 +17,7 @@
 
 using System.Data.Entity;
 
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
 
@@ -36,6 +37,29 @@ namespace Rock.Model
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             AISkillToolCache.UpdateCachedEntity( Id, entityState );
+        }
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                if ( AISkill != null )
+                {
+                    return AISkill;
+                }
+
+                if ( AISkillId != 0 )
+                {
+                    return AISkillCache.Get( AISkillId );
+                }
+
+                return base.ParentAuthority;
+            }
         }
 
         #endregion

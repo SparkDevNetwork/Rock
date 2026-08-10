@@ -1227,11 +1227,17 @@ namespace RockWeb.Blocks.CheckIn.Config
 
             checkinArea.NextGenCheckInLabels = new CheckInLabelService( rockContext )
                 .Queryable()
-                .Join( relatedEntityQry, cl => cl.Id, re => re.TargetEntityId, ( cl, re ) => new CheckinArea.NextGenCheckInLabelInfo
+                .Join( relatedEntityQry, cl => cl.Id, re => re.TargetEntityId, ( cl, re ) => new
                 {
-                    Guid = re.Guid,
-                    CheckInLabelId = cl.Id,
-                    Name = cl.Name
+                    RelatedEntity = re,
+                    CheckInLabel = cl,
+                } )
+                .Where( a => a.CheckInLabel.IsActive )
+                .Select( a => new CheckinArea.NextGenCheckInLabelInfo
+                {
+                    Guid = a.RelatedEntity.Guid,
+                    CheckInLabelId = a.CheckInLabel.Id,
+                    Name = a.CheckInLabel.Name,
                 } )
                 .ToList();
         }

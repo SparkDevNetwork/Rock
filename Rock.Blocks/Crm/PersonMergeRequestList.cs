@@ -133,7 +133,7 @@ namespace Rock.Blocks.Crm
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.EntitySet.IdKey )
                 .AddTextField( "note", a => a.Note )
-                .AddTextField( "requestor", a => a.Requestor.FullName )
+                .AddTextField( "requestor", a => a.Requestor?.FullName )
                 .AddDateTimeField( "date", a => a.Date )
                 .AddField( "mergeRecords", a => a.MergeRecords.ConvertAll( p => p.FullName ) );
         }

@@ -1,0 +1,57 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+using Nest;
+
+namespace Rock.Plugin.HotFixes
+{
+    /// <summary>
+    /// Hardens security on out-of-the-box workflows.
+    /// </summary>
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 301, "19.1" )]
+    public class UpdateBrokenPageIconsForV19_2 : Migration
+    {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            NA_Update_PageIcons_V19_2_Up();
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            // Down migrations are not yet supported in plug-in migrations.
+        }
+
+        /// <summary>
+        /// Updates the icon for the Personalization Segments page and Experience Manager page.
+        /// </summary>
+        private void NA_Update_PageIcons_V19_2_Up()
+        {
+            Sql( $@"
+UPDATE [dbo].[Page] SET [IconCssClass] = 'ti ti-user-circle' WHERE [Guid] = '905F6132-AE1C-4C85-9752-18D22E604C3A' -- Personalization Segments Page
+UPDATE [dbo].[Page] SET [IconCssClass] = 'ti ti-chalkboard-teacher' WHERE [Guid] = '1DA3B534-FB71-483B-BD64-9BFB92F59123' -- Experience Manager Page
+" );
+        }
+
+    }
+}

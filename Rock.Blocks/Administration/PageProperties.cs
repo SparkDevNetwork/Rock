@@ -299,7 +299,19 @@ namespace Rock.Blocks.Administration
                 // Existing entity was found, prepare for view mode by default.
                 if ( isViewable )
                 {
-                    box.Entity = enableFullEditMode ? GetEntityBagForEdit( entity ) : GetEntityBagForView( entity );
+                    /*
+                        5/29/26 - MSE
+
+                        When this block is not in full edit mode it opens straight to the
+                        edit form (for example, the page settings modal), so it needs the
+                        edit-formatted bag. Matrix and Content Channel Item store their view
+                        and edit values in different formats, so giving the edit form a view
+                        value makes it crash.
+
+                        Reason: https://app.asana.com/1/20866866924293/project/1208321217019996/task/1214719530367018
+                    */
+                    var rendersEditFormDirectly = !enableFullEditMode;
+                    box.Entity = rendersEditFormDirectly ? GetEntityBagForEdit( entity ) : GetEntityBagForView( entity );
                 }
                 else
                 {

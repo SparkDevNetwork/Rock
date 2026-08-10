@@ -62,7 +62,7 @@ namespace Rock.Model
                     // Don't use BinaryFileFieldType as that type of attribute's file can be used by more than one attribute
                     var field = attributeCache.FieldType.Field;
 
-                    if ( valueWasModified && field != null && field.GetType().Assembly.FullName.StartsWith( "Rock" ) )
+                    if ( valueWasModified && field != null )
                     {
                         var rules = field.GetValidationRules( attributeCache.ConfigurationValues );
 
@@ -74,15 +74,27 @@ namespace Rock.Model
                         {
                             if ( DbContext.EnableStringValidation )
                             {
-                                throw;
+                                throw new AttributeValueValidationException( attributeCache, Entity.EntityId ?? 0, ex.Reason, null );
                             }
                             else
                             {
-                                ExceptionLogService.LogException( new Exception( "Attribute value validation failed.", ex ) );
+                                // Captures the full current call stack, all callers
+                                // included so that we get more information about
+                                // where this happened in the log.
+                                var stack = new System.Diagnostics.StackTrace( true ).ToString();
+                                var ex2 = new AttributeValueValidationException( attributeCache, Entity.EntityId ?? 0, ex.Reason, stack );
+
+                                ExceptionLogService.LogException( ex2, System.Web.HttpContext.Current );
                             }
                         }
                     }
 
+                    // If this is a BinaryFile backed field type, run special
+                    // processing to handle marking the BinaryFile as not
+                    // temporary. We intentionally do not check
+                    // BinaryFileFieldType nor LabelFieldType because those
+                    // operate as pickers to an existing file rather than being the
+                    // source of the file itself.
                     if ( field != null && (
                         field is Field.Types.FileFieldType ||
                         field is Field.Types.ImageFieldType ||
@@ -166,7 +178,20 @@ namespace Rock.Model
                     }
                 }
 
-                PostSaveDeleteUnreferencedBinaryFile();
+                // If this is a BinaryFile backed field type, run special
+                // processing to handle deleting the BinaryFile if this is
+                // the last attribute value referencing it. We intentionally do
+                // not check BinaryFileFieldType nor LabelFieldType because those
+                // operate as pickers to an existing file rather than being the
+                // source of the file itself.
+                var field = AttributeCache.Get( Entity.AttributeId )?.FieldType.Field;
+                if ( field != null && (
+                    field is Field.Types.FileFieldType ||
+                    field is Field.Types.ImageFieldType ||
+                    field is Field.Types.BackgroundCheckFieldType ) )
+                {
+                    PostSaveDeleteUnreferencedBinaryFile( field is Field.Types.BackgroundCheckFieldType );
+                }
 
                 // Previously we were doing this here:
                 //     UPDATE [AttributeValue] SET ValueAsDateTime = ...
@@ -209,7 +234,8 @@ namespace Rock.Model
             /// </summary>
             /// <remarks>This helps prevent orphaned binary files and ensures that unused files are
             /// removed from storage.</remarks>
-            private void PostSaveDeleteUnreferencedBinaryFile()
+            /// <param name="useContainsSearch">If true, the deletion task will use a contains search for the Guid rather than an equals search.</param>
+            private void PostSaveDeleteUnreferencedBinaryFile( bool useContainsSearch )
             {
                 Guid? newBinaryFileGuid = null;
                 Guid? oldBinaryFileGuid = null;
@@ -236,7 +262,8 @@ namespace Rock.Model
                     {
                         var deleteBinaryFileAttributeMsg = new DeleteBinaryFileAttribute.Message()
                         {
-                            BinaryFileGuid = oldBinaryFileGuid.Value
+                            BinaryFileGuid = oldBinaryFileGuid.Value,
+                            UseContainsSearch = useContainsSearch,
                         };
 
                         deleteBinaryFileAttributeMsg.Send();

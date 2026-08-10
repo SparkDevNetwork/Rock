@@ -1996,10 +1996,14 @@ namespace Rock.Blocks.Types.Mobile.Security
                             if ( personalDevice != null )
                             {
                                 personalDevice.PersonAliasId = person.PrimaryAliasId;
-                                if ( ShowNotificationsRequest )
+                              // A null or empty token (the user skipped the notifications screen
+                                // or denied the OS prompt) must not overwrite a valid registration
+                                // that the launch prompt already stored, so only write when a token
+                                // was actually supplied.
+                                if ( ShowNotificationsRequest && request.Details.PushToken.IsNotNullOrWhiteSpace() )
                                 {
                                     personalDevice.DeviceRegistrationId = request.Details.PushToken;
-                                    personalDevice.NotificationsEnabled = request.Details.PushToken.IsNotNullOrWhiteSpace();
+                                    personalDevice.NotificationsEnabled = true;
                                 }
 
                                 rockContext.SaveChanges();
@@ -2093,10 +2097,14 @@ namespace Rock.Blocks.Types.Mobile.Security
                         if ( personalDevice != null )
                         {
                             personalDevice.PersonAliasId = person.PrimaryAliasId;
-                            if ( ShowNotificationsRequest )
+                            // A null or empty token (the user skipped the notifications screen
+                            // or denied the OS prompt) must not overwrite a valid registration
+                            // that the launch prompt already stored, so only write when a token
+                            // was actually supplied.
+                            if ( ShowNotificationsRequest && details.PushToken.IsNotNullOrWhiteSpace() )
                             {
                                 personalDevice.DeviceRegistrationId = details.PushToken;
-                                personalDevice.NotificationsEnabled = details.PushToken.IsNotNullOrWhiteSpace();
+                                personalDevice.NotificationsEnabled = true;
                             }
                         }
                     }

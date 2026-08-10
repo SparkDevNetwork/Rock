@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -55,5 +55,15 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduler
         /// The count of communications sent.
         /// </value>
         public int CommunicationsSentCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the count of eligible recipients identified at the start of the run
+        /// (before any sending). Useful for distinguishing "we found N people but X failed"
+        /// from "we found 0 people."
+        /// </summary>
+        /// <value>
+        /// The count of eligible recipients identified at the start of the run.
+        /// </value>
+        public int EligibleRecipientCount { get; set; }
     }
 }

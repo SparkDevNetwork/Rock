@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -502,6 +502,34 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
                 category.EntityTypeId = entityTypeId.Value;
                 category.IsSystem = false;
                 category.Order = 0;
+
+                /*
+                    7/31/2026 - MSE
+
+                    The parent category may only be assigned when adding a new category. The edit
+                    panel has no parent category field, so honoring the bag's parent during an edit
+                    allowed a stale client flag to re-parent an existing category to itself (or to
+                    silently clear its parent), corrupting the category hierarchy and breaking the
+                    security inheritance chain.
+
+                    The parent is assigned via the navigation property (not just the Id) so the
+                    IsAuthorized( EDIT ) check below evaluates the security inherited from the
+                    parent category for this new, not-yet-saved category.
+
+                    Reason: https://github.com/SparkDevNetwork/Rock/issues/6949
+                */
+                if ( bag.ParentCategoryGuid.HasValue )
+                {
+                    var parentCategory = categoryService.Get( bag.ParentCategoryGuid.Value );
+                    if ( parentCategory == null )
+                    {
+                        return ActionBadRequest( "Invalid parent category." );
+                    }
+
+                    category.ParentCategory = parentCategory;
+                    category.ParentCategoryId = parentCategory.Id;
+                }
+
                 categoryService.Add( category );
             }
 
@@ -516,17 +544,11 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             category.IconCssClass = bag.IconCssClass;
             category.HighlightColor = bag.HighlightColor;
 
-            if ( bag.ParentCategoryGuid.HasValue )
+            // IsValid guards against invalid data the block action cannot otherwise detect,
+            // such as a recursive parent category hierarchy.
+            if ( !category.IsValid )
             {
-                var parentCategory = CategoryCache.Get( bag.ParentCategoryGuid.Value );
-                if ( parentCategory != null )
-                {
-                    category.ParentCategoryId = parentCategory.Id;
-                }
-            }
-            else
-            {
-                category.ParentCategoryId = null;
+                return ActionBadRequest( category.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" ) );
             }
 
             RockContext.SaveChanges();

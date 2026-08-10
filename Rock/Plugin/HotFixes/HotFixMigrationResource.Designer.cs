@@ -433,8 +433,7 @@ namespace Rock.Plugin.HotFixes {
         ///    BEGIN
         ///	
         ///	    -- configuration of the duration in weeks
-        ///	    DECLARE @GivingDurationLongWeeks int = 52
-        /// [rest of string was truncated]&quot;;.
+        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _052_MigrationRollupsForV8_1_spCrm_FamilyAnalyticsGiving {
             get {
@@ -1086,6 +1085,62 @@ namespace Rock.Plugin.HotFixes {
             get {
                 return ResourceManager.GetString("_277_ExcludeArchivedAndDuplicateListMembers_spCommunication_SynchronizeListRecipi" +
                         "ents", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        This stored procedure retrieves placed and unplaced people for all supported
+        ///        configurations of the Group Placement block in Rock RMS. It supports filtering
+        ///        by template, instance, groups, entity sets, demographics, campus, DataView
+        ///        membership, and fee qualifications.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        A result set containing placement-eligible people along with placement status
+        ///        and contextual registration or group information.
+        ///     [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _295_FixGoupPlacementPersonFilter_spGetGroupPlacementPeople {
+            get {
+                return ResourceManager.GetString("_295_FixGoupPlacementPersonFilter_spGetGroupPlacementPeople", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        This stored procedure retrieves placed and unplaced people for all supported
+        ///        configurations of the Group Placement block in Rock RMS. It supports filtering
+        ///        by template, instance, groups, entity sets, demographics, campus, DataView
+        ///        membership, and fee qualifications.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        A result set containing placement-eligible people along with placement status
+        ///        and contextual registration or group information.
+        ///     [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _298_FixGroupPlacementWaitList_spGetGroupPlacementPeople {
+            get {
+                return ResourceManager.GetString("_298_FixGroupPlacementWaitList_spGetGroupPlacementPeople", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to CREATE PROCEDURE [dbo].[spAnalytics_ETL_Family]
+        ///AS
+        ///BEGIN
+        ///    DECLARE @EtlDate DATE = convert(DATE, SysDateTime())
+        ///        ,@MaxExpireDate DATE = DateFromParts(9999, 1, 1)
+        ///     [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _299_FixAnalyticsETLFamilyOperatorPrecedence_spAnalytics_ETL_Family {
+            get {
+                return ResourceManager.GetString("_299_FixAnalyticsETLFamilyOperatorPrecedence_spAnalytics_ETL_Family", resourceCulture);
             }
         }
     }

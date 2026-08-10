@@ -61,7 +61,7 @@ namespace Rock.Model
                             if ( Entity.CampusId.HasValue && campusName.IsNullOrWhiteSpace() )
                             {
                                 var campus = CampusCache.Get( Entity.CampusId.Value );
-                                campusName = campus.Name;
+                                campusName = campus?.Name;
                             }
 
                             if ( campusName.IsNotNullOrWhiteSpace() )

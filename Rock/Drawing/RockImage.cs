@@ -74,6 +74,11 @@ namespace Rock.Drawing
         /// </summary>
         /// <param name="photoId"></param>
         /// <returns>null if the image could not be retrieved for any reason.</returns>
+        /// <remarks>This is only intended for use with BinaryFiletype.PERSON_IMAGE.</remarks>
+        /// <exception cref="Exception">
+        /// Thrown when the current person is not authorized to view the image or
+        /// when the binary file is not of type <c>BinaryFiletype.PERSON_IMAGE</c>.
+        /// </exception>
         public static Image GetPersonImageFromBinaryFileService( int photoId )
         {
             var binaryFile = new BinaryFileService( new RockContext() ).Get( photoId );
@@ -81,6 +86,15 @@ namespace Rock.Drawing
             if ( binaryFile == null )
             {
                 return null;
+            }
+
+            // Constrain to the well-known Person Image BinaryFileType. This endpoint is only
+            // intended to serve person photos; any other file type must be ignored so that
+            // the avatar handler cannot be used to read arbitrary image/BinaryFiles.
+            var personImageTypeId = BinaryFileTypeCache.GetId( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+            if ( personImageTypeId == null || binaryFile.BinaryFileTypeId != personImageTypeId.Value )
+            {
+                throw new Exception( "Not Allowed" );
             }
 
             if ( !IsAuthorized( binaryFile ) )
@@ -107,7 +121,6 @@ namespace Rock.Drawing
         /// <summary>
         /// Determines whether the current user is authorized to view the Person Image.
         /// Returns true without security check if the Person Image BinaryFileType has RequiresViewSecurity set to false.
-        /// The file type will need to be checked before fetching the file (see RockImage.GetPersonImageFromBinaryFileService())
         /// Validates security and the BinaryFileType if RequiresViewSecurity is true.
         /// </summary>
         /// <param name="binaryFile"></param>

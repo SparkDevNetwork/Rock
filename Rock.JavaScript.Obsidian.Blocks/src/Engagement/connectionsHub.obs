@@ -556,6 +556,8 @@
     <SendEmailModal v-model:visible="isSendEmailModalVisible"
                     :communicationRecipients="communicationRecipients"
                     :communicationTemplates="communicationTemplates"
+                    :fromName="emailFromName"
+                    :fromEmail="emailFromEmail"
                     @onSuccessfulSend="refreshActivityEntries(dockedPanelDetailsBox?.entity?.connectionRequestIdKey)" />
     <ViewOptionsModal :modelValue="viewOptionsForModal"
                       @update:modelValue="onViewOptionsUpdate"
@@ -932,6 +934,8 @@
     const smsFromSystemPhoneNumbers = ref<ListItemBag[]>([]);
     const smsSnippets = ref<ListItemBag[]>([]);
     const communicationTemplates = ref<CommunicationTemplateBag[]>([]);
+    const emailFromName = ref<string>("");
+    const emailFromEmail = ref<string>("");
 
     // Flyout Configuration
     const isFlyoutOpen = ref(false);
@@ -2140,6 +2144,9 @@
         if (result.isSuccess && result.data?.communicationRecipients?.length) {
             communicationRecipients.value = result.data.communicationRecipients;
             communicationTemplates.value = result.data.communicationTemplates ?? [];
+            // Set the default sender values before opening so the modal can seed its From fields on the open edge.
+            emailFromName.value = result.data.fromName ?? "";
+            emailFromEmail.value = result.data.fromEmail ?? "";
             isSendEmailModalVisible.value = true;
         }
         else {
@@ -2147,7 +2154,9 @@
             // TODO - Show error message to user
             communicationRecipients.value = null;
             communicationTemplates.value = [];
-            isSendEmailModalVisible.value = true;
+            emailFromName.value = "";
+            emailFromEmail.value = "";
+            isSendEmailModalVisible.value = false;
         }
     }
 
@@ -2932,6 +2941,12 @@
     }
 
     async function getConnectionRequestDetails(requestIdKey: string): Promise<void> {
+        // Explicitly enter the loading state before fetching. We cannot rely on the docked
+        // panel's detailsBox watch to do this, because when the previous request errored the
+        // details box is already undefined, so re-assigning undefined below is not a reference
+        // change and the watch never fires to show the loading skeleton.
+        connectionRequestDockedPanelRef.value?.setIsLoading(true);
+
         dockedPanelDetailsBox.value = undefined;
 
         const result = await invokeBlockAction<ConnectionRequestDetailBox>("GetConnectionRequestDetails", { connectionRequestIdKey: requestIdKey });

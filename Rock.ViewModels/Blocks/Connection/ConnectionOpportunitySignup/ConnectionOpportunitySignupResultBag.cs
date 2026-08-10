@@ -33,5 +33,12 @@ namespace Rock.ViewModels.Blocks.Connection.ConnectionOpportunitySignup
         /// Gets or sets the response message (success or error details).
         /// </summary>
         public string ResponseMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL the client should redirect to after a
+        /// successful signup. This is set when the response Lava template
+        /// uses the PageRedirect filter.
+        /// </summary>
+        public string RedirectUrl { get; set; }
     }
 }

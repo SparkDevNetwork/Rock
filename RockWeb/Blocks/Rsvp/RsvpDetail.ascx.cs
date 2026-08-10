@@ -218,7 +218,7 @@ namespace RockWeb.Blocks.RSVP
         /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
         private void gAttendees_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindAttendeeGridAndChart( e.IsExporting );
+            BindAttendeeGridAndChart();
         }
 
         /// <summary>
@@ -662,7 +662,7 @@ namespace RockWeb.Blocks.RSVP
         /// <summary>
         /// Binds the grid and chart with attendee data.
         /// </summary>
-        private void BindAttendeeGridAndChart( bool isExporting = false )
+        private void BindAttendeeGridAndChart()
         {
             using ( var rockContext = new RockContext() )
             {
@@ -684,17 +684,17 @@ namespace RockWeb.Blocks.RSVP
                         .Visible = occurrence.ShowDeclineReasons;
                 }
 
-                gAttendees.ColumnsOfType<BoolField>()
-                    .First( c => c.HeaderText == "Accept" )
-                    .Visible = isExporting;
-                gAttendees.ColumnsOfType<RockLiteralField>()
-                  .First( c => c.HeaderText == "Decline Reason" )
-                  .Visible = isExporting;
-                gAttendees.ColumnsOfType<BoolField>()
-                    .First( c => c.HeaderText == "Decline" )
-                    .Visible = isExporting;
+                /*
+                    6/4/26 - MSE
 
+                    This method previously toggled the hidden export-only columns (Accept, Decline, Decline Reason)
+                    visible when isExporting was true. With ExportSource="ColumnOutput", the grid snapshots its
+                    export columns before raising GridRebind, so the toggle happened too late and those columns
+                    were dropped from the export. They are now marked ExcelExportBehavior="AlwaysInclude" in the
+                    markup instead, which includes them in the export while keeping them hidden on screen.
 
+                    Reason: Excel export was missing the Accept, Decline, and Decline Reason columns. (Fixes #6858)
+                */
                 var attendees = GetAttendees( rockContext );
                 int acceptCount = attendees.Where( a => a.Accept ).Count();
                 int declineCount = attendees.Where( a => a.Decline ).Count();

@@ -47,7 +47,7 @@
             <div class="col-sm-6">
                 <DropDownList v-model="communicationTemplateIdKeyOrEmptyString"
                               :disabled="isSending"
-                              help="Copies the message body from the selected template. If the From Name, From Address, and Email Subject fields in the message you're sending are all empty, those values will also be copied from the template. If any of those fields already have a value, they will not be overwritten."
+                              help="Copies the message body from the selected template, and overwrites the From Name and From Address when the template specifies them. The Email Subject is updated unless you've customized it."
                               :items="communicationTemplateListItems"
                               label="Template" />
             </div>
@@ -114,6 +114,16 @@
         communicationTemplates: {
             type: Array as PropType<CommunicationTemplateBag[]>,
             required: true
+        },
+
+        fromName: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        fromEmail: {
+            type: String as PropType<string>,
+            default: ""
         }
     });
 
@@ -214,6 +224,22 @@
         return "danger";
     }
 
+    // Resets all UI and communication state so a draft never carries over between people when the modal is reused.
+    function resetModal(): void {
+        // UI state
+        sendErrorMessage.value = null;
+        isUploadingAttachment.value = false;
+        isSending.value = false;
+
+        // Communication state
+        fromName.value = "";
+        fromEmail.value = "";
+        subject.value = "";
+        emailMessage.value = "";
+        communicationTemplateIdKeyOrEmptyString.value = "";
+        attachments.value = [];
+    }
+
     // #endregion Functions
 
     // #region Event Handlers
@@ -256,12 +282,19 @@
     // #region Watchers
 
     watch(isVisible, () => {
-        if (!isVisible.value) {
+        if (isVisible.value) {
+            // Seed the sender with the current user each time the modal opens (Issue 1).
+            fromName.value = props.fromName ?? "";
+            fromEmail.value = props.fromEmail ?? "";
+        }
+        else {
+            // Reset state on close so a previous draft never appears for the next person (Issue 2).
+            resetModal();
             emit("close");
         }
     });
 
-    watch(communicationTemplateIdKeyOrEmptyString, (newValue) => {
+    watch(communicationTemplateIdKeyOrEmptyString, (newValue, oldValue) => {
         if (!newValue) {
             return;
         }
@@ -273,10 +306,19 @@
 
         emailMessage.value = selectedTemplate.message ?? "";
 
-        // If from name, from email, AND subject are empty, then populate them from the template.
-        if (!fromName.value && !fromEmail.value && !subject.value) {
-            fromName.value = selectedTemplate.fromName ?? "";
-            fromEmail.value = selectedTemplate.fromEmail ?? "";
+        // Overwrite the From Name and From Address with the template's values when it specifies them,
+        // matching the Communication Entry block. The current user is only the default seeded on open.
+        if (selectedTemplate.fromName) {
+            fromName.value = selectedTemplate.fromName;
+        }
+        if (selectedTemplate.fromEmail) {
+            fromEmail.value = selectedTemplate.fromEmail;
+        }
+
+        // Only update the subject if the user hasn't entered one or it still matches the
+        // previously selected template's subject (i.e., the user hasn't customized it).
+        const previousTemplate = props.communicationTemplates.find(ct => ct.idKey === oldValue);
+        if (!subject.value || subject.value === previousTemplate?.subject) {
             subject.value = selectedTemplate.subject ?? "";
         }
     });

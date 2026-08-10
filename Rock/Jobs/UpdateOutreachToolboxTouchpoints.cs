@@ -1543,7 +1543,8 @@ namespace Rock.Jobs
                 ActiveTouchpointCounts = new ContactTouchpointService( rockContext )
                     .Queryable()
                     .Where( t => t.Type == type
-                        && !t.CompletedDateTime.HasValue )
+                        && !t.CompletedDateTime.HasValue
+                        && t.ScheduledDateTime <= run.ProcessingDateTime )
                     .GroupBy( t => t.Contact.OwnerPersonAlias.PersonId )
                     .ToDictionary( g => g.Key, g => g.Count() );
             }

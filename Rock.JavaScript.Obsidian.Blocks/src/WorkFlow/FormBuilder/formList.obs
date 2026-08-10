@@ -244,7 +244,9 @@
         {
             title: "Add Child To Selected",
             type: "default",
-            disabled: !selectedCategory.value,
+            // The new child inherits its security from the selected category, so
+            // require edit access on that category before offering the action.
+            disabled: !selectedCategory.value || !canEditCategory.value,
             handler: () => {
                 blockState.value = BlockState.AddCategory;
                 addNewCategoryAsChild.value = true;
@@ -392,6 +394,9 @@
      * Event handler for the "Edit Category" button.
      */
     function onEditCategory(): void {
+        // Reset the add-as-child flag so a previous "Add Child To Selected" action
+        // cannot cause the edit to send the category itself as its own parent.
+        addNewCategoryAsChild.value = false;
         blockState.value = BlockState.EditCategory;
     }
 

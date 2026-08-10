@@ -199,6 +199,7 @@
         itemKey: props.keyField,
         container: element,
         estimatedItemHeight: 58,
+        ignoreContainerClasses: ["grid-content-container"]
     });
 
     watch(() => props.rows, () => {

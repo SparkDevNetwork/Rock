@@ -90,6 +90,8 @@
                     <asp:LinkButton ID="lbShowUser" runat="server" Text="Add User" CssClass="btn btn-primary" OnClick="lbShowUser_Click"></asp:LinkButton>
                 </asp:Panel>
 
+                <Rock:NotificationBox ID="nbCircularReferenceMessage" runat="server" NotificationBoxType="Warning" Visible="false" />
+
                 <div class="security-inherited">
                     <h4>Inherited Permissions</h4>
 

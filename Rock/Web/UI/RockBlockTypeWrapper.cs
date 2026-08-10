@@ -73,8 +73,22 @@ namespace Rock.Web.UI
 
                  Reason: The Obsidian block content was being reloaded and then discarded.
                          https://app.asana.com/0/1200625776837488/1206779635354257/f
+
+                 06/11/2026 - MSE
+
+                 The above only applies to partial (async) postbacks, where anything this
+                 wrapper renders is outside the UpdatePanel being refreshed and is therefore
+                 discarded by the PageRequestManager. During a full postback the rendered
+                 output is the complete new page, so skipping here caused every Obsidian
+                 block on the page to render empty (e.g. the Page Menu disappearing after
+                 the WebForms Transaction List block performed its "Move Transactions To
+                 Batch" full postback).
+
+                 Reason: Rock menu was removed after moving a transaction to another batch. (Fixes #6871)
             */
-            if ( Block is IRockWebBlockType webBlock && !IsPostBack )
+            var isInAsyncPostBack = ScriptManager.GetCurrent( Page )?.IsInAsyncPostBack == true;
+
+            if ( Block is IRockWebBlockType webBlock && !isInAsyncPostBack )
             {
                 var pageTask = new PageAsyncTask( async () =>
                 {

@@ -356,14 +356,24 @@ namespace Rock.Field.Types
                     publicConfigurationValues[CUSTOM_VALUES_PUBLIC_KEY] = publicConfigurationValues[VALUES_KEY];
                 }
 
-                var options = Helper.GetConfiguredValues( privateConfigurationValues )
-                    .Select( kvp => new
-                    {
-                        value = kvp.Key,
-                        text = kvp.Value
-                    } );
+                try
+                {
+                    var options = Helper.GetConfiguredValues( privateConfigurationValues )
+                        .Select( kvp => new
+                        {
+                            value = kvp.Key,
+                            text = kvp.Value
+                        } );
 
-                publicConfigurationValues[VALUES_KEY] = options.ToCamelCaseJson( false, true );
+                    publicConfigurationValues[VALUES_KEY] = options.ToCamelCaseJson( false, true );
+                }
+                catch
+                {
+                    // If there was an error parsing the configured values,
+                    // return an empty set. In the future this should probably
+                    // also include some sort of error message for the UI.
+                    publicConfigurationValues[VALUES_KEY] = "[]";
+                }
             }
             else
             {

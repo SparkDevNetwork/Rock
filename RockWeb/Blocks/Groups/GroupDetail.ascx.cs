@@ -1288,7 +1288,29 @@ namespace RockWeb.Blocks.Groups
                 if ( !allowedGroupTypeIds.Contains( group.GroupTypeId ) )
                 {
                     var groupType = CurrentGroupTypeCache;
-                    nbInvalidParentGroup.Text = string.Format( "The '{0}' group does not allow child groups with a '{1}' group type.", group.ParentGroup.Name, groupType != null ? groupType.Name : string.Empty );
+                    var groupTypeName = groupType != null ? groupType.Name : string.Empty;
+
+                    /*
+                        06/01/2026 - MSE
+
+                        GetAllowedGroupTypes() applies two independent restrictions: this block's "Group Types
+                        Include"/"Group Types Exclude" settings and the parent group's allowed child group types.
+                        Previously the failure message always blamed the parent group, which was misleading when
+                        the block settings were the actual cause. Re-evaluate the block settings on their own
+                        (passing a null parent group type) so we can report the correct reason.
+
+                        Reason: https://github.com/SparkDevNetwork/Rock/issues/6851
+                    */
+                    var blockAllowedGroupTypeIds = GetAllowedGroupTypes( null, rockContext ).Select( t => t.Id ).ToList();
+                    if ( !blockAllowedGroupTypeIds.Contains( group.GroupTypeId ) )
+                    {
+                        nbInvalidParentGroup.Text = string.Format( "Groups with a '{0}' group type cannot be saved here because of this block's group type settings (e.g. 'Group Types Include' / 'Group Types Exclude').", groupTypeName );
+                    }
+                    else
+                    {
+                        nbInvalidParentGroup.Text = string.Format( "The '{0}' group does not allow child groups with a '{1}' group type.", group.ParentGroup.Name, groupTypeName );
+                    }
+
                     nbInvalidParentGroup.Visible = true;
                     return;
                 }
@@ -1603,6 +1625,7 @@ namespace RockWeb.Blocks.Groups
             var groupTypeQry = GetAllowedGroupTypes( GroupTypeCache.Get( parentGroupGroupTypeId ?? 0 ), rockContext );
 
             List<GroupType> groupTypes = groupTypeQry.OrderBy( a => a.Name ).ToList();
+            var hasAllowedGroupTypes = groupTypes.Any();
             if ( groupTypes.Count() > 1 )
             {
                 // Add a empty option so they are forced to choose
@@ -1612,6 +1635,8 @@ namespace RockWeb.Blocks.Groups
             // If the currently selected GroupType isn't an option anymore, set selected GroupType to null
             if ( ddlGroupType.Visible )
             {
+                ShowNoAllowedGroupTypesWarningIfNeeded( hasAllowedGroupTypes, parentGroupId, parentGroupGroupTypeId, rockContext );
+
                 int? selectedGroupTypeId = ddlGroupType.SelectedValueAsInt();
                 if ( ddlGroupType.SelectedValue != null )
                 {
@@ -2984,6 +3009,58 @@ namespace RockWeb.Blocks.Groups
             }
 
             return groupTypeQry;
+        }
+
+        /// <summary>
+        /// Shows a warning that explains why the Group Type drop-down has no options to choose from,
+        /// or hides the warning when at least one group type is available.
+        /// </summary>
+        /// <param name="hasAllowedGroupTypes">Whether the Group Type drop-down has at least one group type available for selection.</param>
+        /// <param name="parentGroupId">The identifier of the currently selected parent group.</param>
+        /// <param name="parentGroupGroupTypeId">The group type identifier of the currently selected parent group.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void ShowNoAllowedGroupTypesWarningIfNeeded( bool hasAllowedGroupTypes, int? parentGroupId, int? parentGroupGroupTypeId, RockContext rockContext )
+        {
+            if ( hasAllowedGroupTypes )
+            {
+                nbNoAllowedGroupTypes.Visible = false;
+                return;
+            }
+
+            /*
+                06/04/2026 - MSE
+
+                When adding a new group, the block's group type settings and the parent group's allowed
+                child group types can leave no group types to choose from, which rendered the required
+                Group Type drop-down empty with no explanation (e.g. 'Group Types Include' limited to
+                'Small Group' while adding a child group under a 'Serving Team' parent). Surface a
+                warning that identifies which restriction caused it so the administrator knows what to
+                reconfigure.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/6851
+            */
+            var isAnyGroupTypeAllowedByBlock = GetAllowedGroupTypes( null, rockContext ).Any();
+            if ( !isAnyGroupTypeAllowedByBlock )
+            {
+                nbNoAllowedGroupTypes.Text = "There are no group types available to select because of this block's group type settings (e.g. 'Group Types Include' / 'Group Types Exclude').";
+                nbNoAllowedGroupTypes.Visible = true;
+                return;
+            }
+
+            var parentGroupName = parentGroupId.HasValue ? new GroupService( rockContext ).GetSelect( parentGroupId.Value, s => s.Name ) : string.Empty;
+            var parentGroupGroupType = GroupTypeCache.Get( parentGroupGroupTypeId ?? 0 );
+            var doesParentGroupAllowAnyChildGroupTypes = parentGroupGroupType == null
+                || parentGroupGroupType.AllowAnyChildGroupType
+                || parentGroupGroupType.ChildGroupTypes.Any();
+            if ( !doesParentGroupAllowAnyChildGroupTypes )
+            {
+                nbNoAllowedGroupTypes.Text = string.Format( "The '{0}' group does not allow any child group types.", parentGroupName );
+                nbNoAllowedGroupTypes.Visible = true;
+                return;
+            }
+
+            nbNoAllowedGroupTypes.Text = string.Format( "The child group types allowed by the '{0}' group are excluded by this block's group type settings (e.g. 'Group Types Include' / 'Group Types Exclude').", parentGroupName );
+            nbNoAllowedGroupTypes.Visible = true;
         }
 
         /// <summary>

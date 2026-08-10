@@ -42,7 +42,7 @@ namespace Rock.Jobs
     /// <summary>
     /// </summary>
     [DisplayName( "Process BI Analytics" )]
-    [Description( "Job to take care of schema changes ( dynamic Attribute Value Fields ) and data updates to the BI related analytic tables." )]
+    [Description( "Job to take care of schema changes (dynamic Attribute Value Fields) and data updates to the BI related analytic tables. Note: This job is designed to run once per day." )]
 
     [BooleanField(
         "Process Person BI Analytics",
@@ -579,6 +579,21 @@ UPDATE [{analyticsTableName}]
             dataContext.Database.SetCommandTimeout( _commandTimeout );
 
             return dataContext;
+        }
+
+        /// <summary>
+        /// Determines whether the SqlException is the known duplicate-key error
+        /// produced by spAnalytics_ETL_Family when this job (or another configured
+        /// instance of it) has already produced today's AnalyticsSourceFamilyHistorical
+        /// rows.
+        /// </summary>
+        /// <param name="ex">The SqlException to inspect.</param>
+        /// <returns><c>true</c> if the exception matches the known duplicate-run signature; otherwise <c>false</c>.</returns>
+        private static bool IsAnalyticsFamilyDuplicateRunException( SqlException ex )
+        {
+            // SQL error 2601: Cannot insert duplicate key row in object '...' with unique index '...'.
+            return ex.Number == 2601
+                && ex.Message?.IndexOf( "IX_FamilyId_ExpireDate", StringComparison.OrdinalIgnoreCase ) >= 0;
         }
 
         #endregion Shared Methods
@@ -1210,7 +1225,20 @@ WHERE asph.CurrentRowIndicator = 1 AND (
                 MarkFamilyAsHistoryUsingAttributeValues( familyAnalyticAttributes, processingDate );
 
                 // run the main spAnalytics_ETL_Family stored proc to take care of all the non-attribute related data
-                var etlResult = DbService.GetDataTable( "EXEC [dbo].[spAnalytics_ETL_Family]", CommandType.Text, null, _commandTimeout );
+                DataTable etlResult;
+                try
+                {
+                    etlResult = DbService.GetDataTable( "EXEC [dbo].[spAnalytics_ETL_Family]", CommandType.Text, null, _commandTimeout );
+                }
+                catch ( SqlException ex ) when ( IsAnalyticsFamilyDuplicateRunException( ex ) )
+                {
+                    this.Result = "It appears the Family BI Analytics already ran today, possibly from another instance of this job. "
+                        + "Family Analytics processing is designed to run only once per day. "
+                        + "Verify that only one active scheduled job has \"Process Family BI Analytics\" enabled, "
+                        + "or wait until tomorrow before running it again.";
+                    throw new RockJobWarningException( this.Result, ex );
+                }
+
                 if ( etlResult.Rows.Count == 1 )
                 {
                     _familyJobStats.RowsInserted = etlResult.Rows[0]["RowsInserted"] as int? ?? 0;

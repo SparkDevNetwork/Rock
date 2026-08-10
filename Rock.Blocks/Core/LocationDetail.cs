@@ -563,46 +563,77 @@ namespace Rock.Blocks.Core
 
         /// <summary>
         /// Performs Address Verification on the specified addressFields and returns a <see cref="AddressStandardizationResultBag"/> with standardized
-        /// address values for the addressFields.
+        /// address values for the addressFields. When an existing location is being edited, the standardized address and geocoded point are persisted
+        /// immediately, matching the behavior of the legacy WebForms block.
         /// </summary>
         /// <param name="addressFields">The address fields.</param>
+        /// <param name="locationTypeValue">The Location Type currently selected in the editor.</param>
         /// <returns>BlockActionResult.</returns>
         [BlockAction]
-        public BlockActionResult StandardizeLocation( AddressControlBag addressFields )
+        public BlockActionResult StandardizeLocation( AddressControlBag addressFields, ListItemBag locationTypeValue = null )
         {
-            using ( var rockContext = new RockContext() )
+            var locationService = new LocationService( RockContext );
+
+            // Load the location being edited so verification is persisted. A new location has
+            // nothing to load yet, so use a transient instance that is saved via the Save action.
+            var locationId = PageParameter( PageParameterKey.LocationId );
+            var location = locationId.IsNotNullOrWhiteSpace()
+                ? locationService.Get( locationId, !PageCache.Layout.Site.DisablePredictableIds )
+                : null;
+
+            if ( location == null )
             {
-                var locationService = new LocationService( rockContext );
-                var location = new Location
-                {
-                    Street1 = addressFields.Street1,
-                    Street2 = addressFields.Street2,
-                    City = addressFields.City,
-                    State = addressFields.State,
-                    PostalCode = addressFields.PostalCode,
-                    Country = addressFields.Country,
-                };
-
-                locationService.Verify( location, true );
-
-                var result = new AddressStandardizationResultBag
-                {
-                    StandardizeAttemptedResult = location.StandardizeAttemptedResult,
-                    GeocodeAttemptedResult = location.GeocodeAttemptedResult,
-                    AddressFields = new AddressControlBag
-                    {
-                        Street1 = location.Street1,
-                        Street2 = location.Street2,
-                        City = location.City,
-                        State = location.State,
-                        PostalCode = location.PostalCode,
-                        Country = location.Country,
-                    },
-                    GeoPointWellKnownText = location.GeoPoint?.AsText(),
-                };
-
-                return ActionOk( result );
+                location = new Location();
             }
+
+            var isExistingLocation = location.Id != 0;
+
+            // Saving an existing location requires edit authorization (as Save and Delete do).
+            if ( isExistingLocation && !location.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to edit {Location.FriendlyTypeName}." );
+            }
+
+            // Apply the editor's current type and address before verifying. The type is only set
+            // when one is selected so verifying never clears it, matching the WebForms block.
+            var locationTypeValueId = locationTypeValue?.GetEntityId<DefinedValue>( RockContext );
+            if ( locationTypeValueId.HasValue )
+            {
+                location.LocationTypeValueId = locationTypeValueId.Value;
+            }
+
+            location.Street1 = addressFields.Street1;
+            location.Street2 = addressFields.Street2;
+            location.City = addressFields.City;
+            location.State = addressFields.State;
+            location.PostalCode = addressFields.PostalCode;
+            location.Country = addressFields.Country;
+
+            locationService.Verify( location, true );
+
+            // Persist the verified values immediately for an existing location.
+            if ( isExistingLocation )
+            {
+                RockContext.SaveChanges();
+            }
+
+            var result = new AddressStandardizationResultBag
+            {
+                StandardizeAttemptedResult = location.StandardizeAttemptedResult,
+                GeocodeAttemptedResult = location.GeocodeAttemptedResult,
+                AddressFields = new AddressControlBag
+                {
+                    Street1 = location.Street1,
+                    Street2 = location.Street2,
+                    City = location.City,
+                    State = location.State,
+                    PostalCode = location.PostalCode,
+                    Country = location.Country,
+                },
+                GeoPointWellKnownText = location.GeoPoint?.AsText(),
+            };
+
+            return ActionOk( result );
         }
 
         /// <summary>
@@ -635,12 +666,10 @@ namespace Rock.Blocks.Core
         /// Saves the entity contained in the box.
         /// </summary>
         /// <param name="box">The box that contains all the information required to save.</param>
-        /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
+        /// <returns>The URL to redirect to after saving so the host page (and its location tree) reloads with the saved location selected.</returns>
         [BlockAction]
         public BlockActionResult Save( ValidPropertiesBox<LocationBag> box )
         {
-            var entityService = new LocationService( RockContext );
-
             if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
                 return actionError;
@@ -678,12 +707,9 @@ namespace Rock.Blocks.Core
                 } ) );
             }
 
-            // Ensure navigation properties will work now.
-            entity = entityService.Get( entity.Id );
-            entity.LoadAttributes( RockContext );
-
             var personId = PageParameter( PageParameterKey.PersonId );
 
+            // When launched from a person's profile, return to that person's page after saving.
             if ( personId.IsNotNullOrWhiteSpace() )
             {
                 return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
@@ -692,15 +718,20 @@ namespace Rock.Blocks.Core
                 } ) );
             }
 
-            else
+            // Redirect to the current page so the WebForms location tree reloads with the saved
+            // location selected. The tree won't reflect a rename without a full page load.
+            var redirectParams = new Dictionary<string, string>
             {
-                var bag = GetEntityBagForView( entity );
-                return ActionOk( new ValidPropertiesBox<LocationBag>
-                {
-                    Bag = bag,
-                    ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
-                } );
+                [PageParameterKey.LocationId] = entity.IdKey
+            };
+
+            var expandedIds = PageParameter( PageParameterKey.ExpandedIds );
+            if ( expandedIds.IsNotNullOrWhiteSpace() )
+            {
+                redirectParams.Add( PageParameterKey.ExpandedIds, expandedIds );
             }
+
+            return ActionOk( this.GetCurrentPageUrl( redirectParams ) );
         }
 
         /// <summary>

@@ -46,6 +46,7 @@ namespace Rock.Jobs
         IsRequired = true,
         KeyPrompt = "Template Key",
         ValuePrompt = "Target Key",
+        AllowHtml = true,
         Order = 1,
         Key = AttributeKey.AttributeLinks )]
 

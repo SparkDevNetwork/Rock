@@ -97,6 +97,7 @@
 
     <GridSettingsModal v-model="gridSettings"
                        v-model:visible="isGridSettingsVisible"
+                       :defaultSlidingDateRange="defaultSlidingDateRange"
                        :showAchievementTypePicker="!config.options?.achievementType?.value" />
 </template>
 
@@ -119,6 +120,7 @@
     import { AchievementAttemptListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementAttemptList/achievementAttemptListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey, GridSettingsOptions, PreferenceKey } from "./AchievementAttemptList/types.partial";
+    import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
     import { computed, reactive, ref, watch } from "vue";
     import GridSettingsModal from "./AchievementAttemptList/gridSettingsModal.partial.obs";
 
@@ -131,6 +133,13 @@
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
+    // Default the created-date filter to the last 6 months to keep the initial result set bounded.
+    const defaultSlidingDateRange: SlidingDateRange = {
+        rangeType: RangeType.Last,
+        timeUnit: TimeUnit.Month,
+        timeValue: 6
+    };
+
     const isGridSettingsVisible = ref(false);
     const gridSettings = ref<GridSettingsOptions>({
         startDateFrom: preferences.getValue(makeKeyUniqueToAchievementType(PreferenceKey.FilterAttemptStartDateRangeFrom)),
@@ -138,6 +147,7 @@
         status: preferences.getValue(makeKeyUniqueToAchievementType(PreferenceKey.FilterStatus)),
         achieverName: preferences.getValue(makeKeyUniqueToAchievementType(PreferenceKey.FilterAchieverName)),
         achievementType: config.options?.achievementType?.value ? null : JSON.parse(preferences.getValue(makeKeyUniqueToAchievementType(PreferenceKey.FilterAchievementType)) || "{}"),
+        createdDateRange: parseSlidingDateRangeString(preferences.getValue(makeKeyUniqueToAchievementType(PreferenceKey.FilterCreatedDateRange))) ?? defaultSlidingDateRange,
     });
 
     // #endregion
@@ -154,7 +164,8 @@
             || !!gridSettings.value.startDateTo
             || !!gridSettings.value.status
             || !!gridSettings.value.achieverName
-            || !!gridSettings.value.achievementType?.value;
+            || !!gridSettings.value.achievementType?.value
+            || !!gridSettings.value.createdDateRange;
     });
 
     // #endregion
@@ -285,6 +296,7 @@
         preferences.setValue(makeKeyUniqueToAchievementType(PreferenceKey.FilterStatus), gridSettings.value.status ?? "");
         preferences.setValue(makeKeyUniqueToAchievementType(PreferenceKey.FilterAchieverName), gridSettings.value.achieverName ?? "");
         preferences.setValue(makeKeyUniqueToAchievementType(PreferenceKey.FilterAchievementType), JSON.stringify(gridSettings.value.achievementType));
+        preferences.setValue(makeKeyUniqueToAchievementType(PreferenceKey.FilterCreatedDateRange), gridSettings.value.createdDateRange ? slidingDateRangeToString(gridSettings.value.createdDateRange) : "");
 
         await preferences.save();
 

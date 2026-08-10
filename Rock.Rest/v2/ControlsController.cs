@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -8124,7 +8124,7 @@ namespace Rock.Rest.v2
                 WriteInteraction = options.PlayerOptions.WriteInteraction
             };
 
-            playerOptions.UpdateValuesFromMedia( null, options.MediaElementGuid, options.AutoResumeInDays, options.CombinePlayStatisticsInDays, RockRequestContext.CurrentPerson, RockRequestContext.CurrentVisitorId );
+            playerOptions.UpdateValuesFromMedia( null, options.MediaElementGuid, options.AutoResumeInDays ?? 0, options.CombinePlayStatisticsInDays ?? 0, RockRequestContext.CurrentPerson, RockRequestContext.CurrentVisitorId );
 
             return Ok( playerOptions );
         }
@@ -10391,6 +10391,26 @@ namespace Rock.Rest.v2
             {
                 if ( isAnonymous )
                 {
+                    /*
+                        06/16/26 - JMH
+
+                        Saving anonymously creates a Database (username/password) login. If Database
+                        authentication is not active, that login can never be used to sign in, so refuse
+                        rather than create an orphaned, unusable credential. The Registration Entry UI
+                        hides this case; this enforces it for callers that bypass the UI.
+
+                        Reason: Prevent unusable Database logins on Passwordless-only sites.
+                    */
+                    if ( AuthenticationContainer.GetComponent( SystemGuid.EntityType.AUTHENTICATION_DATABASE )?.IsActive != true )
+                    {
+                        return new SaveFinancialAccountFormSaveAccountResultBag
+                        {
+                            Title = "Cannot Save Account",
+                            Detail = "Saving a payment method requires an account login, which is not available on this site.",
+                            IsSuccess = false
+                        };
+                    }
+
                     if ( options.Username.IsNullOrWhiteSpace() || options.Password.IsNullOrWhiteSpace() )
                     {
                         return new SaveFinancialAccountFormSaveAccountResultBag

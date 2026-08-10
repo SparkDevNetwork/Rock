@@ -95,7 +95,6 @@ import CustomSelectGallery from "./ControlGallery/customSelectGallery.partial.ob
 import TabbedModalGallery from "./ControlGallery/tabbedModalGallery.partial.obs";
 import CategoryTreeGallery from "./ControlGallery/categoryTreeGallery.partial.obs";
 import PageNavButtonsGallery from "./ControlGallery/pageNavButtonsGallery.partial.obs";
-import SearchFieldGallery from "./ControlGallery/searchFieldGallery.partial.obs";
 import AttributeValuesContainerGallery from "./ControlGallery/attributeValuesContainerGallery.partial.obs";
 import SocialSecurityNumberBoxGallery from "./ControlGallery/socialSecurityNumberBoxGallery.partial.obs";
 import FieldFilterEditorGallery from "./ControlGallery/fieldFilterEditorGallery.partial.obs";
@@ -451,7 +450,6 @@ const controlGalleryComponents: Record<string, Component> = [
     TabbedModalGallery,
     CategoryTreeGallery,
     PageNavButtonsGallery,
-    SearchFieldGallery,
     AdaptiveMessagePickerGallery,
     EmailEditorGallery,
     KpiGallery,

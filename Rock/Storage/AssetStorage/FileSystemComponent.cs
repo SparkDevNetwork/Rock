@@ -680,7 +680,7 @@ namespace Rock.Storage.AssetStorage
             {
                 Name = fileInfo.Name,
                 Key = relativePath,
-                Uri = $"{FileSystemComponentHttpContext.Request.UrlProxySafe().GetLeftPart( UriPartial.Authority )}/{relativePath.TrimStart( '~' )}",
+                Uri = $"{FileSystemComponentHttpContext.Request.UrlProxySafe().GetLeftPart( UriPartial.Authority ).EnsureTrailingForwardslash()}{relativePath.TrimStart( '~' ).RemoveLeadingForwardslash()}",
                 Type = AssetType.File,
                 IconPath = createThumbnail ? GetThumbnail( assetStorageProvider, relativePath, fileInfo.LastWriteTime ) : string.Empty,
                 FileSize = fileInfo.Length,
