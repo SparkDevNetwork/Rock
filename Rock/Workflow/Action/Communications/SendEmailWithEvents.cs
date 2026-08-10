@@ -45,6 +45,8 @@ namespace Rock.Workflow.Action
         Description = "The body of the email that should be sent. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
         EditorMode = Web.UI.Controls.CodeEditorMode.Html,
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 3 )]
     [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 4 )]
 
