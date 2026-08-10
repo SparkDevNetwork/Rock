@@ -27,7 +27,7 @@ namespace Rock.Plugin.HotFixes
     /// Fix for issue #6962.
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 314, "19.5" )]
+    [MigrationNumber( 314, "19.4" )]
     public class FixEventItemAttributeCorruption6962 : Migration
     {
         /// <summary>
