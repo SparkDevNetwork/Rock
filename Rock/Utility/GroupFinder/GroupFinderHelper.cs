@@ -22,6 +22,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Core.Geography;
 using Rock.Core.Geography.Classes;
 using Rock.Data;
@@ -39,12 +40,13 @@ namespace Rock.Utility.GroupFinder
     /// Lava parameters rather than structured code.
     /// </summary>
     /// <remarks>
-    /// This really shouldn't be in this namespace. Do not make it public without
-    /// moving it to a more appropriate namespace. Ideally, this would go in the
-    /// Rock.Group namespace. But that causes all kinds of conflicts with the
-    /// Group model name.
+    /// Exposed as a RockInternal surface so the Group Finder block and the group
+    /// finder Lava shortcode share one filtering path. The namespace is not ideal
+    /// (Rock.Group would conflict with the Group model name); relocating this to a
+    /// GroupFinderService is a possible later cleanup.
     /// </remarks>
-    internal class GroupFinderHelper
+    [RockInternal( "20.0" )]
+    public class GroupFinderHelper
     {
         private readonly RockContext _rockContext;
 
@@ -128,10 +130,35 @@ namespace Rock.Utility.GroupFinder
                             groupQuery = ApplyFilterTimeOfDay( groupQuery, setting );
                             break;
                         }
+                    // Meeting style (in-person / online / hybrid)
+                    case "meetingstyle":
+                        {
+                            groupQuery = ApplyFilterMeetingStyle( groupQuery, setting );
+                            break;
+                        }
                 }
             }
 
             return groupQuery;
+        }
+
+        /// <summary>
+        /// Applies the meeting style filter to the group query.
+        /// </summary>
+        /// <param name="groupQuery">The group location query to filter.</param>
+        /// <param name="setting">The filter whose <see cref="GroupFinderFilter.Content"/> is a comma separated list of <see cref="MeetingStyle"/> values.</param>
+        /// <returns>The query filtered to groups whose meeting style is one of the specified values, or the original query when none are valid.</returns>
+        private IQueryable<GroupLocation> ApplyFilterMeetingStyle( IQueryable<GroupLocation> groupQuery, GroupFinderFilter setting )
+        {
+            // Content is a comma separated list of MeetingStyle values (names or numeric values).
+            var meetingStyles = setting.Content.SplitDelimitedValues().AsEnumList<MeetingStyle>();
+
+            if ( !meetingStyles.Any() )
+            {
+                return groupQuery;
+            }
+
+            return groupQuery.Where( gl => gl.Group.MeetingStyle.HasValue && meetingStyles.Contains( gl.Group.MeetingStyle.Value ) );
         }
 
         /// <summary>

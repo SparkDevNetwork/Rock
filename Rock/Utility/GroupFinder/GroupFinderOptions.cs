@@ -16,6 +16,7 @@
 
 using System.Collections.Generic;
 
+using Rock.Attribute;
 using Rock.Core.Geography.Classes;
 using Rock.Enums.Geography;
 
@@ -24,7 +25,8 @@ namespace Rock.Utility.GroupFinder
     /// <summary>
     /// The options that can be passed to the <see cref="GroupFinderHelper"/>.
     /// </summary>
-    internal class GroupFinderOptions
+    [RockInternal( "20.0" )]
+    public class GroupFinderOptions
     {
         /// <summary>
         /// The group type id to use for the search.

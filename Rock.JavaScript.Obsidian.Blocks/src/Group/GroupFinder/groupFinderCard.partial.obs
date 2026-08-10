@@ -1,0 +1,205 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="group-finder-card" v-html="card.contentHtml" @click="onCardClick"></div>
+</template>
+
+<style scoped>
+/*
+    Scoped placeholder styling for the group card; the UI team migrates these to shared
+    LESS in a later pass. Values use Rock design tokens where they exist.
+
+    The wrapper owns only the card border, corner radius, highlighting, and click target. Everything
+    inside the border is rendered from the configurable Lava template and injected via v-html, so its
+    styles are written with :deep() (the injected content does not carry the scoped attribute).
+*/
+.group-finder-card {
+    height: 100%;
+    /* Match the card surface rather than transparent, so the 1px ring does not reveal the darker pane
+       behind the card (most noticeable on hover in dark mode); the selected state recolors it to primary. */
+    border: 1px solid var(--color-interface-softest, #fff);
+    border-radius: var(--rounded-xlarge);
+    cursor: pointer;
+    transition: box-shadow 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+/* Hovered (its own hover, or its map circle hovered): raised with the strong shadow, no border. */
+.group-finder-card.is-hovered {
+    box-shadow: var(--box-shadow-strong);
+}
+
+/* Selected (clicked, or its map circle clicked): raised and outlined in the primary color. */
+.group-finder-card.is-selected {
+    border-color: var(--color-primary);
+    box-shadow: var(--box-shadow-strong);
+}
+
+.group-finder-card.is-selected :deep(.group-finder-card-title) {
+    color: var(--color-primary);
+}
+
+.group-finder-card :deep(.group-finder-card-content) {
+    display: flex;
+    box-sizing: border-box;
+    flex-direction: column;
+    gap: var(--spacing-medium);
+    height: 100%;
+    padding: var(--spacing-medium);
+    background: var(--color-interface-softest, #fff);
+    border-radius: var(--rounded-xlarge);
+}
+
+/* The cover is a framed, floating photo: inset by the card padding, white-bordered and shadowed. */
+.group-finder-card :deep(.group-finder-card-media) {
+    position: relative;
+    aspect-ratio: 21 / 9;
+    overflow: hidden;
+    border: 4px solid var(--color-interface-softest, #fff);
+    border-radius: var(--rounded-xlarge);
+    box-shadow: 0 0 1px rgba(145, 158, 171, 0.2), 0 12px 12px rgba(145, 158, 171, 0.1);
+}
+
+/*
+    No-image fallback: a grid + diagonal hatch texture tinted from the group type color. The template
+    supplies the raw color as --group-finder-fallback-color; the tint math is done here in CSS.
+*/
+.group-finder-card :deep(.group-finder-card-media.is-fallback) {
+    --gf-fallback-color: var(--group-finder-fallback-color, #4fd1c5);
+    background:
+        linear-gradient(90deg, color-mix(in srgb, var(--gf-fallback-color) 25%, transparent) 1px, transparent 0) 0 0 / 24px 24px,
+        linear-gradient(color-mix(in srgb, var(--gf-fallback-color) 25%, transparent) 1px, transparent 0) 0 0 / 24px 24px,
+        repeating-linear-gradient(45deg, color-mix(in srgb, var(--gf-fallback-color) 20%, transparent) 0, color-mix(in srgb, var(--gf-fallback-color) 20%, transparent) 2px, transparent 2px, transparent 6px) 0 0 / 24px 24px,
+        color-mix(in srgb, var(--gf-fallback-color) 50%, transparent);
+}
+
+.group-finder-card :deep(.group-finder-card-image) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.group-finder-card :deep(.group-finder-card-badge) {
+    position: absolute;
+    top: var(--spacing-xsmall);
+    left: var(--spacing-xsmall);
+    padding: 2px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    background-color: var(--color-interface-softest, #fdfdfd);
+    color: var(--color-interface-strong, #3d444d);
+    border-radius: var(--rounded-huge);
+}
+
+.group-finder-card :deep(.group-finder-card-body) {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: var(--spacing-small);
+    padding: 0 var(--spacing-medium);
+}
+
+.group-finder-card :deep(.group-finder-card-meta) {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing-small);
+    font-size: 14px;
+    color: var(--color-interface-strongest, #0a0a0a);
+}
+
+.group-finder-card :deep(.group-finder-card-divider) {
+    width: 100%;
+    margin: 0;
+    border: 0;
+    border-top: 1px solid var(--color-interface-softer, #e4e4e4);
+}
+
+.group-finder-card :deep(.group-finder-card-title) {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.055;
+    color: var(--color-interface-strongest, #0a0a0a);
+}
+
+.group-finder-card :deep(.group-finder-card-schedule) {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-interface-strong, #3d444d);
+}
+
+.group-finder-card :deep(.group-finder-card-description) {
+    margin: 0;
+    font-size: 16px;
+    color: var(--color-interface-strong, #3d444d);
+}
+
+.group-finder-card :deep(.group-finder-card-attributes) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xsmall);
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+    color: var(--color-interface-strong, #3d444d);
+    list-style: none;
+}
+
+.group-finder-card :deep(.group-finder-card-attribute) {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-tiny);
+}
+
+.group-finder-card :deep(.group-finder-card-attribute i) {
+    font-size: 18px;
+}
+
+.group-finder-card :deep(.group-finder-card-footer) {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: auto;
+    padding-top: var(--spacing-small);
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { GroupFinderCardBag } from "@Obsidian/ViewModels/Blocks/Group/GroupFinder/groupFinderCardBag";
+
+    // #region Values
+
+    defineProps({
+        card: {
+            type: Object as PropType<GroupFinderCardBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "select"): void;
+    }>();
+
+    // The interactive elements a click can land on without selecting the card, so in-card controls
+    // (register link, carousel arrows, toggles) act on their own.
+    const interactiveSelector = "a[href], button, input, select, textarea, label, [role='button']";
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    // The whole card selects the group and syncs the map, except when the click lands on an interactive
+    // element within the content. A template can opt an element back into selection by marking it, or an
+    // ancestor, with data-groupfinder-select.
+    function onCardClick(event: MouseEvent): void {
+        const target = event.target as HTMLElement | null;
+        const control = target?.closest(interactiveSelector);
+
+        if (control && !control.closest("[data-groupfinder-select]")) {
+            return;
+        }
+
+        emit("select");
+    }
+
+    // #endregion Event Handlers
+</script>

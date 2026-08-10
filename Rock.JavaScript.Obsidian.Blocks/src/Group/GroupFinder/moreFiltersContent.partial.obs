@@ -1,0 +1,63 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentStack>
+        <div class="more-filters-content">
+            <div v-for="filter in config.modalAttributeFilters ?? []"
+                 :key="filter.attributeKey ?? ''"
+                 class="filter-attribute">
+                <template v-if="filter.attribute">
+                    <label v-if="filter.attribute.name" class="filter-section-label">{{ filter.attribute.name }}</label>
+                    <RockAttributeFilter :attribute="filter.attribute"
+                                         :modelValue="valueFor(filter.attributeKey)"
+                                         @update:modelValue="value => setValue(filter.attributeKey, value)" />
+                </template>
+            </div>
+        </div>
+    </ContentStack>
+</template>
+
+<style scoped>
+.filter-attribute {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xsmall);
+}
+
+.filter-section-label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    margin: 0;
+    font-size: var(--font-size-h6, 16px);
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--color-interface-strongest);
+}
+</style>
+
+<script setup lang="ts">
+    import RockAttributeFilter from "@Obsidian/Controls/rockAttributeFilter.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
+    import { useGroupFinderFilters } from "./filterState.partial";
+
+    // #region Values
+
+    const { config, modalAttributeValues } = useGroupFinderFilters();
+
+    // #endregion Values
+
+    // #region Functions
+
+    function valueFor(key: string | null | undefined): ComparisonValue {
+        return (key && modalAttributeValues.value[key]) || { value: "" };
+    }
+
+    function setValue(key: string | null | undefined, value: ComparisonValue): void {
+        if (!key) {
+            return;
+        }
+        modalAttributeValues.value = { ...modalAttributeValues.value, [key]: value };
+    }
+
+    // #endregion Functions
+</script>

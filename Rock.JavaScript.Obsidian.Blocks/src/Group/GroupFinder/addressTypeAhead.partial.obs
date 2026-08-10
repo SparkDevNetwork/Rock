@@ -1,0 +1,153 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="group-finder-address-typeahead">
+        <TextBox v-model="searchText"
+                 type="search"
+                 :disableAutocomplete="true"
+                 :inputClasses="'group-finder-address'"
+                 :placeholder="placeholder"
+                 @keydown.esc="suggestions = []" />
+
+        <ul v-if="suggestions.length > 0" class="group-finder-address-suggestions">
+            <li v-for="suggestion in suggestions" :key="suggestion">
+                <button type="button" class="group-finder-address-suggestion" @click="selectSuggestion(suggestion)">
+                    <i class="ti ti-map-pin"></i>
+                    <span>{{ suggestion }}</span>
+                </button>
+            </li>
+        </ul>
+    </div>
+</template>
+
+<style scoped>
+.group-finder-address-typeahead {
+    position: relative;
+}
+
+.group-finder-address-suggestions {
+    list-style: none;
+    margin: var(--spacing-xsmall) 0 0;
+    padding: 0;
+    border: 1px solid var(--color-interface-soft, #e5e5e5);
+    border-radius: var(--rounded-small);
+    background: var(--color-interface-softest, #fff);
+    overflow: hidden;
+}
+
+.group-finder-address-suggestion {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    width: 100%;
+    padding: var(--spacing-xsmall) var(--spacing-small);
+    border: none;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+.group-finder-address-suggestion:hover {
+    background: var(--color-interface-softer, #f3f3f3);
+}
+
+.group-finder-address-suggestion i {
+    flex: none;
+    color: var(--color-interface-medium, #999);
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+
+    // #region Values
+
+    const props = defineProps({
+        /** The current address text, two-way bound. */
+        modelValue: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        placeholder: {
+            type: String as PropType<string>,
+            default: "Address or Zip"
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // How long the visitor must pause typing before we query Google. Long enough to let a full ZIP or
+    // street number land in one call rather than firing on every keystroke, which also trims API cost.
+    const debounceDelayMs = 500;
+
+    const searchText = ref(props.modelValue);
+    const suggestions = ref<string[]>([]);
+
+    // Debounce handle plus a request counter so a slower earlier response cannot overwrite a newer one, and
+    // a flag to skip the fetch when a text change came from a selection or an external update rather than
+    // the visitor typing.
+    let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+    let latestRequestId = 0;
+    let skipNextFetch = false;
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    // Commit a chosen suggestion: fill the box with it and close the list without re-querying.
+    function selectSuggestion(suggestion: string): void {
+        skipNextFetch = true;
+        searchText.value = suggestion;
+        suggestions.value = [];
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // As the visitor types, mirror the text up to the parent and, debounced and only at 3+ characters,
+    // fetch suggestions from the block. The server also enforces the minimum length before it calls Google.
+    watch(searchText, (value) => {
+        emit("update:modelValue", value);
+
+        if (skipNextFetch) {
+            skipNextFetch = false;
+            return;
+        }
+
+        if (debounceTimer) {
+            clearTimeout(debounceTimer);
+        }
+
+        const text = value.trim();
+        if (text.length < 3) {
+            suggestions.value = [];
+            return;
+        }
+
+        const requestId = ++latestRequestId;
+        debounceTimer = setTimeout(async () => {
+            const result = await invokeBlockAction<string[]>("GetAddressSuggestions", { text });
+            if (requestId === latestRequestId && result.isSuccess && result.data) {
+                suggestions.value = result.data;
+            }
+        }, debounceDelayMs);
+    });
+
+    // Keep in sync when the parent clears or replaces the value (e.g. the "Change" action resets location).
+    watch(() => props.modelValue, (value) => {
+        if (value !== searchText.value) {
+            skipNextFetch = true;
+            searchText.value = value;
+            suggestions.value = [];
+        }
+    });
+
+    // #endregion Watchers
+</script>

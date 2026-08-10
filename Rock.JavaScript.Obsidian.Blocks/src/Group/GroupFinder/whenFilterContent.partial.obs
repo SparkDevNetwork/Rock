@@ -1,0 +1,87 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="filter-when-content">
+        <ContentStack v-if="config.isTimeOfDayFilterShown">
+            <div class="filter-section">
+                <label class="filter-section-label">Time of Day</label>
+                <IconSelect v-model="selectedTimeOfDay" :items="timeOfDayItems" placeholder="Any time" />
+            </div>
+        </ContentStack>
+
+        <ContentStack v-if="config.isDayOfWeekFilterShown">
+            <div class="filter-section">
+                <label class="filter-section-label">Day of the Week</label>
+                <ToggleChipList v-model="selectedDayItems" :items="daysOfWeek" />
+            </div>
+        </ContentStack>
+    </div>
+</template>
+
+<style scoped>
+.filter-when-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-large);
+}
+
+.filter-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xsmall);
+}
+
+.filter-section-label {
+    margin: 0;
+    font-size: var(--font-size-h6, 16px);
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--color-interface-strongest);
+}
+
+</style>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import ToggleChipList from "./toggleChipList.partial.obs";
+    import IconSelect from "./iconSelect.partial.obs";
+    import { useGroupFinderFilters } from "./filterState.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    // #region Values
+
+    const { config, selectedDaysOfWeek, selectedTimeOfDay } = useGroupFinderFilters();
+
+    // Value is the System.DayOfWeek name the server parses; text is the chip label.
+    const daysOfWeek: ListItemBag[] = [
+        { text: "Mon", value: "Monday" },
+        { text: "Tue", value: "Tuesday" },
+        { text: "Wed", value: "Wednesday" },
+        { text: "Thu", value: "Thursday" },
+        { text: "Fri", value: "Friday" },
+        { text: "Sat", value: "Saturday" },
+        { text: "Sun", value: "Sunday" }
+    ];
+
+    // Values are the TimePeriodOfDay names the server parses; icons cue the time of day.
+    const timeOfDayItems = [
+        { value: "Morning", text: "Morning", iconCssClass: "ti ti-sunrise" },
+        { value: "Afternoon", text: "Afternoon", iconCssClass: "ti ti-sun" },
+        { value: "Evening", text: "Evening", iconCssClass: "ti ti-sunset" }
+    ];
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    // The filter state stores day values as a string array, so adapt it to and from the ListItemBag
+    // array the chip list binds to.
+    const selectedDayItems = computed<ListItemBag[]>({
+        get() {
+            return daysOfWeek.filter(day => selectedDaysOfWeek.value.includes(day.value ?? ""));
+        },
+        set(items) {
+            selectedDaysOfWeek.value = items.map(item => item.value ?? "");
+        }
+    });
+
+    // #endregion Computed Values
+</script>

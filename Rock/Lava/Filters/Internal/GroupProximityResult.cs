@@ -17,15 +17,17 @@
 
 using System.Collections.Generic;
 
+using Rock.Attribute;
 using Rock.Core.Geography.Classes;
 using Rock.Enums.Geography;
 
 namespace Rock.Lava.Filters.Internal
 {
     /// <summary>
-    /// Describes the result of a modify entity operation in Lava.
+    /// A single group returned from a group finder proximity search, along with its distance and travel details.
     /// </summary>
-    internal class GroupProximityResult : LavaDataObject
+    [RockInternal( "20.0" )]
+    public class GroupProximityResult : LavaDataObject
     {
         /// <summary>
         /// The group that the location is associated with.

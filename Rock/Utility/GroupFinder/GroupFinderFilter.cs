@@ -16,17 +16,20 @@
 
 using System.Collections.Generic;
 
+using Rock.Attribute;
+
 namespace Rock.Utility.GroupFinder
 {
     /// <summary>
     /// A single filter value used by <see cref="GroupFinderHelper"/>.
     /// </summary>
-    internal class GroupFinderFilter
+    [RockInternal( "20.0" )]
+    public class GroupFinderFilter
     {
         #region Properties
 
         /// <summary>
-        /// Valid values are 'campus', 'attribute', 'dayofweek', 'timeofday'.
+        /// Valid values are 'campus', 'attribute', 'dayofweek', 'timeofday', 'meetingstyle'.
         /// </summary>
         public string Type { get; }
 

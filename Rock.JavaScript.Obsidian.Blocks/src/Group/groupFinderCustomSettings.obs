@@ -1,0 +1,357 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isModalOpen" title="Group Finder Settings" :saveText="saveButtonText" @save="onSave">
+
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <LoadingIndicator v-else-if="isLoading" :delay="500" />
+
+        <div v-else>
+
+            <Panel title="Group Types" :modelValue="true" hasCollapse>
+                <GroupTypePicker v-model="groupTypes"
+                                 label="Group Types"
+                                 help="The group types whose groups the finder offers, and whose attributes the filter and card settings below are drawn from."
+                                 :multiple="true"
+                                 rules="required"
+                                 @update:modelValue="onGroupTypesUpdated" />
+            </Panel>
+
+            <Panel title="Filters" :modelValue="true" hasCollapse>
+                <div class="row">
+                    <div class="col-md-6">
+                        <CheckBox v-model="hideCampusFilters" label="Hide Campus Filters" />
+                        <CheckBox v-model="hideWhereFilters" label="Hide Where Filters" />
+                        <CheckBox v-model="hideWhenFilters" label="Hide When Filters" />
+                        <CheckBox v-model="hideWhatFilters" label="Hide What Filters" />
+                    </div>
+                    <div class="col-md-6">
+                        <CheckBox v-model="enableProximityFeatures"
+                                  label="Enable Proximity Features"
+                                  help="Renders an address input and a Use Current Location action. Requires Google APIs to be configured." />
+                        <CheckBox v-model="enableLiveSearch"
+                                  label="Live Text Search"
+                                  help="Renders a text field that filters groups by name as the visitor types." />
+                        <CheckBox v-model="displayDayOfWeekFilter" label="Display Day of Week Filter" />
+                        <CheckBox v-model="displayTimeOfDayFilter" label="Display Time of Day Filter" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <DefinedValuePicker v-model="campusTypes"
+                                            label="Campus Types"
+                                            help="The campus types offered by the campus filter."
+                                            :definedTypeGuid="DefinedType.CampusType"
+                                            :multiple="true" />
+                        <DefinedValuePicker v-model="campusStatuses"
+                                            label="Campus Statuses"
+                                            help="The campus statuses offered by the campus filter."
+                                            :definedTypeGuid="DefinedType.CampusStatus"
+                                            :multiple="true" />
+                    </div>
+                    <div class="col-md-6">
+                        <CheckBoxList v-model="supportedMeetingStyles"
+                                      label="Supported Meeting Styles"
+                                      help="The meeting styles offered by the Where filter. When none are selected the Meeting Style filter is hidden."
+                                      :items="meetingStyleItems" />
+                    </div>
+                </div>
+                <CheckBoxList v-model="featuredAttributes"
+                              label="Featured Attributes (What)"
+                              help="Attributes promoted into the What section of the filter bar as pills. Limited to Single-select, Multi-select, and Boolean field types, and cannot also be a More Filters attribute."
+                              :items="featuredItems"
+                              :repeatColumns="2" />
+                <CheckBoxList v-model="displayAttributeFilters"
+                              label="Display Attribute Filters (More Filters)"
+                              help="Attributes an individual can filter results by in the More Filters modal. Cannot also be a Featured attribute."
+                              :items="displayItems"
+                              :repeatColumns="2" />
+            </Panel>
+
+            <Panel title="Card and Map" :modelValue="true" hasCollapse>
+                <div class="row">
+                    <div class="col-md-6">
+                        <CheckBox v-model="showImage" label="Show Image" />
+                        <CheckBox v-model="showAverageAge" label="Show Average Age" />
+                        <CheckBox v-model="showMap"
+                                  label="Show Map"
+                                  help="When enabled the layout switches to a side by side arrangement of cards and a map." />
+                    </div>
+                    <div class="col-md-6">
+                        <ColorPicker v-model="mapCircleColor"
+                                     label="Map Circle Color"
+                                     help="The color of the approximation circles on the map." />
+                        <ColorPicker v-model="currentLocationMarkerColor"
+                                     label="Current Location Marker Color"
+                                     help="The color of the &quot;you are here&quot; proximity marker on the map." />
+                        <DefinedValuePicker v-model="mapStyle"
+                                            label="Map Style"
+                                            help="The map style applied to the results map. When not set, the block's default style is used."
+                                            :definedTypeGuid="DefinedType.MapStyles" />
+                    </div>
+                </div>
+                <CheckBoxList v-model="showAttributeOnCard"
+                              label="Show Attribute on Card"
+                              help="Attributes displayed on each result card, each with its icon and value."
+                              :items="availableCardAttributes"
+                              :repeatColumns="2" />
+                <CodeEditor v-model="groupCardTemplate"
+                            label="Group Card Template"
+                            help="The Lava template that renders the content of each result card. Clear it to reset to the built-in default."
+                            mode="lava" />
+            </Panel>
+
+            <Panel title="Linked Pages" :modelValue="true" hasCollapse>
+                <PagePicker v-model="registerPage"
+                            label="Register Page"
+                            help="The page a visitor is sent to when signing up for a group."
+                            :promptForPageRoute="true"
+                            :securityGrantToken="securityGrantToken" />
+            </Panel>
+
+        </div>
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { getSecurityGrant, provideSecurityGrant, setCustomSettingsBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomSettingsBox } from "@Obsidian/ViewModels/Blocks/customSettingsBox";
+    import { GroupFinderCustomSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupFinder/groupFinderCustomSettingsBag";
+    import { GroupFinderCustomSettingsOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupFinder/groupFinderCustomSettingsOptionsBag";
+    import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(null);
+    const reloadBlock = useReloadBlock();
+
+    const emit = defineEmits<{
+        (e: "close"): void
+    }>();
+
+    // The fixed set of meeting styles the Where filter can offer.
+    const meetingStyleItems: ListItemBag[] = [
+        { value: "InPerson", text: "In-Person" },
+        { value: "Online", text: "Online" },
+        { value: "Hybrid", text: "Hybrid" }
+    ];
+
+    // #region Values
+
+    const errorMessage = ref("");
+    const isLoading = ref(true);
+    const isModalOpen = ref(true);
+
+    // Group types and attributes.
+    const groupTypes = ref<ListItemBag[]>([]);
+    const featuredAttributes = ref<string[]>([]);
+    const displayAttributeFilters = ref<string[]>([]);
+    const showAttributeOnCard = ref<string[]>([]);
+
+    // Filters.
+    const hideCampusFilters = ref(false);
+    const hideWhereFilters = ref(false);
+    const hideWhenFilters = ref(false);
+    const hideWhatFilters = ref(false);
+    const campusTypes = ref<ListItemBag[]>([]);
+    const campusStatuses = ref<ListItemBag[]>([]);
+    const enableProximityFeatures = ref(false);
+    const supportedMeetingStyles = ref<string[]>([]);
+    const displayDayOfWeekFilter = ref(false);
+    const displayTimeOfDayFilter = ref(false);
+    const enableLiveSearch = ref(false);
+
+    // Card and map.
+    const showImage = ref(false);
+    const showAverageAge = ref(false);
+    const showMap = ref(false);
+    const mapCircleColor = ref("");
+    const currentLocationMarkerColor = ref("");
+    const mapStyle = ref<ListItemBag | null>(null);
+    const groupCardTemplate = ref("");
+
+    // Linked pages.
+    const registerPage = ref<PageRouteValueBag | null>(null);
+
+    // Available options, rescoped whenever the selected group types change.
+    const availableFeaturedAttributes = ref<ListItemBag[]>([]);
+    const availableDisplayAttributes = ref<ListItemBag[]>([]);
+    const availableCardAttributes = ref<ListItemBag[]>([]);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const saveButtonText = computed((): string => {
+        return errorMessage.value || !isLoading.value ? "Save" : "";
+    });
+
+    const securityGrantToken = computed((): string | null => {
+        return securityGrant.token.value;
+    });
+
+    // Featured and More Filters are mutually exclusive: an attribute chosen in one drops out of the
+    // other's list, so it can never be selected in both.
+    const featuredItems = computed((): ListItemBag[] => {
+        return availableFeaturedAttributes.value.filter(item => !displayAttributeFilters.value.includes(item.value ?? ""));
+    });
+
+    const displayItems = computed((): ListItemBag[] => {
+        return availableDisplayAttributes.value.filter(item => !featuredAttributes.value.includes(item.value ?? ""));
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Rescopes the available attribute options to the currently-selected group types, and drops any
+     * selection that is no longer available under them.
+     */
+    async function onGroupTypesUpdated(): Promise<void> {
+        const selectedGroupTypeGuids = groupTypes.value.map(gt => gt.value ?? "");
+
+        const result = await invokeBlockAction<GroupFinderCustomSettingsOptionsBag>("GetUpdatedAttributeOptions", { selectedGroupTypeGuids });
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage || "Unknown error while loading attributes for the selected group types.";
+            return;
+        }
+
+        availableFeaturedAttributes.value = result.data.availableFeaturedAttributes ?? [];
+        availableDisplayAttributes.value = result.data.availableDisplayAttributes ?? [];
+        availableCardAttributes.value = result.data.availableCardAttributes ?? [];
+
+        featuredAttributes.value = featuredAttributes.value.filter(v => availableFeaturedAttributes.value.some(a => a.value === v));
+        displayAttributeFilters.value = displayAttributeFilters.value.filter(v => availableDisplayAttributes.value.some(a => a.value === v));
+        showAttributeOnCard.value = showAttributeOnCard.value.filter(v => availableCardAttributes.value.some(a => a.value === v));
+    }
+
+    /**
+     * Saves the block settings.
+     */
+    async function onSave(): Promise<void> {
+        const box: CustomSettingsBox<GroupFinderCustomSettingsBag, GroupFinderCustomSettingsOptionsBag> = {};
+
+        setCustomSettingsBoxValue(box, "groupTypes", groupTypes.value);
+        setCustomSettingsBoxValue(box, "featuredAttributes", featuredAttributes.value);
+        setCustomSettingsBoxValue(box, "displayAttributeFilters", displayAttributeFilters.value);
+        setCustomSettingsBoxValue(box, "showAttributeOnCard", showAttributeOnCard.value);
+
+        setCustomSettingsBoxValue(box, "hideCampusFilters", hideCampusFilters.value);
+        setCustomSettingsBoxValue(box, "hideWhereFilters", hideWhereFilters.value);
+        setCustomSettingsBoxValue(box, "hideWhenFilters", hideWhenFilters.value);
+        setCustomSettingsBoxValue(box, "hideWhatFilters", hideWhatFilters.value);
+        setCustomSettingsBoxValue(box, "campusTypes", campusTypes.value);
+        setCustomSettingsBoxValue(box, "campusStatuses", campusStatuses.value);
+        setCustomSettingsBoxValue(box, "enableProximityFeatures", enableProximityFeatures.value);
+        setCustomSettingsBoxValue(box, "supportedMeetingStyles", supportedMeetingStyles.value);
+        setCustomSettingsBoxValue(box, "displayDayOfWeekFilter", displayDayOfWeekFilter.value);
+        setCustomSettingsBoxValue(box, "displayTimeOfDayFilter", displayTimeOfDayFilter.value);
+        setCustomSettingsBoxValue(box, "enableLiveSearch", enableLiveSearch.value);
+
+        setCustomSettingsBoxValue(box, "showImage", showImage.value);
+        setCustomSettingsBoxValue(box, "showAverageAge", showAverageAge.value);
+        setCustomSettingsBoxValue(box, "showMap", showMap.value);
+        setCustomSettingsBoxValue(box, "mapCircleColor", mapCircleColor.value);
+        setCustomSettingsBoxValue(box, "currentLocationMarkerColor", currentLocationMarkerColor.value);
+        setCustomSettingsBoxValue(box, "mapStyle", mapStyle.value);
+        setCustomSettingsBoxValue(box, "groupCardTemplate", groupCardTemplate.value);
+
+        setCustomSettingsBoxValue(box, "registerPage", registerPage.value);
+
+        const result = await invokeBlockAction("SaveCustomSettings", { box });
+
+        if (result.isSuccess) {
+            isModalOpen.value = false;
+            reloadBlock();
+        }
+        else {
+            alert(result.errorMessage || "Unable to save block settings.");
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Loads the current settings and available options so the panel can be displayed.
+     */
+    async function startLoading(): Promise<void> {
+        const result = await invokeBlockAction<CustomSettingsBox<GroupFinderCustomSettingsBag, GroupFinderCustomSettingsOptionsBag>>("GetCustomSettings");
+
+        if (result.isSuccess && result.data && result.data.settings && result.data.options) {
+            const settings = result.data.settings;
+
+            groupTypes.value = settings.groupTypes ?? [];
+            featuredAttributes.value = settings.featuredAttributes ?? [];
+            displayAttributeFilters.value = settings.displayAttributeFilters ?? [];
+            showAttributeOnCard.value = settings.showAttributeOnCard ?? [];
+
+            hideCampusFilters.value = settings.hideCampusFilters;
+            hideWhereFilters.value = settings.hideWhereFilters;
+            hideWhenFilters.value = settings.hideWhenFilters;
+            hideWhatFilters.value = settings.hideWhatFilters;
+            campusTypes.value = settings.campusTypes ?? [];
+            campusStatuses.value = settings.campusStatuses ?? [];
+            enableProximityFeatures.value = settings.enableProximityFeatures;
+            supportedMeetingStyles.value = settings.supportedMeetingStyles ?? [];
+            displayDayOfWeekFilter.value = settings.displayDayOfWeekFilter;
+            displayTimeOfDayFilter.value = settings.displayTimeOfDayFilter;
+            enableLiveSearch.value = settings.enableLiveSearch;
+
+            showImage.value = settings.showImage;
+            showAverageAge.value = settings.showAverageAge;
+            showMap.value = settings.showMap;
+            mapCircleColor.value = settings.mapCircleColor ?? "";
+            currentLocationMarkerColor.value = settings.currentLocationMarkerColor ?? "";
+            mapStyle.value = settings.mapStyle ?? null;
+            groupCardTemplate.value = settings.groupCardTemplate ?? "";
+
+            registerPage.value = settings.registerPage ?? null;
+
+            securityGrant.updateToken(result.data.securityGrantToken);
+            availableFeaturedAttributes.value = result.data.options.availableFeaturedAttributes ?? [];
+            availableDisplayAttributes.value = result.data.options.availableDisplayAttributes ?? [];
+            availableCardAttributes.value = result.data.options.availableCardAttributes ?? [];
+        }
+        else {
+            errorMessage.value = result.errorMessage || "Unknown error while loading custom settings.";
+        }
+
+        isLoading.value = false;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(isModalOpen, () => {
+        if (!isModalOpen.value) {
+            emit("close");
+        }
+    });
+
+    // #endregion Watchers
+
+    provideSecurityGrant(securityGrant);
+
+    startLoading();
+</script>
