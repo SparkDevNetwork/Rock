@@ -90,8 +90,9 @@ internal class AgentBuilder
     /// <summary>
     /// Builds the ChatAgent instance using the configured functions, skills, and settings.
     /// </summary>
+    /// <param name="buildForMcp">Builds the agent for use in MCP tests.</param>
     /// <returns>A configured IChatAgent instance.</returns>
-    internal ( ChatAgent Agent, List<string> output, List<string> logs ) Build()
+    internal ( ChatAgent Agent, List<string> output, List<string> logs ) Build( bool buildForMcp = false )
     {
         var apiKey = ConfigurationManager.AppSettings["RockIntelligenceApiKey"];
 
@@ -126,7 +127,7 @@ internal class AgentBuilder
             name: "Test Agent",
             agentType: AgentType.Chat,
             audienceType: AudienceType.Internal,
-            provider: providerMock.Object,
+            provider: !buildForMcp ? providerMock.Object : null,
             instructions: _instructions,
             settings: new ChatAgentSettings(),
             skills: GetSkills()
@@ -141,7 +142,7 @@ internal class AgentBuilder
         engine.RegisterBlock( "output", _ => new OutputBlock( output ) );
         LavaService.SetCurrentEngine( engine );
 
-        var factory = new ChatAgentFactory( providerMock.Object,
+        var factory = new ChatAgentFactory( !buildForMcp ? providerMock.Object : null,
             agentConfiguration,
             RockApp.Current,
             requestContextAccessorMock.Object,

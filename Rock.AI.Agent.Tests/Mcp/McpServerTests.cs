@@ -44,7 +44,7 @@ public class McpServerTests : MockDatabaseTestsBase
         using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
 
         var mcp = new McpServer();
-        var agent = new AgentBuilder().Build();
+        var agent = new AgentBuilder().Build( buildForMcp: true );
         var request = new McpRequest
         {
             Content = JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"method\":\"initialize\"}" )
@@ -65,7 +65,7 @@ public class McpServerTests : MockDatabaseTestsBase
         using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
 
         var mcp = new McpServer();
-        var agent = new AgentBuilder().Build();
+        var agent = new AgentBuilder().Build( buildForMcp: true );
         var request = new McpRequest
         {
             Content = JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"notifications/test\"}" )
@@ -86,7 +86,7 @@ public class McpServerTests : MockDatabaseTestsBase
         using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
 
         var mcp = new McpServer();
-        var agent = new AgentBuilder().Build();
+        var agent = new AgentBuilder().Build( buildForMcp: true );
         var request = new McpRequest
         {
             Content = JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\"}" )
@@ -107,7 +107,7 @@ public class McpServerTests : MockDatabaseTestsBase
         using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
 
         var mcp = new McpServer();
-        var agent = new AgentBuilder().Build();
+        var agent = new AgentBuilder().Build( buildForMcp: true );
         var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"unknowntest\"}" ), _serializerOptions );
 
         var response = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
@@ -130,7 +130,7 @@ public class McpServerTests : MockDatabaseTestsBase
         using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
 
         var mcp = new McpServer();
-        var agent = new AgentBuilder().Build();
+        var agent = new AgentBuilder().Build( buildForMcp: true );
         var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"initialize\"}" ), _serializerOptions );
 
         var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
@@ -148,7 +148,7 @@ public class McpServerTests : MockDatabaseTestsBase
         using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
 
         var mcp = new McpServer();
-        var agent = new AgentBuilder().Build();
+        var agent = new AgentBuilder().Build( buildForMcp: true );
         var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"initialize\", \"params\":{}}" ), _serializerOptions );
 
         var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
@@ -170,7 +170,7 @@ public class McpServerTests : MockDatabaseTestsBase
         using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
 
         var mcp = new McpServer();
-        var agent = new AgentBuilder().Build();
+        var agent = new AgentBuilder().Build( buildForMcp: true );
         var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"initialize\", \"params\":{\"protocolVersion\":\"2025-06-18\"}}" ), _serializerOptions );
 
         var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
@@ -192,7 +192,7 @@ public class McpServerTests : MockDatabaseTestsBase
         using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
 
         var mcp = new McpServer();
-        var agent = new AgentBuilder().Build();
+        var agent = new AgentBuilder().Build( buildForMcp: true );
         var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"initialize\", \"params\":{\"protocolVersion\":\"2025-03-26\"}}" ), _serializerOptions );
 
         var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
@@ -217,7 +217,7 @@ public class McpServerTests : MockDatabaseTestsBase
         var mcp = new McpServer();
         var agent = new AgentBuilder()
             .WithSkill( GetSkillConfiguration( expectedInstructions ) )
-            .Build();
+            .Build( buildForMcp: true );
         var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"initialize\", \"params\":{\"protocolVersion\":\"2025-03-26\"}}" ), _serializerOptions );
 
         var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
@@ -243,7 +243,7 @@ public class McpServerTests : MockDatabaseTestsBase
         using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
 
         var mcp = new McpServer();
-        var agent = new AgentBuilder().Build();
+        var agent = new AgentBuilder().Build( buildForMcp: true );
         var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"ping\"}" ), _serializerOptions );
 
         var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
@@ -265,7 +265,7 @@ public class McpServerTests : MockDatabaseTestsBase
         using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
 
         var mcp = new McpServer();
-        var agent = new AgentBuilder().Build();
+        var agent = new AgentBuilder().Build( buildForMcp: true );
         var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/list\"}" ), _serializerOptions );
 
         var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
@@ -289,7 +289,7 @@ public class McpServerTests : MockDatabaseTestsBase
                 Name = "TestTool",
                 ToolType = ToolType.ExecuteLava
             } )
-            .Build();
+            .Build( buildForMcp: true );
         var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/list\", \"params\":{}}" ), _serializerOptions );
 
         var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
@@ -316,7 +316,7 @@ public class McpServerTests : MockDatabaseTestsBase
         using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
 
         var mcp = new McpServer();
-        var agent = new AgentBuilder().Build();
+        var agent = new AgentBuilder().Build( buildForMcp: true );
         var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\"}" ), _serializerOptions );
 
         var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
@@ -336,7 +336,7 @@ public class McpServerTests : MockDatabaseTestsBase
         using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
 
         var mcp = new McpServer();
-        var agent = new AgentBuilder().Build();
+        var agent = new AgentBuilder().Build( buildForMcp: true );
         var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"TestTool\"}}" ), _serializerOptions );
 
         var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
@@ -357,7 +357,7 @@ public class McpServerTests : MockDatabaseTestsBase
         using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
 
         var mcp = new McpServer();
-        var agent = new AgentBuilder().Build();
+        var agent = new AgentBuilder().Build( buildForMcp: true );
         var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"IndividualFunctions__TestTool\"}}" ), _serializerOptions );
 
         var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
@@ -380,7 +380,7 @@ public class McpServerTests : MockDatabaseTestsBase
         var mcp = new McpServer();
         var agent = new AgentBuilder()
             .WithSkill( GetSkillConfiguration() )
-            .Build();
+            .Build( buildForMcp: true );
         var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"TestSkill__StringTool\", \"arguments\": {}}}" ), _serializerOptions );
 
         var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
@@ -406,7 +406,7 @@ public class McpServerTests : MockDatabaseTestsBase
         var mcp = new McpServer();
         var agent = new AgentBuilder()
             .WithSkill( GetSkillConfiguration() )
-            .Build();
+            .Build( buildForMcp: true );
         var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"TestSkill__StructuredTool\", \"arguments\": {}}}" ), _serializerOptions );
 
         var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
@@ -434,7 +434,7 @@ public class McpServerTests : MockDatabaseTestsBase
         var mcp = new McpServer();
         var agent = new AgentBuilder()
             .WithSkill( GetSkillConfiguration() )
-            .Build();
+            .Build( buildForMcp: true );
         var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"TestSkill__StructuredTool\", \"arguments\": {}}}" ), _serializerOptions );
 
         var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
@@ -464,7 +464,7 @@ public class McpServerTests : MockDatabaseTestsBase
         var mcp = new McpServer();
         var agent = new AgentBuilder()
             .WithSkill( GetSkillConfiguration() )
-            .Build();
+            .Build( buildForMcp: true );
         var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"TestSkill__EnumToString\", \"arguments\": {\"agentType\": 1}}}" ), _serializerOptions );
 
         var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
@@ -488,7 +488,7 @@ public class McpServerTests : MockDatabaseTestsBase
         var mcp = new McpServer();
         var agent = new AgentBuilder()
             .WithSkill( GetSkillConfiguration() )
-            .Build();
+            .Build( buildForMcp: true );
         var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"TestSkill__EnumToString\", \"arguments\": {\"agentType\": \"Mcp\"}}}" ), _serializerOptions );
 
         var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
@@ -512,7 +512,7 @@ public class McpServerTests : MockDatabaseTestsBase
         var mcp = new McpServer();
         var agent = new AgentBuilder()
             .WithSkill( GetSkillConfiguration() )
-            .Build();
+            .Build( buildForMcp: true );
         var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"TestSkill__Echo\", \"arguments\": {\"input\": null}}}" ), _serializerOptions );
 
         var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
