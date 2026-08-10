@@ -89,6 +89,8 @@ namespace Rock.Workflow.Action
         "Document Purpose Key",
         Description = "The purpose key you provide will be what is shown to individuals to describe what period the statement is for. In most cases this should be the year. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 6,
         Key = AttributeKey.DocumentPurposeKey )]
     [BooleanField(

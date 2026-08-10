@@ -32,6 +32,8 @@ namespace RockWeb.Blocks.Cms
     [TextField(
         "Url",
         Description = "The path to redirect to <span class='tip tip-lava'></span>.",
+        AllowHtml = true,
+        AllowLava = true,
         Order = 0,
         Key = AttributeKey.Url )]
 
