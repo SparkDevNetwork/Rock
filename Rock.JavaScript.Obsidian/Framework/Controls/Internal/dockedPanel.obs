@@ -3,8 +3,9 @@
         <div v-if="isRendered"
              class="docked-panel-container styled-scroll"
              :style="containerStyles"
-             data-position="right"
-             :data-mode="props.mode">
+             :data-position="props.position"
+             :data-mode="props.mode"
+             :data-keep-rounded-when-pushed="props.keepRoundedWhenPushed || null">
 
             <transition name="docked-panel-slide"
                         :appear="animateTransition"
@@ -16,12 +17,21 @@
                      ref="dockedPanelRef"
                      class="docked-panel"
                      :class="{ dragging: isResizing }">
-                    <div v-if="$slots.header"
-                         class="docked-panel-header">
+                    <div v-if="$slots.header || isHeaderDragHandle"
+                         class="docked-panel-header"
+                         :class="{ 'docked-panel-header-handle': isHeaderDragHandle }"
+                         @pointerdown="isHeaderDragHandle ? onResizeStart($event) : undefined">
+                        <span v-if="isHeaderDragHandle" class="docked-panel-grabber"></span>
                         <slot name="header"></slot>
                     </div>
 
-                    <div class="docked-panel-body">
+                    <div class="docked-panel-body"
+                         :class="{ 'docked-panel-body-handle': isBodyDragHandle }"
+                         @pointerdown="isBodyDragHandle ? onBodyResizeStart($event) : undefined"
+                         @touchstart="onBodyTouchStart"
+                         @touchmove="onBodyTouchMove"
+                         @touchend="onBodyTouchEnd"
+                         @touchcancel="onBodyTouchEnd">
                         <slot></slot>
                     </div>
 
@@ -32,7 +42,7 @@
                 </div>
             </transition>
 
-            <div v-if="canResize && internalValue"
+            <div v-if="canResize && internalValue && !isHeaderDragHandle"
                  ref="dockedPanelResizeHandleRef"
                  class="docked-panel-resize-handle"
                  @pointerdown="onResizeStart"></div>
@@ -40,8 +50,155 @@
     </teleport>
 </template>
 
+<style scoped>
+/*
+    Hold a bottom-docked sheet off the viewport bottom by bottomOffset so it clears a fixed system bar
+    (Rock's admin footer) or a device safe-area inset. The container is inset:0 in the shared styles;
+    raising its bottom shifts the sheet and its resize handle up together, since both are positioned
+    within it. Zero by default, so the sheet still sits flush against the edge.
+*/
+.docked-panel-container[data-position="bottom"] {
+    bottom: var(--docked-panel-bottom-offset, 0);
+}
+
+/*
+    Bottom dock: a full-width sheet that slides up from the bottom of the screen (the shared
+    styles in _panels-extensions.scss only cover the right dock). The width props control the
+    sheet's height, since that is its size along the vertical docking axis.
+*/
+.docked-panel-container[data-position="bottom"] .docked-panel {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    max-width: 100%;
+    height: var(--docked-panel-height);
+    min-height: var(--docked-panel-minHeight);
+    max-height: var(--docked-panel-maxHeight);
+    /* Top corners round by --rounded-large, scaled by the corner scale (1 = full, 0 = square) so a sheet
+       with squareAtMaxDepth straightens as it nears its largest stop. */
+    border-radius: calc(var(--rounded-large) * var(--docked-panel-corner-scale, 1)) calc(var(--rounded-large) * var(--docked-panel-corner-scale, 1)) 0 0;
+    /* Keep the side borders so the rounded top corners render a full arc (a corner needs both
+       of its borders); only the bottom border is dropped since it sits at the screen edge. */
+    border-width: 1px 1px 0 1px;
+    /*
+        Declare BOTH transitions: height for size changes (like the right dock animates
+        width), and transform so the open/close slide still animates. This rule out-specifies
+        the global `.docked-panel-slide-enter-active { transition: transform }`, so omitting
+        transform here would replace it and make the slide snap instead of animating. border-radius
+        rides along so the corners ease with a snap rather than jumping.
+    */
+    transition: height 150ms ease, transform 250ms ease, border-radius 150ms ease;
+}
+
+/*
+    Push mode squares the sheet off by default, matching the right dock: it sits flush against the
+    content it pushed, so the rounded corners are dropped and only the top divider border is kept.
+    A consumer whose pushed sheet should still read as a floating card (e.g. a minimized bottom sheet)
+    opts out with keepRoundedWhenPushed, which drops this data attribute and lets the base rounded rule stand.
+*/
+.docked-panel-container[data-position="bottom"][data-mode="push"]:not([data-keep-rounded-when-pushed]) .docked-panel {
+    border-radius: 0;
+    border-width: 1px 0 0 0;
+}
+
+/*
+    While dragging, drop the height transition so the panel tracks the handle instantly
+    instead of easing behind it. This scoped rule must out-specify the base rule above,
+    since it beats the global `.docked-panel.dragging { transition: none }`.
+*/
+.docked-panel-container[data-position="bottom"] .docked-panel.dragging {
+    transition: none;
+}
+
+.docked-panel-container[data-position="bottom"] .docked-panel-resize-handle {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: min(min(var(--docked-panel-maxHeight), max(var(--docked-panel-minHeight), var(--docked-panel-height))), calc(100% - var(--resize-handle-width)));
+    width: auto;
+    height: var(--resize-handle-width);
+    cursor: ns-resize;
+}
+
+.docked-panel-container[data-position="bottom"] .docked-panel-slide-enter-from,
+.docked-panel-container[data-position="bottom"] .docked-panel-slide-leave-to {
+    transform: translateY(100%);
+}
+
+/*
+    Match the end state to translateY so the slide interpolates as one function. The global
+    end state is translateX(0); animating between translateY(100%) and translateX(0) is a
+    mismatched transform pair, which browsers snap through instead of animating.
+*/
+.docked-panel-container[data-position="bottom"] .docked-panel-slide-enter-to,
+.docked-panel-container[data-position="bottom"] .docked-panel-slide-leave-from {
+    transform: translateY(0);
+}
+
+/*
+    Header-as-drag-handle: the whole header slot is the grab surface (touch-action:none keeps the
+    page from scrolling as it is dragged), with a grabber affordance the consumer can style around.
+*/
+.docked-panel-header-handle {
+    position: relative;
+    touch-action: none;
+    user-select: none;
+}
+
+.docked-panel-container[data-position="bottom"] .docked-panel-header-handle {
+    cursor: ns-resize;
+}
+
+/* Keep an overscroll at the top or bottom of the body from chaining to the page, so a bottom-sheet
+   list does not trigger the browser's pull-to-refresh (see the pull-to-resize touch handlers). */
+.docked-panel-body {
+    overscroll-behavior: contain;
+}
+
+/* Body-as-drag-handle: the content is also a grab surface (touch-action:none keeps the page from
+   scrolling as it is dragged). Interactive elements inside stay clickable (see onBodyResizeStart). */
+.docked-panel-body-handle {
+    touch-action: none;
+    user-select: none;
+}
+
+.docked-panel-container[data-position="bottom"] .docked-panel-body-handle {
+    cursor: ns-resize;
+}
+
+.docked-panel-container[data-position="right"] .docked-panel-header-handle {
+    cursor: ew-resize;
+}
+
+/* Bottom: a horizontal grabber pill centered at the top of the header. */
+.docked-panel-container[data-position="bottom"] .docked-panel-grabber {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--color-interface-soft, #d9d9e3);
+}
+
+/* Right: a vertical grabber pill centered on the docking (left) edge of the header. */
+.docked-panel-container[data-position="right"] .docked-panel-grabber {
+    position: absolute;
+    left: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 40px;
+    border-radius: 2px;
+    background: var(--color-interface-soft, #d9d9e3);
+}
+</style>
+
 <script setup lang="ts">
-    import { computed, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { isHTMLElement } from "@Obsidian/Utility/dom";
     import { newGuid } from "@Obsidian/Utility/guid";
@@ -56,18 +213,48 @@
         },
 
         /**
+         * The size of the panel along the axis it docks to (its width for "right", its height for
+         * "bottom"). A panel only ever resizes along that one axis, so this single depth replaces
+         * the separate width/height props. Accepts any CSS length, or a content keyword ("auto" /
+         * "fit-content") to size the panel to its slotted content (bounded by maxDepth) rather than a
+         * fixed size. Overridden by snapPoints when those are set. Falls back to the deprecated width
+         * prop when not provided.
+         */
+        depth: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The largest the panel can be dragged along its docking axis. Falls back to maxWidth. */
+        maxDepth: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The smallest the panel can be dragged along its docking axis. Falls back to minWidth. */
+        minDepth: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /**
          * The width of the docked panel.
+         *
+         * @deprecated Use depth instead. A docked panel resizes along a single axis, so depth
+         * expresses the size for both the right and bottom positions. Still honored as a fallback.
          */
         width: {
             type: String as PropType<string>,
             default: "400px"
         },
 
+        /** @deprecated Use maxDepth instead. */
         maxWidth: {
             type: String as PropType<string>,
             default: "100%"
         },
 
+        /** @deprecated Use minDepth instead. */
         minWidth: {
             type: String as PropType<string>,
             default: "250px"
@@ -92,18 +279,131 @@
             type: String as PropType<"float" | "push">,
             default: "float"
         },
+
+        /**
+         * The edge the panel docks to. "right" slides in from the side; "bottom" slides up from
+         * the bottom like a mobile sheet. The depth prop controls the panel's size along whichever
+         * axis it docks to. Push mode is supported on both: "right" reserves horizontal space,
+         * "bottom" reserves vertical space.
+         */
+        position: {
+            type: String as PropType<"right" | "bottom">,
+            default: "right"
+        },
+
+        /**
+         * Ordered stop sizes the panel snaps between along its docking axis (heights for
+         * "bottom", widths for "right"), smallest first. Each entry is a number from 0 to 1
+         * (a fraction of the available extent), a CSS pixel string like "220px", the keyword
+         * "content" (the size of the header slot, i.e. collapse to just the header), or the
+         * keyword "fit-content" (the natural size of the whole slotted content, bounded by the
+         * axis extent, so the panel is exactly as large as it needs to be). When set, the panel
+         * resizes freely while dragging and settles on the nearest stop in the drag's direction
+         * on release; leave empty for the classic free-resize behavior.
+         */
+        snapPoints: {
+            type: Array as PropType<(number | string)[]>,
+            default: () => []
+        },
+
+        /**
+         * The index (into snapPoints) of the stop the panel currently rests at. Two-way bound,
+         * so a consumer can drive or observe the position. Ignored when snapPoints is empty.
+         */
+        snapPoint: {
+            type: Number as PropType<number>,
+            default: 0
+        },
+
+        /**
+         * When true, tapping the resize handle (without dragging) toggles between the first and
+         * last stop, the way tapping a bottom-sheet header expands or collapses it. Requires
+         * snapPoints and canResize.
+         */
+        snapOnTap: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * What the individual grabs to resize. "edge" is the thin strip along the docking edge;
+         * "header" makes the whole header slot the drag surface and shows a grabber affordance in
+         * it, the way a mobile bottom sheet is dragged by its header. "auto" (the default) picks
+         * per position: header for "bottom", edge for "right". Requires canResize.
+         */
+        dragHandle: {
+            type: String as PropType<"auto" | "edge" | "header">,
+            default: "auto"
+        },
+
+        /**
+         * When true (and canResize), the body slot is also a drag surface, so a content-heavy panel
+         * whose header is small can be resized by dragging anywhere on its content. Pointerdowns that
+         * land on an interactive element (button, link, input, etc.) are ignored so those stay
+         * clickable. Note this sets touch-action: none on the body, so its content will not scroll.
+         */
+        bodyDragHandle: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * When true, a bottom sheet's rounded corners straighten as it approaches its largest stop:
+         * full radius up to the second-to-last stop, interpolating to fully square at the max stop (like
+         * a sheet becoming a full-screen surface). No effect without snap points or for the right dock.
+         */
+        squareAtMaxDepth: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * When true, a bottom sheet in push mode keeps its rounded top corners instead of squaring off.
+         * Push mode squares the corners by default (the sheet sits flush against the content it pushed);
+         * set this when the pushed sheet should still read as a floating card, such as a minimized bottom
+         * sheet. No effect for the right dock or in float mode.
+         */
+        keepRoundedWhenPushed: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * A CSS length to hold a bottom-docked sheet off the viewport bottom, so it clears a fixed system
+         * bar (e.g. Rock's admin footer) or a device safe-area inset instead of sitting under it. Applies
+         * to the bottom dock only; the right dock ignores it. Defaults to no offset.
+         */
+        bottomOffset: {
+            type: String as PropType<string>,
+            default: "0px"
+        },
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: boolean): void;
+        (e: "update:depth", value: string): void;
+        /** @deprecated Emitted alongside update:depth so the deprecated width v-model stays in sync. */
         (e: "update:width", value: string): void;
-
+        (e: "update:snapPoint", value: number): void;
     }>();
 
     // #region Values
 
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
-    const internalWidth = useVModelPassthrough(props, "width", emit);
+    const internalSnapIndex = useVModelPassthrough(props, "snapPoint", emit);
+
+    // The single docking-axis size, resolved from depth (preferred) or the deprecated width.
+    // setDepth is the one writer; it emits update:depth and, for back-compat, update:width.
+    const internalDepth = ref<string>(props.depth || props.width);
+
+    function setDepth(value: string): void {
+        internalDepth.value = value;
+        emit("update:depth", value);
+        emit("update:width", value);
+    }
+
+    const effectiveMinDepth = computed((): string => props.minDepth || props.minWidth);
+    const effectiveMaxDepth = computed((): string => props.maxDepth || props.maxWidth);
     const isRendered = ref(false);
     const panelId = newGuid();
 
@@ -112,19 +412,101 @@
     const dockedPanelRef = ref<HTMLElement | null>(null);
     const dockedPanelResizeHandleRef = ref<HTMLElement | null>(null);
     const startX = ref(0);
+    const startY = ref(0);
     const startWidth = ref(0);
+    const startHeight = ref(0);
     const isResizing = ref(false);
+    // The last drag direction along the axis (1 = toward larger, -1 = toward smaller) and whether
+    // the pointer actually moved, so a release snaps toward where it is heading and a no-move
+    // press counts as a tap. Movement under this many pixels is treated as a tap.
+    let resizeLastDirection = 0;
+    let resizeLastClient = 0;
+    let resizeDidMove = false;
+    const resizeTapThresholdPx = 4;
     const animateTransition = ref(!props.modelValue);
+
+    // Watches the slotted content so a content-relative stop ("content" / "fit-content") re-resolves
+    // when the content changes size or is swapped out while the panel stays open. The mutation
+    // observer re-syncs which children the resize observer watches when the slot's children change.
+    let contentResizeObserver: ResizeObserver | null = null;
+    let contentMutationObserver: MutationObserver | null = null;
 
     // #endregion Values
 
     // #region Computed Values
 
+    const hasSnapPoints = computed((): boolean => props.snapPoints.length > 0);
+
+    // The resolved handle: "auto" picks header for a bottom sheet and the edge strip for a right
+    // dock, since that is what each orientation expects.
+    const resolvedDragHandle = computed((): "edge" | "header" => {
+        if (props.dragHandle !== "auto") {
+            return props.dragHandle;
+        }
+
+        return props.position === "bottom" ? "header" : "edge";
+    });
+
+    // Whether the header slot is the drag surface (vs the thin edge handle).
+    const isHeaderDragHandle = computed((): boolean => props.canResize && resolvedDragHandle.value === "header");
+
+    // Whether the body slot is also a drag surface (opt-in, for small-header content panels).
+    const isBodyDragHandle = computed((): boolean => props.canResize && props.bodyDragHandle);
+
+    // Whether an overscroll drag on the body should resize the sheet (as if dragging the handle) instead
+    // of doing nothing / triggering the browser's pull-to-refresh: dragging down at the top of the list
+    // pulls the sheet to a smaller stop, dragging up at the bottom of the list pulls it to a larger stop.
+    // Only a resizable bottom sheet whose body is a scroll surface, not a drag handle.
+    const isBodyPullResize = computed((): boolean =>
+        props.position === "bottom" && props.canResize && hasSnapPoints.value && !isBodyDragHandle.value);
+
+    // A 1 (full corner radius) to 0 (square) scale for a bottom sheet's top corners as it nears its
+    // largest stop, when squareAtMaxDepth is on. Stays 1 until the second-to-last stop, then interpolates
+    // to 0 at the max stop. 1 (unchanged) for the right dock, without snap points, or when the prop is off.
+    const cornerScale = computed((): number => {
+        if (!props.squareAtMaxDepth || props.position !== "bottom" || !hasSnapPoints.value) {
+            return 1;
+        }
+
+        const sizes = props.snapPoints.map(resolveSnapPoint).sort((a, b) => a - b);
+        const max = sizes[sizes.length - 1];
+        const squareStart = sizes.length > 1 ? sizes[sizes.length - 2] : 0;
+        if (max <= squareStart) {
+            return 1;
+        }
+
+        const current = parseFloat(internalDepth.value) || 0;
+        const progress = Math.min(Math.max((current - squareStart) / (max - squareStart), 0), 1);
+        return 1 - progress;
+    });
+
     const containerStyles = computed((): Record<string, string> => {
+        // The panel resizes along one axis (width for "right", height for "bottom"); depth feeds
+        // whichever CSS var that axis uses. With snap points the bounds come from the smallest and
+        // largest stop so a stop is never clipped by the free-resize min/max.
+        let minSize = effectiveMinDepth.value;
+        let maxSize = props.mode === "push" ? "100%" : effectiveMaxDepth.value;
+
+        if (hasSnapPoints.value) {
+            const bounds = resizeBounds();
+            minSize = `${bounds.min}px`;
+            maxSize = props.mode === "push" ? "100%" : `${bounds.max}px`;
+        }
+
+        if (props.position === "bottom") {
+            return {
+                "--docked-panel-height": internalDepth.value,
+                "--docked-panel-minHeight": minSize,
+                "--docked-panel-maxHeight": maxSize,
+                "--docked-panel-corner-scale": `${cornerScale.value}`,
+                "--docked-panel-bottom-offset": props.bottomOffset,
+            };
+        }
+
         return {
-            "--docked-panel-width": internalWidth.value,
-            "--docked-panel-minWidth": props.minWidth,
-            "--docked-panel-maxWidth": props.mode === "push" ? "100%" : props.maxWidth,
+            "--docked-panel-width": internalDepth.value,
+            "--docked-panel-minWidth": minSize,
+            "--docked-panel-maxWidth": maxSize,
         };
     });
 
@@ -144,10 +526,13 @@
 
     // #region Functions
 
-    function parseWidthSpecifier(value: string): number {
+    function parseDepthSpecifier(value: string): number {
         if (value.endsWith("%")) {
             const percent = parseFloat(value) / 100;
-            return window.innerWidth * percent;
+            // Depth runs vertically for a bottom sheet and horizontally for a right dock, so a
+            // percentage is measured against the matching viewport dimension.
+            const reference = props.position === "bottom" ? window.innerHeight : window.innerWidth;
+            return reference * percent;
         }
         else {
             return parseInt(value);
@@ -166,15 +551,26 @@
         }
         else {
             if (props.mode !== "push") {
-                document.body.style.removeProperty("--docked-panel-push-width");
-                delete document.body.dataset.dockedPanelMode;
-                delete document.body.dataset.dockedPanelPushId;
+                clearBodyPush();
             }
 
             // Otherwise, if we are still in push mode it means we are going to hide
             // the panel. In that case, we don't need to do any clean up yet, it
             // will be done after the animation completes.
         }
+    }
+
+    /**
+     * Removes every body-level artifact this panel may have applied for push mode,
+     * covering both dock axes (the right dock's CSS var and the bottom sheet's inline
+     * padding).
+     */
+    function clearBodyPush(): void {
+        document.body.style.removeProperty("--docked-panel-push-width");
+        document.body.style.removeProperty("padding-bottom");
+        document.body.style.removeProperty("transition");
+        delete document.body.dataset.dockedPanelMode;
+        delete document.body.dataset.dockedPanelPushId;
     }
 
     /**
@@ -187,9 +583,201 @@
         return document.body.dataset.dockedPanelPushId === panelId;
     }
 
+    // The available extent along the docking axis: the viewport minus the fixed top header for a
+    // bottom sheet, or the viewport width for a right dock. The bottom offset also comes off a bottom
+    // sheet's extent, so the largest stop fills the lifted container rather than overrunning its top.
+    function axisExtentPx(): number {
+        if (props.position === "bottom") {
+            const headerHeight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--top-header-height")) || 0;
+            const bottomOffset = parseFloat(props.bottomOffset) || 0;
+            return window.innerHeight - headerHeight - bottomOffset;
+        }
+
+        return window.innerWidth;
+    }
+
+    // The size of the header slot along the docking axis, used for the "content" stop.
+    function headerSizePx(): number {
+        const header = dockedPanelRef.value?.querySelector(".docked-panel-header") as HTMLElement | null;
+        if (!header) {
+            return 0;
+        }
+
+        return props.position === "bottom" ? header.offsetHeight : header.offsetWidth;
+    }
+
+    // The body's natural content size along the docking axis, measured from its own children and
+    // padding rather than its scroll size. scrollHeight/scrollWidth can never report smaller than the
+    // element's current box, so a body bounded by the panel would let "fit-content" grow but never
+    // shrink; measuring the children directly tracks the content both ways. Children stack vertically
+    // in the body, so the height sums them (plus margins) while the width takes the widest.
+    function bodyContentSizePx(body: HTMLElement): number {
+        const bodyStyle = getComputedStyle(body);
+        const children = Array.from(body.children) as HTMLElement[];
+
+        if (props.position === "bottom") {
+            let extent = parseFloat(bodyStyle.paddingTop) + parseFloat(bodyStyle.paddingBottom);
+            for (const child of children) {
+                const childStyle = getComputedStyle(child);
+                extent += child.offsetHeight + parseFloat(childStyle.marginTop) + parseFloat(childStyle.marginBottom);
+            }
+            return extent;
+        }
+
+        const widest = children.reduce((max, child) => {
+            const childStyle = getComputedStyle(child);
+            return Math.max(max, child.offsetWidth + parseFloat(childStyle.marginLeft) + parseFloat(childStyle.marginRight));
+        }, 0);
+        return parseFloat(bodyStyle.paddingLeft) + parseFloat(bodyStyle.paddingRight) + widest;
+    }
+
+    // The natural size of the whole panel content (header + body + footer) along the docking axis,
+    // used for the "fit-content" stop so the panel is exactly as large as its content rather than a
+    // fixed fraction. Clamped to the axis extent so content larger than the viewport does not push
+    // the stop off-screen.
+    function contentSizePx(): number {
+        const panel = dockedPanelRef.value;
+        if (!panel) {
+            return 0;
+        }
+
+        const header = panel.querySelector(".docked-panel-header") as HTMLElement | null;
+        const body = panel.querySelector(".docked-panel-body") as HTMLElement | null;
+        const footer = panel.querySelector(".docked-panel-footer") as HTMLElement | null;
+        const bodySize = body ? bodyContentSizePx(body) : 0;
+
+        if (props.position === "bottom") {
+            // offsetHeight - clientHeight is the panel's vertical border so content is not clipped.
+            const border = panel.offsetHeight - panel.clientHeight;
+            const total = (header?.offsetHeight ?? 0) + bodySize + (footer?.offsetHeight ?? 0) + border;
+            return Math.min(total, axisExtentPx());
+        }
+
+        const border = panel.offsetWidth - panel.clientWidth;
+        const total = (header?.offsetWidth ?? 0) + bodySize + (footer?.offsetWidth ?? 0) + border;
+        return Math.min(total, axisExtentPx());
+    }
+
+    // Resolve a snap point to a pixel size: a 0-1 number is a fraction of the axis extent, the
+    // "content" keyword is the header size, the "fit-content" keyword is the natural content size,
+    // and any other string is parsed as a CSS pixel value.
+    function resolveSnapPoint(point: number | string): number {
+        if (typeof point === "number") {
+            return Math.round(point * axisExtentPx());
+        }
+
+        if (point === "content") {
+            return headerSizePx();
+        }
+
+        if (point === "fit-content") {
+            return contentSizePx();
+        }
+
+        return parseFloat(point) || 0;
+    }
+
+    // The smallest and largest resolved stop sizes, used to clamp a free drag.
+    function resizeBounds(): { min: number; max: number } {
+        if (hasSnapPoints.value) {
+            const sizes = props.snapPoints.map(resolveSnapPoint);
+            return { min: Math.min(...sizes), max: Math.max(...sizes) };
+        }
+
+        return { min: parseDepthSpecifier(effectiveMinDepth.value), max: parseDepthSpecifier(effectiveMaxDepth.value) };
+    }
+
+    // Move to a stop by index and publish it. The resolved size drives the same width/height
+    // pipeline the free-resize path uses. Collapsed stops that resolve to the header size behave
+    // like a peek; the largest stop is the fully expanded state.
+    function applySnapIndex(index: number): void {
+        if (!hasSnapPoints.value) {
+            return;
+        }
+
+        const clamped = Math.min(Math.max(index, 0), props.snapPoints.length - 1);
+        internalSnapIndex.value = clamped;
+
+        setDepth(`${resolveSnapPoint(props.snapPoints[clamped])}px`);
+    }
+
+    // After a drag, settle on the stop in the drag's final direction: the next stop larger than
+    // the released size when heading toward the screen center, or the next stop smaller when
+    // heading toward the edge. Stops are declared smallest-first, so index order is size order.
+    function snapAfterDrag(): void {
+        const sizes = props.snapPoints.map(resolveSnapPoint);
+        const currentPx = parseFloat(internalDepth.value) || 0;
+        const isHeadingLarger = resizeLastDirection >= 0;
+
+        let targetIndex: number;
+        if (isHeadingLarger) {
+            targetIndex = sizes.findIndex(size => size > currentPx + 1);
+            if (targetIndex === -1) {
+                targetIndex = sizes.length - 1;
+            }
+        }
+        else {
+            targetIndex = 0;
+            for (let i = sizes.length - 1; i >= 0; i--) {
+                if (sizes[i] < currentPx - 1) {
+                    targetIndex = i;
+                    break;
+                }
+            }
+        }
+
+        applySnapIndex(targetIndex);
+    }
+
+    // Imperative snap controls, exposed on the component instance for consumers that drive
+    // transitions from their own UI (e.g. a bottom-sheet header binding @click to toggle).
+    function snapTo(index: number): void {
+        applySnapIndex(index);
+    }
+
+    function next(): void {
+        applySnapIndex(internalSnapIndex.value + 1);
+    }
+
+    function previous(): void {
+        applySnapIndex(internalSnapIndex.value - 1);
+    }
+
+    function expand(): void {
+        applySnapIndex(props.snapPoints.length - 1);
+    }
+
+    function collapse(): void {
+        applySnapIndex(0);
+    }
+
+    function toggle(): void {
+        const lastIndex = props.snapPoints.length - 1;
+
+        // Only flip between the two extremes: first opens to last, last collapses to first, and a
+        // middle stop stays where it is.
+        if (internalSnapIndex.value <= 0) {
+            applySnapIndex(lastIndex);
+        }
+        else if (internalSnapIndex.value >= lastIndex) {
+            applySnapIndex(0);
+        }
+    }
+
     // #endregion
 
     // #region Event Handlers
+
+    // Body-drag entry point: start a resize from a pointerdown on the body, unless it landed on an
+    // interactive element (which must stay clickable). Delegates to the normal resize handler.
+    function onBodyResizeStart(e: PointerEvent): void {
+        const target = e.target as HTMLElement | null;
+        if (target?.closest("button, a, input, select, textarea, label, [role='button'], [contenteditable='true']")) {
+            return;
+        }
+
+        onResizeStart(e);
+    }
 
     function onResizeStart(e: PointerEvent): void {
         e.preventDefault();
@@ -198,8 +786,14 @@
             return;
         }
 
+        const rect = dockedPanelRef.value.getBoundingClientRect();
         startX.value = e.clientX;
-        startWidth.value = dockedPanelRef.value.getBoundingClientRect().width;
+        startY.value = e.clientY;
+        startWidth.value = rect.width;
+        startHeight.value = rect.height;
+        resizeLastClient = props.position === "bottom" ? e.clientY : e.clientX;
+        resizeLastDirection = 0;
+        resizeDidMove = false;
         isResizing.value = true;
 
         document.addEventListener("pointermove", onResizeMove);
@@ -211,14 +805,56 @@
             return;
         }
 
-        // TODO If position "left" is supported, this calculation will need to flip the operands.
-        const delta = startX.value - e.clientX;
-        const nextWidth = startWidth.value + delta;
+        // The size grows as the handle is dragged toward the screen center: leftward for a right
+        // dock (X axis, controls width), upward for a bottom dock (Y axis, controls height).
+        const isBottom = props.position === "bottom";
+        const client = isBottom ? e.clientY : e.clientX;
+        const start = isBottom ? startY.value : startX.value;
+        const startSize = isBottom ? startHeight.value : startWidth.value;
 
-        const minWidth = parseWidthSpecifier(props.minWidth);
-        const maxWidth = parseWidthSpecifier(props.maxWidth);
+        // Track the latest travel direction (toward-larger is toward the screen center) so a
+        // release after a reversal settles by where the drag is heading, not its net movement.
+        const step = resizeLastClient - client;
+        if (Math.abs(step) >= 2) {
+            resizeLastDirection = step > 0 ? 1 : -1;
+        }
+        resizeLastClient = client;
 
-        internalWidth.value = `${Math.min(Math.max(nextWidth, minWidth), maxWidth)}px`;
+        // Ignore incidental jitter so a press that never really moves stays a tap.
+        if (!resizeDidMove && Math.abs(client - start) <= resizeTapThresholdPx) {
+            return;
+        }
+        resizeDidMove = true;
+
+        const nextSize = startSize + (start - client);
+        const { min, max } = resizeBounds();
+        setDepth(`${Math.min(Math.max(nextSize, min), max)}px`);
+    }
+
+    // Cancels the synthetic "ghost" click iOS Safari dispatches shortly after a tap. When a tap collapses
+    // the panel, that click would otherwise fall through to whatever element is revealed underneath (e.g.
+    // a filter bar behind the sheet). Armed on gesture end, it swallows the next click in the capture
+    // phase within a short window, then self-clears. Independent of which touch event is (or is not)
+    // cancelable, so it works where preventDefault on touchend/pointer events does not.
+    let dismissGhostClick: (() => void) | null = null;
+
+    function armGhostClickSwallow(): void {
+        dismissGhostClick?.();
+
+        const onCaptureClick = (e: MouseEvent): void => {
+            e.stopPropagation();
+            e.preventDefault();
+            dismissGhostClick?.();
+        };
+        const timer = setTimeout(() => dismissGhostClick?.(), 400);
+
+        dismissGhostClick = (): void => {
+            document.removeEventListener("click", onCaptureClick, true);
+            clearTimeout(timer);
+            dismissGhostClick = null;
+        };
+
+        document.addEventListener("click", onCaptureClick, true);
     }
 
     function onResizeEnd(): void {
@@ -226,6 +862,111 @@
 
         document.removeEventListener("pointermove", onResizeMove);
         document.removeEventListener("pointerup", onResizeEnd);
+
+        if (!hasSnapPoints.value) {
+            return;
+        }
+
+        // A tap that toggles the panel (snapOnTap) shifts content, so arm the ghost-click swallow before
+        // iOS fires its delayed synthetic click at the old tap point. Drags move the finger and do not
+        // produce that ghost click, so they are left alone (avoids ever eating a real click after a drag).
+        if (!resizeDidMove && props.snapOnTap) {
+            armGhostClickSwallow();
+        }
+
+        // A real drag settles on the stop it is heading toward; a tap (no real movement) toggles
+        // between the first and last stop when snapOnTap is enabled. Defer the settle to the next tick so
+        // the `dragging` class (transition: none) is removed before the snap height is written; otherwise
+        // the panel jumps to the stop instead of animating to it.
+        nextTick(() => {
+            if (resizeDidMove) {
+                snapAfterDrag();
+            }
+            else if (props.snapOnTap) {
+                toggle();
+            }
+        });
+    }
+
+    /*
+        Pull-to-resize: on a resizable bottom sheet whose body is a scroll surface, a one-finger overscroll
+        down while the list is at the top collapses the sheet, driving it instead of the browser's
+        pull-to-refresh (which otherwise reloads the page). Overscrolling up while the list is at the bottom
+        is intentionally inert - expanding the sheet on overscroll-up tested poorly, so the sheet stays
+        where the visitor set it and only the handle drag or a tap grows it. Reuses the same resize/snap
+        flow as the drag handle, and is inert for any panel that is not a scrollable bottom sheet
+        (isBodyPullResize).
+    */
+    let bodyPullStartY = 0;
+    let bodyPullEngaged = false;
+
+    function onBodyTouchStart(e: TouchEvent): void {
+        if (!isBodyPullResize.value || e.touches.length !== 1) {
+            return;
+        }
+        bodyPullStartY = e.touches[0].clientY;
+        bodyPullEngaged = false;
+    }
+
+    function onBodyTouchMove(e: TouchEvent): void {
+        if (!isBodyPullResize.value || e.touches.length !== 1 || !dockedPanelRef.value) {
+            return;
+        }
+
+        const body = e.currentTarget as HTMLElement;
+        const currentY = e.touches[0].clientY;
+
+        if (!bodyPullEngaged) {
+            const atTop = body.scrollTop <= 0;
+            const atBottom = body.scrollTop + body.clientHeight >= body.scrollHeight - 1;
+
+            // While the list can still scroll, let it, and keep the reference on the finger so the
+            // overscroll delta is measured from wherever a boundary is actually reached.
+            if (!atTop && !atBottom) {
+                bodyPullStartY = currentY;
+                return;
+            }
+
+            // Only an overscroll DOWN from the top engages the resize, which collapses the sheet.
+            // Overscroll up from the bottom is intentionally not a gesture, so it never expands the sheet.
+            const deltaY = currentY - bodyPullStartY;
+            const pullDownAtTop = atTop && deltaY > resizeTapThresholdPx;
+            if (!pullDownAtTop) {
+                return;
+            }
+
+            bodyPullEngaged = true;
+            startY.value = currentY;
+            startHeight.value = dockedPanelRef.value.getBoundingClientRect().height;
+            resizeLastClient = currentY;
+            resizeLastDirection = 0;
+            resizeDidMove = false;
+            isResizing.value = true;
+        }
+
+        // Mirror onResizeMove for a bottom dock: dragging down shrinks the sheet, dragging up grows it.
+        const step = resizeLastClient - currentY;
+        if (Math.abs(step) >= 2) {
+            resizeLastDirection = step > 0 ? 1 : -1;
+        }
+        resizeLastClient = currentY;
+        resizeDidMove = true;
+
+        const nextSize = startHeight.value + (startY.value - currentY);
+        const { min, max } = resizeBounds();
+        setDepth(`${Math.min(Math.max(nextSize, min), max)}px`);
+
+        // Suppress the native scroll and pull-to-refresh while we drive the sheet.
+        e.preventDefault();
+    }
+
+    function onBodyTouchEnd(): void {
+        if (!bodyPullEngaged) {
+            return;
+        }
+        bodyPullEngaged = false;
+        // Reuse the drag-end path: clears isResizing and settles on the nearest stop in the drag direction.
+        onResizeEnd();
     }
 
     function onDocumentPointerDown(e: PointerEvent): void {
@@ -266,23 +1007,42 @@
     }
 
     function onBeforeEnter(): void {
-        if (isMyPushPanel()) {
+        if (!isMyPushPanel()) {
+            return;
+        }
+
+        if (props.position === "bottom") {
+            // A bottom sheet pushes page content upward, so reserve vertical space equal to
+            // its height. The right dock's data attribute drives the global padding-right
+            // CSS, which must NOT apply here, so the bottom sheet manages padding inline.
+            document.body.style.setProperty("transition", "padding-bottom 250ms ease");
+            document.body.style.setProperty("padding-bottom", internalDepth.value);
+        }
+        else {
             document.body.classList.add("docked-panel-slide-enter-active");
-            document.body.style.setProperty("--docked-panel-push-width", internalWidth.value);
+            document.body.style.setProperty("--docked-panel-push-width", internalDepth.value);
 
             document.body.dataset.dockedPanelMode = props.mode;
         }
     }
 
     function onBeforeLeave(): void {
-        if (isMyPushPanel()) {
+        if (!isMyPushPanel()) {
+            return;
+        }
+
+        if (props.position === "bottom") {
+            // Animate the reserved space back to zero as the sheet slides down.
+            document.body.style.removeProperty("padding-bottom");
+        }
+        else {
             document.body.classList.add("docked-panel-slide-leave-active");
             document.body.style.removeProperty("--docked-panel-push-width");
         }
     }
 
     function onAfterEnter(): void {
-        if (isMyPushPanel()) {
+        if (isMyPushPanel() && props.position === "right") {
             document.body.classList.remove("docked-panel-slide-enter-active");
         }
     }
@@ -296,7 +1056,12 @@
 
         if (isMyPushPanel()) {
             // Remove the body attributes and classes.
-            document.body.classList.remove("docked-panel-slide-leave-active");
+            if (props.position === "bottom") {
+                document.body.style.removeProperty("transition");
+            }
+            else {
+                document.body.classList.remove("docked-panel-slide-leave-active");
+            }
 
             delete document.body.dataset.dockedPanelMode;
             delete document.body.dataset.dockedPanelPushId;
@@ -305,6 +1070,82 @@
 
     function onFullscreenChange(): void {
         fullscreenElement.value = document.fullscreenElement;
+    }
+
+    // Keep fraction and "content" stops correct as the viewport changes (rotation, a mobile
+    // address bar showing or hiding), without disturbing an in-progress drag.
+    function onWindowResize(): void {
+        if (hasSnapPoints.value && !isResizing.value) {
+            applySnapIndex(internalSnapIndex.value);
+        }
+    }
+
+    // Re-resolve the active stop when it is content-relative and the resolved size no longer matches
+    // the panel, so content that changes while the panel is open (new slotted content, an image
+    // loading in) grows or shrinks the panel to fit. Skipped mid-drag and for fixed stops, and the
+    // equality guard keeps a panel-driven body resize from feeding back into a loop.
+    function reResolveContentStop(): void {
+        if (!hasSnapPoints.value || isResizing.value) {
+            return;
+        }
+
+        const activePoint = props.snapPoints[internalSnapIndex.value];
+        if (activePoint !== "content" && activePoint !== "fit-content") {
+            return;
+        }
+
+        const target = `${resolveSnapPoint(activePoint)}px`;
+        if (target !== internalDepth.value) {
+            setDepth(target);
+        }
+    }
+
+    // Point the resize observer at the current content children (measuring their box catches content
+    // height changes that the body's own clientHeight would not, since it is bounded by the panel)
+    // and re-check the fit. Called on open and whenever the slot swaps its children.
+    function syncContentObservers(): void {
+        const body = dockedPanelRef.value?.querySelector(".docked-panel-body") as HTMLElement | null;
+        if (!body || !contentResizeObserver) {
+            return;
+        }
+
+        contentResizeObserver.disconnect();
+        for (const child of Array.from(body.children)) {
+            contentResizeObserver.observe(child);
+        }
+
+        reResolveContentStop();
+    }
+
+    // Start watching the slotted content. Safe to call repeatedly; it tears down any prior observers
+    // first. No-op where ResizeObserver is unavailable.
+    function observeContent(): void {
+        if (typeof ResizeObserver === "undefined") {
+            return;
+        }
+
+        disconnectContentObservers();
+
+        const body = dockedPanelRef.value?.querySelector(".docked-panel-body") as HTMLElement | null;
+        if (!body) {
+            return;
+        }
+
+        contentResizeObserver = new ResizeObserver(() => reResolveContentStop());
+
+        if (typeof MutationObserver !== "undefined") {
+            contentMutationObserver = new MutationObserver(() => syncContentObservers());
+            contentMutationObserver.observe(body, { childList: true });
+        }
+
+        syncContentObservers();
+    }
+
+    function disconnectContentObservers(): void {
+        contentResizeObserver?.disconnect();
+        contentResizeObserver = null;
+        contentMutationObserver?.disconnect();
+        contentMutationObserver = null;
     }
 
     // #endregion Event Handlers
@@ -318,30 +1159,100 @@
         if (open) {
             isRendered.value = true;
             document.addEventListener("pointerdown", onDocumentPointerDown);
+
+            // Resolve the active stop once the panel (and its header) is rendered, so a
+            // "content" stop can measure the header and fractions size against the viewport, and
+            // start watching the content so a content-relative stop tracks later changes.
+            if (hasSnapPoints.value) {
+                nextTick(() => {
+                    applySnapIndex(internalSnapIndex.value);
+                    observeContent();
+                });
+            }
         }
         else {
             document.removeEventListener("pointerdown", onDocumentPointerDown);
+            disconnectContentObservers();
         }
     }, { immediate: true });
+
+    // Re-resolve the active stop when the consumer drives the index, when the stop list changes,
+    // and (via the resize listener registered on mount) when the viewport changes size.
+    watch(() => props.snapPoint, (index) => {
+        if (hasSnapPoints.value && !isResizing.value) {
+            applySnapIndex(index);
+        }
+    });
+
+    // The bottom offset changes the axis extent (like a viewport resize), so re-resolve the active stop
+    // when it changes; otherwise a stop resolved at the old offset (e.g. a maximized sheet) would keep its
+    // stale height and no longer fill the resized container.
+    watch(() => props.bottomOffset, () => {
+        if (hasSnapPoints.value && !isResizing.value) {
+            applySnapIndex(internalSnapIndex.value);
+        }
+    });
+
+    watch(() => props.snapPoints, () => {
+        if (hasSnapPoints.value && !isResizing.value) {
+            applySnapIndex(internalSnapIndex.value);
+        }
+    }, { deep: true });
 
     watch(() => props.mode, () => {
         updateDockedPanelPushId();
 
-        if (internalValue.value && isMyPushPanel()) {
+        if (!internalValue.value || !isMyPushPanel()) {
+            return;
+        }
+
+        // Toggling mode on an already-open panel has no enter/leave transition, so apply or
+        // clear the push spacing here. The bottom sheet uses inline padding; the right dock
+        // uses the body data attribute that drives the global push CSS.
+        if (props.position === "bottom") {
             if (props.mode === "push") {
-                document.body.dataset.dockedPanelMode = props.mode;
+                document.body.style.setProperty("transition", "padding-bottom 250ms ease");
+                document.body.style.setProperty("padding-bottom", internalDepth.value);
             }
             else {
-                delete document.body.dataset.dockedPanelMode;
+                document.body.style.removeProperty("padding-bottom");
             }
+        }
+        else if (props.mode === "push") {
+            document.body.dataset.dockedPanelMode = props.mode;
+        }
+        else {
+            delete document.body.dataset.dockedPanelMode;
         }
     }, { immediate: true });
 
-    watch(internalWidth, () => {
-        if (internalValue.value && isMyPushPanel()) {
-            document.body.style.setProperty("--docked-panel-push-width", internalWidth.value);
+    // Keep the reserved push space in step with the panel's depth as it is dragged or snapped.
+    watch(internalDepth, () => {
+        if (!internalValue.value || !isMyPushPanel()) {
+            return;
+        }
+
+        if (props.position === "bottom") {
+            document.body.style.setProperty("padding-bottom", internalDepth.value);
+        }
+        else {
+            document.body.style.setProperty("--docked-panel-push-width", internalDepth.value);
         }
     }, { immediate: true });
+
+    // Adopt a depth the consumer sets from outside. depth wins; the deprecated width is the
+    // fallback only while depth is unset.
+    watch(() => props.depth, (value) => {
+        if (value && value !== internalDepth.value) {
+            internalDepth.value = value;
+        }
+    });
+
+    watch(() => props.width, (value) => {
+        if (!props.depth && value && value !== internalDepth.value) {
+            internalDepth.value = value;
+        }
+    });
 
     // #endregion Watchers
 
@@ -349,20 +1260,34 @@
 
     onMounted(() => {
         document.addEventListener("fullscreenchange", onFullscreenChange);
+        window.addEventListener("resize", onWindowResize);
+
+        // Size to the active stop if the panel is already open on mount (a bottom sheet is often
+        // opened by default); an initially-closed panel resolves its stop when it opens.
+        if (hasSnapPoints.value && internalValue.value) {
+            nextTick(() => {
+                applySnapIndex(internalSnapIndex.value);
+                observeContent();
+            });
+        }
     });
 
     onBeforeUnmount(() => {
         if (isMyPushPanel()) {
-            document.body.style.removeProperty("--docked-panel-push-width");
-            delete document.body.dataset.dockedPanelMode;
-            delete document.body.dataset.dockedPanelPushId;
+            clearBodyPush();
         }
 
         document.removeEventListener("pointermove", onResizeMove);
         document.removeEventListener("pointerup", onResizeEnd);
         document.removeEventListener("pointerdown", onDocumentPointerDown);
         document.removeEventListener("fullscreenchange", onFullscreenChange);
+        window.removeEventListener("resize", onWindowResize);
+        dismissGhostClick?.();
+        disconnectContentObservers();
     });
 
     // #endregion Lifecycle
+
+    // Expose imperative snap controls so consumers can drive transitions from their own UI.
+    defineExpose({ snapTo, next, previous, expand, collapse, toggle });
 </script>
