@@ -38,7 +38,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Web Request" )]
 
     [CustomDropdownListField( "Method", "HTTP method to use when making requests.", "GET,POST,PUT,DELETE,PATCH", true, "GET", "", 0 )]
-    [TextField( "URL", "Sets the BaseUrl property for requests made by this client instance  <span class='tip tip-lava'></span>", true, key: "Url", order: 1 )]
+    [TextField( "URL", "Sets the BaseUrl property for requests made by this client instance  <span class='tip tip-lava'></span>", true, key: "Url", order: 1, AllowHtml = true, AllowLava = true )]
     [KeyValueListField( "Parameters", "The parameters to send with request. <span class='tip tip-lava'></span>", false, "", "Parameters", "", order: 2 )]
     [KeyValueListField( "Headers", "The key value pairs to add in the http header. <span class='tip tip-lava'></span>", false, "", "Headers", "", order: 3 )]
     [TextField( "Basic Auth UserName", "The user name for basic http authentication.", false, "", "", 4 )]

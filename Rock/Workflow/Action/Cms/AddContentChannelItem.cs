@@ -36,7 +36,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Content Channel Item Add" )]
 
     [ContentChannelField( "Content Channel", "The content channel where items will be added.", true, null, "", 1, "ContentChannel" ) ]
-    [TextField("Title", "The title of the content channel item. <span class='tip tip-lava'></span>", true, "", "", 2 )]
+    [TextField("Title", "The title of the content channel item. <span class='tip tip-lava'></span>", true, "", "", 2, AllowHtml = true, AllowLava = true )]
     [WorkflowTextOrAttribute( "Start Date Time", "Attribute Value", "Text (date time format) or datetime workflow attribute that contains the text to set the start date time. <span class='tip tip-lava'></span>", true, "", "", 3, "StartDateTime",
         new string[] { "Rock.Field.Types.DateTimeFieldType", "Rock.Field.Types.TextFieldType" } )]
     [WorkflowTextOrAttribute( "Expire Date Time", "Attribute Value", "An optional text (date time format) or datetime workflow attribute that contains the text to set the expiration date time. <span class='tip tip-lava'></span>", false, "", "", 4, "ExpireDateTime",

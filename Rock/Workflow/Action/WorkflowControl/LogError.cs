@@ -32,7 +32,7 @@ namespace Rock.Workflow.Action
     [Description( "Logs an error message. This can be used to stop processing. If used in a workflow initiated by a PreSave or PreDelete trigger, this will result in save or delete being aborted. This action always returns an unsuccessful result which causes processing of the activity to stop." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Log Error" )]
-    [TextField( "Message", "The error message to return. <span class='tip tip-lava'></span>" )]
+    [TextField( "Message", "The error message to return. <span class='tip tip-lava'></span>", AllowHtml = true, AllowLava = true )]
     [Rock.SystemGuid.EntityTypeGuid( "E1F593B9-FF5A-4064-845D-331BC491674A")]
     public class LogError : ActionComponent
     {
