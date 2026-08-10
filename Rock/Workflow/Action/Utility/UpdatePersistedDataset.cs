@@ -37,6 +37,8 @@ namespace Rock.Workflow.Action
         Description = "The access key to the persisted dataset that should be updated <span class='tip tip-lava'></span>",
         Key = AttributeKey.PersistedDataAccessKey,
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 0 )]
 
     [BooleanField( "Delay Processing Until Complete",

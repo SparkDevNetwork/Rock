@@ -54,6 +54,8 @@ namespace RockWeb.Blocks.Cms
         "CC Email(s)",
         Description = "CC Email addresses (comma delimited) to send the contents to. <span class='tip tip-lava'></span>",
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 1,
         Key = AttributeKey.CCEmail )]
 
@@ -61,6 +63,8 @@ namespace RockWeb.Blocks.Cms
         "BCC Email(s)",
         Description = "BCC Email addresses (comma delimited) to send the contents to. <span class='tip tip-lava'></span>",
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 2,
         Key = AttributeKey.BCCEmail )]
 
@@ -68,6 +72,8 @@ namespace RockWeb.Blocks.Cms
         "Subject",
         Description = "The subject line for the email. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 3,
         Key = AttributeKey.Subject )]
 
@@ -75,6 +81,8 @@ namespace RockWeb.Blocks.Cms
         "From Email",
         Description = "The email address to use for the from. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 4,
         Key = AttributeKey.FromEmail )]
 
@@ -82,6 +90,8 @@ namespace RockWeb.Blocks.Cms
         "From Name",
         Description = "The name to use for the from address. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 5,
         Key = AttributeKey.FromName )]
 
