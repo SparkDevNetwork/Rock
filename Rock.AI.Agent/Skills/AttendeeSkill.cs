@@ -23,6 +23,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.AI.Agent.Annotations;
 using Rock.Attribute;
+using Rock.Enums.Controls;
 using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
@@ -45,25 +46,25 @@ namespace Rock.AI.Agent.Skills;
 
 [BooleanField( "Disable Name Edit",
     Description = "When true, the person will not be allowed to edit their name.",
-    ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+    BooleanControlType = BooleanControlType.Toggle,
     Key = ConfigurationKey.DisableNameEdit,
     Order = 1 )]
 
 [BooleanField( "Disable Email Edit",
     Description = "When true, the person will not be allowed to edit their email address.",
-    ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+    BooleanControlType = BooleanControlType.Toggle,
     Key = ConfigurationKey.DisableEmailEdit,
     Order = 2 )]
 
 [BooleanField( "Disable Birthdate Edit",
     Description = "When true, the person will not be allowed to edit their birthdate.",
-    ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+    BooleanControlType = BooleanControlType.Toggle,
     Key = ConfigurationKey.DisableBirthdateEdit,
     Order = 3 )]
 
 [BooleanField( "Disable Phone Number Edit",
     Description = "When true, the person will not be allowed to edit their phone numbers.",
-    ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+    BooleanControlType = BooleanControlType.Toggle,
     Key = ConfigurationKey.DisablePhoneNumberEdit,
     Order = 4 )]
 
@@ -78,7 +79,7 @@ namespace Rock.AI.Agent.Skills;
 
 [BooleanField( "Disable Address Edit",
     Description = "When true, the person will not be allowed to edit their addresses.",
-    ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+    BooleanControlType = BooleanControlType.Toggle,
     Key = ConfigurationKey.DisableAddressEdit,
     Order = 6 )]
 
@@ -92,13 +93,13 @@ namespace Rock.AI.Agent.Skills;
 
 [BooleanField( "Disable Campus Edit",
     Description = "When true, the person will not be allowed to edit their campus.",
-    ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+    BooleanControlType = BooleanControlType.Toggle,
     Key = ConfigurationKey.DisableCampusEdit,
     Order = 8 )]
 
 [BooleanField( "Disable Demographics Edit",
     Description = "When true, the person will not be allowed to edit their demographic information.",
-    ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+    BooleanControlType = BooleanControlType.Toggle,
     Key = ConfigurationKey.DisableDemographicsEdit,
     Order = 9 )]
 
