@@ -57,6 +57,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [TextField( "Title Template",
         Description = "The value to use when rendering the title text. <span class='tip tip-lava'></span>",
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "{{ Group.Name }} Group Roster",
         Key = AttributeKeys.TitleTemplate,
         Order = 1 )]
