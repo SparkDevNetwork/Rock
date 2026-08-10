@@ -1,0 +1,322 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="config.isVisible" class="person-profile">
+        <!-- Photo, Name & Campus, Phone & Email, Attributes -->
+        <div class="panel panel-block">
+            <div class="profile-photo-container">
+                <div v-if="config.hasPhoto" class="photo">
+                    <!--
+                        Theme CSS keys off the exact DOM the fluidbox jQuery
+                        plugin used to build at runtime: .photo > a.fluidbox >
+                        .fluidbox-wrap > img. The classes are pure CSS hooks
+                        here (no jQuery plugin loaded) — a Vue @click handler
+                        drives the enlarge overlay instead.
+                    -->
+                    <a href="#" class="fluidbox" @click.prevent="onPhotoClick">
+                        <span class="fluidbox-wrap" v-html="config.photoImageTag ?? ''"></span>
+                    </a>
+                </div>
+                <div v-else v-html="config.photoImageTag ?? ''"></div>
+            </div>
+
+            <div class="d-flex flex-column align-items-center p-spacing-md">
+                <h3 class="title name js-checkin-person-name mt-spacing-none text-center">
+                    {{ config.fullName }}
+                    <a v-if="isShareButtonVisible"
+                       href="#"
+                       class="btn btn-lg btn-link text-muted p-spacing-none"
+                       @click.prevent="onShareClick"><i class="ti ti-share hand"></i></a>
+                </h3>
+                <span v-if="config.campusName" class="label label-campus">{{ config.campusName }}</span>
+            </div>
+
+            <div v-if="isContactSectionVisible" class="person-contact-info">
+                <div class="pnlSms">
+                    <NotificationBox v-if="smsSuccessMessage"
+                                     alertType="success"
+                                     :dismissible="true"
+                                     @dismiss="onSmsSuccessDismissed">{{ smsSuccessMessage }}</NotificationBox>
+                </div>
+
+                <div v-for="(phoneNumber, index) in phoneNumbers"
+                     :key="index"
+                     class="d-flex justify-content-between align-items-center mb-spacing-sm">
+                    <div>
+                        {{ phoneNumber.numberFormatted }}
+                        <span class="d-block text-sm text-muted leading-snug">
+                            {{ phoneNumber.numberType }}
+                        </span>
+                    </div>
+                    <div class="text-right">
+                        <a v-if="phoneNumber.canSendSms && config.isSmsAvailable"
+                           href="#"
+                           class="btn btn-sm btn-square btn-default my-spacing-tiny"
+                           @click.prevent="onSmsIconClick"><i class="ti ti-device-mobile-message"></i></a>
+                        <a class="btn btn-sm btn-square btn-default my-spacing-tiny"
+                           :class="{ disabled: phoneNumber.isUnlisted }"
+                           :href="`tel:${phoneNumber.rawNumber ?? ''}`"><i class="ti ti-phone"></i></a>
+                    </div>
+                </div>
+
+                <div v-if="config.emailTagHtml" class="text-truncate" v-html="config.emailTagHtml"></div>
+            </div>
+
+            <div v-if="hasAdultAttributes" class="adult-attributes">
+                <dl class="attribute-value-container-display">
+                    <template v-for="attr in config.adultAttributes ?? []" :key="attr.key ?? attr.name">
+                        <dt>{{ attr.name }}</dt>
+                        <dd v-html="attr.formattedValueHtml"></dd>
+                    </template>
+                </dl>
+            </div>
+
+            <div v-if="hasChildAttributes" class="child-attributes">
+                <dl class="attribute-value-container-display">
+                    <template v-for="attr in config.childAttributes ?? []" :key="attr.key ?? attr.name">
+                        <dt>{{ attr.name }}</dt>
+                        <dd v-html="attr.formattedValueHtml"></dd>
+                    </template>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Family -->
+        <div v-if="familyMembers.length > 0" class="panel panel-block flex-row flex-wrap justify-content-around p-spacing-tiny">
+            <RelatedPersonTile v-for="(member, index) in familyMembers"
+                               :key="index"
+                               :person="member" />
+        </div>
+
+        <!-- Relationships -->
+        <div v-if="relatedPeople.length > 0" class="panel panel-block flex-row flex-wrap justify-content-around p-spacing-tiny">
+            <RelatedPersonTile v-for="(member, index) in relatedPeople"
+                               :key="index"
+                               :person="member" />
+        </div>
+
+        <SendSmsModal v-model="isSmsModalOpen"
+                      :recipientName="config.fullName ?? ''"
+                      @sent="onSmsSent" />
+
+        <Teleport to="body">
+            <div v-if="isLightboxShown" class="person-photo-lightbox" @click="isLightboxShown = false">
+                <img :src="config.photoUrl ?? ''" :alt="config.fullName ?? ''">
+            </div>
+        </Teleport>
+    </div>
+</template>
+
+<style scoped>
+.person-photo-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 1060;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.7);
+    cursor: zoom-out;
+}
+
+.person-photo-lightbox img {
+    /*
+        Force the box to fill the viewport so a naturally-small profile
+        photo scales UP to a useful size. max-width alone only caps the
+        image and would leave a 200-px photo tiny in the middle of the
+        overlay. object-fit: contain preserves the aspect ratio.
+    */
+    width: 90vw;
+    height: 90vh;
+    object-fit: contain;
+}
+</style>
+
+<!--
+    Unscoped photo layout backstop.
+
+    theme.css already ships identical rules for these selectors, but the img
+    inside .fluidbox-wrap is injected via v-html on the server, so it does
+    not receive Vue's data-v attribute. Reasserting the layout here means the
+    photo renders correctly regardless of whether the theme's compiled CSS
+    reaches this DOM (older cached bundles, alternate themes, etc.).
+-->
+<style>
+.person-profile .profile-photo-container .photo {
+    position: relative;
+    width: 100%;
+}
+
+.person-profile .profile-photo-container .photo::before {
+    display: block;
+    padding-top: 54.857%;
+    content: "";
+}
+
+@media (min-width: 768px) {
+    .person-profile .profile-photo-container .photo::before {
+        padding-top: 75.59%;
+    }
+}
+
+.person-profile .profile-photo-container .photo a.fluidbox {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.person-profile .profile-photo-container .photo a.fluidbox .fluidbox-wrap,
+.person-profile .profile-photo-container .photo a.fluidbox .fluidbox-wrap img {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.person-profile .profile-photo-container .photo a.fluidbox .fluidbox-wrap img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    object-fit: cover;
+    opacity: 1;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+    import RelatedPersonTile from "./PersonLeft/relatedPersonTile.partial.obs";
+    import SendSmsModal from "./PersonLeft/sendSmsModal.partial.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { PersonLeftInitializationBox } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/PersonLeft/personLeftInitializationBox";
+    import { PersonLeftSendSmsResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/PersonLeft/personLeftSendSmsResponseBag";
+
+    const config = useConfigurationValues<PersonLeftInitializationBox>();
+
+    // #region Values
+
+    const isSmsModalOpen = ref(false);
+    const smsSuccessMessage = ref<string>("");
+    const isWebShareSupported = ref(false);
+    const isLightboxShown = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const phoneNumbers = computed(() => config.phoneNumbers ?? []);
+    const familyMembers = computed(() => config.familyMembers ?? []);
+    const relatedPeople = computed(() => config.relatedPeople ?? []);
+
+    const hasAdultAttributes = computed((): boolean => (config.adultAttributes?.length ?? 0) > 0);
+    const hasChildAttributes = computed((): boolean => (config.childAttributes?.length ?? 0) > 0);
+
+    const isContactSectionVisible = computed((): boolean => {
+        return phoneNumbers.value.length > 0
+            || !!config.emailTagHtml
+            || !!smsSuccessMessage.value;
+    });
+
+    // The share button only appears when the block is configured to expose
+    // one AND the browser can actually surface the Web Share sheet.
+    const isShareButtonVisible = computed((): boolean => {
+        return !!config.sharePersonUrl && isWebShareSupported.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Enlarges the profile photo into a Teleport overlay when the person
+     * has an uploaded photo. Silhouette placeholders do not enlarge.
+     */
+    function onPhotoClick(): void {
+        if (!config.hasPhoto) {
+            return;
+        }
+
+        isLightboxShown.value = true;
+    }
+
+    /**
+     * Closes the enlarged photo overlay on Escape.
+     */
+    function onDocumentKeyDown(event: KeyboardEvent): void {
+        if (event.key === "Escape") {
+            isLightboxShown.value = false;
+        }
+    }
+
+    /**
+     * Invokes the browser's Web Share sheet with the person's edit-page URL.
+     */
+    async function onShareClick(): Promise<void> {
+        if (!config.sharePersonUrl || typeof navigator === "undefined" || !navigator.share) {
+            return;
+        }
+
+        try {
+            await navigator.share({
+                title: config.fullName ?? "",
+                url: config.sharePersonUrl
+            });
+        }
+        catch {
+            // The user cancelled the share sheet or the browser blocked the
+            // gesture. Either way, nothing more to do here.
+        }
+    }
+
+    /**
+     * Opens the SMS send modal.
+     */
+    function onSmsIconClick(): void {
+        smsSuccessMessage.value = "";
+        isSmsModalOpen.value = true;
+    }
+
+    /**
+     * Handles a successful SMS send by showing the queued-message banner and
+     * closing the modal.
+     */
+    function onSmsSent(response: PersonLeftSendSmsResponseBag): void {
+        smsSuccessMessage.value = response.message ?? "Message queued.";
+        isSmsModalOpen.value = false;
+    }
+
+    /**
+     * Dismisses the SMS success banner.
+     */
+    function onSmsSuccessDismissed(): void {
+        smsSuccessMessage.value = "";
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // Add/remove the Escape key handler as the overlay opens and closes.
+    watch(isLightboxShown, () => {
+        if (isLightboxShown.value) {
+            document.addEventListener("keydown", onDocumentKeyDown);
+        }
+        else {
+            document.removeEventListener("keydown", onDocumentKeyDown);
+        }
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        isWebShareSupported.value = typeof navigator !== "undefined" && typeof navigator.share === "function";
+    });
+
+    onUnmounted(() => {
+        document.removeEventListener("keydown", onDocumentKeyDown);
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

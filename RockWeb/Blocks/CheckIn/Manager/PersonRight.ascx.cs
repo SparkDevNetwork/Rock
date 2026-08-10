@@ -201,19 +201,19 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            var personId = this.PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
-            if ( !personId.HasValue )
+            var personKey = this.PageParameter( PageParameterKey.PersonId );
+            if ( personKey.IsNullOrWhiteSpace() )
             {
                 // If a PersonId wasn't specified, but an AttendanceId parameter was, reload page with the PersonId
                 // in the URL this will help any other blocks on this page that need to know the PersonId.
                 var attendanceId = this.PageParameter( PageParameterKey.AttendanceId ).AsIntegerOrNull();
                 if ( attendanceId.HasValue )
                 {
-                    personId = new AttendanceService( new RockContext() ).GetSelect( attendanceId.Value, s => ( int? ) s.PersonAlias.PersonId );
+                    var personId = new AttendanceService( new RockContext() ).GetSelect( attendanceId.Value, s => ( int? ) s.PersonAlias.PersonId );
                     if ( personId.HasValue )
                     {
                         var extraParams = new Dictionary<string, string>();
-                        extraParams.Add( PageParameterKey.PersonId, personId.ToString() );
+                        extraParams.Add( PageParameterKey.PersonId, IdHasher.Instance.GetHash( personId.Value ) );
                         NavigateToCurrentPageReference( extraParams );
                     }
                 }
@@ -345,7 +345,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var attendanceIds = hfCurrentAttendanceIds.Value.SplitDelimitedValues().AsIntegerList();
 
             // Get the person Id from the PersonId page parameter, or look it up based on the Person Guid page parameter.
-            int? personIdParam = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+            int? personIdParam = GetIdFromPageParameter( PageParameterKey.PersonId );
             int personId = personIdParam.HasValue
                 ? personIdParam.Value
                 : new PersonService( rockContext ).GetId( personGuid ).GetValueOrDefault();
@@ -547,13 +547,13 @@ namespace RockWeb.Blocks.CheckIn.Manager
         protected void btnPersonAttendanceHistory_Click( object sender, EventArgs e )
         {
             // Get the person Id from the PersonId page parameter, or look it up based on the Person Guid page parameter.
-            int? personIdParam = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+            int? personIdParam = GetIdFromPageParameter( PageParameterKey.PersonId );
             int personId = personIdParam.HasValue
                 ? personIdParam.Value
                 : new PersonService( new RockContext() ).GetId( GetPersonGuid() ).GetValueOrDefault();
 
             var queryParams = new Dictionary<string, string>() {
-                { "PersonId", personId.ToString() }
+                { "PersonId", IdHasher.Instance.GetHash( personId ) }
             };
 
             this.NavigateToLinkedPage( AttributeKey.PersonAttendanceHistoryPage, queryParams );
@@ -592,7 +592,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 return _personGuid.Value;
             }
 
-            int? personId = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+            int? personId = GetIdFromPageParameter( PageParameterKey.PersonId );
             if ( personId.HasValue )
             {
                 using ( var rockContext = new RockContext() )
@@ -602,6 +602,24 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
 
             return _personGuid ?? Guid.Empty;
+        }
+
+        /// <summary>
+        /// Gets the integer identifier from the given page parameter, accepting either
+        /// an integer identifier or a hashed IdKey.
+        /// </summary>
+        /// <param name="pageParameterKey">The name of the page parameter.</param>
+        /// <returns>The integer identifier, or <c>null</c> if not present or not valid.</returns>
+        private int? GetIdFromPageParameter( string pageParameterKey )
+        {
+            var id = PageParameter( pageParameterKey ).AsIntegerOrNull();
+
+            // See if it's an IdKey...
+            if ( id == null )
+            {
+                id = IdHasher.Instance.GetId( PageParameter( pageParameterKey ) );
+            }
+            return id;
         }
 
         /// <summary>

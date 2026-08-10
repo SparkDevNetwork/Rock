@@ -1,0 +1,21 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <a class="group-member text-sm text-center text-color rounded p-spacing-xs"
+       :href="person.url ?? undefined">
+        <span v-html="person.photoImageTag ?? ''"></span>
+        <span>{{ person.nickName }}</span>
+        <small v-if="person.relationshipName">{{ person.relationshipName }}</small>
+    </a>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { PersonLeftRelatedPersonBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/PersonLeft/personLeftRelatedPersonBag";
+
+    defineProps({
+        person: {
+            type: Object as PropType<PersonLeftRelatedPersonBag>,
+            required: true
+        }
+    });
+</script>
