@@ -8052,6 +8052,7 @@ namespace Rock.Rest.v2
                     var treeViewItem = new TreeItemBag();
                     treeViewItem.Value = location.Guid.ToString();
                     treeViewItem.Text = location.Name;
+                    treeViewItem.IsActive = location.IsActive;
                     locationNameList.Add( treeViewItem );
 
                     if ( autoExpandGuids.Contains( location.Guid ) )
@@ -8068,7 +8069,7 @@ namespace Rock.Rest.v2
                 .Where( l =>
                     l.ParentLocationId.HasValue &&
                     resultIds.Contains( l.ParentLocationId.Value ) &&
-                    l.IsActive
+                    ( includeInactive || l.IsActive )
                 )
                 .Select( l => l.ParentLocation.Guid )
                 .Distinct()
@@ -10917,12 +10918,25 @@ namespace Rock.Rest.v2
                     };
                 }
 
-                // Load the transaction from the database
-                var financialTransactionService = new FinancialTransactionService( rockContext );
-                var transaction = financialTransactionService.GetByTransactionCode( financialGateway.Id, options.TransactionCode );
-                var transactionPersonAlias = transaction?.AuthorizedPersonAlias;
+                // A scheduled gift has no completed one-time transaction yet, so resolve the scheduled
+                // transaction it created instead.
+                PersonAlias transactionPersonAlias;
+                FinancialPaymentDetail paymentDetail;
+
+                if ( options.ScheduledTransactionGuid.HasValue )
+                {
+                    var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).Get( options.ScheduledTransactionGuid.Value );
+                    transactionPersonAlias = scheduledTransaction?.AuthorizedPersonAlias;
+                    paymentDetail = scheduledTransaction?.FinancialPaymentDetail;
+                }
+                else
+                {
+                    var transaction = new FinancialTransactionService( rockContext ).GetByTransactionCode( financialGateway.Id, options.TransactionCode );
+                    transactionPersonAlias = transaction?.AuthorizedPersonAlias;
+                    paymentDetail = transaction?.FinancialPaymentDetail;
+                }
+
                 var transactionPerson = transactionPersonAlias?.Person;
-                var paymentDetail = transaction?.FinancialPaymentDetail;
 
                 if ( transactionPerson is null || paymentDetail is null )
                 {
@@ -10947,14 +10961,27 @@ namespace Rock.Rest.v2
                         false );
 
                     var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
-                    // TODO mergeFields.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
+                    mergeFields.Add( "ConfirmAccountUrl", $"{RockRequestContext.RootUrlPath}/ConfirmAccount" );
                     mergeFields.Add( "Person", transactionPerson );
                     mergeFields.Add( "User", user );
 
-                    var emailMessage = new RockEmailMessage( SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT.AsGuid() );
+                    // Use the caller-supplied confirmation system communication when one is given; otherwise
+                    // fall back to the built-in Confirm Account communication.
+                    var confirmAccountTemplateGuid = options.ConfirmationEmailTemplateGuid.HasValue && options.ConfirmationEmailTemplateGuid.Value != Guid.Empty
+                        ? options.ConfirmationEmailTemplateGuid.Value
+                        : SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT.AsGuid();
+
+                    var emailMessage = new RockEmailMessage( confirmAccountTemplateGuid );
                     emailMessage.AddRecipient( new RockEmailMessageRecipient( transactionPerson, mergeFields ) );
-                    // TODO emailMessage.AppRoot = ResolveRockUrl( "~/" );
-                    // TODO emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
+
+                    // AppRoot and ThemeRoot are intentionally left unset: this shared endpoint has no page or site
+                    // theme context to resolve ~/ and ~~/, and the default Confirm Account communication does not
+                    // reference theme-relative assets. They must not be accepted from the caller either, since a
+                    // client-supplied root URL could redirect the outbound email's asset and link URLs to an
+                    // attacker-controlled domain.
+                    //emailMessage.AppRoot = ResolveRockUrl( "~/" );
+                    //emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
+
                     emailMessage.CreateCommunicationRecord = false;
                     emailMessage.Send();
                 }

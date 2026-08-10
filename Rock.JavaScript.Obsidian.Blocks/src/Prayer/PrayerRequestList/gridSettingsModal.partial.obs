@@ -13,7 +13,7 @@
         </div>
 
         <div class="row">
-            <div class="col-md-4">
+            <div v-if="!isPublicOnly" class="col-md-4">
                 <DropDownList v-model="publicOrPrivate" label="Public / Private" :items="publicOrPrivateItems" />
             </div>
 
@@ -63,6 +63,11 @@
         visible: {
             type: Boolean as PropType<boolean>,
             required: true
+        },
+
+        isPublicOnly: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 

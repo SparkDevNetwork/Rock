@@ -721,7 +721,7 @@ export const EntityType = {
     PluginMigration: "F239557E-C7A8-4D1F-82CC-55CDD0ACA3C8",
     /** The EntityType Guid for Rock.Model.PrayerRequest  */
     PrayerRequest: "F13C8FD2-7702-4C79-A6A9-86440DD5DE13",
-    /** The protect my ministry provider */
+    /** The protect my ministry provider. */
     ProtectMyMinistryProvider: "C16856F4-3C6B-4AFB-A0B8-88A303508206",
     /** The guid for the Rock.Model.Registration entity */
     Registration: "D2F294C6-E161-4A56-85C7-CD74D535F61A",

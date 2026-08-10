@@ -152,9 +152,6 @@ export type TransactionBag = {
     /** Gets or sets the total fee coverage amount. */
     totalFeeCoverageAmount?: number | null;
 
-    /** Gets or sets the total foreign currency amount. */
-    totalForeignCurrencyAmount?: number | null;
-
     /** Gets or sets the transaction code. */
     transactionCode?: string | null;
 

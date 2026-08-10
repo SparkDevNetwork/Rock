@@ -1281,7 +1281,7 @@ namespace Rock.Web.UI
                                     nbBlockLoad.Dismissable = true;
                                     control = nbBlockLoad;
 
-                                    if ( this.IsPostBack )
+                                    if ( block.BlockType.Path.IsNotNullOrWhiteSpace() && this.IsPostBack )
                                     {
                                         // throw an error on PostBack so that the ErrorPage gets shown (vs nothing happening)
                                         throw;
@@ -1763,8 +1763,8 @@ namespace Rock.Web.UI
             foreach ( string param in PageParameter( "context", true ).Split( delim, StringSplitOptions.RemoveEmptyEntries ) )
             {
                 string contextItem = Rock.Security.Encryption.DecryptString( param );
-                string[] parts = contextItem.Split( '|' );
-                if ( parts.Length == 2 )
+                string[] parts = contextItem?.Split( '|' );
+                if ( parts != null && parts.Length == 2 )
                 {
                     keyEntityDictionary.AddOrReplace( parts[0], new Data.KeyEntity( parts[1] ) );
                 }

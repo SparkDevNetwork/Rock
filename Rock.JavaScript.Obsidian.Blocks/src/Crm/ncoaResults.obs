@@ -89,8 +89,8 @@
                         </div>
                         <div class="col-md-4 col-xs-12">
                             <div class="row">
-                                <div class="col-lg-5 col-md-12">
-                                    <dl v-if="row.moveDistance">
+                                <div class="col-lg-5 col-md-12" v-if="row.moveDistance">
+                                    <dl>
                                         <dt>Move Distance</dt>
                                         <dd>{{ row.moveDistance }}</dd>
                                     </dl>

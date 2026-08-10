@@ -28,6 +28,14 @@ import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
  * initialization and after any change so the grids can refresh.
  */
 export type SecurityActionDataBag = {
+    /**
+     * Gets or sets the warning shown when a circular reference was detected
+     * in the entity's parent authority chain, meaning the inherited rules
+     * shown may be incomplete. A null value indicates the warning
+     * should not be shown.
+     */
+    circularReferenceMessage?: string | null;
+
     /** Gets or sets the rules defined directly on this entity for the action. */
     itemRules?: GridDataBag | null;
 

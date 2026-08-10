@@ -36,19 +36,19 @@ namespace Rock.ViewModels.Blocks.Core.DocumentTypeDetail
         public string DefaultDocumentNameTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the Rock.Model.EntityType of the entities that Notes of this DocumentType 
+        /// Gets or sets the Rock.Model.EntityType of the entities that documents of this DocumentType apply to.
         /// </summary>
         public ListItemBag EntityType { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the qualifier column/property on the Rock.Model.EntityType that this Docuement Type applies to. If this is not 
+        /// Gets or sets the name of the qualifier column/property on the Rock.Model.EntityType that this Document Type applies to. If this is not
         /// provided, the document type can be used on all entities of the provided Rock.Model.EntityType.
         /// </summary>
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
-        /// Gets or sets the qualifier value in the qualifier column that this document type applies to.  For instance this note type and related notes will only be applicable to entity 
-        /// if the value in the EntityTypeQualiferColumn matches this value. This property should not be populated without also populating the EntityTypeQualifierColumn property.
+        /// Gets or sets the qualifier value in the qualifier column that this document type applies to.  For instance this document type and related documents will only be applicable to entity
+        /// if the value in the EntityTypeQualifierColumn matches this value. This property should not be populated without also populating the EntityTypeQualifierColumn property.
         /// </summary>
         public string EntityTypeQualifierValue { get; set; }
 

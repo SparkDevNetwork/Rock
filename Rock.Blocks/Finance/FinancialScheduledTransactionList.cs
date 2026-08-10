@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.FinancialScheduledTransactionList;
 using Rock.ViewModels.Utility;
@@ -235,7 +236,19 @@ namespace Rock.Blocks.Finance
         /// <returns>The options that provide additional details to the block.</returns>
         private FinancialScheduledTransactionListOptionsBag GetBoxOptions()
         {
-            var options = new FinancialScheduledTransactionListOptionsBag();
+            // Provide the organization's default currency so the client formats amounts
+            // with the correct symbol and decimal places instead of a hard-coded "$".
+            var currencyInfo = new RockCurrencyCodeInfo();
+
+            var options = new FinancialScheduledTransactionListOptionsBag
+            {
+                CurrencyInfo = new CurrencyInfoBag
+                {
+                    Symbol = currencyInfo.Symbol,
+                    DecimalPlaces = currencyInfo.DecimalPlaces,
+                    SymbolLocation = currencyInfo.SymbolLocation
+                }
+            };
 
             return options;
         }
@@ -354,9 +367,9 @@ namespace Rock.Blocks.Finance
                 qry = qry.Where( t => t.ScheduledTransactionDetails.Any( d => d.Account.Guid == FilterAccount.Value ) );
             }
 
-            // Active only (no filter)
+            // filter down to active only based on person preference
             bool includeInctiveSchedules = FilterIncludeInctiveSchedules.AsBoolean();
-            if ( includeInctiveSchedules )
+            if ( !includeInctiveSchedules )
             {
                 qry = qry.Where( t => t.IsActive );
             }
@@ -472,7 +485,7 @@ namespace Rock.Blocks.Finance
                 .AddDateTimeField( "startDate", a => a.FinancialScheduledTransaction.StartDate )
                 .AddDateTimeField( "endDate", a => a.FinancialScheduledTransaction.EndDate )
                 .AddDateTimeField( "nextPayment", a => a.FinancialScheduledTransaction.NextPaymentDate )
-                .AddTextField( "currencyType", a => a.FinancialScheduledTransaction.FinancialPaymentDetail.CurrencyTypeValue?.Value )
+                .AddTextField( "currencyType", a => a.FinancialScheduledTransaction.FinancialPaymentDetail?.CurrencyTypeValue?.Value )
                 .AddField( "accounts", a => a.Accounts )
                 .AddField( "isActive", a => a.FinancialScheduledTransaction.IsActive )
                 .AddAttributeFieldsFrom( a => a.FinancialScheduledTransaction, _gridAttributes.Value );
@@ -548,7 +561,7 @@ namespace Rock.Blocks.Finance
         #region Supported Classes
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class FinancialScheduledTransactionData
         {

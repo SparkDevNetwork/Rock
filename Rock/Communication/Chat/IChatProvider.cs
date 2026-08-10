@@ -261,6 +261,17 @@ namespace Rock.Communication.Chat
         Task<ChatSyncCrudResult> UpdateChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey, Dictionary<ChatChannelMember, ChatChannelMember> chatChannelMembers );
 
         /// <summary>
+        /// Updates the push notification preferences for existing <see cref="ChatChannelMember"/>s in the external
+        /// chat system.
+        /// </summary>
+        /// <param name="chatChannelMembers">The list of <see cref="ChatChannelMember"/>s whose push notification
+        /// preferences should be updated.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
+        /// </returns>
+        Task<ChatSyncCrudResult> UpdateChatChannelMemberPushPreferencesAsync( List<ChatChannelMember> chatChannelMembers );
+
+        /// <summary>
         /// Deletes <see cref="ChatChannelMember"/>s from the external chat system that match the provided
         /// <see cref="ChatChannelType"/>, <see cref="ChatChannel"/> and <see cref="ChatUser"/> key combinations.
         /// </summary>

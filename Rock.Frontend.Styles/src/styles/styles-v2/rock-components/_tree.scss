@@ -6,13 +6,14 @@
 // Table of Content
 //  + Base Style
 //  + Rock Tree
+//  + Tree View Panels
 //  + Preview Tree
 // =============================================================
 
 
 // ======================== BASE STYLE ========================
-.group-tree-view,
-.group-tree-view > .block-content,
+.rock-tree-view,
+.rock-tree-view > .block-content,
 .h-100 > .zone-content {
   height: 100%;
 }
@@ -164,7 +165,6 @@ ul.rocktree-children {
     position:       relative;
     display:        inline-block;
     flex-grow:      1;
-    width:          calc(100% - 48px);
     padding:        0 var(--spacing-medium) 0 0;
     line-height:    var(--line-height-xloose);
     cursor:         pointer;
@@ -211,6 +211,48 @@ ul.rocktree-children {
   }
 }
 // ====================== END ROCK TREE ======================
+
+
+// ======================== TREE VIEW PANELS ========================
+// Shared styles for Obsidian tree-view blocks (Category, Location, Group,
+// Account) built on the TreeList control. Their panel headers use Rock's
+// standard .btn-panel-action; these rules only account for real differences:
+// a smaller action button (more actions fit in a narrower header) and the
+// tree's own horizontal-overflow behavior.
+
+.rock-tree-view-tree {
+  padding-top:    var(--spacing-xsmall);
+  min-height:     200px;
+  overflow-x:     auto;
+  display:        flex;
+}
+
+// TreeList clips horizontal overflow and caps width at 100%, so deeply nested
+// or long-named tree items get cut off. Let the tree size to its content
+// instead so the wrapper shows a horizontal scrollbar when needed.
+.rock-tree-view-tree > div {
+  overflow-x: visible !important;
+  max-width:  none !important;
+  width:      max-content;
+  min-width:  100%;
+}
+
+.rock-tree-view .panel-block .panel-header {
+
+  .panel-header-actions {
+
+    .btn-panel-action {
+      font-size:  100%;
+    }
+    // Keep dropdown items (e.g. "Add Category", "Add Top-Level") from wrapping.
+    .dropdown-menu button {
+      white-space: nowrap;
+    }
+  }
+
+}
+
+// ====================== END TREE VIEW PANELS ======================
 
 
 // ======================== PREVIEW TREE ========================

@@ -67,9 +67,18 @@ namespace Rock.ViewModels.Blocks.Group.GroupTreeView
         public bool LimitToPublic { get; set; }
 
         /// <summary>
-        /// Gets or sets the counts mode: 0 = None, 1 = Child Groups, 2 = Group Members.
+        /// Gets or sets the effective counts mode applied to the tree:
+        /// 0 = None, 1 = Child Groups, 2 = Group Members. This is the person's
+        /// saved preference when one exists, otherwise the block's Initial Count Setting.
         /// </summary>
         public int CountsType { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the person has a saved counts-type preference for this
+        /// block. When false, the Show Count For control should appear empty so the
+        /// Initial Count Setting block attribute is in effect.
+        /// </summary>
+        public bool HasCountsTypePreference { get; set; }
 
         /// <summary>
         /// Gets or sets the campus Guid used to filter the tree, when a campus filter is active.

@@ -8,33 +8,44 @@
     </div>
 
     <div class="row">
-        <div class="col-md-6">
-            <StepTypePicker v-model="internalType"
+        <div class="col-sm-3 col-md-6">
+            <StaticFormControl v-if="isTypePickerDisabled"
+                               label="Step Type"
+                               :modelValue="internalType?.text ?? ''" />
+            <StepTypePicker v-else
+                            v-model="internalType"
                             label="Step Type"
                             rules="required"
-                            :disabled="isTypePickerDisabled"
                             :stepProgramGuid="stepProgramGuid ?? null" />
         </div>
-        <div :class="stepTypeConfiguration?.hasEndDate ? 'col-md-3 col-sm-6' : 'col-md-6'">
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
             <DatePicker v-model="internalStartDate"
                         :label="stepTypeConfiguration?.startDateLabel ?? 'Date'"
                         :rules="stepTypeConfiguration?.isDateRequired ? 'required' : ''" />
         </div>
-        <div v-if="stepTypeConfiguration?.hasEndDate" class="col-md-3 col-sm-6">
+    </div>
+    <div v-if="stepTypeConfiguration?.hasEndDate" class="row">
+        <div class="col-md-6">
             <DatePicker v-model="internalEndDate"
                         label="End Date" />
         </div>
     </div>
 
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-sm-6 col-md-3">
             <StepStatusPicker v-model="internalStatus"
                               label="Status"
                               rules="required"
                               :showBlankItem="true"
                               :stepProgramGuid="stepProgramGuid ?? null" />
         </div>
-        <div class="col-md-6">
+    </div>
+
+    <div class="row">
+        <div class="col-sm-6 col-md-3">
             <CampusPicker v-model="internalCampus"
                           label="Campus"
                           forceVisible
@@ -57,6 +68,7 @@
     import StepProgramPicker from "@Obsidian/Controls/stepProgramPicker.obs";
     import StepStatusPicker from "@Obsidian/Controls/stepStatusPicker.obs";
     import StepTypePicker from "@Obsidian/Controls/stepTypePicker.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import { Guid } from "@Obsidian/Types";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { StepBulkEntryStepTypeConfigurationBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepBulkEntry/stepBulkEntryStepTypeConfigurationBag";

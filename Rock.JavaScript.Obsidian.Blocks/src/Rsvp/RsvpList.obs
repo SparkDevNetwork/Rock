@@ -64,7 +64,7 @@
                       field="invited"
                       headerClass="text-left"
                       itemClass="justify-content-start text-left"
-                      :filter="textValueFilter"
+                      :filter="numberValueFilter"
                       width="5%"
                       visiblePriority="xs" />
 
@@ -73,7 +73,7 @@
                       field="accepted"
                       headerClass="text-left"
                       itemClass="justify-content-start text-left"
-                      :filter="textValueFilter"
+                      :filter="numberValueFilter"
                       width="5%"
                       visiblePriority="xs" />
 
@@ -82,7 +82,7 @@
                       field="declined"
                       headerClass="text-left"
                       itemClass="justify-content-start text-left"
-                      :filter="textValueFilter"
+                      :filter="numberValueFilter"
                       width="5%"
                       visiblePriority="xs" />
 
@@ -103,7 +103,7 @@
 
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock, usePersonPreferences } from "@Obsidian/Utility/block";
-    import Grid, { TextColumn, DateColumn, dateValueFilter, textValueFilter, NumberColumn, Column } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, DateColumn, dateValueFilter, textValueFilter, NumberColumn, Column, numberValueFilter } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { RsvpListOptionsBag } from "@Obsidian/ViewModels/Blocks/Rsvp/RsvpList/rsvpListOptionsBag";
     import { GetOccurrenceIdBag } from "@Obsidian/ViewModels/Blocks/Rsvp/RsvpList/getOccurrenceIdBag";

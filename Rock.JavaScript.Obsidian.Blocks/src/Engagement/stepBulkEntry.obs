@@ -16,7 +16,6 @@
                                      :validationResults="validationResults"
                                      @personAdded="onPersonAdded"
                                      @error="onPersonError" />
-
                     <StepConfiguration :stepTypeConfiguration="stepTypeConfiguration"
                                        :isProgramPickerVisible="config.options?.isProgramPickerVisible ?? true"
                                        :isTypePickerDisabled="config.options?.isTypePickerDisabled ?? false"
@@ -30,7 +29,7 @@
                                        @stepTypeChanged="onStepTypeChanged"
                                        @programChanged="onProgramChanged" />
 
-                    <div class="actions mt-3">
+                    <div class="actions">
                         <RockButton :btnType="BtnType.Primary"
                                     :disabled="!isSaveEnabled"
                                     :isLoading="isSaving"
@@ -56,7 +55,7 @@
                     </template>
                 </NotificationBox>
 
-                <div class="actions mt-3">
+                <div class="actions">
                     <RockButton :btnType="BtnType.Primary"
                                 @click="onDone">
                         Done

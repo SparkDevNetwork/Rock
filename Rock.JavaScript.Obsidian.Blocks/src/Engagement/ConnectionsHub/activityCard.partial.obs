@@ -1,49 +1,48 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="d-flex flex-column gap-xs border rounded bg-interface-softest p-spacing-sm">
-        <div class="d-flex justify-content-between">
-            <div class="d-flex">
+    <div class="activity-card">
+        <div class="activity-card-header">
+            <div class="activity-card-person">
                 <PersonAvatar v-if="activityEntry.cardEntry?.photoUrl"
                               :photoUrl="activityEntry.cardEntry.photoUrl"
                               :photoSize="24"
                               marginRight="2" />
                 <div v-else-if="activityEntry.createdBy === 'Rock'"
-                     class="bg-interface-soft rounded-circle p-spacing-tiny d-flex justify-content-center align-items-center mr-2"
-                     style="width: 24px; height: 24px;">
+                     class="activity-card-system-avatar">
                     <img src="/Assets/Images/rock-logo-circle.svg" width="16" height="16">
                 </div>
-                <div class="d-flex flex-column">
-                    <div class="text-interface-strong"><span class="text-semibold">{{ activityEntry.createdBy }}</span> {{ actionText }} <span class="text-semibold">{{ activityEntry.cardEntry?.title }}</span>.</div>
-                    <div class="text-interface-medium d-flex">
+                <div class="activity-card-details">
+                    <div class="activity-card-text"><span class="activity-card-text-highlight">{{ activityEntry.createdBy }}</span> {{ actionText }} <span class="activity-card-text-highlight">{{ activityEntry.cardEntry?.title }}</span>.</div>
+                    <div class="activity-card-meta">
                         <div>{{ entryDateTimeElapsed }}</div>
                         <template v-if="activityEntry.cardEntry?.connectionRequestIdKey">
-                            <div class="px-spacing-tiny">•</div>
+                            <div class="activity-card-meta-separator">•</div>
                             <div>in <span class="text-link cursor-pointer" @click="navigateToConnectionRequest">{{ activityEntry.cardEntry.connectionOpportunityName }}</span></div>
-                            <div class="px-spacing-tiny">•</div>
+                            <div class="activity-card-meta-separator">•</div>
                             <div>{{ activityEntry.cardEntry.connectionRequestStatus }}</div>
                         </template>
                     </div>
                 </div>
             </div>
-            <div class="d-flex gap-md h-fit ml-spacing-xs">
+            <div class="activity-card-actions">
                 <DropDownContent v-if="(activityEntry.entryType === ActivityEntryType.RequestNote && canEditNote) || (activityEntry.entryType === ActivityEntryType.Activity && canEditActivity) || (activityEntry.entryType === ActivityEntryType.StatusChange && canEditActivity)"
                                  v-model="isSecondaryActionDropdownOpen"
                                  enableFlip>
                     <template #default>
-                        <div class="dropdown-content bg-interface-softest">
-                            <div class="dropdown-content-item py-spacing-sm px-spacing-md text-small text-semibold"
+                        <div class="dropdown-content activity-card-menu">
+                            <div class="dropdown-content-item activity-card-menu-item"
                                  @click.stop="onEdit">
                                 Edit
                             </div>
                             <div v-if="activityEntry.entryType !== ActivityEntryType.StatusChange"
-                                 class="dropdown-content-item py-spacing-sm px-spacing-md text-small text-semibold text-danger"
+                                 class="dropdown-content-item activity-card-menu-item text-danger"
                                  @click.stop="onDelete">
                                 Delete
                             </div>
                         </div>
                     </template>
                 </DropDownContent>
-                <Badge :isCircle="true" :class="badgeClasses" class="d-flex justify-content-center">
+                <Badge :isCircle="true" :class="badgeClasses" class="activity-card-badge-icon">
                     <i :class="iconClass"></i>
                 </Badge>
             </div>
@@ -56,14 +55,14 @@
                              @dismiss="onErrorMessageDismissed">
                 {{ errorMessage }}
             </NotificationBox>
-            <div class="border rounded py-spacing-tiny">
+            <div class="activity-card-note-editor">
                 <TextBox v-model="noteText"
                          textMode="multiline"
                          :rules="noteValidationRules"
                          validationTitle="Note"
                          inputGroupClasses="request-note-editor">
                     <template #inputGroupAppend>
-                        <div class="p-spacing-xs d-flex justify-content-end gap-xs">
+                        <div class="activity-card-note-editor-actions">
                             <RockButton :btnType="BtnType.Link"
                                         :btnSize="BtnSize.Small"
                                         @click="onCancelNoteEdit">
@@ -80,46 +79,16 @@
             </div>
         </RockForm>
         <div v-else-if="!isNullOrWhiteSpace(activityEntry.cardEntry?.content)"
-             class="text-interface-strong">
+             class="activity-card-text">
             {{ activityEntry.cardEntry?.content }}
         </div>
-        <div v-if="activityEntry.cardEntry?.attachments && activityEntry.cardEntry.attachments.length > 0" class="d-flex flex-column gap-tiny">
+        <div v-if="activityEntry.cardEntry?.attachments && activityEntry.cardEntry.attachments.length > 0" class="activity-card-attachments">
             <template v-for="(attachment, index) in activityEntry.cardEntry.attachments">
                 <a :href="`/GetFile.ashx?guid=${attachment.value}&fileName=${attachment.text}`" target="_blank" rel="noopener noreferrer">{{ isNullOrWhiteSpace(attachment.text) ? `View Attachment ${index}` : attachment.text }}</a>
             </template>
         </div>
     </div>
 </template>
-
-<style scoped>
-/* text-sm is incorrectly returning xsmall at the moment in develop */
-.text-small {
-    font-size: var(--font-size-small);
-}
-
-.gap-tiny {
-    gap: var(--spacing-tiny);
-}
-
-.gap-xs {
-    gap: var(--spacing-xsmall);
-}
-
-.gap-md {
-    gap: var(--spacing-medium);
-}
-
-.h-fit {
-    height: fit-content;
-}
-
-:deep(.request-note-editor .form-control) {
-    border: none;
-    border-radius: 0;
-    border-bottom: 1px solid var(--color-interface-soft);
-    box-shadow: none;
-}
-</style>
 
 <script setup lang="ts">
     import { ref, PropType, watch, computed } from "vue";

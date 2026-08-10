@@ -34,7 +34,9 @@
 
         <TextBox v-model="instructions"
                  label="Instructions"
-                 textMode="multiline" />
+                 textMode="multiline"
+                 :rows="8"
+                 allowHtml />
 
         <template v-if="agentType === AgentType.Chat.toString()">
             <div class="row">

@@ -359,6 +359,8 @@ namespace Rock.WebStartup
             {
                 WebRootPath = AppDomain.CurrentDomain.BaseDirectory
             } );
+
+            sc.AddSingleton<Configuration.ConnectedServices.ConnectedServicesProvider>();
             sc.AddSingleton<MetadataHelper>();
             sc.AddSingleton<ObsidianFingerprintManager>();
             sc.AddSingleton<CssProcessor>();

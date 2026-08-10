@@ -2,6 +2,7 @@
   Used to manage styles for specific blocks.
 
   1. Connection Request Board
+  2. Connection Request Entry
 
 */
 
@@ -34,6 +35,67 @@
 
   .modal-open .modal-body .nav-tabs {
     margin-top: var(--spacing-medium);
+  }
+}
+
+// 2. Connection Request Entry
+// -------------------------
+
+.connection-request-entry {
+
+  &-banner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--spacing-xsmall);
+    padding: var(--spacing-large);
+    margin-bottom: var(--spacing-xlarge);
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-large);
+  }
+
+  i.connection-request-entry-banner-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    font-size: 1.75rem;
+    color: var(--color-primary);
+    background-color: var(--color-primary-soft);
+    border-radius: var(--rounded-small);
+  }
+
+  &-banner-title {
+    margin: 0;
+  }
+
+  &-banner-description {
+    color: var(--color-interface-medium);
+  }
+
+  &-address {
+    margin-bottom: 1rem;
+  }
+
+  &-footer {
+    position: sticky;
+    bottom: 0;
+    /* Sit above input-group fields (Email, Mobile Phone), whose .form-control
+       carries z-index: 2, so the footer stays opaque as content scrolls behind it. */
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 0;
+    background: var(--color-interface-softest);
+  }
+
+  /* Layout-transparent wrapper; carries only the disabled state to the fields while submitting. */
+  &-fields {
+    display: contents;
   }
 }
 

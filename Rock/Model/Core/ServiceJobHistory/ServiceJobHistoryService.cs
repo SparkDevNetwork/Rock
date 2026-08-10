@@ -17,7 +17,6 @@
 
 using System;
 using System.Linq;
-using Rock.Attribute;
 using Rock.Data;
 
 namespace Rock.Model
@@ -132,6 +131,17 @@ namespace Rock.Model
                 this.Add( jobHistory );
             }
 
+            CompleteServiceJobHistory( jobHistory, job );
+        }
+
+        /// <summary>
+        /// Completes a job history record with the job's last run results (does not save the context).
+        /// <para>This should only be called after the job's last run details are updated.</para>
+        /// </summary>
+        /// <param name="jobHistory">The job history record to complete.</param>
+        /// <param name="job">The job.</param>
+        internal void CompleteServiceJobHistory( ServiceJobHistory jobHistory, ServiceJob job )
+        {
             jobHistory.StopDateTime = job.LastRunDateTime;
             jobHistory.Status = job.LastStatus;
             jobHistory.StatusMessage = job.LastStatusMessage;
@@ -167,42 +177,6 @@ namespace Rock.Model
             // Save the last job status and message in history.
             jobHistory.Status = job.LastStatus;
             jobHistory.StatusMessage = job.LastStatusMessage;
-        }
-
-        /// <summary>
-        /// Gets the Service job history record before the latest one.
-        /// </summary>
-        /// <remarks>
-        ///     <para>
-        ///         <strong>This is an internal API</strong> that supports the Rock
-        ///         infrastructure and not subject to the same compatibility standards
-        ///         as public APIs. It may be changed or removed without notice in any
-        ///         release and should therefore not be directly used in any plug-ins.
-        ///     </para>
-        /// </remarks>
-        /// <param name="job">The job.</param>
-        [RockInternal( "17.0" )]
-        internal ServiceJobHistory GetServiceJobHistoryForLastRun( ServiceJob job )
-        {
-            // Check if there is an incomplete job history record for this job.
-            var jobHistoryQuery = this.AsNoFilter()
-                .Where( h => h.ServiceJobId == job.Id )
-                .Where( h => h.StartDateTime.HasValue );
-
-            if ( job.LastRunDurationSeconds.HasValue && job.LastRunDurationSeconds > 0 )
-            {
-                jobHistoryQuery = jobHistoryQuery.Where( h => h.StartDateTime < job.LastRunDateTime );
-            }
-            else
-            {
-                jobHistoryQuery = jobHistoryQuery.Where( h => h.StartDateTime <= job.LastRunDateTime );
-            }
-
-            // Get the previous job history record before the latest one.
-            return jobHistoryQuery
-                .OrderByDescending( h => h.StartDateTime.Value )
-                .Skip( 1 )
-                .FirstOrDefault();
         }
 
         /// <summary>

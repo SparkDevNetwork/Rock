@@ -45,6 +45,9 @@ export type BenevolenceRequestDetailOptionsBag = {
     /** Gets or sets a value indicating whether country codes are enabled. */
     countryCodesEnabled: boolean;
 
+    /** Gets or sets the record source that new individuals default to, resolved from the block setting. */
+    defaultRecordSource?: ListItemBag | null;
+
     /** Gets or sets a value indicating whether the country code attribute should be displayed. */
     displayCountryCodeAttribute: boolean;
 

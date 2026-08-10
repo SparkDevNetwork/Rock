@@ -22,7 +22,7 @@
 
                 <div class="d-flex flex-wrap justify-content-center align-items-center gap mt-3">
                     <div v-if="badgesHtml"
-                         class="rockbadge-container d-flex flex-wrap justify-content-center align-items-center gap"
+                         class="bio-badges-contents"
                          v-html="badgesHtml"></div>
                     <button v-if="config.isFollowingVisible"
                             type="button"
@@ -145,8 +145,14 @@
     </div>
 </template>
 
+<style scoped>
+.bio-badges-contents {
+    display: contents;
+}
+</style>
+
 <script setup lang="ts">
-    import { computed, nextTick, reactive, ref } from "vue";
+    import { computed, nextTick, onMounted, reactive, ref } from "vue";
     import ActionsDropDown from "./Bio/actionsDropDown.partial.obs";
     import PhoneNumberSection from "./Bio/phoneNumberSection.partial.obs";
     import PhotoLightbox from "./Bio/photoLightbox.partial.obs";
@@ -283,19 +289,29 @@
         addQuickReturn(config.fullName, "People", 10);
     }
 
-    const badgeScript = (config.badges ?? []).map(b => b.javaScript ?? "").join("");
+    /**
+     * Runs badge JavaScript after the badge HTML is in the DOM. Each badge is
+     * injected as its own script tag (like WebForms ScriptManager per badge)
+     * so one failing badge does not prevent later badges (e.g. Family Attendance
+     * chart) from running.
+     */
+    function runBadgeScripts(): void {
+        const scripts = (config.badges ?? [])
+            .map(b => b.javaScript ?? "")
+            .filter(s => s !== "");
 
-    if (badgeScript !== "") {
-        // Add the script on the next tick to ensure the HTML has been rendered.
-        nextTick(() => {
+        for (const script of scripts) {
             const scriptNode = document.createElement("script");
             scriptNode.type = "text/javascript";
-            scriptNode.appendChild(document.createTextNode(badgeScript));
+            scriptNode.appendChild(document.createTextNode(script));
             document.body.appendChild(scriptNode);
-        });
+        }
     }
 
-    nextTick(() => {
+    /**
+     * Initializes tooltips and popovers for badges and email preference icons.
+     */
+    function initializeTooltips(): void {
         if (!containerRef.value) {
             return;
         }
@@ -307,5 +323,14 @@
         // that expect Bootstrap tooltips. WebForms initialized these globally
         // at page load, which happens before this block mounts.
         tooltip(Array.from(containerRef.value.querySelectorAll(".email-status [data-toggle=\"tooltip\"]")));
+    }
+
+    onMounted(() => {
+        // Wait until v-html badge markup is in the DOM before running scripts
+        // that select elements like .rockbadge-attendance.rockbadge-id-*.
+        nextTick(() => {
+            runBadgeScripts();
+            initializeTooltips();
+        });
     });
 </script>

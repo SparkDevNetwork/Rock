@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-import { WorkflowLaunchItemBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowLaunch/workflowLaunchItemBag";
+import { WorkflowLaunchItemBag } from "@Obsidian/ViewModels/Blocks/WorkFlow/WorkflowLaunch/workflowLaunchItemBag";
 
 /** The runtime data for the Workflow Launch block. */
 export type WorkflowLaunchBag = {

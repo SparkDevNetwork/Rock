@@ -895,9 +895,21 @@ namespace Rock.SystemGuid
         public const string PERSON_SIGNAL = "0FFF77A1-E92D-4A05-8B36-1D2B6D46660F";
 
         /// <summary>
-        /// The protect my ministry provider
+        /// The protect my ministry provider.
         /// </summary>
+        [System.Obsolete( "The Protect My Ministry (v1) background check component was removed in Rock v20. Use PROTECT_MY_MINISTRY_PROVIDER_LEGACY when detecting historical background-check data that was stored under the removed provider." )]
+        [RockObsolete( "20.0" )]
         public const string PROTECT_MY_MINISTRY_PROVIDER = "C16856F4-3C6B-4AFB-A0B8-88A303508206";
+
+        /// <summary>
+        /// The Guid of the legacy Protect My Ministry (v1) background check EntityType.
+        /// The component itself was removed in Rock v20; this constant is retained (as
+        /// <c>internal</c> — Rock-assembly only, not part of the plugin surface) so that
+        /// historical <c>[AttributeValue]</c> rows written under the removed provider
+        /// (background check documents stored as a bare Guid, without a provider prefix)
+        /// can still be recognized and rendered.
+        /// </summary>
+        internal const string PROTECT_MY_MINISTRY_PROVIDER_LEGACY = "C16856F4-3C6B-4AFB-A0B8-88A303508206";
 
         /// <summary>
         /// The guid for the Rock.Model.Registration entity

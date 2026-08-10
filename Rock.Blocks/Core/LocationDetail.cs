@@ -140,6 +140,35 @@ namespace Rock.Blocks.Core
         }
 
         /// <summary>
+        /// Resolves the <see cref="PageParameterKey.ParentLocationId"/> page parameter to a
+        /// Location Id. The parameter accepts an Id, IdKey, or Guid. The tree view emits an
+        /// IdKey; legacy links continue to pass an integer Id (or "0" for no parent). Named
+        /// locations are the practical parents, so the lookup goes through
+        /// <see cref="NamedLocationCache"/> first and falls back to <see cref="LocationService"/>
+        /// only when the cache does not resolve the key.
+        /// </summary>
+        /// <returns>The parent Location Id, or <c>null</c> when no valid parent is supplied.</returns>
+        private int? GetParentLocationIdFromPageParameter()
+        {
+            var key = PageParameter( PageParameterKey.ParentLocationId );
+
+            if ( key.IsNullOrWhiteSpace() || key == "0" )
+            {
+                return null;
+            }
+
+            var allowIntegerId = !PageCache.Layout.Site.DisablePredictableIds;
+
+            var cachedId = NamedLocationCache.Get( key, allowIntegerId )?.Id;
+            if ( cachedId.HasValue )
+            {
+                return cachedId;
+            }
+
+            return new LocationService( RockContext ).Get( key, allowIntegerId )?.Id;
+        }
+
+        /// <summary>
         /// Validates the Location for any final information that might not be
         /// valid after storing all the data from the client.
         /// </summary>
@@ -179,7 +208,7 @@ namespace Rock.Blocks.Core
                 {
                     Id = 0,
                     IsActive = true,
-                    ParentLocationId = PageParameter( PageParameterKey.ParentLocationId ).AsIntegerOrNull(),
+                    ParentLocationId = GetParentLocationIdFromPageParameter(),
                     State = globalAttributesCache.OrganizationState,
                     Country = globalAttributesCache.OrganizationCountry
                 };
@@ -363,7 +392,7 @@ namespace Rock.Blocks.Core
             var bag = GetCommonEntityBag( entity );
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
-            var parentLocationId = PageParameter( PageParameterKey.ParentLocationId ).AsIntegerOrNull();
+            var parentLocationId = GetParentLocationIdFromPageParameter();
 
             if ( entity.Id == 0 && parentLocationId.HasValue )
             {

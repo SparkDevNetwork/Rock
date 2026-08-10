@@ -1,20 +1,20 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="px-spacing-md pb-spacing-lg d-flex flex-column gap-md">
-        <div v-if="options?.isAISummaryVisible" class="border border-info-soft rounded p-spacing-sm bg-interface-softer d-flex flex-column gap-xs">
-            <div class="d-flex justify-content-between align-items-center text-info">
-                <div class="d-flex gap-xs align-items-center">
-                    <i class="ti ti-sparkles font-size-h4"></i>
-                    <div class="text-semibold text-small">AI Summary</div>
+    <div class="connections-hub-docked-panel-body-view">
+        <div v-if="options?.isAISummaryVisible" class="ai-summary-card">
+            <div class="ai-summary-card-header">
+                <div class="ai-summary-card-header-title">
+                    <i class="ti ti-sparkles"></i>
+                    <div>AI Summary</div>
                 </div>
                 <template v-if="isAISummaryLoading">
-                    <i class="ti ti-reload ti-spin font-size-h4"></i>
+                    <i class="ti ti-reload ti-spin"></i>
                 </template>
                 <template v-else-if="isNullOrWhiteSpace(aiSummary) && isNullOrWhiteSpace(aiSummaryError)">
-                    <i class="ti ti-chevron-down font-size-h4 cursor-pointer" @click="emit('fetchAISummary', false)"></i>
+                    <i class="ti ti-chevron-down ai-summary-card-header-action" @click="emit('fetchAISummary', false)"></i>
                 </template>
                 <template v-else>
-                    <i class="ti ti-reload font-size-h4 cursor-pointer" @click="emit('fetchAISummary', true)"></i>
+                    <i class="ti ti-reload ai-summary-card-header-action" @click="emit('fetchAISummary', true)"></i>
                 </template>
             </div>
             <transition name="slide">
@@ -25,10 +25,10 @@
                                          style="margin-bottom: 0;">
                             {{ aiSummaryError }}
                         </NotificationBox>
-                        <div class="text-small text-interface-medium">{{ aiSummary }}</div>
+                        <div style="font-size: var(--font-size-small); color: var(--color-interface-medium);">{{ aiSummary }}</div>
                     </template>
                     <div v-else>
-                        <div class="skeleton skeleton-text mt-spacing-xs"></div>
+                        <div class="skeleton skeleton-text" style="margin-top: var(--spacing-xsmall);"></div>
                         <div class="skeleton skeleton-text"></div>
                         <div class="skeleton skeleton-text"></div>
                     </div>
@@ -39,15 +39,15 @@
         <div v-if="!isNullOrWhiteSpace(options?.lavaHeadingTemplate)" v-html="options?.lavaHeadingTemplate"></div>
 
         <div v-if="props.requestDetails?.additionalRequests && props.requestDetails.additionalRequests.length > 0"
-             class="border rounded p-spacing-sm">
-            <div class="d-flex align-items-center gap-tiny justify-content-between">
-                <div class="d-flex align-items-center gap-tiny text-interface-strong">
-                    <i class="ti ti-plug-connected font-size-h4"></i>
-                    <div class="text-small text-semibold">Additional Requests</div>
+             class="additional-requests-card">
+            <div class="additional-requests-card-header">
+                <div class="additional-requests-card-header-title">
+                    <i class="ti ti-plug-connected"></i>
+                    <div>Additional Requests</div>
                 </div>
                 <div v-if="hiddenAdditionalRequests > 0 || areAdditionalRequestsExpanded"
-                     class="d-flex align-items-center gap-xs">
-                    <div v-if="!areAdditionalRequestsExpanded" class="text-interface-medium">+{{ hiddenAdditionalRequests }}</div>
+                     class="additional-requests-card-header-toggle">
+                    <div v-if="!areAdditionalRequestsExpanded" style="color: var(--color-interface-medium);">+{{ hiddenAdditionalRequests }}</div>
                     <RockButton @click="toggleAdditionalRequests">
                         <i v-if="areAdditionalRequestsExpanded" class="ti ti-chevrons-up"></i>
                         <i v-else class="ti ti-chevrons-down"></i>
@@ -55,16 +55,16 @@
                 </div>
             </div>
             <div>
-                <div class="d-flex flex-column gap-tiny">
+                <div class="additional-requests-card-list">
                     <template v-for="(additionalRequest, index) in props.requestDetails.additionalRequests.slice(0, 5)">
                         <div v-if="additionalRequest.requestIdKey"
                              :key="additionalRequest.requestIdKey"
                              :class="{ 'additional-request': dockedPanelWidthNumber < 350 }">
-                            <span class="text-link text-small pr-spacing-sm cursor-pointer"
+                            <span class="additional-requests-card-list-item-name"
                                   @click="emit('navigateToAdditionalRequest', additionalRequest.requestIdKey)">
                                 {{ additionalRequest.connectionOpportunityName }}
                             </span>
-                            <span class="text-interface-medium text-xs">
+                            <span class="additional-requests-card-list-item-meta">
                                 {{ getRequestMeta(additionalRequest) }}
                             </span>
                         </div>
@@ -73,16 +73,16 @@
 
                 <TransitionVerticalCollapse>
                     <div v-show="areAdditionalRequestsExpanded">
-                        <div class="d-flex flex-column gap-tiny pt-spacing-tiny">
+                        <div class="additional-requests-card-list additional-requests-card-list--expanded">
                             <template v-for="(additionalRequest, index) in props.requestDetails.additionalRequests.slice(5)">
                                 <div v-if="additionalRequest.requestIdKey"
                                      :key="additionalRequest.requestIdKey"
                                      :class="{ 'additional-request': dockedPanelWidthNumber < 350 }">
-                                    <span class="text-link text-small pr-spacing-sm cursor-pointer"
+                                    <span class="additional-requests-card-list-item-name"
                                           @click="emit('navigateToAdditionalRequest', additionalRequest.requestIdKey)">
                                         {{ additionalRequest.connectionOpportunityName }}
                                     </span>
-                                    <span class="text-interface-medium text-xs">
+                                    <span class="additional-requests-card-list-item-meta">
                                         {{ getRequestMeta(additionalRequest) }}
                                     </span>
                                 </div>
@@ -97,19 +97,19 @@
                         icon="ti ti-mail"
                         :disableCollapse="true">
             <template #headerActions>
-                <div class="d-flex align-items-center gap-md">
-                    <div v-if="requestDetails?.connectionState === ConnectionState.FutureFollowUp" class="text-semibold text-info-strong">
+                <div class="connection-request-header-actions">
+                    <div v-if="requestDetails?.connectionState === ConnectionState.FutureFollowUp" class="connection-request-state-label connection-request-state-label--future-follow-up">
                         {{ ConnectionStateDescription[ConnectionState.FutureFollowUp] }} - {{ asLocaleString(requestDetails.followUpDate) }}
                     </div>
-                    <div v-else-if="requestDetails?.connectionState === ConnectionState.Inactive" class="text-semibold text-slate">
+                    <div v-else-if="requestDetails?.connectionState === ConnectionState.Inactive" class="connection-request-state-label text-slate">
                         {{ ConnectionStateDescription[ConnectionState.Inactive] }}
                     </div>
-                    <div v-else-if="requestDetails?.connectionState === ConnectionState.Connected" class="text-semibold text-emerald">
+                    <div v-else-if="requestDetails?.connectionState === ConnectionState.Connected" class="connection-request-state-label text-emerald">
                         {{ ConnectionStateDescription[ConnectionState.Connected] }}
                     </div>
                     <template v-if="options?.areCelebrationsEnabled">
                         <i v-if="isNullOrWhiteSpace(requestDetails?.celebrationText)"
-                           class="ti ti-confetti cursor-pointer"
+                           class="ti ti-confetti cursor-pointer connection-request-header-actions-icon"
                            :ref="(el) => addTooltip(el as Element)"
                            data-toggle="tooltip"
                            data-placement="auto"
@@ -118,7 +118,7 @@
                            @click="emit('onCelebrationClick')">
                         </i>
                         <i v-else
-                           class="ti ti-confetti-filled cursor-pointer text-info-strong"
+                           class="ti ti-confetti-filled cursor-pointer connection-request-header-actions-icon--active"
                            :ref="(el) => addTooltip(el as Element)"
                            data-toggle="tooltip"
                            data-placement="auto"
@@ -129,7 +129,7 @@
                     </template>
                     <template v-if="options?.areRemindersEnabled">
                         <i v-if="requestDetails?.reminderCount && requestDetails.reminderCount > 0"
-                           class="ti ti-bell-filled cursor-pointer text-info-strong"
+                           class="ti ti-bell-filled cursor-pointer connection-request-header-actions-icon--active"
                            :ref="(el) => addTooltip(el as Element)"
                            data-toggle="tooltip"
                            data-placement="auto"
@@ -138,7 +138,7 @@
                            @click="emit('onReminderClick')">
                         </i>
                         <i v-else
-                           class="ti ti-bell cursor-pointer"
+                           class="ti ti-bell cursor-pointer connection-request-header-actions-icon"
                            :ref="(el) => addTooltip(el as Element)"
                            data-toggle="tooltip"
                            data-placement="auto"
@@ -150,101 +150,111 @@
                 </div>
             </template>
             <template #preBody v-if="!isNullOrWhiteSpace(options?.lavaBadgeBar)">
-                <div class="border-top border-bottom px-spacing-md py-spacing-xs">
+                <div class="connection-request-badge-bar">
                     <div v-html="options?.lavaBadgeBar"></div>
                 </div>
             </template>
             <ContentStack>
-                <div class="d-flex flex-column gap-md">
-                    <div>
-                        <RockLabel class="mb-spacing-xs text-interface-stronger">Request Detail</RockLabel>
-                        <DisplayCard :iconCssClass="requestDetails?.connectionOpportunityIcon"
-                                     iconLabelType="info"
-                                     :title="requestDetails?.connectionOpportunityName"
-                                     :description="requestDetails?.campus">
-                            <template #middleSection>
-                                <div class="d-flex flex-column">
-                                    <RockLabel class="text-interface-medium text-regular">Connector</RockLabel>
-                                    <DropDownContent v-model="isConnectorDropdownOpen"
-                                                     enableFlip>
-                                        <template #anchor>
-                                            <div class="d-flex align-items-center gap-xs"
-                                                 :class="canEditConnectionRequest ? 'cursor-pointer' : 'cursor-not-allowed'"
-                                                 @click.prevent.stop="onConnectorDropdownClick">
-                                                <PersonAvatar :photoUrl="selectedConnectorBag?.photoUrl ?? ''"
-                                                              :photoSize="30"
-                                                              marginRight="0" />
-                                                <div class="d-flex align-items-center gap-tiny">
-                                                    <div class="text-small text-interface-strong text-semibold">{{ selectedConnectorBag?.listItemBag?.text }}</div>
-                                                    <i class="ti ti-chevron-down"></i>
+                <div class="connection-request-detail-stack">
+
+                    <RockLabel>Request Detail</RockLabel>
+                    <DisplayCard :iconCssClass="requestDetails?.connectionOpportunityIcon"
+                                 iconLabelType="info"
+                                 :title="requestDetails?.connectionOpportunityName"
+                                 :description="requestDetails?.campus">
+                        <template #middleSection>
+                            <div class="connection-request-connector">
+                                <RockLabel class="static-control-label">Connector</RockLabel>
+                                <DropDownContent v-model="isConnectorDropdownOpen"
+                                                 enableFlip>
+                                    <template #anchor>
+                                        <div class="connection-request-connector-anchor"
+                                             :class="{ 'connection-request-connector-anchor--editable': canEditConnectionRequest }"
+                                             @click.prevent.stop="onConnectorDropdownClick">
+                                            <PersonAvatar :photoUrl="selectedConnectorBag?.photoUrl ?? ''"
+                                                          :photoSize="30"
+                                                          marginRight="0" />
+                                            <div class="connection-request-connector-anchor-label">
+                                                <div style="font-size: var(--font-size-small); color: var(--color-interface-strong); font-weight: var(--font-weight-semibold);">{{ selectedConnectorBag?.listItemBag?.text }}</div>
+                                                <i class="ti ti-chevron-down"></i>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <template #default>
+                                        <div class="person-dropdown">
+                                            <template v-for="connectorItem in connectorItems">
+                                                <div v-if="connectorItem"
+                                                     class="dropdown-content-item dropdown-content-item--connector"
+                                                     :class="{ 'selected': connectorItem.listItemBag?.value === selectedConnector }"
+                                                     @click="updateConnector(connectorItem.listItemBag?.value)">
+                                                    <PersonAvatar :photoUrl="connectorItem.photoUrl ?? ''"
+                                                                  :photoSize="30"
+                                                                  marginRight="0" />
+                                                    <div>{{ connectorItem?.listItemBag?.text }}</div>
                                                 </div>
-                                            </div>
-                                        </template>
-                                        <template #default>
-                                            <div class="d-flex flex-column person-dropdown">
-                                                <template v-for="connectorItem in connectorItems">
-                                                    <div v-if="connectorItem"
-                                                         class="d-flex align-items-center gap-xs dropdown-content-item text-regular py-spacing-sm px-spacing-md bg-interface-softest"
-                                                         :class="{ 'selected': connectorItem.listItemBag?.value === selectedConnector }"
-                                                         @click="updateConnector(connectorItem.listItemBag?.value)">
-                                                        <PersonAvatar :photoUrl="connectorItem.photoUrl ?? ''"
-                                                                      :photoSize="30"
-                                                                      marginRight="0" />
-                                                        <div>{{ connectorItem?.listItemBag?.text }}</div>
-                                                    </div>
-                                                </template>
-                                            </div>
-                                        </template>
-                                    </DropDownContent>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </DropDownContent>
+                            </div>
+                        </template>
+                        <template #actions>
+                            <div class="connection-request-detail-meta">
+                                <div v-if="!isNullOrWhiteSpace(requestDetails?.createdDateTime)" class="connection-request-detail-meta-item">
+                                    <i class="ti ti-calendar-plus"></i>
+                                    Created {{ createdDateTimeElapsed }}
                                 </div>
-                            </template>
-                            <template #actions>
-                                <div class="d-flex flex-column gap-tiny">
-                                    <div v-if="!isNullOrWhiteSpace(requestDetails?.createdDateTime)" class="text-interface-medium">
-                                        <i class="ti ti-calendar-plus"></i>
-                                        Created {{ createdDateTimeElapsed }}
-                                    </div>
-                                    <div v-if="!isNullOrWhiteSpace(requestDetails?.dueDate) && requestDetails?.connectionState !== ConnectionState.Inactive"
-                                         :class="getDueDateColor(requestDetails?.dueStatus, requestDetails?.connectionState === ConnectionState.Connected)">
-                                        <i class="ti ti-clock"></i>
-                                        {{ elapsedDueDate }}
-                                    </div>
+                                <div v-if="!isNullOrWhiteSpace(requestDetails?.dueDate) && requestDetails?.connectionState !== ConnectionState.Inactive"
+                                     :class="getDueDateColor(requestDetails?.dueStatus, requestDetails?.connectionState === ConnectionState.Connected)">
+                                    <i class="ti ti-clock"></i>
+                                    {{ elapsedDueDate }}
                                 </div>
-                            </template>
-                        </DisplayCard>
-                    </div>
+                            </div>
+                        </template>
+                    </DisplayCard>
+
                     <div v-if="requestDetails?.actionItems && requestDetails.actionItems.length > 0">
-                        <RockLabel class="mb-spacing-xs text-interface-strong">Available Actions</RockLabel>
+                        <RockLabel>Available Actions</RockLabel>
                         <ActionItems :actionItems="requestDetails.actionItems ?? []" @onActionClick="onActionItemClick" />
                     </div>
                     <div v-if="!isNullOrWhiteSpace(requestDetails?.comments)">
-                        <RockLabel class="mb-spacing-xs text-interface-medium text-regular">Comments</RockLabel>
-                        <div class="text-interface-stronger" v-html="requestDetails?.comments"></div>
+                        <StaticFormControl label="Comments"
+                                           :modelValue="requestDetails?.comments ?? ''">
+                            <template #default="{ value }">
+                                <div class="static-control-value" v-html="value"></div>
+                            </template>
+                        </StaticFormControl>
                     </div>
                     <div v-if="!isNullOrWhiteSpace(requestDetails?.connectionTypeSource)">
-                        <RockLabel class="mb-spacing-xs text-interface-medium text-regular">Request Source</RockLabel>
-                        <div class="text-interface-stronger">{{ requestDetails?.connectionTypeSource }}</div>
+                        <StaticFormControl label="Request Source"
+                                           :modelValue="requestDetails?.connectionTypeSource ?? ''">
+                            <template #default="{ value }">
+                                <div class="static-control-value">{{ value }}</div>
+                            </template>
+                        </StaticFormControl>
                     </div>
                 </div>
             </ContentStack>
             <ContentStack v-if="options?.areGroupPlacementsEnabled">
-                <RockLabel class="text-interface-stronger mb-spacing-xs">Placement Group Details</RockLabel>
-                <div class="d-flex flex-column gap-md">
-                    <div class="d-flex flex-column gap-xs">
-                        <RockLabel class="text-interface-medium text-regular">Group</RockLabel>
-                        <HighlightLabel v-if="requestDetails?.placementGroup?.groupId"
-                                        :iconCssClass="isNullOrWhiteSpace(requestDetails?.placementGroup?.iconCssClass) ? 'ti ti-users' : requestDetails?.placementGroup?.iconCssClass!"
-                                        labelType="custom"
-                                        customClass="label label-info w-fit cursor-pointer"
-                                        @click="emit('navigateToGroup', requestDetails.placementGroup.groupId ?? '')">
-                            {{ placementGroupName }}
-                        </HighlightLabel>
-                        <HighlightLabel v-else
-                                        iconCssClass="ti ti-alert-circle"
-                                        labelType="custom"
-                                        customClass="label bg-interface-medium w-fit">
-                            None Assigned
-                        </HighlightLabel>
+                <RockLabel>Placement Group Details</RockLabel>
+                <div class="placement-group-detail">
+                    <div class="form-group static-control">
+                        <RockLabel>Group</RockLabel>
+                        <div class="control-wrapper">
+                            <div class="form-control-static">
+                                <HighlightLabel v-if="requestDetails?.placementGroup?.groupId"
+                                                :iconCssClass="isNullOrWhiteSpace(requestDetails?.placementGroup?.iconCssClass) ? 'ti ti-users' : requestDetails?.placementGroup?.iconCssClass!"
+                                                labelType="info"
+                                                @click="emit('navigateToGroup', requestDetails.placementGroup.groupId ?? '')">
+                                    {{ placementGroupName }}
+                                </HighlightLabel>
+                                <HighlightLabel v-else
+                                                iconCssClass="ti ti-alert-circle"
+                                                labelType="type">
+                                    None Assigned
+                                </HighlightLabel>
+                            </div>
+                        </div>
                     </div>
                     <AttributeValuesContainer v-if="requestDetails?.placementGroup?.groupMemberAttributeValues && Object.values(requestDetails.placementGroup.groupMemberAttributeValues).some(v => !!v)"
                                               :modelValue="requestDetails.placementGroup.groupMemberAttributeValues"
@@ -252,20 +262,24 @@
                                               :numberOfColumns="2"
                                               :showCategoryLabel="false" />
                     <div v-if="automatedGroupMemberRequirements && automatedGroupMemberRequirements.length > 0">
-                        <RockLabel class="text-interface-medium text-regular mb-spacing-xs">Requirements</RockLabel>
-                        <div class="d-flex flex-wrap gap-xs">
-                            <HighlightLabel v-for="groupMemberRequirement in automatedGroupMemberRequirements"
-                                            :iconCssClass="groupMemberRequirement.groupMemberRequirementState === MeetsGroupRequirement.Meets ? 'ti ti-circle-check-filled' : ''"
-                                            :labelType="getRequirementLabelType(groupMemberRequirement)">
-                                {{ groupMemberRequirement.requirementName }}
-                            </HighlightLabel>
-                        </div>
+                        <StaticFormControl label="Requirements"
+                                           modelValue="">
+                            <template #default>
+                                <div class="placement-group-detail-requirements">
+                                    <HighlightLabel v-for="groupMemberRequirement in automatedGroupMemberRequirements"
+                                                    :iconCssClass="groupMemberRequirement.groupMemberRequirementState === MeetsGroupRequirement.Meets ? 'ti ti-circle-check-filled' : ''"
+                                                    :labelType="getRequirementLabelType(groupMemberRequirement)">
+                                        {{ groupMemberRequirement.requirementName }}
+                                    </HighlightLabel>
+                                </div>
+                            </template>
+                        </StaticFormControl>
                     </div>
                     <div v-if="manualGroupMemberRequirements && manualGroupMemberRequirements.length > 0">
-                        <RockLabel class="text-interface-medium text-regular mb-spacing-xs">Manual Requirements</RockLabel>
-                        <div class="d-flex flex-column gap-xs">
+                        <RockLabel class="static-control-label">Manual Requirements</RockLabel>
+                        <div class="placement-group-detail-row">
                             <template v-for="manualRequirement in manualGroupMemberRequirements">
-                                <div v-if="manualRequirement.groupRequirementIdKey" class="d-flex gap-xs align-items-center">
+                                <div v-if="manualRequirement.groupRequirementIdKey" class="placement-group-detail-requirement">
                                     <CheckBox :modelValue="manualRequirement.groupMemberRequirementState === MeetsGroupRequirement.Meets"
                                               label=""
                                               :text="manualRequirement.requirementName ?? ''"
@@ -280,7 +294,7 @@
                                         {{ manualRequirementErrorRecord[manualRequirement.groupRequirementIdKey] }}
                                     </NotificationBox>
                                     <div v-else-if="!isManualRequirementLoadingRecord[manualRequirement.groupRequirementIdKey] && isManualRequirementSavedRecord[manualRequirement.groupRequirementIdKey]"
-                                         class="text-success-strong">
+                                         class="placement-group-detail-requirement-saved">
                                         <i class="ti ti-circle-check-filled"></i>
                                         Saved
                                     </div>
@@ -306,15 +320,15 @@
                                  enableFlip
                                  placement="bottom-end">
                     <template #anchor>
-                        <div class="d-flex align-items-center gap-tiny text-primary cursor-pointer">
+                        <div class="activity-filter-anchor">
                             Show {{ selectedActivityFilter.text }}
                             <i class="ti ti-chevron-down"></i>
                         </div>
                     </template>
                     <template #default>
-                        <div class="bg-interface-softest dropdown-content">
+                        <div class="dropdown-content">
                             <div v-for="activityFilter in activityFilterOptions"
-                                 class="dropdown-content-item py-spacing-sm px-spacing-md text-small text-semibold"
+                                 class="dropdown-content-item dropdown-content-item--activity-filter"
                                  @click.stop="updateActivityFilter(activityFilter)">
                                 {{ activityFilter.text }}
                             </div>
@@ -330,7 +344,7 @@
 
                 <template v-if="canEditConnectionRequestNote">
                     <RockForm @submit="onAddRequestNote">
-                        <div class="d-flex flex-column gap-xs">
+                        <div class="activity-add-note-form">
                             <NotificationBox v-if="isAddRequestNoteErrorMessageVisible"
                                              alertType="danger"
                                              style="margin-bottom: 0;"
@@ -356,8 +370,8 @@
                     </RockForm>
                 </template>
                 <template v-for="activityEntry in filteredAndSortedActivityEntries">
-                    <div v-if="activityEntry.entryType === ActivityEntryType.SystemUpdate && activityEntry.systemUpdate" class="d-flex gap-xs text-interface-medium text-small">
-                        <Badge :isCircle="true" class="d-flex justify-content-center bg-interface-softest text-interface-medium h-fit">
+                    <div v-if="activityEntry.entryType === ActivityEntryType.SystemUpdate && activityEntry.systemUpdate" class="activity-system-update">
+                        <Badge :isCircle="true" class="activity-system-update-icon h-fit">
                             <i :class="systemUpdateIconClass(activityEntry.systemUpdate.systemUpdateType)"></i>
                         </Badge>
                         <div>
@@ -381,88 +395,6 @@
         </ContentSection>
     </div>
 </template>
-
-<style scoped>
-.person-details {
-    white-space: nowrap;
-}
-
-.header-icon {
-    width: 24px;
-    height: 24px;
-}
-
-.additional-request {
-    display: flex;
-    flex-direction: column;
-}
-
-.person-dropdown {
-    min-width: 200px;
-    max-height: 40vh;
-    overflow-y: auto;
-}
-
-.dropdown-content-item.selected {
-    color: var(--color-interface-strong);
-    font-weight: var(--font-weight-semibold);
-    background-color: var(--color-info-soft);
-}
-
-.text-regular {
-    font-weight: var(--font-weight-regular);
-}
-
-/* text-sm is incorrectly returning xsmall at the moment in develop */
-.text-small {
-    font-size: var(--font-size-small);
-}
-
-.text-slate {
-    color: #64748B;
-}
-
-.text-emerald {
-    color: #10B981;
-}
-
-.border-info-soft {
-    border-color: var(--color-info-soft);
-}
-
-.gap-tiny {
-    gap: var(--spacing-tiny);
-}
-
-.gap-xs {
-    gap: var(--spacing-xsmall);
-}
-
-.gap-sm {
-    gap: var(--spacing-small);
-}
-
-.gap-md {
-    gap: var(--spacing-medium);
-}
-
-.gap-lg {
-    gap: var(--spacing-large);
-}
-
-.w-fit {
-    width: fit-content;
-}
-
-.h-fit {
-    height: fit-content;
-}
-
-/* Skeleton adjustments */
-.skeleton {
-    background: var(--color-interface-soft);
-}
-</style>
 
 <script setup lang="ts">
     import { ref, PropType, watch, computed, shallowRef } from "vue";
@@ -511,6 +443,7 @@
     import { LaunchWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/launchWorkflowBag";
     import { ConnectorItemBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectorItemBag";
     import { tooltip } from "@Obsidian/Utility/tooltip";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
 
     const props = defineProps({
         requestDetails: {
@@ -779,7 +712,7 @@
             case SystemUpdateType.DueSoonDateChange:
                 return "ti ti-calendar-due";
             case SystemUpdateType.Completion:
-                return "ti ti-circle-check-filled text-success";
+                return "ti ti-circle-check-filled activity-system-update-icon--completed";
             default:
                 return "";
         }
@@ -794,7 +727,7 @@
         switch (entry.systemUpdate.systemUpdateType) {
             case SystemUpdateType.Creation:
                 if (isCreatedByPopulated) {
-                    return `<span class="text-semibold">${entry.createdBy}</span> submitted this connection request for ${props.requestDetails?.connectionOpportunityName}.`;
+                    return `<span class="activity-system-update-highlight">${entry.createdBy}</span> submitted this connection request for ${props.requestDetails?.connectionOpportunityName}.`;
                 }
                 return `This connection request was submitted for ${props.requestDetails?.connectionOpportunityName}.`;
             case SystemUpdateType.StateChange: {
@@ -802,41 +735,41 @@
 
                 if (isCreatedByPopulated) {
                     return hasPrevious
-                        ? `<span class="text-semibold">${entry.createdBy}</span> changed the connection request state from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`
-                        : `<span class="text-semibold">${entry.createdBy}</span> set the connection request state to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                        ? `<span class="activity-system-update-highlight">${entry.createdBy}</span> changed the connection request state from ${entry.systemUpdate.previousValue} to <span class="activity-system-update-highlight">${entry.systemUpdate.newValue}</span>.`
+                        : `<span class="activity-system-update-highlight">${entry.createdBy}</span> set the connection request state to <span class="activity-system-update-highlight">${entry.systemUpdate.newValue}</span>.`;
                 }
                 return hasPrevious
-                    ? `The connection request state changed from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`
-                    : `The connection request state was set to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                    ? `The connection request state changed from ${entry.systemUpdate.previousValue} to <span class="activity-system-update-highlight">${entry.systemUpdate.newValue}</span>.`
+                    : `The connection request state was set to <span class="activity-system-update-highlight">${entry.systemUpdate.newValue}</span>.`;
             }
             case SystemUpdateType.Assignment:
                 if (isCreatedByPopulated) {
-                    return `<span class="text-semibold">${entry.createdBy}</span> assigned <span class="text-semibold">${entry.systemUpdate.newValue}</span> to the connection request.`;
+                    return `<span class="activity-system-update-highlight">${entry.createdBy}</span> assigned <span class="activity-system-update-highlight">${entry.systemUpdate.newValue}</span> to the connection request.`;
                 }
-                return `The connection request was assigned to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                return `The connection request was assigned to <span class="activity-system-update-highlight">${entry.systemUpdate.newValue}</span>.`;
             case SystemUpdateType.Unassignment:
                 if (isCreatedByPopulated) {
-                    return `<span class="text-semibold">${entry.createdBy}</span> unassigned <span class="text-semibold">${entry.systemUpdate.previousValue}</span> from the connection request.`;
+                    return `<span class="activity-system-update-highlight">${entry.createdBy}</span> unassigned <span class="activity-system-update-highlight">${entry.systemUpdate.previousValue}</span> from the connection request.`;
                 }
-                return `The connection request was unassigned from <span class="text-semibold">${entry.systemUpdate.previousValue}</span>.`;
+                return `The connection request was unassigned from <span class="activity-system-update-highlight">${entry.systemUpdate.previousValue}</span>.`;
             case SystemUpdateType.Reassignment:
                 if (isCreatedByPopulated) {
-                    return `<span class="text-semibold">${entry.createdBy}</span> reassigned the connection request from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                    return `<span class="activity-system-update-highlight">${entry.createdBy}</span> reassigned the connection request from ${entry.systemUpdate.previousValue} to <span class="activity-system-update-highlight">${entry.systemUpdate.newValue}</span>.`;
                 }
-                return `The connection request was reassigned from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                return `The connection request was reassigned from ${entry.systemUpdate.previousValue} to <span class="activity-system-update-highlight">${entry.systemUpdate.newValue}</span>.`;
             case SystemUpdateType.Transfer:
                 if (isCreatedByPopulated) {
-                    return `<span class="text-semibold">${entry.createdBy}</span> transferred the connection request from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                    return `<span class="activity-system-update-highlight">${entry.createdBy}</span> transferred the connection request from ${entry.systemUpdate.previousValue} to <span class="activity-system-update-highlight">${entry.systemUpdate.newValue}</span>.`;
                 }
-                return `The connection request was transferred from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                return `The connection request was transferred from ${entry.systemUpdate.previousValue} to <span class="activity-system-update-highlight">${entry.systemUpdate.newValue}</span>.`;
             case SystemUpdateType.DueDateChange:
             case SystemUpdateType.DueSoonDateChange: {
                 const dateType = entry.systemUpdate.systemUpdateType === SystemUpdateType.DueDateChange ? "Due Date" : "Due Soon Date";
-                return `Status change auto-updated <span class="text-semibold">${dateType}</span> for the request from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                return `Status change auto-updated <span class="activity-system-update-highlight">${dateType}</span> for the request from ${entry.systemUpdate.previousValue} to <span class="activity-system-update-highlight">${entry.systemUpdate.newValue}</span>.`;
             }
             case SystemUpdateType.Completion:
                 if (isCreatedByPopulated) {
-                    return `<span class="text-semibold">${entry.createdBy}</span> completed this connection request.`;
+                    return `<span class="activity-system-update-highlight">${entry.createdBy}</span> completed this connection request.`;
                 }
                 return `This connection request was completed.`;
             default:
@@ -888,13 +821,13 @@
     function getDueDateColor(dueStatus: DueStatus | null | undefined, isCompleted: boolean): string {
         switch (dueStatus) {
             case DueStatus.DueLater:
-                return isCompleted ? "text-emerald" : "text-interface-medium";
+                return isCompleted ? "connection-request-due-date--completed-early" : "connection-request-due-date--neutral";
             case DueStatus.DueSoon:
-                return "text-warning";
+                return "connection-request-due-date--due-soon";
             case DueStatus.Overdue:
-                return "text-danger";
+                return "connection-request-due-date--overdue";
             default:
-                return "text-interface-medium";
+                return "connection-request-due-date--neutral";
         }
     }
 

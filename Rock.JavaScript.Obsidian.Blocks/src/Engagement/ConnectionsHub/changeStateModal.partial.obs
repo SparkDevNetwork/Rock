@@ -21,7 +21,7 @@
                                 :disallowPastDateSelection="true" />
                 </div>
             </div>
-            <div v-else class="mb-spacing-sm">
+            <div v-else class="change-state-modal-body-text">
                 {{ bodyText }}
             </div>
             <RequestTable v-if="requestDetails.length > 0"
@@ -30,9 +30,9 @@
                           isConnectorVisible />
 
             <template v-if="failingRequestDetails.length > 0">
-                <div class="mt-spacing-xs">
-                    <RockLabel class="mt-spacing-xs">
-                        <i class="ti ti-circle-filled text-primary pr-spacing-tiny"></i>The requests below do not meet Placement Group requirements and will not be completed.
+                <div class="change-state-modal-failing-notice">
+                    <RockLabel>
+                        <i class="ti ti-circle-filled change-state-modal-failing-notice-icon"></i>The requests below do not meet Placement Group requirements and will not be completed.
                     </RockLabel>
                 </div>
                 <RequestTable :requestDetails="failingRequestDetails"

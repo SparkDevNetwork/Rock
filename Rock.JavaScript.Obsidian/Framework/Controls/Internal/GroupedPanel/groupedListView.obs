@@ -21,7 +21,7 @@
                     </div>
                 </template>
                 <template #headerActions>
-                    <div class="section-header-actions">
+                    <div class="contentsection-header-actions-content">
                         <slot name="headerActions" v-bind="{ groupRows: group.gridData.rows }" />
                         <HighlightLabel v-if="getIsCountMessageVisible(group)">
                             {{ getCountMessage(group.key, group.gridData.rows) }}
@@ -39,8 +39,10 @@
 <style scoped>
 /* Let a group's header actions wrap onto a new line when they no longer fit, so a
    long slotted action set plus the count label does not overflow on narrow screens. */
-.section-header-actions {
+.contentsection-header-actions-content {
+    display: flex;
     flex-wrap: wrap;
+    gap: var(--spacing-xsmall);
 }
 </style>
 

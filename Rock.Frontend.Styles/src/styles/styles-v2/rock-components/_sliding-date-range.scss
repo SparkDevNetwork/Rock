@@ -4,8 +4,8 @@
 
 
 // =============================================================
-// Table of Content           
-//  + Base Style  
+// Table of Content
+//  + Base Style
 // =============================================================
 
 
@@ -31,8 +31,11 @@
 }
 
 // Moved from Rock Theme.less
-.slidingdaterange > .slidingdaterange-info {
-  padding: 1px 6px;
+.slidingdaterange .slidingdaterange-info {
+  --label-height: 20px; // Override default label height
+  position: absolute;
+  margin-left: var(--spacing-tiny);
+  align-self: end;
 }
 
 .form-control-group {

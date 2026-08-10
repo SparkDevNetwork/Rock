@@ -16,7 +16,7 @@ using Rock;
 using Rock.Jobs;
 using Rock.Migrations.RockStartup;
 using Rock.Model;
-using Rock.Tests.Shared.Lava;
+using Rock.Tests.Integration.TestFramework.Lava;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Tests.Shared.Utility;
 using Rock.Utility;
@@ -291,7 +291,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
             // Initialize the Lava Engine first, because it is needed by
             // the sample data loader.
             LavaIntegrationTestHelper.Initialize( testFluidEngine: true, loadShortcodes: false );
-            LavaIntegrationTestHelper.GetEngineInstance( typeof( Lava.Fluid.FluidEngine ) );
+            LavaIntegrationTestHelper.GetEngineInstance( typeof( Rock.Lava.Fluid.FluidEngine ) );
 
             // Make sure all Entity Types are registered.
             // This is necessary because some components are only registered at runtime,

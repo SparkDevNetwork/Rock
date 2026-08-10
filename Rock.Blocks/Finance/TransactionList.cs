@@ -402,6 +402,12 @@ namespace Rock.Blocks.Finance
 
                 var defaultViewMode = GetAttributeValue( AttributeKey.DefaultTransactionView );
 
+                // The WebForms block stored the Accounts default under the legacy "Transaction Details" value; honor it so a pre-conversion default view is preserved.
+                if ( defaultViewMode == ViewMode.LegacyAccounts )
+                {
+                    defaultViewMode = ViewMode.Accounts;
+                }
+
                 return ( defaultViewMode == ViewMode.Accounts )
                     ? ViewMode.Accounts
                     : ViewMode.Transactions;
@@ -472,8 +478,13 @@ namespace Rock.Blocks.Finance
         /// <summary>Gets the foreign key text filter.</summary>
         private string FilterForeignKey => FilterPreference( PreferenceKey.FilterForeignKey );
 
-        /// <summary>Gets the account GUID filter (AccountPicker stores the account's Guid as the ListItemBag value).</summary>
-        private string FilterAccount => FilterPreference( PreferenceKey.FilterAccount ).FromJsonOrNull<ListItemBag>()?.Value;
+        /// <summary>Gets the account GUID filters (the multi-select AccountPicker stores each account's Guid as a ListItemBag value).</summary>
+        private List<Guid> FilterAccountGuids => FilterPreference( PreferenceKey.FilterAccount )
+            .FromJsonOrNull<List<ListItemBag>>()
+            ?.Select( a => a.Value.AsGuidOrNull() )
+            .Where( g => g.HasValue )
+            .Select( g => g.Value )
+            .ToList() ?? new List<Guid>();
 
         /// <summary>Gets the batch campus GUID filter (CampusPicker stores the campus Guid as the ListItemBag value).</summary>
         private string FilterCampusOfBatch => FilterPreference( PreferenceKey.FilterCampusOfBatch ).FromJsonOrNull<ListItemBag>()?.Value;
@@ -1014,10 +1025,10 @@ namespace Rock.Blocks.Finance
             }
 
             // Entity GUID filters — pickers store GUIDs; compare directly against projected GUID columns.
-            var accountGuid = FilterAccount.AsGuidOrNull();
-            if ( accountGuid.HasValue )
+            var filterAccountGuids = FilterAccountGuids;
+            if ( filterAccountGuids.Any() )
             {
-                query = query.Where( r => r.AccountGuids.Contains( accountGuid.Value ) );
+                query = query.Where( r => r.AccountGuids.Any( g => filterAccountGuids.Contains( g ) ) );
             }
 
             var batchCampusGuid = FilterCampusOfBatch.AsGuidOrNull();

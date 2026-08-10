@@ -37,6 +37,12 @@
                             @click="onOperationalSnapshotClick">
                     <i class="ti ti-chart-bar"></i> <span v-if="breakpointHelper?.isSmOrLarger">{{ operationalSnapshotBtnText }}</span>
                 </RockButton>
+
+                <RockButton v-if="isCelebrationReportEnabled"
+                            :title="celebrationsBtnTooltip"
+                            @click="onCelebrationReportClick">
+                    <i class="ti ti-confetti"></i> <span v-if="breakpointHelper?.isSmOrLarger">Celebrations</span>
+                </RockButton>
             </template>
 
             <template v-if="anyConnectionOpportunities" #preBody>
@@ -307,6 +313,7 @@
     // Connection Type-level URLs.
     const typeConnectionsHubListViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.TypeConnectionsHubListViewPage]);
     const typeOperationalSnapshotPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.TypeOperationalSnapshotPage]);
+    const typeCelebrationsReportPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.TypeCelebrationsReportPage]);
 
     // Connection Opportunity-level URLs.
     const opportunityConnectionsHubListViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubListViewPage]);
@@ -360,8 +367,12 @@
         return connectionTypeSummary.value?.isSnapshotViewEnabled ?? false;
     });
 
+    const isCelebrationReportEnabled = computed((): boolean => {
+        return !!typeCelebrationsReportPageUrl.value && (connectionTypeSummary.value?.isCelebrationEnabled ?? false);
+    });
+
     const showPanelHeaderActions = computed((): boolean => {
-        return isListViewEnabled.value || isSnapshotViewEnabled.value;
+        return isListViewEnabled.value || isSnapshotViewEnabled.value || isCelebrationReportEnabled.value;
     });
 
     const viewRequestsBtnTooltip = computed((): string | undefined => {
@@ -378,6 +389,14 @@
         }
 
         return operationalSnapshotBtnText.value;
+    });
+
+    const celebrationsBtnTooltip = computed((): string | undefined => {
+        if (breakpointHelper.value?.isSmOrLarger) {
+            return undefined;
+        }
+
+        return "Celebrations";
     });
 
     const linearGaugeChartData = computed<LinearGaugeSeries[]>(() => {
@@ -657,6 +676,16 @@
         }
 
         window.location.href = url.toString();
+    }
+
+    /**
+     * Handles the click event for the "Celebrations" button in the panel header.
+     * Navigates the individual to the celebrations report page for the connection type.
+     */
+    function onCelebrationReportClick(): void {
+        if (typeCelebrationsReportPageUrl.value) {
+            window.location.href = typeCelebrationsReportPageUrl.value;
+        }
     }
 
     /**

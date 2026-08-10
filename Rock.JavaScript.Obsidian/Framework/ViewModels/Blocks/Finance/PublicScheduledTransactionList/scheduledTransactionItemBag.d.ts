@@ -21,45 +21,94 @@
 // </copyright>
 //
 
-/** One row in the Public Scheduled Transaction List block. */
+/**
+ * One row in the Public Scheduled Transaction List block. Rendered as a
+ * DisplayCard on the client. After a successful or failed Cancel, the
+ * server returns a replacement bag with AlertMessage / AlertType populated
+ * (and the DisplayCard fields left blank); the client swaps the row's
+ * DisplayCard for an inline alert so the row keeps its place in the layout.
+ */
 export type ScheduledTransactionItemBag = {
-    /** Gets or sets the inline-alert message to display in place of the DisplayCard for this row. */
+    /**
+     * Gets or sets the inline-alert message to display in place of the
+     * DisplayCard for this row. Populated only after a Cancel; null while
+     * the row is showing its normal DisplayCard content.
+     */
     alertMessage?: string | null;
 
-    /** Gets or sets the alert type ("success" or "danger") that pairs with AlertMessage. */
+    /**
+     * Gets or sets the alert type ("success" or "danger") that pairs with
+     * AlertMessage. Null while the row is showing its normal DisplayCard content.
+     */
     alertType?: string | null;
 
-    /** Gets or sets the DisplayCard description (e.g. "Visa Ending in 6789 • Expires 11/28"). */
+    /**
+     * Gets or sets the DisplayCard description
+     * (e.g. "Visa Ending in 6789 • Expires 11/28").
+     */
     description?: string | null;
 
-    /** Gets or sets the Edit button tooltip label. */
+    /**
+     * Gets or sets the Edit button tooltip label. Either the literal "Edit"
+     * or the value of the Transfer Button Label setting when the row's
+     * gateway differs from the configured Transfer-To gateway.
+     */
     editButtonText?: string | null;
 
-    /** Gets or sets the CSS class of the icon shown on the Edit button (pencil for edit, arrows-exchange for transfer). */
+    /**
+     * Gets or sets the CSS class of the icon shown on the Edit button.
+     * A pencil icon on regular Edit rows, or an exchange-arrows icon
+     * when the row routes through the Transfer flow.
+     */
     editIconCssClass?: string | null;
 
-    /** Gets or sets the resolved Edit-button target URL. */
+    /**
+     * Gets or sets the resolved Edit-button target URL. Already includes
+     * the ScheduledTransactionGuid query parameter and (when applicable)
+     * the transfer=true flag, so the Vue side does not need to know
+     * about the hosted-vs-classic-vs-transfer routing rules.
+     */
     editUrl?: string | null;
 
-    /** Gets or sets the CSS class of the icon used for the frequency pill. */
+    /**
+     * Gets or sets the CSS class of the icon used for the frequency pill
+     * (e.g. "ti ti-refresh" for recurring, "ti ti-gift" for one-time).
+     */
     frequencyIconCssClass?: string | null;
 
     /** Gets or sets the frequency pill label (e.g. "Every Week", "One-Time"). */
     frequencyLabel?: string | null;
 
-    /** Gets or sets the CSS class of the DisplayCard icon. */
+    /**
+     * Gets or sets the CSS class of the DisplayCard icon
+     * (e.g. "ti ti-credit-card" or "ti ti-building-bank").
+     */
     iconCssClass?: string | null;
 
-    /** Gets or sets the hashed identifier of the scheduled transaction. */
+    /**
+     * Gets or sets the hashed identifier of the scheduled transaction.
+     * Used as the v-for key and as the argument to the Cancel block action.
+     */
     idKey?: string | null;
 
-    /** Gets or sets the human-formatted next-payment line displayed in the middle section of the DisplayCard. */
+    /**
+     * Gets or sets the human-formatted next-payment line displayed in the
+     * middle section of the DisplayCard (e.g. "Next on June 3, 2026").
+     * Null when the schedule has no NextPaymentDate.
+     */
     nextPaymentText?: string | null;
 
-    /** Gets or sets the authorized person's full name displayed in the middle section of the DisplayCard. */
+    /**
+     * Gets or sets the authorized person's full name displayed in the
+     * middle section of the DisplayCard (e.g. "Ted Decker").
+     */
     personName?: string | null;
 
-    /** Gets or sets a value indicating whether the Edit (or Transfer) button should appear for this row. */
+    /**
+     * Gets or sets a value indicating whether the Edit (or Transfer)
+     * button should appear for this row. Hidden for event-registration
+     * transactions and when the relevant edit-page attribute is empty.
+     */
     showEditButton: boolean;
 
     /** Gets or sets the DisplayCard title (e.g. "$125.00 (Contribution)"). */

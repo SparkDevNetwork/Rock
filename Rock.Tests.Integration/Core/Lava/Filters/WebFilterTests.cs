@@ -30,9 +30,9 @@ using Rock.Model;
 using Rock.Tests.Integration.Communications.Transport;
 using Rock.Tests.Integration.TestData;
 using Rock.Tests.Integration.TestData.Communications;
+using Rock.Tests.Integration.TestFramework.Lava;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.Constants;
-using Rock.Tests.Shared.Lava;
 using Rock.Utility;
 using Rock.Web.Cache;
 

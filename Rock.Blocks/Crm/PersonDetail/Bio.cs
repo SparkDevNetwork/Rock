@@ -187,6 +187,7 @@ namespace Rock.Blocks.Crm.PersonDetail
 
     #endregion Block Attributes
 
+    [InitialBlockHeight( 0 )]
     [Rock.Web.UI.ContextAware( typeof( Person ) )]
     [Rock.SystemGuid.EntityTypeGuid( "EA0CF743-D5C9-4B3B-9F21-5766F2F4E678" )]
     // was [Rock.SystemGuid.BlockTypeGuid( "DAAD0340-5CAB-4518-8314-BC39433C8EA5" )]
@@ -893,14 +894,20 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             var showCountryCode = GetAttributeValue( AttributeKey.DisplayCountryCode ).AsBoolean();
 
             var phoneNumbers = person.PhoneNumbers.AsEnumerable();
-            var phoneNumberTypeIds = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() )
+
+            // Only display numbers whose phone type is currently active. An admin can
+            // reactivate the type if a legacy value needs to appear here again.
+            var activePhoneNumberTypeIds = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() )
                 ?.DefinedValues
-                .Select( a => a.Id )
+                .Where( dv => dv.IsActive )
+                .Select( dv => dv.Id )
                 .ToList();
 
-            if ( phoneNumberTypeIds != null && phoneNumberTypeIds.Any() )
+            if ( activePhoneNumberTypeIds != null && activePhoneNumberTypeIds.Any() )
             {
-                phoneNumbers = phoneNumbers.OrderBy( a => phoneNumberTypeIds.IndexOf( a.NumberTypeValueId ?? 0 ) );
+                phoneNumbers = phoneNumbers
+                    .Where( a => a.NumberTypeValueId.HasValue && activePhoneNumberTypeIds.Contains( a.NumberTypeValueId.Value ) )
+                    .OrderBy( a => activePhoneNumberTypeIds.IndexOf( a.NumberTypeValueId.Value ) );
             }
 
             return phoneNumbers

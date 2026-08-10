@@ -37,5 +37,13 @@ namespace Rock.ViewModels.Blocks.Engagement.StreakList
         /// The streak type identifier key.
         /// </value>
         public string StreakTypeIdKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current person is authorized to view the streak type's enrollments.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the block should be visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsBlockVisible { get; set; }
     }
 }

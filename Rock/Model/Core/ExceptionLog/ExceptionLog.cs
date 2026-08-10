@@ -109,7 +109,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the description of the exception.
         /// </value>
         [DataMember]
-        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Description { get; set; }
 
         /// <summary>

@@ -18,6 +18,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Model;
@@ -124,6 +125,37 @@ namespace Rock.Blocks.Utility
             };
 
             return box;
+        }
+
+        /// <inheritdoc/>
+        public override async Task<string> GetControlMarkupAsync()
+        {
+            /*
+                7/23/26 - MSE
+
+                The WebForms version of this block set Visible = false when there was
+                nothing to display, which also suppressed the block's Pre-HTML and
+                Post-HTML. Returning no markup does the same for the Obsidian block:
+                the block wrapper detects the empty markup and hides the entire block,
+                Pre/Post-HTML included.
+
+                Reason: Hide the whole block, Pre/Post-HTML included, when the checklist is empty.
+            */
+            if ( GetAttributeValue( AttributeKey.HideBlockWhenEmpty ).AsBoolean() )
+            {
+                var areCheckedItemsHidden = GetAttributeValue( AttributeKey.HideCheckedItems ).AsBoolean();
+                var items = GetChecklistItems();
+                var hasItemsToDisplay = areCheckedItemsHidden
+                    ? items.Any( i => !i.IsChecked )
+                    : items.Any();
+
+                if ( !hasItemsToDisplay )
+                {
+                    return string.Empty;
+                }
+            }
+
+            return await base.GetControlMarkupAsync();
         }
 
         /// <summary>

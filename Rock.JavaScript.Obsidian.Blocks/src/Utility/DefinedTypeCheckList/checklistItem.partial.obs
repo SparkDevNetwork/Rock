@@ -10,13 +10,16 @@
                 <i class="ti" :class="isDescriptionVisible ? 'ti-chevron-up' : 'ti-chevron-down'"></i>
             </a>
         </header>
-        <div v-if="hasDescription && isDescriptionVisible" class="checklist-description panel-body" v-html="item.description"></div>
+        <TransitionVerticalCollapse>
+            <div v-show="hasDescription && isDescriptionVisible" class="checklist-description panel-body" v-html="item.description"></div>
+        </TransitionVerticalCollapse>
     </article>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { DefinedTypeCheckListItemBag } from "@Obsidian/ViewModels/Blocks/Utility/DefinedTypeCheckList/definedTypeCheckListItemBag";
 
     const props = defineProps({

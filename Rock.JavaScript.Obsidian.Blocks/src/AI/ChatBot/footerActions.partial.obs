@@ -75,7 +75,12 @@
         isSendDisabled: {
             type: Boolean as PropType<boolean>,
             required: true
-        }
+        },
+
+        isDockedMode: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
     });
 
     const emit = defineEmits<{
@@ -176,6 +181,19 @@
     });
 
     onMounted(() => {
+        // If we aren't docked, then focus the input so the user can start
+        // typing immediately.
+        if (!props.isDockedMode) {
+            const textArea = footerActionsElement.value?.querySelector("textarea");
+            if (textArea) {
+                // Calling focus() directly here doesn't work for unknown
+                // reasons, but wrapping it in a setTimeout does. This might
+                // be caused by some other focus event being processed after
+                // we initialize.
+                setTimeout(() => textArea.focus(), 0);
+            }
+        }
+
         // Resize directly off the textarea's input event so the height tracks
         // every keystroke and paste, independent of Vue's reactivity timing.
         footerActionsElement.value?.querySelector("textarea")?.addEventListener("input", resizeAndReportHeight);

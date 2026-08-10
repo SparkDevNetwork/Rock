@@ -21,7 +21,7 @@ namespace Rock.AI.Agent.Classes.Common
     /// Provides a common interface for summary groupings that can be used to
     /// get the count of items within this grouping.
     /// </summary>
-    internal interface ISummaryGroupCount
+    public interface ISummaryGroupCount
     {
         /// <summary>
         /// The number of items for this grouping.

@@ -11,7 +11,7 @@
                          @dismiss="emit('dismissErrorMessage')">
             {{ errorMessage }}
         </NotificationBox>
-        <div class="mb-spacing-sm text-interface-medium">
+        <div style="margin-bottom: var(--spacing-medium); color: var(--color-interface-medium)">
             Connection Celebrations help your team record and celebrate stories of connection. Before adding this celebration, take a moment to record why this connection story is particularly meaningful.
         </div>
         <div class="row">

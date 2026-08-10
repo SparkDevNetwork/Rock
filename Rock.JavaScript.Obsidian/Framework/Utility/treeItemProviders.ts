@@ -21,6 +21,7 @@ import { useHttp } from "./http";
 import { SiteType } from "@Obsidian/Enums/Cms/siteType";
 import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
 import { CategoryPickerChildTreeItemsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/categoryPickerChildTreeItemsOptionsBag";
+import { AccountPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/accountPickerGetChildrenOptionsBag";
 import { LocationItemPickerGetActiveChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/locationItemPickerGetActiveChildrenOptionsBag";
 import { DataViewPickerGetDataViewsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/dataViewPickerGetDataViewsOptionsBag";
 import { WorkflowTypePickerGetWorkflowTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/workflowTypePickerGetWorkflowTypesOptionsBag";
@@ -622,6 +623,66 @@ export class ConnectionRequestTreeItemProvider implements ITreeItemProvider {
      */
     async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
         return this.getItems(item.value);
+    }
+}
+
+
+/**
+ * Tree Item Provider for retrieving financial accounts from the server and
+ * displaying them inside a tree list.
+ */
+export class FinancialAccountTreeItemProvider implements ITreeItemProvider {
+    /** The HTTP client for making API requests. */
+    private readonly http = useHttp();
+
+    /** The security grant token that will be used to request additional access to the account list. */
+    public securityGrantToken: string | null = null;
+
+    /** Whether to include inactive accounts. */
+    public includeInactive: boolean = false;
+
+    /** Whether to display each account's public name instead of its internal name. */
+    public displayPublicName: boolean = false;
+
+    /**
+     * Gets the child items from the server.
+     *
+     * @param parentGuid The parent account whose children are retrieved, or null for the root accounts.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentGuid: Guid | null = null): Promise<TreeItemBag[]> {
+        const options: AccountPickerGetChildrenOptionsBag = {
+            parentGuid: toGuidOrNull(parentGuid) ?? emptyGuid,
+            includeInactive: this.includeInactive,
+            displayPublicName: this.displayPublicName,
+            loadFullTree: false,
+            securityGrantToken: this.securityGrantToken
+        };
+        const url = "/api/v2/Controls/AccountPickerGetChildren";
+        const response = await this.http.post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.error("Error fetching accounts from server", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems(null);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(toGuidOrNull(item.value));
     }
 }
 

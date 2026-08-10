@@ -9,7 +9,7 @@
 
   <!-- Versioning and packaging information -->
   <PropertyGroup>
-    <Version>20.0.5</Version>
+    <Version>20.0.6</Version>
     <InformationalVersion>Rock McKinley 20.0</InformationalVersion>
 
     <FileVersion>$(Version)</FileVersion>
@@ -34,6 +34,13 @@
   <PropertyGroup>
     <DefineConstants Condition="'$(TargetFramework)' == '' or '$(TargetFramework)' == 'net472'">$(DefineConstants);WEBFORMS</DefineConstants>
     <DefineConstants Condition="'$(TargetFramework)' == '' or '$(TargetFramework)' == 'net472'">$(DefineConstants);REVIEW_WEBFORMS</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Package output settings. -->
+  <PropertyGroup>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts\</PackageOutputPath>
+    <!-- Prevent the grpc native libraries from being included in the NuGet package. -->
+    <Grpc_SkipNativeLibsCopy>true</Grpc_SkipNativeLibsCopy>
   </PropertyGroup>
 
   <!-- CopyToRockWeb task and defaults -->
@@ -61,6 +68,9 @@
 
     <!-- RestSharp 105.2.3. This package can't be updated without it being a breaking change to plugins. -->
     <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-9pq7-rcxv-47vq" />
+
+    <!-- Newer versions of the exporter dropped support for gRPC, so we can't upgrade. -->
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-4625-4j76-fww9" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" Label="Normalise stack trace file locations">

@@ -40,7 +40,7 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection class="persistence-schedule-section" title="Persistence Schedule" icon="ti ti-database-export" disableCollapse>
+        <ContentSection class="body-flush-vertical" title="Persistence Schedule" icon="ti ti-database-export" disableCollapse>
             <ContentStack>
                 <div class="panel panel-waterfall">
                     <div class="panel-body">
@@ -115,12 +115,6 @@
     </ContentSectionContainer>
 </template>
 
-<style scoped>
-.persistence-schedule-section :deep(.contentsection-body) {
-    padding-top: 0;
-    padding-bottom: 0;
-}
-</style>
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";

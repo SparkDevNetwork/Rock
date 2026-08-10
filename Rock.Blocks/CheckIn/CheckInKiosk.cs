@@ -187,13 +187,15 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             return new KioskConfigurationBag
             {
                 Kiosk = CheckInKioskSetup.GetKioskBag( kiosk ),
+                CampusId = kiosk.GetCampusId(),
                 Areas = areas.Where( a => savedConfiguration.AreaIds.Contains( a.IdKey ) )
                     .Select( a => new CheckInItemBag
                     {
                         Id = a.IdKey,
                         Name = a.Name
                     } ).ToList(),
-                Template = template
+                Template = template,
+                TemplateId = templateGroupType.Id,
             };
         }
 

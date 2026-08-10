@@ -70,14 +70,12 @@ namespace Rock.Blocks.Crm
 
         private static class AttributeKey
         {
-            public const string DetailPage = "DetailPage";
             public const string NcoaProcessPage = "NcoaProcessPage";
             public const string ResultCount = "ResultCount";
         }
 
         private static class NavigationUrlKey
         {
-            public const string DetailPage = "DetailPage";
             public const string NcoaProcessPage = "NcoaProcessPage";
         }
 
@@ -195,7 +193,6 @@ namespace Rock.Blocks.Crm
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "NcoaRowId", "((Key))" ),
                 [NavigationUrlKey.NcoaProcessPage] = this.GetLinkedPageUrl( AttributeKey.NcoaProcessPage )
             };
         }
@@ -496,22 +493,22 @@ namespace Rock.Blocks.Crm
 
             var combinedData = groupedFamilyMoves
                 .Concat( individualMoves )
-                .OrderBy( i => i.FamilyId )
                 .ToList();
 
             var totalResults = combinedData.Count();
 
             var ncoaHistoryData = combinedData
-                .OrderBy(i => i.Id)
+                .OrderBy( i => i.Id )
                 .Skip( ( pageNumber - 1 ) * resultCount )
                 .Take( resultCount )
                 .ToList();
 
-            // Records that are not individual move types and will represent family moves.
+            // The distinct family IDs of the family-move records on this page.
             var familyIds = ncoaHistoryData
                 .Where( h => h.MoveType != MoveType.Individual )
-                .GroupBy( h => new { h.FamilyId, h.MoveType, h.MoveDate } )
-                .Select( g => g.Max( x => x.FamilyId ) ).ToList();
+                .Select( h => h.FamilyId )
+                .Distinct()
+                .ToList();
 
             var familyNamesKey = GetPersonNamesForFamilies( familyIds );
 
@@ -542,15 +539,14 @@ namespace Rock.Blocks.Crm
             {
                 var individual = personData.Where( p => p.personAliasId == i.PersonAliasId ).FirstOrDefault();
 
-
                 return new NcoaDataBag
                 {
                     IdKey = i.Id.AsIdKey(),
                     FamilyId = i.FamilyId,
                     Type = i.NcoaType.ToString(),
                     MoveType = i.MoveType.ToString(),
-                    IndividualIdKey = individual.personId.AsIdKey(),
-                    IndividualName = individual.NickName + ' ' + individual.LastName,
+                    IndividualIdKey = individual != null ? individual.personId.AsIdKey() : string.Empty,
+                    IndividualName = individual != null ? $"{individual.NickName} {individual.LastName}" : string.Empty,
                     FamilyMembers = i.MoveType != MoveType.Individual && familyNamesKey.ContainsKey( i.FamilyId ) ? familyNamesKey[i.FamilyId] : string.Empty,
                     OtherFamilyMembers = otherFamilyMembersByAliasId.TryGetValue( i.PersonAliasId, out var otherMembers ) ? otherMembers : string.Empty,
 

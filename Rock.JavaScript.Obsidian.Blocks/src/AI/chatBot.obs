@@ -40,6 +40,7 @@
                                    :isDebugAllowed="config.isDebugAllowed"
                                    :isDebugEnabled="isDebugEnabled"
                                    :isSendDisabled="isSendDisabled"
+                                   :isDockedMode="config.isDockedMode"
                                    @deleteAnchor="onDeleteAnchor"
                                    @toggleDebug="onToggleDebugClick"
                                    @clearMessages="onClearMessages"
@@ -67,31 +68,32 @@
             </RockButton>
 
             <SessionList :sessions="sessions"
-                        :sessionIdKey="sessionIdKey"
-                        @selectSession="onSelectSession"
-                        @deleteSession="onDeleteSession" />
+                         :sessionIdKey="sessionIdKey"
+                         @selectSession="onSelectSession"
+                         @deleteSession="onDeleteSession" />
 
 
         </div>
 
         <div class="conversation-container">
             <MessageList :messages="messages"
-                        :liveMessage="liveMessage"
-                        :isSending="isSending"
-                        :isDebugEnabled="isDebugEnabled"
-                        :bottomPadding="messageContainerPadding"
-                        @showMessageDebug="onShowMessageDebug" />
+                         :liveMessage="liveMessage"
+                         :isSending="isSending"
+                         :isDebugEnabled="isDebugEnabled"
+                         :bottomPadding="messageContainerPadding"
+                         @showMessageDebug="onShowMessageDebug" />
 
             <FooterActions v-model:message="message"
-                        :sortedAnchors="sortedAnchors"
-                        :isDebugAllowed="config.isDebugAllowed"
-                        :isDebugEnabled="isDebugEnabled"
-                        :isSendDisabled="isSendDisabled"
-                        @deleteAnchor="onDeleteAnchor"
-                        @toggleDebug="onToggleDebugClick"
-                        @clearMessages="onClearMessages"
-                        @submit="onSubmit"
-                        @updateBottomPadding="messageContainerPadding = $event" />
+                           :sortedAnchors="sortedAnchors"
+                           :isDebugAllowed="config.isDebugAllowed"
+                           :isDebugEnabled="isDebugEnabled"
+                           :isSendDisabled="isSendDisabled"
+                           :isDockedMode="config.isDockedMode"
+                           @deleteAnchor="onDeleteAnchor"
+                           @toggleDebug="onToggleDebugClick"
+                           @clearMessages="onClearMessages"
+                           @submit="onSubmit"
+                           @updateBottomPadding="messageContainerPadding = $event" />
         </div>
 
     </div>

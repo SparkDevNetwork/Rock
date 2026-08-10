@@ -20,7 +20,7 @@ namespace Rock.AI.Agent.Annotations
     /// so this attribute can be applied multiple times to a single method.
     /// </summary>
     [System.AttributeUsage( System.AttributeTargets.Class | System.AttributeTargets.Method, Inherited = false, AllowMultiple = true )]
-    internal class AgentPurposeAttribute : System.Attribute
+    public class AgentPurposeAttribute : System.Attribute
     {
         /// <summary>
         /// The purpose of the tool.

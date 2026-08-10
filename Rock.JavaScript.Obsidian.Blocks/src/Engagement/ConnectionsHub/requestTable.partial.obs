@@ -1,48 +1,47 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="styled-scroll">
+    <div class="styled-scroll" style="margin-top: var(--spacing-small);">
         <RockLabel v-if="isLabelVisible">{{ pluralize("Request", requestDetails.length) }}</RockLabel>
-        <div class="d-flex flex-column gap-xs request-table">
-            <div v-for="request in requestDetails" class="bg-interface-softer py-spacing-sm px-spacing-md border rounded request-row mr-spacing-tiny">
-                <div class="d-flex align-items-center">
+        <div class="request-list">
+            <div v-for="request in requestDetails" class="request-list-item">
+                <div class="request-list-item-person">
                     <template v-if="request.requester">
                         <PersonAvatar :personIdKey="request.requester?.idKey ?? ''"
                                       :photoUrl="request.requester?.photoUrl ?? ''"
                                       :photoSize="36"
                                       marginRight="3" />
 
-                        <div>
-                            <strong>{{ getFormattedName(request.requester) }}</strong>
-                            <div v-if="request.requester?.connectionStatus" class="text-muted">{{ request.requester?.connectionStatus }}</div>
+                        <div class="request-list-item-person-details">
+                            <span class="request-list-item-person-details-name">{{ getFormattedName(request.requester) }}</span>
+                            <span v-if="request.requester?.connectionStatus" class="request-list-item-person-details-info">{{ request.requester?.connectionStatus }}</span>
                         </div>
                     </template>
                 </div>
-                <div v-if="isConnectionOpportunityVisible" class="d-flex flex-column align-items-start justify-content-center gap-1">
-                    <HighlightLabel labelType="custom"
-                                    customClass="label-default text-xs text-semibold text-interface-strong">
+                <div v-if="isConnectionOpportunityVisible" class="request-list-item-opportunity">
+                    <HighlightLabel labelType="default">
                         {{ request.connectionOpportunity }}
                     </HighlightLabel>
                     <span v-if="!isNullOrWhiteSpace(request.connectionTypeSource) && viewOptions.isRequestSourceShown"
-                          class="text-small text-interface-medium">
+                          class="request-list-item-opportunity-source">
                         {{ request.connectionTypeSource }}
                     </span>
                 </div>
-                <div v-if="isDueDateVisible" class="d-flex align-items-center">
+                <div v-if="isDueDateVisible" class="request-list-item-date">
                     <template v-if="!isNullOrWhiteSpace(request.dueDate)">
-                        <i class="ti ti-calendar pr-spacing-tiny"></i>
+                        <i class="ti ti-calendar"></i>
                         <span>{{ getDueDateElapsedString(request.dueDate) }}</span>
                     </template>
                     <div v-else>
                         <i class="ti ti-minus"></i>
                     </div>
                 </div>
-                <div v-if="isConnectorVisible" class="d-flex align-items-center">
-                    <i class="ti ti-user-circle pr-spacing-tiny"></i>
+                <div v-if="isConnectorVisible" class="request-list-item-connector">
+                    <i class="ti ti-user-circle"></i>
                     <span>{{ request.connector?.text }}</span>
                 </div>
-                <div class="d-flex align-items-center justify-content-end">
+                <div class="request-list-item-status">
                     <div v-if="request.connectionStatus"
-                         class="w-100 py-spacing-tiny px-spacing-xs font-size-sm rounded-huge text-semibold text-interface-softest text-center text-truncate"
+                         class="connectionstatus-button"
                          :style="`background-color: ${request.connectionStatus.highlightColor}`">
                         {{ request.connectionStatus.name }}
                     </div>
@@ -53,18 +52,10 @@
 </template>
 
 <style scoped>
-.gap-xs {
-    gap: var(--spacing-xsmall);
-}
-
-.request-table {
-    max-height: 30vh;
-    overflow: auto;
-}
-
-.request-row {
+/* This cannot be migrated to scss because the colsPerRow is a computed property in the component. */
+.request-list-item {
     display: grid;
-    grid-template-columns: repeat(v-bind(colsPerRow), minmax(180px, 1fr));
+    grid-template-columns: repeat(v-bind(colsPerRow), minmax(auto, 1fr));
 }
 </style>
 

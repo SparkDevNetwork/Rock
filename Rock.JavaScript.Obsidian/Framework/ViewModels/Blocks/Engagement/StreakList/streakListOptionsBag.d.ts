@@ -23,6 +23,9 @@
 
 /** Additional Configuration for the Streak List Block. */
 export type StreakListOptionsBag = {
+    /** Gets or sets a value indicating whether the current person is authorized to view the streak type's enrollments. */
+    isBlockVisible: boolean;
+
     /** Gets or sets the streak type identifier key. */
     streakTypeIdKey?: string | null;
 

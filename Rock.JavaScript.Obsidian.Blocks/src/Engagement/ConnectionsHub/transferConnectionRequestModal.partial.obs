@@ -27,7 +27,7 @@
                                       label="Opportunity"
                                       :showBlankItem="false" />
                     </div>
-                    <div v-if="!isBulkTransfer" class="col-md-6 mb-spacing-md pl-spacing-none">
+                    <div v-if="!isBulkTransfer" class="col-md-6" style="margin-bottom: var(--spacing-medium); padding-left: 0;">
                         <RockButton :btnType="BtnType.Default"
                                     @click="setSearchMode(true)"
                                     isSquare>
@@ -128,11 +128,6 @@
     </Modal>
 </template>
 
-<style scoped>
-.gap-xs {
-    gap: var(--spacing-xsmall)
-}
-</style>
 
 <script setup lang="ts">
     import Modal from "@Obsidian/Controls/modal.obs";

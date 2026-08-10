@@ -22,7 +22,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Tests.Shared.Lava;
+using Rock.Tests.Integration.TestFramework.Lava;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Core.Lava.Commands

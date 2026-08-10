@@ -44,6 +44,7 @@ namespace Rock.Observability
 
         // Performance counters
         private static readonly PerformanceCounter _cpuPerformancCounter = null;
+        private static readonly PerformanceCounter _sqlPoolConnectionsCounter = null;
 
         private static readonly string _rockVersion = VersionInfo.VersionInfo.GetRockProductVersionFullName();
 
@@ -112,6 +113,15 @@ namespace Rock.Observability
             catch
             {
                 _cpuPerformancCounter = null;
+            }
+
+            try
+            {
+                _sqlPoolConnectionsCounter = CreateSqlPoolConnectionsCounter();
+            }
+            catch
+            {
+                _sqlPoolConnectionsCounter = null;
             }
         }
 
@@ -253,6 +263,33 @@ namespace Rock.Observability
                 "rock.database.queries",
                 unit: "count",
                 description: "Count of the number of database queries." );
+
+            if ( _sqlPoolConnectionsCounter != null )
+            {
+                /*
+                    7/31/26 - CLAUDE
+
+                    This reports NumberOfPooledConnections (in-use + idle) rather
+                    than NumberOfActiveConnections because the "detailed" counters
+                    from the .NET Data Provider for SqlServer are gated behind the
+                    ConnectionPoolPerformanceCounterDetail diagnostic switch in
+                    the app config and would report zero without it. The pooled
+                    total is a good proxy for pool health: it grows to meet
+                    demand and decays slowly as idle connections time out, so
+                    sustained high values reveal either genuine saturation or a
+                    leak. Each pooled connection is a real TCP session on SQL
+                    Server, not just a .NET wrapper. Aggregated across all pools
+                    because Rock hosts more than one, e.g. the primary database
+                    pool and a dedicated distributed-lock pool.
+
+                    Reason: Detailed active/idle counters require a config switch, pooled total is always available and a good health signal.
+                */
+                MeterInstance.CreateObservableUpDownCounter(
+                    "rock.database.connections.pooled",
+                    () => new Measurement<long>( ( long ) _sqlPoolConnectionsCounter.NextValue(), _commonTags ),
+                    unit: "{connections}",
+                    description: "Number of SQL connections currently held by connection pools in this Rock process (in use plus idle), aggregated across all pools." );
+            }
 
             // Setup Hosting metrics (metrics about the entire server environment)
             if ( _cpuPerformancCounter != null )
@@ -472,6 +509,32 @@ namespace Rock.Observability
         private static Measurement<float> GetCpuMeasure()
         {
             return new Measurement<float>( _cpuPerformancCounter.NextValue(), _commonTags );
+        }
+
+        /// <summary>
+        /// Creates a PerformanceCounter for the aggregate number of SQL
+        /// connections held by all connection pools in this process (in use
+        /// plus idle). The .NET Data Provider for SqlServer registers one
+        /// performance counter instance per AppDomain, formatted as
+        /// "{AppDomainName}[{PID}]". Returns null if the category is
+        /// unavailable or if the AppDomain's instance cannot be found, e.g.
+        /// because no SqlConnection has been opened in the process yet.
+        /// </summary>
+        /// <returns>The counter, or null if it cannot be resolved.</returns>
+        private static PerformanceCounter CreateSqlPoolConnectionsCounter()
+        {
+            var categoryName = ".NET Data Provider for SqlServer";
+            var category = new PerformanceCounterCategory( categoryName );
+            var suffix = $"[{Process.GetCurrentProcess().Id}]";
+            var instance = category.GetInstanceNames()
+                .FirstOrDefault( n => n.EndsWith( suffix, StringComparison.Ordinal ) );
+
+            if ( instance == null )
+            {
+                return null;
+            }
+
+            return new PerformanceCounter( categoryName, "NumberOfPooledConnections", instance, readOnly: true );
         }
 
         /// <summary>

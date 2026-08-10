@@ -21,7 +21,7 @@ using System.Configuration;
 
 using Rock.Lava.Fluid;
 using Rock.Model;
-using Rock.Tests.Shared.Lava;
+using Rock.Tests.Integration.TestFramework.Lava;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Utility;
 using Rock.Web;

@@ -148,6 +148,12 @@ namespace Rock.Blocks.AI
         }
 
         /// <inheritdoc/>
+        protected override IQueryable<AISkillTool> GetOrderedListQueryable( IQueryable<AISkillTool> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( a => a.Name );
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<AISkillTool> GetGridBuilder()
         {
             var skill = AISkillCache.Get( GetSkillId( null ) );

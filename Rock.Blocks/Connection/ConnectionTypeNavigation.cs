@@ -83,6 +83,12 @@ namespace Rock.Blocks.Connection
         Order = 4,
         IsRequired = true )]
 
+    [LinkedPage( "Celebrations Report Page",
+        Key = AttributeKey.CelebrationsReportPage,
+        Description = "Select the page that the celebrations button should open to view the celebrations report.",
+        Order = 4,
+        IsRequired = false )]
+
     [ConnectionTypesField( "Connection Types",
         Key = AttributeKey.ConnectionTypes,
         Description = "Optional list of connection types to limit the display to (All will be displayed by default).",
@@ -104,6 +110,7 @@ namespace Rock.Blocks.Connection
             public const string ConnectionsHubPage = "ConnectionsHubPage";
             public const string OperationalSnapshotPage = "OperationalSnapshotPage";
             public const string MyConnectionsPage = "MyConnectionsPage";
+            public const string CelebrationsReportPage = "CelebrationsReportPage";
             public const string ConnectionTypes = "ConnectionTypes";
         }
 
@@ -116,6 +123,7 @@ namespace Rock.Blocks.Connection
             public const string ConnectionsHubBoardViewPage = "ConnectionsHubBoardViewPage";
             public const string ConnectionsHubGridViewPage = "ConnectionsHubGridViewPage";
             public const string OperationalSnapshotPage = "OperationalSnapshotPage";
+            public const string CelebrationsReportPage = "CelebrationsReportPage";
 
             // Connection Opportunity-level URLs.
             public const string OpportunityConnectionsHubListViewPage = "OpportunityConnectionsHubListViewPage";
@@ -394,7 +402,8 @@ namespace Rock.Blocks.Connection
                         OverdueRequestCount = counts == null ? 0 : counts.OverdueRequestCount,
                         UnassignedRequestCount = counts == null ? 0 : counts.UnassignedRequestCount,
                         AssignedToYouRequestCount = counts == null ? 0 : counts.AssignedToYouRequestCount,
-                        EnabledViews = x.ConnectionType.EnabledViews
+                        EnabledViews = x.ConnectionType.EnabledViews,
+                        IsCelebrationEnabled = x.ConnectionType.EnabledFeatures.HasFlag( EnabledFeatureFlags.Celebration )
                     }
                 )
                 .OrderBy( s => s.Order )
@@ -509,6 +518,7 @@ namespace Rock.Blocks.Connection
                 [NavigationUrlKey.ConnectionsHubBoardViewPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsHubPage, hubBoardViewQueryParams ),
                 [NavigationUrlKey.ConnectionsHubGridViewPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsHubPage, hubGridViewQueryParams ),
                 [NavigationUrlKey.OperationalSnapshotPage] = this.GetLinkedPageUrl( AttributeKey.OperationalSnapshotPage, PageParameterKey.ConnectionType, "((Key))" ),
+                [NavigationUrlKey.CelebrationsReportPage] = this.GetLinkedPageUrl( AttributeKey.CelebrationsReportPage ),
 
                 // Connection Opportunity-level URLs.
                 [NavigationUrlKey.OpportunityConnectionsHubListViewPage] = this.GetLinkedPageUrl(

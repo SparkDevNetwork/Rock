@@ -56,9 +56,11 @@
                                             <CampusAccountAmountPicker v-model="accountAmounts"
                                                                        :selectableAccountGuids="selectableAccountGuids"
                                                                        :accountAmountEntryMode="config.bag?.isMultiAccountMode ? 'multipleAccounts' : 'singleAccount'"
+                                                                       :alwaysHideCampus="options.isCampusPrompted"
                                                                        hideCampusIfKnown
                                                                        :rules="amountRules"
-                                                                       :campusGuid="campus?.value ?? null" />
+                                                                       :campusGuid="campus?.value ?? null"
+                                                                       @update:campusGuid="onCampusGuidChanged" />
                                         </div>
                                     </div>
 
@@ -369,6 +371,17 @@
     }
 
     /**
+     * Captures the campus chosen from the amount picker's built-in campus picker (shown only
+     * when the dedicated campus section is hidden) so it writes back into the single `campus`
+     * value the update request reads.
+     *
+     * @param guid The Guid of the campus selected in the amount picker, or null when cleared.
+     */
+    function onCampusGuidChanged(guid: Guid | null): void {
+        campus.value = guid ? { value: guid } : null;
+    }
+
+    /**
      * Selects the given payment method card.
      *
      * @param value The identifier of the chosen payment method.
@@ -507,6 +520,7 @@
                 accountName: aa.account?.text ?? null,
                 amount: aa.amount ?? null
             })),
+            campusGuid: toGuidOrNull(campus.value?.value),
             frequencyValue: frequencyValue.value,
             nextPaymentDate: nextPaymentDate.value,
             endDate: isOneTimeFrequency.value ? null : endDate.value,
@@ -563,8 +577,15 @@
      * @param value The account/amount allocations from the picker.
      */
     function validateNoNegativeAmounts(value: unknown): string | boolean {
-        const amounts = value as AccountAmount[] | null;
-        if (amounts?.some(aa => (aa.amount ?? 0) < 0)) {
+        // In single-account mode the picker forwards these rules to its inner account
+        // picker too, whose value is a single account (not an amount array), so ignore
+        // anything that isn't the account/amount array this rule is meant to check.
+        if (!Array.isArray(value)) {
+            return true;
+        }
+
+        const amounts = value as AccountAmount[];
+        if (amounts.some(aa => (aa.amount ?? 0) < 0)) {
             return "Make sure the amount you've entered for each account is a positive amount.";
         }
 

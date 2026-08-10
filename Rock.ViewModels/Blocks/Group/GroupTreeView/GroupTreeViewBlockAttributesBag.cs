@@ -66,5 +66,11 @@ namespace Rock.ViewModels.Blocks.Group.GroupTreeView
         /// Gets or sets whether auto-selecting the first group when none is selected is disabled.
         /// </summary>
         public bool DisableAutoSelectFirstGroup { get; set; }
+
+        /// <summary>
+        /// Gets or sets the block attribute default for counts when the person has no
+        /// saved Show Count For preference: 0 = None, 1 = Child Groups, 2 = Group Members.
+        /// </summary>
+        public int InitialCountSetting { get; set; }
     }
 }

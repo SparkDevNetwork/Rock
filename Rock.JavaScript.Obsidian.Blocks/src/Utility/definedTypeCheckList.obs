@@ -61,6 +61,15 @@
         if (!result.isSuccess) {
             item.isChecked = previous;
             await alert(result.errorMessage ?? "Unable to save your change. Please try again.");
+            return;
+        }
+
+        // The block's Pre-HTML and Post-HTML are rendered by the server outside this
+        // component and can only be removed by a fresh page render, so reload once the
+        // last visible item is checked off (the WebForms block redirected back to the
+        // same page for the same reason).
+        if (!isBlockVisible.value) {
+            window.location.reload();
         }
     }
 

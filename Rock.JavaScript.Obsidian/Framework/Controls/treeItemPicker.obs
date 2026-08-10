@@ -7,6 +7,7 @@
                            :showClear="showClear"
                            :modelValue="internalValues"
                            :fullWidth="fullWidth"
+                           :hideMainActionButtons="hideMainActionButtons"
                            v-model:showPopup="internalShowPopup">
 
         <TreeList v-model="internalValues"
@@ -148,6 +149,16 @@
          * selecting all children and descendant items of that folder.
          */
         showSelectChildren: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * When true the popup's footer action buttons (Select / Cancel) are
+         * hidden. Useful in single-select mode, where clicking an item applies
+         * and closes immediately, making the buttons redundant.
+         */
+        hideMainActionButtons: {
             type: Boolean as PropType<boolean>,
             default: false
         },

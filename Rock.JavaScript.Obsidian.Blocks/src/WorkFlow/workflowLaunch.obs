@@ -68,9 +68,9 @@
     import { computed, ref } from "vue";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
-    import { WorkflowLaunchBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowLaunch/workflowLaunchBag";
-    import { WorkflowLaunchOptionsBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowLaunch/workflowLaunchOptionsBag";
-    import { WorkflowLaunchItemBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowLaunch/workflowLaunchItemBag";
+    import { WorkflowLaunchBag } from "@Obsidian/ViewModels/Blocks/WorkFlow/WorkflowLaunch/workflowLaunchBag";
+    import { WorkflowLaunchOptionsBag } from "@Obsidian/ViewModels/Blocks/WorkFlow/WorkflowLaunch/workflowLaunchOptionsBag";
+    import { WorkflowLaunchItemBag } from "@Obsidian/ViewModels/Blocks/WorkFlow/WorkflowLaunch/workflowLaunchItemBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";

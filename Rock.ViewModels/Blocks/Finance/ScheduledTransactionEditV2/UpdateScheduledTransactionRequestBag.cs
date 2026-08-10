@@ -36,6 +36,12 @@ namespace Rock.ViewModels.Blocks.Finance.ScheduledTransactionEditV2
         public List<ScheduledTransactionAccountAmountBag> AccountAmounts { get; set; }
 
         /// <summary>
+        /// Gets or sets the unique identifier of the selected campus. Used for campus account
+        /// mapping so a parent account can be routed to its campus-specific child account.
+        /// </summary>
+        public Guid? CampusGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the selected payment frequency value.
         /// </summary>
         public string FrequencyValue { get; set; }

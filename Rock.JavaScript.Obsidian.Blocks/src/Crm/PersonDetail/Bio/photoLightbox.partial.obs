@@ -1,8 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div id="profile-image" class="img-card-top profile-squish">
+    <div :id="isCondensed ? undefined : 'profile-image'"
+         :class="containerClass">
         <div class="fluid-crop">
-            <a href="#" @click.prevent="onPhotoClick">
+            <a href="#"
+               class="fluidbox"
+               title="View photo"
+               @click.prevent="onPhotoClick">
                 <img :src="photoUrl" alt="" class="img-profile">
             </a>
         </div>
@@ -31,12 +35,16 @@
     max-width: 90vw;
     max-height: 90vh;
 }
+
+.fluidbox {
+    cursor: zoom-in;
+}
 </style>
 
 <script setup lang="ts">
-    import { onUnmounted, PropType, ref, watch } from "vue";
+    import { computed, onUnmounted, PropType, ref, watch } from "vue";
 
-    defineProps({
+    const props = defineProps({
         photoUrl: {
             type: String as PropType<string>,
             required: true
@@ -45,6 +53,15 @@
         personName: {
             type: String as PropType<string>,
             default: ""
+        },
+
+        /**
+         * When true, uses the condensed Bio Summary photo layout (left column)
+         * instead of the full Bio block top photo layout.
+         */
+        isCondensed: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -53,6 +70,16 @@
     const isLightboxShown = ref(false);
 
     // #endregion Values
+
+    // #region Computed Values
+
+    const containerClass = computed((): string => {
+        return props.isCondensed
+            ? "profile-image profile-image-sm"
+            : "img-card-top profile-squish";
+    });
+
+    // #endregion Computed Values
 
     // #region Event Handlers
 

@@ -630,20 +630,29 @@ namespace Rock.Blocks.Fundraising
         }
 
         /// <summary>
-        /// Gets the number of top-level comments on the opportunity that are viewable by the
-        /// current person. Only root notes are counted (replies are nested beneath their parent),
-        /// matching the count shown in the legacy comments tab label.
+        /// Gets the number of root comments on the opportunity viewable by the current person.
+        /// Counted in SQL, so per-note auth rules are not evaluated.
         /// </summary>
         /// <param name="group">The opportunity group.</param>
         /// <returns>The number of viewable root comments.</returns>
         private int GetCommentCount( Rock.Model.Group group )
         {
-            var noteClientService = new NoteClientService( RockContext, RequestContext.CurrentPerson )
-            {
-                AllowedNoteTypes = GetCommentNoteTypes()
-            };
+            var noteTypeIds = GetCommentNoteTypes()
+                .Where( nt => nt.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .Select( nt => nt.Id )
+                .ToList();
 
-            return noteClientService.GetViewableNotes( group ).Count( n => !n.ParentNoteId.HasValue );
+            if ( !noteTypeIds.Any() )
+            {
+                return 0;
+            }
+
+            return new NoteService( RockContext ).Queryable()
+                .AsNoTracking()
+                .AreViewableBy( RequestContext.CurrentPerson?.Id )
+                .Count( n => noteTypeIds.Contains( n.NoteTypeId )
+                    && n.EntityId == group.Id
+                    && n.ParentNoteId == null );
         }
 
         #endregion Methods

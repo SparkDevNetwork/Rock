@@ -1,0 +1,89 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+using System;
+
+namespace Rock.Plugin.HotFixes
+{
+    /// <summary>
+    /// Removes AttributeValue rows for EventCalendarItem-typed attributes whose EntityId
+    /// does not correspond to an EventCalendarItem on the attribute's qualifying calendar.
+    /// These rows were written by a regression in the Obsidian Event Item Detail block
+    /// that stamped EntityId with the EventItem.Id instead of the EventCalendarItem.Id.
+    /// Fix for issue #6962.
+    /// </summary>
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 314, "19.4" )]
+    public class FixEventItemAttributeCorruption6962 : Migration
+    {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            NA_CleanupEventItemAttributeCorruption_6962_Up();
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            //
+        }
+
+        /// <summary>
+        /// Deletes AttributeValue rows written with EntityId = EventItem.Id for
+        /// EventCalendarItem-scoped attributes by the Obsidian Event Item Detail block
+        /// regression (fixed in this branch). Only rows whose EntityId does not match a
+        /// real EventCalendarItem on the attribute's qualifying calendar are removed.
+        ///
+        /// Reason: https://github.com/SparkDevNetwork/Rock/issues/6962
+        /// </summary>
+        private void NA_CleanupEventItemAttributeCorruption_6962_Up()
+        {
+            Sql( @"
+DECLARE @EventCalendarItemEntityTypeId INT = (
+    SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.EventCalendarItem'
+);
+
+IF @EventCalendarItemEntityTypeId IS NOT NULL
+BEGIN
+    DECLARE @BatchSize INT = 5000;
+    DECLARE @Deleted   INT = 1;
+
+    WHILE @Deleted > 0
+    BEGIN
+        DELETE TOP (@BatchSize) av
+        FROM [AttributeValue] av
+        INNER JOIN [Attribute] a
+            ON a.[Id] = av.[AttributeId]
+        LEFT JOIN [EventCalendarItem] eci
+            ON eci.[Id] = av.[EntityId]
+           AND eci.[EventCalendarId] = TRY_CAST( a.[EntityTypeQualifierValue] AS INT )
+        WHERE a.[EntityTypeId] = @EventCalendarItemEntityTypeId
+          AND a.[EntityTypeQualifierColumn] = 'EventCalendarId'
+          AND av.[EntityId] IS NOT NULL
+          AND eci.[Id] IS NULL;
+
+        SET @Deleted = @@ROWCOUNT;
+    END
+END
+" );
+        }
+    }
+}

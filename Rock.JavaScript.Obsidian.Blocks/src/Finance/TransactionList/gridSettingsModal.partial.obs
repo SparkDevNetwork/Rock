@@ -73,6 +73,7 @@
                     <div v-if="isAccountFilterVisible" class="col-md-6">
                         <AccountPicker v-model="account"
                                        label="Account"
+                                       :multiple="true"
                                        :activeOnly="isActiveAccountsOnlyFilter" />
                     </div>
                 </div>
@@ -181,7 +182,7 @@
     const transactionType = ref(props.modelValue.transactionType ?? null);
     const transactionCode = ref(props.modelValue.transactionCode ?? "");
     const foreignKey = ref(props.modelValue.foreignKey ?? "");
-    const account = ref(props.modelValue.account as ListItemBag);
+    const account = ref<ListItemBag[]>(props.modelValue.account ?? []);
     const campusOfBatch = ref(props.modelValue.campusOfBatch as ListItemBag);
     const campusOfAccount = ref(props.modelValue.campusOfAccount as ListItemBag);
 
@@ -224,7 +225,7 @@
         transactionType.value = props.modelValue.transactionType ?? null;
         transactionCode.value = props.modelValue.transactionCode ?? "";
         foreignKey.value = props.modelValue.foreignKey ?? "";
-        account.value = props.modelValue.account as ListItemBag;
+        account.value = props.modelValue.account ?? [];
         campusOfBatch.value = props.modelValue.campusOfBatch as ListItemBag;
         campusOfAccount.value = props.modelValue.campusOfAccount as ListItemBag;
     });

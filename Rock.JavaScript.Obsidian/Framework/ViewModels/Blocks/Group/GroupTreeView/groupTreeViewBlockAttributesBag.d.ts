@@ -43,6 +43,12 @@ export type GroupTreeViewBlockAttributesBag = {
      */
     includedGroupTypeGuids?: Guid[] | null;
 
+    /**
+     * Gets or sets the block attribute default for counts when the person has no
+     * saved Show Count For preference: 0 = None, 1 = Child Groups, 2 = Group Members.
+     */
+    initialCountSetting: number;
+
     /** Gets or sets whether the tree is limited to security-role groups. */
     limitToSecurityRoleGroups: boolean;
 

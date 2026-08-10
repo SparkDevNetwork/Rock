@@ -1,0 +1,66 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <button class="btn btn-danger btn-sm"
+            :title="buttonTitle"
+            type="button"
+            :disabled="isDisabled"
+            @click.prevent="onClick">
+        <i :class="iconClass"></i>
+    </button>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+
+    const props = defineProps(standardCellProps);
+
+    const isProcessing = ref(false);
+
+    /*
+        GroupList-mode delete cell. Swaps the icon and tooltip to archive when the group has
+        history snapshots, mirroring the WebForms RowDataBound logic. canDelete already encodes
+        IsSystem + EDIT authorization on the C# side, so this cell only needs to honor that flag.
+    */
+    const isDisabled = computed((): boolean => {
+        if (isProcessing.value) {
+            return true;
+        }
+
+        return props.row["canDelete"] === false;
+    });
+
+    const buttonTitle = computed((): string => {
+        return props.row["needsArchive"] === true ? "Archive" : "Delete";
+    });
+
+    const iconClass = computed((): string => {
+        return props.row["needsArchive"] === true ? "ti ti-archive" : "ti ti-x";
+    });
+
+    async function onClick(event: Event): Promise<void> {
+        const key = props.grid.getRowKey(props.row);
+
+        if (event.target instanceof HTMLElement) {
+            event.target.blur();
+        }
+
+        if (!key || typeof props.column.props.onClick !== "function") {
+            return;
+        }
+
+        isProcessing.value = true;
+
+        try {
+            const result = props.column.props.onClick(key, props.grid);
+
+            if (isPromise(result)) {
+                await result;
+            }
+        }
+        finally {
+            isProcessing.value = false;
+        }
+    }
+</script>

@@ -15,7 +15,7 @@
                 <Pill :disabled="isSending"
                       :tooltip="getRecipientTooltip(item)"
                       :tokenType="getRecipientTokenType(item)">
-                    <img :src="item?.photoUrl ?? undefined" style="border-radius: 24px; width: 24px; height: 24px" />
+                    <img :src="item?.photoUrl ?? undefined" style="border-radius: var(--rounded-huge); width: 24px; height: 24px" />
                     <span class="item-content">{{ item.name }}</span>
                 </Pill>
             </template>
@@ -71,12 +71,6 @@
     </Modal>
 </template>
 
-<style scoped>
-.recipients-email-error {
-    color: var(--color-danger-strong);
-    margin-bottom: var(--spacing-medium);
-}
-</style>
 
 <script setup lang="ts">
     import { PropType, watch, computed, ref } from "vue";

@@ -1,0 +1,95 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Filters"
+           saveText="Apply"
+           @save="onSave">
+
+        <div v-if="!isConnectionTypeFilterHidden" class="row">
+            <div class="col-md-4">
+                <DropDownList v-model="connectionTypeValue"
+                              label="Request Type"
+                              :items="connectionTypeItems"
+                              :showBlankItem="true" />
+            </div>
+        </div>
+
+        <SlidingDateRangePicker v-model="slidingDateRange"
+                                label="Date Range"
+                                :isRangeClearable="false" />
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        connectionTypeItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        isConnectionTypeFilterHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const slidingDateRange = ref<SlidingDateRange | null>(props.modelValue.slidingDateRange);
+    const connectionTypeValue = ref<string>(props.modelValue.connectionType?.value ?? "");
+
+    /** Apply — emits updated settings if anything changed, then closes. */
+    function onSave(): void {
+        const connectionType = props.connectionTypeItems.find(i => i.value === connectionTypeValue.value) ?? null;
+
+        const value: GridSettingsOptions = {
+            slidingDateRange: slidingDateRange.value,
+            connectionType
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    // Resync local state when the parent's gridSettings changes.
+    watch(() => props.modelValue, () => {
+        slidingDateRange.value = props.modelValue.slidingDateRange;
+        connectionTypeValue.value = props.modelValue.connectionType?.value ?? "";
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

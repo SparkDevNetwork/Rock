@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.Entity;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -273,9 +274,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptrPhones_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            PhoneNumber phoneNumber = e.Item.DataItem as PhoneNumber;
+            var phoneNumber = e.Item.DataItem as PhoneNumberDisplay;
 
-            if ( phoneNumber.Id == SmsPhoneNumberId )
+            if ( phoneNumber != null && phoneNumber.Id == SmsPhoneNumberId )
             {
                 LinkButton btnSms = ( LinkButton ) e.Item.FindControl( "btnSms" );
                 if ( btnSms != null )
@@ -653,7 +654,26 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     }
                 }
 
-                var phoneNumbers = person.PhoneNumbers.Where( p => !p.IsUnlisted ).ToList();
+                // Exclude phone numbers whose type has been deactivated so they don't
+                // appear alongside active phone numbers on the check-in Person Profile.
+                var activePhoneNumberTypeIds = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) )
+                    .DefinedValues
+                    .Where( dv => dv.IsActive )
+                    .Select( dv => dv.Id )
+                    .ToList();
+
+                var phoneNumbers = person.PhoneNumbers
+                    .Where( p => p.NumberTypeValueId.HasValue
+                                 && activePhoneNumberTypeIds.Contains( p.NumberTypeValueId.Value ) )
+                    .Select( p => new PhoneNumberDisplay
+                    {
+                        Id = p.Id,
+                        Number = p.IsUnlisted ? MaskDigits( p.Number ) : p.Number,
+                        NumberFormatted = p.IsUnlisted ? MaskDigits( p.NumberFormatted ) : p.NumberFormatted,
+                        NumberType = p.NumberTypeValue?.Value,
+                        IsUnlisted = p.IsUnlisted
+                    } )
+                    .ToList();
                 rptrPhones.DataSource = phoneNumbers;
                 rptrPhones.DataBind();
                 pnlContact.Visible = phoneNumbers.Any() || lEmail.Visible;
@@ -994,6 +1014,21 @@ namespace RockWeb.Blocks.CheckIn.Manager
             tbSmsMessage.Text = snippet.Content.ResolveMergeFields( mergeFields );
         }
 
+        /// <summary>
+        /// Replaces every digit in <paramref name="value"/> with an asterisk, preserving formatting
+        /// characters such as parentheses, spaces, and dashes. Used to render unlisted phone numbers
+        /// so staff can see the number type and layout without seeing the actual digits.
+        /// </summary>
+        private static string MaskDigits( string value )
+        {
+            if ( value.IsNullOrWhiteSpace() )
+            {
+                return value;
+            }
+
+            return Regex.Replace( value, @"\d", "*" );
+        }
+
         #endregion Methods
 
         #region Helper Class
@@ -1022,6 +1057,42 @@ namespace RockWeb.Blocks.CheckIn.Manager
             /// The Relationship Name
             /// </summary>
             public string RelationshipName { get; set; }
+        }
+
+        /// <summary>
+        /// A lightweight projection of <see cref="PhoneNumber"/> used to bind the phones repeater.
+        /// Unlisted numbers are masked at projection time so the actual digits never reach the
+        /// markup or the DOM.
+        /// </summary>
+        private class PhoneNumberDisplay
+        {
+            /// <summary>
+            /// The <see cref="PhoneNumber.Id"/>, used to match the SMS-capable number.
+            /// </summary>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// The raw number, masked with asterisks when <see cref="IsUnlisted"/> is <c>true</c>.
+            /// Used for the <c>tel:</c> link href.
+            /// </summary>
+            public string Number { get; set; }
+
+            /// <summary>
+            /// The formatted number, masked with asterisks when <see cref="IsUnlisted"/> is <c>true</c>.
+            /// Used for display.
+            /// </summary>
+            public string NumberFormatted { get; set; }
+
+            /// <summary>
+            /// The phone number type (e.g. "Mobile", "Home").
+            /// </summary>
+            public string NumberType { get; set; }
+
+            /// <summary>
+            /// Whether the underlying phone number is unlisted. Bound in the markup to disable the
+            /// <c>tel:</c> button so staff can't dial a number they aren't allowed to see.
+            /// </summary>
+            public bool IsUnlisted { get; set; }
         }
 
         #endregion Helper Class

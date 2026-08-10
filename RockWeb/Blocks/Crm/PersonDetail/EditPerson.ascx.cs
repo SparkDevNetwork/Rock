@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
@@ -654,11 +655,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                                 }}
                                         }})";
 
+                                        // Encode values that get embedded in the JS string literals so
+                                        // apostrophes in names (e.g., "O'Reilly") don't break the confirm() call.
                                         string givingEnvelopeWarningScript = string.Format(
                                             givingEnvelopeWarningScriptFormat,
-                                            givingEnvelopeWarningText,
+                                            HttpUtility.JavaScriptStringEncode( givingEnvelopeWarningText ),
                                             hfGivingEnvelopeNumberConfirmed.ClientID,
-                                            newEnvelopeNumber );
+                                            HttpUtility.JavaScriptStringEncode( newEnvelopeNumber ) );
 
                                         ScriptManager.RegisterStartupScript( hfGivingEnvelopeNumberConfirmed, hfGivingEnvelopeNumberConfirmed.GetType(), "confirm-envelope-number", givingEnvelopeWarningScript, true );
                                         return false;
@@ -993,9 +996,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var phoneNumbers = new List<PhoneNumber>();
             var phoneNumberTypes = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
-            if ( phoneNumberTypes.DefinedValues.Any() )
+
+            // Only show active phone types. An admin can reactivate the type if they
+            // need to view or edit a value stored against an inactive type.
+            var activePhoneNumberTypes = phoneNumberTypes.DefinedValues
+                .Where( dv => dv.IsActive )
+                .ToList();
+
+            if ( activePhoneNumberTypes.Any() )
             {
-                foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues )
+                foreach ( var phoneNumberType in activePhoneNumberTypes )
                 {
                     var phoneNumber = Person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberType.Id );
                     if ( phoneNumber == null )

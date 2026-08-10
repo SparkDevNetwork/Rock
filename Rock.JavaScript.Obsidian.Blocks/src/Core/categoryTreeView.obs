@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
-    <div v-else class="category-tree-view">
+    <div v-else class="category-tree-view rock-tree-view">
         <Panel v-if="panelTitle || !isEntityTypeConfigured"
                :title="panelTitle || 'Categories'"
                :isDrawerOpen="showSearch || showConfig"
@@ -12,7 +12,7 @@
             <template #headerActions>
                 <button v-if="canEdit && showEntityAdd"
                         type="button"
-                        class="btn btn-link btn-xs"
+                        class="btn btn-panel-action btn-add"
                         :title="addEntityTitle"
                         :disabled="selectedKeys.length !== 1"
                         @click="onAddEntity">
@@ -22,20 +22,20 @@
                               title="Add Category"
                               :items="addCategoryActions"
                               align="right"
-                              anchorButtonCssClass="btn-link btn-xs"
+                              anchorButtonCssClass="btn-panel-action"
                               :isAnchorButtonOverflow="false">
                     <i class="ti ti-folder-plus"></i>
                 </DropDownMenu>
                 <button v-if="isSearchVisible"
                         type="button"
-                        class="btn btn-link btn-xs"
+                        class="btn btn-panel-action"
                         title="Search"
                         @click="onToggleSearch">
                     <i class="ti ti-search"></i>
                 </button>
                 <button v-if="isActiveFilterVisible"
                         type="button"
-                        class="btn btn-link btn-xs"
+                        class="btn btn-panel-action"
                         title="Options"
                         @click="onToggleConfig">
                     <i class="ti ti-dots-vertical"></i>
@@ -65,7 +65,7 @@
             </template>
 
             <NotificationBox v-if="!isEntityTypeConfigured" alertType="warning">Please select an entity type in the block settings.</NotificationBox>
-            <div v-else class="category-tree-view-tree">
+            <div v-else class="rock-tree-view-tree">
                 <TreeList v-model="selectedKeys"
                           :provider="itemProvider"
                           :initiallyExpanded="initiallyExpanded"
@@ -87,52 +87,6 @@
                   @treeitem-collapsed="onCollapse" />
     </div>
 </template>
-
-<style scoped>
-/* The panel body is flush. Keep a small gap above the tree, plus a min-height
-   so the tree holds a stable area instead of collapsing to its node count. */
-.category-tree-view-tree {
-    padding-top: 8px;
-    min-height: 200px;
-    overflow-x: auto;
-}
-
-/* The TreeList control clips horizontal overflow and caps its width at 100%, so deeply nested or
-   long-named categories get cut off. Let the tree size to its content (still filling the panel when
-   narrow) so the wrapper shows a horizontal scrollbar when needed, matching the WebForms block. */
-.category-tree-view-tree > :deep(div) {
-    overflow-x: visible !important;
-    max-width: none !important;
-    width: max-content;
-    min-width: 100%;
-}
-
-/* The panel's default header actions render 12px icons in the medium interface color spaced 12px
-   apart, which looks smaller and more washed out than the matching WebForms control. Size, space,
-   and color the icons to match it: 14px glyphs in the strong interface color, ~14px apart, with the
-   trailing icon held ~14px off the panel edge. */
-.category-tree-view :deep(.panel-header-actions > *) {
-    margin-right: 0 !important;
-}
-
-.category-tree-view :deep(.panel-header-actions) {
-    padding-right: 6px !important;
-}
-
-.category-tree-view :deep(.panel-header-actions .btn) {
-    padding-left: 6px !important;
-    padding-right: 6px !important;
-}
-
-.category-tree-view :deep(.panel-header-actions .btn),
-.category-tree-view :deep(.panel-header-actions .btn i) {
-    color: var(--color-interface-strong) !important;
-}
-
-.category-tree-view :deep(.panel-header-actions .btn i) {
-    font-size: 14px !important;
-}
-</style>
 
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
@@ -201,7 +155,7 @@
 
     const selectedKeys = ref<string[]>(bag.selectedCategoryGuids ?? []);
     const initiallyExpanded = ref<string[]>(bag.expandedCategoryGuids ?? []);
-    const expandedKeys = ref<string[]>([...( bag.expandedCategoryGuids ?? [] )]);
+    const expandedKeys = ref<string[]>([...(bag.expandedCategoryGuids ?? [])]);
 
     // The tree never auto-navigates on load; a category is selected only by an explicit click or a
     // deep link. This matches the WebForms block, which did not jump to the first category.
@@ -272,7 +226,8 @@
     /** Adds a new entity parented to the selected node's category. */
     async function onAddEntity(): Promise<void> {
         const result = await invokeBlockAction<string>("GetAddEntityUrl", {
-            selectedGuid: (selectedKeys.value[0] as Guid) ?? emptyGuid
+            selectedGuid: (selectedKeys.value[0] as Guid) ?? emptyGuid,
+            expandedGuids: expandedKeys.value
         });
 
         if (result.isSuccess && result.data) {

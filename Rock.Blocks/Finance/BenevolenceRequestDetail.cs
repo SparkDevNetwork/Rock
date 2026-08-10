@@ -24,6 +24,7 @@ using System.Text;
 
 using Rock.Attribute;
 using Rock.Constants;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -106,6 +107,17 @@ namespace Rock.Blocks.Finance
         Category = "Individual",
         Order = 7 )]
 
+    [DefinedValueField(
+        "Record Source",
+        Key = AttributeKey.RecordSource,
+        Description = "The record source to use for new individuals (default = 'Benevolence Request'). If a 'RecordSource' page parameter is found, it will be used instead.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE,
+        IsRequired = false,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_BENEVOLENCE_REQUEST,
+        Category = "Individual",
+        Order = 8 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "9B1BE948-F14A-4889-981D-75B86E6D458D" )]
@@ -153,6 +165,7 @@ namespace Rock.Blocks.Finance
             public const string WorkflowEntryPage = "WorkflowEntryPage";
             public const string RaceOption = "RaceOption";
             public const string EthnicityOption = "EthnicityOption";
+            public const string RecordSource = "RecordSource";
         }
 
         /// <summary>
@@ -240,6 +253,7 @@ namespace Rock.Blocks.Finance
             options.WorkflowEntryPageAttribute = GetAttributeValue( AttributeKey.WorkflowEntryPage ).AsGuid();
             options.RaceOptionAttribute = GetAttributeValue( AttributeKey.RaceOption ).ToString();
             options.EthnicityOptionAttribute = GetAttributeValue( AttributeKey.EthnicityOption ).ToString();
+            options.DefaultRecordSource = GetRecordSourceListItemBag( GetRecordSourceValueId() );
 
             #endregion Attribute Options
 
@@ -912,6 +926,7 @@ namespace Rock.Blocks.Finance
                         GovernmentId = governmentId ?? "",
                         RaceGuid = person.RaceValue?.Guid ?? Guid.Empty,
                         EthnicityGuid = person.EthnicityValue?.Guid ?? Guid.Empty,
+                        RecordSource = GetRecordSourceListItemBag( person.RecordSourceValueId ),
                     };
                 }
             }
@@ -946,6 +961,7 @@ namespace Rock.Blocks.Finance
                 GovernmentId = entity.GovernmentId ?? "",
                 RaceGuid = Guid.Empty,
                 EthnicityGuid = Guid.Empty,
+                RecordSource = GetRecordSourceListItemBag( GetRecordSourceValueId() ),
             };
 
             var caseWorkerBagBuiltFromEntity = new PersonBag
@@ -1021,6 +1037,7 @@ namespace Rock.Blocks.Finance
                 GovernmentId = "",
                 RaceGuid = person.RaceValue?.Guid ?? Guid.Empty,
                 EthnicityGuid = person.EthnicityValue?.Guid ?? Guid.Empty,
+                RecordSource = GetRecordSourceListItemBag( person.RecordSourceValueId ),
             };
 
             return true;
@@ -1347,6 +1364,9 @@ namespace Rock.Blocks.Finance
                     }
                 }
 
+                var selectedRecordSourceId = DefinedValueCache.Get( ( personBag.RecordSource?.Value ).AsGuidOrNull() ?? Guid.Empty )?.Id;
+                person.RecordSourceValueId = selectedRecordSourceId ?? GetRecordSourceValueId();
+
                 if ( personBag.RaceGuid != null && !personBag.RaceGuid.IsEmpty() )
                 {
                     person.RaceValueId = DefinedValueCache.Get( personBag.RaceGuid ).Id;
@@ -1370,6 +1390,34 @@ namespace Rock.Blocks.Finance
             }
 
             return person;
+        }
+
+        /// <summary>
+        /// Gets the record source to use for new individuals.
+        /// </summary>
+        /// <returns>
+        /// The identifier of the Record Source Type <see cref="DefinedValue"/> to use.
+        /// </returns>
+        private int? GetRecordSourceValueId()
+        {
+            return RecordSourceHelper.GetSessionRecordSourceValueId()
+                ?? DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordSource ).AsGuid() )?.Id;
+        }
+
+        /// <summary>
+        /// Builds a <see cref="ListItemBag"/> for the given Record Source Type <see cref="DefinedValue"/> identifier.
+        /// </summary>
+        /// <param name="recordSourceValueId">The identifier of the Record Source Type defined value.</param>
+        /// <returns>A <see cref="ListItemBag"/> for the defined value, or <see langword="null"/> if it was not found.</returns>
+        private ListItemBag GetRecordSourceListItemBag( int? recordSourceValueId )
+        {
+            if ( !recordSourceValueId.HasValue )
+            {
+                return null;
+            }
+
+            var recordSource = DefinedValueCache.Get( recordSourceValueId.Value );
+            return recordSource?.ToListItemBag();
         }
 
         /// <summary>
