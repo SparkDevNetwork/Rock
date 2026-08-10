@@ -91,6 +91,8 @@ namespace Rock.Workflow.Action
         Description = "The name to use for the new document that is created. <span class='tip tip-lava'></span>",
         Key = AttributeKey.SignatureDocumentName,
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 7 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "41491689-00BD-49A1-A3CD-A59FBBD2B2F8" )]
