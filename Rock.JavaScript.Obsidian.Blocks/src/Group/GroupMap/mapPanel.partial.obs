@@ -10,7 +10,7 @@
             </template>
 
             <template v-else>
-                <div v-if="(options.isCampusFilterShown ?? false) && hasGeoFence" class="map-filter-campus">
+                <div v-if="options.isCampusFilterShown ?? false" class="map-filter-campus">
                     <CheckBoxList v-model="selectedCampusIds"
                                   label="Campus Filter"
                                   help="Select the campuses to narrow the results down to families with that home campus."
