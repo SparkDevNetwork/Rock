@@ -44,7 +44,6 @@
                       title="Individual"
                       field="individual"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getPersonNameFilterValue"
                       visiblePriority="xs" />
 
         <TextColumn
@@ -120,7 +119,6 @@
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { CompletionStatusDescription } from "@Obsidian/Enums/Lms/completionStatus";
 
     const invokeBlockAction = useInvokeBlockAction();
@@ -179,16 +177,6 @@
      */
     function onSelectItem(key: string): void {
         emit("rowClick", key);
-    }
-
-    /**
-    * Gets the filter value text to use for the name column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getPersonNameFilterValue(row: Record<string, unknown>): string {
-        const person = row["individual"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     /**

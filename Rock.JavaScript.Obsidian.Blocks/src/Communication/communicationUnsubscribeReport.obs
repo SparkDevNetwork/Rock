@@ -63,8 +63,7 @@
                       visiblePriority="xl"
                       :hideAvatar="true"
                       :showAsLink="true"
-                      :filter="pickExistingValueFilter"
-                      :filterValue="getSentByPersonTextValue" />
+                      :filter="pickExistingValueFilter" />
 
     </Grid>
 
@@ -164,16 +163,6 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while tring to load grid data.");
         }
-    }
-
-    /**
-     * Gets the text value for the "Sent By" column.
-     *
-     * @param row The row whose value to get.
-     */
-    function getSentByPersonTextValue(row: Record<string, unknown>): string {
-        const person = (row as Row).sentByPerson;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     // #endregion Functions

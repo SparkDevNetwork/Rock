@@ -24,9 +24,7 @@
                       name="person"
                       field="person"
                       title="Person"
-                      :filter="pickExistingValueFilter"
-                      :filterValue="getPersonFilterValue"
-                      :quickFilterValue="getPersonFilterValue" />
+                      :filter="pickExistingValueFilter" />
 
         <TextColumn name="provider"
                     field="provider"
@@ -79,7 +77,6 @@
     import { LoginHistoryOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/LoginHistory/loginHistoryOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<LoginHistoryOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -148,16 +145,6 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while tring to load grid data.");
         }
-    }
-
-    /**
-    * Gets the filter value text to use for the person column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getPersonFilterValue(row: Record<string, unknown>): string {
-        const person = row["person"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     // #endregion Functions

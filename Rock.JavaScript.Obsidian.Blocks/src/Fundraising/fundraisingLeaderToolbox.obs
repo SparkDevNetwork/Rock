@@ -37,8 +37,7 @@
                 <PersonColumn name="person"
                               title="Name"
                               field="person"
-                              :filter="pickExistingValueFilter"
-                              :filterValue="getPersonNameFilterValue" />
+                              :filter="pickExistingValueFilter" />
 
                 <DateTimeColumn name="dateTimeAdded"
                                 title="Date Added"
@@ -74,7 +73,6 @@
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { FundraisingLeaderToolboxOptionsBag } from "@Obsidian/ViewModels/Blocks/Fundraising/FundraisingLeaderToolbox/fundraisingLeaderToolboxOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { NavigationUrlKey } from "./FundraisingLeaderToolbox/types.partial";
 
     const config = useConfigurationValues<ListBlockBox<FundraisingLeaderToolboxOptionsBag>>();
@@ -102,16 +100,6 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
-    }
-
-    /**
-     * Gets the filter value text to use for the participant name column.
-     *
-     * @param row The row to be filtered.
-     */
-    function getPersonNameFilterValue(row: Record<string, unknown>): string {
-        const person = row["person"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     // #endregion Functions

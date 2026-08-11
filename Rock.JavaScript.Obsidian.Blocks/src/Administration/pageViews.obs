@@ -32,9 +32,6 @@
                       field="loggedInUser"
                       :hideAvatar="true"
                       :showAsLink="true"
-                      :filter="pickExistingValueFilter"
-                      :filterValue="getPersonNameFilterValue"
-                      :quickFilterValue="getPersonNameFilterValue"
                       width="25%" />
 
         <TextColumn name="url"
@@ -54,7 +51,7 @@
     import { computed, reactive, ref, watch } from "vue";
     import GridSettingsModal from "./PageViews/gridSettingsModal.partial.obs";
     import { GridSettingsOptions, PreferenceKey, Row } from "./PageViews/types.partial";
-    import Grid, { DateTimeColumn, NumberColumn, PersonColumn, TextColumn, dateValueFilter, numberValueFilter, pickExistingValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { DateTimeColumn, NumberColumn, PersonColumn, TextColumn, dateValueFilter, numberValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
@@ -124,16 +121,6 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
-    }
-
-    /**
-     * Gets the filter and search value for the "Logged In User" column.
-     *
-     * @param row The row whose value to get.
-     */
-    function getPersonNameFilterValue(row: Record<string, unknown>): string {
-        const person = (row as Row).loggedInUser;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     /**

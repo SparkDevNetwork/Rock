@@ -36,8 +36,6 @@
                       :showAsLink="true"
                       :detailField="false"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getRequestedByFilterValue"
-                      :quickFilterValue="getRequestedByFilterValue"
                       visiblePriority="md" />
 
         <DateTimeColumn name="completedDateTime"
@@ -60,7 +58,6 @@
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { AssessmentHistoryOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/AssessmentHistory/assessmentHistoryOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { reactive, ref } from "vue";
 
     const config = useConfigurationValues<ListBlockBox<AssessmentHistoryOptionsBag>>();
@@ -127,19 +124,6 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
-    }
-
-    /**
-     * Gets the text used to filter the Requested By column.
-     *
-     * @param row The row whose filter value is needed.
-     *
-     * @returns The text to filter and search the column by.
-     */
-    function getRequestedByFilterValue(row: Record<string, unknown>): string {
-        const person = row["requestedBy"] as PersonFieldBag;
-
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     /**
