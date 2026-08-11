@@ -92,7 +92,7 @@ namespace Rock.Blocks.Group
         "Initial Count Setting",
         Key = AttributeKey.InitialCountSetting,
         Description = "Select the counts that should be initially shown in the treeview.",
-        ListSource = "\"0^None,1^Child Groups,2^Group Members\"",
+        ListSource = "0^None,1^Child Groups,2^Group Members",
         IsRequired = false,
         DefaultValue = AttributeDefault.InitialCountSettingNone,
         Order = 7 )]
