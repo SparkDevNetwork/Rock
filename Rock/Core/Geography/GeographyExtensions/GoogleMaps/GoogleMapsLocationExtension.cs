@@ -174,6 +174,8 @@ namespace Rock.Core.Geography.GeographyExtensions.GoogleMaps
                 }
                 catch
                 {
+                    // A transient failure (network, quota, or an unexpected response shape) yields no
+                    // result; the caller treats the location as unresolved rather than erroring.
                     return null;
                 }
             }
@@ -210,7 +212,7 @@ namespace Rock.Core.Geography.GeographyExtensions.GoogleMaps
                     includedPrimaryTypes = new[] { "geocode" }
                 };
 
-                var requestJson = JsonConvert.SerializeObject( body );
+                var requestJson = body.ToJson();
 
                 var request = new HttpRequestMessage( HttpMethod.Post, "https://places.googleapis.com/v1/places:autocomplete" )
                 {
