@@ -583,7 +583,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// </summary>
         private int? GetAttendanceId()
         {
-            int? attendanceId = PageParameter( PageParameterKey.AttendanceId ).AsIntegerOrNull();
+            int? attendanceId = GetIdFromPageParameter( PageParameterKey.AttendanceId );
             if ( attendanceId.HasValue )
             {
                 return attendanceId;
@@ -600,6 +600,24 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
 
             return attendanceId;
+        }
+
+        /// <summary>
+        /// Gets the integer identifier from the given page parameter, accepting either
+        /// an integer identifier or a hashed IdKey.
+        /// </summary>
+        /// <param name="pageParameterKey">The name of the page parameter.</param>
+        /// <returns>The integer identifier, or <c>null</c> if not present or not valid.</returns>
+        private int? GetIdFromPageParameter( string pageParameterKey )
+        {
+            var id = PageParameter( pageParameterKey ).AsIntegerOrNull();
+
+            // See if it's an IdKey...
+            if ( id == null )
+            {
+                id = Rock.Utility.IdHasher.Instance.GetId( PageParameter( pageParameterKey ) );
+            }
+            return id;
         }
 
         /// <summary>

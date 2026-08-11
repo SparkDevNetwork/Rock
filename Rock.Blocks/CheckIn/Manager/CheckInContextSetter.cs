@@ -144,7 +144,7 @@ namespace Rock.Blocks.CheckIn.Manager
             sb.Append( @"
 <div class=""context-setters-container"">" );
 
-            if ( options.Campuses.Count > 1 )
+            if ( options.Campuses?.Count > 1 )
             {
                 sb.Append( $@"
     <ul class=""nav navbar-nav contextsetter contextsetter-campus"">
