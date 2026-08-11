@@ -31,7 +31,7 @@ namespace Rock.AI.Agent
     /// Extension methods related to working with attributes and their values
     /// inside tools.
     /// </summary>
-    internal static class AttributeValueExtensions
+    public static class AttributeValueExtensions
     {
         #region Constants
 
