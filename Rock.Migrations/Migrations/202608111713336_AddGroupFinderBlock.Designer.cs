@@ -13,7 +13,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "202607092338179_AddGroupFinderBlock"; }
+            get { return "202608111713336_AddGroupFinderBlock"; }
         }
         
         string IMigrationMetadata.Source

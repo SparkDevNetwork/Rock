@@ -168,6 +168,7 @@ The fixed card layout above is the shipped default, not the ceiling. Card presen
 - The property MUST be nullable so existing groups are unaffected and the filter/display can be hidden when unset.
 - The property MUST be filterable by the Where filter and available for display where relevant.
 - A `GroupType.IsMeetingStyleEnabled` boolean (default `false`) MUST gate the property: the Meeting Style field appears on the Group Detail edit panel only for group types where the flag is enabled.
+- On install and upgrade, the migration MUST seed `IsMeetingStyleEnabled = true` on the built-in **Small Group** group type (`GROUPTYPE_SMALL_GROUP`, `50FCFB30-F51A-49DF-86F4-2B176EA1820B`) so the Meeting Style field and the Group Finder's meeting-style filter are usable out of the box. Every other group type keeps the `false` default.
 
 ### Block settings
 
@@ -208,6 +209,7 @@ Add a `MeetingStyle` nullable enum property to the group data model, gated by a 
 - Enum `MeetingStyle { InPerson, Online, Hybrid }` in `Rock.Enums/Group/MeetingStyle.cs` (namespace `Rock.Model`, `[Enums.EnumDomain( "Group" )]`).
 - A nullable `MeetingStyle?` column on `Group`, added via an EF migration (nullable, no default, no backfill).
 - A boolean `IsMeetingStyleEnabled` column on `GroupType` (default `false`), following the existing GroupType gate idiom (`TakesAttendance`, `GroupsRequireCampus`, etc.).
+- The same migration seeds `IsMeetingStyleEnabled = 1` on the built-in Small Group type (`SystemGuid.GroupType.GROUPTYPE_SMALL_GROUP`), the primary group-discovery type, so the feature ships enabled where it matters most. The seed is a targeted, idempotent `UPDATE ... WHERE [Guid] = ...` and is non-destructive: it only makes the field available on that type's edit panel; existing groups keep `MeetingStyle = null`. Every other group type keeps the `false` default.
 - The `MeetingStyle` field on the Group Detail edit panel renders only when the group's `GroupType.IsMeetingStyleEnabled` is true. This keeps the field off group types where it is irrelevant (serving teams, etc.).
 - Filter support wired into the engine's Where filtering.
 

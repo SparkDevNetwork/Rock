@@ -672,6 +672,7 @@ namespace Rock.Blocks.Group
 
                 PhotoUrl = entity.PhotoUrl,
                 Description = entity.Description,
+                MeetingStyle = entity.MeetingStyle,
                 Administrator = BuildAdministratorRef( entity.GroupAdministratorPersonAlias, groupType ),
                 AdministratorLabel = BuildAdministratorLabel( groupType ),
                 ParentGroup = BuildParentGroupRef( entity.ParentGroup ),
@@ -835,6 +836,9 @@ namespace Rock.Blocks.Group
 
             box.IfValidProperty( nameof( box.Bag.Description ),
                 () => entity.Description = box.Bag.Description );
+
+            box.IfValidProperty( nameof( box.Bag.MeetingStyle ),
+                () => entity.MeetingStyle = box.Bag.MeetingStyle );
 
             box.IfValidProperty( nameof( box.Bag.PhotoBinaryFile ),
                 () => ApplyPhotoBinaryFile( entity, box.Bag ) );
@@ -3182,6 +3186,7 @@ namespace Rock.Blocks.Group
             bag.EnableLocationSchedules = groupType.EnableLocationSchedules ?? false;
             bag.IsSchedulingEnabled = groupType.IsSchedulingEnabled;
             bag.AllowMultipleLocations = groupType.AllowMultipleLocations;
+            bag.IsMeetingStyleEnabled = groupType.IsMeetingStyleEnabled;
 
             // The Location Type dropdown sources its options from the
             // group type's configured LocationTypeValues. MapStyleValueGuid

@@ -313,6 +313,7 @@ namespace Rock.Blocks.Group
                 AllowGroupSpecificRecordSource = entity.AllowGroupSpecificRecordSource,
                 AllowGroupSync = entity.AllowGroupSync,
                 AllowMultipleLocations = entity.AllowMultipleLocations,
+                IsMeetingStyleEnabled = entity.IsMeetingStyleEnabled,
                 AllowSpecificGroupMemberAttributes = entity.AllowSpecificGroupMemberAttributes,
                 AllowSpecificGroupMemberWorkflows = entity.AllowSpecificGroupMemberWorkflows,
                 AttendanceCountsAsWeekendService = entity.AttendanceCountsAsWeekendService,
@@ -459,6 +460,9 @@ namespace Rock.Blocks.Group
 
             box.IfValidProperty( nameof( box.Bag.AllowMultipleLocations ),
                 () => entity.AllowMultipleLocations = box.Bag.AllowMultipleLocations );
+
+            box.IfValidProperty( nameof( box.Bag.IsMeetingStyleEnabled ),
+                () => entity.IsMeetingStyleEnabled = box.Bag.IsMeetingStyleEnabled );
 
             box.IfValidProperty( nameof( box.Bag.AllowSpecificGroupMemberAttributes ),
                 () => entity.AllowSpecificGroupMemberAttributes = box.Bag.AllowSpecificGroupMemberAttributes );

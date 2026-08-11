@@ -31,6 +31,13 @@ namespace Rock.Migrations
         {
             AddColumn("dbo.Group", "MeetingStyle", c => c.Int());
             AddColumn("dbo.GroupType", "IsMeetingStyleEnabled", c => c.Boolean(nullable: false));
+
+            // Enable Meeting Style on the built-in Small Group type so the Group Finder's
+            // meeting-style filter and the per-group field are usable out of the box.
+            Sql( @"
+                UPDATE [GroupType]
+                SET [IsMeetingStyleEnabled] = 1
+                WHERE [Guid] = '50FCFB30-F51A-49DF-86F4-2B176EA1820B'" );
         }
         
         /// <summary>

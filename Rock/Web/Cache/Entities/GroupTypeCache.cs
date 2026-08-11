@@ -121,6 +121,15 @@ namespace Rock.Web.Cache
         public bool AllowMultipleLocations { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether the Meeting Style field is available on <see cref="Rock.Model.Group">Groups</see> of this GroupType.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if Groups of this GroupType expose a Meeting Style; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsMeetingStyleEnabled { get; private set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [show in group list].
         /// </summary>
         /// <value>
@@ -1226,6 +1235,7 @@ namespace Rock.Web.Cache
             GroupMemberTerm = groupType.GroupMemberTerm;
             DefaultGroupRoleId = groupType.DefaultGroupRoleId;
             AllowMultipleLocations = groupType.AllowMultipleLocations;
+            IsMeetingStyleEnabled = groupType.IsMeetingStyleEnabled;
             ShowInGroupList = groupType.ShowInGroupList;
             ShowInNavigation = groupType.ShowInNavigation;
             IconCssClass = groupType.IconCssClass;

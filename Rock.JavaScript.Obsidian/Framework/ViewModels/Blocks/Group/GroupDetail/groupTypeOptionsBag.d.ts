@@ -133,6 +133,12 @@ export type GroupTypeOptionsBag = {
     isInactiveReasonVisible: boolean;
 
     /**
+     * Gets or sets a value indicating whether the Meeting Style field is available on groups of this
+     * type. When false, the Meeting Style picker is hidden on the group.
+     */
+    isMeetingStyleEnabled: boolean;
+
+    /**
      * Gets or sets a value indicating whether the "Overall Group Schedule" stack inside
      * the Meeting &amp; Scheduling section renders. Distinct from
      * Rock.ViewModels.Blocks.Group.GroupDetail.GroupTypeOptionsBag.IsSchedulingEnabled, which drives the Member Scheduling stack.

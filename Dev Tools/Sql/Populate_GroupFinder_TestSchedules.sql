@@ -3,12 +3,15 @@ SET QUOTED_IDENTIFIER ON
 SET ANSI_NULLS ON
 
 -- =============================================
--- Description: Creates a handful of weekly schedules (spanning every day of the week and all three
+-- Description: Creates a handful of inline weekly schedules (spanning every day of the week and all three
 --              time-of-day buckets Morning/Afternoon/Evening) and assigns them across the map-located
 --              Small Groups (GroupTypeId 25), so the Group Finder "When" filter and the card schedule
---              text have data. Weekly schedules use WeeklyDayOfWeek + WeeklyTimeOfDay, which is what both
---              the day/time filter and Schedule.FriendlyScheduleText read - no iCalendar content needed.
---              Idempotent: schedules are guarded by guid and the group assignment is deterministic.
+--              text have data. Inline weekly schedules carry their recurrence in WeeklyDayOfWeek +
+--              WeeklyTimeOfDay and MUST have an empty Name: a non-empty Name marks the row as a shared
+--              named schedule, which Rock instead expects to define its recurrence through iCalendarContent.
+--              The @Sched [Label] column is used only for this script's own output, not the stored Name.
+--              Idempotent: schedules are guarded by guid, existing rows are normalized to an empty Name,
+--              and the group assignment is deterministic.
 -- Date: 2026-08-05
 -- =============================================
 
@@ -16,7 +19,7 @@ DECLARE @GroupTypeId INT = 25
 
 -- Day-of-week ints follow .NET DayOfWeek: Sunday = 0 ... Saturday = 6.
 -- Times sit safely inside their bucket (Morning 5-11, Afternoon 12-16, Evening 17-20).
-DECLARE @Sched TABLE ([Ord] INT, [Guid] UNIQUEIDENTIFIER, [Name] NVARCHAR(50), [Dow] INT, [Time] TIME(7))
+DECLARE @Sched TABLE ([Ord] INT, [Guid] UNIQUEIDENTIFIER, [Label] NVARCHAR(50), [Dow] INT, [Time] TIME(7))
 INSERT INTO @Sched VALUES
  (0,'7F1A2B3C-2222-4A5B-9C0D-A0B1C2D3E501','Weekly - Monday Morning',    1, '09:00'),
  (1,'7F1A2B3C-2222-4A5B-9C0D-A0B1C2D3E502','Weekly - Monday Evening',    1, '18:30'),
@@ -31,12 +34,20 @@ INSERT INTO @Sched VALUES
 BEGIN TRANSACTION
 
 -- ---------------------------------------------
--- Schedules
+-- Schedules. Name is intentionally empty so each row stays an inline weekly schedule.
 -- ---------------------------------------------
 INSERT INTO [Schedule] ([Name],[WeeklyDayOfWeek],[WeeklyTimeOfDay],[IsActive],[Order],[AutoInactivateWhenComplete],[Guid],[CreatedDateTime],[ModifiedDateTime])
-SELECT s.[Name], s.[Dow], s.[Time], 1, s.[Ord], 0, s.[Guid], GETDATE(), GETDATE()
+SELECT '', s.[Dow], s.[Time], 1, s.[Ord], 0, s.[Guid], GETDATE(), GETDATE()
 FROM @Sched s
 WHERE NOT EXISTS (SELECT 1 FROM [Schedule] sch WHERE sch.[Guid] = s.[Guid])
+
+-- Repair rows from an earlier version of this script that stored a Name: an inline
+-- weekly schedule must have an empty Name to be classified as inline rather than named.
+UPDATE sch
+SET sch.[Name] = ''
+FROM [Schedule] sch
+JOIN @Sched s ON s.[Guid] = sch.[Guid]
+WHERE ISNULL(sch.[Name], '') <> ''
 
 DECLARE @Count INT = (SELECT COUNT(*) FROM @Sched)
 
@@ -66,9 +77,9 @@ COMMIT TRANSACTION
 -- ---------------------------------------------
 -- Verify: group counts by assigned schedule.
 -- ---------------------------------------------
-SELECT sch.[Name] AS [Schedule], sch.[WeeklyDayOfWeek] AS [Dow], CAST(sch.[WeeklyTimeOfDay] AS NVARCHAR(16)) AS [Time], COUNT(g.[Id]) AS [Groups]
-FROM [Schedule] sch
+SELECT s.[Label] AS [Schedule], sch.[WeeklyDayOfWeek] AS [Dow], CAST(sch.[WeeklyTimeOfDay] AS NVARCHAR(16)) AS [Time], COUNT(g.[Id]) AS [Groups]
+FROM @Sched s
+JOIN [Schedule] sch ON sch.[Guid] = s.[Guid]
 LEFT JOIN [Group] g ON g.[ScheduleId] = sch.[Id] AND g.[GroupTypeId] = @GroupTypeId
-WHERE sch.[Guid] IN (SELECT [Guid] FROM @Sched)
-GROUP BY sch.[Name], sch.[WeeklyDayOfWeek], sch.[WeeklyTimeOfDay]
-ORDER BY sch.[Name]
+GROUP BY s.[Label], sch.[WeeklyDayOfWeek], sch.[WeeklyTimeOfDay]
+ORDER BY s.[Label]
