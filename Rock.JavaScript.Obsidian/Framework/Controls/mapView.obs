@@ -54,6 +54,26 @@
         radiusMeters: number;
     };
 
+    // A map marker whose concrete Google type is chosen at creation: a legacy google.maps.Marker, or an
+    // AdvancedMarkerElement when the map has a Map ID (advanced markers require one). The marker is kept as
+    // plain data and all behavior lives in the setMarker* free functions, so a map with many markers pays
+    // for the data per marker, not a copy of the operations (which a per-instance method object would cost).
+    type MapMarker =
+        | { kind: "legacy"; raw: google.maps.Marker }
+        | { kind: "advanced"; raw: google.maps.marker.AdvancedMarkerElement; content: HTMLElement };
+
+    // The look of a marker, resolved to a legacy icon or an advanced DOM element per marker kind. Only the
+    // image variant exists so far (the reference "you are here" pin); a circle variant lands with the group
+    // markers.
+    type MarkerVisual = {
+        kind: "image";
+        svg: string;
+        widthPx: number;
+        heightPx: number;
+        anchorXPx: number;
+        anchorYPx: number;
+    };
+
     // #endregion Types
 
     const props = defineProps({
@@ -244,7 +264,7 @@
     // so a marker click can focus like a card click only while still at that default results zoom.
     let lastFitZoom: number | null = null;
     // A distinct pin for the reference location (props.referenceLocation), kept in sync with that prop.
-    let referenceLocationMarker: google.maps.Marker | null = null;
+    let referenceLocationMarker: MapMarker | null = null;
     const focusMarkerZoom = 15;
     const plottedMarkers: Record<string, PlottedMarker> = {};
     let styles: google.maps.MapTypeStyle[] = [];
@@ -448,8 +468,10 @@
         }
         expandedIds = new Set<string>();
 
-        referenceLocationMarker?.setMap(null);
-        referenceLocationMarker = null;
+        if (referenceLocationMarker) {
+            setMarkerMap(referenceLocationMarker, null);
+            referenceLocationMarker = null;
+        }
 
         google.maps.event.clearInstanceListeners(map);
         map = null;
@@ -1124,7 +1146,7 @@
     // It stays a pin so it reads distinctly against the group markers, which render as circles (showPin is
     // off). Built as an SVG icon so it renders on every map path. Its tip is at the bottom center of the
     // art, so the anchor lands the point right on the coordinate.
-    function referenceLocationIcon(): google.maps.Icon {
+    function referenceLocationVisual(): MarkerVisual {
         // The color comes from the consumer (a block setting); fall back to a high-contrast rose.
         const pinColor = props.referenceLocationColor || "#e11d48";
 
@@ -1134,11 +1156,94 @@
             + `<path d="${path}" fill="${pinColor}" />`
             + "</svg>";
 
+        return { kind: "image", svg, widthPx: 36, heightPx: 36, anchorXPx: 18, anchorYPx: 32 };
+    }
+
+    // A data URI for a marker visual's SVG.
+    function markerVisualDataUri(visual: MarkerVisual): string {
+        return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(visual.svg);
+    }
+
+    // The legacy icon for a marker visual.
+    function markerVisualIcon(visual: MarkerVisual): google.maps.Icon {
         return {
-            url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg),
-            scaledSize: new google.maps.Size(36, 36),
-            anchor: new google.maps.Point(18, 32)
+            url: markerVisualDataUri(visual),
+            scaledSize: new google.maps.Size(visual.widthPx, visual.heightPx),
+            anchor: new google.maps.Point(visual.anchorXPx, visual.anchorYPx)
         };
+    }
+
+    // The advanced-marker DOM element for a marker visual. AdvancedMarkerElement pins the content's bottom
+    // center to the coordinate, so the element is nudged so the visual's own anchor point lands there
+    // instead, matching where the legacy icon's anchor sits.
+    function markerVisualElement(visual: MarkerVisual): HTMLElement {
+        const image = document.createElement("img");
+        image.src = markerVisualDataUri(visual);
+        image.width = visual.widthPx;
+        image.height = visual.heightPx;
+        image.style.display = "block";
+
+        const shiftX = visual.widthPx / 2 - visual.anchorXPx;
+        const shiftY = visual.heightPx - visual.anchorYPx;
+        image.style.transform = `translate(${shiftX}px, ${shiftY}px)`;
+
+        return image;
+    }
+
+    // Create a marker of the right kind for the current map: an AdvancedMarkerElement when a Map ID is set
+    // (advanced markers require one), or a legacy Marker otherwise. Position, look, stacking, hover title,
+    // and clickability are set up front; later changes go through the setMarker* helpers.
+    function createMapMarker(position: google.maps.LatLng, visual: MarkerVisual, options: { zIndex?: number; title?: string; clickable?: boolean }): MapMarker {
+        if (mapId.trim().length > 0) {
+            const content = markerVisualElement(visual);
+            const advanced = new google.maps.marker.AdvancedMarkerElement({
+                position,
+                content,
+                zIndex: options.zIndex,
+                title: options.title ?? "",
+                gmpClickable: options.clickable ?? false
+            });
+            return { kind: "advanced", raw: advanced, content };
+        }
+
+        const legacy = new google.maps.Marker({
+            position,
+            icon: markerVisualIcon(visual),
+            zIndex: options.zIndex,
+            title: options.title ?? "",
+            clickable: options.clickable ?? false
+        });
+        return { kind: "legacy", raw: legacy };
+    }
+
+    // Move a marker to a new coordinate.
+    function setMarkerPosition(marker: MapMarker, position: google.maps.LatLng): void {
+        if (marker.kind === "legacy") {
+            marker.raw.setPosition(position);
+        }
+        else {
+            marker.raw.position = position;
+        }
+    }
+
+    // Attach a marker to a map, or detach it with null.
+    function setMarkerMap(marker: MapMarker, targetMap: google.maps.Map | null): void {
+        if (marker.kind === "legacy") {
+            marker.raw.setMap(targetMap);
+        }
+        else {
+            marker.raw.map = targetMap;
+        }
+    }
+
+    // Set a marker's hover title.
+    function setMarkerTitle(marker: MapMarker, title: string): void {
+        if (marker.kind === "legacy") {
+            marker.raw.setTitle(title);
+        }
+        else {
+            marker.raw.title = title;
+        }
     }
 
     // Add, move, or remove the reference-location pin to match props.referenceLocation. It sits above the
@@ -1150,26 +1255,26 @@
 
         const location = props.referenceLocation;
         if (!location) {
-            referenceLocationMarker?.setMap(null);
-            referenceLocationMarker = null;
+            if (referenceLocationMarker) {
+                setMarkerMap(referenceLocationMarker, null);
+                referenceLocationMarker = null;
+            }
             return;
         }
 
         const position = new google.maps.LatLng(location.latitude, location.longitude);
         if (!referenceLocationMarker) {
-            referenceLocationMarker = new google.maps.Marker({
-                map,
-                position,
-                icon: referenceLocationIcon(),
-                clickable: false,
+            referenceLocationMarker = createMapMarker(position, referenceLocationVisual(), {
                 zIndex: 2000,
-                title: location.title
+                title: location.title,
+                clickable: false
             });
+            setMarkerMap(referenceLocationMarker, map);
         }
         else {
-            referenceLocationMarker.setPosition(position);
-            referenceLocationMarker.setTitle(location.title ?? "");
-            referenceLocationMarker.setMap(map);
+            setMarkerPosition(referenceLocationMarker, position);
+            setMarkerTitle(referenceLocationMarker, location.title ?? "");
+            setMarkerMap(referenceLocationMarker, map);
         }
     }
 
