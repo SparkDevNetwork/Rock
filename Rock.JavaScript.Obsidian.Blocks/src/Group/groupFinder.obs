@@ -1929,7 +1929,9 @@
                 return;
             }
 
-            const body = document.querySelector(".group-finder-sheet-body");
+            // Measure the docked panel's scroll viewport (it grows as the drawer opens), not the inner
+            // content wrapper whose height is the constant card-list total and never tracks the open.
+            const body = document.querySelector(".docked-panel-body");
             const height = body ? body.clientHeight : 0;
 
             if (height === lastHeight) {
