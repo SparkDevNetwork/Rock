@@ -62,17 +62,14 @@
         | { kind: "legacy"; raw: google.maps.Marker }
         | { kind: "advanced"; raw: google.maps.marker.AdvancedMarkerElement; content: HTMLElement };
 
-    // The look of a marker, resolved to a legacy icon or an advanced DOM element per marker kind. Only the
-    // image variant exists so far (the reference "you are here" pin); a circle variant lands with the group
-    // markers.
-    type MarkerVisual = {
-        kind: "image";
-        svg: string;
-        widthPx: number;
-        heightPx: number;
-        anchorXPx: number;
-        anchorYPx: number;
-    };
+    // The look of a marker, resolved to a legacy icon or an advanced DOM element per marker kind. "image"
+    // is a fixed SVG (the reference "you are here" pin); "circle" is a filled, stroked dot (the group
+    // markers' resting dot); "hidden" is an invisible-but-still-counted placeholder used to take a marker
+    // off screen without dropping it from the clusterer's count.
+    type MarkerVisual =
+        | { kind: "image"; svg: string; widthPx: number; heightPx: number; anchorXPx: number; anchorYPx: number }
+        | { kind: "circle"; radiusPx: number; fillColor: string; fillOpacity: number; strokeColor: string; strokeOpacity: number; strokeWeight: number }
+        | { kind: "hidden"; radiusPx: number };
 
     // #endregion Types
 
@@ -1159,35 +1156,84 @@
         return { kind: "image", svg, widthPx: 36, heightPx: 36, anchorXPx: 18, anchorYPx: 32 };
     }
 
-    // A data URI for a marker visual's SVG.
-    function markerVisualDataUri(visual: MarkerVisual): string {
-        return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(visual.svg);
+    // A data URI for an SVG string.
+    function svgDataUri(svg: string): string {
+        return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
     }
 
-    // The legacy icon for a marker visual.
-    function markerVisualIcon(visual: MarkerVisual): google.maps.Icon {
+    // The legacy icon (an SVG-image Icon or a Symbol) for a marker visual.
+    function markerVisualIcon(visual: MarkerVisual): google.maps.Icon | google.maps.Symbol {
+        if (visual.kind === "image") {
+            return {
+                url: svgDataUri(visual.svg),
+                scaledSize: new google.maps.Size(visual.widthPx, visual.heightPx),
+                anchor: new google.maps.Point(visual.anchorXPx, visual.anchorYPx)
+            };
+        }
+
+        if (visual.kind === "circle") {
+            return {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: visual.radiusPx,
+                fillColor: visual.fillColor,
+                fillOpacity: visual.fillOpacity,
+                strokeColor: visual.strokeColor,
+                strokeOpacity: visual.strokeOpacity,
+                strokeWeight: visual.strokeWeight
+            };
+        }
+
+        // hidden: a fully transparent circle of the same footprint, so the marker keeps its place and
+        // stays counted by the clusterer (which reads getVisible) while showing nothing.
         return {
-            url: markerVisualDataUri(visual),
-            scaledSize: new google.maps.Size(visual.widthPx, visual.heightPx),
-            anchor: new google.maps.Point(visual.anchorXPx, visual.anchorYPx)
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: visual.radiusPx,
+            fillOpacity: 0,
+            strokeOpacity: 0
         };
     }
 
     // The advanced-marker DOM element for a marker visual. AdvancedMarkerElement pins the content's bottom
-    // center to the coordinate, so the element is nudged so the visual's own anchor point lands there
+    // center to the coordinate, so the element is translated so the visual's own anchor point lands there
     // instead, matching where the legacy icon's anchor sits.
     function markerVisualElement(visual: MarkerVisual): HTMLElement {
-        const image = document.createElement("img");
-        image.src = markerVisualDataUri(visual);
-        image.width = visual.widthPx;
-        image.height = visual.heightPx;
-        image.style.display = "block";
+        if (visual.kind === "hidden") {
+            // An empty zero-size element: invisible but still a clusterer member (advanced markers are
+            // counted by membership rather than a visible flag), mirroring the legacy transparent icon.
+            const empty = document.createElement("span");
+            empty.style.display = "block";
+            empty.style.width = "0";
+            empty.style.height = "0";
+            return empty;
+        }
+
+        const element = document.createElement("img");
+        element.style.display = "block";
+
+        if (visual.kind === "circle") {
+            const diameter = visual.radiusPx * 2;
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${diameter}" height="${diameter}" viewBox="0 0 ${diameter} ${diameter}">`
+                + `<circle cx="${visual.radiusPx}" cy="${visual.radiusPx}" r="${visual.radiusPx - visual.strokeWeight / 2}" `
+                + `fill="${visual.fillColor}" fill-opacity="${visual.fillOpacity}" `
+                + `stroke="${visual.strokeColor}" stroke-opacity="${visual.strokeOpacity}" stroke-width="${visual.strokeWeight}" />`
+                + "</svg>";
+            element.src = svgDataUri(svg);
+            element.width = diameter;
+            element.height = diameter;
+            // Center the circle on the coordinate (anchor at its center, height = diameter).
+            element.style.transform = `translate(0px, ${visual.radiusPx}px)`;
+            return element;
+        }
+
+        element.src = svgDataUri(visual.svg);
+        element.width = visual.widthPx;
+        element.height = visual.heightPx;
 
         const shiftX = visual.widthPx / 2 - visual.anchorXPx;
         const shiftY = visual.heightPx - visual.anchorYPx;
-        image.style.transform = `translate(${shiftX}px, ${shiftY}px)`;
+        element.style.transform = `translate(${shiftX}px, ${shiftY}px)`;
 
-        return image;
+        return element;
     }
 
     // Create a marker of the right kind for the current map: an AdvancedMarkerElement when a Map ID is set
