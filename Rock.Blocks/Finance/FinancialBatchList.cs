@@ -422,6 +422,7 @@ namespace Rock.Blocks.Finance
                 .AddField( "controlItemCount", a => a.Batch.ControlItemCount )
                 .AddTextField( "campus", a => a.Batch.CampusId.HasValue ? CampusCache.Get( a.Batch.CampusId.Value )?.Name : null )
                 .AddField( "status", a => a.Batch.Status )
+                .AddField( "isAutomated", a => a.Batch.IsAutomated )
                 .AddDateTimeField( "startDateTime", a => a.Batch.BatchStartDateTime )
                 .AddField( "remoteSettlementAmount", a => a.Batch.RemoteSettlementAmount )
                 .AddField( "remoteSettlementKey", a => a.Batch.RemoteSettlementBatchKey )
@@ -456,6 +457,12 @@ namespace Rock.Blocks.Finance
                 if ( !entity.IsAuthorized( Authorization.DELETE, RequestContext.CurrentPerson ) )
                 {
                     return ActionBadRequest( $"Not authorized to delete {FinancialBatch.FriendlyTypeName}." );
+                }
+
+                // Automated batches are system-owned (gateway/automated-giving downloads); deleting one wipes real gifts and breaks the automation.
+                if ( entity.IsAutomated )
+                {
+                    return ActionBadRequest( "Automated batches cannot be deleted." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )
