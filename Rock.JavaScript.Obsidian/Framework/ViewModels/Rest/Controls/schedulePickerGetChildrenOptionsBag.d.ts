@@ -29,6 +29,12 @@ import { Guid } from "@Obsidian/Types";
  */
 export type SchedulePickerGetChildrenOptionsBag = {
     /**
+     * When true, restrict the results to schedules that are eligible for
+     * check-in (schedules whose CheckInStartOffsetMinutes is set).
+     */
+    includeCheckInSchedulesOnly: boolean;
+
+    /**
      * Gets or sets the values that need to be expanded to. This is used
      * when opening the tree view with an already selected value. Each
      * selected value is included in this property. When getting the list

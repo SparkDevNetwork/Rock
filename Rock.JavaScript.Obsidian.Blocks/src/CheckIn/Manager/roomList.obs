@@ -1,0 +1,262 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="warningMessage" :alertType="AlertType.Warning">
+        {{ warningMessage }}
+    </NotificationBox>
+
+    <Grid v-else
+          :definition="gridDefinition"
+          :data="gridDataSource"
+          keyField="rowKey"
+          itemTerm="Room"
+          :title="panelTitle"
+          stickyHeader
+          :disablePaging="true"
+          :showExport="false"
+          :showMergeTemplate="false"
+          :showLaunchWorkflow="false"
+          gridSettings
+          :gridSettingsActive="hasActiveFilter"
+          @gridSettingsClick="isGridSettingsVisible = true"
+          @selectItem="onSelectItem">
+
+        <TextColumn v-if="showRoomColumn"
+                    name="locationName"
+                    field="locationName"
+                    title="Room"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <Column name="groupName"
+                field="groupName"
+                title="Group"
+                :filter="textValueFilter"
+                :filterValue="getGroupFilterValue"
+                :quickFilterValue="getGroupFilterValue"
+                :exportValue="getGroupFilterValue"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <div>
+                    <div class="group-name">{{ (row as RoomRow).groupName }}</div>
+                    <div v-if="(row as RoomRow).groupTypePath"
+                         class="small text-muted text-wrap">
+                        {{ (row as RoomRow).groupTypePath }}
+                    </div>
+                </div>
+            </template>
+        </Column>
+
+        <NumberColumn v-if="showCheckedInCount"
+                      name="checkedInCount"
+                      field="checkedInCount"
+                      title="Checked-in"
+                      width="130px"
+                      :filter="numberValueFilter"
+                      visiblePriority="xs" />
+
+        <NumberColumn name="presentCount"
+                      field="presentCount"
+                      width="130px"
+                      :title="presentColumnHeader"
+                      :filter="numberValueFilter"
+                      visiblePriority="xs" />
+
+        <NumberColumn v-if="showCheckedOutCount"
+                      name="checkedOutCount"
+                      field="checkedOutCount"
+                      title="Checked-out"
+                      width="140px"
+                      :filter="numberValueFilter"
+                      visiblePriority="xs" />
+
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible" />
+</template>
+
+<script setup lang="ts">
+    import { computed, onMounted, reactive, ref, watch } from "vue";
+    import GridSettingsModal from "./RoomList/gridSettingsModal.partial.obs";
+    import { GridSettingsOptions, NavigationUrlKey } from "./RoomList/types.partial";
+    import Grid, { Column, NumberColumn, TextColumn, numberValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { RoomListGridDataBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/RoomList/roomListGridDataBag";
+    import { RoomListOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/RoomList/roomListOptionsBag";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+
+    // #region Types
+
+    type RoomRow = {
+        rowKey?: string | null;
+        locationIdKey?: string | null;
+        locationName?: string | null;
+        groupName?: string | null;
+        groupTypePath?: string | null;
+        checkedInCount: number;
+        presentCount: number;
+        checkedOutCount: number;
+    };
+
+    // #endregion Types
+
+    const config = useConfigurationValues<ListBlockBox<RoomListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    // These pieces of block UI state are seeded from the initialization
+    // response and then refreshed whenever the grid reloads. Keeping them
+    // as refs (rather than reading straight off `config`) lets the response
+    // from GetGridData update the panel title and column visibility to match
+    // the current filter without a full block reload.
+    const warningMessage = ref<string | null | undefined>(config.options?.warningMessage);
+    const redirectUrl = ref<string | null | undefined>(config.options?.redirectUrl);
+    const panelTitle = ref<string>(config.options?.panelTitle ?? "Room List");
+    const showRoomColumn = ref<boolean>(config.options?.showRoomColumn ?? true);
+    const showCheckedInCount = ref<boolean>(config.options?.showCheckedInCount ?? false);
+    const showCheckedOutCount = ref<boolean>(config.options?.showCheckedOutCount ?? false);
+    const presentColumnHeader = ref<string>(config.options?.presentColumnHeader ?? "Present");
+    const gridDefinition = computed(() => config.gridDefinition ?? undefined);
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        selectedSchedules: [...(config.options?.selectedSchedules ?? [])]
+    });
+
+    const navigationUrls = computed<Record<string, string>>(() => config.navigationUrls ?? {});
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const hasActiveFilter = computed<boolean>(() => {
+        return gridSettings.value.selectedSchedules.length > 0;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    async function onSelectItem(rowKey: string): Promise<void> {
+        if (!gridData?.rows) {
+            return;
+        }
+
+        const row = (gridData.rows as RoomRow[]).find(r => r.rowKey === rowKey);
+        const locationIdKey = row?.locationIdKey;
+
+        if (!locationIdKey) {
+            return;
+        }
+
+        const url = navigationUrls.value[NavigationUrlKey.RosterPage];
+        if (url) {
+            window.location.href = url.replace("((Key))", encodeURIComponent(locationIdKey));
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Combined title + detail search value for the Group column. Ensures the
+     * column filter and the grid-wide quick filter match either the group
+     * name or the group-type path shown underneath it.
+     */
+    function getGroupFilterValue(row: Record<string, unknown>): string {
+        const r = row as RoomRow;
+        const parts: string[] = [];
+        if (r.groupName) {
+            parts.push(r.groupName);
+        }
+        if (r.groupTypePath) {
+            parts.push(r.groupTypePath);
+        }
+        return parts.join(" ");
+    }
+
+    async function loadGridData(): Promise<GridDataBag> {
+        const selectedScheduleGuids = gridSettings.value.selectedSchedules
+            .map(s => s.value)
+            .filter((v): v is string => !!v);
+
+        const result = await invokeBlockAction<RoomListGridDataBag>("GetGridData", { selectedScheduleGuids });
+
+        if (!result.isSuccess || !result.data) {
+            throw new Error(result.errorMessage ?? "Unable to load room list.");
+        }
+
+        // Refresh block-level UI state from the response so the panel title
+        // and column visibility follow the current filter's resolved area
+        // and location scope.
+        panelTitle.value = result.data.panelTitle ?? panelTitle.value;
+        showRoomColumn.value = result.data.showRoomColumn;
+        showCheckedInCount.value = result.data.showCheckedInCount;
+        showCheckedOutCount.value = result.data.showCheckedOutCount;
+        presentColumnHeader.value = result.data.presentColumnHeader ?? presentColumnHeader.value;
+
+        if (result.data.redirectUrl) {
+            window.location.href = result.data.redirectUrl;
+            return { rows: [] } as GridDataBag;
+        }
+
+        if (result.data.warningMessage) {
+            warningMessage.value = result.data.warningMessage;
+            return { rows: [] } as GridDataBag;
+        }
+
+        // A response can transition the block back out of a warning state
+        // (for example when a Campus is selected after the initial load).
+        warningMessage.value = null;
+
+        const responseGridData = result.data.gridData ?? ({ rows: [] } as GridDataBag);
+        gridData = reactive(responseGridData);
+        return gridData;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // Whenever the filter modal emits new settings, kick off a fresh grid
+    // request. The block action on the server persists the selection to the
+    // shared CheckinManager cookie and returns refreshed grid data plus the
+    // column-visibility flags for the resolved area / location scope.
+    watch(gridSettings, () => {
+        if (warningMessage.value || redirectUrl.value) {
+            return;
+        }
+        gridDataSource.value = loadGridData();
+    }, { deep: true });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        // If the initial load already resolved a redirect (missing area with
+        // an Area Select Page configured), send the browser there without
+        // ever showing the grid.
+        if (redirectUrl.value) {
+            window.location.href = redirectUrl.value;
+            return;
+        }
+
+        if (warningMessage.value) {
+            return;
+        }
+
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion Lifecycle Hooks
+</script>
