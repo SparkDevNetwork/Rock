@@ -1982,6 +1982,12 @@ namespace RockWeb.Blocks.CheckIn
                 includeCampusName = true;
             }
 
+            var phoneNumberTypes = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
+            var activePhoneNumberTypeIds = phoneNumberTypes.DefinedValues
+                .Where( dv => dv.IsActive )
+                .Select( dv => dv.Id )
+                .ToList();
+
             _searchResultsState = new List<SearchResult>();
             foreach ( var person in persons )
             {
@@ -2010,7 +2016,7 @@ namespace RockWeb.Blocks.CheckIn
                                             .Select( a => a.Person )
                                             .ToList();
                     var mobilePhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
-                    if ( mobilePhone != null )
+                    if ( mobilePhone != null && activePhoneNumberTypeIds.Contains( mobilePhone.NumberTypeValueId.Value ) )
                     {
                         searchResult.Mobile = mobilePhone.NumberFormatted;
                     }
