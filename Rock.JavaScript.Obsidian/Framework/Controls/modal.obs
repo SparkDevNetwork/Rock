@@ -21,7 +21,7 @@
                         <slot v-else name="header" />
                     </div>
 
-                    <RockForm v-model:submit="internalSubmit" @submit="onSubmit" hideErrors @visibleValidationChanged="onVisibleValidationChanged">
+                    <RockForm v-model:submit="internalSubmit" @submit="onSubmit" hideErrors class="rock-modal-form" @visibleValidationChanged="onVisibleValidationChanged">
                         <div class="modal-body">
                             <RockValidation :errors="validationErrors" />
 
@@ -48,15 +48,17 @@
 <style scoped>
 /* Opt-in full-screen modal (isFullScreen). The box sizing (full viewport) is applied inline in the
    template so it beats the theme's .modal-content rules; the theme sets a rounded frame with !important,
-   so squaring the corners needs !important too. These rules stretch the inner form so the header and
-   footer stay fixed and only the body scrolls. */
+   so squaring the corners needs !important too. These rules stretch the modal's own content form
+   (.rock-modal-form) so the header and footer stay fixed and only the body scrolls. Targeting the
+   modal's own form by class rather than a bare "form" selector keeps the layout off any form the
+   consumer nests inside the body. */
 /* The theme's rounded frame is set with !important (.rock-modal-frame), which specificity cannot beat, so
    squaring the modal box itself is the one place !important is unavoidable. */
 .rock-modal-fullscreen {
     border-radius: 0 !important;
 }
 
-.rock-modal-fullscreen :deep(form) {
+.rock-modal-fullscreen :deep(.rock-modal-form) {
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
