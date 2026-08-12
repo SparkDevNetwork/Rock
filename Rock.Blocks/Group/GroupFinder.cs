@@ -394,21 +394,6 @@ namespace Rock.Blocks.Group
         private const int MaxResults = 1000;
 
         /// <summary>
-        /// The fraction of the circle radius the true location may sit from the fuzzed marker. Kept below 1 so the true location stays inside the circle with a small margin rather than on its edge; the offset is spread area-uniformly from the center out to this fraction.
-        /// </summary>
-        private const double MaxOffsetFractionOfRadius = 0.95;
-
-        /// <summary>
-        /// The system setting that stores the server-only salt keying the location fuzz, so the deterministic per-group offset cannot be reproduced from the public group guid.
-        /// </summary>
-        private const string LocationFuzzSaltSettingKey = "core_GroupFinderLocationFuzzSalt";
-
-        /// <summary>
-        /// The radius, in meters, of the privacy circle drawn around a fuzzed marker: 500 feet (~152 m), roughly a small cluster of neighboring homes, so a group's true location stays hidden within it rather than across a wide half-mile area. Each group's offset is a per-group fraction (&lt; 100%) of this radius, so the true location falls within the circle rather than on its edge.
-        /// </summary>
-        private const double LocationCircleRadiusMeters = 500 * MetersPerMile / 5280;
-
-        /// <summary>
         /// Meters per degree of latitude (constant); used to convert a metric offset into a coordinate shift.
         /// </summary>
         private const double MetersPerDegreeLatitude = 111320;
@@ -1289,61 +1274,15 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
-        /// Shifts a group's true coordinates by a stable, per-group offset so the map communicates an approximate area rather than a precise point.
+        /// Builds a compact signature of a group's fuzzed point for the driving-distance cache. A cached
+        /// distance is reused only while this key still matches, so a group whose location changed since
+        /// the value was computed is re-routed rather than showing a stale distance and time.
         /// </summary>
-        /// <remarks>
-        /// The offset is deterministic - the same group always resolves to the same fuzzed point - so a per-request random offset cannot be averaged over many requests to triangulate the true location. It is derived by HMAC-ing the group's <see cref="Guid"/> with a server-only salt (see <see cref="GetLocationFuzzSalt"/>): keying it with a secret the client never sees prevents reversing the offset from the public group guid + fuzzed marker to recover the true location.
-        /// </remarks>
-        /// <param name="groupGuid">The group identifier used to seed the offset.</param>
-        /// <param name="latitude">The group's true latitude.</param>
-        /// <param name="longitude">The group's true longitude.</param>
-        /// <param name="saltBytes">The server-only salt keying the offset seed.</param>
-        /// <returns>The fuzzed latitude and longitude.</returns>
-        private static (double Latitude, double Longitude) FuzzLocation( Guid groupGuid, double latitude, double longitude, byte[] saltBytes )
+        /// <param name="point">The fuzzed point the distance was, or would be, computed from.</param>
+        /// <returns>An invariant "latitude,longitude" key rounded to roughly a meter.</returns>
+        private static string GetDistanceLocationKey( (double Latitude, double Longitude) point )
         {
-            byte[] seed;
-            using ( var hmac = new System.Security.Cryptography.HMACSHA256( saltBytes ) )
-            {
-                seed = hmac.ComputeHash( groupGuid.ToByteArray() );
-            }
-
-            var angle = ( BitConverter.ToUInt32( seed, 0 ) / ( double ) uint.MaxValue ) * 2 * Math.PI;
-            var distanceSeed = BitConverter.ToUInt32( seed, 4 ) / ( double ) uint.MaxValue;
-
-            // The square root spreads the offset uniformly over the circle's area rather than biasing
-            // it toward the center, so the true location is not disproportionately near the marker (a
-            // linear distance would cluster it there and weaken the privacy). The offset reaches at
-            // most a fixed fraction of the radius, keeping the true location inside the circle.
-            var distanceMeters = Math.Sqrt( distanceSeed ) * MaxOffsetFractionOfRadius * LocationCircleRadiusMeters;
-
-            // A degree of longitude shrinks toward the poles, so scale it by the latitude's cosine.
-            var metersPerDegreeLongitude = MetersPerDegreeLatitude * Math.Cos( latitude * Math.PI / 180 );
-
-            var deltaLatitude = ( distanceMeters * Math.Cos( angle ) ) / MetersPerDegreeLatitude;
-            var deltaLongitude = metersPerDegreeLongitude > 0
-                ? ( distanceMeters * Math.Sin( angle ) ) / metersPerDegreeLongitude
-                : 0;
-
-            return ( latitude + deltaLatitude, longitude + deltaLongitude );
-        }
-
-        /// <summary>
-        /// Gets the server-only salt that keys the location fuzz, generating and persisting one on first use.
-        /// </summary>
-        /// <remarks>
-        /// The salt is stored in a system setting and never sent to the client, so the deterministic per-group offset cannot be recomputed from the public group guid and reversed to recover a true location.
-        /// </remarks>
-        /// <returns>The salt bytes used as the HMAC key.</returns>
-        private static byte[] GetLocationFuzzSalt()
-        {
-            var salt = Rock.Web.SystemSettings.GetValue( LocationFuzzSaltSettingKey );
-            if ( salt.IsNullOrWhiteSpace() )
-            {
-                salt = Rock.Security.Encryption.GenerateUniqueToken();
-                Rock.Web.SystemSettings.SetValue( LocationFuzzSaltSettingKey, salt );
-            }
-
-            return System.Text.Encoding.UTF8.GetBytes( salt );
+            return FormattableString.Invariant( $"{point.Latitude:F5},{point.Longitude:F5}" );
         }
 
         /// <summary>
@@ -1936,11 +1875,11 @@ namespace Rock.Blocks.Group
             */
             if ( isSearch )
             {
-                var latitudeMargin = LocationCircleRadiusMeters / MetersPerDegreeLatitude;
+                var latitudeMargin = LocationObfuscator.DefaultCircleRadiusMeters / MetersPerDegreeLatitude;
                 var centerLatitude = ( searchBounds.North + searchBounds.South ) / 2;
                 var metersPerDegreeLongitude = MetersPerDegreeLatitude * Math.Cos( centerLatitude * Math.PI / 180 );
                 var longitudeMargin = metersPerDegreeLongitude > 0
-                    ? LocationCircleRadiusMeters / metersPerDegreeLongitude
+                    ? LocationObfuscator.DefaultCircleRadiusMeters / metersPerDegreeLongitude
                     : latitudeMargin;
 
                 var southBound = searchBounds.South - latitudeMargin;
@@ -2039,12 +1978,11 @@ namespace Rock.Blocks.Group
 
             if ( isPreciseOrigin && resultGroupIds.Any() )
             {
-                var saltBytes = GetLocationFuzzSalt();
                 representativePoints = GetRepresentativePoints( resultGroupIds, true, proximityDbPoint );
                 var guidByGroupId = representativePoints.ToDictionary( p => p.GroupId, p => p.Guid );
                 var fuzzedByGroup = representativePoints.ToDictionary(
                     p => p.GroupId,
-                    p => FuzzLocation( p.Guid, p.Latitude, p.Longitude, saltBytes ) );
+                    p => LocationObfuscator.GetFuzzedLocation( p.Guid, p.Latitude, p.Longitude ) );
 
                 // Straight-line distance is always available for every group.
                 foreach ( var pair in fuzzedByGroup )
@@ -2066,7 +2004,15 @@ namespace Rock.Blocks.Group
                     }
 
                     var groupGuid = guidByGroupId.TryGetValue( groupId, out var guid ) ? guid.ToString() : null;
-                    if ( groupGuid != null && knownDistances.TryGetValue( groupGuid, out var cached ) && cached != null )
+                    var locationKey = GetDistanceLocationKey( fuzzedByGroup[groupId] );
+
+                    // Reuse a cached distance only when it was computed for this same group location. A
+                    // group that moved since (its fuzzed point shifts with its real location) misses the
+                    // cache and is re-routed, so the card's distance and drive time track the new location.
+                    if ( groupGuid != null
+                        && knownDistances.TryGetValue( groupGuid, out var cached )
+                        && cached != null
+                        && cached.LocationKey == locationKey )
                     {
                         drivingByGroup[groupId] = ( cached.Miles, cached.Minutes );
                     }
@@ -2084,7 +2030,12 @@ namespace Rock.Blocks.Group
 
                         if ( guidByGroupId.TryGetValue( lookedUp.Key, out var guid ) )
                         {
-                            newDistances[guid.ToString()] = new GroupFinderDistanceBag { Miles = lookedUp.Value.Miles, Minutes = lookedUp.Value.Minutes };
+                            newDistances[guid.ToString()] = new GroupFinderDistanceBag
+                            {
+                                Miles = lookedUp.Value.Miles,
+                                Minutes = lookedUp.Value.Minutes,
+                                LocationKey = GetDistanceLocationKey( fuzzedByGroup[lookedUp.Key] )
+                            };
                         }
                     }
                 }
@@ -2207,18 +2158,17 @@ namespace Rock.Blocks.Group
                 return new List<GroupFinderMapMarkerBag>();
             }
 
-            var saltBytes = GetLocationFuzzSalt();
             var markers = new List<GroupFinderMapMarkerBag>();
             foreach ( var point in representativePoints ?? GetRepresentativePoints( groupIds, hasOrigin, originPoint ) )
             {
-                var fuzzed = FuzzLocation( point.Guid, point.Latitude, point.Longitude, saltBytes );
+                var fuzzed = LocationObfuscator.GetFuzzedLocation( point.Guid, point.Latitude, point.Longitude );
 
                 markers.Add( new GroupFinderMapMarkerBag
                 {
                     GroupGuid = point.Guid.ToString(),
                     Latitude = fuzzed.Latitude,
                     Longitude = fuzzed.Longitude,
-                    CircleRadiusMeters = LocationCircleRadiusMeters
+                    CircleRadiusMeters = LocationObfuscator.DefaultCircleRadiusMeters
                 } );
             }
 
@@ -2285,7 +2235,6 @@ namespace Rock.Blocks.Group
         {
             var pointsByGroup = GetRepresentativePoints( candidateGroupIds, hasOrigin, originPoint )
                 .ToDictionary( p => p.GroupId );
-            var saltBytes = GetLocationFuzzSalt();
 
             var south = bounds.South;
             var north = bounds.North;
@@ -2301,7 +2250,7 @@ namespace Rock.Blocks.Group
                     continue;
                 }
 
-                var fuzzed = FuzzLocation( point.Guid, point.Latitude, point.Longitude, saltBytes );
+                var fuzzed = LocationObfuscator.GetFuzzedLocation( point.Guid, point.Latitude, point.Longitude );
                 var inBox = fuzzed.Latitude >= south && fuzzed.Latitude <= north
                     && fuzzed.Longitude >= west && fuzzed.Longitude <= east;
 

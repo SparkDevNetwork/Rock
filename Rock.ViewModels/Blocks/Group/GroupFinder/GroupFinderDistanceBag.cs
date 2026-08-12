@@ -31,5 +31,12 @@ namespace Rock.ViewModels.Blocks.Group.GroupFinder
         /// Gets or sets the static (non-traffic) driving time in minutes.
         /// </summary>
         public double Minutes { get; set; }
+
+        /// <summary>
+        /// Gets or sets a signature of the group's location this distance was computed for. A cached
+        /// entry is reused only while this still matches the group's current location, so a group whose
+        /// location changed between searches is re-routed rather than showing a stale distance and time.
+        /// </summary>
+        public string LocationKey { get; set; }
     }
 }

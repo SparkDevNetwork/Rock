@@ -23,6 +23,13 @@
 
 /** A driving distance and time from the origin to a group, cached per session and exchanged between the block and the client. */
 export type GroupFinderDistanceBag = {
+    /**
+     * Gets or sets a signature of the group's location this distance was computed for. A cached
+     * entry is reused only while this still matches the group's current location, so a group whose
+     * location changed between searches is re-routed rather than showing a stale distance and time.
+     */
+    locationKey?: string | null;
+
     /** Gets or sets the driving distance in miles. */
     miles: number;
 
