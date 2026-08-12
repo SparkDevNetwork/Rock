@@ -283,56 +283,6 @@
 
     // #endregion Values
 
-    // #region Watchers
-
-    watch(isReady, initialize);
-
-    watch(() => props.markers, (): void => {
-        if (isReady.value && !isUnavailable.value) {
-            renderMarkers();
-        }
-    }, { deep: true });
-
-    watch(() => props.selectedMarkerId, (): void => {
-        applyMarkerVisibility();
-        applyMarkerStyles();
-
-        // A selection made outside the map (a card click) focuses the map on that marker; clearing the
-        // selection returns the map to where it was before the focus. A marker click on the map is not
-        // normally a focus (it is already where the visitor clicked) - but with
-        // focusMarkerOnClickAtDefaultZoom set, a marker clicked while the map is still at its results-fit
-        // zoom focuses like a card click, so a tap on a small/clustered marker zooms in to it.
-        if (isMarkerClickSelection) {
-            isMarkerClickSelection = false;
-            if (props.focusMarkerOnClickAtDefaultZoom && props.selectedMarkerId && isAtResultsFitZoom()) {
-                focusSelectedMarker(props.selectedMarkerId);
-            }
-        }
-        else if (props.selectedMarkerId) {
-            focusSelectedMarker(props.selectedMarkerId);
-        }
-        else {
-            restoreSavedView();
-        }
-    });
-
-    // Hovering re-styles the markers and, when collapsed, expands the target to its full circle; it
-    // never selects (that is a click).
-    watch(() => props.hoveredMarkerId, (): void => {
-        applyMarkerVisibility();
-        applyMarkerStyles();
-        applyClusterHover();
-    });
-
-    // Changing the drawn set (e.g. paging the list) only toggles visibility; it does not re-plot
-    // or refit, so the map stays put while the shown markers change.
-    watch(() => props.renderedMarkerIds, applyMarkerVisibility, { deep: true });
-
-    // Add, move, or clear the searched-location pin as the prop changes.
-    watch(() => props.referenceLocation, syncReferenceLocationMarker, { deep: true });
-
-    // #endregion Watchers
-
     // #region Functions
 
     // Rock keys its theme off a "theme" attribute on the document element: "dark" and "light" are
@@ -872,10 +822,12 @@
             expandedIds.delete(id);
         }
 
-        // Create markers for the groups new to the set.
+        // Create markers new to the set, and update a persisting marker in place when its group's
+        // coordinates or radius changed (the id is stable, so it is reused rather than torn down).
         const addedClusterMarkers: google.maps.Marker[] = [];
         for (const markerData of props.markers) {
             if (plottedMarkers[markerData.id]) {
+                updatePlottedMarkerIfMoved(markerData);
                 continue;
             }
 
@@ -896,6 +848,31 @@
             // The one-time initial fit snaps into place; deliberate later refits (a search) ease.
             fitToMarkers(false);
             hasFitted = true;
+        }
+    }
+
+    // Reapply a persisting marker's geometry when its group's coordinates or approximation radius
+    // changed between renders (e.g. an admin edited the group's location). Only the moved values are
+    // written, so an unchanged marker costs a pair of comparisons and nothing else.
+    function updatePlottedMarkerIfMoved(markerData: MapViewMarker): void {
+        const plotted = plottedMarkers[markerData.id];
+        if (!plotted) {
+            return;
+        }
+
+        const hasMoved = plotted.position.lat() !== markerData.latitude || plotted.position.lng() !== markerData.longitude;
+        if (hasMoved) {
+            const position = new google.maps.LatLng(markerData.latitude, markerData.longitude);
+            plotted.marker?.setPosition(position);
+            plotted.dot?.setPosition(position);
+            plotted.circle?.setCenter(position);
+            plotted.position = position;
+        }
+
+        const newRadius = markerData.circleRadiusMeters ?? 0;
+        if (plotted.radiusMeters !== newRadius) {
+            plotted.circle?.setRadius(newRadius);
+            plotted.radiusMeters = newRadius;
         }
     }
 
@@ -1456,6 +1433,56 @@
     }
 
     // #endregion Functions
+
+    // #region Watchers
+
+    watch(isReady, initialize);
+
+    watch(() => props.markers, (): void => {
+        if (isReady.value && !isUnavailable.value) {
+            renderMarkers();
+        }
+    }, { deep: true });
+
+    watch(() => props.selectedMarkerId, (): void => {
+        applyMarkerVisibility();
+        applyMarkerStyles();
+
+        // A selection made outside the map (a card click) focuses the map on that marker; clearing the
+        // selection returns the map to where it was before the focus. A marker click on the map is not
+        // normally a focus (it is already where the visitor clicked) - but with
+        // focusMarkerOnClickAtDefaultZoom set, a marker clicked while the map is still at its results-fit
+        // zoom focuses like a card click, so a tap on a small/clustered marker zooms in to it.
+        if (isMarkerClickSelection) {
+            isMarkerClickSelection = false;
+            if (props.focusMarkerOnClickAtDefaultZoom && props.selectedMarkerId && isAtResultsFitZoom()) {
+                focusSelectedMarker(props.selectedMarkerId);
+            }
+        }
+        else if (props.selectedMarkerId) {
+            focusSelectedMarker(props.selectedMarkerId);
+        }
+        else {
+            restoreSavedView();
+        }
+    });
+
+    // Hovering re-styles the markers and, when collapsed, expands the target to its full circle; it
+    // never selects (that is a click).
+    watch(() => props.hoveredMarkerId, (): void => {
+        applyMarkerVisibility();
+        applyMarkerStyles();
+        applyClusterHover();
+    });
+
+    // Changing the drawn set (e.g. paging the list) only toggles visibility; it does not re-plot
+    // or refit, so the map stays put while the shown markers change.
+    watch(() => props.renderedMarkerIds, applyMarkerVisibility, { deep: true });
+
+    // Add, move, or clear the searched-location pin as the prop changes.
+    watch(() => props.referenceLocation, syncReferenceLocationMarker, { deep: true });
+
+    // #endregion Watchers
 
     // #region Lifecycle Hooks
 
