@@ -298,7 +298,8 @@
                          snapOnTap
                          squareAtMaxDepth
                          keepRoundedWhenPushed
-                         :snapPoints="drawerSnapPoints">
+                         :snapPoints="drawerSnapPoints"
+                         @settled="onDrawerSettled">
                 <template #header>
                     <div class="group-finder-sheet-title">
                         <span>{{ resultCountText }}</span>
@@ -1033,6 +1034,12 @@
     // expanded sheet overlays the map. The swap is deferred until the open/close animation settles (see the
     // drawerSnapIndex watcher), since flipping it mid-slide reparents the sheet and cancels the animation.
     const drawerMode = ref<"push" | "float">("push");
+
+    // The group card to scroll to once the drawer finishes opening. Opening from minimized swaps the dock
+    // mode and reparents the sheet a beat after it slides open; scrolling before that lands is canceled by
+    // the reparent, so a reveal that opens the drawer parks the target here and the drawer's settled event
+    // does the scroll once the sheet is in its resting place. Null when nothing is waiting to be revealed.
+    const pendingScrollGuid = ref<string | null>(null);
 
     // A CSS length that holds the collapsed sheet above Rock's admin footer (a fixed bar at the viewport
     // bottom, shown to admins in edit mode) so the minimized handle does not cover it. Zero when the bar is
@@ -1913,57 +1920,48 @@
         }
     }
 
-    // Scroll the selected group's card to the top of the drawer once the drawer has finished opening.
-    // The drawer body grows frame by frame while its height transition runs; this watches that height
-    // and scrolls only after it holds steady for a couple of frames (or a frame cap is hit, bounding
-    // the wait on a slow or interrupted transition), so the card lands correctly regardless of how far
-    // down the list it is. The selection is re-checked at scroll time so a rapid re-selection wins.
-    function scrollCardIntoViewWhenSettled(guid: string): void {
-        let lastHeight = -1;
-        let stableFrames = 0;
-        let frames = 0;
-        const maxFrames = 90;
+    // Scroll the selected group's card to the top of the drawer. The selection is re-checked first so a
+    // rapid re-selection that has already moved on does not scroll to a stale card, and nextTick lets the
+    // newly selected card render before the lookup. The caller is responsible for only invoking this once
+    // the drawer is at rest, so the smooth glide is not canceled by an in-flight open or reparent.
+    function scrollCardIntoView(guid: string): void {
+        if (selectedGroupGuid.value !== guid) {
+            return;
+        }
 
-        const step = (): void => {
-            if (selectedGroupGuid.value !== guid) {
-                return;
-            }
-
-            // Measure the docked panel's scroll viewport (it grows as the drawer opens), not the inner
-            // content wrapper whose height is the constant card-list total and never tracks the open.
-            const body = document.querySelector(".docked-panel-body");
-            const height = body ? body.clientHeight : 0;
-
-            if (height === lastHeight) {
-                stableFrames++;
-            }
-            else {
-                stableFrames = 0;
-                lastHeight = height;
-            }
-
-            frames++;
-            if ((height > 0 && stableFrames >= 2) || frames >= maxFrames) {
-                document.querySelector(`[data-group-guid="${guid}"]`)?.scrollIntoView({ block: "start", behavior: "smooth" });
-                return;
-            }
-
-            requestAnimationFrame(step);
-        };
-
-        requestAnimationFrame(step);
+        nextTick(() => {
+            document.querySelector(`[data-group-guid="${guid}"]`)?.scrollIntoView({ block: "start", behavior: "smooth" });
+        });
     }
 
-    // Reveal the selected group's card in the drawer, then scroll it to the top once the sheet settles.
-    // Only open the sheet when it is minimized, where the card is otherwise hidden. At a middle stop the
-    // map and list already both show, so leave the depth where the visitor set it and just bring the card
-    // into view; we do not maximize or minimize the sheet for them. Scrolling waits for any open to finish,
-    // since scrolling mid-animation runs against the still-collapsed body and leaves a distant card off screen.
+    // Reveal the selected group's card in the drawer. Only open the sheet when it is minimized, where the
+    // card is otherwise hidden; at a middle stop the map and list both already show, so leave the depth
+    // where the visitor set it. Opening the sheet swaps its dock mode and reparents it a beat later, which
+    // would cancel a smooth scroll mid-glide, so an open (or an open already in flight) parks the target in
+    // pendingScrollGuid for onDrawerSettled to scroll once the sheet lands. A drawer already at rest scrolls
+    // straight away.
     function revealSelectedGroupInDrawer(guid: string): void {
         if (drawerSnapIndex.value === 0) {
+            pendingScrollGuid.value = guid;
             drawerSnapIndex.value = drawerSnapPoints.length - 1;
         }
-        scrollCardIntoViewWhenSettled(guid);
+        else if (pendingScrollGuid.value !== null) {
+            pendingScrollGuid.value = guid;
+        }
+        else {
+            scrollCardIntoView(guid);
+        }
+    }
+
+    // Scroll to the group parked by revealSelectedGroupInDrawer once the drawer has finished opening and
+    // reparenting (the DockedPanel settled event). Clears the target so an unrelated later settle does not
+    // re-scroll, and scrollCardIntoView drops it anyway if the selection has since changed.
+    function onDrawerSettled(): void {
+        const guid = pendingScrollGuid.value;
+        pendingScrollGuid.value = null;
+        if (guid) {
+            scrollCardIntoView(guid);
+        }
     }
 
     // Collapse the sheet to its header only when it is fully maximized, so selecting a card reveals the map

@@ -387,6 +387,12 @@
         /** @deprecated Emitted alongside update:depth so the deprecated width v-model stays in sync. */
         (e: "update:width", value: string): void;
         (e: "update:snapPoint", value: number): void;
+        /**
+         * Emitted after a dock-mode change has fully landed: the panel has been relocated to its new
+         * teleport parent and its scroll position restored. A consumer can run layout-sensitive work here
+         * (e.g. scrolling content into view) that a mid-reparent DOM move would otherwise disrupt.
+         */
+        (e: "settled"): void;
     }>();
 
     // #region Values
@@ -1298,6 +1304,31 @@
             applyActiveSnapDepth();
         }
     }, { deep: true });
+
+    /*
+        A mode change re-points the teleport target (push docks to <body>, float to #content-wrapper),
+        so Vue moves the whole panel under a new parent. That DOM move resets the scroll body's scroll
+        offsets to 0, silently discarding whatever position a consumer had scrolled to. Capture the
+        position before the patch - this pre-flush watch runs before the teleport moves the node - and
+        restore it on the next tick, once the move has landed, so a mode swap the consumer did not initiate
+        never loses their scroll. Both axes are saved because the right dock scrolls horizontally. When the
+        mode change does not actually reparent (e.g. no #content-wrapper, so both modes target <body>), the
+        saved and current positions match and the restore is a no-op. The settled event is emitted once the
+        panel is back in place so a consumer can safely run layout-sensitive work (see the settled emit).
+    */
+    watch(() => props.mode, () => {
+        const body = dockedPanelRef.value?.querySelector(".docked-panel-body") as HTMLElement | null;
+        const savedScrollTop = body?.scrollTop ?? 0;
+        const savedScrollLeft = body?.scrollLeft ?? 0;
+
+        nextTick(() => {
+            if (body) {
+                body.scrollTop = savedScrollTop;
+                body.scrollLeft = savedScrollLeft;
+            }
+            emit("settled");
+        });
+    }, { flush: "pre" });
 
     watch(() => props.mode, () => {
         updateDockedPanelPushId();
