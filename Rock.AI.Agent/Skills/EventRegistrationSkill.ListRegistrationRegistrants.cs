@@ -72,10 +72,12 @@ internal sealed partial class EventRegistrationSkill
             .Select( rr => new RegistrationRegistrantResult
             {
                 Id = rr.Id,
+                Guid = rr.Guid,
                 Person = PersonResult.NameOnly( rr.PersonAlias ),
                 RegistrationInstance = new RegistrationInstanceResult
                 {
                     Id = rr.Registration.RegistrationInstance.Id,
+                    Guid = rr.Registration.RegistrationInstance.Guid,
                     Name = rr.Registration.RegistrationInstance.Name,
                 },
                 RegisteredDateTime = rr.CreatedDateTime,
@@ -86,6 +88,7 @@ internal sealed partial class EventRegistrationSkill
             .Select( rr => new RegistrationRegistrantResult
             {
                 Id = rr.Id,
+                Guid = rr.Guid,
                 Person = rr.Person,
                 RegistrationInstance = rr.RegistrationInstance,
                 RegisteredDateTime = rr.RegisteredDateTime,

@@ -76,9 +76,11 @@ internal partial class StepSkill
             .Select( spc => new StepProgramCompletionResult
             {
                 Id = spc.Id,
+                Guid = spc.Guid,
                 StepProgram = new KeyNameResult
                 {
                     Id = spc.StepProgram.Id,
+                    Guid = spc.StepProgram.Guid,
                     Name = spc.StepProgram.Name,
                 },
                 Person = PersonResult.NameOnly( spc.PersonAlias ),
@@ -90,6 +92,7 @@ internal partial class StepSkill
                         StepType = new StepTypeResult
                         {
                             Id = s.StepType.Id,
+                            Guid = s.StepType.Guid,
                             Name = s.StepType.Name,
                         },
                     } )

@@ -85,9 +85,9 @@ Defect 2 is a shape that was never revisited. `AttributeResult` predates the nee
 - `AttributeResult` MUST expose the attribute's description, order, field type, and allowed values where the field type supplies them.
 - `Get{Entity}AvailableAttributes` tools MUST keep returning `helper.GetAvailableAttributes` directly. A tool needing more MUST extend `AttributeResult` in core rather than building its own results, because building its own means duplicating the helper's visibility and authorization filters.
 - Single-entity `Get` tools MUST populate `Guid` on the result they build.
-- Nested `KeyNameResult` references inside those results MUST carry `Guid`, set with `FromEntity` or an explicit object initializer. The three-argument constructor MUST NOT be used; it discards its `guid` argument.
+- Nested `KeyNameResult` references inside those results MUST carry `Guid`, set with `FromEntity` or an explicit object initializer. ~~The three-argument constructor MUST NOT be used; it discards its `guid` argument.~~ **Superseded.** The constructor was fixed to assign its argument; it is now safe to use.
 - A shared result factory used by both `Get` and `List` paths MUST NOT be changed. The `Get` tool sets `Guid` on its own result after calling the factory.
-- `List` and `Lookup` tools MUST NOT populate `Guid`, with one structural exception described below.
+- ~~`List` and `Lookup` tools MUST NOT populate `Guid`, with one structural exception described below.~~ **Superseded. The rule is now the opposite:** every result representing an entity populates `Guid`, `List` and `Lookup` included. See "Scope, and why it was reversed" below.
 - All changes MUST be additive. No existing tool signature or result property may change meaning.
 
 ## Proposed Fix
@@ -142,7 +142,29 @@ Do **not** convert those initializers to `KeyNameResult.FromEntity`. `FromEntity
 
 **Two of the eleven route through a shared factory.** `GetCurrentPerson` builds its result with `PersonResult.Basic`, which is also used for nested person references inside list results. Changing the factory would leak `Guid` into those lists, so `GetCurrentPerson` sets it on its own result afterward instead. `GetPersonProfile` and `GetMyProfile` both use `PersonSkill.GetPrimaryPersonResult`, which is only ever a `Get` path, so that one is changed directly.
 
-### Scope: `Get` yes, `List` no
+### Scope, and why it was reversed
+
+> **Superseded.** The rule below held for one release and was then reversed. Every result
+> that represents an entity now populates `Guid`, `List` and `Lookup` included, wherever the
+> model has one.
+>
+> **What went wrong.** The argument below is about payload. It never weighed what the caller
+> does when the identifier is absent, which is not "make one more call." It is to send the
+> `IdKey` instead, into a slot Rock stores a GUID in. That does not error. The reference
+> silently fails to resolve, and the damage surfaces much later.
+>
+> **The second reason is forward cover.** Whether a given entity is referenceable is not a
+> fixed property. It changes the moment someone adds a field type. A rule that depends on
+> today's list of entity field types has to be revisited every time that list grows, and it
+> will not be.
+>
+> **The cost was measured and is small.** 122 insertions across 48 files, one scripted pass.
+> No tool gained a database call: every foreign-key case already dereferenced its navigation
+> property for `Name`, so the guid is one more column on a join that was already there.
+>
+> The paragraph about `ListDefinedValues` below is the clearest example of the reasoning
+> failing. It correctly identified the exact case that would break and then argued for
+> breaking it.
 
 **`Get` detail tools populate `Guid`. `List` and `Lookup` tools do not.**
 

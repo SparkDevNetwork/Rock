@@ -84,15 +84,16 @@ internal sealed partial class CoreAdministrationSkill
             .Select( sc => new SystemCommunicationResult
             {
                 Id = sc.Id,
+                Guid = sc.Guid,
                 Title = sc.Title,
                 Category = sc.Category != null
-                    ? new KeyNameResult { Id = sc.Category.Id, Name = sc.Category.Name }
+                    ? new KeyNameResult { Id = sc.Category.Id, Guid = sc.Category.Guid, Name = sc.Category.Name }
                     : null
             } )
             .ToList() );
 
         var historyPage = cursorPage.WithItems( cursorPage.Items
-            .Select( sc => new KeyNameResult { Id = sc.Id, Name = sc.Title } ) );
+            .Select( sc => new KeyNameResult { Id = sc.Id, Guid = sc.Guid, Name = sc.Title } ) );
 
         return helper.GetPaginatedResult( resultPage, historyPage );
     }

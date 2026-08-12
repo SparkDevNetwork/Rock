@@ -105,20 +105,25 @@ internal sealed partial class CoreAdministrationSkill
             .Select( dv => new DefinedValueResult
             {
                 Id = dv.Id,
+
+                // A defined value is referenced by Guid in workflow action
+                // settings and attribute default values, so the list has to
+                // carry it or a caller has no way to reach one.
+                Guid = dv.Guid,
                 Value = dv.Value,
                 Description = dv.Description,
 
                 // Only when the type uses categories. A null category on every
                 // row of a type that does not use them is noise.
                 Category = isCategorized && dv.CategoryId.HasValue
-                    ? new KeyNameResult { Id = dv.CategoryId.Value, Name = dv.CategoryName }
+                    ? new KeyNameResult { Id = dv.CategoryId.Value, Guid = CategoryCache.Get( dv.CategoryId.Value )?.Guid, Name = dv.CategoryName }
                     : null,
                 AttributeValues = dv.GetGridAttributeValueResults( AgentRequestContext ).ToList()
             } )
             .ToList() );
 
         var historyPage = page.WithItems( page.Items
-            .Select( dv => new KeyNameResult { Id = dv.Id, Name = dv.Value } ) );
+            .Select( dv => new KeyNameResult { Id = dv.Id, Guid = dv.Guid, Name = dv.Value } ) );
 
         return helper.GetPaginatedResult( resultPage, historyPage );
     }

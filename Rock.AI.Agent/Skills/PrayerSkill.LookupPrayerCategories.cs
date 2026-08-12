@@ -37,6 +37,7 @@ internal sealed partial class PrayerSkill
             .Select( pc => new CategoryResult
             {
                 Id = pc.Id,
+                Guid = pc.Guid,
                 Description = pc.Description,
                 Name = pc.Name,
             } )
@@ -46,6 +47,7 @@ internal sealed partial class PrayerSkill
         var trimmedCategories = prayerCategories.Select( pc => new KeyNameResult
         {
             Id = pc.Id,
+            Guid = pc.Guid,
             Name = pc.Name,
         } ).ToList();
 

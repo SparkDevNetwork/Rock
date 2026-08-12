@@ -69,6 +69,7 @@ internal sealed partial class WorkflowBuilderSkill
                 return new WorkflowActionComponentResult
                 {
                     EntityTypeIdKey = entityType.Id.AsIdKey(),
+                    EntityTypeGuid = entityType.Guid,
                     ClassName = componentType.FullName,
                     Name = ActionContainer.GetComponentName( componentType.FullName ),
                     Category = componentType.GetCustomAttributes( typeof( ActionCategoryAttribute ), true )

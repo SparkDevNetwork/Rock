@@ -39,6 +39,7 @@ internal sealed partial class CmsSkill
         var siteList = sites.Select( s => new SiteResult
         {
             Id = s.Id,
+            Guid = s.Guid,
             Name = s.Name,
             Description = s.Description,
             SiteType = s.SiteType.ConvertToString( true ),

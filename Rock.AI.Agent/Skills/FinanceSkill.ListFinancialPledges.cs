@@ -64,12 +64,14 @@ internal sealed partial class FinanceSkill
             .Select( fp => new FinancialPledgeResult
             {
                 Id = fp.Id,
+                Guid = fp.Guid,
                 Person = PersonResult.NameOnly( fp.PersonAlias ),
                 StartDate = fp.StartDate != DateTime.MinValue ? fp.StartDate : null,
                 EndDate = fp.EndDate != DateTime.MaxValue ? fp.EndDate : null,
                 FinancialAccount = new FinancialAccountResult
                 {
                     Id = fp.Account.Id,
+                    Guid = fp.Account.Guid,
                     Name = fp.Account.Name,
                 },
                 TotalAmount = fp.TotalAmount,

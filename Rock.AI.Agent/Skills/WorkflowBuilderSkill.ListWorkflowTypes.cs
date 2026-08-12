@@ -121,7 +121,7 @@ internal sealed partial class WorkflowBuilderSkill
             .ToList() );
 
         var historyPage = page.WithItems( page.Items
-            .Select( wt => new KeyNameResult { Id = wt.Id, Name = wt.Name } ) );
+            .Select( wt => new KeyNameResult { Id = wt.Id, Guid = wt.Guid, Name = wt.Name } ) );
 
         return helper.GetPaginatedResult( resultPage, historyPage );
     }

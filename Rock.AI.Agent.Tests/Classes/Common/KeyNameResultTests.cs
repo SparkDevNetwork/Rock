@@ -63,24 +63,27 @@ public class KeyNameResultTests
     }
 
     /// <summary>
-    /// The constructors leave the guid null. Only <see cref="KeyNameResult.FromEntity"/>
-    /// and an explicit object initializer populate it.
+    /// A constructor populates the guid when it is given one, and leaves it null
+    /// when it is not.
     /// </summary>
     /// <remarks>
-    /// The three argument constructor accepts a guid and does not assign it. That
-    /// is asserted here rather than treated as a defect, so a caller who reaches
-    /// for it can see from the tests that it will not do what the signature
-    /// suggests.
+    /// The three argument constructor previously accepted a guid and dropped it,
+    /// and an earlier version of this test asserted that as intended behavior. It
+    /// was not: every caller reading the signature would believe the guid had been
+    /// set. Now that results carry their identifier, the constructor assigns it and
+    /// this test holds it to that.
     /// </remarks>
     [TestMethod]
-    public void Constructors_LeaveGuidNull()
+    public void Constructors_AssignGuidOnlyWhenGiven()
     {
+        var guid = Guid.NewGuid();
+
         var fromId = new KeyNameResult( 1, "Test" );
         var fromKey = new KeyNameResult( "abc123", "Test" );
-        var fromIdAndGuid = new KeyNameResult( 1, Guid.NewGuid(), "Test" );
+        var fromIdAndGuid = new KeyNameResult( 1, guid, "Test" );
 
-        Assert.IsNull( fromId.Guid );
-        Assert.IsNull( fromKey.Guid );
-        Assert.IsNull( fromIdAndGuid.Guid, "The three argument constructor does not assign its guid argument." );
+        Assert.IsNull( fromId.Guid, "The id and name constructor has no guid to assign." );
+        Assert.IsNull( fromKey.Guid, "The key and name constructor has no guid to assign." );
+        Assert.AreEqual( guid, fromIdAndGuid.Guid, "The three argument constructor must assign its guid argument." );
     }
 }

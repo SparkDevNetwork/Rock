@@ -113,15 +113,18 @@ internal sealed partial class GroupSkill
                 var r = new ScheduledAttendanceResult
                 {
                     Id = a.Id,
+                    Guid = a.Guid,
                     Person = PersonResult.NameOnly( a.PersonAlias ),
                     Group = new GroupResult
                     {
                         Id = a.Occurrence.GroupId.Value,
+                        Guid = a.Occurrence.Group.Guid,
                         Name = a.Occurrence.Group.Name
                     },
                     Location = new KeyNameResult
                     {
                         Id = a.Occurrence.LocationId,
+                        Guid = a.Occurrence.Location.Guid,
                         Name = a.Occurrence.Location.Name
                     },
                     ScheduledDate = a.StartDateTime,

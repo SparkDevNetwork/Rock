@@ -46,6 +46,7 @@ internal partial class StepSkill
                 g => g.Select( ss => new StepStatusResult
                 {
                     Id = ss.Id,
+                    Guid = ss.Guid,
                     Name = ss.Name,
                     IndicatesStepCompleted = ss.IsCompleteStatus,
                 } )
@@ -58,12 +59,14 @@ internal partial class StepSkill
             .Select( sp => new StepProgramResult
             {
                 Id = sp.Id,
+                Guid = sp.Guid,
                 Name = sp.Name,
                 StepTypes = sp.StepTypes
                     .OrderBy( st => st.Order )
                     .Select( s => new StepTypeResult
                     {
                         Id = s.Id,
+                        Guid = s.Guid,
                         Name = s.Name
                     } )
                     .ToList(),

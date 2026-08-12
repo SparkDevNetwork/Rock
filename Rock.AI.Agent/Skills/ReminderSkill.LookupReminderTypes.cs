@@ -40,10 +40,12 @@ internal sealed partial class ReminderSkill
             .Select( rt => new ReminderTypeResult
             {
                 Id = rt.Id,
+                Guid = rt.Guid,
                 Name = rt.Name,
                 EntityType = new KeyNameResult
                 {
                     Id = rt.EntityTypeId,
+                    Guid = rt.EntityType.Guid,
                     Name = rt.EntityType.Name,
                 },
                 Description = rt.Description,

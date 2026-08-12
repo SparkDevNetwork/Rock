@@ -57,6 +57,7 @@ internal sealed partial class CoreAdministrationSkill
             .Select( ft => new FieldTypeResult
             {
                 Id = ft.Id,
+                Guid = ft.Guid,
                 Name = ft.Name
             } )
             .ToList();

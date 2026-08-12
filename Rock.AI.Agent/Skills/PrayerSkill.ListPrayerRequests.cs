@@ -129,6 +129,7 @@ internal sealed partial class PrayerSkill
             .Select( pr => new PrayerRequestResult
             {
                 Id = pr.Id,
+                Guid = pr.Guid,
                 Text = pr.Text,
                 EnteredDateTime = pr.EnteredDateTime,
                 IsUrgent = pr.IsUrgent,
@@ -140,6 +141,7 @@ internal sealed partial class PrayerSkill
                     ? new KeyNameResult
                     {
                         Id = pr.Category.Id,
+                        Guid = pr.Category.Guid,
                         Name = pr.Category.Name
                     }
                     : null

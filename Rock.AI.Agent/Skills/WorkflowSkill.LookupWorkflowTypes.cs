@@ -36,6 +36,7 @@ internal sealed partial class WorkflowSkill
             .Select( c => new WorkflowTypeResult
             {
                 Id = c.Id,
+                Guid = c.Guid,
                 Name = c.Name,
                 Description = c.Description,
                 CategoryName = c.Category?.Name
@@ -46,6 +47,7 @@ internal sealed partial class WorkflowSkill
             .Select( c => new WorkflowTypeResult
             {
                 Id = c.Id,
+                Guid = c.Guid,
                 Name = c.Name,
             } )
             .ToList();

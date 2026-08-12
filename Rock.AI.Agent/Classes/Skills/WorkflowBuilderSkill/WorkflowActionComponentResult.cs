@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 
+using System;
+
 namespace Rock.AI.Agent.Classes.Skills.WorkflowBuilderSkill;
 
 /// <summary>
@@ -32,6 +34,17 @@ internal class WorkflowActionComponentResult
     /// component when adding an action or asking for its settings.
     /// </summary>
     public string EntityTypeIdKey { get; set; }
+
+    /// <summary>
+    /// The unique identifier of the component's entity type.
+    /// </summary>
+    /// <remarks>
+    /// Named for the entity type rather than being a bare <c>Guid</c>, because a
+    /// component has no record of its own and a plain <c>guid</c> here would imply
+    /// an identity it does not have. This is the value Rock stores when an export
+    /// or a setting refers to the component.
+    /// </remarks>
+    public Guid? EntityTypeGuid { get; set; }
 
     /// <summary>
     /// The full class name of the component. Returned so a caller can recognize

@@ -66,6 +66,7 @@ internal sealed partial class NoteSkill
                 var noteTypeResult = new NoteTypeResult
                 {
                     Id = noteType.Id,
+                    Guid = noteType.Guid,
                     Name = noteType.Name,
                 };
 
@@ -78,6 +79,7 @@ internal sealed partial class NoteSkill
                         noteTypeResult.EntityType = new KeyNameResult
                         {
                             Id = entityType.Id,
+                            Guid = entityType.Guid,
                             Name = entityType.FriendlyName,
                         };
                     }

@@ -70,9 +70,10 @@ internal sealed partial class CoreAdministrationSkill
             .Select( dt => new DefinedTypeResult
             {
                 Id = dt.Id,
+                Guid = dt.Guid,
                 Name = dt.Name,
                 Category = dt.Category != null
-                    ? new KeyNameResult { Id = dt.Category.Id, Name = dt.Category.Name }
+                    ? new KeyNameResult { Id = dt.Category.Id, Guid = dt.Category.Guid, Name = dt.Category.Name }
                     : null
             } );
 

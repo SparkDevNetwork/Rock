@@ -33,7 +33,7 @@ One rule in particular is worth writing down because getting it wrong is silent:
 - Every tool MUST carry `[Description]` and a unique `[AgentToolGuid]`.
 - Every destructive tool MUST carry `[AgentGuardrail]`.
 - Tool parameters MUST use IdKeys, named `{entity}IdKey`.
-- Result `Guid` MUST be populated explicitly; it is null by default everywhere.
+- Result `Guid` MUST be populated explicitly; it is null by default everywhere. This applies to **every** tool type, `Lookup` and `List` included, wherever the model has a `Guid`.
 - A tool paging a secured database query MUST use `CursorPaginator` with the person constructor.
 - A cursor ordering MUST end with a unique tiebreaker.
 - Any tool using page-number paging MUST document why it is not a cursor.
@@ -87,7 +87,14 @@ Building a stub entity and passing it to `helper.GetAvailableAttributes` is the 
 
 Parameters are IdKeys, named `{entity}IdKey`. Results inherit `EntityResultBase`, which supplies `IdKey` (computed from an internal `Id` marked `[JsonIgnore]`) and a nullable `Guid`. `KeyNameResult` is the lightweight reference shape and carries `IdKey`, `Guid`, and `Name`.
 
-`EntityResultBase` and `KeyNameResult` both already expose `Guid`. It defaults to null and is currently populated nowhere, so **populate it explicitly.** See [260807-ai-agent-result-guids.md](completed/ai/260807-ai-agent-result-guids.md).
+`EntityResultBase` and `KeyNameResult` both already expose `Guid`. It defaults to null, so **populate it explicitly.**
+
+**Every result that represents an entity carries its `Guid`, in every tool type.** An earlier rule limited this to `Get` tools on payload grounds; it was reversed. See "Scope, and why it was reversed" in [260807-ai-agent-result-guids.md](completed/ai/260807-ai-agent-result-guids.md).
+
+Two practical notes:
+
+1. **Take the guid from something already in hand.** In a projection that dereferences a navigation property for `Name`, the guid is one more column on a join that already exists. Do not add a cache or service call to fetch one.
+2. **Where the result does not represent a record, name the field for what it identifies.** `WorkflowActionComponentResult` carries `EntityTypeGuid`, not `Guid`, because an action component has no identity of its own.
 
 ### 6. Paging
 
