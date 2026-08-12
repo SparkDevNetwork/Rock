@@ -37,6 +37,8 @@
     import { Guid } from "@Obsidian/Types";
     import { MapViewMarker } from "@Obsidian/Types/Controls/mapView";
     import { loadMapResources } from "@Obsidian/Utility/geo";
+    import { GeoPickerGoogleMapSettingsBag } from "@Obsidian/ViewModels/Rest/Controls/geoPickerGoogleMapSettingsBag";
+    import { GeoPickerSettingsBag } from "@Obsidian/ViewModels/Rest/Controls/geoPickerSettingsBag";
     import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
     import { MarkerClusterer, Cluster, Marker } from "@Obsidian/Libs/markerClusterer";
 
@@ -113,15 +115,6 @@
          * (not pins). The default keeps the full circle at every zoom.
          */
         chipMarkers: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-
-        /**
-         * When true, a user pan or zoom of the map clears the current selection. The default leaves
-         * the selection in place while the map moves.
-         */
-        deselectOnMapMove: {
             type: Boolean as PropType<boolean>,
             default: false
         },
@@ -426,6 +419,11 @@
             ...(hasMapId && { mapId })
         });
 
+        // The initial view comes from the configured center/zoom (or the marker fit below), not a user
+        // pan, so the map's first settle is a programmatic move. Without this an empty map (no markers to
+        // fit) reports its first idle as a user move, which a consumer could read as a pan re-query.
+        isProgrammaticMove = true;
+
         // Paint the Dynamic Map Style JSON only when there is no Map ID (Google ignores JSON styles once a
         // mapId is set). A Map ID map is styled entirely in the cloud; the default base map is left as-is.
         if (hasJsonStyle) {
@@ -463,22 +461,6 @@
         // the zoom changes so a marker never vanishes mid-zoom: the circle scales natively with the map,
         // and only the fixed-size dot toggles on or off at the crossover.
         google.maps.event.addListener(map, "zoom_changed", syncClusteredCircles);
-
-        // Optionally clear the selection and hover when the user pans or zooms, dismissing the info
-        // window or card and reverting the marker highlight. Guarded so the programmatic fit at load
-        // (nothing highlighted yet) does not fire it. dragstart covers panning; zoom_changed zooming.
-        if (props.deselectOnMapMove) {
-            const clearHighlightsOnMove = (): void => {
-                if (props.selectedMarkerId) {
-                    emit("update:selectedMarkerId", null);
-                }
-                if (props.hoveredMarkerId) {
-                    emit("update:hoveredMarkerId", null);
-                }
-            };
-            google.maps.event.addListener(map, "dragstart", clearHighlightsOnMove);
-            google.maps.event.addListener(map, "zoom_changed", clearHighlightsOnMove);
-        }
 
         renderMarkers();
         syncReferenceLocationMarker();
@@ -808,6 +790,12 @@
                 const isHovered = id === props.hoveredMarkerId;
                 dot.setIcon(showDot ? circleDotIcon(isSelected, isHovered) : transparentDotIcon());
                 dot.setZIndex(isSelected || isHovered ? 1000 : 1);
+
+                // The transparent dot keeps a hit area even when invisible, so while the circle is the
+                // element showing, drop the dot's interactivity and let the circle own hover and click.
+                // Otherwise the dot's mouseout clears the hover mid-circle and the circle's mouseover
+                // never re-fires (the pointer never geometrically left the circle).
+                dot.setClickable(showDot);
             }
         }
     }
@@ -1399,9 +1387,6 @@
 
     defineExpose({ fitToMarkers, setView, fitToBounds, focusMarker: focusSelectedMarker });
 
-    // Center and zoom in on a marker selected from outside the map (a card click), saving the current
-    // view first so it can be restored when the selection clears. Card-to-card selections keep the
-    // original saved view (it is captured only once) so a later clear returns all the way back.
     // Whether the map is still at (or below) the zoom it last fit its results to - i.e. the visitor has
     // not zoomed in since. True when no results fit has happened yet.
     function isAtResultsFitZoom(): boolean {
@@ -1413,6 +1398,9 @@
         return currentZoom == null || currentZoom <= lastFitZoom + 0.05;
     }
 
+    // Center and zoom in on a marker selected from outside the map (a card click), saving the current
+    // view first so it can be restored when the selection clears. Card-to-card selections keep the
+    // original saved view (it is captured only once) so a later clear returns all the way back.
     function focusSelectedMarker(id: string): void {
         if (!map) {
             return;
@@ -1461,6 +1449,12 @@
         savedViewZoom = null;
     }
 
+    // loadMapResources is typed to the base settings bag but returns the Google-specific bag at runtime.
+    // This guard confirms the googleMapId field is present so a caller can read it without an assertion.
+    function hasGoogleMapId(settings: GeoPickerSettingsBag): settings is GeoPickerGoogleMapSettingsBag {
+        return "googleMapId" in settings;
+    }
+
     // #endregion Functions
 
     // #region Lifecycle Hooks
@@ -1489,7 +1483,7 @@
         }
 
         // The Map Style's Google cloud Map ID, when configured. Present takes precedence over the JSON style.
-        mapId = settings.googleMapId ?? "";
+        mapId = hasGoogleMapId(settings) ? settings.googleMapId ?? "" : "";
 
         isGoogleLoaded.value = true;
     });
