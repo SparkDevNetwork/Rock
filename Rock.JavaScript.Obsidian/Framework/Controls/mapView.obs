@@ -246,6 +246,12 @@
     let markerClusterer: MarkerClusterer | null = null;
     // Watches the document's "theme" attribute so an in-app light/dark toggle rebuilds a theme-driven map.
     let themeObserver: MutationObserver | null = null;
+    // Watches the OS color scheme so a system/unset theme still rebuilds the map when the OS flips, since
+    // that flip does not touch the "theme" attribute the observer above watches.
+    let colorSchemeMediaQuery: MediaQueryList | null = null;
+    // The color scheme the current map was built with, so a theme or OS change that resolves to the same
+    // scheme is a no-op instead of a needless (and visibly flickering) teardown and rebuild.
+    let builtColorScheme: google.maps.ColorScheme | null = null;
     // True while a programmatic move (fitBounds/setView) is settling, so the idle it produces is
     // reported as a non-user move. Lets a consumer distinguish the visitor panning/zooming from the
     // map recentering itself (e.g. onto a search origin), which must not be treated as a user pan.
@@ -306,6 +312,12 @@
     // explicit, while "system" or no attribute follows the OS. Map that to Google's ColorScheme so the
     // base map matches the rest of the page (mirrors the rule in styles-v2/core.css). Used on the Map ID
     // and default base-map paths; a painted JSON style keeps its own light look and does not use this.
+    //
+    // The system/unset case resolves to an explicit DARK or LIGHT from the media query rather than Google's
+    // FOLLOW_SYSTEM. A Map ID vector map given FOLLOW_SYSTEM paints the light base first and only swaps to
+    // dark once it resolves the OS preference, which flashes on load; handing Google an explicit scheme
+    // renders the final look from the first frame. startThemeWatch listens for OS flips so the live
+    // following FOLLOW_SYSTEM would have given us is preserved.
     function resolveColorScheme(): google.maps.ColorScheme {
         const theme = document.documentElement.getAttribute("theme");
 
@@ -317,7 +329,8 @@
             return google.maps.ColorScheme.LIGHT;
         }
 
-        return google.maps.ColorScheme.FOLLOW_SYSTEM;
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        return prefersDark ? google.maps.ColorScheme.DARK : google.maps.ColorScheme.LIGHT;
     }
 
     async function initialize(ready: boolean): Promise<void> {
@@ -354,6 +367,11 @@
         const hasMapId = mapId.trim().length > 0;
         const hasJsonStyle = !hasMapId && styles.length > 0;
 
+        // A painted JSON style is light-tuned and keeps its own look; every other path follows the theme.
+        // Recorded so a later theme or OS change that resolves to this same scheme skips the rebuild.
+        const colorScheme = hasJsonStyle ? google.maps.ColorScheme.LIGHT : resolveColorScheme();
+        builtColorScheme = colorScheme;
+
         map = new google.maps.Map(mapContainer.value, {
             center: new google.maps.LatLng(centerLatitude, centerLongitude),
             zoom: 12,
@@ -371,7 +389,7 @@
             // A painted JSON style is light-tuned and governs its own look, so keep the base light and do
             // not let the theme darken it. The Map ID and default base maps follow the Rock theme, so Google
             // renders the matching light/dark scheme.
-            colorScheme: hasJsonStyle ? google.maps.ColorScheme.LIGHT : resolveColorScheme(),
+            colorScheme,
             // POIs are never interactive: a POI click opens Google's place card and swallows the map click
             // the control relies on to clear the selection. The Map Style owns POI visibility; this governs
             // only interactivity.
@@ -492,6 +510,13 @@
             return;
         }
 
+        // A theme attribute write or an OS flip can resolve to the scheme the map already has (e.g. toggling
+        // "system" to an explicit "dark" while the OS is already dark). Rebuilding then would tear down and
+        // recreate the map for an identical result, which itself flickers, so only rebuild on a real change.
+        if (resolveColorScheme() === builtColorScheme) {
+            return;
+        }
+
         const center = map.getCenter();
         const zoom = map.getZoom();
 
@@ -517,6 +542,12 @@
 
         themeObserver = new MutationObserver((): void => rebuildForColorScheme());
         themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["theme"] });
+
+        // In system/unset mode the OS flipping light/dark never touches the "theme" attribute, so watch the
+        // media query too - matching Rock's CSS, which reflows the whole page on that flip. rebuildForColorScheme's
+        // scheme guard makes this a no-op whenever an explicit theme already pins the scheme.
+        colorSchemeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+        colorSchemeMediaQuery.addEventListener("change", rebuildForColorScheme);
     }
 
     // Report the current viewport after every pan or zoom: both its bounds (for a consumer that
@@ -1750,6 +1781,8 @@
     onBeforeUnmount((): void => {
         themeObserver?.disconnect();
         themeObserver = null;
+        colorSchemeMediaQuery?.removeEventListener("change", rebuildForColorScheme);
+        colorSchemeMediaQuery = null;
         teardownMap();
     });
 
