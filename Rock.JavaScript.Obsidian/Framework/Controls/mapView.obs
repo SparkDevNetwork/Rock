@@ -837,14 +837,13 @@
         for (const cluster of getClusters(markerClusterer)) {
             const bubble = cluster.marker;
 
-            // Only a rendered multi-marker legacy bubble has a hover state; a lone group shows as its own circle.
-            if (!bubble || cluster.count <= 1 || !isLegacyMarker(bubble)) {
+            // A lone group shows as its own circle, not a bubble, so it has no cluster hover state here.
+            if (!bubble || cluster.count <= 1) {
                 continue;
             }
 
             const isHovered = hoveredProxy != null && cluster.markers?.includes(hoveredProxy) === true;
-            bubble.setIcon(clusterIcon(cluster.count, isHovered));
-            bubble.setZIndex(isHovered ? 1000 : 1);
+            styleClusterBubble(bubble, cluster.count, isHovered);
         }
     }
 
@@ -1054,36 +1053,15 @@
                 markers,
                 algorithmOptions: props.maxZoom != null ? { maxZoom: props.maxZoom - 1 } : undefined,
                 renderer: {
-                    // Draw the cluster bubble in the same faint, marker-color family as the individual
-                    // approximation circles (a light fill, a marker-color ring, and a marker-color
-                    // count) rather than a bold opaque blob, so a cluster does not visually outrank the
-                    // group markers. Hovering gives it the same highlight as a group circle - a bolder
-                    // ring and fill, a bit larger, brought forward - and unhovering reverts it. Resting
-                    // z-index matches a circle; the hover raises it like a hovered marker.
-                    render(cluster): google.maps.Marker {
-                        const count = cluster.count;
-                        const clusterMarker = new google.maps.Marker({
-                            position: cluster.position,
-                            icon: clusterIcon(count, false),
-                            label: {
-                                text: String(count),
-                                color: markerColor,
-                                fontSize: "12px",
-                                fontWeight: "600"
-                            },
-                            zIndex: 1
-                        });
-
-                        clusterMarker.addListener("mouseover", (): void => {
-                            clusterMarker.setIcon(clusterIcon(count, true));
-                            clusterMarker.setZIndex(1000);
-                        });
-                        clusterMarker.addListener("mouseout", (): void => {
-                            clusterMarker.setIcon(clusterIcon(count, false));
-                            clusterMarker.setZIndex(1);
-                        });
-
-                        return clusterMarker;
+                    // Draw the cluster bubble as a solid marker-color disc with a contrasting count, so it
+                    // reads as its own distinct object rather than blending into the semitransparent group
+                    // circles. An advanced-marker bubble is used on a Map ID map (matching the group dots), a
+                    // legacy one otherwise. Hovering (here or from the list) darkens and lifts it. The
+                    // clusterer owns the bubble's map membership and click-to-zoom.
+                    render(cluster): Marker {
+                        const bubble = createClusterBubble(cluster.position, cluster.count);
+                        addClusterHoverListeners(bubble, cluster.count);
+                        return bubble;
                     }
                 }
             });
@@ -1157,17 +1135,139 @@
     // The cluster bubble icon in the same faint marker-color family as the approximation circles, with
     // a resting and a hovered state that mirror a group circle's (bolder ring/fill, thicker, and a bit
     // larger when hovered). The count grows the base size a little.
-    function clusterIcon(count: number, isHovered: boolean): google.maps.Symbol {
-        const baseScale = count < 10 ? 16 : count < 50 ? 20 : 24;
+    // The resting radius, in pixels, of a cluster bubble, growing in a few steps as the count rises so a
+    // bigger cluster reads as bigger. A hovered bubble adds a couple of pixels on top of this.
+    function clusterRadiusPx(count: number): number {
+        return count < 10 ? 16 : count < 50 ? 20 : 24;
+    }
+
+    // A legible count color for a solid fill of the given color. Google does not auto-contrast a marker
+    // label or DOM text against its background, so choose black or white from the color's perceived
+    // luminance (the 0.299/0.587/0.114 weighting) so the number stays readable on any marker color.
+    function contrastingTextColor(hex: string): string {
+        const value = hex.replace("#", "");
+        const red = parseInt(value.slice(0, 2), 16);
+        const green = parseInt(value.slice(2, 4), 16);
+        const blue = parseInt(value.slice(4, 6), 16);
+        const luminance = (0.299 * red + 0.587 * green + 0.114 * blue) / 255;
+        return luminance > 0.6 ? "#000000" : "#ffffff";
+    }
+
+    // Darken a hex color toward black by a 0-1 fraction, used for a bubble's hover fill.
+    function darkenColor(hex: string, fraction: number): string {
+        const value = hex.replace("#", "");
+        const channel = (start: number): string => {
+            const scaled = Math.round(parseInt(value.slice(start, start + 2), 16) * (1 - fraction));
+            return Math.max(0, Math.min(255, scaled)).toString(16).padStart(2, "0");
+        };
+        return `#${channel(0)}${channel(2)}${channel(4)}`;
+    }
+
+    // The count text for a legacy bubble, colored to contrast with its solid fill.
+    function clusterLabel(count: number): google.maps.MarkerLabel {
+        return {
+            text: String(count),
+            color: contrastingTextColor(markerColor),
+            fontSize: "12px",
+            fontWeight: "600"
+        };
+    }
+
+    // The legacy bubble shape: a solid marker-color disc with no outline. Hovering darkens the fill and
+    // grows it a touch.
+    function clusterSymbol(count: number, isHovered: boolean): google.maps.Symbol {
+        const radius = clusterRadiusPx(count);
         return {
             path: google.maps.SymbolPath.CIRCLE,
-            fillColor: markerColor,
-            fillOpacity: isHovered ? highlightedCircleFillOpacity : restingCircleFillOpacity,
-            strokeColor: markerColor,
-            strokeOpacity: isHovered ? highlightedCircleStrokeOpacity : restingCircleStrokeOpacity,
-            strokeWeight: isHovered ? 2 : 1,
-            scale: isHovered ? baseScale + 3 : baseScale
+            fillColor: isHovered ? darkenColor(markerColor, 0.15) : markerColor,
+            fillOpacity: 1,
+            strokeWeight: 0,
+            scale: isHovered ? radius + 2 : radius
         };
+    }
+
+    // Style a cluster bubble's DOM element (the advanced-marker path) as the same solid disc, in place so
+    // a hover restyle keeps the element and its listeners. The element grows a touch on hover to match the
+    // legacy bubble. AdvancedMarkerElement pins the content's bottom center to the coordinate, so shift the
+    // disc down by its radius to land its center there instead (matching the group circle's centering).
+    function styleClusterElement(element: HTMLElement, count: number, isHovered: boolean): void {
+        const radius = clusterRadiusPx(count) + (isHovered ? 2 : 0);
+        const diameter = radius * 2;
+        element.style.width = `${diameter}px`;
+        element.style.height = `${diameter}px`;
+        element.style.borderRadius = "50%";
+        element.style.boxSizing = "border-box";
+        element.style.display = "flex";
+        element.style.alignItems = "center";
+        element.style.justifyContent = "center";
+        element.style.background = isHovered ? darkenColor(markerColor, 0.15) : markerColor;
+        element.style.border = "none";
+        element.style.color = contrastingTextColor(markerColor);
+        element.style.fontSize = "12px";
+        element.style.fontWeight = "600";
+        element.style.lineHeight = "1";
+        element.style.cursor = "pointer";
+        element.style.transform = `translate(0px, ${radius}px)`;
+    }
+
+    // The advanced (HTML) bubble element: a solid disc with the count centered inside it.
+    function buildClusterElement(count: number): HTMLElement {
+        const element = document.createElement("div");
+        element.textContent = String(count);
+        styleClusterElement(element, count, false);
+        return element;
+    }
+
+    // Create the cluster bubble the clusterer will manage: an advanced marker when the map has a Map ID (to
+    // match the advanced group dots), a legacy marker otherwise. The clusterer owns the bubble's map
+    // membership and click-to-zoom, so neither is set here.
+    function createClusterBubble(position: google.maps.LatLng, count: number): Marker {
+        if (mapId.trim().length > 0) {
+            return new google.maps.marker.AdvancedMarkerElement({
+                position,
+                content: buildClusterElement(count),
+                zIndex: 1,
+                gmpClickable: true
+            });
+        }
+
+        return new google.maps.Marker({
+            position,
+            icon: clusterSymbol(count, false),
+            label: clusterLabel(count),
+            zIndex: 1
+        });
+    }
+
+    // Apply the resting or hovered look to an existing bubble of either kind.
+    function styleClusterBubble(bubble: Marker, count: number, isHovered: boolean): void {
+        if (isLegacyMarker(bubble)) {
+            bubble.setIcon(clusterSymbol(count, isHovered));
+            bubble.setZIndex(isHovered ? 1000 : 1);
+        }
+        else {
+            const element = bubble.content as HTMLElement | null;
+            if (element) {
+                styleClusterElement(element, count, isHovered);
+            }
+            bubble.zIndex = isHovered ? 1000 : 1;
+        }
+    }
+
+    // Wire a bubble's own hover highlight (the pointer directly over it), mirroring applyClusterHover's
+    // list-driven highlight. Legacy uses map events; advanced uses DOM events on its content element.
+    function addClusterHoverListeners(bubble: Marker, count: number): void {
+        if (isLegacyMarker(bubble)) {
+            bubble.addListener("mouseover", (): void => styleClusterBubble(bubble, count, true));
+            bubble.addListener("mouseout", (): void => styleClusterBubble(bubble, count, false));
+        }
+        else {
+            const element = bubble.content as HTMLElement | null;
+            if (element) {
+                element.addEventListener("mouseenter", (): void => styleClusterBubble(bubble, count, true));
+                element.addEventListener("mouseleave", (): void => styleClusterBubble(bubble, count, false));
+            }
+        }
     }
 
     // A teardrop pin filled with the configured marker color; a highlighted pin is enlarged.
