@@ -536,7 +536,7 @@
         return document.body;
     });
 
-    // #endregion
+    // #endregion Computed Values
 
     // #region Functions
 
@@ -839,7 +839,7 @@
         }
     }
 
-    // #endregion
+    // #endregion Functions
 
     // #region Event Handlers
 
@@ -1356,7 +1356,7 @@
 
     // #endregion Watchers
 
-    // #region Lifecycle
+    // #region Lifecycle Hooks
 
     onMounted(() => {
         document.addEventListener("fullscreenchange", onFullscreenChange);
@@ -1382,7 +1382,7 @@
         disconnectContentObservers();
     });
 
-    // #endregion Lifecycle
+    // #endregion Lifecycle Hooks
 
     // Expose imperative snap controls so consumers can drive transitions from their own UI.
     defineExpose({ snapTo, next, previous, expand, collapse, toggle });
