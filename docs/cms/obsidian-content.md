@@ -24,6 +24,8 @@ related_files:
 
 > **Prototype, not in `develop`.** All of this lives on `feature-kh-obsidian-content`. Design history is in [specs/260721](../../specs/260721-obsidian-content-block-and-component-model.md) and [specs/260722](../../specs/260722-mcp-driven-obsidian-content-vibe-coding.md).
 
+> For the architectural view of the whole feature (the agent record, the skill inventory, the knowledge base dependency, and the Jint constraints), see [Vibe Coding Architecture](../ai/vibe-coding-architecture.md). This doc is the CMS-side mechanics.
+
 ## What It Is
 
 An admin drops one **Obsidian Content Detail** block on a page and writes a Vue component right there. The code is turned into a loadable module (in the admin's browser when saved from the editor, or on the server when saved through MCP), then stored in the database next to the original source. Visitors get only the finished module. No repo file, no Rock build.
