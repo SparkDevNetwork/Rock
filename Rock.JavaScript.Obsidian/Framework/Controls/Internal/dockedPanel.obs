@@ -293,13 +293,15 @@
 
         /**
          * Ordered stop sizes the panel snaps between along its docking axis (heights for
-         * "bottom", widths for "right"), smallest first. Each entry is a number from 0 to 1
-         * (a fraction of the available extent), a CSS pixel string like "220px", the keyword
-         * "content" (the size of the header slot, i.e. collapse to just the header), or the
-         * keyword "fit-content" (the natural size of the whole slotted content, bounded by the
-         * axis extent, so the panel is exactly as large as it needs to be). When set, the panel
-         * resizes freely while dragging and settles on the nearest stop in the drag's direction
-         * on release; leave empty for the classic free-resize behavior.
+         * "bottom", widths for "right"). Entries MUST be ordered smallest to largest: the snap
+         * index and the after-drag settle read them in declared order, so an unsorted list snaps
+         * to the wrong stop. Each entry is a number from 0 to 1 (a fraction of the available
+         * extent), a CSS pixel string like "220px", the keyword "content" (the size of the header
+         * slot, i.e. collapse to just the header), or the keyword "fit-content" (the natural size
+         * of the whole slotted content, bounded by the axis extent, so the panel is exactly as
+         * large as it needs to be). When set, the panel resizes freely while dragging and settles
+         * on the nearest stop in the drag's direction on release; leave empty for the classic
+         * free-resize behavior.
          */
         snapPoints: {
             type: Array as PropType<(number | string)[]>,
@@ -405,6 +407,12 @@
     const effectiveMinDepth = computed((): string => props.minDepth || props.minWidth);
     const effectiveMaxDepth = computed((): string => props.maxDepth || props.maxWidth);
     const isRendered = ref(false);
+
+    // Snapshot of the DOM-measured sizing the snap and bounds math needs: the axis extent and each snap
+    // point resolved to pixels. A drag or a style recompute reads these cached numbers instead of
+    // re-measuring every frame; refreshMetrics() rebuilds it only when the sizing actually changes
+    // (open, viewport resize, bottomOffset change, content resize, or the start of a resize gesture).
+    const resolvedMetrics = ref<{ extentPx: number; stops: number[] }>({ extentPx: 0, stops: [] });
     const panelId = newGuid();
 
     const fullscreenElement = ref<Element | null>(null);
@@ -468,7 +476,13 @@
             return 1;
         }
 
-        const sizes = props.snapPoints.map(resolveSnapPoint).sort((a, b) => a - b);
+        // snapPoints are declared smallest-first (documented contract), so the last cached size is the
+        // largest stop and the one before it is where the corners begin squaring - no re-sort needed.
+        const sizes = resolvedMetrics.value.stops;
+        if (sizes.length === 0) {
+            return 1;
+        }
+
         const max = sizes[sizes.length - 1];
         const squareStart = sizes.length > 1 ? sizes[sizes.length - 2] : 0;
         if (max <= squareStart) {
@@ -583,13 +597,37 @@
         return document.body.dataset.dockedPanelPushId === panelId;
     }
 
+    // Resolve any CSS length the bottomOffset prop may hold - a plain px value, but also "1.5rem",
+    // "10%", "calc(...)", or "env(safe-area-inset-bottom)" - to pixels. A bare px value is parsed
+    // directly; anything else is measured with a throwaway probe so the extent tracks the real rendered
+    // offset rather than only a raw px number. Called from refreshMetrics, so the probe cost is rare.
+    function resolveCssLengthPx(value: string): number {
+        const trimmed = value.trim();
+        if (trimmed === "") {
+            return 0;
+        }
+
+        if (/^-?\d*\.?\d+px$/.test(trimmed)) {
+            return parseFloat(trimmed);
+        }
+
+        const probe = document.createElement("div");
+        probe.style.position = "absolute";
+        probe.style.visibility = "hidden";
+        probe.style.height = trimmed;
+        document.body.appendChild(probe);
+        const px = probe.getBoundingClientRect().height;
+        probe.remove();
+        return px;
+    }
+
     // The available extent along the docking axis: the viewport minus the fixed top header for a
     // bottom sheet, or the viewport width for a right dock. The bottom offset also comes off a bottom
     // sheet's extent, so the largest stop fills the lifted container rather than overrunning its top.
     function axisExtentPx(): number {
         if (props.position === "bottom") {
             const headerHeight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--top-header-height")) || 0;
-            const bottomOffset = parseFloat(props.bottomOffset) || 0;
+            const bottomOffset = resolveCssLengthPx(props.bottomOffset);
             return window.innerHeight - headerHeight - bottomOffset;
         }
 
@@ -635,7 +673,7 @@
     // used for the "fit-content" stop so the panel is exactly as large as its content rather than a
     // fixed fraction. Clamped to the axis extent so content larger than the viewport does not push
     // the stop off-screen.
-    function contentSizePx(): number {
+    function contentSizePx(extentPx: number): number {
         const panel = dockedPanelRef.value;
         if (!panel) {
             return 0;
@@ -650,20 +688,21 @@
             // offsetHeight - clientHeight is the panel's vertical border so content is not clipped.
             const border = panel.offsetHeight - panel.clientHeight;
             const total = (header?.offsetHeight ?? 0) + bodySize + (footer?.offsetHeight ?? 0) + border;
-            return Math.min(total, axisExtentPx());
+            return Math.min(total, extentPx);
         }
 
         const border = panel.offsetWidth - panel.clientWidth;
         const total = (header?.offsetWidth ?? 0) + bodySize + (footer?.offsetWidth ?? 0) + border;
-        return Math.min(total, axisExtentPx());
+        return Math.min(total, extentPx);
     }
 
-    // Resolve a snap point to a pixel size: a 0-1 number is a fraction of the axis extent, the
-    // "content" keyword is the header size, the "fit-content" keyword is the natural content size,
-    // and any other string is parsed as a CSS pixel value.
-    function resolveSnapPoint(point: number | string): number {
+    // Resolve a snap point to a pixel size against a pre-measured axis extent: a 0-1 number is a
+    // fraction of the extent, the "content" keyword is the header size, the "fit-content" keyword is the
+    // natural content size, and any other string is parsed as a CSS pixel value. The extent is passed in
+    // so refreshMetrics measures it once per snapshot rather than once per stop.
+    function resolveSnapPoint(point: number | string, extentPx: number): number {
         if (typeof point === "number") {
-            return Math.round(point * axisExtentPx());
+            return Math.round(point * extentPx);
         }
 
         if (point === "content") {
@@ -671,41 +710,77 @@
         }
 
         if (point === "fit-content") {
-            return contentSizePx();
+            return contentSizePx(extentPx);
         }
 
         return parseFloat(point) || 0;
     }
 
-    // The smallest and largest resolved stop sizes, used to clamp a free drag.
-    function resizeBounds(): { min: number; max: number } {
-        if (hasSnapPoints.value) {
-            const sizes = props.snapPoints.map(resolveSnapPoint);
-            return { min: Math.min(...sizes), max: Math.max(...sizes) };
-        }
-
-        return { min: parseDepthSpecifier(effectiveMinDepth.value), max: parseDepthSpecifier(effectiveMaxDepth.value) };
+    // Rebuild the cached metrics: measure the axis extent once and resolve every snap point against it.
+    // The one place that reads the DOM for sizing; every other consumer reads resolvedMetrics.
+    function refreshMetrics(): void {
+        const extentPx = axisExtentPx();
+        resolvedMetrics.value = {
+            extentPx,
+            stops: hasSnapPoints.value ? props.snapPoints.map(point => resolveSnapPoint(point, extentPx)) : []
+        };
     }
 
-    // Move to a stop by index and publish it. The resolved size drives the same width/height
-    // pipeline the free-resize path uses. Collapsed stops that resolve to the header size behave
-    // like a peek; the largest stop is the fully expanded state.
+    // The smallest and largest allowed sizes, used to clamp a free drag. With snap points these are the
+    // extremes of the cached resolved stops. Without them (free resize) the configured max is capped to
+    // the axis extent so the panel cannot grow past the header / bottom-offset region the snap path
+    // already respects.
+    function resizeBounds(): { min: number; max: number } {
+        const { extentPx, stops } = resolvedMetrics.value;
+
+        if (hasSnapPoints.value) {
+            if (stops.length > 0) {
+                return { min: Math.min(...stops), max: Math.max(...stops) };
+            }
+
+            // Snap points are configured but not measured yet (the first frame before the snapshot
+            // lands). Allow up to the axis extent rather than clamping to the free-resize max, which can
+            // be a small or zero default and would momentarily crush the panel.
+            const fallbackExtent = extentPx > 0 ? extentPx : (props.position === "bottom" ? window.innerHeight : window.innerWidth);
+            return { min: 0, max: fallbackExtent };
+        }
+
+        const configuredMax = parseDepthSpecifier(effectiveMaxDepth.value);
+        const cap = extentPx > 0 ? extentPx : configuredMax;
+        return { min: parseDepthSpecifier(effectiveMinDepth.value), max: Math.min(configuredMax, cap) };
+    }
+
+    // Set the depth for the currently active stop from the cached metrics, without changing the index or
+    // emitting update:snapPoint. The re-resolve paths (viewport resize, bottomOffset change, content
+    // change, consumer-driven index) use this so re-fitting never echoes back through the snapPoint
+    // v-model into a second apply.
+    function applyActiveSnapDepth(): void {
+        const stops = resolvedMetrics.value.stops;
+        if (stops.length === 0) {
+            return;
+        }
+
+        const clamped = Math.min(Math.max(internalSnapIndex.value, 0), stops.length - 1);
+        setDepth(`${stops[clamped]}px`);
+    }
+
+    // Move to a stop by index and publish it. The resolved size drives the same width/height pipeline
+    // the free-resize path uses. Collapsed stops that resolve to the header size behave like a peek; the
+    // largest stop is the fully expanded state.
     function applySnapIndex(index: number): void {
         if (!hasSnapPoints.value) {
             return;
         }
 
-        const clamped = Math.min(Math.max(index, 0), props.snapPoints.length - 1);
-        internalSnapIndex.value = clamped;
-
-        setDepth(`${resolveSnapPoint(props.snapPoints[clamped])}px`);
+        internalSnapIndex.value = Math.min(Math.max(index, 0), props.snapPoints.length - 1);
+        applyActiveSnapDepth();
     }
 
     // After a drag, settle on the stop in the drag's final direction: the next stop larger than
     // the released size when heading toward the screen center, or the next stop smaller when
     // heading toward the edge. Stops are declared smallest-first, so index order is size order.
     function snapAfterDrag(): void {
-        const sizes = props.snapPoints.map(resolveSnapPoint);
+        const sizes = resolvedMetrics.value.stops;
         const currentPx = parseFloat(internalDepth.value) || 0;
         const isHeadingLarger = resizeLastDirection >= 0;
 
@@ -796,8 +871,16 @@
         resizeDidMove = false;
         isResizing.value = true;
 
+        // Snapshot the sizing once here so the per-frame drag bounds and the release snap read cached
+        // numbers instead of re-measuring the DOM on every pointermove.
+        refreshMetrics();
+
         document.addEventListener("pointermove", onResizeMove);
         document.addEventListener("pointerup", onResizeEnd);
+        // pointercancel fires instead of pointerup when the browser steals the gesture (the page scroller
+        // takes over, an incoming call). Route it to the same teardown so the drag never sticks with the
+        // listeners attached and the dragging class left on.
+        document.addEventListener("pointercancel", onResizeEnd);
     }
 
     function onResizeMove(e: PointerEvent): void {
@@ -862,6 +945,7 @@
 
         document.removeEventListener("pointermove", onResizeMove);
         document.removeEventListener("pointerup", onResizeEnd);
+        document.removeEventListener("pointercancel", onResizeEnd);
 
         if (!hasSnapPoints.value) {
             return;
@@ -1011,6 +1095,14 @@
             return;
         }
 
+        // Resolve the active stop before reserving push space, so the reserved padding starts at the
+        // stop's real height rather than the pre-resolution depth and then jumping when the open
+        // watcher re-resolves it a tick later.
+        if (hasSnapPoints.value) {
+            refreshMetrics();
+            applyActiveSnapDepth();
+        }
+
         if (props.position === "bottom") {
             // A bottom sheet pushes page content upward, so reserve vertical space equal to
             // its height. The right dock's data attribute drives the global padding-right
@@ -1076,7 +1168,8 @@
     // address bar showing or hiding), without disturbing an in-progress drag.
     function onWindowResize(): void {
         if (hasSnapPoints.value && !isResizing.value) {
-            applySnapIndex(internalSnapIndex.value);
+            refreshMetrics();
+            applyActiveSnapDepth();
         }
     }
 
@@ -1094,7 +1187,10 @@
             return;
         }
 
-        const target = `${resolveSnapPoint(activePoint)}px`;
+        // The content changed, so re-measure and compare the active stop's new size against the current
+        // depth. The equality guard keeps a panel-driven body resize from feeding back into a loop.
+        refreshMetrics();
+        const target = `${resolvedMetrics.value.stops[internalSnapIndex.value]}px`;
         if (target !== internalDepth.value) {
             setDepth(target);
         }
@@ -1165,7 +1261,8 @@
             // start watching the content so a content-relative stop tracks later changes.
             if (hasSnapPoints.value) {
                 nextTick(() => {
-                    applySnapIndex(internalSnapIndex.value);
+                    refreshMetrics();
+                    applyActiveSnapDepth();
                     observeContent();
                 });
             }
@@ -1176,26 +1273,29 @@
         }
     }, { immediate: true });
 
-    // Re-resolve the active stop when the consumer drives the index, when the stop list changes,
-    // and (via the resize listener registered on mount) when the viewport changes size.
-    watch(() => props.snapPoint, (index) => {
+    // The consumer drove the index; internalSnapIndex already reflects it (v-model passthrough), so just
+    // re-resolve the active stop's depth from the cache - no re-measure, and no re-emit that would echo
+    // back through the snapPoint v-model.
+    watch(() => props.snapPoint, () => {
         if (hasSnapPoints.value && !isResizing.value) {
-            applySnapIndex(index);
+            applyActiveSnapDepth();
         }
     });
 
-    // The bottom offset changes the axis extent (like a viewport resize), so re-resolve the active stop
-    // when it changes; otherwise a stop resolved at the old offset (e.g. a maximized sheet) would keep its
-    // stale height and no longer fill the resized container.
+    // The bottom offset changes the axis extent (like a viewport resize), so re-measure and re-resolve
+    // the active stop when it changes; otherwise a stop resolved at the old offset (e.g. a maximized
+    // sheet) would keep its stale height and no longer fill the resized container.
     watch(() => props.bottomOffset, () => {
         if (hasSnapPoints.value && !isResizing.value) {
-            applySnapIndex(internalSnapIndex.value);
+            refreshMetrics();
+            applyActiveSnapDepth();
         }
     });
 
     watch(() => props.snapPoints, () => {
         if (hasSnapPoints.value && !isResizing.value) {
-            applySnapIndex(internalSnapIndex.value);
+            refreshMetrics();
+            applyActiveSnapDepth();
         }
     }, { deep: true });
 
@@ -1262,14 +1362,9 @@
         document.addEventListener("fullscreenchange", onFullscreenChange);
         window.addEventListener("resize", onWindowResize);
 
-        // Size to the active stop if the panel is already open on mount (a bottom sheet is often
-        // opened by default); an initially-closed panel resolves its stop when it opens.
-        if (hasSnapPoints.value && internalValue.value) {
-            nextTick(() => {
-                applySnapIndex(internalSnapIndex.value);
-                observeContent();
-            });
-        }
+        // The open-on-mount stop resolution is owned by the immediate internalValue watcher above: it
+        // fires during setup and schedules the same nextTick(applySnapIndex + observeContent). Repeating
+        // it here would resolve the stop and build the content observer a second time.
     });
 
     onBeforeUnmount(() => {
@@ -1279,6 +1374,7 @@
 
         document.removeEventListener("pointermove", onResizeMove);
         document.removeEventListener("pointerup", onResizeEnd);
+        document.removeEventListener("pointercancel", onResizeEnd);
         document.removeEventListener("pointerdown", onDocumentPointerDown);
         document.removeEventListener("fullscreenchange", onFullscreenChange);
         window.removeEventListener("resize", onWindowResize);
