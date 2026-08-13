@@ -68,24 +68,28 @@ namespace Rock.Blocks.Group
         Key = AttributeKey.HideCampusFilters,
         Order = 10,
         Category = AttributeCategory.CustomSetting,
+        Description = "When enabled, the Campus filter is not shown in the filter bar.",
         DefaultBooleanValue = false )]
 
     [BooleanField( "Hide Where Filters",
         Key = AttributeKey.HideWhereFilters,
         Order = 20,
         Category = AttributeCategory.CustomSetting,
+        Description = "When enabled, the Where (location) filter is not shown in the filter bar.",
         DefaultBooleanValue = false )]
 
     [BooleanField( "Hide When Filters",
         Key = AttributeKey.HideWhenFilters,
         Order = 30,
         Category = AttributeCategory.CustomSetting,
+        Description = "When enabled, the When (schedule) filter is not shown in the filter bar.",
         DefaultBooleanValue = false )]
 
     [BooleanField( "Hide What Filters",
         Key = AttributeKey.HideWhatFilters,
         Order = 40,
         Category = AttributeCategory.CustomSetting,
+        Description = "When enabled, the What (attributes) filter is not shown in the filter bar.",
         DefaultBooleanValue = false )]
 
     [DefinedValueField( "Campus Types",
@@ -125,12 +129,14 @@ namespace Rock.Blocks.Group
         Key = AttributeKey.DisplayDayOfWeekFilter,
         Order = 90,
         Category = AttributeCategory.CustomSetting,
+        Description = "When enabled, a Day of Week filter is shown in the When section.",
         DefaultBooleanValue = false )]
 
     [BooleanField( "Display Time of Day Filter",
         Key = AttributeKey.DisplayTimeOfDayFilter,
         Order = 100,
         Category = AttributeCategory.CustomSetting,
+        Description = "When enabled, a Time of Day filter is shown in the When section.",
         DefaultBooleanValue = false )]
 
     [BooleanField( "Live Text Search",
@@ -171,12 +177,14 @@ namespace Rock.Blocks.Group
         Key = AttributeKey.ShowImage,
         Order = 150,
         Category = AttributeCategory.CustomSetting,
+        Description = "When enabled, the group image is shown on each result card.",
         DefaultBooleanValue = false )]
 
     [BooleanField( "Show Average Age",
         Key = AttributeKey.ShowAverageAge,
         Order = 160,
         Category = AttributeCategory.CustomSetting,
+        Description = "When enabled, the average member age is shown on each result card.",
         DefaultBooleanValue = false )]
 
     [BooleanField( "Show Map",
@@ -273,10 +281,6 @@ namespace Rock.Blocks.Group
             public const string CurrentLocationMarkerColor = "CurrentLocationMarkerColor";
             public const string MapStyle = "MapStyle";
             public const string GroupCardTemplate = "GroupCardTemplate";
-        }
-
-        private static class PageParameterKey
-        {
         }
 
         private static class AttributeCategory
@@ -469,7 +473,7 @@ namespace Rock.Blocks.Group
                 IsLiveSearchEnabled = GetAttributeValue( AttributeKey.EnableLiveSearch ).AsBoolean(),
                 Campuses = GetFilterCampuses(),
                 MeetingStyles = meetingStyles
-                    .Select( v => new ListItemBag { Value = v, Text = v == nameof( MeetingStyle.InPerson ) ? "In-Person" : v } )
+                    .Select( v => new ListItemBag { Value = v, Text = GetMeetingStyleDisplayText( v ) } )
                     .ToList(),
                 FeaturedAttributeFilters = featuredAttributeFilters,
                 ModalAttributeFilters = modalAttributeFilters,
@@ -480,6 +484,21 @@ namespace Rock.Blocks.Group
                 // the returned markers.
                 Results = null
             };
+        }
+
+        /// <summary>
+        /// The display label for a Supported Meeting Styles value.
+        /// </summary>
+        /// <remarks>
+        /// Mirrors the labels in the Supported Meeting Styles attribute's list source. That list source must
+        /// be a compile-time literal on the attribute, so it cannot call this method; keep the two in step
+        /// when a style's label changes.
+        /// </remarks>
+        /// <param name="value">The meeting-style value (a <see cref="MeetingStyle"/> name).</param>
+        /// <returns>The display label for the value.</returns>
+        private static string GetMeetingStyleDisplayText( string value )
+        {
+            return value == nameof( MeetingStyle.InPerson ) ? "In-Person" : value;
         }
 
         /// <summary>
@@ -1254,14 +1273,7 @@ namespace Rock.Blocks.Group
             mergeFields["DriveTime"] = drivingMinutes.HasValue ? FormatDriveTime( drivingMinutes.Value ) : null;
             mergeFields["StraightLineDistance"] = straightLineDistance;
             mergeFields["RegisterUrl"] = registerUrl;
-            mergeFields["Attributes"] = GetCardAttributes( group )
-                .Select( attribute => new Dictionary<string, object>
-                {
-                    ["Label"] = attribute.Label,
-                    ["Value"] = attribute.Value,
-                    ["IconCssClass"] = attribute.IconCssClass
-                } )
-                .ToList();
+            mergeFields["Attributes"] = GetCardAttributes( group );
 
             var renderContext = LavaService.NewRenderContext( mergeFields, enabledLavaCommands );
             var renderResult = LavaService.RenderTemplate( compiledCardTemplate, renderContext );
@@ -1289,13 +1301,13 @@ namespace Rock.Blocks.Group
         /// Gets the "Show Attribute on Card" attribute values for a group, each with its icon.
         /// </summary>
         /// <param name="group">The group whose attributes are read.</param>
-        /// <returns>The card attribute bags, or an empty list when none are configured.</returns>
-        private List<GroupFinderCardAttributeBag> GetCardAttributes( Rock.Model.Group group )
+        /// <returns>The card attributes, or an empty list when none are configured.</returns>
+        private List<GroupFinderCardAttributeInfo> GetCardAttributes( Rock.Model.Group group )
         {
             var attributeGuids = GetAttributeValue( AttributeKey.ShowAttributeOnCard ).SplitDelimitedValues().AsGuidList();
             if ( !attributeGuids.Any() )
             {
-                return new List<GroupFinderCardAttributeBag>();
+                return new List<GroupFinderCardAttributeInfo>();
             }
 
             if ( group.Attributes == null )
@@ -1303,7 +1315,7 @@ namespace Rock.Blocks.Group
                 group.LoadAttributes( RockContext );
             }
 
-            var cardAttributes = new List<GroupFinderCardAttributeBag>();
+            var cardAttributes = new List<GroupFinderCardAttributeInfo>();
             foreach ( var attributeGuid in attributeGuids )
             {
                 var attribute = AttributeCache.Get( attributeGuid );
@@ -1321,7 +1333,7 @@ namespace Rock.Blocks.Group
                     continue;
                 }
 
-                cardAttributes.Add( new GroupFinderCardAttributeBag
+                cardAttributes.Add( new GroupFinderCardAttributeInfo
                 {
                     Label = attribute.Name,
                     // The formatted value, so a Defined Value shows its name and a Boolean shows Yes/No,
@@ -1332,6 +1344,32 @@ namespace Rock.Blocks.Group
             }
 
             return cardAttributes;
+        }
+
+        /// <summary>
+        /// A single card attribute exposed to the group card Lava template: its label, formatted value, and icon.
+        /// </summary>
+        /// <remarks>
+        /// A <see cref="LavaDataObject"/> so the template reaches its members directly (Attributes are
+        /// iterated as <c>attribute.Label</c>, <c>attribute.Value</c>, <c>attribute.IconCssClass</c>). It is
+        /// server-only and never serialized to the client, which receives only the rendered card HTML.
+        /// </remarks>
+        private class GroupFinderCardAttributeInfo : LavaDataObject
+        {
+            /// <summary>
+            /// Gets or sets the attribute's display label.
+            /// </summary>
+            public string Label { get; set; }
+
+            /// <summary>
+            /// Gets or sets the attribute's formatted value.
+            /// </summary>
+            public string Value { get; set; }
+
+            /// <summary>
+            /// Gets or sets the attribute's icon CSS class.
+            /// </summary>
+            public string IconCssClass { get; set; }
         }
 
         /// <summary>

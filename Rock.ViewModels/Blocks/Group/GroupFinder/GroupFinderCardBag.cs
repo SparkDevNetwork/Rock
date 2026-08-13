@@ -34,25 +34,4 @@ namespace Rock.ViewModels.Blocks.Group.GroupFinder
         /// </summary>
         public string ContentHtml { get; set; }
     }
-
-    /// <summary>
-    /// A single attribute displayed on a Group Finder card.
-    /// </summary>
-    public class GroupFinderCardAttributeBag
-    {
-        /// <summary>
-        /// Gets or sets the attribute's display label.
-        /// </summary>
-        public string Label { get; set; }
-
-        /// <summary>
-        /// Gets or sets the attribute's formatted value.
-        /// </summary>
-        public string Value { get; set; }
-
-        /// <summary>
-        /// Gets or sets the attribute's icon CSS class.
-        /// </summary>
-        public string IconCssClass { get; set; }
-    }
 }
