@@ -41,6 +41,9 @@ export type GroupFinderInitializationBox = {
     /** Gets or sets the attribute filters promoted into the What section as pills. */
     featuredAttributeFilters?: GroupFinderAttributeFilterBag[] | null;
 
+    /** Gets or sets the color of the group markers on the map. One color drives every state via opacity (solid border + light fill when highlighted, lighter otherwise). */
+    groupMarkerColor?: string | null;
+
     /** Gets or sets a value indicating whether the Campus filter section is shown. */
     isCampusFilterShown: boolean;
 
@@ -79,9 +82,6 @@ export type GroupFinderInitializationBox = {
 
     /** Gets or sets a value indicating whether the Where filter section is shown. */
     isWhereFilterShown: boolean;
-
-    /** Gets or sets the color of the map approximation circles. One color drives every state via opacity (solid border + light fill when highlighted, lighter otherwise). */
-    mapCircleColor?: string | null;
 
     /** Gets or sets the guid of the Map Styles defined value applied to the results map, or empty to use the default style. */
     mapStyleValueGuid?: string | null;

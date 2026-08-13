@@ -84,9 +84,9 @@
                                   help="When enabled the layout switches to a side by side arrangement of cards and a map." />
                     </div>
                     <div class="col-md-6">
-                        <ColorPicker v-model="mapCircleColor"
-                                     label="Map Circle Color"
-                                     help="The color of the approximation circles on the map." />
+                        <ColorPicker v-model="groupMarkerColor"
+                                     label="Group Marker Color"
+                                     help="The color of the group markers on the map." />
                         <ColorPicker v-model="currentLocationMarkerColor"
                                      label="Current Location Marker Color"
                                      help="The color of the &quot;you are here&quot; proximity marker on the map." />
@@ -191,7 +191,7 @@
     const isImageShown = ref(false);
     const isAverageAgeShown = ref(false);
     const isMapShown = ref(false);
-    const mapCircleColor = ref("");
+    const groupMarkerColor = ref("");
     const currentLocationMarkerColor = ref("");
     const mapStyle = ref<ListItemBag | null>(null);
     const groupCardTemplate = ref("");
@@ -283,7 +283,7 @@
         setCustomSettingsBoxValue(box, "isImageShown", isImageShown.value);
         setCustomSettingsBoxValue(box, "isAverageAgeShown", isAverageAgeShown.value);
         setCustomSettingsBoxValue(box, "isMapShown", isMapShown.value);
-        setCustomSettingsBoxValue(box, "mapCircleColor", mapCircleColor.value);
+        setCustomSettingsBoxValue(box, "groupMarkerColor", groupMarkerColor.value);
         setCustomSettingsBoxValue(box, "currentLocationMarkerColor", currentLocationMarkerColor.value);
         setCustomSettingsBoxValue(box, "mapStyle", mapStyle.value);
         setCustomSettingsBoxValue(box, "groupCardTemplate", groupCardTemplate.value);
@@ -334,7 +334,7 @@
             isImageShown.value = settings.isImageShown;
             isAverageAgeShown.value = settings.isAverageAgeShown;
             isMapShown.value = settings.isMapShown;
-            mapCircleColor.value = settings.mapCircleColor ?? "";
+            groupMarkerColor.value = settings.groupMarkerColor ?? "";
             currentLocationMarkerColor.value = settings.currentLocationMarkerColor ?? "";
             mapStyle.value = settings.mapStyle ?? null;
             groupCardTemplate.value = settings.groupCardTemplate ?? "";

@@ -167,8 +167,8 @@ namespace Rock.Migrations
             // Attribute for BlockType
             //   BlockType: Group Finder
             //   Category: Group
-            //   Attribute: Map Circle Color
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "3C9A5E71-8B24-4D0E-A6F1-9E7C2B4A0D53", "D747E6AE-C383-4E22-8846-71518E3DD06F", "Map Circle Color", "MapCircleColor", "Map Circle Color", @"The color of the approximation circles on the map. This one color drives every state via opacity: a solid 2px border with a light fill when hovered or selected, and a lighter border and fill otherwise.", 175, @"#D70015", "D05EAC1A-D883-4EEC-9F37-4D4511CB4A19" );
+            //   Attribute: Group Marker Color
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "3C9A5E71-8B24-4D0E-A6F1-9E7C2B4A0D53", "D747E6AE-C383-4E22-8846-71518E3DD06F", "Group Marker Color", "GroupMarkerColor", "Group Marker Color", @"The color of the group markers on the map. This one color drives every state via opacity: a solid 2px border with a light fill when hovered or selected, and a lighter border and fill otherwise.", 175, @"#D70015", "D05EAC1A-D883-4EEC-9F37-4D4511CB4A19" );
 
             // Attribute for BlockType
             //   BlockType: Group Finder
@@ -295,7 +295,7 @@ namespace Rock.Migrations
             // Attribute for BlockType
             //   BlockType: Group Finder
             //   Category: Group
-            //   Attribute: Map Circle Color
+            //   Attribute: Group Marker Color
             RockMigrationHelper.DeleteAttribute("D05EAC1A-D883-4EEC-9F37-4D4511CB4A19");
 
             // Attribute for BlockType

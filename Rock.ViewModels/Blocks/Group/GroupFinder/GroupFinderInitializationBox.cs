@@ -37,9 +37,9 @@ namespace Rock.ViewModels.Blocks.Group.GroupFinder
         public bool IsMapShown { get; set; }
 
         /// <summary>
-        /// Gets or sets the color of the map approximation circles. One color drives every state via opacity (solid border + light fill when highlighted, lighter otherwise).
+        /// Gets or sets the color of the group markers on the map. One color drives every state via opacity (solid border + light fill when highlighted, lighter otherwise).
         /// </summary>
-        public string MapCircleColor { get; set; }
+        public string GroupMarkerColor { get; set; }
 
         /// <summary>
         /// Gets or sets the color of the "you are here" proximity marker (current location or entered address) on the map.

@@ -52,6 +52,9 @@ export type GroupFinderCustomSettingsBag = {
     /** Gets or sets the Lava template that renders the content of each result card. Blank falls back to the built-in default. */
     groupCardTemplate?: string | null;
 
+    /** Gets or sets the color of the group markers on the map. */
+    groupMarkerColor?: string | null;
+
     /** Gets or sets the group types whose groups the finder searches, and whose attributes the filter and card settings are drawn from. */
     groupTypes?: ListItemBag[] | null;
 
@@ -87,9 +90,6 @@ export type GroupFinderCustomSettingsBag = {
 
     /** Gets or sets whether the Where (location) filter is hidden. */
     isWhereFilterHidden: boolean;
-
-    /** Gets or sets the color of the approximation circles on the map. */
-    mapCircleColor?: string | null;
 
     /** Gets or sets the map style applied to the results map. */
     mapStyle?: ListItemBag | null;

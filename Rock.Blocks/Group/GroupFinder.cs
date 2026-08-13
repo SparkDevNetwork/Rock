@@ -194,11 +194,11 @@ namespace Rock.Blocks.Group
         Description = "When enabled the layout switches to a side by side arrangement of cards and a map.",
         DefaultBooleanValue = false )]
 
-    [ColorField( "Map Circle Color",
-        Key = AttributeKey.MapCircleColor,
+    [ColorField( "Group Marker Color",
+        Key = AttributeKey.GroupMarkerColor,
         Order = 175,
         Category = AttributeCategory.CustomSetting,
-        Description = "The color of the approximation circles on the map. This one color drives every state via opacity: a solid 2px border with a light fill when hovered or selected, and a lighter border and fill otherwise.",
+        Description = "The color of the group markers on the map. This one color drives every state via opacity: a solid 2px border with a light fill when hovered or selected, and a lighter border and fill otherwise.",
         DefaultValue = "#D70015" )]
 
     [ColorField( "Current Location Marker Color",
@@ -277,7 +277,7 @@ namespace Rock.Blocks.Group
             public const string FeaturedAttributes = "FeaturedAttributes";
             public const string ShowImage = "ShowImage";
             public const string ShowAverageAge = "ShowAverageAge";
-            public const string MapCircleColor = "MapCircleColor";
+            public const string GroupMarkerColor = "GroupMarkerColor";
             public const string CurrentLocationMarkerColor = "CurrentLocationMarkerColor";
             public const string MapStyle = "MapStyle";
             public const string GroupCardTemplate = "GroupCardTemplate";
@@ -454,7 +454,7 @@ namespace Rock.Blocks.Group
             {
                 IsImageShown = GetAttributeValue( AttributeKey.ShowImage ).AsBoolean(),
                 IsMapShown = isMapConfigured && isMapAvailable,
-                MapCircleColor = GetAttributeValue( AttributeKey.MapCircleColor ),
+                GroupMarkerColor = GetAttributeValue( AttributeKey.GroupMarkerColor ),
                 CurrentLocationMarkerColor = GetAttributeValue( AttributeKey.CurrentLocationMarkerColor ),
                 MapStyleValueGuid = GetAttributeValue( AttributeKey.MapStyle ),
                 VisitorLatitude = visitorLocation.Latitude,
@@ -1468,7 +1468,7 @@ namespace Rock.Blocks.Group
                 IsImageShown = GetAttributeValue( AttributeKey.ShowImage ).AsBoolean(),
                 IsAverageAgeShown = GetAttributeValue( AttributeKey.ShowAverageAge ).AsBoolean(),
                 IsMapShown = GetAttributeValue( AttributeKey.ShowMap ).AsBoolean(),
-                MapCircleColor = GetAttributeValue( AttributeKey.MapCircleColor ),
+                GroupMarkerColor = GetAttributeValue( AttributeKey.GroupMarkerColor ),
                 CurrentLocationMarkerColor = GetAttributeValue( AttributeKey.CurrentLocationMarkerColor ),
                 MapStyle = GetAttributeValue( AttributeKey.MapStyle ).DefinedValueGuidsToListItemBagList().FirstOrDefault(),
                 GroupCardTemplate = GetAttributeValue( AttributeKey.GroupCardTemplate ),
@@ -1575,8 +1575,8 @@ namespace Rock.Blocks.Group
                 box.IfValidProperty( nameof( box.Settings.IsMapShown ),
                     () => block.SetAttributeValue( AttributeKey.ShowMap, box.Settings.IsMapShown.ToString() ) );
 
-                box.IfValidProperty( nameof( box.Settings.MapCircleColor ),
-                    () => block.SetAttributeValue( AttributeKey.MapCircleColor, box.Settings.MapCircleColor ) );
+                box.IfValidProperty( nameof( box.Settings.GroupMarkerColor ),
+                    () => block.SetAttributeValue( AttributeKey.GroupMarkerColor, box.Settings.GroupMarkerColor ) );
 
                 box.IfValidProperty( nameof( box.Settings.CurrentLocationMarkerColor ),
                     () => block.SetAttributeValue( AttributeKey.CurrentLocationMarkerColor, box.Settings.CurrentLocationMarkerColor ) );

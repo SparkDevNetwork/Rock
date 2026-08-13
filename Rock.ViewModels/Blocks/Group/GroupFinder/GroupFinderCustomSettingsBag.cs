@@ -136,9 +136,9 @@ namespace Rock.ViewModels.Blocks.Group.GroupFinder
         public bool IsMapShown { get; set; }
 
         /// <summary>
-        /// Gets or sets the color of the approximation circles on the map.
+        /// Gets or sets the color of the group markers on the map.
         /// </summary>
-        public string MapCircleColor { get; set; }
+        public string GroupMarkerColor { get; set; }
 
         /// <summary>
         /// Gets or sets the color of the "you are here" proximity marker on the map.

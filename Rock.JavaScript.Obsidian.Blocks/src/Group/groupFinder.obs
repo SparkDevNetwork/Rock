@@ -267,7 +267,7 @@
                          @update:selectedMarkerId="onGroupMarkerSelect"
                          v-model:hoveredMarkerId="hoveredGroupGuid"
                          :markers="mapMarkers"
-                         :markerColor="config.mapCircleColor ?? undefined"
+                         :markerColor="config.groupMarkerColor ?? undefined"
                          :mapStyleValueGuid="config.mapStyleValueGuid || undefined"
                          :referenceLocation="proximityLocation"
                          :referenceLocationColor="config.currentLocationMarkerColor ?? undefined"
