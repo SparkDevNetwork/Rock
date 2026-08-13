@@ -319,11 +319,11 @@ namespace Rock.Blocks.Group
     {%- if ImageUrl and ImageUrl != '' -%}
     <div class=""group-finder-card-media"">
         <img class=""group-finder-card-image"" src=""{{ ImageUrl }}"" alt=""{{ Group.Name | Escape }}"" />
-        {%- if GroupTypeName and GroupTypeName != '' -%}<span class=""group-finder-card-badge"">{{ GroupTypeName }}</span>{%- endif -%}
+        {%- if GroupTypeName and GroupTypeName != '' -%}<span class=""group-finder-card-badge"">{{ GroupTypeName | Escape }}</span>{%- endif -%}
     </div>
     {%- else -%}
     <div class=""group-finder-card-media is-fallback"" style=""--group-finder-fallback-color: {{ GroupTypeColor | Default:'#4fd1c5' }}"">
-        {%- if GroupTypeName and GroupTypeName != '' -%}<span class=""group-finder-card-badge"">{{ GroupTypeName }}</span>{%- endif -%}
+        {%- if GroupTypeName and GroupTypeName != '' -%}<span class=""group-finder-card-badge"">{{ GroupTypeName | Escape }}</span>{%- endif -%}
     </div>
     {%- endif -%}
     {%- endif -%}
@@ -343,14 +343,14 @@ namespace Rock.Blocks.Group
         <hr class=""group-finder-card-divider"" />
         {%- endif -%}
 
-        <h3 class=""group-finder-card-title"">{{ Group.Name }}</h3>
+        <h3 class=""group-finder-card-title"">{{ Group.Name | Escape }}</h3>
 
         {%- if ScheduleText and ScheduleText != '' -%}
-        <div class=""group-finder-card-schedule"">{{ ScheduleText }}</div>
+        <div class=""group-finder-card-schedule"">{{ ScheduleText | Escape }}</div>
         {%- endif -%}
 
         {%- if Group.Description and Group.Description != '' -%}
-        <p class=""group-finder-card-description"">{{ Group.Description }}</p>
+        <p class=""group-finder-card-description"">{{ Group.Description | Escape }}</p>
         {%- endif -%}
 
         {%- assign attributeCount = Attributes | Size -%}
@@ -359,12 +359,12 @@ namespace Rock.Blocks.Group
         {%- if hasCampus or attributeCount > 0 -%}
         <ul class=""group-finder-card-attributes"">
             {%- if CampusName and CampusName != '' -%}
-            <li class=""group-finder-card-attribute""><i class=""ti ti-map-pin""></i><span>{{ CampusName }}</span></li>
+            <li class=""group-finder-card-attribute""><i class=""ti ti-map-pin""></i><span>{{ CampusName | Escape }}</span></li>
             {%- endif -%}
             {%- for attribute in Attributes -%}
             <li class=""group-finder-card-attribute"">
                 {%- if attribute.IconCssClass and attribute.IconCssClass != '' -%}<i class=""{{ attribute.IconCssClass }}""></i>{%- endif -%}
-                <span>{{ attribute.Value }}</span>
+                <span>{{ attribute.Value | Escape }}</span>
             </li>
             {%- endfor -%}
         </ul>
