@@ -17,7 +17,6 @@
 
 using System.Collections.Generic;
 
-using Rock.Attribute;
 using Rock.Core.Geography.Classes;
 using Rock.Enums.Geography;
 
@@ -26,8 +25,7 @@ namespace Rock.Lava.Filters.Internal
     /// <summary>
     /// A single group returned from a group finder proximity search, along with its distance and travel details.
     /// </summary>
-    [RockInternal( "20.0" )]
-    public class GroupProximityResult : LavaDataObject
+    internal class GroupProximityResult : LavaDataObject
     {
         /// <summary>
         /// The group that the location is associated with.

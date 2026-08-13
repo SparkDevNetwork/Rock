@@ -22,7 +22,6 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 using Rock;
-using Rock.Attribute;
 using Rock.Core.Geography;
 using Rock.Core.Geography.Classes;
 using Rock.Data;
@@ -40,13 +39,12 @@ namespace Rock.Utility.GroupFinder
     /// Lava parameters rather than structured code.
     /// </summary>
     /// <remarks>
-    /// Exposed as a RockInternal surface so the Group Finder block and the group
-    /// finder Lava shortcode share one filtering path. The namespace is not ideal
-    /// (Rock.Group would conflict with the Group model name); relocating this to a
-    /// GroupFinderService is a possible later cleanup.
+    /// This really shouldn't be in this namespace. Do not make it public without
+    /// moving it to a more appropriate namespace. Ideally, this would go in the
+    /// Rock.Group namespace. But that causes all kinds of conflicts with the
+    /// Group model name.
     /// </remarks>
-    [RockInternal( "20.0" )]
-    public class GroupFinderHelper
+    internal class GroupFinderHelper
     {
         private readonly RockContext _rockContext;
 

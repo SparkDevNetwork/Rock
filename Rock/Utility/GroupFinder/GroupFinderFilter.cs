@@ -16,15 +16,12 @@
 
 using System.Collections.Generic;
 
-using Rock.Attribute;
-
 namespace Rock.Utility.GroupFinder
 {
     /// <summary>
     /// A single filter value used by <see cref="GroupFinderHelper"/>.
     /// </summary>
-    [RockInternal( "20.0" )]
-    public class GroupFinderFilter
+    internal class GroupFinderFilter
     {
         #region Properties
 
