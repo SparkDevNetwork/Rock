@@ -1141,11 +1141,25 @@
         return count < 10 ? 16 : count < 50 ? 20 : 24;
     }
 
+    // Normalize a color to a 6-digit "rrggbb" (no leading #), expanding a 3-digit shorthand. The bubble
+    // color math needs three real hex channels, so a value that is not hex (a named or functional CSS
+    // color) falls back to the default marker color rather than producing NaN channels.
+    function normalizeHexChannels(hex: string): string {
+        const value = hex.trim().replace(/^#/, "");
+        if (/^[0-9a-fA-F]{6}$/.test(value)) {
+            return value.toLowerCase();
+        }
+        if (/^[0-9a-fA-F]{3}$/.test(value)) {
+            return value.toLowerCase().replace(/(.)/g, "$1$1");
+        }
+        return "0088cc";
+    }
+
     // A legible count color for a solid fill of the given color. Google does not auto-contrast a marker
     // label or DOM text against its background, so choose black or white from the color's perceived
     // luminance (the 0.299/0.587/0.114 weighting) so the number stays readable on any marker color.
     function contrastingTextColor(hex: string): string {
-        const value = hex.replace("#", "");
+        const value = normalizeHexChannels(hex);
         const red = parseInt(value.slice(0, 2), 16);
         const green = parseInt(value.slice(2, 4), 16);
         const blue = parseInt(value.slice(4, 6), 16);
@@ -1155,7 +1169,7 @@
 
     // Darken a hex color toward black by a 0-1 fraction, used for a bubble's hover fill.
     function darkenColor(hex: string, fraction: number): string {
-        const value = hex.replace("#", "");
+        const value = normalizeHexChannels(hex);
         const channel = (start: number): string => {
             const scaled = Math.round(parseInt(value.slice(start, start + 2), 16) * (1 - fraction));
             return Math.max(0, Math.min(255, scaled)).toString(16).padStart(2, "0");
