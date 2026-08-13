@@ -10,6 +10,10 @@
 
         <div v-else>
 
+            <NotificationBox v-if="saveError" :alertType="AlertType.Warning">
+                {{ saveError }}
+            </NotificationBox>
+
             <Panel title="Group Types" :modelValue="true" hasCollapse>
                 <GroupTypePicker v-model="groupTypes"
                                  label="Group Types"
@@ -130,6 +134,7 @@
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { MeetingStyle, MeetingStyleDescription } from "@Obsidian/Enums/Group/meetingStyle";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { getSecurityGrant, provideSecurityGrant, setCustomSettingsBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { CustomSettingsBox } from "@Obsidian/ViewModels/Blocks/customSettingsBox";
@@ -146,16 +151,20 @@
         (e: "close"): void
     }>();
 
-    // The fixed set of meeting styles the Where filter can offer.
-    const meetingStyleItems: ListItemBag[] = [
-        { value: "InPerson", text: "In-Person" },
-        { value: "Online", text: "Online" },
-        { value: "Hybrid", text: "Hybrid" }
-    ];
+    // The full set of meeting styles the Where filter can offer, derived from the MeetingStyle enum so the
+    // value (the enum name) and label (its Description) stay single-sourced with the server rather than
+    // hardcoded here.
+    const meetingStyleItems: ListItemBag[] = Object.entries(MeetingStyle).map(([name, value]) => ({
+        value: name,
+        text: MeetingStyleDescription[value]
+    }));
 
     // #region Values
 
     const errorMessage = ref("");
+    // A save failure, shown within the form (not replacing it the way errorMessage does) so the admin's
+    // edits stay on screen to retry.
+    const saveError = ref("");
     const isLoading = ref(true);
     const isModalOpen = ref(true);
 
@@ -200,7 +209,10 @@
     // #region Computed Values
 
     const saveButtonText = computed((): string => {
-        return errorMessage.value || !isLoading.value ? "Save" : "";
+        // Show Save only when the form is actually displayed (loaded and no load error). On a load failure
+        // the form is hidden behind the error, so a save would persist the component's default, empty values
+        // over the block's real settings.
+        return !isLoading.value && !errorMessage.value ? "Save" : "";
     });
 
     const securityGrantToken = computed((): string | null => {
@@ -247,6 +259,8 @@
      * Saves the block settings.
      */
     async function onSave(): Promise<void> {
+        saveError.value = "";
+
         const box: CustomSettingsBox<GroupFinderCustomSettingsBag, GroupFinderCustomSettingsOptionsBag> = {};
 
         setCustomSettingsBoxValue(box, "groupTypes", groupTypes.value);
@@ -283,7 +297,7 @@
             reloadBlock();
         }
         else {
-            alert(result.errorMessage || "Unable to save block settings.");
+            saveError.value = result.errorMessage || "Unable to save block settings.";
         }
     }
 
