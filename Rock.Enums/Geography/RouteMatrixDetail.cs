@@ -20,6 +20,7 @@ namespace Rock.Enums.Geography
     /// <summary>
     /// Selects how much data a route matrix request returns, which in turn determines its billing tier.
     /// </summary>
+    [Enums.EnumDomain( "Geography" )]
     public enum RouteMatrixDetail
     {
         /// <summary>
