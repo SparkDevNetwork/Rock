@@ -48,9 +48,11 @@ Resolve from `document.documentElement.getAttribute("theme")`:
 |---|---|
 | `light` | `LIGHT` |
 | `dark` | `DARK` |
-| `system` or unset | `FOLLOW_SYSTEM` |
+| `system` or unset | Explicit `LIGHT` / `DARK`, resolved from the `prefers-color-scheme` media query |
 
 This resolver replaces the current boolean `isRockDarkMode()` usage on the Map ID and default paths. The JSON path does not set a theme-driven scheme.
+
+`system` (or an unset `theme`) resolves to an explicit `LIGHT` or `DARK` rather than `FOLLOW_SYSTEM`: on a vector (Map ID) map, `FOLLOW_SYSTEM` flashes a light base while the map loads before settling on the OS preference. Reading `prefers-color-scheme` up front avoids that flash, and `startThemeWatch` re-applies the scheme live when the OS preference flips.
 
 ### Per-path behavior
 
