@@ -22,20 +22,20 @@
             <Panel title="Filters" :modelValue="true" hasCollapse>
                 <div class="row">
                     <div class="col-md-6">
-                        <CheckBox v-model="hideCampusFilters" label="Hide Campus Filters" />
-                        <CheckBox v-model="hideWhereFilters" label="Hide Where Filters" />
-                        <CheckBox v-model="hideWhenFilters" label="Hide When Filters" />
-                        <CheckBox v-model="hideWhatFilters" label="Hide What Filters" />
+                        <CheckBox v-model="isCampusFilterHidden" label="Hide Campus Filters" />
+                        <CheckBox v-model="isWhereFilterHidden" label="Hide Where Filters" />
+                        <CheckBox v-model="isWhenFilterHidden" label="Hide When Filters" />
+                        <CheckBox v-model="isWhatFilterHidden" label="Hide What Filters" />
                     </div>
                     <div class="col-md-6">
-                        <CheckBox v-model="enableProximityFeatures"
+                        <CheckBox v-model="isProximityEnabled"
                                   label="Enable Proximity Features"
                                   help="Renders an address input and a Use Current Location action. Requires Google APIs to be configured." />
-                        <CheckBox v-model="enableLiveSearch"
+                        <CheckBox v-model="isLiveSearchEnabled"
                                   label="Live Text Search"
                                   help="Renders a text field that filters groups by name as the visitor types." />
-                        <CheckBox v-model="displayDayOfWeekFilter" label="Display Day of Week Filter" />
-                        <CheckBox v-model="displayTimeOfDayFilter" label="Display Time of Day Filter" />
+                        <CheckBox v-model="isDayOfWeekFilterShown" label="Display Day of Week Filter" />
+                        <CheckBox v-model="isTimeOfDayFilterShown" label="Display Time of Day Filter" />
                     </div>
                 </div>
                 <div class="row">
@@ -73,9 +73,9 @@
             <Panel title="Card and Map" :modelValue="true" hasCollapse>
                 <div class="row">
                     <div class="col-md-6">
-                        <CheckBox v-model="showImage" label="Show Image" />
-                        <CheckBox v-model="showAverageAge" label="Show Average Age" />
-                        <CheckBox v-model="showMap"
+                        <CheckBox v-model="isImageShown" label="Show Image" />
+                        <CheckBox v-model="isAverageAgeShown" label="Show Average Age" />
+                        <CheckBox v-model="isMapShown"
                                   label="Show Map"
                                   help="When enabled the layout switches to a side by side arrangement of cards and a map." />
                     </div>
@@ -166,22 +166,22 @@
     const showAttributeOnCard = ref<string[]>([]);
 
     // Filters.
-    const hideCampusFilters = ref(false);
-    const hideWhereFilters = ref(false);
-    const hideWhenFilters = ref(false);
-    const hideWhatFilters = ref(false);
+    const isCampusFilterHidden = ref(false);
+    const isWhereFilterHidden = ref(false);
+    const isWhenFilterHidden = ref(false);
+    const isWhatFilterHidden = ref(false);
     const campusTypes = ref<ListItemBag[]>([]);
     const campusStatuses = ref<ListItemBag[]>([]);
-    const enableProximityFeatures = ref(false);
+    const isProximityEnabled = ref(false);
     const supportedMeetingStyles = ref<string[]>([]);
-    const displayDayOfWeekFilter = ref(false);
-    const displayTimeOfDayFilter = ref(false);
-    const enableLiveSearch = ref(false);
+    const isDayOfWeekFilterShown = ref(false);
+    const isTimeOfDayFilterShown = ref(false);
+    const isLiveSearchEnabled = ref(false);
 
     // Card and map.
-    const showImage = ref(false);
-    const showAverageAge = ref(false);
-    const showMap = ref(false);
+    const isImageShown = ref(false);
+    const isAverageAgeShown = ref(false);
+    const isMapShown = ref(false);
     const mapCircleColor = ref("");
     const currentLocationMarkerColor = ref("");
     const mapStyle = ref<ListItemBag | null>(null);
@@ -254,21 +254,21 @@
         setCustomSettingsBoxValue(box, "displayAttributeFilters", displayAttributeFilters.value);
         setCustomSettingsBoxValue(box, "showAttributeOnCard", showAttributeOnCard.value);
 
-        setCustomSettingsBoxValue(box, "hideCampusFilters", hideCampusFilters.value);
-        setCustomSettingsBoxValue(box, "hideWhereFilters", hideWhereFilters.value);
-        setCustomSettingsBoxValue(box, "hideWhenFilters", hideWhenFilters.value);
-        setCustomSettingsBoxValue(box, "hideWhatFilters", hideWhatFilters.value);
+        setCustomSettingsBoxValue(box, "isCampusFilterHidden", isCampusFilterHidden.value);
+        setCustomSettingsBoxValue(box, "isWhereFilterHidden", isWhereFilterHidden.value);
+        setCustomSettingsBoxValue(box, "isWhenFilterHidden", isWhenFilterHidden.value);
+        setCustomSettingsBoxValue(box, "isWhatFilterHidden", isWhatFilterHidden.value);
         setCustomSettingsBoxValue(box, "campusTypes", campusTypes.value);
         setCustomSettingsBoxValue(box, "campusStatuses", campusStatuses.value);
-        setCustomSettingsBoxValue(box, "enableProximityFeatures", enableProximityFeatures.value);
+        setCustomSettingsBoxValue(box, "isProximityEnabled", isProximityEnabled.value);
         setCustomSettingsBoxValue(box, "supportedMeetingStyles", supportedMeetingStyles.value);
-        setCustomSettingsBoxValue(box, "displayDayOfWeekFilter", displayDayOfWeekFilter.value);
-        setCustomSettingsBoxValue(box, "displayTimeOfDayFilter", displayTimeOfDayFilter.value);
-        setCustomSettingsBoxValue(box, "enableLiveSearch", enableLiveSearch.value);
+        setCustomSettingsBoxValue(box, "isDayOfWeekFilterShown", isDayOfWeekFilterShown.value);
+        setCustomSettingsBoxValue(box, "isTimeOfDayFilterShown", isTimeOfDayFilterShown.value);
+        setCustomSettingsBoxValue(box, "isLiveSearchEnabled", isLiveSearchEnabled.value);
 
-        setCustomSettingsBoxValue(box, "showImage", showImage.value);
-        setCustomSettingsBoxValue(box, "showAverageAge", showAverageAge.value);
-        setCustomSettingsBoxValue(box, "showMap", showMap.value);
+        setCustomSettingsBoxValue(box, "isImageShown", isImageShown.value);
+        setCustomSettingsBoxValue(box, "isAverageAgeShown", isAverageAgeShown.value);
+        setCustomSettingsBoxValue(box, "isMapShown", isMapShown.value);
         setCustomSettingsBoxValue(box, "mapCircleColor", mapCircleColor.value);
         setCustomSettingsBoxValue(box, "currentLocationMarkerColor", currentLocationMarkerColor.value);
         setCustomSettingsBoxValue(box, "mapStyle", mapStyle.value);
@@ -305,21 +305,21 @@
             displayAttributeFilters.value = settings.displayAttributeFilters ?? [];
             showAttributeOnCard.value = settings.showAttributeOnCard ?? [];
 
-            hideCampusFilters.value = settings.hideCampusFilters;
-            hideWhereFilters.value = settings.hideWhereFilters;
-            hideWhenFilters.value = settings.hideWhenFilters;
-            hideWhatFilters.value = settings.hideWhatFilters;
+            isCampusFilterHidden.value = settings.isCampusFilterHidden;
+            isWhereFilterHidden.value = settings.isWhereFilterHidden;
+            isWhenFilterHidden.value = settings.isWhenFilterHidden;
+            isWhatFilterHidden.value = settings.isWhatFilterHidden;
             campusTypes.value = settings.campusTypes ?? [];
             campusStatuses.value = settings.campusStatuses ?? [];
-            enableProximityFeatures.value = settings.enableProximityFeatures;
+            isProximityEnabled.value = settings.isProximityEnabled;
             supportedMeetingStyles.value = settings.supportedMeetingStyles ?? [];
-            displayDayOfWeekFilter.value = settings.displayDayOfWeekFilter;
-            displayTimeOfDayFilter.value = settings.displayTimeOfDayFilter;
-            enableLiveSearch.value = settings.enableLiveSearch;
+            isDayOfWeekFilterShown.value = settings.isDayOfWeekFilterShown;
+            isTimeOfDayFilterShown.value = settings.isTimeOfDayFilterShown;
+            isLiveSearchEnabled.value = settings.isLiveSearchEnabled;
 
-            showImage.value = settings.showImage;
-            showAverageAge.value = settings.showAverageAge;
-            showMap.value = settings.showMap;
+            isImageShown.value = settings.isImageShown;
+            isAverageAgeShown.value = settings.isAverageAgeShown;
+            isMapShown.value = settings.isMapShown;
             mapCircleColor.value = settings.mapCircleColor ?? "";
             currentLocationMarkerColor.value = settings.currentLocationMarkerColor ?? "";
             mapStyle.value = settings.mapStyle ?? null;

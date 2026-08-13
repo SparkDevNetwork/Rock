@@ -1411,22 +1411,22 @@ namespace Rock.Blocks.Group
                 ShowAttributeOnCard = GetAttributeValue( AttributeKey.ShowAttributeOnCard ).SplitDelimitedValues().AsGuidList(),
 
                 // Filters.
-                HideCampusFilters = GetAttributeValue( AttributeKey.HideCampusFilters ).AsBoolean(),
-                HideWhereFilters = GetAttributeValue( AttributeKey.HideWhereFilters ).AsBoolean(),
-                HideWhenFilters = GetAttributeValue( AttributeKey.HideWhenFilters ).AsBoolean(),
-                HideWhatFilters = GetAttributeValue( AttributeKey.HideWhatFilters ).AsBoolean(),
+                IsCampusFilterHidden = GetAttributeValue( AttributeKey.HideCampusFilters ).AsBoolean(),
+                IsWhereFilterHidden = GetAttributeValue( AttributeKey.HideWhereFilters ).AsBoolean(),
+                IsWhenFilterHidden = GetAttributeValue( AttributeKey.HideWhenFilters ).AsBoolean(),
+                IsWhatFilterHidden = GetAttributeValue( AttributeKey.HideWhatFilters ).AsBoolean(),
                 CampusTypes = GetAttributeValue( AttributeKey.CampusTypes ).DefinedValueGuidsToListItemBagList(),
                 CampusStatuses = GetAttributeValue( AttributeKey.CampusStatuses ).DefinedValueGuidsToListItemBagList(),
-                EnableProximityFeatures = GetAttributeValue( AttributeKey.EnableProximityFeatures ).AsBoolean(),
+                IsProximityEnabled = GetAttributeValue( AttributeKey.EnableProximityFeatures ).AsBoolean(),
                 SupportedMeetingStyles = GetAttributeValue( AttributeKey.SupportedMeetingStyles ).SplitDelimitedValues().ToList(),
-                DisplayDayOfWeekFilter = GetAttributeValue( AttributeKey.DisplayDayOfWeekFilter ).AsBoolean(),
-                DisplayTimeOfDayFilter = GetAttributeValue( AttributeKey.DisplayTimeOfDayFilter ).AsBoolean(),
-                EnableLiveSearch = GetAttributeValue( AttributeKey.EnableLiveSearch ).AsBoolean(),
+                IsDayOfWeekFilterShown = GetAttributeValue( AttributeKey.DisplayDayOfWeekFilter ).AsBoolean(),
+                IsTimeOfDayFilterShown = GetAttributeValue( AttributeKey.DisplayTimeOfDayFilter ).AsBoolean(),
+                IsLiveSearchEnabled = GetAttributeValue( AttributeKey.EnableLiveSearch ).AsBoolean(),
 
                 // Card and Map.
-                ShowImage = GetAttributeValue( AttributeKey.ShowImage ).AsBoolean(),
-                ShowAverageAge = GetAttributeValue( AttributeKey.ShowAverageAge ).AsBoolean(),
-                ShowMap = GetAttributeValue( AttributeKey.ShowMap ).AsBoolean(),
+                IsImageShown = GetAttributeValue( AttributeKey.ShowImage ).AsBoolean(),
+                IsAverageAgeShown = GetAttributeValue( AttributeKey.ShowAverageAge ).AsBoolean(),
+                IsMapShown = GetAttributeValue( AttributeKey.ShowMap ).AsBoolean(),
                 MapCircleColor = GetAttributeValue( AttributeKey.MapCircleColor ),
                 CurrentLocationMarkerColor = GetAttributeValue( AttributeKey.CurrentLocationMarkerColor ),
                 MapStyle = GetAttributeValue( AttributeKey.MapStyle ).DefinedValueGuidsToListItemBagList().FirstOrDefault(),
@@ -1492,17 +1492,17 @@ namespace Rock.Blocks.Group
                 box.IfValidProperty( nameof( box.Settings.ShowAttributeOnCard ),
                     () => block.SetAttributeValue( AttributeKey.ShowAttributeOnCard, ( box.Settings.ShowAttributeOnCard ?? new List<Guid>() ).Select( g => g.ToString() ).ToList().AsDelimited( "," ) ) );
 
-                box.IfValidProperty( nameof( box.Settings.HideCampusFilters ),
-                    () => block.SetAttributeValue( AttributeKey.HideCampusFilters, box.Settings.HideCampusFilters.ToString() ) );
+                box.IfValidProperty( nameof( box.Settings.IsCampusFilterHidden ),
+                    () => block.SetAttributeValue( AttributeKey.HideCampusFilters, box.Settings.IsCampusFilterHidden.ToString() ) );
 
-                box.IfValidProperty( nameof( box.Settings.HideWhereFilters ),
-                    () => block.SetAttributeValue( AttributeKey.HideWhereFilters, box.Settings.HideWhereFilters.ToString() ) );
+                box.IfValidProperty( nameof( box.Settings.IsWhereFilterHidden ),
+                    () => block.SetAttributeValue( AttributeKey.HideWhereFilters, box.Settings.IsWhereFilterHidden.ToString() ) );
 
-                box.IfValidProperty( nameof( box.Settings.HideWhenFilters ),
-                    () => block.SetAttributeValue( AttributeKey.HideWhenFilters, box.Settings.HideWhenFilters.ToString() ) );
+                box.IfValidProperty( nameof( box.Settings.IsWhenFilterHidden ),
+                    () => block.SetAttributeValue( AttributeKey.HideWhenFilters, box.Settings.IsWhenFilterHidden.ToString() ) );
 
-                box.IfValidProperty( nameof( box.Settings.HideWhatFilters ),
-                    () => block.SetAttributeValue( AttributeKey.HideWhatFilters, box.Settings.HideWhatFilters.ToString() ) );
+                box.IfValidProperty( nameof( box.Settings.IsWhatFilterHidden ),
+                    () => block.SetAttributeValue( AttributeKey.HideWhatFilters, box.Settings.IsWhatFilterHidden.ToString() ) );
 
                 box.IfValidProperty( nameof( box.Settings.CampusTypes ),
                     () => block.SetAttributeValue( AttributeKey.CampusTypes, box.Settings.CampusTypes.ToCommaDelimitedValuesString() ) );
@@ -1510,29 +1510,29 @@ namespace Rock.Blocks.Group
                 box.IfValidProperty( nameof( box.Settings.CampusStatuses ),
                     () => block.SetAttributeValue( AttributeKey.CampusStatuses, box.Settings.CampusStatuses.ToCommaDelimitedValuesString() ) );
 
-                box.IfValidProperty( nameof( box.Settings.EnableProximityFeatures ),
-                    () => block.SetAttributeValue( AttributeKey.EnableProximityFeatures, box.Settings.EnableProximityFeatures.ToString() ) );
+                box.IfValidProperty( nameof( box.Settings.IsProximityEnabled ),
+                    () => block.SetAttributeValue( AttributeKey.EnableProximityFeatures, box.Settings.IsProximityEnabled.ToString() ) );
 
                 box.IfValidProperty( nameof( box.Settings.SupportedMeetingStyles ),
                     () => block.SetAttributeValue( AttributeKey.SupportedMeetingStyles, ( box.Settings.SupportedMeetingStyles ?? new List<string>() ).AsDelimited( "," ) ) );
 
-                box.IfValidProperty( nameof( box.Settings.DisplayDayOfWeekFilter ),
-                    () => block.SetAttributeValue( AttributeKey.DisplayDayOfWeekFilter, box.Settings.DisplayDayOfWeekFilter.ToString() ) );
+                box.IfValidProperty( nameof( box.Settings.IsDayOfWeekFilterShown ),
+                    () => block.SetAttributeValue( AttributeKey.DisplayDayOfWeekFilter, box.Settings.IsDayOfWeekFilterShown.ToString() ) );
 
-                box.IfValidProperty( nameof( box.Settings.DisplayTimeOfDayFilter ),
-                    () => block.SetAttributeValue( AttributeKey.DisplayTimeOfDayFilter, box.Settings.DisplayTimeOfDayFilter.ToString() ) );
+                box.IfValidProperty( nameof( box.Settings.IsTimeOfDayFilterShown ),
+                    () => block.SetAttributeValue( AttributeKey.DisplayTimeOfDayFilter, box.Settings.IsTimeOfDayFilterShown.ToString() ) );
 
-                box.IfValidProperty( nameof( box.Settings.EnableLiveSearch ),
-                    () => block.SetAttributeValue( AttributeKey.EnableLiveSearch, box.Settings.EnableLiveSearch.ToString() ) );
+                box.IfValidProperty( nameof( box.Settings.IsLiveSearchEnabled ),
+                    () => block.SetAttributeValue( AttributeKey.EnableLiveSearch, box.Settings.IsLiveSearchEnabled.ToString() ) );
 
-                box.IfValidProperty( nameof( box.Settings.ShowImage ),
-                    () => block.SetAttributeValue( AttributeKey.ShowImage, box.Settings.ShowImage.ToString() ) );
+                box.IfValidProperty( nameof( box.Settings.IsImageShown ),
+                    () => block.SetAttributeValue( AttributeKey.ShowImage, box.Settings.IsImageShown.ToString() ) );
 
-                box.IfValidProperty( nameof( box.Settings.ShowAverageAge ),
-                    () => block.SetAttributeValue( AttributeKey.ShowAverageAge, box.Settings.ShowAverageAge.ToString() ) );
+                box.IfValidProperty( nameof( box.Settings.IsAverageAgeShown ),
+                    () => block.SetAttributeValue( AttributeKey.ShowAverageAge, box.Settings.IsAverageAgeShown.ToString() ) );
 
-                box.IfValidProperty( nameof( box.Settings.ShowMap ),
-                    () => block.SetAttributeValue( AttributeKey.ShowMap, box.Settings.ShowMap.ToString() ) );
+                box.IfValidProperty( nameof( box.Settings.IsMapShown ),
+                    () => block.SetAttributeValue( AttributeKey.ShowMap, box.Settings.IsMapShown.ToString() ) );
 
                 box.IfValidProperty( nameof( box.Settings.MapCircleColor ),
                     () => block.SetAttributeValue( AttributeKey.MapCircleColor, box.Settings.MapCircleColor ) );

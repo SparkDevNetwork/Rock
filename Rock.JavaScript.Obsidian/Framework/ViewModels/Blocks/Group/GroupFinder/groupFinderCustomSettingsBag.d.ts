@@ -42,18 +42,6 @@ export type GroupFinderCustomSettingsBag = {
      */
     displayAttributeFilters?: Guid[] | null;
 
-    /** Gets or sets whether the Day of Week filter is displayed. */
-    displayDayOfWeekFilter: boolean;
-
-    /** Gets or sets whether the Time of Day filter is displayed. */
-    displayTimeOfDayFilter: boolean;
-
-    /** Gets or sets whether live text search (filtering by group name as the visitor types) is enabled. */
-    enableLiveSearch: boolean;
-
-    /** Gets or sets whether proximity features (an address input and a Use Current Location action) are enabled. */
-    enableProximityFeatures: boolean;
-
     /**
      * Gets or sets the attributes surfaced as "What" filter pills.
      * Mutually exclusive with DisplayAttributeFilters, and limited to Single-select,
@@ -67,17 +55,38 @@ export type GroupFinderCustomSettingsBag = {
     /** Gets or sets the group types whose groups the finder searches, and whose attributes the filter and card settings are drawn from. */
     groupTypes?: ListItemBag[] | null;
 
+    /** Gets or sets whether the average member age is shown on each card. */
+    isAverageAgeShown: boolean;
+
     /** Gets or sets whether the Campus filter is hidden. */
-    hideCampusFilters: boolean;
+    isCampusFilterHidden: boolean;
+
+    /** Gets or sets whether the Day of Week filter is displayed. */
+    isDayOfWeekFilterShown: boolean;
+
+    /** Gets or sets whether the group image is shown on each card. */
+    isImageShown: boolean;
+
+    /** Gets or sets whether live text search (filtering by group name as the visitor types) is enabled. */
+    isLiveSearchEnabled: boolean;
+
+    /** Gets or sets whether the results map is shown alongside the cards. */
+    isMapShown: boolean;
+
+    /** Gets or sets whether proximity features (an address input and a Use Current Location action) are enabled. */
+    isProximityEnabled: boolean;
+
+    /** Gets or sets whether the Time of Day filter is displayed. */
+    isTimeOfDayFilterShown: boolean;
 
     /** Gets or sets whether the What (attributes) filter is hidden. */
-    hideWhatFilters: boolean;
+    isWhatFilterHidden: boolean;
 
     /** Gets or sets whether the When (schedule) filter is hidden. */
-    hideWhenFilters: boolean;
+    isWhenFilterHidden: boolean;
 
     /** Gets or sets whether the Where (location) filter is hidden. */
-    hideWhereFilters: boolean;
+    isWhereFilterHidden: boolean;
 
     /** Gets or sets the color of the approximation circles on the map. */
     mapCircleColor?: string | null;
@@ -90,15 +99,6 @@ export type GroupFinderCustomSettingsBag = {
 
     /** Gets or sets the attributes displayed on each group card. */
     showAttributeOnCard?: Guid[] | null;
-
-    /** Gets or sets whether the average member age is shown on each card. */
-    showAverageAge: boolean;
-
-    /** Gets or sets whether the group image is shown on each card. */
-    showImage: boolean;
-
-    /** Gets or sets whether the results map is shown alongside the cards. */
-    showMap: boolean;
 
     /** Gets or sets the meeting styles offered by the Where filter (InPerson, Online, Hybrid). When none are selected the Meeting Style filter is hidden. */
     supportedMeetingStyles?: string[] | null;

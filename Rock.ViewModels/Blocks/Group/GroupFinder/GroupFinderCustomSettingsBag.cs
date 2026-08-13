@@ -64,22 +64,22 @@ namespace Rock.ViewModels.Blocks.Group.GroupFinder
         /// <summary>
         /// Gets or sets whether the Campus filter is hidden.
         /// </summary>
-        public bool HideCampusFilters { get; set; }
+        public bool IsCampusFilterHidden { get; set; }
 
         /// <summary>
         /// Gets or sets whether the Where (location) filter is hidden.
         /// </summary>
-        public bool HideWhereFilters { get; set; }
+        public bool IsWhereFilterHidden { get; set; }
 
         /// <summary>
         /// Gets or sets whether the When (schedule) filter is hidden.
         /// </summary>
-        public bool HideWhenFilters { get; set; }
+        public bool IsWhenFilterHidden { get; set; }
 
         /// <summary>
         /// Gets or sets whether the What (attributes) filter is hidden.
         /// </summary>
-        public bool HideWhatFilters { get; set; }
+        public bool IsWhatFilterHidden { get; set; }
 
         /// <summary>
         /// Gets or sets the campus types offered by the Campus filter.
@@ -94,7 +94,7 @@ namespace Rock.ViewModels.Blocks.Group.GroupFinder
         /// <summary>
         /// Gets or sets whether proximity features (an address input and a Use Current Location action) are enabled.
         /// </summary>
-        public bool EnableProximityFeatures { get; set; }
+        public bool IsProximityEnabled { get; set; }
 
         /// <summary>
         /// Gets or sets the meeting styles offered by the Where filter (InPerson, Online, Hybrid). When none are selected the Meeting Style filter is hidden.
@@ -104,17 +104,17 @@ namespace Rock.ViewModels.Blocks.Group.GroupFinder
         /// <summary>
         /// Gets or sets whether the Day of Week filter is displayed.
         /// </summary>
-        public bool DisplayDayOfWeekFilter { get; set; }
+        public bool IsDayOfWeekFilterShown { get; set; }
 
         /// <summary>
         /// Gets or sets whether the Time of Day filter is displayed.
         /// </summary>
-        public bool DisplayTimeOfDayFilter { get; set; }
+        public bool IsTimeOfDayFilterShown { get; set; }
 
         /// <summary>
         /// Gets or sets whether live text search (filtering by group name as the visitor types) is enabled.
         /// </summary>
-        public bool EnableLiveSearch { get; set; }
+        public bool IsLiveSearchEnabled { get; set; }
 
         #endregion Filters
 
@@ -123,17 +123,17 @@ namespace Rock.ViewModels.Blocks.Group.GroupFinder
         /// <summary>
         /// Gets or sets whether the group image is shown on each card.
         /// </summary>
-        public bool ShowImage { get; set; }
+        public bool IsImageShown { get; set; }
 
         /// <summary>
         /// Gets or sets whether the average member age is shown on each card.
         /// </summary>
-        public bool ShowAverageAge { get; set; }
+        public bool IsAverageAgeShown { get; set; }
 
         /// <summary>
         /// Gets or sets whether the results map is shown alongside the cards.
         /// </summary>
-        public bool ShowMap { get; set; }
+        public bool IsMapShown { get; set; }
 
         /// <summary>
         /// Gets or sets the color of the approximation circles on the map.
