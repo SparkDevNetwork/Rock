@@ -1,6 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="group-finder-card" v-html="card.contentHtml" @click="onCardClick"></div>
+    <div class="group-finder-card"
+         role="button"
+         tabindex="0"
+         v-html="card.contentHtml"
+         @click="onCardClick"
+         @keydown.enter="onCardActivate"
+         @keydown.space.prevent="onCardActivate"></div>
 </template>
 
 <style scoped>
@@ -194,11 +200,22 @@
         const target = event.target as HTMLElement | null;
         const control = target?.closest(interactiveSelector);
 
-        if (control && !control.closest("[data-groupfinder-select]")) {
+        // The card itself carries role="button" (matched by interactiveSelector), so exclude it: only an
+        // interactive element nested inside the card suppresses selection.
+        if (control && control !== event.currentTarget && !control.closest("[data-groupfinder-select]")) {
             return;
         }
 
         emit("select");
+    }
+
+    // Keyboard activation (Enter/Space) of the card as a role="button", mirroring a mouse click. Only when
+    // the card itself is focused - a key press on an inner control (e.g. the register link) acts on that
+    // control rather than selecting the card.
+    function onCardActivate(event: KeyboardEvent): void {
+        if (event.target === event.currentTarget) {
+            emit("select");
+        }
     }
 
     // #endregion Event Handlers

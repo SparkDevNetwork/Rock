@@ -47,12 +47,13 @@
                 <i class="ti ti-chevron-left"></i>
             </RockButton>
 
-            <template v-for="(item, index) in pageButtons" :key="index">
+            <template v-for="(item, index) in pageButtons" :key="item.isEllipsis ? `ellipsis-${index}` : `page-${item.page}`">
                 <span v-if="item.isEllipsis" class="group-finder-pager-ellipsis">&hellip;</span>
                 <RockButton v-else
                             :btnType="item.page === currentPage ? 'primary' : 'default'"
                             btnSize="sm"
                             :disabled="item.page === currentPage"
+                            :aria-current="item.page === currentPage ? 'page' : undefined"
                             :title="`Page ${item.page + 1}`"
                             @click="$emit('pageChange', item.page)">
                     {{ item.page + 1 }}
