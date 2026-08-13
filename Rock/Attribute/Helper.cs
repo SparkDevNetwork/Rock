@@ -2347,8 +2347,7 @@ SET [PersistedTextValue] = @TextValue,
     [IsPersistedValueDirty] = 0
 WHERE [AttributeId] = @AttributeId
   AND [ValueChecksum] = CHECKSUM(@Value)
-  AND [Value] = @Value
-  AND [IsPersistedValueDirty] = 1",
+  AND [Value] = @Value",
                 textValueParameter,
                 htmlValueParameter,
                 condensedTextValueParameter,
