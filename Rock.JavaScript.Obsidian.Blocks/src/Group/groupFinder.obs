@@ -1936,16 +1936,24 @@
 
     // Reveal the selected group's card in the drawer. Only open the sheet when it is minimized, where the
     // card is otherwise hidden; at a middle stop the map and list both already show, so leave the depth
-    // where the visitor set it. Opening the sheet swaps its dock mode and reparents it a beat later, which
-    // would cancel a smooth scroll mid-glide, so an open (or an open already in flight) parks the target in
-    // pendingScrollGuid for onDrawerSettled to scroll once the sheet lands. A drawer already at rest scrolls
-    // straight away.
+    // where the visitor set it.
+    //
+    // The scroll must run once the sheet is at rest, because opening it swaps the dock mode a beat later and
+    // that swap reparents the sheet, cancelling a smooth scroll mid-glide. The resting mode at any open stop
+    // is "float". While the sheet is minimized, or a swap to float is still pending, park the target and let
+    // the settle scroll it (onDrawerSettled, driven by the DockedPanel settled event on a real reparent, or
+    // by the mode-swap timer when the mode does not actually change). Only a sheet already resting in float
+    // scrolls straight away. Deciding from the mode - not from whether a scroll is already parked - is what
+    // keeps a re-maximize that never toggles the mode (so no settled fires) from stranding the parked scroll.
     function revealSelectedGroupInDrawer(guid: string): void {
         if (drawerSnapIndex.value === 0) {
             pendingScrollGuid.value = guid;
             drawerSnapIndex.value = drawerSnapPoints.length - 1;
+            return;
         }
-        else if (pendingScrollGuid.value !== null) {
+
+        const isModeSettling = drawerMode.value !== "float" || drawerModeSwapTimer !== undefined;
+        if (isModeSettling) {
             pendingScrollGuid.value = guid;
         }
         else {
@@ -2436,7 +2444,17 @@
             clearTimeout(drawerModeSwapTimer);
         }
         drawerModeSwapTimer = setTimeout(() => {
-            drawerMode.value = drawerSnapIndex.value === 0 ? "push" : "float";
+            drawerModeSwapTimer = undefined;
+            const nextMode = drawerSnapIndex.value === 0 ? "push" : "float";
+            const didModeChange = drawerMode.value !== nextMode;
+            drawerMode.value = nextMode;
+
+            // A real mode change reparents the sheet and DockedPanel emits settled, which scrolls any parked
+            // card. When the mode does not actually change (e.g. re-maximizing before a pending minimize swap
+            // fired, so the sheet stayed float), no settled comes - so scroll the parked card here instead.
+            if (!didModeChange) {
+                onDrawerSettled();
+            }
         }, 300);
     });
 
