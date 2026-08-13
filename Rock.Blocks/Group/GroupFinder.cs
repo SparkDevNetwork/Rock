@@ -487,18 +487,21 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
-        /// The display label for a Supported Meeting Styles value.
+        /// The display label for a Supported Meeting Styles value, taken from the <see cref="MeetingStyle"/> enum's Description.
         /// </summary>
         /// <remarks>
-        /// Mirrors the labels in the Supported Meeting Styles attribute's list source. That list source must
-        /// be a compile-time literal on the attribute, so it cannot call this method; keep the two in step
-        /// when a style's label changes.
+        /// The label is single-sourced from the enum's Description attributes, which the client also reads
+        /// (via the generated MeetingStyleDescription). The Supported Meeting Styles attribute's list source
+        /// still repeats these labels as a compile-time literal it cannot derive from the enum; keep that one
+        /// in step with the enum's Descriptions.
         /// </remarks>
         /// <param name="value">The meeting-style value (a <see cref="MeetingStyle"/> name).</param>
         /// <returns>The display label for the value.</returns>
         private static string GetMeetingStyleDisplayText( string value )
         {
-            return value == nameof( MeetingStyle.InPerson ) ? "In-Person" : value;
+            return Enum.TryParse<MeetingStyle>( value, out var meetingStyle )
+                ? meetingStyle.ConvertToString()
+                : value;
         }
 
         /// <summary>

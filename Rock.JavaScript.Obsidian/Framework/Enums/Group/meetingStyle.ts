@@ -35,7 +35,7 @@ export const MeetingStyle = {
 
 /** Represents how a Group meets: in person, online, or a combination of the two. */
 export const MeetingStyleDescription: Record<number, string> = {
-    1: "In Person",
+    1: "In-Person",
 
     2: "Online",
 

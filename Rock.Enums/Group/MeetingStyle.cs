@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.ComponentModel;
+
 namespace Rock.Model
 {
     /// <summary>
@@ -26,16 +28,19 @@ namespace Rock.Model
         /// <summary>
         /// The group meets in person at a physical location.
         /// </summary>
+        [Description( "In-Person" )]
         InPerson = 1,
 
         /// <summary>
         /// The group meets online.
         /// </summary>
+        [Description( "Online" )]
         Online = 2,
 
         /// <summary>
         /// The group meets both in person and online.
         /// </summary>
+        [Description( "Hybrid" )]
         Hybrid = 3
     }
 }
