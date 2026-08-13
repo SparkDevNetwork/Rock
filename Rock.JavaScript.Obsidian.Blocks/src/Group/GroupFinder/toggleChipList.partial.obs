@@ -6,6 +6,7 @@
                 type="button"
                 class="toggle-chip"
                 :class="{ 'is-selected': isSelected(item) }"
+                :aria-pressed="isSelected(item)"
                 :disabled="disabled"
                 @click="toggle(item)">
             <slot name="chip" :item="item" :isSelected="isSelected(item)">

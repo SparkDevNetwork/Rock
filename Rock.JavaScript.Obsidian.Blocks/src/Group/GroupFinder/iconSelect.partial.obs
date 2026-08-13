@@ -2,7 +2,11 @@
 <template>
     <DropDownContent v-model="isOpen" placement="bottom-start" preventOverflowClipping enableFlip>
         <template #anchor>
-            <button type="button" class="icon-select-trigger" :class="{ 'is-open': isOpen }">
+            <button type="button"
+                    class="icon-select-trigger"
+                    :class="{ 'is-open': isOpen }"
+                    aria-haspopup="listbox"
+                    :aria-expanded="isOpen">
                 <span class="icon-select-value" :class="{ 'is-placeholder': !selectedItem }">
                     <i v-if="triggerIconCssClass" :class="triggerIconCssClass" class="icon-select-icon"></i>
                     <span class="icon-select-text">{{ selectedItem ? selectedItem.text : placeholder }}</span>
@@ -10,11 +14,13 @@
                 <i class="ti ti-chevron-down icon-select-caret"></i>
             </button>
         </template>
-        <ul class="icon-select-menu">
+        <ul class="icon-select-menu" role="listbox">
             <li v-for="item in items" :key="item.value">
                 <button type="button"
+                        role="option"
                         class="icon-select-option"
                         :class="{ 'is-selected': item.value === modelValue }"
+                        :aria-selected="item.value === modelValue"
                         @click="onSelect(item.value)">
                     <i v-if="item.iconCssClass" :class="item.iconCssClass" class="icon-select-icon"></i>
                     <span>{{ item.text }}</span>
