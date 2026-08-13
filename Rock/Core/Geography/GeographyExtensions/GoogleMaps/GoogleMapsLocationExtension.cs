@@ -172,10 +172,12 @@ namespace Rock.Core.Geography.GeographyExtensions.GoogleMaps
                         return new GeocodeResult( point, viewport );
                     }
                 }
-                catch
+                catch ( Exception ex )
                 {
                     // A transient failure (network, quota, or an unexpected response shape) yields no
-                    // result; the caller treats the location as unresolved rather than erroring.
+                    // result; the caller treats the location as unresolved rather than erroring. Logged so
+                    // the failure is visible rather than silently swallowed.
+                    Rock.Model.ExceptionLogService.LogException( ex );
                     return null;
                 }
             }
@@ -259,10 +261,12 @@ namespace Rock.Core.Geography.GeographyExtensions.GoogleMaps
                         }
                     }
                 }
-                catch
+                catch ( Exception ex )
                 {
                     // A transient failure (network, quota) just yields no suggestions; the visitor can still
-                    // type a full address and search.
+                    // type a full address and search. Logged so the failure is visible rather than silently
+                    // swallowed.
+                    Rock.Model.ExceptionLogService.LogException( ex );
                     return suggestions;
                 }
             }
