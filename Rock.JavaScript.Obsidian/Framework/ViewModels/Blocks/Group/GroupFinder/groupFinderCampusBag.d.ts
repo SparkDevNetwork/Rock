@@ -21,14 +21,20 @@
 // </copyright>
 //
 
-/** A campus option in the Group Finder Campus filter, carrying a short badge for its avatar. */
+/** A campus option in the Group Finder Campus filter, carrying a short badge for its avatar. Its Text is the campus name and its Value is the campus unique identifier. */
 export type GroupFinderCampusBag = {
     /** Gets or sets the short letter badge (avatar) for the campus. */
     badge?: string | null;
 
-    /** Gets or sets the campus name shown beside the badge. */
+    /** Gets or sets the category for this item. */
+    category?: string | null;
+
+    /** Gets or sets disabled for this item. */
+    disabled?: boolean | null;
+
+    /** Gets or sets the text. */
     text?: string | null;
 
-    /** Gets or sets the campus unique identifier. */
+    /** Gets or sets the value. */
     value?: string | null;
 };

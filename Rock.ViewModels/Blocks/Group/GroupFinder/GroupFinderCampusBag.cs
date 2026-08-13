@@ -15,26 +15,18 @@
 // </copyright>
 //
 
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Group.GroupFinder
 {
     /// <summary>
-    /// A campus option in the Group Finder Campus filter, carrying a short badge for its avatar.
+    /// A campus option in the Group Finder Campus filter, carrying a short badge for its avatar. Its Text is the campus name and its Value is the campus unique identifier.
     /// </summary>
-    public class GroupFinderCampusBag
+    public class GroupFinderCampusBag : ListItemBag
     {
         /// <summary>
         /// Gets or sets the short letter badge (avatar) for the campus.
         /// </summary>
         public string Badge { get; set; }
-
-        /// <summary>
-        /// Gets or sets the campus name shown beside the badge.
-        /// </summary>
-        public string Text { get; set; }
-
-        /// <summary>
-        /// Gets or sets the campus unique identifier.
-        /// </summary>
-        public string Value { get; set; }
     }
 }
