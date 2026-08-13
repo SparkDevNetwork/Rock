@@ -1582,9 +1582,10 @@
     async function loadResults(keepPage: boolean = false): Promise<void> {
         isLoading.value = true;
 
-        // Capture the filter inputs this request runs against, so the dirty-state check treats them as
-        // searched and clears the pending-changes overlay/button until the visitor edits a filter again.
-        lastSearchedFingerprint.value = filterFingerprint();
+        // Capture the filter inputs this request runs against. It is applied to lastSearchedFingerprint
+        // only once the response comes back successful and not superseded (below), so a failed or
+        // superseded search does not clear the pending-changes overlay/button as though it had run.
+        const searchedFingerprint = filterFingerprint();
 
         // A fresh search always starts at the first page; only a page change (goToPage) keeps the
         // current page so the request fetches it.
@@ -1684,6 +1685,10 @@
         }
 
         const data = response.data;
+
+        // The search ran (successful and not superseded), so treat its inputs as searched: this clears the
+        // pending-changes overlay/button until the visitor edits a filter again.
+        lastSearchedFingerprint.value = searchedFingerprint;
 
         // A typed free-text search that comes back with no search area could not be geocoded (bad
         // input, or a quota/transient failure), so the server returned no results. Flag it so the
