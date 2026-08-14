@@ -73,7 +73,11 @@
                 </TransitionVerticalCollapse>
             </div>
 
-            <div class="actions">
+            <div v-if="isCaptchaEnabled" v-show="!isCaptchaComplete">
+                <Captcha ref="captchaElement"></Captcha>
+            </div>
+
+            <div v-if="!isCaptchaEnabled || isCaptchaComplete" class="actions">
                 <RockButton btnType="primary" @click="onConfirmPayment" autoDisable>
                     {{ confirmPaymentButtonText }}
                 </RockButton>
@@ -83,6 +87,7 @@
 </template>
 
 <script setup lang="ts">
+    import Captcha from "@Obsidian/Controls/captcha.obs";
     import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import GatewayControl from "@Obsidian/Controls/gatewayControl.obs";
@@ -99,10 +104,11 @@
     import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
+    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
     import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
     import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { computed, ref, watch } from "vue";
+    import { computed, onMounted, ref, watch } from "vue";
     import { interactiveActionProps } from "../types";
     import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 
@@ -145,6 +151,10 @@
     const gatewayErrorMessage = ref("");
     const gatewayValidationFields = ref<FormError[]>([]);
     let gatewayCompletionSource: PromiseCompletionSource | undefined;
+
+    const isCaptchaComplete = ref<boolean>(false);
+    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
+    const captchaToken = ref<string | null | undefined>();
 
     // #endregion
 
@@ -298,9 +308,18 @@
         newData[ComponentDataKey.Token] = token;
         newData[ComponentDataKey.UseSavedAccount] = selectedSavedAccount.value;
 
+        let actionContext: BlockActionContextBag | undefined;
+
+        if (captchaToken.value) {
+            actionContext = {
+                ...actionContext,
+                captcha: captchaToken.value
+            };
+        }
+
         try {
             paymentEvents({ type: "submitting" });
-            await props.submit(newData);
+            await props.submit(newData, actionContext);
             paymentEvents({ type: "success" });
         }
         catch (error) {
@@ -378,6 +397,21 @@
 
     // #endregion
 
+    async function waitForCaptcha(): Promise<void> {
+        if (!props.isCaptchaEnabled || !captchaElement.value) {
+            return;
+        }
+
+        captchaToken.value = await captchaElement.value.getToken() || null;
+
+        if (!captchaToken.value) {
+            isCaptchaComplete.value = false;
+        }
+        else {
+            isCaptchaComplete.value = true;
+        }
+    }
+
     // If either configuration or data changes, we need to reset our state
     // to match both.
     watch([() => props.configuration, () => props.data], () => {
@@ -385,4 +419,8 @@
     });
 
     setInitialValues();
+
+    onMounted(async () => {
+        await waitForCaptcha();
+    });
 </script>
