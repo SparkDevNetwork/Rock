@@ -1263,6 +1263,7 @@ namespace Rock.Blocks.Group
                 .Where( gl => gl.Location.Guid == bag.LocationGuid.Value )
                 .Where( gl => gl.Schedules.Any() )
                 .SelectMany( gl => gl.Schedules )
+                .Where( s => s.IsActive )
                 .OrderBy( s => s.Name )
                 .Distinct()
                 .ToList();

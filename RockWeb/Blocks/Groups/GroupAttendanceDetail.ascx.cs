@@ -808,6 +808,7 @@ namespace RockWeb.Blocks.Groups
                 _group.GroupLocations
                     .Where( l => l.LocationId == locationId.Value )
                     .SelectMany( l => l.Schedules )
+                    .Where( s => s.IsActive )
                     .OrderBy( s => s.Name )
                     .ToList()
                     .ForEach( s => schedules.TryAdd( s.Id, s.Name ) );
