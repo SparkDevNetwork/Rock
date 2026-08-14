@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
 
 using Rock.Model;
 using Rock.Web.Cache;
@@ -58,24 +57,9 @@ internal class SmsMedium : IAgentCommunicationMedium
     #region IAgentCommunicationMedium
 
     /// <inheritdoc />
-    public async Task<DraftResult> DraftAsync( ChatAgent agent, DraftRequest request )
+    public string BuildDraftingInstructions( DraftRequest request )
     {
-        var prompt = DraftPromptBuilder.BuildSmsDraftPrompt( request, _fromNumber.Number );
-
-        var promptResult = await agent.InvokePromptAsync( prompt, null );
-
-        var dto = promptResult.ResponseText.FromJsonOrNull<DraftDto>();
-        if ( dto == null || dto.Subject.IsNullOrWhiteSpace() || dto.Body.IsNullOrWhiteSpace() )
-        {
-            throw new InvalidOperationException( "Draft JSON invalid. Expect: { \"subject\", \"body\" }" );
-        }
-
-        return new DraftResult
-        {
-            Body = dto.Body,
-            Type = AgentCommunicationType.Sms,
-            VerificationText = GetVerificationText( request.CurrentPerson, request.Recipients )
-        };
+        return DraftPromptBuilder.BuildSmsDraftInstructions( request, _fromNumber.Number );
     }
 
     /// <inheritdoc />
@@ -121,6 +105,27 @@ internal class SmsMedium : IAgentCommunicationMedium
         return errors;
     }
 
+    /// <inheritdoc />
+    public string GetVerificationText( Rock.Model.Person currentPerson, List<Rock.Model.Person> recipients )
+    {
+        var verificationText = new StringBuilder();
+
+        foreach ( var recipient in recipients )
+        {
+            verificationText.AppendLine( "Recipient: " + recipient.FullName );
+        }
+
+        verificationText.AppendLine();
+        verificationText.AppendLine( "From: " + _fromNumber.Name + " (" + _fromNumber.Number + ")" );
+        verificationText.AppendLine();
+
+        // Body is returned in the actual payload, so just use a placeholder here.
+        verificationText.AppendLine( "Body:" );
+        verificationText.AppendLine( "[body]" );
+
+        return verificationText.ToString();
+    }
+
     #endregion
 
     #region Methods
@@ -162,32 +167,6 @@ internal class SmsMedium : IAgentCommunicationMedium
         comm.Recipients = commRecipients;
 
         return comm;
-    }
-
-    /// <summary>
-    /// Returns a text representation of the email for verification purposes.
-    /// </summary>
-    /// <param name="currentPerson"></param>
-    /// <param name="recipients"></param>
-    /// <returns></returns>
-    public string GetVerificationText( Rock.Model.Person currentPerson, List<Rock.Model.Person> recipients )
-    {
-        var verificationText = new StringBuilder();
-
-        foreach ( var recipient in recipients )
-        {
-            verificationText.AppendLine( "Recipient: " + recipient.FullName );
-        }
-
-        verificationText.AppendLine();
-        verificationText.AppendLine( "From: " + _fromNumber.Name + " (" + _fromNumber.Number + ")" );
-        verificationText.AppendLine();
-
-        // Body + Subject are returned in the actual payload, so just use placeholders here.  
-        verificationText.AppendLine( "Body:" );
-        verificationText.AppendLine( "[body]" );
-
-        return verificationText.ToString();
     }
 
     #endregion

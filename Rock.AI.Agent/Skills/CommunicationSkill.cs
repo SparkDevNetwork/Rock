@@ -20,6 +20,10 @@ using System.Linq;
 
 using Microsoft.Extensions.Logging;
 
+using Rock.AI.Agent.Utilities.CommunicationSkill;
+using Rock.AI.Agent.Utilities.CommunicationSkill.Mediums;
+using Rock.Communication;
+using Rock.Data;
 using Rock.SystemGuid;
 using Rock.SystemKey;
 using Rock.Web.Cache;
@@ -97,6 +101,99 @@ internal sealed partial class CommunicationSkill : AgentSkillComponent
             .FirstOrDefault();
 
         return fallback;
+    }
+
+    /// <summary>
+    /// Returns the specified medium based on the communication type.
+    /// </summary>
+    /// <param name="communicationType">The communication type to build a medium for.</param>
+    /// <param name="rockContext">The rock context passed through to mediums that need it.</param>
+    /// <param name="fromNumberId">The system phone number id to use for SMS communications, if any.</param>
+    /// <returns>An <see cref="IAgentCommunicationMedium"/> instance, or <c>null</c> if the medium is unsupported or has no active transport.</returns>
+    private IAgentCommunicationMedium GetCommunicationMedium( AgentCommunicationType communicationType, RockContext rockContext, int? fromNumberId = null )
+    {
+        IAgentCommunicationMedium medium;
+
+        if ( communicationType == AgentCommunicationType.Email )
+        {
+            if ( !MediumContainer.HasActiveEmailTransport() )
+            {
+                return null;
+            }
+
+            medium = new EmailMedium();
+        }
+        else if ( communicationType == AgentCommunicationType.Sms )
+        {
+            if ( !fromNumberId.HasValue )
+            {
+                return null;
+            }
+
+            if ( !MediumContainer.HasActiveSmsTransport() )
+            {
+                return null;
+            }
+
+            medium = new SmsMedium( fromNumberId.Value );
+        }
+        else if ( communicationType == AgentCommunicationType.Push )
+        {
+            if ( !MediumContainer.HasActivePushTransport() )
+            {
+                return null;
+            }
+
+            medium = new PushNotificationMedium( rockContext );
+        }
+        else
+        {
+            return null;
+        }
+
+        return medium;
+    }
+
+    /// <summary>
+    /// Get the system phone number identifier to use when creating an SMS
+    /// communication.
+    /// </summary>
+    /// <param name="helper">The tool helper used to record any errors encountered.</param>
+    /// <param name="communicationType">The type of communication being processed.</param>
+    /// <param name="fromNumberIdKey">The identifier key of the system phone number that was specified.</param>
+    /// <returns>The integer identifier of a system phone number or <c>null</c> if it could not be determined.</returns>
+    private int? GetFromNumberId( AgentToolHelper helper, AgentCommunicationType communicationType, string fromNumberIdKey )
+    {
+        if ( communicationType != AgentCommunicationType.Sms )
+        {
+            return null;
+        }
+
+        if ( fromNumberIdKey.IsNotNullOrWhiteSpace() )
+        {
+            var fromNumber = SystemPhoneNumberCache.Get( fromNumberIdKey, false );
+
+            if ( fromNumber != null && fromNumber.IsActive && fromNumber.IsSmsEnabled )
+            {
+                return fromNumber.Id;
+            }
+
+            helper.AddError( "The provided fromNumberIdKey does not correspond to a valid active SMS-enabled system phone number." );
+        }
+        else
+        {
+            var fromNumberId = GetDefaultSmsPhoneNumber()?.Id;
+
+            if ( fromNumberId.HasValue )
+            {
+                return fromNumberId.Value;
+            }
+
+            helper.AddError( "No valid default SMS 'from' number could be determined for the current person. Please provide a fromNumberIdKey." );
+            helper.AddInstructions( "Call the LookupSystemPhoneNumbers function, and prompt the user to pick from the list." );
+        }
+
+        return null;
     }
 
     #endregion
