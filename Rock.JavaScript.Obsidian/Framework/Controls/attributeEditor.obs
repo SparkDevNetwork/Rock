@@ -257,6 +257,20 @@
 
     const attributeGuid = computed((): Guid | undefined | null => props.modelValue?.guid);
 
+    /**
+     * Determines if the value matches a reserved key name, ignoring case and
+     * surrounding whitespace.
+     *
+     * @param value The key value to check.
+     *
+     * @returns True if the value is reserved.
+     */
+    function isKeyReserved(value: string): boolean {
+        const normalizedValue = value.trim().toLowerCase();
+
+        return props.reservedKeyNames.some(r => typeof r === "string" && r.trim().toLowerCase() === normalizedValue);
+    }
+
     function populateAttributeKey(): void {
         // if the attribute key hasn't been filled in yet, populate it with the attribute name minus whitespace
         if (attributeKey.value.trim() === "" && attributeName.value.trim() !== "") {
@@ -264,7 +278,7 @@
             let newKeyValue = keyValue;
 
             let i = 1;
-            while (props.reservedKeyNames.includes(newKeyValue)) {
+            while (isKeyReserved(newKeyValue)) {
                 newKeyValue = keyValue + i++;
             }
 
@@ -275,7 +289,7 @@
     function validateValue(): string[] {
         const errors = [] as string[];
 
-        if (props.reservedKeyNames.some(r => r === attributeKey.value)) {
+        if (isKeyReserved(attributeKey.value)) {
             errors.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
         }
 

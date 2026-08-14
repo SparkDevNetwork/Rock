@@ -18,12 +18,10 @@
 import { nextTick, Ref } from "vue";
 import { ScheduleCoordinatorNotificationType } from "@Obsidian/Enums/Group/scheduleCoordinatorNotificationType";
 import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
-import { FieldType } from "@Obsidian/SystemGuids/fieldType";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { isNullish } from "@Obsidian/Utility/util";
 import { TimePickerValue } from "@Obsidian/ViewModels/Controls/timePickerValue";
 import { TimeIntervalBag } from "@Obsidian/ViewModels/Utility/timeIntervalBag";
-import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
 import { GroupDetailBlockActionInvoker } from "./types.partial";
 
 /**
@@ -259,40 +257,6 @@ export function formatScheduleInterval(minutes: number | null | undefined): stri
         return `${hours} ${hours === 1 ? "hour" : "hours"}`;
     }
     return `${minutes} ${minutes === 1 ? "minute" : "minutes"}`;
-}
-
-/**
- * Creates a new attribute instance suitable for editing with the AttributeEditor control.
- * Centralized to reduce the risk of fixing attribute-default bugs in one place but not another.
- */
-export function createNewAttribute(): PublicEditableAttributeBag {
-    return {
-        guid: "",
-        name: "",
-        description: "",
-        isActive: true,
-        isPublic: false,
-        isRequired: false,
-        isShowOnBulk: false,
-        isShowInGrid: false,
-        isAnalytic: false,
-        isAnalyticHistory: false,
-        isAllowSearch: false,
-        isEnableHistory: false,
-        isIndexEnabled: false,
-        isSystem: false,
-        fieldTypeGuid: FieldType.Text,
-        configurationValues: {},
-        categories: [],
-        key: "",
-        abbreviatedName: "",
-        preHtml: "",
-        postHtml: "",
-        defaultValue: "",
-        isSuppressHistoryLogging: false,
-        attributeColor: "",
-        iconCssClass: ""
-    };
 }
 
 /**
