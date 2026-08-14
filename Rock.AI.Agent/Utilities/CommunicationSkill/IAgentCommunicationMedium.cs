@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,7 +15,6 @@
 // </copyright>
 
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Rock.AI.Agent.Utilities.CommunicationSkill;
 
@@ -27,19 +26,30 @@ internal interface IAgentCommunicationMedium
     /// <summary>
     /// Validates the recipients for the communication medium.
     /// </summary>
-    /// <param name="recipient"></param>
-    /// <returns></returns>
+    /// <param name="recipient">The recipients to validate.</param>
+    /// <returns>A list of validation error messages. An empty list indicates the recipients are valid.</returns>
     List<string> ValidateRecipients( List<Rock.Model.Person> recipient );
 
     /// <summary>
-    /// Drafts the commmunication content by invoking an internal prompt via the kernel.
+    /// Builds a drafting instruction block that is returned to the calling LLM.
+    /// The LLM is expected to author the subject/body itself and then call the
+    /// draft tool a second time with those values so the communication can be
+    /// created as a transient draft.
     /// </summary>
-    /// <param name="kernel">The kernel to execute the prompt on.</param>
     /// <param name="request">The details of the draft.</param>
-    /// <returns></returns>
-    Task<DraftResult> DraftAsync(
-        ChatAgent agent,
-        DraftRequest request );
+    /// <returns>The instruction text the LLM should follow when composing the draft.</returns>
+    string BuildDraftingInstructions( DraftRequest request );
+
+    /// <summary>
+    /// Produces a human-readable summary of the pending communication that can
+    /// be shown to the user for verification before it is sent. The subject
+    /// and body themselves are returned in the tool payload, so placeholders
+    /// (e.g. <c>[subject]</c>, <c>[body]</c>) may be used here.
+    /// </summary>
+    /// <param name="currentPerson">The person sending the communication.</param>
+    /// <param name="recipients">The recipients that will receive the communication.</param>
+    /// <returns>The verification text to include in the tool result.</returns>
+    string GetVerificationText( Rock.Model.Person currentPerson, List<Rock.Model.Person> recipients );
 
     /// <summary>
     /// Structures the communication entity from the draft content.

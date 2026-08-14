@@ -64,11 +64,6 @@ namespace Rock.AI.Agent
         /// </summary>
         public abstract RockContext RockContext { get; }
 
-        /// <summary>
-        /// The chat agent instance that this request is being processed by.
-        /// </summary>
-        internal abstract ChatAgent ChatAgent { get; }
-
         #endregion
 
         #region Constructors
