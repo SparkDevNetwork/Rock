@@ -12,15 +12,15 @@
                         here (no jQuery plugin loaded) — a Vue @click handler
                         drives the enlarge overlay instead.
                     -->
-                    <a href="#" class="fluidbox" @click.prevent="onPhotoClick">
+                    <a ref="photoLinkElement" href="#" class="fluidbox" @click.prevent="onPhotoClick">
                         <span class="fluidbox-wrap" v-html="config.photoImageTag ?? ''"></span>
                     </a>
                 </div>
                 <div v-else v-html="config.photoImageTag ?? ''"></div>
             </div>
 
-            <div class="d-flex flex-column align-items-center p-spacing-md">
-                <h3 class="title name js-checkin-person-name mt-spacing-none text-center">
+            <div class="person-profile-name-block">
+                <h3 class="title name js-checkin-person-name person-profile-name">
                     {{ config.fullName }}
                     <a v-if="isShareButtonVisible"
                        href="#"
@@ -40,19 +40,19 @@
 
                 <div v-for="(phoneNumber, index) in phoneNumbers"
                      :key="index"
-                     class="d-flex justify-content-between align-items-center mb-spacing-sm">
+                     class="person-profile-phone-row">
                     <div>
                         {{ phoneNumber.numberFormatted }}
                         <span class="d-block text-sm text-muted leading-snug">
                             {{ phoneNumber.numberType }}
                         </span>
                     </div>
-                    <div class="text-right">
+                    <div class="person-profile-phone-actions">
                         <a v-if="phoneNumber.canSendSms && config.isSmsAvailable"
                            href="#"
-                           class="btn btn-sm btn-square btn-default my-spacing-tiny"
+                           class="btn btn-sm btn-square btn-default person-profile-phone-icon-btn"
                            @click.prevent="onSmsIconClick"><i class="ti ti-device-mobile-message"></i></a>
-                        <a class="btn btn-sm btn-square btn-default my-spacing-tiny"
+                        <a class="btn btn-sm btn-square btn-default person-profile-phone-icon-btn"
                            :class="{ disabled: phoneNumber.isUnlisted }"
                            :href="`tel:${phoneNumber.rawNumber ?? ''}`"><i class="ti ti-phone"></i></a>
                     </div>
@@ -98,89 +98,33 @@
                       :recipientName="config.fullName ?? ''"
                       @sent="onSmsSent" />
 
+        <!--
+            .person-photo-lightbox/-transform/-frame have no local <style> —
+            they live in styles-v2/rock-components/_photo-lightbox.scss.
+            Only runtime width/height/transform are set here (onLightbox*
+            below), since those come from the thumbnail's live position.
+
+            Rock component candidate: Crm/PersonDetail/Bio/photoLightbox.partial.obs
+            has a simpler, un-animated duplicate (.bio-photo-lightbox). If
+            consolidated, this implementation should win — it's the more
+            capable of the two.
+        -->
         <Teleport to="body">
-            <div v-if="isLightboxShown" class="person-photo-lightbox" @click="isLightboxShown = false">
-                <img :src="config.photoUrl ?? ''" :alt="config.fullName ?? ''">
-            </div>
+            <Transition name="lightbox"
+                        @before-enter="onLightboxBeforeEnter"
+                        @enter="onLightboxEnter"
+                        @leave="onLightboxLeave">
+                <div v-if="isLightboxShown" class="person-photo-lightbox" @click="isLightboxShown = false">
+                    <div ref="lightboxTransformElement" class="person-photo-lightbox-transform">
+                        <div class="person-photo-lightbox-frame">
+                            <img :src="config.photoUrl ?? ''" :alt="config.fullName ?? ''">
+                        </div>
+                    </div>
+                </div>
+            </Transition>
         </Teleport>
     </div>
 </template>
-
-<style scoped>
-.person-photo-lightbox {
-    position: fixed;
-    inset: 0;
-    z-index: 1060;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(0, 0, 0, 0.7);
-    cursor: zoom-out;
-}
-
-.person-photo-lightbox img {
-    /*
-        Force the box to fill the viewport so a naturally-small profile
-        photo scales UP to a useful size. max-width alone only caps the
-        image and would leave a 200-px photo tiny in the middle of the
-        overlay. object-fit: contain preserves the aspect ratio.
-    */
-    width: 90vw;
-    height: 90vh;
-    object-fit: contain;
-}
-</style>
-
-<!--
-    Unscoped photo layout backstop.
-
-    theme.css already ships identical rules for these selectors, but the img
-    inside .fluidbox-wrap is injected via v-html on the server, so it does
-    not receive Vue's data-v attribute. Reasserting the layout here means the
-    photo renders correctly regardless of whether the theme's compiled CSS
-    reaches this DOM (older cached bundles, alternate themes, etc.).
--->
-<style>
-.person-profile .profile-photo-container .photo {
-    position: relative;
-    width: 100%;
-}
-
-.person-profile .profile-photo-container .photo::before {
-    display: block;
-    padding-top: 54.857%;
-    content: "";
-}
-
-@media (min-width: 768px) {
-    .person-profile .profile-photo-container .photo::before {
-        padding-top: 75.59%;
-    }
-}
-
-.person-profile .profile-photo-container .photo a.fluidbox {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-}
-
-.person-profile .profile-photo-container .photo a.fluidbox .fluidbox-wrap,
-.person-profile .profile-photo-container .photo a.fluidbox .fluidbox-wrap img {
-    display: block;
-    width: 100%;
-    height: 100%;
-}
-
-.person-profile .profile-photo-container .photo a.fluidbox .fluidbox-wrap img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    object-fit: cover;
-    opacity: 1;
-}
-</style>
 
 <script setup lang="ts">
     import { computed, onMounted, onUnmounted, ref, watch } from "vue";
@@ -199,6 +143,8 @@
     const smsSuccessMessage = ref<string>("");
     const isWebShareSupported = ref(false);
     const isLightboxShown = ref(false);
+    const photoLinkElement = ref<HTMLAnchorElement | null>(null);
+    const lightboxTransformElement = ref<HTMLElement | null>(null);
 
     // #endregion Values
 
@@ -249,6 +195,89 @@
     }
 
     /**
+     * Sizes the overlay frame to match the thumbnail's own on-screen
+     * dimensions and jumps it (with no transition) onto the thumbnail's
+     * position at scale(1) — the same "closed" state Fluidbox's ghost
+     * element started from. This can run before the element is inserted
+     * into the DOM, since it only needs the thumbnail's rect, not the
+     * overlay frame's.
+     */
+    function onLightboxBeforeEnter(el: Element): void {
+        const frame = el.querySelector<HTMLElement>(".person-photo-lightbox-transform");
+        const geometry = getLightboxGeometry();
+
+        if (!frame || !geometry) {
+            return;
+        }
+
+        frame.style.width = `${geometry.width}px`;
+        frame.style.height = `${geometry.height}px`;
+        frame.style.transition = "none";
+        frame.style.transform = geometry.closedTransform;
+    }
+
+    /**
+     * Grows the overlay frame from the thumbnail's position/size out to its
+     * full size, mirroring the soft grow Fluidbox used to provide.
+     */
+    function onLightboxEnter(el: Element, done: () => void): void {
+        const frame = el.querySelector<HTMLElement>(".person-photo-lightbox-transform");
+        const geometry = getLightboxGeometry();
+
+        if (!frame || !geometry) {
+            done();
+            return;
+        }
+
+        // Force a reflow so the browser registers the "from" transform set in
+        // onLightboxBeforeEnter before the transition to the "to" state below.
+        void frame.offsetWidth;
+
+        frame.addEventListener("transitionend", () => done(), { once: true });
+        frame.style.transition = "transform 0.28s cubic-bezier(0.22, 1, 0.36, 1)";
+        frame.style.transform = geometry.openTransform;
+    }
+
+    /**
+     * Shrinks the overlay frame back down onto the thumbnail's position/size
+     * as the overlay closes, mirroring Fluidbox's original collapse.
+     */
+    function onLightboxLeave(el: Element, done: () => void): void {
+        const frame = el.querySelector<HTMLElement>(".person-photo-lightbox-transform");
+        const geometry = getLightboxGeometry();
+
+        if (!frame || !geometry) {
+            done();
+            return;
+        }
+
+        void frame.offsetWidth;
+
+        frame.addEventListener("transitionend", () => done(), { once: true });
+        frame.style.transition = "transform 0.24s cubic-bezier(0.4, 0, 1, 1)";
+        frame.style.transform = geometry.closedTransform;
+    }
+
+    /**
+     * Keeps the overlay frame's size/position correct if the window is
+     * resized while it's open — geometry is only computed at open/close
+     * time otherwise, so without this the frame would stay fixed at
+     * whatever size/position it had when the resize started.
+     */
+    function onWindowResize(): void {
+        const geometry = getLightboxGeometry();
+
+        if (!lightboxTransformElement.value || !geometry) {
+            return;
+        }
+
+        lightboxTransformElement.value.style.transition = "none";
+        lightboxTransformElement.value.style.width = `${geometry.width}px`;
+        lightboxTransformElement.value.style.height = `${geometry.height}px`;
+        lightboxTransformElement.value.style.transform = geometry.openTransform;
+    }
+
+    /**
      * Invokes the browser's Web Share sheet with the person's edit-page URL.
      */
     async function onShareClick(): Promise<void> {
@@ -294,15 +323,72 @@
 
     // #endregion Event Handlers
 
+    // #region Functions
+
+    /**
+     * Computes the overlay image's box size and its closed/open transforms
+     * from the thumbnail's live on-screen rect.
+     *
+     * Fluidbox kept its enlarged "ghost" element sized at the thumbnail's own
+     * dimensions the entire time and reached the enlarged appearance purely
+     * through a persistent transform: scale() — never laying the element out
+     * at full size directly. That is why its border-radius (a small,
+     * fixed pixel value) still looked proportionally rounded once enlarged:
+     * the scale magnified the rendered radius right along with everything
+     * else. Reproducing that here (rather than sizing the image at 90vw/90vh
+     * and resting at scale(1)) is what lets --rounded-medium look correct at
+     * both the thumbnail's size and the overlay's enlarged size.
+     */
+    function getLightboxGeometry(): { width: number; height: number; closedTransform: string; openTransform: string } | null {
+        if (!photoLinkElement.value) {
+            return null;
+        }
+
+        const thumbnailRect = photoLinkElement.value.getBoundingClientRect();
+
+        if (thumbnailRect.width === 0 || thumbnailRect.height === 0) {
+            return null;
+        }
+
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        // The largest uniform scale that keeps the (thumbnail-shaped) box
+        // within 90% of the viewport in both dimensions, same as Fluidbox
+        // fitting its ghost element to the available window space.
+        const openScale = Math.min(
+            (viewportWidth * 0.9) / thumbnailRect.width,
+            (viewportHeight * 0.9) / thumbnailRect.height
+        );
+
+        // The backdrop flex-centers the (unscaled) box at the viewport's
+        // center, so the closed transform only needs to translate it back
+        // onto the thumbnail's actual position.
+        const deltaX = (thumbnailRect.left + thumbnailRect.width / 2) - (viewportWidth / 2);
+        const deltaY = (thumbnailRect.top + thumbnailRect.height / 2) - (viewportHeight / 2);
+
+        return {
+            width: thumbnailRect.width,
+            height: thumbnailRect.height,
+            closedTransform: `translate(${deltaX}px, ${deltaY}px) scale(1)`,
+            openTransform: `translate(0, 0) scale(${openScale})`
+        };
+    }
+
+    // #endregion Functions
+
     // #region Watchers
 
-    // Add/remove the Escape key handler as the overlay opens and closes.
+    // Add/remove the Escape key handler and the resize handler that keeps the
+    // overlay frame correctly sized/positioned as the overlay opens and closes.
     watch(isLightboxShown, () => {
         if (isLightboxShown.value) {
             document.addEventListener("keydown", onDocumentKeyDown);
+            window.addEventListener("resize", onWindowResize);
         }
         else {
             document.removeEventListener("keydown", onDocumentKeyDown);
+            window.removeEventListener("resize", onWindowResize);
         }
     });
 
@@ -316,6 +402,7 @@
 
     onUnmounted(() => {
         document.removeEventListener("keydown", onDocumentKeyDown);
+        window.removeEventListener("resize", onWindowResize);
     });
 
     // #endregion Lifecycle Hooks

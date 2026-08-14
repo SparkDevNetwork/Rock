@@ -47,7 +47,8 @@
                   :rowClass="attendanceRowClass"
                   itemTerm="Attendance"
                   liveUpdates
-                  @selectItem="onAttendanceRowSelected">
+                  @selectItem="onAttendanceRowSelected"
+                  class="table-responsive">
                 <HtmlColumn name="when" title="When" field="whenHtml" />
                 <HtmlColumn name="location" title="Location" field="locationHtml" />
                 <HtmlColumn name="code" title="Code" field="codeHtml" itemClass="align-middle" />

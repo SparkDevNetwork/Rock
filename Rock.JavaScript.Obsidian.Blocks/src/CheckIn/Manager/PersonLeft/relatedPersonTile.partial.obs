@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <a class="group-member text-sm text-center text-color rounded p-spacing-xs"
+    <a class="group-member"
        :href="person.url ?? undefined">
         <span v-html="person.photoImageTag ?? ''"></span>
         <span>{{ person.nickName }}</span>
