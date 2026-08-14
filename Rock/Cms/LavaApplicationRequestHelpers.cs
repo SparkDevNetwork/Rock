@@ -70,10 +70,16 @@ namespace Rock.Cms
             // is a rendering hint only and must never gate authorization. A string
             // rather than a boolean so future clients (TV, Kiosk) can be added
             // without breaking existing templates.
+            // X-Helix-Client is checked first so a client can declare itself
+            // explicitly. X-Rock-DeviceData is the fallback because the mobile
+            // shell stamps it on every request it makes, not only on Helix
+            // requests; without it a renderlavaendpoint call rendered inside a
+            // mobile block reports "Web" and takes an endpoint's HTML branch,
+            // which then fails the shell's XAML parse.
             var helixClient = request.Headers["X-Helix-Client"].ToStringSafe();
-            var clientType = helixClient.Equals( "RockMobile", StringComparison.OrdinalIgnoreCase )
-                ? "Mobile"
-                : "Web";
+            var isMobileShell = helixClient.Equals( "RockMobile", StringComparison.OrdinalIgnoreCase )
+                || request.Headers["X-Rock-DeviceData"].IsNotNullOrWhiteSpace();
+            var clientType = isMobileShell ? "Mobile" : "Web";
             dictionary.Add( "ClientType", clientType );
 
             try
