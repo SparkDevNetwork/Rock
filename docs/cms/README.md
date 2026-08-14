@@ -13,6 +13,6 @@ If you are new, start with [cms-overview.md](cms-overview.md). Sub-topics worth 
 | [Content Collections](content-collections.md) | Cross-channel aggregation, Lucene vs Elasticsearch backends, indexing-job resilience. |
 | [Lava Applications](lava-applications.md) | URL-routable Lava endpoints, Helix reactivity, Body merge fields, RenderLavaEndpoint composition. |
 | [Media Elements](media-elements.md) | Account/Folder/Element hierarchy, external provider integration, sync jobs, mediaplayer shortcode. |
-| [Obsidian Content](obsidian-content.md) | Prototype (unmerged). In-page Vue authoring, browser-side compile, and the MCP tools that drive it from a chat. |
+| [Obsidian Content](obsidian-content.md) | Prototype (unmerged). In-page Vue authoring, out-of-process server compile, and the MCP tools that drive it from a chat. |
 | [Pages and Routing](pages-and-routing.md) | Site/Layout/Page/Block four-layer hierarchy, friendly URLs, page short links with expiration and inbound UTM fallback, IP geolocation. |
 | [Personalization and Segments](personalization-and-segments.md) | PersonalizationSegment + RequestFilter + AdaptiveMessage, persistent membership, anonymous + authenticated personalization. |

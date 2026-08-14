@@ -14,6 +14,39 @@ related_docs:
 
 # Implementation Plan: In-Process Jint Compile for Obsidian Content
 
+> ## Superseded, 2026-08-14
+>
+> **This plan was implemented and then replaced.** Server-side compilation no longer uses an
+> in-process Jint engine. It runs the same bundle in a page of the headless Chromium Rock
+> already manages for PDF generation, out of process.
+>
+> **Why it was replaced.** The plan's central risk could not be closed from inside the process.
+> Deeply nested source exhausted the compile thread's stack, and a `StackOverflowException`
+> cannot be caught in .NET, so it terminated the worker process and every request on the site
+> rather than failing the one save. A 16 MB dedicated thread and a pre-flight complexity guard
+> bounded the trigger but could not change the outcome. Moving the compile into a child process
+> removes the failure class instead of narrowing it, and reusing Chromium does so with no new
+> dependency, no new artifact to deploy, and the side benefit that the server and the browser
+> editor now run the same engine as well as the same bundle.
+>
+> **What still holds and is worth reading here:**
+>
+> - The Phase 0 spike results.
+> - The two bundle constraints (source maps disabled, Vue version taken from
+>   `@vue/compiler-sfc`'s own export). Introduced for Jint, still present, harmless under
+>   Chromium.
+> - The compile contract, the `System.register` shim technique, and the structural output check,
+>   all of which carried over unchanged.
+> - The reasoning for compiling on the church's own server rather than a hosted Spark service.
+>
+> **What is now wrong:** everything about the engine, the dedicated thread, `LimitRecursion`,
+> engine lifetime, and the timing model.
+>
+> Current state is documented in
+> [docs/ai/vibe-coding-architecture.md](../docs/ai/vibe-coding-architecture.md) and
+> [docs/cms/obsidian-content.md](../docs/cms/obsidian-content.md). The body below is left as the
+> point-in-time record and has not been edited.
+
 This plan is addressed to a Claude Code session implementing it in the Rock repo. Read [260804-vibe-coding-findings.md](260804-vibe-coding-findings.md) and [260722-mcp-driven-obsidian-content-vibe-coding.md](260722-mcp-driven-obsidian-content-vibe-coding.md) first for the why.
 
 **Every design decision is already made. Do not reopen them.** If you find something that contradicts this plan, say so and stop rather than choosing a different approach on your own.

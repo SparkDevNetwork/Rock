@@ -1,0 +1,173 @@
+<mxfile host="app.diagrams.net" version="24.7.17" type="device">
+  <diagram name="Vibe Coding Flow" id="vibe-coding-flow">
+    <mxGraphModel dx="1100" dy="1600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="1700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Vibe Coding: build flow" style="text;html=1;fontSize=20;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="60" y="30" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Rock is the MCP server, not the AI. The intelligence is the external client." style="text;html=1;fontSize=12;fontColor=#666666;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="60" y="58" width="520" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="user" value="&lt;b&gt;User in a chat&lt;/b&gt;&lt;br&gt;&quot;build me a serving dashboard&quot;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="360" y="120" width="260" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="client" value="&lt;b&gt;MCP client (Claude)&lt;/b&gt;&lt;br&gt;the intelligence" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="380" y="240" width="220" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="kb" value="&lt;b&gt;Rock knowledge base MCP&lt;/b&gt;&lt;br&gt;knowledge.rockrms.com&lt;br&gt;coding guide, controls catalog&lt;br&gt;&lt;i&gt;outside Rock&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;dashed=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="720" y="230" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="agent" value="&lt;b&gt;Rock MCP endpoint&lt;/b&gt;&lt;br&gt;api/v2/mcp/vibe-coding&lt;br&gt;AIAgent row, AgentType.Mcp&lt;br&gt;skills become tools, admin gated" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="350" y="360" width="280" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="pb" value="&lt;b&gt;PageBuilder skill&lt;/b&gt;&lt;br&gt;FindPages, CreatePage, AddBlock" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="340" y="510" width="300" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="page" value="Page with an Obsidian Content block&lt;br&gt;&lt;i&gt;returns the block IdKey&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="350" y="620" width="280" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ld" value="&lt;b&gt;LavaData skill&lt;/b&gt;&lt;br&gt;CreateLavaEndpoint / UpdateLavaEndpoint" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="340" y="720" width="300" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="test" value="Template lints and&lt;br&gt;test executes?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="380" y="830" width="220" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="lava" value="Lava application and JSON endpoints&lt;br&gt;&lt;i&gt;no security rules until an admin adds them&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="340" y="970" width="300" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="vc" value="&lt;b&gt;ObsidianVibeCoding skill&lt;/b&gt;&lt;br&gt;SetContentSource with the Vue source" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="330" y="1070" width="320" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="jint" value="Complexity guard, then&lt;br&gt;Jint compile. Succeeds?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="370" y="1180" width="240" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="store" value="&lt;b&gt;ObsidianContent row&lt;/b&gt;&lt;br&gt;Source and CompiledContent" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="390" y="1340" width="200" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="visitor" value="&lt;b&gt;Visitor loads the precompiled module&lt;/b&gt;&lt;br&gt;runs as the visitor, with their permissions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="350" y="1480" width="280" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2;" edge="1" parent="1" source="user" target="client">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;startArrow=classic;startFill=1;dashed=1;strokeColor=#999999;" edge="1" parent="1" source="client" target="kb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2l" value="look up controls" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=10;fontColor=#666666;" vertex="1" connectable="0" parent="e2">
+          <mxGeometry x="-0.1" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2;" edge="1" parent="1" source="client" target="agent">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3l" value="tool calls" style="edgeLabel;html=1;align=center;fontSize=10;fontColor=#666666;" vertex="1" connectable="0" parent="e3">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2;" edge="1" parent="1" source="agent" target="pb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="pb" target="page">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2;" edge="1" parent="1" source="page" target="ld">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6l" value="IdKey" style="edgeLabel;html=1;align=center;fontSize=10;fontColor=#666666;" vertex="1" connectable="0" parent="e6">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="ld" target="test">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#b85450;dashed=1;" edge="1" parent="1" source="test" target="ld">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="270" y="875" />
+              <mxPoint x="270" y="750" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8l" value="no, error returned&lt;br&gt;agent fixes its own Lava" style="edgeLabel;html=1;align=center;fontSize=10;fontColor=#b85450;" vertex="1" connectable="0" parent="e8">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint x="-50" as="offset" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2;" edge="1" parent="1" source="test" target="lava">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9l" value="yes" style="edgeLabel;html=1;align=center;fontSize=10;fontColor=#82b366;" vertex="1" connectable="0" parent="e9">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2;" edge="1" parent="1" source="lava" target="vc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="vc" target="jint">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#b85450;dashed=1;" edge="1" parent="1" source="jint" target="client">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="180" y="1230" />
+              <mxPoint x="180" y="270" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e12l" value="no, compiler error text&lt;br&gt;nothing is stored" style="edgeLabel;html=1;align=center;fontSize=10;fontColor=#b85450;" vertex="1" connectable="0" parent="e12">
+          <mxGeometry x="-0.75" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2;" edge="1" parent="1" source="jint" target="store">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13l" value="yes" style="edgeLabel;html=1;align=center;fontSize=10;fontColor=#82b366;" vertex="1" connectable="0" parent="e13">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e14" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2;" edge="1" parent="1" source="store" target="visitor">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e15" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=1;exitY=0.5;entryX=1;entryY=0.5;strokeColor=#6c8ebf;" edge="1" parent="1" source="lava" target="visitor">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="780" y="995" />
+              <mxPoint x="780" y="1510" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e15l" value="useLavaApp invoke&lt;br&gt;at view time" style="edgeLabel;html=1;align=center;fontSize=10;fontColor=#6c8ebf;" vertex="1" connectable="0" parent="e15">
+          <mxGeometry x="-0.1" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="legend" value="&lt;b&gt;Legend&lt;/b&gt;&lt;br&gt;&lt;br&gt;Blue: outside Rock&lt;br&gt;Grey dashed: second MCP server&lt;br&gt;Green: Rock agent skills and their output&lt;br&gt;Yellow: feedback loop, fails loudly&lt;br&gt;Purple: storage&lt;br&gt;Red: runtime, runs as the visitor" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=#ffffff;strokeColor=#cccccc;fontSize=11;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1340" width="240" height="150" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

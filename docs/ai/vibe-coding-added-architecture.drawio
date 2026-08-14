@@ -1,0 +1,137 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Added Architecture" id="vibe-coding-added-architecture">
+    <mxGraphModel dx="1710" dy="1052" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1260" pageHeight="1420" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;fontSize=22;fontStyle=1;align=left;verticalAlign=middle;" value="Vibe Coding: what had to be added to Rock" vertex="1">
+          <mxGeometry height="30" width="700" x="50" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" parent="1" style="text;html=1;fontSize=12;fontColor=#666666;align=left;verticalAlign=top;whiteSpace=wrap;" value="Four new layers, top to bottom in the order a build uses them. The hard rendering problem was already solved, so the additions are orchestration, a safe compile, storage and a render path." vertex="1">
+          <mxGeometry height="45" width="700" x="50" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="legend" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#cccccc;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;Legend&lt;/b&gt;&lt;br&gt;&lt;br&gt;Colored: new code for this feature&lt;br&gt;Grey dashed: existed, reused unchanged&lt;br&gt;Orange dashed: decided, not built&lt;br&gt;Solid arrow: build time flow&lt;br&gt;Dashed arrow: depends on" vertex="1">
+          <mxGeometry height="120" width="300" x="880" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="g1" parent="1" style="swimlane;whiteSpace=wrap;html=1;startSize=32;fillColor=#f0f8ef;strokeColor=#82b366;fontSize=13;fontStyle=1;verticalAlign=middle;align=left;spacingLeft=10;" value="1. Agent surface: three skills plus seeding" vertex="1">
+          <mxGeometry height="230" width="720" x="50" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="skill_pb" parent="g1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;PageBuilderSkill&lt;/b&gt;&lt;br&gt;&lt;br&gt;FindPages&lt;br&gt;CreatePage&lt;br&gt;AddBlock&lt;br&gt;&lt;br&gt;&lt;i&gt;returns the block IdKey&lt;/i&gt;" vertex="1">
+          <mxGeometry height="118" width="215" x="20" y="44" as="geometry" />
+        </mxCell>
+        <mxCell id="skill_ld" parent="g1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;LavaDataSkill&lt;/b&gt;&lt;br&gt;&lt;br&gt;Create / Get / Update endpoint&lt;br&gt;Delete endpoint and application&lt;br&gt;&lt;br&gt;&lt;i&gt;lints, test executes, stamps&lt;br&gt;ForeignKey provenance&lt;/i&gt;" vertex="1">
+          <mxGeometry height="118" width="215" x="252" y="44" as="geometry" />
+        </mxCell>
+        <mxCell id="skill_vc" parent="g1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;ObsidianVibeCodingSkill&lt;/b&gt;&lt;br&gt;&lt;br&gt;GetRockVersion&lt;br&gt;GetContentSource&lt;br&gt;SetContentSource&lt;br&gt;&lt;br&gt;&lt;i&gt;writes against that IdKey&lt;/i&gt;" vertex="1">
+          <mxGeometry height="118" width="215" x="484" y="44" as="geometry" />
+        </mxCell>
+        <mxCell id="mig999" parent="g1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=11;align=left;spacingLeft=10;verticalAlign=middle;" value="&lt;b&gt;999_AddVibeCodingAgent&lt;/b&gt; (plugin migration): registers each skill EntityType first, upserts the AISkill and AISkillTool rows, creates the &quot;Vibe Agent&quot; record on slug vibe-coding only when absent, grants VIEW to Rock Administrators and denies all users." vertex="1">
+          <mxGeometry height="42" width="679" x="20" y="174" as="geometry" />
+        </mxCell>
+        <mxCell id="g2" parent="1" style="swimlane;whiteSpace=wrap;html=1;startSize=32;fillColor=#fffbf0;strokeColor=#d6b656;fontSize=13;fontStyle=1;verticalAlign=middle;align=left;spacingLeft=10;" value="2. Server side compile" vertex="1">
+          <mxGeometry height="290" width="720" x="50" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="guard" parent="g2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;ObsidianContentComplexityGuard&lt;/b&gt;&lt;br&gt;&lt;i&gt;Rock/Cms&lt;/i&gt;&lt;br&gt;&lt;br&gt;Estimates JavaScript call frames from template and script nesting, and refuses above 400. Runs before any engine exists, so it is the only place an uncatchable stack overflow can become an ordinary error." vertex="1">
+          <mxGeometry height="150" width="300" x="20" y="46" as="geometry" />
+        </mxCell>
+        <mxCell id="compiler" parent="g2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;ObsidianContentCompiler&lt;/b&gt;&lt;br&gt;&lt;i&gt;Rock/Cms, hosts Jint 4.15.3&lt;/i&gt;&lt;br&gt;&lt;br&gt;Engine per compile, disposed after. Dedicated 16 MB thread. 10 s engine timeout plus a 5 s join backstop. System.register shim. Compiles only, never runs the output." vertex="1">
+          <mxGeometry height="150" width="300" x="399" y="46" as="geometry" />
+        </mxCell>
+        <mxCell id="bundle" parent="g2" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;fontSize=11;align=left;spacingLeft=10;verticalAlign=middle;" value="&lt;b&gt;obsidianContentCompiler.ts&lt;/b&gt; (Framework/Libs): one compiler implementation, two hosts. The server runs the same built bundle the browser editor loads, so the same source always produces the same module. Source maps disabled and the Vue version read from compiler-sfc, both to satisfy Jint." vertex="1">
+          <mxGeometry height="60" width="679" x="20" y="212" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" edge="1" parent="g2" source="guard" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#555555;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="compiler">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s4l" connectable="0" parent="s4" style="edgeLabel;html=1;fontSize=10;fontColor=#555555;labelBackgroundColor=#ffffff;" value="within limits" vertex="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="g3" parent="1" style="swimlane;whiteSpace=wrap;html=1;startSize=32;fillColor=#faf5fc;strokeColor=#9673a6;fontSize=13;fontStyle=1;verticalAlign=middle;align=left;spacingLeft=10;" value="3. Storage: one table, one row per block placement" vertex="1">
+          <mxGeometry height="170" width="720" x="50" y="820" as="geometry" />
+        </mxCell>
+        <mxCell id="table" parent="g3" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=12;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;verticalAlign=bottom;spacingTop=10;" value="&lt;b&gt;[ObsidianContent]&lt;/b&gt;&lt;br&gt;&lt;i&gt;migration 202607221200000&lt;/i&gt;&lt;br&gt;&lt;br&gt;BlockId (cascade delete), Source, CompiledContent, CompiledVueVersion, CompiledDateTime" vertex="1">
+          <mxGeometry height="105" width="300" x="20" y="46" as="geometry" />
+        </mxCell>
+        <mxCell id="entity" parent="g3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;ObsidianContent entity and service&lt;/b&gt;&lt;br&gt;&lt;br&gt;GetByBlockId and GetOrCreateByBlockId. Both write paths, the block action and the MCP tool, go through one upsert. The cascade delete is a deliberate exception to Rock&#39;s default." vertex="1">
+          <mxGeometry height="105" width="300" x="399" y="46" as="geometry" />
+        </mxCell>
+        <mxCell id="g4" parent="1" style="swimlane;whiteSpace=wrap;html=1;startSize=32;fillColor=#fdf3f3;strokeColor=#b85450;fontSize=13;fontStyle=1;verticalAlign=middle;align=left;spacingLeft=10;" value="4. Render and data at view time" vertex="1">
+          <mxGeometry height="250" width="720" x="50" y="1050" as="geometry" />
+        </mxCell>
+        <mxCell id="block" parent="g4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;ObsidianContentDetail&lt;/b&gt;&lt;br&gt;&lt;i&gt;Rock.Blocks/Cms&lt;/i&gt;&lt;br&gt;&lt;br&gt;One block, dropped on any page, resolving its row by its own BlockId. CompiledContent goes to every viewer, Source only with EDIT." vertex="1">
+          <mxGeometry height="140" width="215" x="20" y="46" as="geometry" />
+        </mxCell>
+        <mxCell id="viewpanel" parent="g4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;viewPanel.partial.obs&lt;/b&gt;&lt;br&gt;&lt;i&gt;module execution&lt;/i&gt;&lt;br&gt;&lt;br&gt;Supplies a fake System object, catches the registration, resolves dependencies through Rock&#39;s real loader and mounts. No compiler in the render path." vertex="1">
+          <mxGeometry height="140" width="215" x="252" y="46" as="geometry" />
+        </mxCell>
+        <mxCell id="lavaapp" parent="g4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;lavaApp.ts&lt;/b&gt;&lt;br&gt;&lt;i&gt;Framework/Utility&lt;/i&gt;&lt;br&gt;&lt;br&gt;useLavaApp and invoke. Ships as framework code, so a fix here reaches components already compiled and stored in the database." vertex="1">
+          <mxGeometry height="140" width="215" x="484" y="46" as="geometry" />
+        </mxCell>
+        <mxCell id="trustnote" parent="g4" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=11;align=left;spacingLeft=10;verticalAlign=middle;" value="&lt;b&gt;The trust boundary is authoring, not execution.&lt;/b&gt; Authored code runs in the visitor&#39;s browser as the visitor, with their cookie and their permissions. Nothing sandboxes it, which is why every write tool in layer 1 is administrator gated." vertex="1">
+          <mxGeometry height="42" width="679" x="20" y="196" as="geometry" />
+        </mxCell>
+        <mxCell id="rx1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eeeeee;strokeColor=#999999;fontColor=#333333;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;dashed=1;" value="&lt;b&gt;Reused: agent plumbing and page security&lt;/b&gt;&lt;br&gt;&lt;br&gt;/api/v2/mcp/{slug}, OAuth with the mcp:invoke scope, AgentSkillComponent, the AIAgent entity with AgentType.Mcp, and the existing Page, Block and Zone authorization.&lt;br&gt;&lt;br&gt;&lt;i&gt;No new transport, controller or auth path.&lt;/i&gt;" vertex="1">
+          <mxGeometry height="160" width="300" x="880" y="215" as="geometry" />
+        </mxCell>
+        <mxCell id="rx2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#cccccc;fontColor=#666666;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;dashed=1;" value="&lt;b&gt;Nothing reused here&lt;/b&gt;&lt;br&gt;&lt;br&gt;This layer is entirely new ground. Rock had deliberately removed an in-process JavaScript engine once before, which is why every constraint in this box is load bearing rather than incidental.&lt;br&gt;&lt;br&gt;&lt;i&gt;Jint 4.15.3 is the one new third party dependency the feature adds.&lt;/i&gt;" vertex="1">
+          <mxGeometry height="185" width="300" x="880" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="rx3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eeeeee;strokeColor=#999999;fontColor=#333333;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;dashed=1;" value="&lt;b&gt;Reused: the data layer&lt;/b&gt;&lt;br&gt;&lt;br&gt;EF migrations, the Model base class columns, and the HtmlContent pattern of hanging a row off a block placement.&lt;br&gt;&lt;br&gt;&lt;i&gt;EntityType is registered explicitly before AddOrUpdateEntityBlockType, because startup registration runs after migrations.&lt;/i&gt;" vertex="1">
+          <mxGeometry height="160" width="300" x="880" y="825" as="geometry" />
+        </mxCell>
+        <mxCell id="rx4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eeeeee;strokeColor=#999999;fontColor=#333333;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;dashed=1;" value="&lt;b&gt;Reused: loader and Lava&lt;/b&gt;&lt;br&gt;&lt;br&gt;The Obsidian loader and the alias map in core.ts, which define what authored code can import. Widening the map widens the authoring surface.&lt;br&gt;&lt;br&gt;LavaApplication, LavaEndpoint and the Lava engine serve the data. A new application deliberately breaks security inheritance, so it is governed by nothing until an administrator adds rules." vertex="1">
+          <mxGeometry height="200" width="300" x="880" y="1075" as="geometry" />
+        </mxCell>
+        <mxCell id="kb" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#333333;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;dashed=1;" value="&lt;b&gt;Knowledge base MCP&lt;/b&gt; &lt;i&gt;(outside Rock, not code this feature added)&lt;/i&gt;&lt;br&gt;&lt;br&gt;knowledge.rockrms.com carries the curated coding guide and the catalog of all 247 controls. Rock cannot see, verify or version check it. Today the client must connect it as a second MCP server, and a client that connects only Rock gets no guidance at all, silently." vertex="1">
+          <mxGeometry height="130" width="480" x="50" y="1340" as="geometry" />
+        </mxCell>
+        <mxCell id="proxy" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;dashed=1;" value="&lt;b&gt;Knowledge base proxy&lt;/b&gt; &lt;i&gt;(decided, not built)&lt;/i&gt;&lt;br&gt;&lt;br&gt;Rock relays the knowledge base tools as its own so the client configures one server. Needs two things Rock does not have: an outbound MCP client, since Mcp/ is server side only, and GetDymanicTools widened beyond ToolType.AIPrompt so remote tools can be advertised without a Rock release per tool." vertex="1">
+          <mxGeometry height="130" width="480" x="700" y="1340" as="geometry" />
+        </mxCell>
+        <mxCell id="s1" edge="1" parent="1" source="g1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#555555;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="g2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s1l" connectable="0" parent="s1" style="edgeLabel;html=1;fontSize=10;fontColor=#555555;labelBackgroundColor=#ffffff;" value="SetContentSource submits the authored source" vertex="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="s2" edge="1" parent="1" source="g2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#555555;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="g3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s2l" connectable="0" parent="s2" style="edgeLabel;html=1;fontSize=10;fontColor=#555555;labelBackgroundColor=#ffffff;" value="stores on success, nothing at all on failure" vertex="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="s3" edge="1" parent="1" source="g3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#555555;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="g4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s3l" connectable="0" parent="s3" style="edgeLabel;html=1;fontSize=10;fontColor=#555555;labelBackgroundColor=#ffffff;" value="read on every page view" vertex="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d1" edge="1" parent="1" source="g1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;strokeColor=#999999;endArrow=open;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="rx1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d2" edge="1" parent="1" source="g3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;strokeColor=#999999;endArrow=open;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="rx3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d3" edge="1" parent="1" source="g4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;strokeColor=#999999;endArrow=open;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="rx4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d4" edge="1" parent="1" source="proxy" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;strokeColor=#d79b00;endArrow=open;endSize=8;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="kb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d4l" connectable="0" parent="d4" style="edgeLabel;html=1;fontSize=10;fontColor=#d79b00;labelBackgroundColor=#ffffff;" value="would wrap" vertex="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

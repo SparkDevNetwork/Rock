@@ -105,12 +105,14 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <param name="parentPage">The parent page identifier (guid or id).</param>
         /// <param name="name">The name of the new page.</param>
+        /// <param name="route">An optional kebab-case route for the page, such as "serving-dashboard", so it is reachable at a friendly URL rather than only /page/id.</param>
         /// <returns>The new page's identifiers and URL, or an error.</returns>
         [AgentToolName( "CreatePage" )]
         [AgentToolPreamble( "Creating the page." )]
         [AgentUsage( "parentPage is where the new page lives; ask the user for it if not specified. The new page inherits the parent's layout." )]
+        [AgentUsage( "Pass route so the page gets a friendly kebab-case URL ('serving-dashboard'). Without it the page is only reachable at /page/id." )]
         [Rock.SystemGuid.AgentToolGuid( "4A64B0B9-0DF9-42CF-BF5C-8FE24EFA4633" )]
-        public AgentToolResult CreatePage( string parentPage, string name )
+        public AgentToolResult CreatePage( string parentPage, string name, string route = null )
         {
             if ( name.IsNullOrWhiteSpace() )
             {
@@ -132,6 +134,23 @@ namespace Rock.AI.Agent
                 if ( parentCache == null || !parentCache.IsAuthorized( Authorization.ADMINISTRATE, AgentRequestContext.CurrentPerson ) )
                 {
                     return Error( "You are not authorized to add a page under that parent." );
+                }
+
+                // Validate the route before the page exists, so a bad route is a clean
+                // error rather than a page created without the URL the caller asked for.
+                var normalizedRoute = route.IsNotNullOrWhiteSpace() ? route.Trim().TrimStart( '/' ) : null;
+
+                if ( normalizedRoute != null )
+                {
+                    if ( normalizedRoute.Length == 0 || normalizedRoute.Contains( " " ) )
+                    {
+                        return Error( "The route must be a URL path with no spaces, such as 'serving-dashboard'." );
+                    }
+
+                    if ( new PageRouteService( rockContext ).Queryable().Any( r => r.Route == normalizedRoute ) )
+                    {
+                        return Error( $"The route '{normalizedRoute}' is already used by another page. Choose a different route." );
+                    }
                 }
 
                 var page = new Rock.Model.Page
@@ -164,19 +183,48 @@ namespace Rock.AI.Agent
 
                 rockContext.SaveChanges();
 
+                if ( normalizedRoute != null )
+                {
+                    var pageRoute = new PageRoute
+                    {
+                        PageId = page.Id,
+                        Route = normalizedRoute
+                    };
+
+                    new PageRouteService( rockContext ).Add( pageRoute );
+
+                    if ( !pageRoute.IsValid )
+                    {
+                        return Error( pageRoute.ValidationResults.Select( r => r.ErrorMessage ).FirstOrDefault() ?? $"The route '{normalizedRoute}' could not be created." );
+                    }
+
+                    rockContext.SaveChanges();
+
+                    // The routing table is only rebuilt when told about the new route; without
+                    // this the friendly URL 404s until the next application restart.
+                    Rock.Bus.Message.PageRouteWasUpdatedMessage.Publish();
+                }
+
                 // A new child page inherits the parent page's authorization.
                 Authorization.CopyAuthorization( parent, page, rockContext );
 
                 // Flush the parent so the new child appears in navigation.
                 PageCache.Remove( parent.Id );
 
-                return Success( new
+                var result = Success( new
                 {
                     page.Guid,
                     page.IdKey,
                     Name = page.InternalName,
-                    Url = $"/page/{page.Id}"
+                    Url = normalizedRoute != null ? $"/{normalizedRoute}" : $"/page/{page.Id}"
                 } );
+
+                if ( normalizedRoute == null )
+                {
+                    result.WithInstructions( $"The page was created without a route, so it is only reachable at /page/{page.Id}. Pass a kebab-case route to CreatePage next time, or tell the user the page has no friendly URL until one is added through Page Properties." );
+                }
+
+                return result;
             }
         }
 
@@ -205,7 +253,26 @@ namespace Rock.AI.Agent
 
             if ( blockTypeCache == null )
             {
-                return Error( $"No block type matched '{blockType}'." );
+                /*
+                    8/11/2026 - CLAUDE
+
+                    The name match is exact, so a near miss ("Obsidian Content" for
+                    "Obsidian Content Detail") used to fail with nothing to go on, and the
+                    agent's only recovery was guessing again. Suggesting the closest names
+                    turns the retry into a selection.
+
+                    Reason: An exact-match failure gave the agent no path to the right name.
+                */
+                var suggestions = BlockTypeCache.All()
+                    .Where( bt => bt.Name != null && bt.Name.IndexOf( blockType, System.StringComparison.OrdinalIgnoreCase ) >= 0 )
+                    .OrderBy( bt => bt.Name.Length )
+                    .Take( 5 )
+                    .Select( bt => bt.Name )
+                    .ToList();
+
+                return Error( suggestions.Any()
+                    ? $"No block type is named exactly '{blockType}'. Close matches: {string.Join( ", ", suggestions )}. Call again with one of these exact names."
+                    : $"No block type matched '{blockType}'." );
             }
 
             using ( var rockContext = new RockContext() )

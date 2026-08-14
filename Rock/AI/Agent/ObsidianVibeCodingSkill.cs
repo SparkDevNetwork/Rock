@@ -260,8 +260,65 @@ namespace Rock.AI.Agent
                         // source, but the caller must hear the honest consequence below.
                         isServerCompilerUnavailable = true;
                     }
+                    else if ( compileResult.IsBrowserMissing )
+                    {
+                        /*
+                            8/14/2026 - CLAUDE
+
+                            Distinct from every other failure because it is transient and
+                            not the caller's fault. Compiling runs in the headless Chromium
+                            Rock also uses for PDFs, and that build is downloaded on first
+                            use rather than shipped. On an instance that has never generated
+                            a PDF it is simply not there yet.
+
+                            The compile path deliberately refuses to trigger that download:
+                            it is on the order of a hundred megabytes and an agent is waiting
+                            on a tool call. So nothing is stored, and the agent is told to
+                            retry rather than to fix source that was never the problem.
+
+                            Reason: A missing browser is a wait, not a compile error.
+                        */
+                        return Error( "The server could not compile because its browser engine is still being provisioned. Nothing was saved. This is not a problem with your source. Tell the user the instance needs its PDF/browser engine installed, which happens automatically the first time a PDF is generated, and try SetContentSource again in a few minutes." );
+                    }
                     else
                     {
+                        /*
+                            8/13/2026 - KH (captured by CLAUDE)
+
+                            IDEA, NOT BUILT: when the refusal comes from the complexity
+                            guard rather than from a real compile error, tell the agent it
+                            can keep the component as-is by saving it through the block's
+                            browser editor, which compiles in the visitor's V8 instead of
+                            Jint and has far more stack to work with.
+
+                            This looks workable and mostly reuses machinery that exists.
+                            One thing has to change first: today a failed compile stores
+                            NOTHING, so there would be no draft for anyone to open and
+                            save. The guard path would have to store Source without
+                            CompiledContent, which is exactly what the bundle-missing
+                            fallback below already does, including the honest warning that
+                            the block will not render until an administrator saves it in
+                            the editor.
+
+                            Worth settling before building:
+
+                            - It softens the guard from a wall into a routing decision:
+                              server compile for ordinary components, human-in-the-loop
+                              browser compile for exceptional ones. That is arguably the
+                              better product behavior, but it does reintroduce the
+                              saved-but-blank state this feature exists to prevent, so the
+                              message has to be unmissable.
+                            - Untested whether the browser actually survives sources this
+                              deep. V8 has far more headroom than Jint, and a failure there
+                              costs a tab rather than the worker process, but nobody has
+                              confirmed where its limit sits.
+                            - Only offer it for a guard refusal. A genuine compile error
+                              means broken source, and sending that to the editor just
+                              moves the same error somewhere less visible.
+
+                            Reason: Capturing an escape hatch for legitimately complex
+                            components instead of refusing them outright.
+                        */
                         return Error( "The source failed to compile. Fix the source and call SetContentSource again. Compiler errors:\n" + string.Join( "\n", compileResult.Errors ) );
                     }
                 }

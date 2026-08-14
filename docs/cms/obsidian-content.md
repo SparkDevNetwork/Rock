@@ -1,6 +1,6 @@
----
+﻿---
 title: Obsidian Content
-last_updated: 2026-08-06
+last_updated: 2026-08-14
 status: prototype (unmerged, branch `feature-kh-obsidian-content`)
 related_files:
   - Rock/AI/Agent/ObsidianVibeCodingSkill.cs
@@ -24,7 +24,7 @@ related_files:
 
 > **Prototype, not in `develop`.** All of this lives on `feature-kh-obsidian-content`. Design history is in [specs/260721](../../specs/260721-obsidian-content-block-and-component-model.md) and [specs/260722](../../specs/260722-mcp-driven-obsidian-content-vibe-coding.md).
 
-> For the architectural view of the whole feature (the agent record, the skill inventory, the knowledge base dependency, and the Jint constraints), see [Vibe Coding Architecture](../ai/vibe-coding-architecture.md). This doc is the CMS-side mechanics.
+> For the architectural view of the whole feature (the agent record, the skill inventory, the knowledge base dependency, and the compile constraints), see [Vibe Coding Architecture](../ai/vibe-coding-architecture.md). This doc is the CMS-side mechanics.
 
 ## What It Is
 
@@ -133,11 +133,15 @@ The authoring contract is narrow, and Claude has to stay inside it:
 **The server compiles.** There is exactly one compiler implementation, the [obsidianContentCompiler](../../Rock.JavaScript.Obsidian/Framework/Libs/obsidianContentCompiler.ts) library bundle, and it runs in two hosts:
 
 - **The browser editor** loads it on demand through the import map (edit mode only, never for a visitor) and compiles on save.
-- **The server** runs the same built bundle (`~/Obsidian/Libs/obsidianContentCompiler.js`) inside a [Jint](https://github.com/sebastienros/jint) JavaScript engine via [ObsidianContentCompiler.cs](../../Rock/Cms/ObsidianContentCompiler.cs) whenever `SetContentSource` receives source without compiled output.
+- **The server** runs the same built bundle (`~/Obsidian/Libs/obsidianContentCompiler.js`) in a page of the headless Chromium Rock already manages for PDF generation, via [ObsidianContentCompiler.cs](../../Rock/Cms/ObsidianContentCompiler.cs), whenever `SetContentSource` receives source without compiled output.
 
-Because both hosts run the same bundle, the same source always produces the same module. The engine is created per compile and disposed afterward (steady-state memory cost is zero; the measured cold path is under a second), it is constrained by a timeout and a recursion limit, and it only ever compiles, never executes, the output. A client that can compile (Claude Code with the repo) may still supply `compiledContent` itself; both paths store the same thing.
+Because both hosts run the same bundle **and the same engine**, the same source always produces the same module and the two cannot drift. A fresh page is opened per compile and closed afterward, on a browser process separate from `PdfGenerator`'s so a wedged compile cannot disturb statement generation. It only ever compiles, never executes, the output. A client that can compile (Claude Code with the repo) may still supply `compiledContent` itself; both paths store the same thing.
 
-Two Jint-specific constraints live in the bundle and must stay there: source map generation is disabled (Jint's `Function.prototype.toString` returns `[native code]`, which breaks `source-map-js` regenerating its own sort function), and the Vue version comes from `@vue/compiler-sfc`'s own `version` export rather than an `import` from `vue`, keeping the bundle dependency-free so the server needs no import map.
+**Why a child process and not an in-process engine.** The server compile originally ran in [Jint](https://github.com/sebastienros/jint). Deeply nested source exhausted the stack, and a `StackOverflowException` cannot be caught in .NET, so it terminated the worker process and every request on the site with it rather than failing the one save. Moving the compile into Chromium puts the stack that can be exhausted inside a process Rock can afford to lose: the same input now closes a page and raises an ordinary catchable exception. A complexity guard briefly sat ahead of the compile to refuse deeply nested source; it was removed once the process boundary made it unnecessary, and the architecture doc records why.
+
+**Chromium is never downloaded from this path.** It installs on demand the first time a PDF is generated, which is fine for a background job, but an agent is waiting on this call. A missing browser is reported as its own result so the caller can be told to retry, rather than blocking on a hundred-megabyte download.
+
+Two constraints in the bundle date from the Jint host and remain: source map generation is disabled, and the Vue version comes from `@vue/compiler-sfc`'s own `version` export rather than an `import` from `vue`. Chromium needs neither, but both are harmless and the second still keeps the bundle self-contained.
 
 **What the compiler actually does,** in order:
 
@@ -220,7 +224,7 @@ One row per block placement, in `[ObsidianContent]`.
 | Block (Vue) and partials | [obsidianContentDetail.obs](../../Rock.JavaScript.Obsidian.Blocks/src/Cms/obsidianContentDetail.obs) |
 | Compiler (shared lib, both hosts) | [obsidianContentCompiler.ts](../../Rock.JavaScript.Obsidian/Framework/Libs/obsidianContentCompiler.ts) |
 | Compiler loader (browser edit path) | [obsidianContentCompiler.partial.ts](../../Rock.JavaScript.Obsidian.Blocks/src/Cms/obsidianContentDetail/obsidianContentCompiler.partial.ts) |
-| Compile service (server, Jint) | [ObsidianContentCompiler.cs](../../Rock/Cms/ObsidianContentCompiler.cs) |
+| Compile service (server, Chromium) | [ObsidianContentCompiler.cs](../../Rock/Cms/ObsidianContentCompiler.cs) |
 | Alias map and loader | [System/core.ts](../../Rock.JavaScript.Obsidian/System/core.ts) |
 | Control endpoints | [Rock.Rest/v2/ControlsController.cs](../../Rock.Rest/v2/ControlsController.cs) |
 | Migration | [202607221200000_AddObsidianContent.cs](../../Rock.Migrations/Migrations/202607221200000_AddObsidianContent.cs) |
@@ -232,4 +236,7 @@ One row per block placement, in `[ObsidianContent]`.
 3. **No Vue version check on render.** The server stamps the compile-time version on saves it compiles, but client-supplied versions are stored as given and nothing validates at render time.
 4. **The editor's preview note is wrong.** It claims API calls will not work in the preview. They do: `useHttp()` falls back to the real functions and the frame is same-origin. The preview isolates crashes and DOM changes, not the login session.
 5. **The branch is 124 commits behind `develop`.** The migration's EF snapshot needs regenerating with `Add-Migration`.
-6. **The block's own editor still compiles client-side.** Harmless (it runs the same shared bundle), but consolidating its save path onto the server compiler is a future cleanup.
+6. **The block's own editor still compiles client-side.** Harmless (it runs the same shared bundle), but consolidating its save path onto the server compiler is a future cleanup. Less pressing now that the server compiles in a browser too, so both paths use the same engine as well as the same bundle.
+7. **Both write paths accept caller-supplied `CompiledContent` without verifying it came from `Source`.** `SetContentSource` checks only a structural regex and a version string, and the block's `SaveContent` action checks nothing, so the stored source need not be what executes. That defeats source as a review artifact. Fixable in one line now that the server can always compile: ignore supplied output and compile `Source` itself.
+8. **A newly created Lava application has no security rules**, and the tools do not set any, so an agent-created endpoint is governed by nothing until an administrator adds rules. See the note in [LavaDataSkill.cs](../../Rock/AI/Agent/LavaDataSkill.cs).
+9. **Compiling depends on the PDF browser being installed.** It arrives on first PDF generation, so an instance that has never produced one cannot compile until it does. Reported honestly rather than blocking on the download, but it is a real first-run dependency.

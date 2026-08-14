@@ -18,14 +18,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
+using System.Threading.Tasks;
 
-using Jint;
-using Jint.Runtime;
+using PuppeteerSharp;
 
 using Rock.Attribute;
 using Rock.Configuration;
+using Rock.Pdf;
+using Rock.Utility;
 
 namespace Rock.Cms
 {
@@ -34,64 +36,73 @@ namespace Rock.Cms
 
         Compiles Obsidian Content authored source (a Vue single-file component) on
         the server by running the SAME compiler bundle the block's browser editor
-        uses (~/Obsidian/Libs/obsidianContentCompiler.js) inside a Jint JavaScript
-        engine. This exists so MCP clients with no repo checkout and no JavaScript
-        runtime of their own (Claude Chat, Claude Desktop) get a real compile with
-        structured errors instead of saving source that never renders.
-
-        A new engine is created per compile and disposed afterward, deliberately.
-        Compiles are rare, administrator-initiated, and a human is waiting, so the
-        roughly one second cold path is acceptable while the steady-state memory
-        cost stays zero. That matters on web farms, and it also sidesteps every
-        engine thread-safety question. Do not cache the engine or the bundle text.
-
-        The engine COMPILES the source; it never executes the compiled output. The
-        output runs later in browsers, gated by the same block authorization as a
-        save from the editor.
-
-        See specs/260806-jint-in-process-obsidian-compile-plan.md for the design,
-        the Phase 0 spike results, and the source-map constraint that lives in the
-        bundle itself.
+        uses (~/Obsidian/Libs/obsidianContentCompiler.js). This exists so MCP clients
+        with no repo checkout and no JavaScript runtime of their own (Claude Chat,
+        Claude Desktop) get a real compile with structured errors instead of saving
+        source that never renders.
 
         Reason: Server-side compile for repo-less MCP authoring clients.
 
-        8/6/2026 - CLAUDE
+        8/14/2026 - CLAUDE
 
-        The compile runs on a dedicated thread with a 16 MB stack because it can
-        otherwise overflow the stack, and a StackOverflowException cannot be caught
-        in .NET: it terminates the worker process, taking every request on the site
-        with it rather than failing the one save.
+        The engine is now the headless Chromium that Rock already manages for PDF
+        generation, reached through PuppeteerSharp. It replaces the in-process Jint
+        host entirely, and the change is confined to this class: SetContentSource and
+        every other caller are untouched.
 
-        The cause is frame amplification. Jint is a tree-walking interpreter, so a
-        single JavaScript call frame costs many native frames, and the compiler
-        bundle contains recursive-descent parsers written in JavaScript (Babel for
-        the script block, the template AST walk, then a final parse of the generated
-        module). Measured: a moderately complex component needs about 900 KB of
-        stack against a 1 MB default, and an ASP.NET request has already consumed
-        part of that budget before this code runs. The same source compiles in a
-        standalone console harness and dies under IIS for exactly that reason.
+        This is the complete fix for the problem the previous implementation could
+        only mitigate. A stack overflow inside Jint terminated the worker process and
+        could not be caught, because the stack being exhausted was Rock's own. The
+        stack here belongs to a child process, so exhausting it closes a page and
+        raises an ordinary catchable exception. The dedicated 16 MB thread that used
+        to buy margin against that is gone; there is nothing left for it to protect.
 
-        Two things this is NOT:
+        Three further gains, none of them the reason for the change but all of them
+        real:
 
-        - It is not a size problem. A 30 KB component compiled fine while a 10 KB
-          one overflowed. Structural depth drives stack use, not byte count, so the
-          timing model in the spec says nothing about stack safety.
-        - It is not solved by LimitRecursion. That counts JavaScript frames; the
-          recursion that exhausts the stack is inside the engine. Setting it to 64
-          still allowed the process to die.
+        - Output now matches the browser editor by construction rather than by
+          convention. Same bundle AND same engine, so the two hosts cannot drift.
+        - V8 compiles rather than interprets, so the 731 KB bundle costs far less to
+          parse than it did under a tree-walking interpreter.
+        - No new dependency. PuppeteerSharp and the pinned Chromium build are already
+          shipped and version-managed for PdfGenerator.
 
-        This is a mitigation, not a proof. It closes the margin by roughly eighteen
-        times, but any input that recurses deeply enough can still reach the end of
-        any fixed stack, and the failure remains uncatchable. Compiling in a
-        short-lived child process is the only complete answer, and is an open
-        question rather than a decision.
+        Deliberate choices, in the order they were decided:
 
-        Reason: An uncatchable stack overflow here would kill the whole worker.
+        - A SEPARATE browser process from PdfGenerator's. The install is shared, so
+          there is no second download, but a wedged compile must not disturb
+          statement generation and vice versa.
+        - A FRESH PAGE per compile, disposed afterward, so one compile cannot leave
+          state behind for the next. The browser itself is long lived because
+          launching one costs far more than opening a page.
+        - Chromium is NEVER downloaded from this path. PdfGenerator will fetch it on
+          demand, which is correct for a background job with no one waiting, but here
+          a human is waiting behind an agent tool call and a 100 MB download would
+          blow every timeout. A missing browser is reported as its own result so the
+          caller can say something honest and retry later.
+
+        There was briefly an ObsidianContentComplexityGuard ahead of this, refusing
+        structurally deep source before any engine existed. It was the only way to
+        turn the Jint stack overflow into an ordinary error, and it is deleted rather
+        than kept, deliberately. Once the compile moved out of process its every
+        remaining failure mode was downside: under-counting became harmless, because
+        a dead page is survivable, while over-counting still refused work a person
+        legitimately wrote. Its threshold was also calibrated against Jint's stack and
+        described limits this engine does not have. A second safety mechanism that
+        guards nothing is a maintenance liability, so the process boundary is the only
+        one now. Do not reintroduce a nesting check without a measured reason.
+
+        The engine COMPILES the source; it never executes the compiled output. That
+        output runs later in visitors' browsers, gated by the same block
+        authorization as a save from the editor.
+
+        Reason: Containing the compile in a child process removes the uncatchable
+        crash instead of merely making it less likely.
     */
 
     /// <summary>
     /// Compiles Obsidian Content authored source into a SystemJS module by running
-    /// the shared compiler bundle in an in-process JavaScript engine.
+    /// the shared compiler bundle in Rock's managed headless browser.
     /// </summary>
     [RockInternal( "18.0" )]
     internal class ObsidianContentCompiler
@@ -106,41 +117,18 @@ namespace Rock.Cms
         private const string CompilerBundleVirtualPath = "~/Obsidian/Libs/obsidianContentCompiler.js";
 
         /// <summary>
-        /// How long a single compile may run before it is cancelled. Generous next
-        /// to the measured sub-second compile time, tight enough that a
-        /// pathological source cannot pin a thread.
+        /// The Rock-relative path of the shared Chromium install, matching the
+        /// location <see cref="PdfGenerator"/> uses so the two features share one
+        /// download and one pinned version.
         /// </summary>
-        private static readonly TimeSpan CompileTimeout = TimeSpan.FromSeconds( 10 );
+        private const string ChromeEngineVirtualPath = "~/App_Data/ChromeEngine";
 
         /// <summary>
-        /// <para>
-        /// The stack size of the dedicated compile thread. Measured requirement for
-        /// a moderately complex component (nested v-for, object literals in
-        /// bindings, several async functions) is about 900 KB, against a default
-        /// thread stack of 1 MB, and an ASP.NET request has already consumed part
-        /// of that before the compile begins. 16 MB is roughly eighteen times the
-        /// measured need.
-        /// </para>
-        /// <para>
-        /// This is reserved address space, not committed memory: pages commit only
-        /// as the stack is actually used, so an idle or shallow compile costs
-        /// nothing near this figure.
-        /// </para>
+        /// How long a single compile may run in the page before it is abandoned.
+        /// Generous next to the measured compile time, tight enough that a
+        /// pathological source cannot pin a page indefinitely.
         /// </summary>
-        private const int CompileThreadStackBytes = 16 * 1024 * 1024;
-
-        /// <summary>
-        /// The maximum script recursion depth.
-        /// </summary>
-        /// <remarks>
-        /// This does NOT protect against the stack overflow this class guards
-        /// against, and must not be relied on for that. It counts JavaScript call
-        /// frames, while the recursion that exhausts the stack happens inside the
-        /// engine's own evaluator and parser. Verified by experiment: a value of 64
-        /// still let the process die. The dedicated thread stack is the real
-        /// defense; this only bounds runaway recursion in authored code.
-        /// </remarks>
-        private const int CompileRecursionLimit = 1024;
+        private const int CompileTimeoutMilliseconds = 30000;
 
         /// <summary>
         /// The same structural check the MCP save path applies: the output must be
@@ -154,19 +142,23 @@ namespace Rock.Cms
         /// bundle registers with an empty dependency array; the shim throws if
         /// that assumption ever breaks rather than mis-linking silently.
         /// </summary>
+        /// <remarks>
+        /// Still required in a page. The bundle is SystemJS format and a blank page
+        /// has no loader, so without this its registration would go nowhere.
+        /// </remarks>
         private const string SystemRegisterShim = @"
-var __exports = {};
-var System = {
+window.__exports = {};
+window.System = {
     register: function (deps, declare) {
         if (deps.length > 0) {
             throw new Error('The compiler bundle unexpectedly declared dependencies: ' + deps.join(', '));
         }
         var mod = declare(function (name, value) {
             if (typeof name === 'object' && name !== null) {
-                for (var key in name) { __exports[key] = name[key]; }
+                for (var key in name) { window.__exports[key] = name[key]; }
             }
             else {
-                __exports[name] = value;
+                window.__exports[name] = value;
             }
             return value;
         }, {});
@@ -180,10 +172,28 @@ var System = {
         #region Fields
 
         /// <summary>
+        /// The long-lived browser dedicated to compiling, separate from the one
+        /// PdfGenerator launches. Guarded by <see cref="_browserLock"/>.
+        /// </summary>
+        private static IBrowser _browser;
+
+        /// <summary>
+        /// Serializes browser creation so a burst of saves cannot launch several.
+        /// </summary>
+        private static readonly object _browserLock = new object();
+
+        /// <summary>
         /// An explicit physical path to the compiler bundle, used by tests. When
         /// null the bundle is resolved from the web root at compile time.
         /// </summary>
         private readonly string _bundlePhysicalPath;
+
+        /// <summary>
+        /// An explicit physical path to the browser executable, used by tests.
+        /// When null the browser is resolved from the shared install through
+        /// <see cref="RockApp"/>, which does not exist outside a hosted app.
+        /// </summary>
+        private readonly string _browserExecutablePath;
 
         #endregion Fields
 
@@ -197,13 +207,16 @@ var System = {
         }
 
         /// <summary>
-        /// Creates a compiler that reads the bundle from an explicit physical
-        /// path. This exists for tests, which run without a hosted web root.
+        /// Creates a compiler that reads the bundle and the browser from explicit
+        /// physical paths. This exists for tests, which run without a hosted web
+        /// root and therefore cannot resolve either through <see cref="RockApp"/>.
         /// </summary>
         /// <param name="bundlePhysicalPath">The physical path of the compiler bundle.</param>
-        internal ObsidianContentCompiler( string bundlePhysicalPath )
+        /// <param name="browserExecutablePath">The physical path of the browser executable.</param>
+        internal ObsidianContentCompiler( string bundlePhysicalPath, string browserExecutablePath = null )
         {
             _bundlePhysicalPath = bundlePhysicalPath;
+            _browserExecutablePath = browserExecutablePath;
         }
 
         #endregion Constructors
@@ -231,91 +244,252 @@ var System = {
                 return ObsidianContentCompileResult.BundleMissing();
             }
 
-            // Read per call rather than caching; the file changes on deploy and
-            // this path is cold by design. Done on the calling thread so any file
-            // or path problem is reported normally rather than from the worker.
-            var bundle = File.ReadAllText( bundlePath );
-
-            // Run the engine on a dedicated thread with a large stack. A stack
-            // overflow cannot be caught in .NET, so it would terminate the whole
-            // worker process rather than failing this one request; the only real
-            // defense is to make the stack big enough that the compiler cannot
-            // reach the end of it. See CompileThreadStackBytes for the measurements.
-            ObsidianContentCompileResult result = null;
-
-            var worker = new Thread( () => result = RunEngine( bundle, source ), CompileThreadStackBytes )
+            if ( !IsBrowserInstalled() )
             {
-                IsBackground = true,
-                Name = "ObsidianContentCompile"
-            };
-
-            worker.Start();
-
-            // The engine's own timeout should end the work well before this, so
-            // this join only bounds the case where the engine fails to honor it.
-            // The thread is background, so a wedged worker cannot hold up shutdown.
-            if ( !worker.Join( CompileTimeout + TimeSpan.FromSeconds( 5 ) ) )
-            {
-                return ObsidianContentCompileResult.Failure( "Compilation did not finish within the allowed time and was abandoned." );
+                return ObsidianContentCompileResult.BrowserMissing();
             }
 
-            return result ?? ObsidianContentCompileResult.Failure( "The compiler returned no result." );
+            // Read per call rather than caching; the file changes on deploy and this
+            // path is cold by design.
+            var bundle = File.ReadAllText( bundlePath );
+
+            try
+            {
+                return AsyncHelper.RunSync( () => CompileInPageAsync( bundle, source ) );
+            }
+            catch ( Exception ex )
+            {
+                // AsyncHelper unwraps to the original exception, but a faulted task
+                // can still surface aggregated. Flatten so the caller sees the real
+                // message rather than "One or more errors occurred".
+                var actual = ex is AggregateException aggregate
+                    ? aggregate.Flatten().InnerExceptions.FirstOrDefault() ?? ex
+                    : ex;
+
+                return ObsidianContentCompileResult.Failure( DescribeFailure( actual ) );
+            }
         }
 
         /// <summary>
-        /// Runs the compiler bundle in a JavaScript engine. Always called on the
-        /// dedicated large-stack thread, never directly.
+        /// Runs the compiler bundle in a fresh page and returns its output.
         /// </summary>
         /// <param name="bundle">The compiler bundle source.</param>
         /// <param name="source">The authored Vue single-file-component source.</param>
         /// <returns>The result of the compile attempt.</returns>
-        private ObsidianContentCompileResult RunEngine( string bundle, string source )
+        private async Task<ObsidianContentCompileResult> CompileInPageAsync( string bundle, string source )
         {
+            var browser = await GetBrowserAsync().ConfigureAwait( false );
+            IPage page = null;
+
             try
             {
-                using ( var engine = new Engine( options => options
-                    .TimeoutInterval( CompileTimeout )
-                    .LimitRecursion( CompileRecursionLimit ) ) )
+                page = await browser.NewPageAsync().ConfigureAwait( false );
+                page.DefaultTimeout = CompileTimeoutMilliseconds;
+
+                // A blank page, never navigated. The compiler needs no document and
+                // must not be able to reach the network.
+                await page.EvaluateExpressionAsync( SystemRegisterShim ).ConfigureAwait( false );
+                await page.EvaluateExpressionAsync( bundle ).ConfigureAwait( false );
+
+                var output = await page
+                    .EvaluateFunctionAsync<CompileOutput>( "(src) => window.__exports.compileSource(src)", source )
+                    .ConfigureAwait( false );
+
+                if ( output == null || output.CompiledContent.IsNullOrWhiteSpace() )
                 {
-                    engine.Execute( SystemRegisterShim );
-                    engine.Execute( bundle );
-                    engine.SetValue( "__ocSource", source );
-
-                    var result = engine.Evaluate( "__exports.compileSource(__ocSource)" ).AsObject();
-                    var compiledContent = result.Get( "compiledContent" ).AsString();
-                    var vueVersion = result.Get( "vueVersion" ).AsString();
-
-                    // The bundle already parse-validates its own output; this is the
-                    // final structural gate before the caller stores anything.
-                    if ( !SystemRegisterShape.IsMatch( compiledContent ) )
-                    {
-                        return ObsidianContentCompileResult.Failure( "The compiler produced output that is not a SystemJS module." );
-                    }
-
-                    return ObsidianContentCompileResult.Success( compiledContent, vueVersion );
+                    return ObsidianContentCompileResult.Failure( "The compiler returned no output." );
                 }
+
+                // The bundle already parse-validates its own output; this is the
+                // final structural gate before the caller stores anything.
+                if ( !SystemRegisterShape.IsMatch( output.CompiledContent ) )
+                {
+                    return ObsidianContentCompileResult.Failure( "The compiler produced output that is not a SystemJS module." );
+                }
+
+                return ObsidianContentCompileResult.Success( output.CompiledContent, output.VueVersion );
             }
-            catch ( JavaScriptException ex )
+            finally
             {
-                // The compiler throws a JavaScript Error whose message carries the
-                // real compile problem (parse errors, bad filters, unknown syntax).
-                // That text is the feedback loop; pass it through unaltered.
-                return ObsidianContentCompileResult.Failure( ex.Message );
-            }
-            catch ( TimeoutException )
-            {
-                return ObsidianContentCompileResult.Failure( $"Compilation exceeded the {CompileTimeout.TotalSeconds:0} second limit and was cancelled." );
-            }
-            catch ( Exception ex )
-            {
-                // Constraint violations and engine faults land here. Include the
-                // type name so an operator can tell a recursion limit from a
-                // genuine engine bug without a debugger.
-                return ObsidianContentCompileResult.Failure( $"The compile engine failed ({ex.GetType().Name}): {ex.Message}" );
+                if ( page != null )
+                {
+                    try
+                    {
+                        await page.CloseAsync().ConfigureAwait( false );
+                    }
+                    catch
+                    {
+                        // Intentionally ignored: the page may already be gone if the
+                        // renderer died, and failing to close it must not mask the
+                        // real result.
+                    }
+                }
             }
         }
 
+        /// <summary>
+        /// Gets the shared compile browser, launching it when it is missing or has
+        /// disconnected.
+        /// </summary>
+        /// <returns>A connected browser.</returns>
+        private async Task<IBrowser> GetBrowserAsync()
+        {
+            var existing = _browser;
+
+            if ( existing != null && existing.IsConnected )
+            {
+                return existing;
+            }
+
+            // Launching is slow enough that a burst of saves could otherwise start
+            // several browsers. The lock is held only while starting one.
+            var launchTask = null as Task<IBrowser>;
+
+            lock ( _browserLock )
+            {
+                if ( _browser != null && _browser.IsConnected )
+                {
+                    return _browser;
+                }
+
+                _browser = null;
+                launchTask = LaunchBrowserAsync();
+            }
+
+            var browser = await launchTask.ConfigureAwait( false );
+
+            lock ( _browserLock )
+            {
+                _browser = browser;
+            }
+
+            return browser;
+        }
+
+        /// <summary>
+        /// Launches a headless browser dedicated to compiling, using the Chromium
+        /// build already pinned and installed for PDF generation.
+        /// </summary>
+        /// <returns>The launched browser.</returns>
+        private async Task<IBrowser> LaunchBrowserAsync()
+        {
+            var launchOptions = new LaunchOptions
+            {
+                Headless = true,
+                ExecutablePath = GetBrowserExecutablePath()
+            };
+
+            return await Puppeteer.LaunchAsync( launchOptions ).ConfigureAwait( false );
+        }
+
+        /// <summary>
+        /// Determines whether the pinned Chromium build is already installed.
+        /// </summary>
+        /// <remarks>
+        /// This deliberately does not install anything. PdfGenerator downloads on
+        /// demand because nobody is waiting on a background job; here an agent is
+        /// waiting on a tool call, and a hundred-megabyte download would exceed
+        /// every timeout between here and the caller.
+        /// </remarks>
+        /// <returns><c>true</c> when the browser can be launched.</returns>
+        private bool IsBrowserInstalled()
+        {
+            try
+            {
+                var executablePath = GetBrowserExecutablePath();
+
+                return executablePath.IsNotNullOrWhiteSpace() && File.Exists( executablePath );
+            }
+            catch
+            {
+                // Intentionally ignored: any failure resolving the install is
+                // reported to the caller as "not installed", which carries the
+                // correct advice either way.
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Resolves the browser executable, preferring an explicit path supplied
+        /// for tests over the shared install.
+        /// </summary>
+        /// <returns>The physical path of the browser executable.</returns>
+        private string GetBrowserExecutablePath()
+        {
+            if ( _browserExecutablePath.IsNotNullOrWhiteSpace() )
+            {
+                return _browserExecutablePath;
+            }
+
+            return GetBrowserFetcher().GetExecutablePath( PdfGenerator.BrowserVersion );
+        }
+
+        /// <summary>
+        /// Builds a fetcher pointed at the shared Chromium install location.
+        /// </summary>
+        /// <returns>The browser fetcher.</returns>
+        private static BrowserFetcher GetBrowserFetcher()
+        {
+            var browserDownloadPath = RockApp.Current.MapPath( ChromeEngineVirtualPath );
+
+            return new BrowserFetcher( new BrowserFetcherOptions
+            {
+                Browser = SupportedBrowser.Chrome,
+                Path = browserDownloadPath
+            } );
+        }
+
+        /// <summary>
+        /// Turns an exception from the page into caller-facing text.
+        /// </summary>
+        /// <param name="exception">The exception the compile raised.</param>
+        /// <returns>The message describing what went wrong.</returns>
+        private static string DescribeFailure( Exception exception )
+        {
+            // A dead renderer is the case this whole design exists to survive. It is
+            // an ordinary catchable exception now, so say plainly what happened
+            // rather than passing through Puppeteer's wording.
+            if ( exception is TargetClosedException )
+            {
+                return "The compiler process stopped unexpectedly, which usually means the source is too complex to compile. Simplify the component and try again.";
+            }
+
+            if ( exception is WaitTaskTimeoutException || exception is TimeoutException )
+            {
+                return $"Compilation exceeded the {CompileTimeoutMilliseconds / 1000} second limit and was cancelled.";
+            }
+
+            // EvaluationFailedException carries the compiler's own error text, which
+            // is the feedback loop the agent needs; pass it through unaltered.
+            if ( exception is EvaluationFailedException )
+            {
+                return exception.Message;
+            }
+
+            return $"The compile engine failed ({exception.GetType().Name}): {exception.Message}";
+        }
+
         #endregion Methods
+
+        #region Support Classes
+
+        /// <summary>
+        /// The shape the compiler bundle returns, deserialized from the page.
+        /// </summary>
+        private class CompileOutput
+        {
+            /// <summary>
+            /// Gets or sets the compiled SystemJS module string.
+            /// </summary>
+            public string CompiledContent { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Vue version the compile targeted.
+            /// </summary>
+            public string VueVersion { get; set; }
+        }
+
+        #endregion Support Classes
     }
 
     /// <summary>
@@ -338,6 +512,14 @@ var System = {
         /// to a source-only save rather than reporting a compile error.
         /// </summary>
         public bool IsBundleMissing { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the compile could not be attempted
+        /// because the shared Chromium build is not installed yet. This is a
+        /// transient state on an instance that has never generated a PDF, so
+        /// callers should advise retrying rather than report a failure.
+        /// </summary>
+        public bool IsBrowserMissing { get; private set; }
 
         /// <summary>
         /// Gets the compiled SystemJS module string, or null when the compile failed.
@@ -405,6 +587,24 @@ var System = {
             };
 
             result.Errors.Add( "The compiler bundle is not deployed on this server." );
+
+            return result;
+        }
+
+        /// <summary>
+        /// Creates a result indicating the shared Chromium build has not been
+        /// installed yet, so no compile could be attempted.
+        /// </summary>
+        /// <returns>The result.</returns>
+        public static ObsidianContentCompileResult BrowserMissing()
+        {
+            var result = new ObsidianContentCompileResult
+            {
+                IsSuccess = false,
+                IsBrowserMissing = true
+            };
+
+            result.Errors.Add( "The browser engine used to compile is not installed on this server yet." );
 
             return result;
         }

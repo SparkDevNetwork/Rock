@@ -66,6 +66,7 @@ namespace Rock.AI.Agent
     [AgentUsage( "Group all of a block's endpoints under one application, named after the dashboard. Pass the same applicationSlug each time and the application is reused." )]
     [AgentUsage( "In the component, import { useLavaApp } from '@Obsidian/Utility/lavaApp', bind the application once with useLavaApp('application-slug'), then call lavaApp.invoke('endpoint-slug'). Do not hand-roll the URL, the CSRF header, or the JSON parsing." )]
     [AgentUsage( "invoke returns the same shape as invokeBlockAction. Check isSuccess before reading data, and render an empty state rather than an error when the call succeeds but legitimately has no rows." )]
+    [AgentUsage( "Values sent by invoke arrive in the template under the 'Body' merge field for Post endpoints and 'QueryString' for Get, never as bare merge fields. Read '{{ Body.teamId }}', not '{{ teamId }}'. A bare parameter renders as empty with no error, so a query built from one silently returns wrong data." )]
     [AgentUsage( "The endpoint runs as whoever views the page, not as you. Write the template for the least-privileged viewer, and remember that a newly created application has no security rules until an administrator adds them." )]
     [AgentUsage( "A deleteentity command only deletes the one entity. Child rows whose foreign key does not cascade will block it, and the failure surfaces as a foreign key error rather than anything the user can act on. Check how Rock's own code deletes that entity and remove the same children first." )]
     [AgentUsage( "These tools change site configuration and can run privileged Lava. Confirm the application name, endpoint slug, and enabled Lava commands with the user before creating." )]
@@ -107,11 +108,35 @@ namespace Rock.AI.Agent
         private const int MaxTestOutputLength = 2000;
 
         /// <summary>
+        /// The hard ceiling on test execution output, reachable by passing
+        /// maxTestOutputLength. High enough for a diagnostic dump, low enough that a
+        /// dashboard payload cannot flood the tool result.
+        /// </summary>
+        private const int MaxAllowedTestOutputLength = 10000;
+
+        /// <summary>
+        /// The ForeignKey value stamped on applications and endpoints this skill creates.
+        /// The delete tools only accept records carrying it, so the skill can clean up
+        /// after itself without being able to delete anything a person authored.
+        /// </summary>
+        private const string AgentProvenanceKey = "AI-Agent:LavaDataSkill";
+
+        /// <summary>
         /// The permission key of the raw SQL Lava command, as returned by
         /// <c>SqlBlock.RequiredPermissionKey</c>. This is the command that requires the
         /// user's approval before an endpoint may use it.
         /// </summary>
         private const string SqlCommandName = "Sql";
+
+        /// <summary>
+        /// The Lava command that lets a template add or update entities.
+        /// </summary>
+        private const string RockEntityModifyCommandName = "RockEntityModify";
+
+        /// <summary>
+        /// The Lava command that lets a template delete entities.
+        /// </summary>
+        private const string RockEntityDeleteCommandName = "RockEntityDelete";
 
         /*
             8/3/2026 - CLAUDE
@@ -162,8 +187,10 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
         /// <param name="httpMethod">The HTTP method the endpoint answers: Get, Post, Put or Delete. Defaults to Post.</param>
         /// <param name="codeTemplate">The Lava template that produces the response body.</param>
         /// <param name="enabledLavaCommands">A comma-delimited list of Lava commands the template needs, such as "RockEntity" or "RockEntity,RockEntityModify".</param>
-        /// <param name="securityMode">How the endpoint authorizes execution: EndpointExecute, ApplicationView, ApplicationEdit or ApplicationAdministrate.</param>
+        /// <param name="securityMode">How the endpoint authorizes execution: EndpointExecute, ApplicationView, ApplicationEdit or ApplicationAdministrate. Defaults to ApplicationView so the application's security governs.</param>
         /// <param name="sqlJustification">Why raw SQL is unavoidable, required only when <paramref name="enabledLavaCommands"/> includes "Sql".</param>
+        /// <param name="testParameters">A JSON object of the values a component would send with invoke, surfaced to the test execution as the Body merge field (or QueryString for Get endpoints).</param>
+        /// <param name="maxTestOutputLength">How many characters of test output to return, up to 10000. Defaults to 2000.</param>
         /// <returns>The application slug, endpoint slug, callable URL, and the result of test-executing the template.</returns>
         [AgentToolName( "CreateLavaEndpoint" )]
         [AgentToolPreamble( "Creating the Lava endpoint." )]
@@ -171,9 +198,10 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
         [AgentUsage( "Endpoints are keyed by slug AND method, so the same slug with Get and with Post are two different endpoints." )]
         [AgentUsage( "enabledLavaCommands must include every command the template uses or the template will fail at runtime. Use 'RockEntity' to read, 'RockEntityModify' to add or update, and 'RockEntityDelete' to delete. These cover almost everything, including charts and totals." )]
         [AgentUsage( "Do not request 'Sql'. It is refused unless you also pass sqlJustification, which you may only supply after telling the user why the entity commands cannot do the job and getting their explicit approval. Rewriting the template with entity commands is nearly always the correct response to that refusal." )]
-        [AgentUsage( "The returned testExecution result renders the template as the current person with no HTTP request context. It catches syntax errors, unknown filters and null references, but NOT request-specific behavior, so a pass is not proof the endpoint works for a visitor." )]
+        [AgentUsage( "Always pass testParameters when the template reads Body or QueryString, with realistic values, so the parameter path is proven rather than assumed. Without it the test renders with no request data and a template that reads Body.x is only exercised down its missing-parameter branch." )]
+        [AgentUsage( "Enabling RockEntityModify or RockEntityDelete turns test execution off for that endpoint, because running it would perform real writes. You get no syntax check at all, so keep write endpoints small and put any read logic in a separate RockEntity-only endpoint that can still be tested." )]
         [Rock.SystemGuid.AgentToolGuid( "9066DD4A-2158-4B1C-87E3-4058CBEE1E5C" )]
-        public AgentToolResult CreateLavaEndpoint( string applicationSlug, string applicationName, string endpointSlug, string httpMethod, string codeTemplate, string enabledLavaCommands = null, string securityMode = null, string sqlJustification = null )
+        public AgentToolResult CreateLavaEndpoint( string applicationSlug, string applicationName, string endpointSlug, string httpMethod, string codeTemplate, string enabledLavaCommands = null, string securityMode = null, string sqlJustification = null, string testParameters = null, int? maxTestOutputLength = null )
         {
             if ( applicationSlug.IsNullOrWhiteSpace() )
             {
@@ -205,6 +233,16 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
             if ( !TryValidateSqlUsage( enabledLavaCommands, sqlJustification, out var sqlError ) )
             {
                 return Error( sqlError );
+            }
+
+            if ( !TryLintTemplate( codeTemplate, out var lintError ) )
+            {
+                return Error( lintError );
+            }
+
+            if ( !TryParseTestParameters( testParameters, out var parsedTestParameters, out var testParametersError ) )
+            {
+                return Error( testParametersError );
             }
 
             using ( var rockContext = new RockContext() )
@@ -249,7 +287,8 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
                         Name = applicationName,
                         Slug = applicationSlug,
                         IsActive = true,
-                        ConfigurationRiggingJson = EmptyConfigurationRigging
+                        ConfigurationRiggingJson = EmptyConfigurationRigging,
+                        ForeignKey = AgentProvenanceKey
                     };
 
                     applicationService.Add( application );
@@ -273,7 +312,8 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
                     CodeTemplate = codeTemplate,
                     EnabledLavaCommands = enabledLavaCommands.ToStringSafe(),
                     SecurityMode = endpointSecurityMode,
-                    IsActive = true
+                    IsActive = true,
+                    ForeignKey = AgentProvenanceKey
                 };
 
                 // These endpoints exist to feed components, so they return JSON. Cross-site
@@ -299,7 +339,7 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
                     EndpointSlug = endpoint.Slug,
                     Method = method.ToString(),
                     Url = GetEndpointUrl( application.Slug, endpoint.Slug ),
-                    TestExecution = TestExecute( codeTemplate, endpoint.EnabledLavaCommands, application )
+                    TestExecution = TestExecute( codeTemplate, endpoint.EnabledLavaCommands, application, method, parsedTestParameters, maxTestOutputLength )
                 } );
 
                 /*
@@ -389,6 +429,8 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
         /// <param name="securityMode">The security mode to switch to, or <c>null</c> to leave it alone.</param>
         /// <param name="enabledLavaCommands">The comma-delimited Lava commands to allow, or <c>null</c> to leave them alone.</param>
         /// <param name="sqlJustification">Why raw SQL is unavoidable, required only when this call adds "Sql" to <paramref name="enabledLavaCommands"/>.</param>
+        /// <param name="testParameters">A JSON object of the values a component would send with invoke, surfaced to the test execution as the Body merge field (or QueryString for Get endpoints).</param>
+        /// <param name="maxTestOutputLength">How many characters of test output to return, up to 10000. Defaults to 2000.</param>
         /// <returns>The endpoint identifiers and the result of test-executing the new template.</returns>
         [AgentToolName( "UpdateLavaEndpoint" )]
         [AgentToolPreamble( "Updating the Lava endpoint." )]
@@ -396,13 +438,24 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
         [AgentUsage( "securityMode and enabledLavaCommands are left unchanged when omitted. Use them to correct an endpoint you already created rather than sending the user to the admin pages." )]
         [AgentUsage( "A template that starts using a new command needs that command added here too, or it will silently return nothing where the command was." )]
         [AgentUsage( "Adding 'Sql' to enabledLavaCommands is refused without sqlJustification, exactly as it is on create. Rewriting the template with 'RockEntity', 'RockEntityModify' and 'RockEntityDelete' is the expected response." )]
-        [AgentUsage( "The returned testExecution result renders as the current person with no HTTP request context, so a pass is not proof the endpoint works for a visitor." )]
+        [AgentUsage( "Always pass testParameters when the template reads Body or QueryString, with realistic values, so the parameter path is proven rather than assumed." )]
+        [AgentUsage( "An endpoint enabling RockEntityModify or RockEntityDelete is not test-executed, so this call returns no evidence the template works." )]
         [Rock.SystemGuid.AgentToolGuid( "2F92D13B-A2A2-455C-8324-57A181D505C2" )]
-        public AgentToolResult UpdateLavaEndpoint( string applicationSlug, string endpointSlug, string codeTemplate, string httpMethod = null, string securityMode = null, string enabledLavaCommands = null, string sqlJustification = null )
+        public AgentToolResult UpdateLavaEndpoint( string applicationSlug, string endpointSlug, string codeTemplate, string httpMethod = null, string securityMode = null, string enabledLavaCommands = null, string sqlJustification = null, string testParameters = null, int? maxTestOutputLength = null )
         {
             if ( codeTemplate.IsNullOrWhiteSpace() )
             {
                 return Error( "A Lava template is required." );
+            }
+
+            if ( !TryLintTemplate( codeTemplate, out var lintError ) )
+            {
+                return Error( lintError );
+            }
+
+            if ( !TryParseTestParameters( testParameters, out var parsedTestParameters, out var testParametersError ) )
+            {
+                return Error( testParametersError );
             }
 
             /*
@@ -461,7 +514,7 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
                     EndpointSlug = endpoint.Slug,
                     Method = endpoint.HttpMethod.ToString(),
                     Url = GetEndpointUrl( endpoint.LavaApplication.Slug, endpoint.Slug ),
-                    TestExecution = TestExecute( codeTemplate, endpoint.EnabledLavaCommands, endpoint.LavaApplication )
+                    TestExecution = TestExecute( codeTemplate, endpoint.EnabledLavaCommands, endpoint.LavaApplication, endpoint.HttpMethod, parsedTestParameters, maxTestOutputLength )
                 } );
 
                 // Only when this call is what turned SQL on. An endpoint that already had it
@@ -472,6 +525,124 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
                 }
 
                 return result;
+            }
+        }
+
+        /// <summary>
+        /// Deletes an endpoint this skill previously created, so exploration and
+        /// diagnostics can clean up after themselves.
+        /// </summary>
+        /// <param name="applicationSlug">The slug of the Lava application the endpoint belongs to.</param>
+        /// <param name="endpointSlug">The slug of the endpoint to delete.</param>
+        /// <param name="httpMethod">The HTTP method of the endpoint. Defaults to Post.</param>
+        /// <returns>Confirmation of the deletion, or an error.</returns>
+        [AgentToolName( "DeleteLavaEndpoint" )]
+        [AgentToolPreamble( "Deleting the Lava endpoint." )]
+        [AgentUsage( "Only endpoints created by this skill can be deleted; anything a person authored has to be removed through the Lava Applications admin pages. Use this to clean up diagnostic and scratch endpoints instead of leaving them for the user." )]
+        [Rock.SystemGuid.AgentToolGuid( "B3E1A5C7-6F24-4D1B-9C88-05D7F42A61E9" )]
+        public AgentToolResult DeleteLavaEndpoint( string applicationSlug, string endpointSlug, string httpMethod = null )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                if ( !TryGetEndpoint( applicationSlug, endpointSlug, httpMethod, rockContext, out var endpoint, out var error ) )
+                {
+                    return error;
+                }
+
+                // The provenance stamp is the whole safety model: the skill can only unwind
+                // its own work, never something a person built through the admin pages.
+                if ( endpoint.ForeignKey != AgentProvenanceKey )
+                {
+                    return Error( $"The '{endpointSlug}' endpoint was not created by this skill, so it cannot be deleted here. Ask the user to remove it through the Lava Applications admin pages." );
+                }
+
+                var application = endpoint.LavaApplication;
+                var endpointId = endpoint.Id;
+
+                new LavaEndpointService( rockContext ).Delete( endpoint );
+                rockContext.SaveChanges();
+
+                var remainingCount = application.LavaEndpoints.Count( e => e.Id != endpointId );
+
+                var result = Success( new
+                {
+                    Deleted = true,
+                    ApplicationSlug = application.Slug,
+                    EndpointSlug = endpointSlug,
+                    RemainingEndpointCount = remainingCount
+                } );
+
+                if ( remainingCount == 0 && application.ForeignKey == AgentProvenanceKey )
+                {
+                    result.WithInstructions( $"The '{application.Slug}' application now has no endpoints and was created by this skill. If it is no longer needed, remove it with DeleteLavaApplication so it does not linger as clutter." );
+                }
+
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Deletes a Lava application this skill previously created, along with any
+        /// endpoints it created inside it.
+        /// </summary>
+        /// <param name="applicationSlug">The slug of the Lava application to delete.</param>
+        /// <returns>Confirmation of the deletion, or an error.</returns>
+        [AgentToolName( "DeleteLavaApplication" )]
+        [AgentToolPreamble( "Deleting the Lava application." )]
+        [AgentUsage( "Only applications created by this skill, containing only endpoints created by this skill, can be deleted. Use it to clean up scratch applications when a build is finished." )]
+        [Rock.SystemGuid.AgentToolGuid( "9A47C2D1-83B5-4E60-A7F3-1B58C90D24E6" )]
+        public AgentToolResult DeleteLavaApplication( string applicationSlug )
+        {
+            if ( applicationSlug.IsNullOrWhiteSpace() )
+            {
+                return Error( "An application slug is required." );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var applicationService = new LavaApplicationService( rockContext );
+                var application = applicationService.Queryable().FirstOrDefault( a => a.Slug == applicationSlug );
+
+                if ( application == null )
+                {
+                    return Error( $"No Lava application exists with the slug '{applicationSlug}'." );
+                }
+
+                if ( !IsAuthorizedToAuthor( application ) )
+                {
+                    return Error( $"You are not authorized to administrate the '{applicationSlug}' Lava application." );
+                }
+
+                if ( application.ForeignKey != AgentProvenanceKey )
+                {
+                    return Error( $"The '{applicationSlug}' application was not created by this skill, so it cannot be deleted here. Ask the user to remove it through the Lava Applications admin pages." );
+                }
+
+                // A single hand-authored endpoint anywhere in the application blocks the
+                // whole delete, so a person's work can never ride along with the cleanup.
+                var foreignEndpoints = application.LavaEndpoints
+                    .Where( e => e.ForeignKey != AgentProvenanceKey )
+                    .Select( e => e.Slug )
+                    .ToList();
+
+                if ( foreignEndpoints.Any() )
+                {
+                    return Error( $"The '{applicationSlug}' application contains endpoints that were not created by this skill ({string.Join( ", ", foreignEndpoints )}), so it cannot be deleted here. Ask the user to remove it through the Lava Applications admin pages." );
+                }
+
+                var endpointService = new LavaEndpointService( rockContext );
+                var deletedEndpointCount = application.LavaEndpoints.Count;
+
+                endpointService.DeleteRange( application.LavaEndpoints.ToList() );
+                applicationService.Delete( application );
+                rockContext.SaveChanges();
+
+                return Success( new
+                {
+                    Deleted = true,
+                    ApplicationSlug = applicationSlug,
+                    DeletedEndpointCount = deletedEndpointCount
+                } );
             }
         }
 
@@ -571,10 +742,60 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
         /// <param name="codeTemplate">The Lava template to render.</param>
         /// <param name="enabledLavaCommands">The comma-delimited Lava commands the template is allowed to use.</param>
         /// <param name="application">The application whose configuration rigging the template can read.</param>
+        /// <param name="method">The HTTP method of the endpoint, which decides whether simulated parameters surface as Body or QueryString.</param>
+        /// <param name="testParameters">The parsed request values to simulate, or <c>null</c> to render with no request data.</param>
+        /// <param name="maxTestOutputLength">How many characters of output to return, or <c>null</c> for the default.</param>
         /// <returns>A result describing whether the render succeeded, and what it produced.</returns>
-        private TestExecutionResult TestExecute( string codeTemplate, string enabledLavaCommands, LavaApplication application )
+        private TestExecutionResult TestExecute( string codeTemplate, string enabledLavaCommands, LavaApplication application, LavaEndpointHttpMethod method, object testParameters, int? maxTestOutputLength )
         {
-            const string coverage = "Rendered as the current person with no HTTP request context, so the Request, QueryString, Body and Headers merge fields were not available. This catches syntax errors, unknown filters and null references, but not request-specific behavior.";
+            /*
+                8/12/2026 - CLAUDE
+
+                A template that can write is never test-executed. Rendering it performed real
+                inserts, updates and deletes, unattributed, which is an unacceptable price for
+                a syntax check.
+
+                Rolling the render back in a transaction was considered and rejected. It is
+                achievable (the entity blocks take their RockContext from the Lava context, so
+                seeding it and using WrapTransactionIf would cover the SQL), but it cannot be
+                made honest: Rock updates and flushes caches during save, and those caches are
+                not restored by a rollback, so a "dry run" would leave the instance describing
+                rows that no longer exist. Post-save hooks that queue bus messages, RealTime
+                notifications and workflows fire regardless of the rollback as well.
+
+                Detection keys off enabledLavaCommands rather than the template text because a
+                write cannot execute unless its command is enabled, which makes this exact
+                rather than a guess about markup.
+
+                Reason: A partial rollback would be more dangerous than not testing at all.
+            */
+            if ( IsWriteCapable( enabledLavaCommands ) )
+            {
+                return new TestExecutionResult
+                {
+                    IsSkipped = true,
+                    Coverage = "Not executed. This endpoint enables a write command (RockEntityModify or RockEntityDelete), and running the template would perform real, unattributed writes. Nothing about this template has been verified, including its syntax. Review it yourself, and have the user exercise it from the page where a failure is visible and recoverable. To get a test result, move the read-only part of the template into a separate endpoint that enables only RockEntity."
+                };
+            }
+
+            /*
+                8/11/2026 - CLAUDE
+
+                Endpoints read their request values from the Body merge field (QueryString for
+                Get), and an end-to-end test proved that path is exactly the one this test could
+                never exercise: with no request context, a template reading Body.teamId only ever
+                runs its missing-parameter branch, and the agent ships the endpoint on faith. The
+                simulated field mirrors LavaApplicationRequestHelpers.RequestToDictionary, which
+                adds the parsed JSON body as a single "Body" merge field, so a template that
+                passes here reads its parameters the same way it will on a real request.
+
+                Reason: The parameter path is the likeliest silent failure and was untestable.
+            */
+            var requestFieldName = method == LavaEndpointHttpMethod.Get ? "QueryString" : "Body";
+
+            var coverage = testParameters != null
+                ? $"Rendered as the current person with a simulated {requestFieldName} merge field built from testParameters. Other request merge fields (Headers, Cookies, RawUrl) were not available."
+                : "Rendered as the current person with no HTTP request context, so the Request, QueryString, Body and Headers merge fields were not available. A template that reads Body or QueryString was only exercised down its missing-parameter branch; pass testParameters to prove the parameter path.";
 
             /*
                 8/3/2026 - CLAUDE
@@ -602,6 +823,11 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
 
                 mergeFields.AddOrReplace( "ConfigurationRigging", configurationRigging );
 
+                if ( testParameters != null )
+                {
+                    mergeFields.AddOrReplace( requestFieldName, testParameters );
+                }
+
                 var parameters = LavaRenderParameters.WithContext(
                     LavaService.NewRenderContext( mergeFields, enabledLavaCommands.SplitDelimitedValues() ) );
 
@@ -624,22 +850,53 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
                     return new TestExecutionResult
                     {
                         IsSuccess = false,
-                        ErrorMessage = renderResult.GetLavaException().Message,
+                        ErrorMessage = AugmentLavaError( renderResult.GetLavaException().Message ),
                         Coverage = coverage
                     };
                 }
 
-                return BuildSuccessResult( renderResult.Text, coverage );
+                return BuildSuccessResult( renderResult.Text, coverage, maxTestOutputLength );
             }
             catch ( Exception ex )
             {
                 return new TestExecutionResult
                 {
                     IsSuccess = false,
-                    ErrorMessage = ex.Message,
+                    ErrorMessage = AugmentLavaError( ex.Message ),
                     Coverage = coverage
                 };
             }
+        }
+
+        /// <summary>
+        /// Appends a hint to the Lava error messages whose real cause is somewhere other
+        /// than where the message points, so the agent's next attempt is a fix rather than
+        /// another guess.
+        /// </summary>
+        /// <param name="message">The error message the engine produced.</param>
+        /// <returns>The message, with a hint appended when one applies.</returns>
+        private static string AugmentLavaError( string message )
+        {
+            if ( message.IsNullOrWhiteSpace() )
+            {
+                return message;
+            }
+
+            // The engine reports a where clause containing a dotted navigation path as a
+            // generic invalid-expression error with no mention of the cause.
+            if ( message.IndexOf( "Where expression is invalid", StringComparison.OrdinalIgnoreCase ) >= 0 )
+            {
+                return message + " Hint: dotted navigation paths (for example 'Group.CampusId') are not supported in where clauses, even though they work in sort, groupby and select. Resolve the related ids in a first query and filter on a scalar property or a literal OR clause.";
+            }
+
+            // An unrecognized block tag is reported as a missing end tag somewhere else in
+            // the template, which sends the agent to the wrong line.
+            if ( message.IndexOf( "was expected", StringComparison.OrdinalIgnoreCase ) >= 0 )
+            {
+                return message + " Hint: this usually means a block tag was not recognized, so its end tag broke the surrounding structure. Entity command blocks use the entity's own name ('{% group %}...{% endgroup %}'), and the command must also be listed in enabledLavaCommands.";
+            }
+
+            return message;
         }
 
         /// <summary>
@@ -648,12 +905,17 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
         /// </summary>
         /// <param name="output">The full text the template produced.</param>
         /// <param name="coverage">The description of what the test did and did not exercise.</param>
-        /// <returns>A successful result whose output is no longer than <see cref="MaxTestOutputLength"/>.</returns>
-        private static TestExecutionResult BuildSuccessResult( string output, string coverage )
+        /// <param name="maxTestOutputLength">The caller's requested output budget, or <c>null</c> for the default.</param>
+        /// <returns>A successful result whose output is no longer than the effective limit.</returns>
+        private static TestExecutionResult BuildSuccessResult( string output, string coverage, int? maxTestOutputLength )
         {
             var fullText = output.ToStringSafe();
 
-            if ( fullText.Length <= MaxTestOutputLength )
+            // Diagnostics legitimately need more than the default, so the caller can raise
+            // the budget, but a whole dashboard payload still cannot flood the tool result.
+            var effectiveLimit = Math.Min( Math.Max( maxTestOutputLength ?? MaxTestOutputLength, 100 ), MaxAllowedTestOutputLength );
+
+            if ( fullText.Length <= effectiveLimit )
             {
                 return new TestExecutionResult
                 {
@@ -670,9 +932,10 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
             return new TestExecutionResult
             {
                 IsSuccess = true,
-                Output = fullText.Substring( 0, MaxTestOutputLength ),
+                Output = fullText.Substring( 0, effectiveLimit ),
                 OutputLength = fullText.Length,
                 IsOutputTruncated = true,
+                TruncationAdvice = $"Output was truncated at {effectiveLimit} of {fullText.Length} characters. Re-run with a larger maxTestOutputLength (up to {MaxAllowedTestOutputLength}), or emit more compact output.",
                 Coverage = coverage
             };
         }
@@ -689,6 +952,71 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
         }
 
         /// <summary>
+        /// Rejects template mistakes whose runtime failures point somewhere other than the
+        /// real cause, so the agent hears about them while the template is still in hand.
+        /// </summary>
+        /// <param name="codeTemplate">The template about to be saved.</param>
+        /// <param name="errorMessage">Contains the explanation when <c>false</c> is returned.</param>
+        /// <returns><c>true</c> when no lint problem was found.</returns>
+        private static bool TryLintTemplate( string codeTemplate, out string errorMessage )
+        {
+            errorMessage = null;
+
+            /*
+                8/11/2026 - CLAUDE
+
+                There is no generic '{% entity <name> %}' block tag; the entity commands
+                register one tag per entity name. The engine reports the unknown tag as a
+                missing end tag somewhere else entirely, so an agent that writes it burns a
+                round trip on a misleading error. An end-to-end test hit exactly this.
+
+                Reason: Catch a known-wrong tag before it is saved, with the real fix named.
+            */
+            if ( codeTemplate.IndexOf( "{% entity ", StringComparison.OrdinalIgnoreCase ) >= 0
+                || codeTemplate.IndexOf( "{%- entity ", StringComparison.OrdinalIgnoreCase ) >= 0
+                || codeTemplate.IndexOf( "{% endentity", StringComparison.OrdinalIgnoreCase ) >= 0 )
+            {
+                errorMessage = "The template uses '{% entity %}', which is not a Lava tag. Entity command blocks use the entity's own name: '{% group %}...{% endgroup %}', '{% groupmember %}...{% endgroupmember %}'. Replace the tag with the entity's friendly name with the spaces removed.";
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Parses the request values the caller wants simulated during test execution,
+        /// using the same deserialization the real request pipeline applies to a JSON body.
+        /// </summary>
+        /// <param name="testParameters">The JSON object supplied by the caller, or <c>null</c>.</param>
+        /// <param name="parsed">Contains the parsed values when <c>true</c> is returned, or <c>null</c> when none were supplied.</param>
+        /// <param name="errorMessage">Contains the explanation when <c>false</c> is returned.</param>
+        /// <returns><c>true</c> when the parameters are absent or valid JSON.</returns>
+        private static bool TryParseTestParameters( string testParameters, out object parsed, out string errorMessage )
+        {
+            parsed = null;
+            errorMessage = null;
+
+            if ( testParameters.IsNullOrWhiteSpace() )
+            {
+                return true;
+            }
+
+            try
+            {
+                // The same call LavaApplicationRequestHelpers uses on a real JSON body, so
+                // the simulated Body behaves like the one a component's invoke produces.
+                parsed = Newtonsoft.Json.JsonConvert.DeserializeObject( testParameters );
+            }
+            catch ( Exception ex )
+            {
+                errorMessage = $"testParameters must be a valid JSON object, for example {{\"teamId\": 5}}. It could not be parsed: {ex.Message}";
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Determines whether the requested commands include raw SQL.
         /// </summary>
         /// <param name="enabledLavaCommands">The comma-delimited commands the caller asked for.</param>
@@ -698,6 +1026,24 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
             return enabledLavaCommands
                 .SplitDelimitedValues()
                 .Any( c => c.Equals( SqlCommandName, StringComparison.OrdinalIgnoreCase ) );
+        }
+
+        /// <summary>
+        /// Determines whether the requested commands allow the template to change data.
+        /// A template can only write when its write command is enabled, so this is exact
+        /// rather than an inspection of the markup.
+        /// </summary>
+        /// <param name="enabledLavaCommands">The comma-delimited commands the caller asked for.</param>
+        /// <returns><c>true</c> if the template is able to insert, update or delete.</returns>
+        private static bool IsWriteCapable( string enabledLavaCommands )
+        {
+            // Sql is deliberately absent. It can write, but it is already gated behind the
+            // user's explicit approval, and endpoints that use it are overwhelmingly reads
+            // that would lose their only syntax check for no gain in safety.
+            return enabledLavaCommands
+                .SplitDelimitedValues()
+                .Any( c => c.Equals( RockEntityModifyCommandName, StringComparison.OrdinalIgnoreCase )
+                    || c.Equals( RockEntityDeleteCommandName, StringComparison.OrdinalIgnoreCase ) );
         }
 
         /// <summary>
@@ -774,11 +1120,54 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
         {
             errorMessage = null;
 
-            // EndpointExecute is the entity default and keeps authorization on the endpoint
-            // itself, which is the safest choice when the agent does not specify one.
+            /*
+                8/11/2026 - CLAUDE
+
+                The default used to be EndpointExecute, matching the entity default, on the
+                theory that keeping authorization on the endpoint was safest. In practice a
+                new endpoint has no authorization rules and the authorization walk never
+                reaches LavaApplicationCache's role override, so the "safe" default was an
+                endpoint nobody could call, failing as a bare 401, and every agent hit it.
+                ApplicationView defers to the application, where this skill's security is
+                actually rigged, so the default now matches where the rules really live.
+
+                Reason: The old default produced an endpoint that no one, admins included,
+                could call.
+
+                8/12/2026 - CLAUDE
+
+                REVISIT: the claim above that ApplicationView defers to "where this skill's
+                security is actually rigged" is wrong. This skill rigs no security at all.
+                CreateLavaEndpoint builds the application with an empty ConfigurationRigging
+                and no Auth rows, so switching the default from EndpointExecute to
+                ApplicationView moved the problem rather than fixing it:
+
+                - ApplicationView authorizes against the application's EXECUTE_VIEW action.
+                - A new application has no Auth rows, LavaApplication.ParentAuthority is
+                  deliberately null (see LavaApplication.Logic.cs), and Model.IsAllowedByDefault
+                  grants only VIEW and TAG, so EXECUTE_VIEW denies.
+                - LavaApplication.IsAuthorized overrides for Rock Administrators and Lava
+                  Application Developers on View/Edit/Administrate but explicitly NOT on
+                  Execute.
+
+                So a freshly created endpoint still cannot be called by anyone, administrators
+                included, exactly as before. Worse, it is now silent: the WithInstructions
+                warning in CreateLavaEndpoint fires only for EndpointExecute, so the default
+                path ships this failure with no warning attached.
+
+                The fix is for these tools to set the authorization rather than describe it.
+                That likely means taking the intended audience as a parameter (staff, all
+                authenticated people, or public) and writing the matching EXECUTE_VIEW Auth
+                rows when the application is created, so the endpoint is callable by exactly
+                the people it should be and no one else. Until then, do not tell the user
+                security is handled.
+
+                Reason: The default security mode still yields an uncallable endpoint, and
+                now does so without warning.
+            */
             if ( securityMode.IsNullOrWhiteSpace() )
             {
-                mode = LavaEndpointSecurityMode.EndpointExecute;
+                mode = LavaEndpointSecurityMode.ApplicationView;
                 return true;
             }
 
@@ -802,9 +1191,17 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
         private class TestExecutionResult
         {
             /// <summary>
-            /// Whether the template rendered without an error.
+            /// Whether the template rendered without an error. This is <c>false</c> when
+            /// <see cref="IsSkipped"/> is <c>true</c>, because nothing was rendered; it does
+            /// not mean the template is broken.
             /// </summary>
             public bool IsSuccess { get; set; }
+
+            /// <summary>
+            /// Whether the template was deliberately not executed because it can write.
+            /// Distinguishes "we did not look" from "we looked and it failed".
+            /// </summary>
+            public bool IsSkipped { get; set; }
 
             /// <summary>
             /// The rendered output when <see cref="IsSuccess"/> is <c>true</c>. This is only
@@ -823,6 +1220,11 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
             /// visible tail for where the template stopped producing text.
             /// </summary>
             public bool IsOutputTruncated { get; set; }
+
+            /// <summary>
+            /// How to see the rest of the output when it was truncated.
+            /// </summary>
+            public string TruncationAdvice { get; set; }
 
             /// <summary>
             /// The reason the render failed when <see cref="IsSuccess"/> is <c>false</c>.

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,6 +17,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -28,9 +29,11 @@ namespace Rock.Tests.Cms
 {
     /// <summary>
     /// Tests for the server-side Obsidian Content compiler, which runs the shared
-    /// compiler bundle inside a Jint engine. These tests require the built bundle
-    /// at RockWeb/Obsidian/Libs/obsidianContentCompiler.js; when the Obsidian
-    /// build has not produced it, the tests are inconclusive rather than failing.
+    /// compiler bundle in a headless Chromium page. These need two things present:
+    /// the built bundle at RockWeb/Obsidian/Libs/obsidianContentCompiler.js, and
+    /// the pinned Chromium under RockWeb/App_Data/ChromeEngine. When either is
+    /// absent the tests are inconclusive rather than failing, because neither is
+    /// produced by building this solution.
     /// </summary>
     [TestClass]
     public class ObsidianContentCompilerTests
@@ -169,7 +172,7 @@ const count = 1;
         [TestMethod]
         public void CompileSource_WithValidSource_ProducesSystemJsModule()
         {
-            var compiler = new ObsidianContentCompiler( GetBundlePathOrInconclusive() );
+            var compiler = new ObsidianContentCompiler( GetBundlePathOrInconclusive(), GetBrowserPathOrInconclusive() );
 
             var result = compiler.CompileSource( ValidSource );
 
@@ -183,7 +186,7 @@ const count = 1;
         [TestMethod]
         public void CompileSource_WithBrokenTemplate_ReturnsCompilerErrors()
         {
-            var compiler = new ObsidianContentCompiler( GetBundlePathOrInconclusive() );
+            var compiler = new ObsidianContentCompiler( GetBundlePathOrInconclusive(), GetBrowserPathOrInconclusive() );
 
             var result = compiler.CompileSource( BrokenSource );
 
@@ -200,7 +203,7 @@ const count = 1;
             // 900 KB of stack against a 1 MB default and terminated the worker process
             // with an uncatchable StackOverflowException. Byte count is not the risk
             // factor here, structural depth is, so this fixture is deliberately small.
-            var compiler = new ObsidianContentCompiler( GetBundlePathOrInconclusive() );
+            var compiler = new ObsidianContentCompiler( GetBundlePathOrInconclusive(), GetBrowserPathOrInconclusive() );
 
             var result = compiler.CompileSource( ComplexSource );
 
@@ -215,7 +218,7 @@ const count = 1;
             // template this deep terminates the process rather than returning. The
             // assertion is deliberately weak: either outcome is acceptable as long
             // as control returns here at all.
-            var compiler = new ObsidianContentCompiler( GetBundlePathOrInconclusive() );
+            var compiler = new ObsidianContentCompiler( GetBundlePathOrInconclusive(), GetBrowserPathOrInconclusive() );
             var deep = new StringBuilder();
 
             deep.AppendLine( "<template>" );
@@ -239,6 +242,50 @@ const count = 1;
             Assert.IsNotNull( result, "The compiler must return a result rather than terminating the process." );
         }
 
+        /*
+            8/14/2026 - CLAUDE
+
+            The two tests below cover structurally deep source. They date from the
+            Jint host, where depth was the one input that could kill the worker
+            process: template nesting compiled to 1023 and died at 1024, script
+            bracket nesting compiled to 511 and died at 512, both bounded by
+            CompileRecursionLimit rather than by the stack.
+
+            None of that applies now. The compile runs in a child browser process, so
+            depth is no longer dangerous, and the complexity guard that used to
+            enforce a limit ahead of it has been deleted along with its threshold.
+
+            The tests are kept because depth is still the shape most likely to expose
+            a compiler regression, and because they are the only coverage of nesting
+            at all. Their depths are no longer "safely under a boundary", they are
+            simply more than any real component uses: the worst of the 2,098 .obs
+            files in this repository measures 37 estimated frames.
+
+            Reason: Depth coverage outlived the danger that motivated it.
+        */
+
+        [TestMethod]
+        public void CompileSource_AtRealisticTemplateDepth_Compiles()
+        {
+            // Real dashboards nest roughly 10 to 30 levels. 200 is far above anything real.
+            var compiler = new ObsidianContentCompiler( GetBundlePathOrInconclusive(), GetBrowserPathOrInconclusive() );
+
+            var result = compiler.CompileSource( BuildNestedTemplateSource( 200 ) );
+
+            Assert.IsTrue( result.IsSuccess, "Compile failed: " + string.Join( "; ", result.Errors ) );
+        }
+
+        [TestMethod]
+        public void CompileSource_AtRealisticScriptNestingDepth_Compiles()
+        {
+            // Object literals in class and style bindings rarely nest past 5 to 10 levels.
+            var compiler = new ObsidianContentCompiler( GetBundlePathOrInconclusive(), GetBrowserPathOrInconclusive() );
+
+            var result = compiler.CompileSource( BuildNestedObjectSource( 100 ) );
+
+            Assert.IsTrue( result.IsSuccess, "Compile failed: " + string.Join( "; ", result.Errors ) );
+        }
+
         [TestMethod]
         public void CompileSource_WithUnscopedStyle_TerminatesTheStatementBeforeStyleInjection()
         {
@@ -251,7 +298,7 @@ const count = 1;
             // between the two and starts with an identifier. Only an UNSCOPED style
             // puts the two statements directly against each other, which is why
             // every earlier fixture passed.
-            var compiler = new ObsidianContentCompiler( GetBundlePathOrInconclusive() );
+            var compiler = new ObsidianContentCompiler( GetBundlePathOrInconclusive(), GetBrowserPathOrInconclusive() );
 
             var result = compiler.CompileSource( UnscopedStyleSource );
 
@@ -280,6 +327,92 @@ const count = 1;
         #endregion CompileSource
 
         #region Support
+
+        /// <summary>
+        /// Builds a component whose template nests elements to the given depth.
+        /// One element level costs one JavaScript call frame.
+        /// </summary>
+        /// <param name="depth">How many levels of nesting to emit.</param>
+        /// <returns>The generated source.</returns>
+        private static string BuildNestedTemplateSource( int depth )
+        {
+            var builder = new StringBuilder();
+
+            builder.AppendLine( "<template>" );
+            builder.Append( string.Concat( Enumerable.Repeat( "<div>", depth ) ) );
+            builder.Append( "x" );
+            builder.Append( string.Concat( Enumerable.Repeat( "</div>", depth ) ) );
+            builder.AppendLine();
+            builder.AppendLine( "</template>" );
+            builder.AppendLine( "<script setup>" );
+            builder.AppendLine( "const x = 1;" );
+            builder.AppendLine( "</script>" );
+
+            return builder.ToString();
+        }
+
+        /// <summary>
+        /// Builds a component whose script nests object literals to the given depth,
+        /// mirroring the object literals used in class and style bindings. One level
+        /// costs two JavaScript call frames.
+        /// </summary>
+        /// <param name="depth">How many levels of nesting to emit.</param>
+        /// <returns>The generated source.</returns>
+        private static string BuildNestedObjectSource( int depth )
+        {
+            var builder = new StringBuilder();
+
+            builder.AppendLine( "<template>" );
+            builder.AppendLine( "<div>x</div>" );
+            builder.AppendLine( "</template>" );
+            builder.AppendLine( "<script setup>" );
+            builder.Append( "const x = " );
+            builder.Append( string.Concat( Enumerable.Repeat( "{ a: ", depth ) ) );
+            builder.Append( "1" );
+            builder.Append( string.Concat( Enumerable.Repeat( " }", depth ) ) );
+            builder.AppendLine( ";" );
+            builder.AppendLine( "</script>" );
+
+            return builder.ToString();
+        }
+
+        /// <summary>
+        /// Locates the pinned Chromium build by walking up from the test directory
+        /// to the repository root. Marks the test inconclusive when it is absent,
+        /// which is the normal state until something generates a PDF.
+        /// </summary>
+        /// <remarks>
+        /// Tests cannot resolve this through <c>RockApp</c> the way the compiler
+        /// does at runtime, because there is no hosted application here.
+        /// </remarks>
+        /// <returns>The physical path of the browser executable.</returns>
+        private static string GetBrowserPathOrInconclusive()
+        {
+            var directory = new DirectoryInfo( AppDomain.CurrentDomain.BaseDirectory );
+
+            while ( directory != null )
+            {
+                var engineRoot = Path.Combine( directory.FullName, "RockWeb", "App_Data", "ChromeEngine" );
+
+                if ( Directory.Exists( engineRoot ) )
+                {
+                    var executable = Directory
+                        .EnumerateFiles( engineRoot, "chrome.exe", SearchOption.AllDirectories )
+                        .OrderByDescending( path => path )
+                        .FirstOrDefault();
+
+                    if ( executable != null )
+                    {
+                        return executable;
+                    }
+                }
+
+                directory = directory.Parent;
+            }
+
+            Assert.Inconclusive( "The Chromium build used to compile was not found under RockWeb/App_Data/ChromeEngine. It installs automatically the first time a PDF is generated." );
+            return null;
+        }
 
         /// <summary>
         /// Locates the built compiler bundle by walking up from the test directory
