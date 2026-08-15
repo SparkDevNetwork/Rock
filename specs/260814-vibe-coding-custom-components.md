@@ -10,10 +10,10 @@ summary: >-
 contributors: []
 related_docs:
   - docs/ai/vibe-coding-architecture.md
-  - docs/cms/obsidian-content.md
+  - docs/cms/custom-component.md
 ---
 
-# Vibe Coding: AI-Authored Obsidian Content
+# Vibe Coding: AI-Authored Custom Components
 
 ## Summary
 
@@ -83,11 +83,11 @@ flowchart TD
     Client -->|"/api/v2/mcp/vibe-coding"| Agent["Vibe Agent<br/>AIAgent, AgentType.Mcp"]
     Agent --> PB["PageBuilder<br/>FindPages, CreatePage, AddBlock"]
     Agent --> LD["LavaData<br/>Create/Get/Update/Delete endpoint"]
-    Agent --> VC["ObsidianVibeCoding<br/>GetRockVersion, Get/SetContentSource"]
-    PB --> Page["Page + Obsidian Content block"]
+    Agent --> VC["CustomComponent<br/>GetRockVersion, Get/SetComponentSource"]
+    PB --> Page["Page + Custom Component block"]
     LD --> Lava["Lava application + JSON endpoints"]
     VC --> Compile["Compile in headless Chromium"]
-    Compile --> Table["[ObsidianContent] row"]
+    Compile --> Table["[CustomComponent] row"]
     Page --> Visitor["Visitor loads the compiled module"]
     Table --> Visitor
     Lava -->|"useLavaApp invoke"| Visitor
@@ -115,7 +115,7 @@ Layers 1 and 7 ship in the same EF migration. Scaffold the migration once, late,
 
 One table, one row per block placement, following the `HtmlContent` pattern.
 
-`Rock/Model/CMS/ObsidianContent/ObsidianContent.cs`, EntityType `38F182A7-9FE4-4D7B-B483-59F615BDE41C`.
+`Rock/Model/CMS/CustomComponent/CustomComponent.cs`, EntityType `38F182A7-9FE4-4D7B-B483-59F615BDE41C`.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -130,11 +130,11 @@ Service exposes exactly two methods, `GetByBlockId` and `GetOrCreateByBlockId`. 
 
 The EF migration must register the block's EntityType explicitly before calling `AddOrUpdateEntityBlockType`, because startup EntityType registration runs *after* migrations. Use the entity-based helper. Do not use `UpdateBlockTypeByGuid`, which deletes by path and can wipe every entity-based block type.
 
-The migration also registers the `Rock.Model.ObsidianContent` EntityType itself (`SystemGuid.EntityType.OBSIDIAN_CONTENT`, `38F182A7-9FE4-4D7B-B483-59F615BDE41C`), matching the code-generated service class, and carries the layer 7 seeding. The exploration branch's migration carried a stale timestamp that sorted before seven later migrations, which breaks the model-compatibility snapshot; scaffolding fresh at the end of the build avoids that class of problem.
+The migration also registers the `Rock.Model.CustomComponent` EntityType itself (`SystemGuid.EntityType.CUSTOM_COMPONENT`, `38F182A7-9FE4-4D7B-B483-59F615BDE41C`), matching the code-generated service class, and carries the layer 7 seeding. The exploration branch's migration carried a stale timestamp that sorted before seven later migrations, which breaks the model-compatibility snapshot; scaffolding fresh at the end of the build avoids that class of problem.
 
 ### Layer 2: Shared compiler bundle
 
-`Rock.JavaScript.Obsidian/Framework/Libs/obsidianContentCompiler.ts`, built to `~/Obsidian/Libs/obsidianContentCompiler.js`.
+`Rock.JavaScript.Obsidian/Framework/Libs/customComponentCompiler.ts`, built to `~/Obsidian/Libs/customComponentCompiler.js`.
 
 **One implementation, one host.** Only the server runs the bundle. The browser never loads a compiler; the editor sends source to the block's save action and displays the server's result. (An earlier iteration also loaded this bundle in the browser for a live preview; see [Considered but Rejected](#considered-but-rejected).)
 
@@ -157,13 +157,13 @@ Two constraints in the bundle:
 
 ### Layer 3: Block, editor and render
 
-`Rock.Blocks/Cms/ObsidianContentDetail.cs`. EntityType `8C7E29E5-E2C5-4331-B7F7-06EF894E7316`, BlockType `D4A5F720-493C-4DE8-B4B6-D6667D7ED2A2`. Web sites only.
+`Rock.Blocks/Cms/CustomComponentDetail.cs`. EntityType `8C7E29E5-E2C5-4331-B7F7-06EF894E7316`, BlockType `D4A5F720-493C-4DE8-B4B6-D6667D7ED2A2`. Web sites only.
 
 The security posture is one method: `CompiledContent` goes to every viewer; `Source` only when the person has EDIT.
 
-Vue side, `Rock.JavaScript.Obsidian.Blocks/src/Cms/obsidianContentDetail.obs` plus partials for the edit panel and the view panel. The edit experience is deliberately small: a code editor, save and cancel, and a notification box for compile errors. There is no live preview, no in-browser compiler, no sandboxed iframe, and no debounced compile loop. The exploration built all of those (roughly 360 lines plus an `allow-same-origin` sandbox caveat) and this rebuild drops them.
+Vue side, `Rock.JavaScript.Obsidian.Blocks/src/Cms/customComponentDetail.obs` plus partials for the edit panel and the view panel. The edit experience is deliberately small: a code editor, save and cancel, and a notification box for compile errors. There is no live preview, no in-browser compiler, no sandboxed iframe, and no debounced compile loop. The exploration built all of those (roughly 360 lines plus an `allow-same-origin` sandbox caveat) and this rebuild drops them.
 
-Save sends `Source` only. The block action compiles through the layer 4 service, stores source and compiled output together on success, and on failure stores nothing and returns the compiler's error text for the notification box. This is the same code path `SetContentSource` uses, so the human editor and the agent exercise one compile-and-store implementation. If the compile browser is still provisioning, save reports a retryable condition, exactly as the skill does.
+Save sends `Source` only. The block action compiles through the layer 4 service, stores source and compiled output together on success, and on failure stores nothing and returns the compiler's error text for the notification box. This is the same code path `SetComponentSource` uses, so the human editor and the agent exercise one compile-and-store implementation. If the compile browser is still provisioning, save reports a retryable condition, exactly as the skill does.
 
 **Rendering runs the stored module by hand**: supply a fake `System` object to capture the registration, resolve each dependency through Rock's real loader, execute, mount. It cannot simply load a URL, because Rock's loader appends `.js` and `?fingerprint` to any path, which a `blob:` URL cannot carry.
 
@@ -171,7 +171,7 @@ No compiler ever loads in the browser.
 
 ### Layer 4: Server-side compile
 
-`Rock/Cms/ObsidianContentCompiler.cs`. Runs the bundle in a page of the headless Chromium Rock already manages for PDF generation, via PuppeteerSharp. It serves both writers: the block's save action (layer 3) and the agent's `SetContentSource` (layer 6).
+`Rock/Cms/CustomComponentCompiler.cs`. Runs the bundle in a page of the headless Chromium Rock already manages for PDF generation, via PuppeteerSharp. It serves both writers: the block's save action (layer 3) and the agent's `SetComponentSource` (layer 6).
 
 **Nothing new is added to run it.** PuppeteerSharp and a pinned Chromium build already ship for `Rock/Pdf/PdfGenerator.cs`. Reuse the install path (`~/App_Data/ChromeEngine`) and call `PdfGenerator.BrowserVersion` so the pin lives in one place.
 
@@ -206,7 +206,7 @@ Three small changes to existing Lava application infrastructure:
 
 ### Layer 6: Agent skills
 
-Three `AgentSkillComponent` subclasses. They compose by handing off identifiers: PageBuilder returns a block `IdKey`, ObsidianVibeCoding writes against it, LavaData feeds it.
+Three `AgentSkillComponent` subclasses. They compose by handing off identifiers: PageBuilder returns a block `IdKey`, CustomComponent writes against it, LavaData feeds it.
 
 **They are built to the established skill shape, not the exploration's.** The exploration placed them loose in the `Rock` project as monolithic files (`LavaDataSkill.cs` reached 1,243 lines) and diverged from the 21 shipped skills on nearly every convention. The rebuild follows the shipped pattern exactly:
 
@@ -224,7 +224,7 @@ Three `AgentSkillComponent` subclasses. They compose by handing off identifiers:
 |---|---|---|---|
 | PageBuilder | `EE27BE5A-1276-433F-A636-1BEF3550EC1E` / `1D5FD674-F94D-4166-BC10-F2EA86412C4B` | `FindPages`, `CreatePage`, `AddBlock` | ADMINISTRATE of the page |
 | LavaData | `8660E7C0-1101-4058-BAF5-20B860600027` / `CABB72CF-DD09-48CD-9BB9-4819488BC7CA` | `CreateLavaEndpoint`, `GetLavaEndpoint`, `UpdateLavaEndpoint`, `DeleteLavaEndpoint`, `DeleteLavaApplication` | ADMINISTRATE of the application |
-| ObsidianVibeCoding | `647770A9-F3D7-4924-B046-5C9C43959ECB` / `4C833FA4-A7EF-4D49-9549-B24CBB629A73` | `GetRockVersion`, `GetContentSource`, `SetContentSource` | EDIT of the block (`GetRockVersion` ungated) |
+| CustomComponent | `647770A9-F3D7-4924-B046-5C9C43959ECB` / `4C833FA4-A7EF-4D49-9549-B24CBB629A73` | `GetRockVersion`, `GetComponentSource`, `SetComponentSource` | EDIT of the block (`GetRockVersion` ungated) |
 
 Tool GUIDs:
 
@@ -238,8 +238,8 @@ UpdateLavaEndpoint     2F92D13B-A2A2-455C-8324-57A181D505C2
 DeleteLavaEndpoint     B3E1A5C7-6F24-4D1B-9C88-05D7F42A61E9
 DeleteLavaApplication  9A47C2D1-83B5-4E60-A7F3-1B58C90D24E6
 GetRockVersion         3E7A1C42-8B95-4D06-A1F3-2C64D9B7E508
-GetContentSource       7D3A8200-3A90-44CC-9E30-B600383E835F
-SetContentSource       26FFEE94-4868-4DEC-BE40-68FBE30DAEB8
+GetComponentSource       7D3A8200-3A90-44CC-9E30-B600383E835F
+SetComponentSource       26FFEE94-4868-4DEC-BE40-68FBE30DAEB8
 ```
 
 Behavior worth specifying:
@@ -248,7 +248,7 @@ Behavior worth specifying:
 - **`CreateLavaEndpoint` groups by application.** One application per block, named after the dashboard, so security is rigged once.
 - **Delete tools only accept records this skill created**, identified by `ForeignKey = "AI-Agent:LavaDataSkill"`. The provenance stamp is the entire safety model: the skill can unwind its own work and nothing else.
 - **`Sql` is refused** without a `sqlJustification` argument, because raw SQL bypasses Rock's per-row entity security while the entity commands respect it.
-- **`SetContentSource` stores nothing on compile failure** and returns the compiler's error text.
+- **`SetComponentSource` stores nothing on compile failure** and returns the compiler's error text.
 
 ### Layer 7: Agent seeding
 
@@ -309,17 +309,17 @@ Things that fail silently, in rough order of how much time they cost.
 
 ## Verification Steps
 
-1. The single migration applies; `[ObsidianContent]` exists with the cascade FK; the block type, skills, tools, and agent are all registered. No other migration or hotfix is involved.
+1. The single migration applies; `[CustomComponent]` exists with the cascade FK; the block type, skills, tools, and agent are all registered. No other migration or hotfix is involved.
 2. Place the block on a page as an administrator. Author a component in the editor. Save compiles on the server, stores, and renders. A syntax error stores nothing and surfaces the compiler's message in the editor.
 3. View the same page as a non-administrator. The component renders and `Source` is not present in the payload.
 4. Restart the application. Skill and tool names and descriptions are unchanged, proving the seeded values match what startup re-registration derives.
 5. Through an MCP client connected to `/api/v2/mcp/vibe-coding`: `GetRockVersion` returns this instance's version.
-6. `CreatePage` with a route, then `AddBlock` with the Obsidian Content Detail block type. The friendly URL resolves.
-7. `SetContentSource` with a valid component. It compiles server side and stores. The page renders it.
-8. `SetContentSource` with a syntax error. Nothing is stored, and the compiler's error text comes back.
-9. `SetContentSource` with pathologically deep nesting (several hundred levels). It returns an error and **the site keeps serving**. This is the regression test for the whole compile design.
+6. `CreatePage` with a route, then `AddBlock` with the Custom Component block type. The friendly URL resolves.
+7. `SetComponentSource` with a valid component. It compiles server side and stores. The page renders it.
+8. `SetComponentSource` with a syntax error. Nothing is stored, and the compiler's error text comes back.
+9. `SetComponentSource` with pathologically deep nesting (several hundred levels). It returns an error and **the site keeps serving**. This is the regression test for the whole compile design.
 10. `CreateLavaEndpoint` returns a test execution result. Point a component at it with `useLavaApp` and confirm the data renders.
-11. Rename the Chromium install directory and call `SetContentSource`, then save from the block editor. Both report a retryable condition rather than hanging or reporting a source error.
+11. Rename the Chromium install directory and call `SetComponentSource`, then save from the block editor. Both report a retryable condition rather than hanging or reporting a source error.
 
 ## Open Questions
 
@@ -388,7 +388,7 @@ Rejected. The existing endpoint already carries authenticated per-person request
 
 ## Related
 
-Superseded by this spec, all still in `specs/`:
+Superseded by this spec, preserved in `specs/` on the exploration branch `feature-kh-obsidian-content` (they are not carried to the rebuild branch). They predate the rename, so they use the feature's working name, Obsidian Content:
 
 - `specs/260721-obsidian-content-block-and-component-model.md` (the block, model and browser compile)
 - `specs/260722-mcp-driven-obsidian-content-vibe-coding.md` (lifting authoring into MCP)
@@ -401,7 +401,7 @@ Superseded by this spec, all still in `specs/`:
 Current as-built documentation:
 
 - [docs/ai/vibe-coding-architecture.md](../docs/ai/vibe-coding-architecture.md)
-- [docs/cms/obsidian-content.md](../docs/cms/obsidian-content.md)
+- [docs/cms/custom-component.md](../docs/cms/custom-component.md)
 
 Patterns to copy:
 
