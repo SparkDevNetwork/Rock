@@ -19,7 +19,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Skills.PageBuilderSkill;
+using Rock.AI.Agent.Classes.Skills.PageSkill;
 using Rock.Configuration;
 using Rock.Model;
 using Rock.Security;
@@ -28,13 +28,13 @@ using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills;
 
-internal sealed partial class PageBuilderSkill
+internal sealed partial class PageSkill
 {
     #region Tool(s)
 
-    [Description( "Adds a block to a page in the specified zone. Returns the new block's IdKey, which is the block id the CustomComponent skill's SetComponentSource tool needs." )]
+    [Description( "Adds a block to a page in the specified zone. Returns the new block's IdKey, which is the block id the CustomComponent skill's AddOrUpdateCustomComponent tool needs." )]
     [AgentToolPreamble( "Adding the block to the page." )]
-    [AgentUsage( "blockType is the block type name or guid; ask the user which block if not specified. For vibe-coded content use the 'Custom Component' block type. Returns the block IdKey to pass as blockId to the CustomComponent skill's SetComponentSource tool." )]
+    [AgentUsage( "blockType is the block type name or guid; ask the user which block if not specified. For vibe-coded content use the 'Custom Component' block type. Returns the block IdKey to pass as blockId to the CustomComponent skill's AddOrUpdateCustomComponent tool." )]
     [AgentToolGuid( "05C9C108-4516-46B7-85FB-5C8FE6212CCF" )]
     public AgentToolResult AddBlock(
         [Description( "The IdKey or guid of the page to add the block to." )]

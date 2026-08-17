@@ -81,9 +81,9 @@ flowchart TD
     User["User in a chat"] --> Client["MCP client (Claude)"]
     Client -->|"coding guide, controls catalog"| KB["Rock knowledge base MCP<br/>(outside Rock)"]
     Client -->|"/api/v2/mcp/vibe-coding"| Agent["Vibe Agent<br/>AIAgent, AgentType.Mcp"]
-    Agent --> PB["PageBuilder<br/>FindPages, CreatePage, AddBlock"]
-    Agent --> LD["LavaData<br/>Create/Get/Update/Delete endpoint"]
-    Agent --> VC["CustomComponent<br/>GetRockVersion, Get/SetComponentSource"]
+    Agent --> PB["Page<br/>SearchPages, AddPage, AddBlock"]
+    Agent --> LD["LavaApplication<br/>AddOrUpdate/Get/Delete endpoint"]
+    Agent --> VC["CustomComponent<br/>GetRockVersion, GetCustomComponent, AddOrUpdateCustomComponent"]
     PB --> Page["Page + Custom Component block"]
     LD --> Lava["Lava application + JSON endpoints"]
     VC --> Compile["Compile in headless Chromium"]
@@ -163,7 +163,7 @@ The security posture is one method: `CompiledContent` goes to every viewer; `Sou
 
 Vue side, `Rock.JavaScript.Obsidian.Blocks/src/Cms/customComponentDetail.obs` plus partials for the edit panel and the view panel. The edit experience is deliberately small: a code editor, save and cancel, and a notification box for compile errors. There is no live preview, no in-browser compiler, no sandboxed iframe, and no debounced compile loop. The exploration built all of those (roughly 360 lines plus an `allow-same-origin` sandbox caveat) and this rebuild drops them.
 
-Save sends `Source` only. The block action compiles through the layer 4 service, stores source and compiled output together on success, and on failure stores nothing and returns the compiler's error text for the notification box. This is the same code path `SetComponentSource` uses, so the human editor and the agent exercise one compile-and-store implementation. If the compile browser is still provisioning, save reports a retryable condition, exactly as the skill does.
+Save sends `Source` only. The block action compiles through the layer 4 service, stores source and compiled output together on success, and on failure stores nothing and returns the compiler's error text for the notification box. This is the same code path `AddOrUpdateCustomComponent` uses, so the human editor and the agent exercise one compile-and-store implementation. If the compile browser is still provisioning, save reports a retryable condition, exactly as the skill does.
 
 **Rendering runs the stored module by hand**: supply a fake `System` object to capture the registration, resolve each dependency through Rock's real loader, execute, mount. It cannot simply load a URL, because Rock's loader appends `.js` and `?fingerprint` to any path, which a `blob:` URL cannot carry.
 
@@ -171,7 +171,7 @@ No compiler ever loads in the browser.
 
 ### Layer 4: Server-side compile
 
-`Rock/Cms/CustomComponentCompiler.cs`. Runs the bundle in a page of the headless Chromium Rock already manages for PDF generation, via PuppeteerSharp. It serves both writers: the block's save action (layer 3) and the agent's `SetComponentSource` (layer 6).
+`Rock/Cms/CustomComponentCompiler.cs`. Runs the bundle in a page of the headless Chromium Rock already manages for PDF generation, via PuppeteerSharp. It serves both writers: the block's save action (layer 3) and the agent's `AddOrUpdateCustomComponent` (layer 6).
 
 **Nothing new is added to run it.** PuppeteerSharp and a pinned Chromium build already ship for `Rock/Pdf/PdfGenerator.cs`. Reuse the install path (`~/App_Data/ChromeEngine`) and call `PdfGenerator.BrowserVersion` so the pin lives in one place.
 
@@ -206,49 +206,51 @@ Three small changes to existing Lava application infrastructure:
 
 ### Layer 6: Agent skills
 
-Three `AgentSkillComponent` subclasses. They compose by handing off identifiers: PageBuilder returns a block `IdKey`, CustomComponent writes against it, LavaData feeds it.
+Three `AgentSkillComponent` subclasses. They compose by handing off identifiers: Page returns a block `IdKey`, CustomComponent writes against it, LavaApplication feeds it.
 
-**They are built to the established skill shape, not the exploration's.** The exploration placed them loose in the `Rock` project as monolithic files (`LavaDataSkill.cs` reached 1,243 lines) and diverged from the 21 shipped skills on nearly every convention. The rebuild follows the shipped pattern exactly:
+**They are built to the established skill shape, not the exploration's.** The exploration placed them loose in the `Rock` project as monolithic files (`LavaApplicationSkill.cs` reached 1,243 lines) and diverged from the 21 shipped skills on nearly every convention. The rebuild follows the shipped pattern exactly:
 
 - **Location**: `Rock.AI.Agent/Skills/`, namespace `Rock.AI.Agent.Skills` (file scoped), beside the existing 21. Typed result classes go in `Rock.AI.Agent/Classes/Skills/{SkillName}/`.
 - **Shape**: `internal sealed partial class`. The skill file is a shell (fields, constructor, regions); each tool lives in its own partial file named `{Skill}.{ToolName}.cs`.
 - **Constructor**: takes `ILogger<TSkill>`, null-guarded into `_logger`, handed to `AgentToolHelper`.
 - **Class attributes**, in the established order: `[Description]`, `[AgentPurpose]`, `[AgentUsage]`, `[AgentSkillGuid]`, `[EntityTypeGuid]`. No `[AgentSkillName]`; nothing consumes it.
 - **Tool attributes**: `[Description]` first on every tool method. This is load bearing: startup re-registration overwrites the stored tool description from that attribute, so a tool without one has its seeded description nulled on the next application start. Drop `[AgentToolName]` restating the method name; add `[AgentToolReturnDescription]` where the return shape is not obvious.
-- **Parameters**: inline `[Description]` on parameters; XML doc comments are not compiled into the assembly and never reach the model. Update tools use `SetOrClear<T>` so "not supplied" and "clear it" are distinguishable. Tools with long behavior-parameter lists (the exploration's `CreateLavaEndpoint` took 10 positional primitives) take a typed request object instead.
+- **Parameters**: inline `[Description]` on parameters; XML doc comments are not compiled into the assembly and never reach the model. Update tools use `SetOrClear<T>` so "not supplied" and "clear it" are distinguishable. Tools with long behavior-parameter lists (the exploration's create-endpoint tool took 10 positional primitives) take a typed request object instead.
+- **Verb vocabulary**: tool names use only the established verbs. Reads are `Lookup`, `List`, `Get`, or `Search`; writes are `AddOrUpdate`, `Update`, or `Delete`. No `Create`, `Find`, or `Set`, and write pairs follow the `AddOrUpdateX` plus `DeleteX` shape the shipped skills use.
 - **Plumbing**: entity resolution, security checks, and error accumulation go through `AgentToolHelper` (`GetRequiredEntity<T>` with `checkSecurity: true`, `AddError`, `HasErrors`, `ErrorResult`, `SaveChangesIfNoErrors`). Errors accumulate rather than returning on the first, so the agent fixes a bad call in one round trip. `RockContext` comes from `AgentRequestContext.RockContext`, never `new RockContext()`. Integer-identifier acceptance follows the site's `DisablePredictableIds` setting consistently across all three skills.
 - **Results**: typed classes deriving `EntityResultBase`, never anonymous types. Large payloads are trimmed into history with `.WithHistoryContent(...)`.
 - **Naming**: startup registration derives each `AISkill.Name` from the class name split-cased and rewrites it on every start. Seeded names and descriptions (layer 7) must therefore match the class name and the class `[Description]` exactly, or the seeded values last only until the first restart.
 
 | Skill | Skill GUID / EntityType GUID | Tools | Gate |
 |---|---|---|---|
-| PageBuilder | `EE27BE5A-1276-433F-A636-1BEF3550EC1E` / `1D5FD674-F94D-4166-BC10-F2EA86412C4B` | `FindPages`, `CreatePage`, `AddBlock` | ADMINISTRATE of the page |
-| LavaData | `8660E7C0-1101-4058-BAF5-20B860600027` / `CABB72CF-DD09-48CD-9BB9-4819488BC7CA` | `CreateLavaEndpoint`, `GetLavaEndpoint`, `UpdateLavaEndpoint`, `DeleteLavaEndpoint`, `DeleteLavaApplication` | ADMINISTRATE of the application |
-| CustomComponent | `647770A9-F3D7-4924-B046-5C9C43959ECB` / `4C833FA4-A7EF-4D49-9549-B24CBB629A73` | `GetRockVersion`, `GetComponentSource`, `SetComponentSource` | EDIT of the block (`GetRockVersion` ungated) |
+| Page | `EE27BE5A-1276-433F-A636-1BEF3550EC1E` / `1D5FD674-F94D-4166-BC10-F2EA86412C4B` | `SearchPages`, `AddPage`, `AddBlock` | ADMINISTRATE of the page |
+| LavaApplication | `8660E7C0-1101-4058-BAF5-20B860600027` / `CABB72CF-DD09-48CD-9BB9-4819488BC7CA` | `AddOrUpdateLavaEndpoint`, `GetLavaEndpoint`, `DeleteLavaEndpoint`, `DeleteLavaApplication` | ADMINISTRATE of the application |
+| CustomComponent | `647770A9-F3D7-4924-B046-5C9C43959ECB` / `4C833FA4-A7EF-4D49-9549-B24CBB629A73` | `GetRockVersion`, `GetCustomComponent`, `AddOrUpdateCustomComponent` | EDIT of the block (`GetRockVersion` ungated) |
 
 Tool GUIDs:
 
 ```
-FindPages              C668CAE0-CFA7-4AFF-87FF-5025860170BA
-CreatePage             4A64B0B9-0DF9-42CF-BF5C-8FE24EFA4633
-AddBlock               05C9C108-4516-46B7-85FB-5C8FE6212CCF
-CreateLavaEndpoint     9066DD4A-2158-4B1C-87E3-4058CBEE1E5C
-GetLavaEndpoint        11AE1557-1EF3-4E03-9E8E-FCF99F72FCD9
-UpdateLavaEndpoint     2F92D13B-A2A2-455C-8324-57A181D505C2
-DeleteLavaEndpoint     B3E1A5C7-6F24-4D1B-9C88-05D7F42A61E9
-DeleteLavaApplication  9A47C2D1-83B5-4E60-A7F3-1B58C90D24E6
-GetRockVersion         3E7A1C42-8B95-4D06-A1F3-2C64D9B7E508
-GetComponentSource       7D3A8200-3A90-44CC-9E30-B600383E835F
-SetComponentSource       26FFEE94-4868-4DEC-BE40-68FBE30DAEB8
+SearchPages                 C668CAE0-CFA7-4AFF-87FF-5025860170BA
+AddPage                     4A64B0B9-0DF9-42CF-BF5C-8FE24EFA4633
+AddBlock                    05C9C108-4516-46B7-85FB-5C8FE6212CCF
+AddOrUpdateLavaEndpoint     9066DD4A-2158-4B1C-87E3-4058CBEE1E5C
+GetLavaEndpoint             11AE1557-1EF3-4E03-9E8E-FCF99F72FCD9
+DeleteLavaEndpoint          B3E1A5C7-6F24-4D1B-9C88-05D7F42A61E9
+DeleteLavaApplication       9A47C2D1-83B5-4E60-A7F3-1B58C90D24E6
+GetRockVersion              3E7A1C42-8B95-4D06-A1F3-2C64D9B7E508
+GetCustomComponent          7D3A8200-3A90-44CC-9E30-B600383E835F
+AddOrUpdateCustomComponent  26FFEE94-4868-4DEC-BE40-68FBE30DAEB8
 ```
+
+The exploration also had an `UpdateLavaEndpoint` tool (`2F92D13B-A2A2-455C-8324-57A181D505C2`). It was merged into `AddOrUpdateLavaEndpoint` to match the established `AddOrUpdateX` plus `DeleteX` write shape, and its GUID is retired: it must not be reused.
 
 Behavior worth specifying:
 
-- **`CreatePage` takes a kebab-case route** and publishes `PageRouteWasUpdatedMessage`, or the friendly URL 404s until restart.
-- **`CreateLavaEndpoint` groups by application.** One application per block, named after the dashboard, so security is rigged once.
-- **Delete tools only accept records this skill created**, identified by `ForeignKey = "AI-Agent:LavaDataSkill"`. The provenance stamp is the entire safety model: the skill can unwind its own work and nothing else.
+- **`AddPage` takes a kebab-case route** and publishes `PageRouteWasUpdatedMessage`, or the friendly URL 404s until restart.
+- **`AddOrUpdateLavaEndpoint` groups by application.** One application per block, named after the dashboard, so security is rigged once.
+- **Update and delete only accept records this skill created**, identified by `ForeignKey = "AI-Agent:LavaDataSkill"` (an opaque provenance token that predates the skill's rename and must never change). The provenance stamp is the entire safety model: the skill can modify and unwind its own work and nothing else, so an upsert can never overwrite a hand-authored endpoint that happens to share a slug.
 - **`Sql` is refused** without a `sqlJustification` argument, because raw SQL bypasses Rock's per-row entity security while the entity commands respect it.
-- **`SetComponentSource` stores nothing on compile failure** and returns the compiler's error text.
+- **`AddOrUpdateCustomComponent` stores nothing on compile failure** and returns the compiler's error text.
 
 ### Layer 7: Agent seeding
 
@@ -314,12 +316,12 @@ Things that fail silently, in rough order of how much time they cost.
 3. View the same page as a non-administrator. The component renders and `Source` is not present in the payload.
 4. Restart the application. Skill and tool names and descriptions are unchanged, proving the seeded values match what startup re-registration derives.
 5. Through an MCP client connected to `/api/v2/mcp/vibe-coding`: `GetRockVersion` returns this instance's version.
-6. `CreatePage` with a route, then `AddBlock` with the Custom Component block type. The friendly URL resolves.
-7. `SetComponentSource` with a valid component. It compiles server side and stores. The page renders it.
-8. `SetComponentSource` with a syntax error. Nothing is stored, and the compiler's error text comes back.
-9. `SetComponentSource` with pathologically deep nesting (several hundred levels). It returns an error and **the site keeps serving**. This is the regression test for the whole compile design.
-10. `CreateLavaEndpoint` returns a test execution result. Point a component at it with `useLavaApp` and confirm the data renders.
-11. Rename the Chromium install directory and call `SetComponentSource`, then save from the block editor. Both report a retryable condition rather than hanging or reporting a source error.
+6. `AddPage` with a route, then `AddBlock` with the Custom Component block type. The friendly URL resolves.
+7. `AddOrUpdateCustomComponent` with a valid component. It compiles server side and stores. The page renders it.
+8. `AddOrUpdateCustomComponent` with a syntax error. Nothing is stored, and the compiler's error text comes back.
+9. `AddOrUpdateCustomComponent` with pathologically deep nesting (several hundred levels). It returns an error and **the site keeps serving**. This is the regression test for the whole compile design.
+10. `AddOrUpdateLavaEndpoint` returns a test execution result. Point a component at it with `useLavaApp` and confirm the data renders.
+11. Rename the Chromium install directory and call `AddOrUpdateCustomComponent`, then save from the block editor. Both report a retryable condition rather than hanging or reporting a source error.
 
 ## Open Questions
 

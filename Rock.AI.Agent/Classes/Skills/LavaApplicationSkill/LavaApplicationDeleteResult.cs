@@ -14,20 +14,26 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.AI.Agent.Classes.Skills.CustomComponentSkill;
+namespace Rock.AI.Agent.Classes.Skills.LavaApplicationSkill;
 
 /// <summary>
-/// Result model for a successful Custom Component compile and save.
+/// Result model for a Lava application that was deleted by the skill.
 /// </summary>
-internal class ComponentSaveResult
+internal class LavaApplicationDeleteResult
 {
     /// <summary>
-    /// The IdKey of the block placement whose component was saved.
+    /// Whether the application was deleted.
     /// </summary>
-    public string BlockIdKey { get; set; }
+    public bool IsDeleted { get; set; }
 
     /// <summary>
-    /// The Vue version the stored output was compiled against.
+    /// The slug of the application that was deleted.
     /// </summary>
-    public string CompiledVueVersion { get; set; }
+    public string ApplicationSlug { get; set; }
+
+    /// <summary>
+    /// How many of the skill's own endpoints were deleted along with the
+    /// application.
+    /// </summary>
+    public int DeletedEndpointCount { get; set; }
 }

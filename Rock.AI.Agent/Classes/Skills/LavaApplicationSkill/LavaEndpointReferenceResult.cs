@@ -14,12 +14,14 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.AI.Agent.Classes.Skills.LavaDataSkill;
+namespace Rock.AI.Agent.Classes.Skills.LavaApplicationSkill;
 
 /// <summary>
-/// Result model for reading the full configuration of a Lava endpoint.
+/// Trimmed reference to a Lava endpoint, used as the history content for
+/// results whose full payload (templates, test output) is too large to keep
+/// in session context.
 /// </summary>
-internal class LavaEndpointDetailResult
+internal class LavaEndpointReferenceResult
 {
     /// <summary>
     /// The slug of the Lava application the endpoint belongs to.
@@ -35,36 +37,6 @@ internal class LavaEndpointDetailResult
     /// The HTTP method the endpoint answers.
     /// </summary>
     public string Method { get; set; }
-
-    /// <summary>
-    /// The display name of the endpoint.
-    /// </summary>
-    public string Name { get; set; }
-
-    /// <summary>
-    /// Whether the endpoint is active and able to answer requests.
-    /// </summary>
-    public bool IsActive { get; set; }
-
-    /// <summary>
-    /// The Lava template that produces the response body.
-    /// </summary>
-    public string CodeTemplate { get; set; }
-
-    /// <summary>
-    /// The comma-delimited Lava commands the template is allowed to use.
-    /// </summary>
-    public string EnabledLavaCommands { get; set; }
-
-    /// <summary>
-    /// How the endpoint authorizes execution.
-    /// </summary>
-    public string SecurityMode { get; set; }
-
-    /// <summary>
-    /// The MIME content type the endpoint's response declares.
-    /// </summary>
-    public string ContentType { get; set; }
 
     /// <summary>
     /// The URL a client uses to call the endpoint.

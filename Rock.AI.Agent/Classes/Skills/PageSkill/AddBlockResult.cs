@@ -16,25 +16,22 @@
 
 using Rock.AI.Agent.Classes.Entity;
 
-namespace Rock.AI.Agent.Classes.Skills.PageBuilderSkill;
+namespace Rock.AI.Agent.Classes.Skills.PageSkill;
 
 /// <summary>
-/// Lightweight result model for a page matched by the FindPages tool.
+/// Result model for a block added to a page by the AddBlock tool. The IdKey
+/// is the block id to pass to the CustomComponent skill's
+/// AddOrUpdateCustomComponent tool.
 /// </summary>
-internal class PageResult : EntityResultBase
+internal class AddBlockResult : EntityResultBase
 {
     /// <summary>
-    /// The internal (administrative) name of the page.
+    /// The zone on the page the block was placed in.
     /// </summary>
-    public string InternalName { get; set; }
+    public string Zone { get; set; }
 
     /// <summary>
-    /// The title shown to visitors when the page renders.
+    /// The relative URL of the page the block was added to.
     /// </summary>
-    public string PageTitle { get; set; }
-
-    /// <summary>
-    /// The name of the site the page belongs to, when known.
-    /// </summary>
-    public string SiteName { get; set; }
+    public string PageUrl { get; set; }
 }

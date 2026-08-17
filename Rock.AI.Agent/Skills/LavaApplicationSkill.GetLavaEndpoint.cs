@@ -17,20 +17,20 @@
 using System.ComponentModel;
 
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Skills.LavaDataSkill;
+using Rock.AI.Agent.Classes.Skills.LavaApplicationSkill;
 using Rock.Cms;
 using Rock.Configuration;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills;
 
-internal sealed partial class LavaDataSkill
+internal sealed partial class LavaApplicationSkill
 {
     #region Tool(s)
 
     [Description( "Reads the current template and configuration of a Lava endpoint so it can be iterated on." )]
     [AgentToolPreamble( "Reading the Lava endpoint." )]
-    [AgentUsage( "Read the endpoint before changing it, so an UpdateLavaEndpoint call replaces the template you expect. Endpoints are keyed by slug AND method." )]
+    [AgentUsage( "Read the endpoint before changing it, so an AddOrUpdateLavaEndpoint call replaces the template you expect. Endpoints are keyed by slug AND method." )]
     [AgentToolGuid( "11AE1557-1EF3-4E03-9E8E-FCF99F72FCD9" )]
     public AgentToolResult GetLavaEndpoint(
         [Description( "The slug of the Lava application the endpoint belongs to." )]

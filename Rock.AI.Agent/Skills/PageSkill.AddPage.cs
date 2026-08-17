@@ -18,7 +18,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Skills.PageBuilderSkill;
+using Rock.AI.Agent.Classes.Skills.PageSkill;
 using Rock.Bus.Message;
 using Rock.Configuration;
 using Rock.Model;
@@ -28,16 +28,16 @@ using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills;
 
-internal sealed partial class PageBuilderSkill
+internal sealed partial class PageSkill
 {
     #region Tool(s)
 
-    [Description( "Creates a new child page under a parent page, inheriting the parent's layout and therefore its site and zones. Pass a kebab-case route so the page gets a friendly URL." )]
+    [Description( "Adds a new child page under a parent page, inheriting the parent's layout and therefore its site and zones. Pass a kebab-case route so the page gets a friendly URL." )]
     [AgentToolPreamble( "Creating the page." )]
     [AgentUsage( "parentPage is where the new page lives; ask the user for it if not specified. The new page inherits the parent's layout." )]
     [AgentUsage( "Pass route so the page gets a friendly kebab-case URL ('serving-dashboard'). Without it the page is only reachable at /page/id." )]
     [AgentToolGuid( "4A64B0B9-0DF9-42CF-BF5C-8FE24EFA4633" )]
-    public AgentToolResult CreatePage(
+    public AgentToolResult AddPage(
         [Description( "The IdKey or guid of the parent page the new page will live under." )]
         string parentPage,
 
@@ -161,7 +161,7 @@ internal sealed partial class PageBuilderSkill
         // Flush the parent so the new child appears in navigation.
         PageCache.Remove( parent.Id );
 
-        var result = Success( new CreatePageResult
+        var result = Success( new AddPageResult
         {
             Id = page.Id,
             Guid = page.Guid,
@@ -171,7 +171,7 @@ internal sealed partial class PageBuilderSkill
 
         if ( normalizedRoute == null )
         {
-            result.WithInstructions( $"The page was created without a route, so it is only reachable at /page/{page.Id}. Pass a kebab-case route to CreatePage next time, or tell the user the page has no friendly URL until one is added through Page Properties." );
+            result.WithInstructions( $"The page was created without a route, so it is only reachable at /page/{page.Id}. Pass a kebab-case route to AddPage next time, or tell the user the page has no friendly URL until one is added through Page Properties." );
         }
 
         return result;

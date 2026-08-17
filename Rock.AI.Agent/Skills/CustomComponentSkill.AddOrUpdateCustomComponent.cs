@@ -35,7 +35,7 @@ internal sealed partial class CustomComponentSkill
     [AgentToolPreamble( "Compiling and saving the component source." )]
     [AgentUsage( "blockId is the block placement to write; source is the authored Vue single-file-component. The server compiles the source and either stores the result or returns the compile errors for you to fix and retry. Nothing is stored when the compile fails." )]
     [AgentToolGuid( "26FFEE94-4868-4DEC-BE40-68FBE30DAEB8" )]
-    public AgentToolResult SetComponentSource(
+    public AgentToolResult AddOrUpdateCustomComponent(
         [Description( "The id of the Custom Component block placement to write." )]
         string blockId,
 
@@ -92,7 +92,7 @@ internal sealed partial class CustomComponentSkill
 
                 Reason: A missing browser is a wait, not a compile error.
             */
-            helper.AddError( "The server could not compile because its browser engine is still being provisioned. Nothing was saved. This is not a problem with your source. Tell the user the instance needs its PDF/browser engine installed, which happens automatically the first time a PDF is generated, and try SetComponentSource again in a few minutes." );
+            helper.AddError( "The server could not compile because its browser engine is still being provisioned. Nothing was saved. This is not a problem with your source. Tell the user the instance needs its PDF/browser engine installed, which happens automatically the first time a PDF is generated, and try AddOrUpdateCustomComponent again in a few minutes." );
 
             return helper.ErrorResult;
         }
@@ -110,7 +110,7 @@ internal sealed partial class CustomComponentSkill
 
         if ( !compileResult.IsSuccess )
         {
-            helper.AddError( "The source failed to compile. Fix the source and call SetComponentSource again. Compiler errors:\n" + string.Join( "\n", compileResult.Errors ) );
+            helper.AddError( "The source failed to compile. Fix the source and call AddOrUpdateCustomComponent again. Compiler errors:\n" + string.Join( "\n", compileResult.Errors ) );
 
             return helper.ErrorResult;
         }
@@ -124,7 +124,7 @@ internal sealed partial class CustomComponentSkill
 
         rockContext.SaveChanges();
 
-        return Success( new ComponentSaveResult
+        return Success( new CustomComponentSaveResult
         {
             BlockIdKey = block.IdKey,
             CompiledVueVersion = compileResult.VueVersion

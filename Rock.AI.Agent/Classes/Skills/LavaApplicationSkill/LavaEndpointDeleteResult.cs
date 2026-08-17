@@ -14,23 +14,30 @@
 // limitations under the License.
 // </copyright>
 
-using Rock.AI.Agent.Classes.Entity;
-
-namespace Rock.AI.Agent.Classes.Skills.PageBuilderSkill;
+namespace Rock.AI.Agent.Classes.Skills.LavaApplicationSkill;
 
 /// <summary>
-/// Result model for a page created by the CreatePage tool.
+/// Result model for a Lava endpoint that was deleted by the skill.
 /// </summary>
-internal class CreatePageResult : EntityResultBase
+internal class LavaEndpointDeleteResult
 {
     /// <summary>
-    /// The internal name of the new page.
+    /// Whether the endpoint was deleted.
     /// </summary>
-    public string Name { get; set; }
+    public bool IsDeleted { get; set; }
 
     /// <summary>
-    /// The relative URL the new page is reachable at. This is the friendly
-    /// route when one was created, otherwise the /page/id fallback.
+    /// The slug of the Lava application the endpoint belonged to.
     /// </summary>
-    public string Url { get; set; }
+    public string ApplicationSlug { get; set; }
+
+    /// <summary>
+    /// The slug of the endpoint that was deleted.
+    /// </summary>
+    public string EndpointSlug { get; set; }
+
+    /// <summary>
+    /// How many endpoints remain in the application after the delete.
+    /// </summary>
+    public int RemainingEndpointCount { get; set; }
 }

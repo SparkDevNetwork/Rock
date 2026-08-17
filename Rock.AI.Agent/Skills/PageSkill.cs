@@ -31,15 +31,15 @@ namespace Rock.AI.Agent.Skills;
     agent can stand up a place for authored content: find a parent page, create
     a child page under it, and add a block to a page. The AddBlock tool returns
     the new block's IdKey, which is exactly what the CustomComponent skill's
-    SetComponentSource tool needs, so the two skills compose
-    (CreatePage -> AddBlock -> SetComponentSource).
+    AddOrUpdateCustomComponent tool needs, so the two skills compose
+    (AddPage -> AddBlock -> AddOrUpdateCustomComponent).
 
     The page and block creation logic mirrors the core admin blocks
     (Administration ZoneBlocks and Pages): inherit the parent page's layout,
     place at the end of the siblings or zone, copy the parent's authorization
     onto the new record, and flush the affected page cache. These are
     structural, privileged changes, so every mutating tool is gated on
-    ADMINISTRATE of the target (the parent page for CreatePage, the page for
+    ADMINISTRATE of the target (the parent page for AddPage, the page for
     AddBlock).
 
     Reason: MCP-driven page and block scaffolding that feeds the Custom Component authoring flow.
@@ -51,12 +51,12 @@ namespace Rock.AI.Agent.Skills;
 /// </summary>
 [Description( "Create CMS pages and add blocks to them." )]
 [AgentPurpose( "Create a new page and add blocks to pages in Rock's CMS." )]
-[AgentUsage( "When the user wants a new page but does not say where it should live, ask them for the parent page, then use FindPages to locate and confirm it before calling CreatePage." )]
-[AgentUsage( "When the user wants to add a block but does not say which block type, ask them which one. For vibe-coded content add the 'Custom Component' block, then call the CustomComponent skill's SetComponentSource with the block id AddBlock returns." )]
+[AgentUsage( "When the user wants a new page but does not say where it should live, ask them for the parent page, then use SearchPages to locate and confirm it before calling AddPage." )]
+[AgentUsage( "When the user wants to add a block but does not say which block type, ask them which one. For vibe-coded content add the 'Custom Component' block, then call the CustomComponent skill's AddOrUpdateCustomComponent with the block id AddBlock returns." )]
 [AgentUsage( "These tools change site structure. Confirm the parent page, page name, block type, and zone with the user before creating." )]
 [AgentSkillGuid( "EE27BE5A-1276-433F-A636-1BEF3550EC1E" )]
 [EntityTypeGuid( "1D5FD674-F94D-4166-BC10-F2EA86412C4B" )]
-internal sealed partial class PageBuilderSkill : AgentSkillComponent
+internal sealed partial class PageSkill : AgentSkillComponent
 {
     #region Fields
 
@@ -70,10 +70,10 @@ internal sealed partial class PageBuilderSkill : AgentSkillComponent
     #region Constructors
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PageBuilderSkill"/> class.
+    /// Initializes a new instance of the <see cref="PageSkill"/> class.
     /// </summary>
     /// <param name="logger">Logger for diagnostics and error reporting.</param>
-    public PageBuilderSkill( ILogger<PageBuilderSkill> logger )
+    public PageSkill( ILogger<PageSkill> logger )
     {
         _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
     }

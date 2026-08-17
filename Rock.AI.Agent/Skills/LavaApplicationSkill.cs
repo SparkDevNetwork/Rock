@@ -21,7 +21,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Skills.LavaDataSkill;
+using Rock.AI.Agent.Classes.Skills.LavaApplicationSkill;
 using Rock.Data;
 using Rock.Enums.Cms;
 using Rock.Lava;
@@ -55,9 +55,10 @@ namespace Rock.AI.Agent.Skills;
     which is never test-executed; see TestExecute for why.
 
     Everything this skill creates is stamped with a ForeignKey provenance
-    value, and the delete tools refuse any record that does not carry it.
-    That stamp is the entire safety model for deletes: the skill can unwind
-    its own work and nothing else.
+    value, and the tools that change or remove existing records refuse any
+    record that does not carry it. That stamp is the entire safety model for
+    destructive operations: the skill can rework and unwind its own work and
+    nothing else.
 
     Reason: MCP-driven Lava endpoint authoring that feeds the Custom
     Component flow, gated on ADMINISTRATE and scoped by provenance.
@@ -70,7 +71,7 @@ namespace Rock.AI.Agent.Skills;
 /// </summary>
 [Description( "Create and edit Lava endpoints that return JSON data to authored components." )]
 [AgentPurpose( "Create the data endpoints an authored Custom Component calls, by writing Lava rather than searching for an existing REST endpoint." )]
-[AgentUsage( "When an authored Custom Component needs data, create a Lava endpoint with CreateLavaEndpoint. Do not search for an existing Rock REST endpoint first; write the Lava that returns exactly the JSON the component renders." )]
+[AgentUsage( "When an authored Custom Component needs data, create a Lava endpoint with AddOrUpdateLavaEndpoint. Do not search for an existing Rock REST endpoint first; write the Lava that returns exactly the JSON the component renders." )]
 [AgentUsage( "Group all of a block's endpoints under one application, named after the dashboard. Pass the same applicationSlug each time and the application is reused." )]
 [AgentUsage( "In the component, import { useLavaApp } from '@Obsidian/Utility/lavaApp', bind the application once with useLavaApp('application-slug'), then call lavaApp.invoke('endpoint-slug'). Do not hand-roll the URL, the CSRF header, or the JSON parsing." )]
 [AgentUsage( "invoke returns the same shape as invokeBlockAction. Check isSuccess before reading data, and render an empty state rather than an error when the call succeeds but legitimately has no rows." )]
@@ -84,7 +85,7 @@ namespace Rock.AI.Agent.Skills;
 [AgentGuardrail( "Raw SQL bypasses Rock's per-row security. An endpoint runs as whoever views the page, and '{% sql %}' returns every row the query matches regardless of that person's rights, while the entity commands filter results by them automatically. Treat SQL as a last resort that needs the user's informed consent, not a convenience." )]
 [AgentSkillGuid( "8660E7C0-1101-4058-BAF5-20B860600027" )]
 [EntityTypeGuid( "CABB72CF-DD09-48CD-9BB9-4819488BC7CA" )]
-internal sealed partial class LavaDataSkill : AgentSkillComponent
+internal sealed partial class LavaApplicationSkill : AgentSkillComponent
 {
     #region Fields
 
@@ -96,9 +97,11 @@ internal sealed partial class LavaDataSkill : AgentSkillComponent
 
     /// <summary>
     /// The ForeignKey value stamped on applications and endpoints this skill
-    /// creates. The delete tools only accept records carrying it, so the
-    /// skill can clean up after itself without being able to delete anything
-    /// a person authored.
+    /// creates. The destructive tools only accept records carrying it, so
+    /// the skill can clean up after itself without being able to change or
+    /// delete anything a person authored. This literal predates the class
+    /// rename from LavaDataSkill and must never change: stamped rows exist,
+    /// and the string is an opaque provenance token, not a class reference.
     /// </summary>
     private static readonly string AgentProvenanceKey = "AI-Agent:LavaDataSkill";
 
@@ -162,7 +165,7 @@ internal sealed partial class LavaDataSkill : AgentSkillComponent
         Reason: Advisory text did not stop the agent from silently choosing
         raw SQL, which bypasses per-row entity security.
     */
-    private static readonly string SqlRequiresApprovalMessage = @"This endpoint requests the 'Sql' Lava command, which needs the user's explicit approval before it can be created.
+    private static readonly string SqlRequiresApprovalMessage = @"This endpoint requests the 'Sql' Lava command, which needs the user's explicit approval before it can be saved.
 
 Raw SQL bypasses Rock's per-row security. The endpoint runs as whoever views the page, and '{% sql %}' returns every row the query matches regardless of that person's rights. The entity commands filter results by the viewer automatically, so a mistake in SQL leaks data to every visitor who can call the endpoint.
 
@@ -185,10 +188,10 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
     #region Constructors
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="LavaDataSkill"/> class.
+    /// Initializes a new instance of the <see cref="LavaApplicationSkill"/> class.
     /// </summary>
     /// <param name="logger">Logger for diagnostics and error reporting.</param>
-    public LavaDataSkill( ILogger<LavaDataSkill> logger )
+    public LavaApplicationSkill( ILogger<LavaApplicationSkill> logger )
     {
         _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
     }
@@ -655,7 +658,7 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
     /// <returns>The instruction text to attach to the result.</returns>
     private static string GetSqlApprovalInstructions( string endpointSlug, string sqlJustification )
     {
-        return $"The '{endpointSlug}' endpoint was created with the raw SQL command enabled, on this justification: {sqlJustification} State plainly in your reply that this endpoint uses raw SQL, repeat that justification, and warn that raw SQL does not honor the viewer's per-row permissions, so the template itself is responsible for every filter. If the user did not already approve this, say so rather than presenting it as settled.";
+        return $"The '{endpointSlug}' endpoint was saved with the raw SQL command enabled, on this justification: {sqlJustification} State plainly in your reply that this endpoint uses raw SQL, repeat that justification, and warn that raw SQL does not honor the viewer's per-row permissions, so the template itself is responsible for every filter. If the user did not already approve this, say so rather than presenting it as settled.";
     }
 
     /// <summary>
@@ -714,7 +717,7 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
             is now ApplicationView so the endpoint defers to the application.
 
             REVISIT: ApplicationView has not fixed this, only moved it. This
-            skill rigs no security at all. CreateLavaEndpoint builds the
+            skill rigs no security at all. AddOrUpdateLavaEndpoint builds the
             application with an empty ConfigurationRigging and no Auth rows:
 
             - ApplicationView authorizes against the application's
@@ -729,8 +732,8 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
 
             So a freshly created endpoint still cannot be called by anyone,
             administrators included, and the default path is silent because
-            the WithInstructions warning in CreateLavaEndpoint fires only for
-            EndpointExecute. The fix is for these tools to set the
+            the WithInstructions warning in AddOrUpdateLavaEndpoint fires
+            only for EndpointExecute. The fix is for these tools to set the
             authorization rather than describe it, likely by taking the
             intended audience as a parameter (staff, all authenticated
             people, or public) and writing the matching EXECUTE_VIEW Auth

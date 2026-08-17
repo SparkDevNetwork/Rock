@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.AI.Agent.Classes.Skills.LavaDataSkill;
+namespace Rock.AI.Agent.Classes.Skills.LavaApplicationSkill;
 
 /// <summary>
 /// Result model for a Lava endpoint that was created or updated, including

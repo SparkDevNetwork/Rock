@@ -18,14 +18,14 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Skills.LavaDataSkill;
+using Rock.AI.Agent.Classes.Skills.LavaApplicationSkill;
 using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills;
 
-internal sealed partial class LavaDataSkill
+internal sealed partial class LavaApplicationSkill
 {
     #region Tool(s)
 

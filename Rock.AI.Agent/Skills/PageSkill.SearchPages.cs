@@ -19,22 +19,22 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Skills.PageBuilderSkill;
+using Rock.AI.Agent.Classes.Skills.PageSkill;
 using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills;
 
-internal sealed partial class PageBuilderSkill
+internal sealed partial class PageSkill
 {
     #region Tool(s)
 
-    [Description( "Finds CMS pages by a partial name match so a page can be resolved and confirmed with the user before creating a child page under it or adding a block to it." )]
+    [Description( "Searches CMS pages by a partial name match so a page can be resolved and confirmed with the user before adding a child page under it or adding a block to it." )]
     [AgentToolPreamble( "Looking up pages." )]
-    [AgentUsage( "query is matched against the page's internal name and title. Returns the IdKey and guid to pass to CreatePage or AddBlock." )]
+    [AgentUsage( "query is matched against the page's internal name and title. Returns the IdKey and guid to pass to AddPage or AddBlock." )]
     [AgentToolGuid( "C668CAE0-CFA7-4AFF-87FF-5025860170BA" )]
-    public AgentToolResult FindPages(
+    public AgentToolResult SearchPages(
         [Description( "A partial page name to search for. Matched against the page's internal name and title." )]
         string query )
     {

@@ -39,7 +39,7 @@ namespace Rock.Cms
         (~/Obsidian/Libs/customComponentCompiler.js) in the headless Chromium that
         Rock already manages for PDF generation, reached through PuppeteerSharp.
         The server is the ONLY compile path: the block's save action and the agent
-        skill's SetComponentSource both come through here, and no compiler ever
+        skill's AddOrUpdateCustomComponent both come through here, and no compiler ever
         ships to a browser.
 
         An earlier iteration ran the bundle in an in-process Jint engine. That was

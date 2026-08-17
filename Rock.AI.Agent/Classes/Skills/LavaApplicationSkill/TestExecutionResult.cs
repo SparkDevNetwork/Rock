@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.AI.Agent.Classes.Skills.LavaDataSkill;
+namespace Rock.AI.Agent.Classes.Skills.LavaApplicationSkill;
 
 /// <summary>
 /// The outcome of rendering an endpoint's template so the agent can see

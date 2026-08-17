@@ -110,7 +110,7 @@ namespace Rock.Blocks.Cms
                 8/17/2026 - CLAUDE
 
                 The server is the only compile path, shared with the agent skill's
-                SetComponentSource tool. Compiled output is never accepted from the
+                AddOrUpdateCustomComponent tool. Compiled output is never accepted from the
                 client, so the stored source is always exactly what the stored
                 module was compiled from.
 

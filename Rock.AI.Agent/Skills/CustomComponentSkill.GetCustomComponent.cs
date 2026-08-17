@@ -34,7 +34,7 @@ internal sealed partial class CustomComponentSkill
     [AgentToolPreamble( "Reading the current component source." )]
     [AgentUsage( "blockId is the id of the Custom Component block placement to read." )]
     [AgentToolGuid( "7D3A8200-3A90-44CC-9E30-B600383E835F" )]
-    public AgentToolResult GetComponentSource(
+    public AgentToolResult GetCustomComponent(
         [Description( "The id of the Custom Component block placement to read." )]
         string blockId )
     {
@@ -67,7 +67,7 @@ internal sealed partial class CustomComponentSkill
             return NoData();
         }
 
-        return Success( new ComponentSourceResult
+        return Success( new CustomComponentResult
         {
             Source = content.Source,
             CompiledVueVersion = content.CompiledVueVersion

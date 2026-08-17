@@ -14,20 +14,23 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.AI.Agent.Classes.Skills.CustomComponentSkill;
+using Rock.AI.Agent.Classes.Entity;
+
+namespace Rock.AI.Agent.Classes.Skills.PageSkill;
 
 /// <summary>
-/// Result model for the authored source of a Custom Component block placement.
+/// Result model for a page added by the AddPage tool.
 /// </summary>
-internal class ComponentSourceResult
+internal class AddPageResult : EntityResultBase
 {
     /// <summary>
-    /// The authored Vue single-file-component source.
+    /// The internal name of the new page.
     /// </summary>
-    public string Source { get; set; }
+    public string Name { get; set; }
 
     /// <summary>
-    /// The Vue version the stored compiled output was compiled against.
+    /// The relative URL the new page is reachable at. This is the friendly
+    /// route when one was created, otherwise the /page/id fallback.
     /// </summary>
-    public string CompiledVueVersion { get; set; }
+    public string Url { get; set; }
 }

@@ -14,32 +14,20 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.AI.Agent.Classes.Skills.LavaDataSkill;
+namespace Rock.AI.Agent.Classes.Skills.CustomComponentSkill;
 
 /// <summary>
-/// Trimmed reference to a Lava endpoint, used as the history content for
-/// results whose full payload (templates, test output) is too large to keep
-/// in session context.
+/// Result model for the authored source of a Custom Component block placement.
 /// </summary>
-internal class LavaEndpointReferenceResult
+internal class CustomComponentResult
 {
     /// <summary>
-    /// The slug of the Lava application the endpoint belongs to.
+    /// The authored Vue single-file-component source.
     /// </summary>
-    public string ApplicationSlug { get; set; }
+    public string Source { get; set; }
 
     /// <summary>
-    /// The slug of the endpoint.
+    /// The Vue version the stored compiled output was compiled against.
     /// </summary>
-    public string EndpointSlug { get; set; }
-
-    /// <summary>
-    /// The HTTP method the endpoint answers.
-    /// </summary>
-    public string Method { get; set; }
-
-    /// <summary>
-    /// The URL a client uses to call the endpoint.
-    /// </summary>
-    public string Url { get; set; }
+    public string CompiledVueVersion { get; set; }
 }
