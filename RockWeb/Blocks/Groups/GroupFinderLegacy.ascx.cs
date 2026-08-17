@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Groups
     /// <summary>
     /// Block for people to find a group that matches their search parameters.
     /// </summary>
-    [DisplayName( "Group Finder" )]
+    [DisplayName( "Group Finder (Legacy)" )]
     [Category( "Groups" )]
     [Description( "Block for people to find a group that matches their search parameters." )]
     [ContextAware( typeof( Campus ) )]
@@ -255,7 +255,7 @@ namespace RockWeb.Blocks.Groups
     #endregion
 
     [Rock.SystemGuid.BlockTypeGuid( "9F8F2D68-DEEA-4686-810F-AB32923F855E" )]
-    public partial class GroupFinder : RockBlockCustomSettings
+    public partial class GroupFinderLegacy : RockBlockCustomSettings
     {
         private static class AttributeKey
         {
