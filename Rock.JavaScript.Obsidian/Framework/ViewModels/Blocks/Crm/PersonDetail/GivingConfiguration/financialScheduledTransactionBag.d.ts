@@ -22,10 +22,10 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { CurrencyInfoBag } from "@Obsidian/ViewModels/Rest/Utilities/currencyInfoBag";
 import { FinancialPaymentDetailBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingConfiguration/financialPaymentDetailBag";
 import { FinancialScheduledTransactionDetailBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingConfiguration/financialScheduledTransactionDetailBag";
 import { PersonAliasBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingConfiguration/personAliasBag";
+import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
 
 /** Contains the Financial Scheduled Transaction data for the person or business. */
 export type FinancialScheduledTransactionBag = {
@@ -36,9 +36,10 @@ export type FinancialScheduledTransactionBag = {
     authorizedPersonAlias?: PersonAliasBag | null;
 
     /**
-     * Gets or sets the currency information (symbol, decimal places, symbol
-     * location) used to format the transaction total in the scheduled
-     * transaction's own currency, honoring ForeignCurrencyCodeValueId.
+     * Gets or sets the currency information (symbol, decimal places,
+     * symbol location) used to format the transaction total in the
+     * scheduled transaction's own currency, honoring
+     * ForeignCurrencyCodeValueId.
      */
     currencyInfo?: CurrencyInfoBag | null;
 
@@ -61,9 +62,10 @@ export type FinancialScheduledTransactionBag = {
     isActive: boolean;
 
     /**
-     * Gets or sets a value indicating whether the associated financial gateway
-     * component supports inactivating (canceling) this scheduled transaction.
-     * When false, the client should hide the inactivate action.
+     * Gets or sets a value indicating whether the associated financial
+     * gateway component supports inactivating (canceling) this scheduled
+     * transaction. When false, the client should hide the inactivate
+     * action because the gateway can't honor it.
      */
     isInactivateSupported: boolean;
 
@@ -72,8 +74,8 @@ export type FinancialScheduledTransactionBag = {
 
     /**
      * Gets or sets the identifier of the saved account this scheduled
-     * transaction is drawing from. Used by the client to determine whether a
-     * saved account is "in use" without relying on name matching.
+     * transaction is drawing from. Used by the client to determine whether
+     * a saved account is "in use" without relying on name matching.
      */
     savedAccountId?: number | null;
 
