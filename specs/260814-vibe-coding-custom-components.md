@@ -108,8 +108,11 @@ Each layer is independently testable and depends only on those above it.
 | 5 | Lava endpoint data | A component can fetch what it renders |
 | 6 | Agent skills | An AI client can drive the whole loop |
 | 7 | Agent seeding | It ships preconfigured |
+| 8 | External render endpoint | It works on instances with no local browser |
 
 Layers 1 and 7 ship in the same EF migration. Scaffold the migration once, late, after the skills exist, so the table creation and the seeding land as one file with one timestamp that sorts after every existing migration.
+
+**Layers 1 through 7 are built.** Layer 8 is not, and until it is, the feature is unusable on any instance configured with an external PDF render endpoint. See [Layer 8](#layer-8-external-render-endpoint-not-built).
 
 ### Layer 1: Data model
 
@@ -189,6 +192,8 @@ The page gets the same `System.register` shim the Jint host used, for the same r
 **Why out of process is load bearing.** In-process, deeply nested source exhausted the stack, and a `StackOverflowException` cannot be caught in .NET: it terminated the worker and every request on the site. The stack that can be exhausted now belongs to a child process, so the same input closes a page and raises a catchable `TargetClosedException`. **Do not move compilation back in process.**
 
 **Chromium is never installed from this path.** `PdfGenerator` downloads on demand, which is right for a background job. Here an agent is waiting on a tool call and the download is ~100 MB. A missing browser returns a distinct `IsBrowserMissing` result, and the skill tells the caller to retry once provisioning completes.
+
+Provisioning normally needs no help: `Global.asax.cs` calls `PdfGenerator.EnsureChromeEngineInstalled()` on a background thread during `Application_Start`, so a fresh instance downloads Chromium on its own. `IsBrowserMissing` is therefore a transient race, hit only by compiling within a minute or two of a cold start. **Except on an instance with an external render endpoint, where it is permanent and the retry advice is a lie.** That is [Layer 8](#layer-8-external-render-endpoint-not-built).
 
 `CompileSource` is synchronous and called from a synchronous tool; bridge with `AsyncHelper.RunSync`, as `PdfGenerator` does.
 
@@ -270,6 +275,59 @@ The `AddOrUpdateCodeAISkill` and `AddOrUpdateCodeAISkillTool` helpers are privat
 
 `Down()` drops the table, the block type, and the seeded skill and tool rows, but leaves the agent row alone for the same reason re-running `Up()` does: it may carry administrator tuning.
 
+### Layer 8: External render endpoint (NOT BUILT)
+
+**The problem.** An instance can set the `core_PDFExternalRenderEndpoint` system setting to offload browser work to a remote Chrome. When it is set, `PdfGenerator.EnsureChromeEngineInstalled` returns immediately without downloading, by design: no local Chromium is wanted. `CustomComponentCompiler` does not know about that setting, so `IsBrowserInstalled()` is false forever, every compile returns `IsBrowserMissing`, and both writers tell the user to retry in a few minutes for a condition that will never change. **The feature is silently unusable on those instances, and the error message is misleading rather than merely unhelpful.**
+
+**The fix is small, because the pattern already exists.** The setting holds a Chrome DevTools WebSocket URL, and `PdfGenerator.InitializeChromeEngine` already branches on it (`Rock/Pdf/PdfGenerator.cs:270`):
+
+```csharp
+_puppeteerBrowser = Puppeteer.ConnectAsync( new ConnectOptions { BrowserWSEndpoint = pdfExternalRenderEndpoint } ).Result;
+```
+
+`CustomComponentCompiler` needs the same branch in two places:
+
+| Method | Change |
+|---|---|
+| `LaunchBrowserAsync` | When the setting is populated, `Puppeteer.ConnectAsync` with `BrowserWSEndpoint` instead of `Puppeteer.LaunchAsync` with `ExecutablePath` |
+| `IsBrowserInstalled` | Skip the local `File.Exists` gate entirely when the setting is populated. That gate is what currently produces the false `IsBrowserMissing` |
+
+A failed connect must return its own result, distinct from `IsBrowserMissing`, saying the configured render endpoint is unreachable and naming it. Do not reuse the provisioning message; the whole defect being fixed is a permanent condition wearing a transient message.
+
+**Three design consequences worth deciding deliberately, not by default.**
+
+- **Process isolation stops being Rock's to guarantee.** Layer 4 chose a separate browser process from `PdfGenerator`'s so a wedged compile could not disturb statement generation. Against a remote endpoint both features connect to the same remote browser, and Rock controls neither. The fresh-page-per-compile discipline becomes the only isolation left.
+- **The containment story now crosses a network boundary.** A stack-exhausting compile still cannot take down Rock, which is the property that matters. But the page it kills lives in a browser that may be shared with other tenants. Confirm `TargetClosedException` still surfaces the same way over a websocket, because that is the entire safety argument of layer 4.
+- **The compile runs authored source through Vue's compiler inside someone else's browser.** It compiles, never executes the output, so this is not the same exposure as running the component. Still, an administrator pointing Rock at a shared render service should be told this surface uses it too.
+
+**Reuse `PdfGenerator`'s reader, do not re-read the setting ad hoc.** Both places should resolve the endpoint the same way `PdfGenerator` does, so a future change to how it is stored does not leave this compiler behind.
+
+#### Verification steps for layer 8
+
+The condition is invisible without a remote browser to point at, so provision one first. Either works:
+
+```bash
+docker run -d -p 3000:3000 ghcr.io/browserless/chromium
+```
+
+or a local headless Chrome with remote debugging enabled, then read `webSocketDebuggerUrl` from `http://localhost:9222/json/version`:
+
+```bash
+chrome --headless --remote-debugging-port=9222
+```
+
+Set the endpoint in Admin Tools > General Settings > System Settings, key `core_PDFExternalRenderEndpoint`, to the `ws://` URL. Then:
+
+1. **Baseline, no regression.** With the setting empty and local Chromium installed, save a component from the block editor. It compiles and renders. This must keep working; layer 8 adds a branch, it does not replace the local path.
+2. **Remote compile, block editor.** Set the endpoint. Rename `~/App_Data/ChromeEngine` so no local browser can possibly be used. Save a component. It compiles and renders, proving the compile actually went over the websocket rather than silently falling back.
+3. **Remote compile, agent path.** With the same configuration, call `AddOrUpdateCustomComponent` through an MCP client. It compiles and stores. Both writers share one compile path, so a fix that only reaches one of them means the branch landed in the wrong place.
+4. **The regression that layer 8 must not break.** Still on the remote endpoint, submit the pathologically deep source from the layer 4 tests (several hundred nesting levels). It must return an error and **the site must keep serving**. This is the layer 4 containment guarantee re-proven across a network boundary, and it is the single most important test here.
+5. **Unreachable endpoint.** Point the setting at a dead port (`ws://localhost:1/`). A save must report that the configured render endpoint is unreachable, name it, and **must not** say the browser is being provisioned or advise retrying in a few minutes.
+6. **Reverting.** Clear the setting and restore `~/App_Data/ChromeEngine`. Compiles return to the local browser with no restart required beyond whatever the setting's cache demands.
+7. **The original defect, as a regression test.** Set the endpoint on an instance with no local Chromium at all and confirm the pre-layer-8 symptom is gone: no permanent "still being provisioned, try again in a few minutes".
+
+Steps 2 and 5 are the pair that prove the defect fixed. Step 4 is the one that must not be skipped for being tedious.
+
 ### Knowledge base dependency
 
 Control APIs and build patterns come from a Spark-curated coding guide on the Rock knowledge base, reached through its `coding_guide` topic: component anatomy, a catalog of all 247 controls with verified props and gotchas, endpoint patterns, hard rules, and worked recipes.
@@ -308,6 +366,7 @@ Things that fail silently, in rough order of how much time they cost.
 | Non-plain import statements | The compiler extracts imports by regex; side-effect and dynamic imports do not resolve |
 | Test-executing a write-capable template | Performs real, unattributed writes. Endpoints enabling `RockEntityModify` or `RockEntityDelete` are **not** test-executed for this reason |
 | Creating a page without a route | Reachable only at `/page/id` |
+| An instance with `core_PDFExternalRenderEndpoint` set | No local Chromium is ever installed, so every compile reports "still being provisioned" forever. Fixed by [Layer 8](#layer-8-external-render-endpoint-not-built) |
 
 ## Verification Steps
 
