@@ -406,18 +406,15 @@ namespace Rock.Blocks.CheckIn.Manager
         /// </summary>
         private List<PersonRightAttendanceRowBag> BuildAttendanceRows( Person person )
         {
-            var schedules = new ScheduleService( RockContext )
-                .Queryable().AsNoTracking()
-                .Where( s => s.CheckInStartOffsetMinutes.HasValue )
-                .ToList();
-
-            var scheduleIds = schedules.Select( s => s.Id ).ToList();
             var personAliasIds = person.Aliases.Select( a => a.Id ).ToList();
 
-            var personAliasService = new PersonAliasService( RockContext );
-
-            var attendances = new AttendanceService( RockContext )
-                .Queryable( "Occurrence.Schedule,Occurrence.Group,Occurrence.Location,AttendanceCode,SearchResultGroup" )
+            // Filter check-in schedules via the navigation property rather
+            // than a materialized List<int> of every check-in schedule id.
+            // The old code inlined thousands of ids into a "WHERE IN (...)"
+            // list -- this generates a clean JOIN + WHERE on Schedule.
+            var attendanceRows = new AttendanceService( RockContext )
+                .Queryable()
+                .AsNoTracking()
                 .Where( a =>
                     a.PersonAliasId.HasValue
                     && personAliasIds.Contains( a.PersonAliasId.Value )
@@ -426,17 +423,74 @@ namespace Rock.Blocks.CheckIn.Manager
                     && a.Occurrence.LocationId.HasValue
                     && a.DidAttend.HasValue
                     && a.DidAttend.Value
-                    && scheduleIds.Contains( a.Occurrence.ScheduleId.Value ) )
+                    && a.Occurrence.Schedule.CheckInStartOffsetMinutes.HasValue )
                 .OrderByDescending( a => a.StartDateTime )
                 .Take( 20 )
-                .ToList()
-                .OrderByDescending( a => a.Occurrence.OccurrenceDate )
-                .ThenByDescending( a => a.Occurrence.Schedule.StartTimeOfDay )
+                .Select( a => new
+                {
+                    a.Id,
+                    a.StartDateTime,
+                    a.EndDateTime,
+                    a.CampusId,
+                    a.CheckedInByPersonAliasId,
+                    OccurrenceDate = a.Occurrence.OccurrenceDate,
+                    ScheduleId = a.Occurrence.ScheduleId.Value,
+                    LocationId = a.Occurrence.LocationId.Value,
+                    LocationName = a.Occurrence.Location.Name,
+                    GroupName = a.Occurrence.Group.Name,
+                    Code = a.AttendanceCode != null ? a.AttendanceCode.Code : null,
+                    SearchResultGroupName = a.SearchResultGroup != null ? a.SearchResultGroup.Name : null
+                } )
                 .ToList();
 
-            if ( !attendances.Any() )
+            if ( !attendanceRows.Any() )
             {
                 return new List<PersonRightAttendanceRowBag>();
+            }
+
+            // Only fetch the Schedule entities the top-20 rows actually need
+            // (for the in-memory IsCurrentlyCheckedIn computation and their
+            // display names). Bounded to at most 20 ids -- a safe IN clause.
+            var neededScheduleIds = attendanceRows.Select( r => r.ScheduleId ).Distinct().ToList();
+            var schedulesById = new ScheduleService( RockContext )
+                .Queryable().AsNoTracking()
+                .Where( s => neededScheduleIds.Contains( s.Id ) )
+                .ToList()
+                .ToDictionary( s => s.Id );
+
+            // Sort by OccurrenceDate then Schedule start-time (in-memory,
+            // using the schedule dictionary since StartTimeOfDay is a
+            // [NotMapped] computed property EF cannot translate into SQL).
+            attendanceRows = attendanceRows
+                .OrderByDescending( a => a.OccurrenceDate )
+                .ThenByDescending( a => schedulesById.TryGetValue( a.ScheduleId, out var s ) ? s.StartTimeOfDay : TimeSpan.Zero )
+                .ToList();
+
+            // Batch the "checked in by" person lookup instead of firing one
+            // PersonAliasService.GetPerson query per row inside the render loop.
+            var checkedInByAliasIds = attendanceRows
+                .Where( a => a.CheckedInByPersonAliasId.HasValue )
+                .Select( a => a.CheckedInByPersonAliasId.Value )
+                .Distinct()
+                .ToList();
+
+            var checkedInByPersonsByAliasId = new Dictionary<int, (Guid Guid, string FullName)>();
+            if ( checkedInByAliasIds.Any() )
+            {
+                checkedInByPersonsByAliasId = new PersonAliasService( RockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( pa => checkedInByAliasIds.Contains( pa.Id ) )
+                    .Select( pa => new
+                    {
+                        AliasId = pa.Id,
+                        pa.Person.Guid,
+                        pa.Person.NickName,
+                        pa.Person.LastName
+                    } )
+                    .ToList()
+                    .ToDictionary(
+                        pa => pa.AliasId,
+                        pa => ( pa.Guid, $"{pa.NickName} {pa.LastName}".Trim() ) );
             }
 
             // Include both PersonId and AttendanceId on the row URL so the
@@ -462,23 +516,28 @@ namespace Rock.Blocks.CheckIn.Manager
 
             var rows = new List<PersonRightAttendanceRowBag>();
 
-            foreach ( var attendance in attendances )
+            foreach ( var attendance in attendanceRows )
             {
-                var isActive = attendance.IsCurrentlyCheckedIn;
-                var scheduleName = attendance.Occurrence.Schedule?.Name ?? string.Empty;
-                var locationName = attendance.Occurrence.Location?.Name ?? string.Empty;
-                var groupName = attendance.Occurrence.Group?.Name ?? string.Empty;
-                var code = attendance.AttendanceCode?.Code ?? string.Empty;
-                var searchResultGroupName = attendance.SearchResultGroup?.Name ?? string.Empty;
+                // Compute IsCurrentlyCheckedIn against the schedule dictionary
+                // we already loaded above -- no lazy loads on Occurrence.Schedule.
+                schedulesById.TryGetValue( attendance.ScheduleId, out var schedule );
+                var isActive = Attendance.CalculateIsCurrentlyCheckedIn(
+                    attendance.StartDateTime,
+                    attendance.EndDateTime,
+                    attendance.CampusId,
+                    schedule );
 
-                var checkedInByPerson = attendance.CheckedInByPersonAliasId.HasValue
-                    ? personAliasService.GetPerson( attendance.CheckedInByPersonAliasId.Value )
-                    : null;
+                var scheduleName = schedule?.Name ?? string.Empty;
+                var locationName = attendance.LocationName ?? string.Empty;
+                var groupName = attendance.GroupName ?? string.Empty;
+                var code = attendance.Code ?? string.Empty;
+                var searchResultGroupName = attendance.SearchResultGroupName ?? string.Empty;
 
                 var whenHtml = $"<span class=\"text-sm\">{attendance.StartDateTime.ToShortDateString()}</span>"
                     + $"<span class=\"d-block text-sm text-muted\">{scheduleName}</span>";
 
-                if ( checkedInByPerson != null )
+                if ( attendance.CheckedInByPersonAliasId.HasValue
+                    && checkedInByPersonsByAliasId.TryGetValue( attendance.CheckedInByPersonAliasId.Value, out var checkedInByPerson ) )
                 {
                     var byUrl = this.GetCurrentPageUrl( new Dictionary<string, string>
                     {
@@ -491,7 +550,7 @@ namespace Rock.Blocks.CheckIn.Manager
                 string locationHtml;
                 if ( isActive )
                 {
-                    managerPageQuery[PageParameterKey.LocationId] = attendance.Occurrence.LocationId.ToStringSafe();
+                    managerPageQuery[PageParameterKey.LocationId] = attendance.LocationId.ToString();
                     var managerUrl = this.GetLinkedPageUrl( AttributeKey.ManagerPage, managerPageQuery );
                     locationHtml = $"<span class=\"text-sm\"><a href=\"{managerUrl}\">{locationName}</a></span>"
                         + $"<span class=\"d-block text-sm text-muted\">{groupName}</span>";
@@ -506,11 +565,12 @@ namespace Rock.Blocks.CheckIn.Manager
                     ? $"{code} <span class=\"label label-success align-middle\">Current</span>"
                     : code;
 
-                var rowUrl = attendanceDetailPageUrlTemplate.Replace( "((AttendanceId))", attendance.IdKey );
+                var idKey = Rock.Utility.IdHasher.Instance.GetHash( attendance.Id );
+                var rowUrl = attendanceDetailPageUrlTemplate.Replace( "((AttendanceId))", idKey );
 
                 rows.Add( new PersonRightAttendanceRowBag
                 {
-                    IdKey = attendance.IdKey,
+                    IdKey = idKey,
                     WhenHtml = whenHtml,
                     LocationHtml = locationHtml,
                     CodeHtml = codeHtml,

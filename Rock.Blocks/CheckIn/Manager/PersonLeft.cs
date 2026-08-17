@@ -481,23 +481,61 @@ namespace Rock.Blocks.CheckIn.Manager
         /// </summary>
         private List<PersonLeftRelatedPersonBag> BuildFamilyBags( Person person )
         {
-            var personService = new PersonService( RockContext );
-
-            var familyMembers = personService.GetFamilyMembers( person.Id, includeSelf: true ).ToList();
-
-            var otherFamilyMembers = familyMembers
+            // Project directly to the scalar fields we actually consume so
+            // EF does not hydrate every column of GroupMember + Group +
+            // Person + GroupTypeRole (the fat query previously showed in the
+            // trace was hundreds of columns wide, most of them ignored).
+            var familyMemberRows = new PersonService( RockContext )
+                .GetFamilyMembers( person.Id, includeSelf: true )
                 .Where( m => m.PersonId != person.Id )
-                .OrderBy( m => m.GroupId )
-                .ThenBy( m => m.Person.BirthDate )
+                .Select( m => new
+                {
+                    m.GroupId,
+                    m.PersonId,
+                    m.Person.NickName,
+                    m.Person.Guid,
+                    m.Person.PhotoId,
+                    m.Person.Age,
+                    m.Person.Gender,
+                    m.Person.RecordTypeValueId,
+                    m.Person.AgeClassification,
+                    m.Person.BirthDate
+                } )
                 .ToList();
 
-            return otherFamilyMembers
-                .Select( m => new PersonLeftRelatedPersonBag
+            if ( !familyMemberRows.Any() )
+            {
+                return new List<PersonLeftRelatedPersonBag>();
+            }
+
+            return familyMemberRows
+                .OrderBy( m => m.GroupId )
+                .ThenBy( m => m.BirthDate )
+                .Select( m =>
                 {
-                    NickName = m.Person.NickName,
-                    PhotoImageTag = Person.GetPersonPhotoImageTag( m.Person, 64, 64, className: "d-block mb-spacing-tiny" ),
-                    Url = BuildProfileUrlForRelatedPerson( m.Person.Guid ),
-                    RelationshipName = null
+                    var recordTypeValueGuid = m.RecordTypeValueId.HasValue
+                        ? DefinedValueCache.Get( m.RecordTypeValueId.Value )?.Guid
+                        : null;
+
+                    var photoArgs = new GetPersonPhotoImageTagArgs
+                    {
+                        PhotoId = m.PhotoId,
+                        Age = m.Age,
+                        Gender = m.Gender,
+                        RecordTypeValueGuid = recordTypeValueGuid,
+                        AgeClassification = m.AgeClassification,
+                        MaxWidth = 64,
+                        MaxHeight = 64,
+                        ClassName = "d-block mb-spacing-tiny"
+                    };
+
+                    return new PersonLeftRelatedPersonBag
+                    {
+                        NickName = m.NickName,
+                        PhotoImageTag = Person.GetPersonPhotoImageTag( m.PersonId, photoArgs ),
+                        Url = BuildProfileUrlForRelatedPerson( m.Guid ),
+                        RelationshipName = null
+                    };
                 } )
                 .ToList();
         }
@@ -526,14 +564,13 @@ namespace Rock.Blocks.CheckIn.Manager
                 .Where( r => r.GroupTypeId == knownRelationshipsGroupTypeId.Value )
                 .ToList();
 
+            // Load attributes for all the roles in one round trip rather
+            // than one query per role inside the loop below.
+            Rock.Attribute.Helper.LoadAttributes( knownRelationshipRoles, RockContext, null );
+
             var checkInInverseRoleIds = new List<int>();
             foreach ( var role in knownRelationshipRoles )
             {
-                // Known-relationship roles are a small set (typically fewer
-                // than 20). Loading each role's attributes here is preferable
-                // to a bulk lift for readability.
-                role.LoadAttributes( RockContext );
-
                 if ( !role.GetAttributeValue( "CanCheckin" ).AsBoolean() )
                 {
                     continue;
@@ -562,21 +599,46 @@ namespace Rock.Blocks.CheckIn.Manager
                 return new List<PersonLeftRelatedPersonBag>();
             }
 
-            var personService = new PersonService( RockContext );
-
-            var relatedMembers = personService
+            // GetRelatedPeople does not Include GroupRole or Person on the
+            // returned group members, so touching either navigation property
+            // in a Select / OrderBy would lazy-load once per member. Batch
+            // both up-front instead:
+            //   * Role names come from knownRelationshipRoles (already loaded
+            //     above) via a small in-memory dictionary.
+            //   * Related-person entities come from one PersonService query
+            //     keyed by their PersonId.
+            var relatedMembers = new PersonService( RockContext )
                 .GetRelatedPeople( new List<int> { person.Id }, checkInInverseRoleIds )
-                .OrderBy( m => m.Person.LastName )
-                .ThenBy( m => m.Person.NickName )
                 .ToList();
 
+            if ( !relatedMembers.Any() )
+            {
+                return new List<PersonLeftRelatedPersonBag>();
+            }
+
+            var roleNamesById = knownRelationshipRoles.ToDictionary( r => r.Id, r => r.Name );
+
+            var relatedPersonIds = relatedMembers.Select( m => m.PersonId ).Distinct().ToList();
+            var personsById = new PersonService( RockContext )
+                .Queryable().AsNoTracking()
+                .Where( p => relatedPersonIds.Contains( p.Id ) )
+                .ToList()
+                .ToDictionary( p => p.Id );
+
             return relatedMembers
-                .Select( m => new PersonLeftRelatedPersonBag
+                .Where( m => personsById.ContainsKey( m.PersonId ) )
+                .OrderBy( m => personsById[m.PersonId].LastName )
+                .ThenBy( m => personsById[m.PersonId].NickName )
+                .Select( m =>
                 {
-                    NickName = m.Person.NickName,
-                    PhotoImageTag = Person.GetPersonPhotoImageTag( m.Person, 50, 50, className: "rounded" ),
-                    Url = BuildProfileUrlForRelatedPerson( m.Person.Guid ),
-                    RelationshipName = m.GroupRole.Name
+                    var relatedPerson = personsById[m.PersonId];
+                    return new PersonLeftRelatedPersonBag
+                    {
+                        NickName = relatedPerson.NickName,
+                        PhotoImageTag = Person.GetPersonPhotoImageTag( relatedPerson, 50, 50, className: "rounded" ),
+                        Url = BuildProfileUrlForRelatedPerson( relatedPerson.Guid ),
+                        RelationshipName = roleNamesById.TryGetValue( m.GroupRoleId, out var name ) ? name : string.Empty
+                    };
                 } )
                 .ToList();
         }
