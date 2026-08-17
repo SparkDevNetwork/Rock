@@ -1,0 +1,36 @@
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+namespace Rock.ViewModels.Blocks.Cms.CustomComponentDetail
+{
+    /// <summary>
+    /// The request sent to the SaveContent block action when an authorized
+    /// editor saves an authored custom component.
+    /// </summary>
+    /// <remarks>
+    /// The request carries only the source. The server is the sole compile
+    /// path, so compiled output is never accepted from a caller.
+    /// </remarks>
+    public class SaveCustomComponentRequestBag
+    {
+        /// <summary>
+        /// Gets or sets the clean Vue source the author wrote.
+        /// </summary>
+        /// <value>The authored Vue source.</value>
+        public string Source { get; set; }
+    }
+}
