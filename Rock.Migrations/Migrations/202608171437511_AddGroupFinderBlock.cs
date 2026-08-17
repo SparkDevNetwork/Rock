@@ -17,10 +17,31 @@
 namespace Rock.Migrations
 {
     /// <summary>
-    ///
+    /// Adds the Obsidian Group Finder block and the Meeting Style columns behind its meeting-style
+    /// filter, and renames the WebForms Group Finder to "Group Finder (Legacy)" so the new block takes
+    /// over the name.
     /// </summary>
     public partial class AddGroupFinderBlock : Rock.Migrations.RockMigration
     {
+        #region Constants
+
+        /// <summary>
+        /// The WebForms Group Finder block type Guid, carried through the rename unchanged.
+        /// </summary>
+        private const string LegacyGroupFinderBlockTypeGuid = "9F8F2D68-DEEA-4686-810F-AB32923F855E";
+
+        /// <summary>
+        /// The path the WebForms block occupied before the rename.
+        /// </summary>
+        private const string OriginalLegacyBlockPath = "~/Blocks/Groups/GroupFinder.ascx";
+
+        /// <summary>
+        /// The path the WebForms block occupies after the rename.
+        /// </summary>
+        private const string RenamedLegacyBlockPath = "~/Blocks/Groups/GroupFinderLegacy.ascx";
+
+        #endregion
+
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
@@ -36,7 +57,9 @@ namespace Rock.Migrations
                 SET [IsMeetingStyleEnabled] = 1
                 WHERE [Guid] = '50FCFB30-F51A-49DF-86F4-2B176EA1820B'" );
 
-            
+            // Renamed before the block below registers, so "Group Finder" is never on two block types.
+            RepointLegacyGroupFinderBlockType( "Group Finder (Legacy)", RenamedLegacyBlockPath );
+
             // Add/Update Obsidian Block Entity Type
             //   EntityType:Rock.Blocks.Group.GroupFinder
             RockMigrationHelper.UpdateEntityType("Rock.Blocks.Group.GroupFinder", "Group Finder", "Rock.Blocks.Group.GroupFinder, Rock.Blocks, Version=20.0.6.0, Culture=neutral, PublicKeyToken=null", false, false, "B6E7A1C2-0D4F-4E90-9C3A-2F1B7A0E5D64");
@@ -416,8 +439,35 @@ namespace Rock.Migrations
             //   EntityType: Group Finder
             RockMigrationHelper.DeleteBlockType("3C9A5E71-8B24-4D0E-A6F1-9E7C2B4A0D53");
 
+            // Restored after the block above is deleted, which frees the "Group Finder" name again.
+            RepointLegacyGroupFinderBlockType( "Group Finder", OriginalLegacyBlockPath );
+
             DropColumn("dbo.GroupType", "IsMeetingStyleEnabled");
             DropColumn("dbo.Group", "MeetingStyle");
         }
+
+        #region Private Methods
+
+        /// <summary>
+        /// Applies a name and path to the WebForms Group Finder block type, matched on its Guid.
+        /// </summary>
+        /// <remarks>
+        /// A hand-written UPDATE is used rather than <c>UpdateBlockTypeByGuid()</c> for two reasons: that
+        /// helper's DELETE is keyed on Path alone, which wipes every entity-based block type when the path
+        /// is empty, and its INSERT branch would add a second row if the Guid lookup ever missed. Matching
+        /// on Guid moves the existing row instead, which is what keeps configured block instances attached.
+        /// </remarks>
+        /// <param name="name">The admin-facing block type name to apply.</param>
+        /// <param name="path">The block path to apply.</param>
+        private void RepointLegacyGroupFinderBlockType( string name, string path )
+        {
+            Sql( $@"
+                UPDATE [BlockType]
+                SET [Name] = '{name}'
+                    , [Path] = '{path}'
+                WHERE [Guid] = '{LegacyGroupFinderBlockTypeGuid}'" );
+        }
+
+        #endregion
     }
 }

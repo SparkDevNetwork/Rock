@@ -198,7 +198,7 @@
 
                 The same conditional lives in geoPickerMap.obs:236-269
                 and the WebForms GroupMap / GroupFinder marker code
-                (rationale documented at GroupFinder.ascx.cs:2316-2330).
+                (rationale documented at GroupFinderLegacy.ascx.cs:2316-2330).
 
                 Reason: AdvancedMarkerElement requires a mapId; legacy
                 Marker is required when no mapId is configured.
