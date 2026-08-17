@@ -688,6 +688,12 @@ namespace Rock.SystemGuid
         public const string CONTENT_ITEM_DETAIL = "ABF26679-1051-4F4F-8A67-5958E5BF71F8";
 
         /// <summary>
+        /// Gets the Content Item Metrics page guid
+        /// ParentPage: Content Channel Detail
+        /// </summary>
+        public const string CONTENT_ITEM_METRICS = "B917B620-C172-4E52-9695-917E3833DB09";
+
+        /// <summary>
         /// Gets the Content Type Detail page guid
         /// ParentPage: Content Channel Types
         /// </summary>

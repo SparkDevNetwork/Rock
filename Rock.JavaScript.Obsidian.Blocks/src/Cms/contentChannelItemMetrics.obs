@@ -1,0 +1,628 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="!config.isCollectingData" :alertType="AlertType.Warning">
+        <strong>No view data is being collected for this content.</strong>
+        <p class="mb-0 mt-1">Metrics appear here once interaction tracking is turned on. Enable Log Interactions on the Content Channel Item View block that displays this item, then check back after it receives traffic.</p>
+    </NotificationBox>
+
+    <ContextSlicer v-else :title="itemName">
+        <ButtonGroup v-model="selectedView" :items="viewOptions" />
+    </ContextSlicer>
+
+    <Panel v-if="config.isCollectingData && selectedView === MetricsView.Overview" title="Overview" type="block">
+        <template #headerActions>
+            <HighlightLabel v-if="contentChannelName" labelType="default">{{ contentChannelName }}</HighlightLabel>
+            <HighlightLabel v-if="isStatusVisible" :labelType="statusLabelType">{{ statusText }}</HighlightLabel>
+        </template>
+
+        <SlidingDateRangePicker v-model="selectedDateRange"
+                                label="Date Range" />
+
+        <div class="row kpi-row">
+            <template v-if="isLoading">
+                <div v-for="n in 3" :key="n" class="col-md-4">
+                    <div class="skeleton kpi-skeleton"></div>
+                </div>
+            </template>
+            <template v-else>
+                <div class="col-md-4">
+                    <KpiTile label="Total Views" :value="kpis.totalViews.value">
+                        <template #footer>
+                            <template v-if="kpis.totalViews.hasPrevious">
+                                <span :style="{ color: kpis.totalViews.deltaColor }">{{ kpis.totalViews.deltaText }}</span> vs. Previous Period
+                            </template>
+                            <template v-else>No Previous Period</template>
+                        </template>
+                    </KpiTile>
+                </div>
+
+                <div class="col-md-4">
+                    <KpiTile label="Unique Views" :help="uniqueViewsHelp" :value="kpis.uniqueViews.value">
+                        <template #footer>
+                            <template v-if="kpis.uniqueViews.hasPrevious">
+                                <span :style="{ color: kpis.uniqueViews.deltaColor }">{{ kpis.uniqueViews.deltaText }}</span> vs. Previous Period
+                            </template>
+                            <template v-else>No Previous Period</template>
+                        </template>
+                    </KpiTile>
+                </div>
+
+                <div class="col-md-4">
+                    <KpiTile label="Known People" :help="knownPeopleHelp" :value="kpis.knownPeople.value">
+                        <template #footer>
+                            <template v-if="kpis.knownPeople.hasPrevious">
+                                <span :style="{ color: kpis.knownPeople.deltaColor }">{{ kpis.knownPeople.deltaText }}</span> vs. Previous Period
+                            </template>
+                            <template v-else>No Previous Period</template>
+                        </template>
+                    </KpiTile>
+                </div>
+            </template>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <Panel title="Views Over Time" panelHeaderCssClass="border-bottom-0">
+                    <div v-if="isLoading" class="skeleton metric-skeleton"></div>
+                    <NothingToShow v-else-if="!hasViewsOverTimeData" />
+                    <LineChart v-else
+                               :labels="viewsOverTimeLabels"
+                               :series="viewsOverTimeSeries"
+                               :tooltip="formatViewsTooltip"
+                               hideLegend
+                               labelDateFormat="auto"
+                               :linear="true"
+                               :showPoints="isViewsOverTimePointsShown"
+                               :valueHideGridLines="true"
+                               :valueHideAxisLine="true"
+                               :categoryHideAxisLine="true"
+                               height="300px" />
+                </Panel>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <Panel title="Device Breakdown" panelHeaderCssClass="border-bottom-0">
+                    <div v-if="isLoading" class="skeleton metric-skeleton"></div>
+                    <NothingToShow v-else-if="deviceBreakdownLabels.length === 0" />
+                    <BarChart v-else
+                              :labels="deviceBreakdownLabels"
+                              :series="deviceBreakdownSeries"
+                              :tooltip="formatViewsTooltip"
+                              hideLegend
+                              :valueHideGridLines="true"
+                              :valueHideAxisLine="true"
+                              :categoryHideAxisLine="true"
+                              :valuePrecision="0"
+                              height="300px" />
+                </Panel>
+            </div>
+
+            <div class="col-md-6">
+                <Panel title="Connection Status Breakdown" panelHeaderCssClass="border-bottom-0">
+                    <template #title>
+                        Connection Status Breakdown
+                    </template>
+                    <template #headerActions>
+                        <small class="text-muted">(Of Known People)</small>
+                    </template>
+                    <div v-if="isLoading" class="skeleton metric-skeleton"></div>
+                    <NothingToShow v-else-if="connectionStatusLabels.length === 0" />
+                    <BarChart v-else
+                              :labels="connectionStatusLabels"
+                              :series="connectionStatusSeries"
+                              :tooltip="formatPeopleTooltip"
+                              hideLegend
+                              :valueHideGridLines="true"
+                              :valueHideAxisLine="true"
+                              :categoryHideAxisLine="true"
+                              :valuePrecision="0"
+                              height="300px" />
+                </Panel>
+            </div>
+        </div>
+
+        <Panel title="Top Known Referrers" panelHeaderCssClass="border-bottom-0">
+            <div v-if="isLoading" class="skeleton metric-skeleton"></div>
+            <NothingToShow v-else-if="topReferrers.length === 0" />
+            <RankedListBarChart v-else :items="topReferrers" />
+        </Panel>
+
+        <UtmMetricsCard :breakdowns="utmBreakdowns" :isLoading="isLoading" />
+    </Panel>
+
+    <Grid v-else-if="config.isCollectingData"
+          :definition="config.viewerGridDefinition ?? undefined"
+          :data="viewerGridDataSource"
+          keyField="idKey"
+          personKeyField="idKey"
+          itemTerm="Viewer"
+          title="Viewer List"
+          :entityTypeGuid="EntityType.Person"
+          :isCountMessageVisible="false"
+          :showBulkUpdate="false"
+          :showPersonMerge="false"
+          :showLaunchWorkflow="true"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasGridFilters"
+          @gridSettingsClick="isGridSettingsVisible = true">
+        <template #gridHeaderBadges>
+            <div class="d-flex gap-3">
+                <HighlightLabel v-if="contentChannelName" labelType="default">{{ contentChannelName }}</HighlightLabel>
+                <HighlightLabel v-if="isStatusVisible" :labelType="statusLabelType">{{ statusText }}</HighlightLabel>
+            </div>
+        </template>
+
+        <SelectColumn />
+        <PersonColumn name="person"
+                      title="Name"
+                      field="person"
+                      :showAsLink="true"
+                      :filter="textValueFilter"
+                      :filterValue="getPersonFilterValue"
+                      :quickFilterValue="getPersonFilterValue"
+                      visiblePriority="xs" />
+
+        <TextColumn name="campus"
+                    title="Campus"
+                    field="campus"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="sm" />
+
+        <NumberColumn name="views"
+                      title="Views"
+                      field="views"
+                      :filter="numberValueFilter"
+                      width="120px"
+                      visiblePriority="sm" />
+
+        <DateTimeColumn name="lastViewed"
+                        title="Last Viewed"
+                        field="lastViewed"
+                        :filter="dateValueFilter"
+                        visiblePriority="xs" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :defaultSlidingDateRange="defaultSlidingDateRange"
+                       :campusItems="config.viewerFilterOptions?.campuses ?? []"
+                       :connectionStatusItems="config.viewerFilterOptions?.connectionStatuses ?? []"
+                       :sourceItems="config.viewerFilterOptions?.sources ?? []" />
+</template>
+
+<style scoped>
+/* Match the KPI row's bottom gap to the panels below, whose margin-bottom is --spacing-large.
+   The mb-* utilities are rem-based (root font-size is 14px), so none of them equal 24px. */
+.kpi-row {
+    margin-bottom: var(--spacing-large);
+}
+
+/* Loading placeholders sized to match the content they stand in for, so nothing shifts when the
+   real charts and tiles arrive. The base .skeleton class supplies the shimmer animation. */
+.metric-skeleton {
+    height: 300px;
+    border-radius: var(--rounded-small);
+}
+
+.kpi-skeleton {
+    height: 116px;
+    border-radius: var(--rounded-small);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import KpiTile from "./ContentChannelItemMetrics/kpiTile.partial.obs";
+    import NothingToShow from "./ContentChannelItemMetrics/nothingToShow.partial.obs";
+    import RankedListBarChart from "./ContentChannelItemMetrics/rankedListBarChart.partial.obs";
+    import UtmMetricsCard from "./ContentChannelItemMetrics/utmMetricsCard.partial.obs";
+    import GridSettingsModal from "./ContentChannelItemMetrics/gridSettingsModal.partial.obs";
+    import BarChart from "@Obsidian/Controls/barChart.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import ContextSlicer from "@Obsidian/Controls/contextSlicer.obs";
+    import Grid, { PersonColumn, TextColumn, NumberColumn, DateTimeColumn, textValueFilter, pickExistingValueFilter, numberValueFilter, dateValueFilter, SelectColumn } from "@Obsidian/Controls/grid";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import LineChart from "@Obsidian/Controls/lineChart.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { BarSeries, LineSeries, TooltipContext } from "@Obsidian/Core/Controls/chart";
+    import { ContentChannelItemStatus, ContentChannelItemStatusDescription } from "@Obsidian/Enums/Cms/contentChannelItemStatus";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
+    import { ContentChannelItemMetricsInitializationBox } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemMetrics/contentChannelItemMetricsInitializationBox";
+    import { MetricSliceBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemMetrics/metricSliceBag";
+    import { OverviewMetricsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemMetrics/overviewMetricsBag";
+    import { UtmDimensionMetricsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemMetrics/utmDimensionMetricsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { GridSettingsOptions, PreferenceKey } from "./ContentChannelItemMetrics/types.partial";
+
+    // #region Types
+
+    const enum MetricsView {
+        Overview = "Overview",
+        ViewerDetails = "ViewerDetails"
+    }
+
+    type KpiDisplay = {
+        value: number;
+        hasPrevious: boolean;
+        deltaText: string;
+        deltaColor: string;
+    };
+
+    // The catch-all breakdown buckets that render in a neutral color instead of a categorical one.
+    const neutralSliceLabels = ["Unknown", "No Status"];
+
+    const uniqueViewsHelp = "The number of distinct browsing sessions that viewed this content, not the number of views. The same person returning on a different day or device counts as a new view.";
+    const knownPeopleHelp = "The number of distinct, identified individuals who viewed this content, not the number of views. Anonymous visits aren't included, even from congregation members who weren't logged in.";
+
+    // #endregion Types
+
+    const config = useConfigurationValues<ContentChannelItemMetricsInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // Reload the block when its configuration changes so setting edits (such as the UTM metrics
+    // selection) take effect without a manual page refresh.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const selectedView = ref<string>(MetricsView.Overview);
+
+    const viewOptions: { text: string; value: string }[] = [
+        { text: "Overview", value: MetricsView.Overview },
+        { text: "Viewer Details", value: MetricsView.ViewerDetails }
+    ];
+
+    const statusLabelTypes: Record<number, "default" | "success" | "danger"> = {
+        [ContentChannelItemStatus.PendingApproval]: "default",
+        [ContentChannelItemStatus.Approved]: "success",
+        [ContentChannelItemStatus.Denied]: "danger"
+    };
+
+    const defaultSlidingDateRange: SlidingDateRange = {
+        rangeType: RangeType.Last,
+        timeUnit: TimeUnit.Day,
+        timeValue: 7
+    };
+
+    // All grid filters plus the shared date range live in one settings object. The Overview date range
+    // picker binds to the computed selectedDateRange below, so both views read and write the same state.
+    const gridSettings = ref<GridSettingsOptions>({
+        dateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.DateRange)) ?? defaultSlidingDateRange,
+        campus: preferences.getValue(PreferenceKey.FilterCampus),
+        connectionStatus: preferences.getValue(PreferenceKey.FilterConnectionStatus),
+        source: preferences.getValue(PreferenceKey.FilterSource)
+    });
+
+    const isGridSettingsVisible = ref<boolean>(false);
+
+    const metrics = ref<OverviewMetricsBag>();
+
+    // True only until the first metrics fetch completes, so the initial render shows skeletons
+    // rather than briefly flashing the empty states. Later refetches do not toggle it back on.
+    const isLoading = ref<boolean>(true);
+
+    // Sequences overlapping metrics fetches so a slow earlier response cannot overwrite a newer one.
+    let latestMetricsRequestId = 0;
+
+    // The Viewer Details grid data, lazily loaded the first time that tab is opened and then reloaded
+    // when the shared date range changes. Undefined until the tab has been opened at least once.
+    const viewerGridDataSource = ref<Promise<GridDataBag>>();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    // The shared date range. Reads and writes gridSettings.dateRange so the Overview picker and the grid
+    // settings modal edit the same value.
+    const selectedDateRange = computed<SlidingDateRange | null>({
+        get() {
+            return gridSettings.value.dateRange ?? null;
+        },
+        set(value) {
+            gridSettings.value = { ...gridSettings.value, dateRange: value };
+        }
+    });
+
+    // Whether any of the grid-specific filters (not the always-present date range) is active, used to
+    // highlight the grid settings button.
+    const hasGridFilters = computed<boolean>(() => {
+        return !!gridSettings.value.campus || !!gridSettings.value.connectionStatus || !!gridSettings.value.source;
+    });
+
+    const itemName = computed<string>(() => {
+        return config.title ?? "Content Channel Item";
+    });
+
+    const contentChannelName = computed<string>(() => {
+        return config.contentChannelName ?? "";
+    });
+
+    const isStatusVisible = computed<boolean>(() => {
+        return config.isStatusVisible === true;
+    });
+
+    const statusText = computed<string>(() => {
+        return ContentChannelItemStatusDescription[config.itemStatus] ?? "";
+    });
+
+    const statusLabelType = computed<"default" | "success" | "danger">(() => {
+        return statusLabelTypes[config.itemStatus] ?? "default";
+    });
+
+    const kpis = computed<Record<string, KpiDisplay>>(() => {
+        const m = metrics.value;
+
+        return {
+            totalViews: makeKpi(m?.totalViews, m?.totalViewsDeltaPercent),
+            uniqueViews: makeKpi(m?.uniqueViews, m?.uniqueViewsDeltaPercent),
+            knownPeople: makeKpi(m?.knownPeople, m?.knownPeopleDeltaPercent)
+        };
+    });
+
+    const viewsOverTimeLabels = computed<string[]>(() => {
+        return (metrics.value?.viewsOverTime ?? []).map(p => p.date ?? "");
+    });
+
+    const viewsOverTimeSeries = computed<LineSeries[]>(() => {
+        return [
+            {
+                label: "Views",
+                data: (metrics.value?.viewsOverTime ?? []).map(p => p.count)
+            }
+        ];
+    });
+
+    // The zero-fill in GetViewsOverTime always emits a point per day, so "has data" means at
+    // least one day actually had views, not simply that points exist.
+    const hasViewsOverTimeData = computed<boolean>(() => {
+        return (metrics.value?.viewsOverTime ?? []).some(p => p.count > 0);
+    });
+
+    // Show a point marker per day only for shorter ranges; longer ranges get too crowded.
+    const isViewsOverTimePointsShown = computed<boolean>(() => {
+        return (metrics.value?.viewsOverTime?.length ?? 0) <= 15;
+    });
+
+    const deviceBreakdownLabels = computed<string[]>(() => {
+        return (metrics.value?.deviceBreakdown ?? []).map(s => s.label ?? "");
+    });
+
+    const deviceBreakdownSeries = computed<BarSeries[]>(() => {
+        const slices = metrics.value?.deviceBreakdown ?? [];
+
+        return [
+            {
+                label: "Views",
+                data: slices.map(s => s.count),
+                color: slices.map((s, index) => sliceColor(s.label ?? "", index))
+            }
+        ];
+    });
+
+    const connectionStatusLabels = computed<string[]>(() => {
+        return (metrics.value?.connectionStatusBreakdown ?? []).map(s => s.label ?? "");
+    });
+
+    const connectionStatusSeries = computed<BarSeries[]>(() => {
+        const slices = metrics.value?.connectionStatusBreakdown ?? [];
+
+        return [
+            {
+                label: "Known People",
+                data: slices.map(s => s.count),
+                color: slices.map((s, index) => sliceColor(s.label ?? "", index))
+            }
+        ];
+    });
+
+    const topReferrers = computed<MetricSliceBag[]>(() => {
+        return metrics.value?.topReferrers ?? [];
+    });
+
+    const utmBreakdowns = computed<UtmDimensionMetricsBag[]>(() => {
+        return metrics.value?.utmBreakdowns ?? [];
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Builds the display model for a single KPI tile from its value and delta.
+     *
+     * @param value The current period value.
+     * @param delta The percent change versus the previous period, or null when unavailable.
+     */
+    function makeKpi(value: number | undefined, delta: number | null | undefined): KpiDisplay {
+        const hasPrevious = delta !== null && delta !== undefined;
+        const rounded = hasPrevious ? Math.round(delta as number) : 0;
+
+        return {
+            value: value ?? 0,
+            hasPrevious,
+            deltaText: hasPrevious ? `${rounded > 0 ? "+" : ""}${rounded}%` : "",
+            deltaColor: !hasPrevious || rounded === 0
+                ? "var(--color-interface-medium)"
+                : rounded > 0 ? "var(--color-success-strong)" : "var(--color-danger-strong)"
+        };
+    }
+
+    /**
+     * Formats the Views Over Time tooltip body.
+     *
+     * @param context The tooltip context for the hovered point.
+     */
+    function formatViewsTooltip(context: TooltipContext): string {
+        return `${(context.value ?? 0).toLocaleString(undefined)} Views`;
+    }
+
+    /**
+     * Formats a breakdown tooltip body as a distinct-people count.
+     *
+     * @param context The tooltip context for the hovered bar.
+     */
+    function formatPeopleTooltip(context: TooltipContext): string {
+        return `${(context.value ?? 0).toLocaleString(undefined)} People`;
+    }
+
+    /**
+     * Resolves the bar color for a breakdown slice, using a neutral color for the catch-all buckets
+     * (Unknown, No Status) and cycling through the categorical palette for the remaining slices.
+     *
+     * @param label The slice label.
+     * @param index The slice index within the breakdown.
+     */
+    function sliceColor(label: string, index: number): string {
+        if (neutralSliceLabels.includes(label)) {
+            return getCssVariableValue("--color-neutral-primary");
+        }
+
+        return getCssVariableValue(`--color-categorical-${(index % 8) + 1}`);
+    }
+
+    /**
+     * Persists the date range and grid filters to the block preferences. The server actions read these,
+     * so they must be saved before requesting Overview or Viewer Details data.
+     */
+    async function persistSettings(): Promise<void> {
+        const settings = gridSettings.value;
+
+        preferences.setValue(PreferenceKey.DateRange, settings.dateRange ? slidingDateRangeToString(settings.dateRange) : "");
+        preferences.setValue(PreferenceKey.FilterCampus, settings.campus ?? "");
+        preferences.setValue(PreferenceKey.FilterConnectionStatus, settings.connectionStatus ?? "");
+        preferences.setValue(PreferenceKey.FilterSource, settings.source ?? "");
+        await preferences.save();
+    }
+
+    /**
+     * Loads the Overview KPI metrics for the currently persisted date range.
+     */
+    async function refreshMetrics(): Promise<void> {
+        const requestId = ++latestMetricsRequestId;
+
+        try {
+            const result = await invokeBlockAction<OverviewMetricsBag>("GetOverviewMetrics");
+
+            // Ignore a stale response that resolved after a newer request was issued.
+            if (requestId === latestMetricsRequestId && result.isSuccess && result.data) {
+                metrics.value = result.data;
+            }
+        }
+        finally {
+            // Only the very first load shows skeletons; later refetches (such as a date-range change)
+            // leave the existing content in place while the new data loads. Only the latest request
+            // clears the flag so a stale response cannot flip it early.
+            if (requestId === latestMetricsRequestId) {
+                isLoading.value = false;
+            }
+        }
+    }
+
+    /**
+     * Loads the Viewer Details grid data for the currently persisted date range.
+     */
+    async function loadViewerData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetViewerData");
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+
+        throw new Error(result.errorMessage ?? "Unable to load the viewer details.");
+    }
+
+    /**
+     * Gets the filter/quick-filter value for a person row, so the Name column filters on the full name.
+     *
+     * @param row The grid row.
+     */
+    function getPersonFilterValue(row: Record<string, unknown>): string {
+        const person = row["person"] as PersonFieldBag | undefined;
+        return `${person?.nickName ?? ""} ${person?.lastName ?? ""}`;
+    }
+
+    /**
+     * Determines whether a date range is complete enough to query. A cleared (null) range is valid
+     * (all time); a partially-entered range (such as "Last" with the number deleted) is not, so the
+     * query is held off until the input is finished.
+     *
+     * @param range The sliding date range to validate.
+     */
+    function isDateRangeQueryable(range: SlidingDateRange | null | undefined): boolean {
+        if (!range) {
+            return true;
+        }
+
+        if (([RangeType.Last, RangeType.Next, RangeType.Previous, RangeType.Upcoming] as number[]).includes(range.rangeType)) {
+            return (range.timeValue ?? 0) > 0 && range.timeUnit != null;
+        }
+
+        if (range.rangeType === RangeType.Current) {
+            return range.timeUnit != null;
+        }
+
+        if (range.rangeType === RangeType.DateRange) {
+            return !!range.lowerDate || !!range.upperDate;
+        }
+
+        return true;
+    }
+
+    // #endregion Functions
+
+    // Tracks the last persisted date range so a settings change only refetches the Overview when the
+    // date range actually changed (the campus/status/source filters do not affect the Overview).
+    let lastDateRangeString = gridSettings.value.dateRange ? slidingDateRangeToString(gridSettings.value.dateRange) : "";
+
+    // #region Watchers
+
+    // Both the date range picker and the settings modal write to gridSettings, and the picker emits on
+    // every sub-field edit, so debounce to collapse a burst of changes into one save and reload. The
+    // preferences are saved before any fetch so the server reads them.
+    const applySettings = debounce(async () => {
+        // Hold off persisting and querying while the date range is mid-edit (for example, the number
+        // was cleared in "Last X Days"); a cleared range is fine and still queries.
+        if (!isDateRangeQueryable(gridSettings.value.dateRange)) {
+            return;
+        }
+
+        await persistSettings();
+
+        const dateRangeString = gridSettings.value.dateRange ? slidingDateRangeToString(gridSettings.value.dateRange) : "";
+        if (dateRangeString !== lastDateRangeString) {
+            lastDateRangeString = dateRangeString;
+            await refreshMetrics();
+        }
+
+        if (viewerGridDataSource.value) {
+            viewerGridDataSource.value = loadViewerData();
+        }
+    }, 400);
+
+    watch(gridSettings, applySettings, { deep: true });
+
+    // Lazily load the viewer grid the first time the Viewer Details tab is opened; it stays cached after.
+    watch(selectedView, () => {
+        if (selectedView.value === MetricsView.ViewerDetails && !viewerGridDataSource.value) {
+            viewerGridDataSource.value = loadViewerData();
+        }
+    });
+
+    // #endregion Watchers
+
+    // Persist the initial settings (including the default range) before the first load so the server reads them.
+    persistSettings().then(() => refreshMetrics());
+</script>
