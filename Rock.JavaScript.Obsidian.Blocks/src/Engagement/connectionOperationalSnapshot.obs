@@ -23,19 +23,19 @@
 
                             <div class="row row-grouped gutter-0" :class="breakpointHelper?.breakpoint">
                                 <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
-                                    <KpiTile noBorders label="Active" :value="currentMetricsKpis.active.value" />
+                                    <KpiTile isBorderless label="Active" :value="currentMetricsKpis.active.value" />
                                 </div>
 
                                 <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
-                                    <KpiTile noBorders label="Unassigned" :value="currentMetricsKpis.unassigned.value" />
+                                    <KpiTile isBorderless label="Unassigned" :value="currentMetricsKpis.unassigned.value" />
                                 </div>
 
                                 <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
-                                    <KpiTile noBorders label="Due Soon" :value="currentMetricsKpis.dueSoon.value" :valueColor="currentMetricsKpis.dueSoon.color" />
+                                    <KpiTile isBorderless label="Due Soon" :value="currentMetricsKpis.dueSoon.value" :valueColor="currentMetricsKpis.dueSoon.color" />
                                 </div>
 
                                 <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
-                                    <KpiTile noBorders label="Overdue" :value="currentMetricsKpis.overdue.value" :valueColor="currentMetricsKpis.overdue.color" />
+                                    <KpiTile isBorderless label="Overdue" :value="currentMetricsKpis.overdue.value" :valueColor="currentMetricsKpis.overdue.color" />
                                 </div>
                             </div>
 
@@ -352,8 +352,8 @@
     import { computed, ref, watch } from "vue";
     import BreakpointObserver from "./ConnectionOperationalSnapshot/breakpointObserver.partial.obs";
     import ChartPanel from "./ConnectionOperationalSnapshot/chartPanel.partial.obs";
-    import { ellipsisTooltip as vEllipsisTooltip } from "./ConnectionOperationalSnapshot/ellipsisTooltipDirective.partial";
-    import KpiTile from "./ConnectionOperationalSnapshot/kpiTile.partial.obs";
+    import { vEllipsisTooltip } from "@Obsidian/Directives/ellipsisTooltip";
+    import KpiTile from "@Obsidian/Controls/kpiTile.obs";
     import { BreakpointHelper } from "./ConnectionOperationalSnapshot/types.partial";
     import BarChart from "@Obsidian/Controls/barChart.obs";
     import ContextSlicer from "@Obsidian/Controls/contextSlicer.obs";
