@@ -109,10 +109,11 @@ Each layer is independently testable and depends only on those above it.
 | 6 | Agent skills | An AI client can drive the whole loop |
 | 7 | Agent seeding | It ships preconfigured |
 | 8 | External render endpoint | It works on instances with no local browser |
+| 9 | Internal chat agent | An administrator can vibe-code from Rock's own chat, no external client |
 
 Layers 1 and 7 ship in the same EF migration. Scaffold the migration once, late, after the skills exist, so the table creation and the seeding land as one file with one timestamp that sorts after every existing migration.
 
-**Layers 1 through 7 are built.** Layer 8 is not, and until it is, the feature is unusable on any instance configured with an external PDF render endpoint. See [Layer 8](#layer-8-external-render-endpoint-not-built).
+**Layers 1 through 7 are built.** Layers 8 and 9 are not. Until layer 8 lands, the feature is unusable on any instance configured with an external PDF render endpoint ([Layer 8](#layer-8-external-render-endpoint-not-built)). Layer 9 adds a second, non-MCP agent so the loop runs from Rock's own chat UI ([Layer 9](#layer-9-internal-chat-agent-not-built)).
 
 ### Layer 1: Data model
 
@@ -327,6 +328,48 @@ Set the endpoint in Admin Tools > General Settings > System Settings, key `core_
 7. **The original defect, as a regression test.** Set the endpoint on an instance with no local Chromium at all and confirm the pre-layer-8 symptom is gone: no permanent "still being provisioned, try again in a few minutes".
 
 Steps 2 and 5 are the pair that prove the defect fixed. Step 4 is the one that must not be skipped for being tedious.
+
+### Layer 9: Internal chat agent (NOT BUILT)
+
+**What it is.** A second `AIAgent` row with `AgentType.Chat`, attached to the same three skills, so an administrator runs the whole authoring loop from Rock's own chat UI with no external MCP client at all. The MCP agent stays; this is a sibling on a different transport, not a replacement.
+
+**What carries over free.** Everything below the agent row. The skills are transport-agnostic `AgentSkillComponent`s: `AgentRequestContext.CurrentPerson` is the signed-in person in chat exactly as it is the authenticated person over MCP, so every EDIT and ADMINISTRATE gate, the provenance stamp model, and the server compile path work unchanged. Attachment mechanics are identical too, including the `EnabledTools` allowlist (and its trap: attaching without populating it yields an agent that sees nothing).
+
+**Two premises change, and both belong in this layer's review.**
+
+1. **A model now runs on the instance's own AI provider.** The MCP design's "Rock is the MCP server, not the AI" holds only for the MCP agent. The chat agent executes through Rock Intelligence, so it needs an AI provider configured, its token costs land on the church's account, and authoring Vue competently needs a frontier-class model. Follow the Staff Agent precedent from `309_EnableRockIntelligence.cs:227`: seed create-only, and let the instructions say plainly that the agent is not usable until the instance's AI provider is configured, rather than failing mysteriously.
+2. **The knowledge base trick is unavailable.** The MCP flow gets control discovery because the *client* connects knowledge.rockrms.com as a second MCP server. A chat agent has no client-side composition and Rock has no outbound MCP client, so as seeded it cannot look up any control API.
+
+**The control-discovery decision is the heart of this layer.**
+
+- **MUST: honest degradation.** The chat agent's instructions must state that it cannot verify control APIs on this transport, must restrict itself to controls it can see in the block's existing source or plain HTML, and must tell the user what it is not able to do. The skills' existing "do not guess a control's props" rules already point this direction; the chat instructions make it explicit. This alone makes the layer shippable, but weak.
+- **SHOULD: a local control-reference tool.** Add a tool to CustomComponentSkill (e.g. `GetControlDefinition`) that reads the shipped build output: the `.d.ts` files emit every control's props and slots, and each `*.obs.js.map` embeds the original source in `sourcesContent`. This was [Considered but Rejected](#considered-but-rejected) for the MCP flow because local extraction yields source while the curated catalog yields curation, and the MCP client had the catalog. The chat agent has nothing, and source beats silence; the rejection's own reasoning flips here. Version-correctness comes free since the files are the instance's own build. Tool GUID assigned at implementation.
+- **Out of scope still: proxying the knowledge base through Rock.** That remains the eventual consolidation for both transports and still needs the outbound MCP client Rock does not have.
+
+**Seeding.** Same single migration, honoring the one-migration requirement. The branch is unmerged, so amending `202608172102127_AddCustomComponent` is legitimate; any dev database that already applied it must re-run the new seeding method by hand or roll the migration back and forward. Pinned values:
+
+| Item | Value |
+|---|---|
+| Agent name | Vibe Chat Agent (working name; rides the eventual "vibe" rename) |
+| Agent Guid | `5A2BC280-C12E-4C13-AA1F-D169DB27D3FE` |
+| AgentType / AudienceType | `Chat` / `Internal` |
+| Allow-VIEW auth (Rock Administrators) | `555E5B64-1F3F-4117-B108-20ADB95F8A04` |
+| Deny-VIEW auth (all users) | `0CCA182B-7827-4FE7-BA69-B63C79BDE4D3` |
+| Skills and EnabledTools | Identical lists to the MCP agent |
+
+The instructions are NOT a copy of the MCP agent's. Same persona, guardrails, build order, and authoring contract, but reworked for chat: the Staff Agent's markdown-presentation guidance applies, references to connecting a knowledge base are removed, the honest-degradation rule above is added, and the not-yet-configured wording covers the missing-provider state. Like the MCP agent, the row is create-only so administrator retuning survives re-runs, and `Down()` leaves it alone for the same reason.
+
+#### Verification steps for layer 9
+
+1. Apply the amended migration on a clean database. Both agents exist; the chat agent's skills, tools, and security match the MCP agent's row for row.
+2. With no AI provider configured, open the chat agent as an administrator. It responds with its not-configured message rather than erroring.
+3. Configure an AI provider. As an administrator, ask it to build a small dashboard. It walks the build order (`SearchPages`, `AddPage`, `AddBlock`, `AddOrUpdateLavaEndpoint`, `AddOrUpdateCustomComponent`), and the resulting page renders for a normal member.
+4. Ask it to use a Rock control it has no source for. It declines to guess the props and says why, or (if the SHOULD tool is built) looks the control up with `GetControlDefinition` and uses real props.
+5. As a person who is not a Rock administrator, confirm the agent is not visible in chat at all (the deny auth), and separately, as a person who can see the agent but lacks EDIT on a target block, confirm `AddOrUpdateCustomComponent` refuses with the authorization message. The transport changed; the gates must not have.
+6. Restart the application. Skill and tool names and descriptions are unchanged (the startup re-registration parity check, re-proven with two agents attached).
+7. Re-run the migration's seeding on an instance where an administrator has retuned the chat agent's instructions. The tuning survives.
+
+Step 5 is the one that matters most: it proves authorization is enforced per acting person, not per transport.
 
 ### Knowledge base dependency
 
