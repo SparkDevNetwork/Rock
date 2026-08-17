@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -13,12 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-
-namespace Rock.AI.Agent.Utilities.CommunicationSkill;
-
-internal sealed class DraftDto
+//
+namespace Rock.Obsidian.UI.GridField
 {
-    public string Subject { get; set; }
-
-    public string Body { get; set; }
+    /// <summary>
+    /// Root-tier grid field mapped to the Obsidian Grid's <c>boolean</c> column
+    /// type. Renders a check icon for true, blank for false.
+    /// </summary>
+    public class BooleanObsidianGridField : ObsidianGridField
+    {
+        /// <inheritdoc/>
+        public sealed override string ColumnType => "boolean";
+    }
 }

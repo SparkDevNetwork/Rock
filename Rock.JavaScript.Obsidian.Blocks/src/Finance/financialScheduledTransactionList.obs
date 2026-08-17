@@ -18,9 +18,7 @@
                       title="Contributor"
                       field="authorized"
                       width="200px"
-                      :filter="pickExistingValueFilter"
-                      :filterValue="getPersonFilterValue"
-                      :quickFilterValue="getPersonFilterValue" />
+                      :filter="pickExistingValueFilter" />
 
         <CurrencyColumn name="amount"
                         title="Amount"
@@ -129,7 +127,6 @@
     import GridSettingsModal from "./FinancialScheduledTransactionList/gridSettingsModal.partial.obs";
     import { toCurrencyOrNull, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<FinancialScheduledTransactionListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -230,16 +227,6 @@
         }
 
         return filterValue;
-    }
-
-    /**
-    * Gets the filter value text to use for the person column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getPersonFilterValue(row: Record<string, unknown>): string {
-        const person = row["authorized"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     watch(gridSettings, async () => {

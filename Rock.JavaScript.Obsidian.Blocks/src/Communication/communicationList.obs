@@ -160,9 +160,7 @@
                       visiblePriority="xl"
                       :hideAvatar="true"
                       :showAsLink="true"
-                      :filter="pickExistingValueFilter"
-                      :filterValue="getSentByPersonTextValue"
-                      :quickFilterValue="getSentByPersonTextValue" />
+                      :filter="pickExistingValueFilter" />
 
         <DeleteColumn v-if="config.isDeleteEnabled"
                       visiblePriority="xl"
@@ -542,16 +540,6 @@
         }
 
         return formatAspDate(rockDateTime, "g");
-    }
-
-    /**
-     * Gets the text value for the "Sent By" column.
-     *
-     * @param row The row whose value to get.
-     */
-    function getSentByPersonTextValue(row: Record<string, unknown>): string {
-        const person = (row as Row).sentByPerson;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     /**

@@ -101,6 +101,12 @@ export type TransactionBag = {
     /** Gets or sets the payment detail information. */
     paymentDetail?: PaymentDetailBag | null;
 
+    /**
+     * Gets or sets the person or business credited with this transaction, bound to the
+     * edit panel's person picker. The value is the person alias Guid.
+     */
+    personOrBusiness?: ListItemBag | null;
+
     /** Gets or sets the person alias who processed the transaction. */
     processedByPersonAlias?: ListItemBag | null;
 

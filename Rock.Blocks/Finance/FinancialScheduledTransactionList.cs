@@ -311,7 +311,7 @@ namespace Rock.Blocks.Finance
                 givingGroupId = _person.GivingGroupId;
             }
 
-            IQueryable<FinancialScheduledTransaction> qry = new FinancialScheduledTransactionService( rockContext )
+            IQueryable<FinancialScheduledTransaction> qry = new FinancialScheduledTransactionService( RockContext )
                 .Queryable()
                 .Include( t => t.ScheduledTransactionDetails )
                 .Include( t => t.FinancialPaymentDetail.CurrencyTypeValue )
@@ -402,10 +402,20 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         protected override IQueryable<FinancialScheduledTransactionData> GetListQueryable( RockContext rockContext )
         {
-            return GetScheduledTransactionQueryable( rockContext )
+            return GetScheduledTransactionQueryable( RockContext )
                 .Select( a => new FinancialScheduledTransactionData
                 {
-                    FinancialScheduledTransaction = a
+                    FinancialScheduledTransaction = a,
+                    AuthorizedPerson = a.AuthorizedPersonAlias.Person,
+                    CurrencyTypeValueId = a.FinancialPaymentDetail.CurrencyTypeValueId,
+                    AccountLines = a.ScheduledTransactionDetails.Select( d => new AccountLine
+                    {
+                        AccountId = d.AccountId,
+                        AccountGuid = d.Account.Guid,
+                        Order = d.Account.Order,
+                        Name = d.Account.Name,
+                        Amount = d.Amount
+                    } )
                 } );
         }
 
@@ -425,14 +435,14 @@ namespace Rock.Blocks.Finance
             // sent to the client.
             foreach ( var item in items )
             {
-                var accounts = item.FinancialScheduledTransaction.ScheduledTransactionDetails
+                var accounts = item.AccountLines
                     .Select( d => new
                     {
-                        Id = accountGuids.Any() && !accountGuids.Contains( d.Account.Guid ) ? 0 : d.AccountId,
-                        Order = d.Account.Order,
-                        Name = d.Account.Name,
+                        Id = accountGuids.Any() && !accountGuids.Contains( d.AccountGuid ) ? 0 : d.AccountId,
+                        Order = d.Order,
+                        Name = d.Name,
                         Amount = d.Amount,
-                        IsOther = accountGuids.Any() && !accountGuids.Contains( d.Account.Guid )
+                        IsOther = accountGuids.Any() && !accountGuids.Contains( d.AccountGuid )
                     } )
                     .OrderBy( d => d.IsOther )
                     .ThenBy( d => d.Order )
@@ -458,7 +468,7 @@ namespace Rock.Blocks.Finance
                 }
             }
 
-            GridAttributeLoader.LoadFor( items, i => i.FinancialScheduledTransaction, _gridAttributes.Value, rockContext );
+            GridAttributeLoader.LoadFor( items, i => i.FinancialScheduledTransaction, _gridAttributes.Value, RockContext );
 
             return items;
         }
@@ -476,16 +486,16 @@ namespace Rock.Blocks.Finance
                 .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.FinancialScheduledTransaction.IdKey )
                 .AddTextField( "id", a => a.FinancialScheduledTransaction.Id.ToString() )
-                .AddPersonField( "authorized", a => a.FinancialScheduledTransaction.AuthorizedPersonAlias?.Person )
-                .AddTextField( "transactionFrequency", a => a.FinancialScheduledTransaction.TransactionFrequencyValue?.Value )
-                .AddTextField( "transactionType", a => a.FinancialScheduledTransaction.TransactionTypeValue?.Value )
+                .AddPersonField( "authorized", a => a.AuthorizedPerson )
+                .AddTextField( "transactionFrequency", a => DefinedValueCache.GetValue( a.FinancialScheduledTransaction.TransactionFrequencyValueId ) )
+                .AddTextField( "transactionType", a => DefinedValueCache.GetValue( a.FinancialScheduledTransaction.TransactionTypeValueId ) )
                 .AddTextField( "gatewayScheduleId", a => a.FinancialScheduledTransaction.GatewayScheduleId )
-                .AddField( "amount", a => a.FinancialScheduledTransaction.TotalAmount )
+                .AddField( "amount", a => a.AccountLines.Sum( l => l.Amount ) )
                 .AddDateTimeField( "createdDateTime", a => a.FinancialScheduledTransaction.CreatedDateTime )
                 .AddDateTimeField( "startDate", a => a.FinancialScheduledTransaction.StartDate )
                 .AddDateTimeField( "endDate", a => a.FinancialScheduledTransaction.EndDate )
                 .AddDateTimeField( "nextPayment", a => a.FinancialScheduledTransaction.NextPaymentDate )
-                .AddTextField( "currencyType", a => a.FinancialScheduledTransaction.FinancialPaymentDetail?.CurrencyTypeValue?.Value )
+                .AddTextField( "currencyType", a => DefinedValueCache.GetValue( a.CurrencyTypeValueId ) )
                 .AddField( "accounts", a => a.Accounts )
                 .AddField( "isActive", a => a.FinancialScheduledTransaction.IsActive )
                 .AddAttributeFieldsFrom( a => a.FinancialScheduledTransaction, _gridAttributes.Value );
@@ -588,6 +598,61 @@ namespace Rock.Blocks.Finance
             /// The account data for this batch.
             /// </value>
             public IEnumerable<AccountData> Accounts { get; set; }
+
+            /// <summary>
+            /// Gets or sets the raw per-account detail lines for this scheduled
+            /// transaction. Projected directly in the list query so the fund data
+            /// rides along in a single joined query instead of lazy-loading the
+            /// detail and account navigations per row.
+            /// </summary>
+            public IEnumerable<AccountLine> AccountLines { get; set; }
+
+            /// <summary>
+            /// Gets or sets the authorized person, projected in the list query so the
+            /// grid's person column does not lazy-load the alias and person per row.
+            /// </summary>
+            public Person AuthorizedPerson { get; set; }
+
+            /// <summary>
+            /// Gets or sets the currency type defined value identifier from the payment
+            /// detail, projected in the list query so the grid can resolve the currency
+            /// type from cache without lazy-loading the payment detail per row.
+            /// </summary>
+            public int? CurrencyTypeValueId { get; set; }
+        }
+
+        /// <summary>
+        /// A single scheduled-transaction detail line, flattened with its account's
+        /// display fields so the grid can build the account summary without touching
+        /// the entity navigations.
+        /// </summary>
+        public class AccountLine
+        {
+            /// <summary>
+            /// Gets or sets the account identifier for this line.
+            /// </summary>
+            public int AccountId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the account unique identifier, used to test membership
+            /// against the block's configured accounts.
+            /// </summary>
+            public Guid AccountGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the account's display order.
+            /// </summary>
+            public int Order { get; set; }
+
+            /// <summary>
+            /// Gets or sets the account name.
+            /// </summary>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the amount for this line.
+            /// </summary>
+            public decimal Amount { get; set; }
         }
 
         /// <summary>

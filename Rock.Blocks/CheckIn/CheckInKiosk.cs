@@ -1029,6 +1029,8 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         public async Task<BlockActionResult> PrintPreCheckInLabels( string kioskId, string scannedCode )
         {
             var director = new CheckInDirector( RockContext );
+            var today = RockDateTime.Today;
+            var now = RockDateTime.Now;
 
             var kiosk = DeviceCache.GetByIdKey( kioskId, RockContext );
 
@@ -1039,7 +1041,17 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
 
             var sessionGuids = GetPreCheckInSessionGuids( scannedCode );
             var attendanceIds = new AttendanceService( RockContext ).Queryable()
-                .Where( a => sessionGuids.Contains( a.AttendanceCheckInSession.Guid ) )
+                .Where( a => sessionGuids.Contains( a.AttendanceCheckInSession.Guid )
+                    && a.Occurrence.OccurrenceDate == today
+                    && a.Occurrence.ScheduleId.HasValue )
+                .Select( a => new
+                {
+                    a.Id,
+                    a.Occurrence.ScheduleId
+                } )
+                .ToList()
+                // Only include attendance records if check-in is still active.
+                .Where( a => NamedScheduleCache.Get( a.ScheduleId.Value, RockContext ).WasCheckInActive( now ) )
                 .Select( a => a.Id )
                 .ToList();
 

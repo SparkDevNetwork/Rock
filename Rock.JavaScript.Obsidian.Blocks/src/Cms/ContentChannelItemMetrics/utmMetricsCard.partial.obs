@@ -1,0 +1,205 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel v-if="isLoading || hasDimensions" :title="cardTitle" panelHeaderCssClass="border-bottom-0">
+        <template #headerActions>
+            <div v-if="isDimensionPickerShown" class="utm-dimension-picker">
+                <DropDownList v-model="selectedDimensionValue"
+                              :items="dimensionOptions"
+                              :showBlankItem="false" />
+            </div>
+        </template>
+        <div v-if="isLoading" class="skeleton utm-skeleton"></div>
+        <div v-else ref="bodyContainer" class="utm-body">
+            <Transition name="utm-fade"
+                        mode="out-in"
+                        @beforeLeave="onBeforeLeave"
+                        @enter="onEnter"
+                        @afterEnter="onAfterEnter">
+                <div :key="selectedDimensionValue" class="utm-body-content">
+                    <NothingToShow v-if="activeItems.length === 0" />
+                    <RankedListBarChart v-else :items="activeItems" />
+                </div>
+            </Transition>
+        </div>
+    </Panel>
+</template>
+
+<style scoped>
+/* The inner Ant Select sizes to its content, so pin its width here; otherwise the picker grows
+   and shrinks with the selected dimension's label. :deep pierces into the DropDownList control. */
+.utm-dimension-picker :deep(.ant-select) {
+    min-width: 160px;
+}
+
+/* No label on the picker, so drop the control's default bottom spacing. */
+.utm-dimension-picker {
+    margin-bottom: 0;
+}
+
+/* Loading placeholder sized to the ranked list it stands in for. The base .skeleton class supplies
+   the shimmer animation. */
+.utm-skeleton {
+    height: 220px;
+    border-radius: var(--rounded-small);
+}
+
+/* Animate the body's height directly between the old and new content rather than collapsing to
+   zero. The height values are measured and set in the transition hooks. overflow:hidden keeps the
+   taller content clipped while the height catches up. */
+.utm-body {
+    overflow: hidden;
+    transition: height 0.35s ease;
+}
+
+/* flow-root gives the measured content its own block formatting context so its offsetHeight
+   includes the last row's margin-bottom. Without it the measured height is short by that margin
+   and the height snaps when it is released back to auto, causing the jitter. */
+.utm-body-content {
+    display: flow-root;
+}
+
+/* Cross-fade the swapped content. The enter duration matches the body's height transition (0.35s)
+   so afterEnter, which resets the height back to auto, fires exactly when the morph finishes. */
+.utm-fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.utm-fade-enter-active {
+    transition: opacity 0.35s ease;
+}
+
+.utm-fade-enter-from,
+.utm-fade-leave-to {
+    opacity: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import NothingToShow from "./nothingToShow.partial.obs";
+    import RankedListBarChart from "./rankedListBarChart.partial.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { UtmDimension, UtmDimensionDescription } from "@Obsidian/Enums/Cms/utmDimension";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { MetricSliceBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemMetrics/metricSliceBag";
+    import { UtmDimensionMetricsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemMetrics/utmDimensionMetricsBag";
+
+    // #region Types
+
+    const props = defineProps<{
+        /** The per-dimension UTM breakdowns for every selected dimension, in canonical order. */
+        breakdowns: UtmDimensionMetricsBag[];
+
+        /** True while the metrics are loading, so the card shows a skeleton instead of its body. */
+        isLoading?: boolean;
+    }>();
+
+    // #endregion Types
+
+    // #region Values
+
+    // The dimension currently shown, held as its enum value in string form for the dropdown.
+    const selectedDimensionValue = ref<string>("");
+
+    // The body wrapper whose height is animated between the outgoing and incoming content.
+    const bodyContainer = ref<HTMLElement | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    // The card renders whenever there are dimensions to show; an empty dimension shows the
+    // "Nothing To Show" state rather than hiding the card. Only guards against the pre-load
+    // state where no dimensions have arrived yet.
+    const hasDimensions = computed<boolean>(() => {
+        return props.breakdowns.length > 0;
+    });
+
+    // The dropdown only makes sense when there is more than one dimension to switch between.
+    const isDimensionPickerShown = computed<boolean>(() => {
+        return props.breakdowns.length > 1;
+    });
+
+    const dimensionOptions = computed<ListItemBag[]>(() => {
+        return props.breakdowns.map(b => ({
+            value: String(b.dimension),
+            text: UtmDimensionDescription[b.dimension] ?? ""
+        }));
+    });
+
+    // Source is the preferred default; otherwise fall back to the first dimension sent.
+    const defaultDimensionValue = computed<string>(() => {
+        if (props.breakdowns.some(b => b.dimension === UtmDimension.Source)) {
+            return String(UtmDimension.Source);
+        }
+
+        return props.breakdowns.length > 0 ? String(props.breakdowns[0].dimension) : "";
+    });
+
+    const activeItems = computed<MetricSliceBag[]>(() => {
+        const active = props.breakdowns.find(b => String(b.dimension) === selectedDimensionValue.value);
+        return active?.items ?? [];
+    });
+
+    const cardTitle = computed<string>(() => {
+        // Guard the empty selection explicitly: Number("") is 0, which is a valid dimension (Source),
+        // so relying on the lookup alone would mislabel the card before a dimension is selected.
+        if (!selectedDimensionValue.value) {
+            return "Top UTM";
+        }
+
+        return `Top UTM ${UtmDimensionDescription[Number(selectedDimensionValue.value)] ?? ""}`;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Locks the body to the outgoing content's height so the swap starts from where it is rather
+     * than collapsing to zero.
+     */
+    function onBeforeLeave(): void {
+        if (bodyContainer.value) {
+            bodyContainer.value.style.height = `${bodyContainer.value.offsetHeight}px`;
+        }
+    }
+
+    /**
+     * Animates the body from the locked height to the incoming content's natural height.
+     *
+     * @param element The entering content element.
+     */
+    function onEnter(element: Element): void {
+        if (bodyContainer.value && element instanceof HTMLElement) {
+            bodyContainer.value.style.height = `${element.offsetHeight}px`;
+        }
+    }
+
+    /**
+     * Releases the fixed height back to auto once the animation completes so later content is
+     * measured correctly.
+     */
+    function onAfterEnter(): void {
+        if (bodyContainer.value) {
+            bodyContainer.value.style.height = "";
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // Whenever the data changes (for example a new date range), keep the current selection if it still
+    // has an option, otherwise reset to the default so the card never points at a missing dimension.
+    watch(() => props.breakdowns, () => {
+        const availableValues = props.breakdowns.map(b => String(b.dimension));
+
+        if (!availableValues.includes(selectedDimensionValue.value)) {
+            selectedDimensionValue.value = defaultDimensionValue.value;
+        }
+    }, { immediate: true });
+
+    // #endregion Watchers
+</script>

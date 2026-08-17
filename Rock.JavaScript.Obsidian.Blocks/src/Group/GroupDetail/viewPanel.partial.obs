@@ -67,6 +67,15 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div v-if="meetingStyleText" class="col-md-6">
+                                <div class="form-group static-control">
+                                    <label class="control-label">Meeting Style</label>
+                                    <div class="control-wrapper">
+                                        <div class="form-control-static">{{ meetingStyleText }}</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <AttributeValuesContainer v-if="hasAttributes"
@@ -214,6 +223,7 @@
     import { GroupDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupDetailOptionsBag";
     import { GroupLinkageBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupLinkageBag";
     import { GroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupBag";
+    import { MeetingStyleDescription } from "@Obsidian/Enums/Group/meetingStyle";
     import { NavigationUrlKey } from "./types.partial";
     import { computed, PropType } from "vue";
     import LocationCard from "./locationCard.partial.obs";
@@ -277,6 +287,14 @@
      * Whether the group has any public attributes to render.
      */
     const hasAttributes = computed((): boolean => Object.keys(attributes.value).length > 0);
+
+    /**
+     * Friendly Meeting Style label, or empty when the group has no meeting style set.
+     */
+    const meetingStyleText = computed((): string => {
+        const value = props.modelValue?.meetingStyle;
+        return value != null ? (MeetingStyleDescription[value] ?? "") : "";
+    });
 
     /**
      * Registration linkages for the group (Registration Instances pointing at this group).

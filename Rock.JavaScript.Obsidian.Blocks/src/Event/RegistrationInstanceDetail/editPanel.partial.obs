@@ -19,29 +19,41 @@
                     <div class="col-md-6">
                         <DateTimePicker v-model="startDateTime" label="Registration Starts" />
                     </div>
+                </div>
+                <div class="row">
                     <div class="col-md-6">
                         <DateTimePicker v-model="endDateTime" label="Registration Ends" />
                     </div>
-                    <div class="col-md-6">
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
                         <NumberBox v-model="maxAttendees"
                                    label="Maximum Attendees"
                                    help="Total number of people who can register for the event. Leave blank for unlimited." />
                     </div>
+                </div>
+                <div class="row">
                     <div class="col-md-6">
                         <WorkflowTypePicker v-model="registrationWorkflowType"
                                             label="Registration Workflow"
                                             :multiple="false"
                                             help="An optional workflow type to launch when a new registration is completed." />
                     </div>
+                </div>
+                <div class="row">
                     <div class="col-md-6">
                         <DateTimePicker v-model="sendReminderDateTime" label="Send Reminder Date" />
                     </div>
+                </div>
+                <div class="row">
                     <div class="col-md-6">
                         <DefinedValuePicker v-model="registrantRecordSource"
                                             label="Record Source"
                                             :definedTypeGuid="recordSourceDefinedTypeGuid"
                                             help="The record source to use for new individuals. If not set, the registration template's record source will be used. If a 'RecordSource' page parameter is found at the time of registration, it will be used instead." />
                     </div>
+                </div>
+                <div class="row">
                     <div v-if="modelValue.bag?.isPaymentPlanAllowed" class="col-md-6">
                         <DatePicker v-model="paymentDeadlineDate"
                                     label="Payment Deadline"
@@ -66,12 +78,15 @@
                                       label="Contact"
                                       enableSelfSelection />
                     </div>
-                    <div class="col-md-6"></div>
+                </div>
+                <div class="row">
                     <div class="col-md-6">
-                        <PhoneNumberBox v-model="contactPhone" label="Contact Phone" />
+                        <PhoneNumberBox v-model="contactPhone" label="Phone" />
                     </div>
+                </div>
+                <div class="row">
                     <div class="col-md-6">
-                        <EmailBox v-model="contactEmail" label="Contact Email" />
+                        <EmailBox v-model="contactEmail" label="Email" />
                     </div>
                 </div>
             </ContentStack>
@@ -79,34 +94,44 @@
 
         <ContentSection v-if="showFinancialSection" title="Registration Financial Information" icon="ti ti-currency-dollar">
             <ContentStack>
-                <div class="row">
-                    <div v-if="modelValue.bag?.isSetCostOnInstance" class="col-md-6">
-                        <CurrencyBox v-model="cost" label="Cost" help="The cost per registrant" />
-                    </div>
-                    <div v-if="modelValue.bag?.isSetCostOnInstance" class="col-md-6">
-                        <CurrencyBox v-model="minimumInitialPayment"
-                                     label="Minimum Initial Payment"
-                                     help="The minimum amount required per registrant. Leave value blank if full amount is required." />
-                    </div>
-                    <div v-if="modelValue.bag?.isRedirectionGateway" class="col-md-6">
-                        <DropDownList v-model="externalGatewayMerchantId"
-                                      :label="gatewayMerchantLabel"
-                                      :items="gatewayMerchantItems"
-                                      showBlankItem />
-                    </div>
-                    <div v-if="modelValue.bag?.isRedirectionGateway" class="col-md-6">
-                        <DropDownList v-model="externalGatewayFundId"
-                                      :label="gatewayFundLabel"
-                                      :items="gatewayFundItems"
-                                      showBlankItem />
-                    </div>
-                    <div v-if="modelValue.bag?.isFinancialGatewayConfigured" class="col-md-6">
+                <div v-if="modelValue.bag?.isFinancialGatewayConfigured" class="row">
+                    <div class="col-md-6">
                         <AccountPicker v-model="account"
                                        label="Account"
                                        rules="required"
                                        activeOnly />
                     </div>
-                    <div v-if="modelValue.bag?.isSetCostOnInstance" class="col-md-6">
+                </div>
+                <div v-if="modelValue.bag?.isSetCostOnInstance" class="row">
+                    <div class="col-md-6">
+                        <CurrencyBox v-model="cost" label="Cost" help="The cost per registrant" />
+                    </div>
+                </div>
+                <div v-if="modelValue.bag?.isSetCostOnInstance" class="row">
+                    <div class="col-md-6">
+                        <CurrencyBox v-model="minimumInitialPayment"
+                                     label="Minimum Initial Payment"
+                                     help="The minimum amount required per registrant. Leave value blank if full amount is required." />
+                    </div>
+                </div>
+                <div v-if="modelValue.bag?.isRedirectionGateway" class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="externalGatewayMerchantId"
+                                      :label="gatewayMerchantLabel"
+                                      :items="gatewayMerchantItems"
+                                      showBlankItem />
+                    </div>
+                </div>
+                <div v-if="modelValue.bag?.isRedirectionGateway" class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="externalGatewayFundId"
+                                      :label="gatewayFundLabel"
+                                      :items="gatewayFundItems"
+                                      showBlankItem />
+                    </div>
+                </div>
+                <div v-if="modelValue.bag?.isSetCostOnInstance" class="row">
+                    <div class="col-md-6">
                         <CurrencyBox v-model="defaultPayment"
                                      label="Default Payment Amount"
                                      help="The default payment amount per registrant. Leave value blank to default to the full amount. NOTE: This requires that a Minimum Initial Payment is greater than 0." />
@@ -117,36 +142,48 @@
 
         <ContentSection title="Registration Messages" icon="ti ti-message">
             <ContentStack>
-                <HtmlEditor v-model="registrationInstructions"
-                            label="Registration Instructions"
-                            toolbar="light"
-                            :editorHeight="200"
-                            help="These instructions will appear at the beginning of the registration process. Instructions can be provided on the registration template also. Any instructions here will override the instructions on the template." />
-
-                <HtmlEditor v-model="additionalReminderDetails"
-                            label="Additional Reminder Details"
-                            toolbar="light"
-                            :editorHeight="200"
-                            help="These reminder details will be included in the reminder notification." />
-
-                <HtmlEditor v-model="additionalConfirmationDetails"
-                            label="Additional Confirmation Details"
-                            toolbar="light"
-                            :editorHeight="200"
-                            help="These confirmation details will be appended to those from the registration template when displayed at the end of the registration process." />
+                <div class="row">
+                    <div class="col-md-12">
+                        <HtmlEditor v-model="registrationInstructions"
+                                    label="Registration Instructions"
+                                    toolbar="light"
+                                    :editorHeight="200"
+                                    help="These instructions will appear at the beginning of the registration process. Instructions can be provided on the registration template also. Any instructions here will override the instructions on the template." />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <HtmlEditor v-model="additionalReminderDetails"
+                                    label="Additional Reminder Details"
+                                    toolbar="light"
+                                    :editorHeight="200"
+                                    help="These reminder details will be included in the reminder notification." />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <HtmlEditor v-model="additionalConfirmationDetails"
+                                    label="Additional Confirmation Details"
+                                    toolbar="light"
+                                    :editorHeight="200"
+                                    help="These confirmation details will be appended to those from the registration template when displayed at the end of the registration process." />
+                    </div>
+                </div>
             </ContentStack>
         </ContentSection>
 
         <ContentSection v-if="showSessionSection" title="Registration Session" icon="ti ti-clock">
             <ContentStack>
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-3">
                         <NumberBox v-model="timeoutLengthMinutes"
                                    label="Timeout Length"
                                    appendText="minutes"
                                    help="Applies a timeout to registration sessions to help manage limited spots. Individuals have this amount of time to complete each page before losing their reserved spots. Defaults to 15 minutes if left blank. Sessions are automatically enabled when a Maximum Attendee limit is set." />
                     </div>
-                    <div class="col-md-6">
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
                         <NumberBox v-model="timeoutThreshold"
                                    label="Timeout Threshold"
                                    appendText="% registrants"

@@ -30,8 +30,6 @@
                       itemClass="text-nowrap"
                       :showAsLink="true"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getRequesterFilterValue"
-                      :quickFilterValue="getRequesterFilterValue"
                       visiblePriority="xs" />
 
         <LabelColumn v-if="!gridSettings.connectionType"
@@ -113,7 +111,6 @@
     import EditStoryModal from "./CelebrationsReport/editStoryModal.partial.obs";
     import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./CelebrationsReport/types.partial";
     import Grid, { DateColumn, PersonColumn, Column, dateValueFilter, textValueFilter, pickExistingValueFilter, LabelColumn, SelectColumn } from "@Obsidian/Controls/grid";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { RangeType, TimeUnit, parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
     import { safeParseJson } from "@Obsidian/Utility/stringUtils";
@@ -193,14 +190,6 @@
      */
     function rowClass(row: Record<string, unknown>): string {
         return row["canEdit"] === true ? "" : "grid-row-no-edit";
-    }
-
-    /**
-     * Gets the filter value text to use for the requester column.
-     */
-    function getRequesterFilterValue(row: Record<string, unknown>): string {
-        const person = row["requester"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     /**

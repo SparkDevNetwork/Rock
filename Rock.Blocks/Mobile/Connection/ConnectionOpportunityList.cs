@@ -148,6 +148,13 @@ namespace Rock.Blocks.Mobile.Connection
                 return ActionBadRequest( $"The specified {ConnectionType.FriendlyTypeName} is not active." );
             }
 
+            // The Add button opens the wizard at its Type step and carries no
+            // page parameters, so the gate asks whether the person can add
+            // anywhere rather than scoping to the type being listed here.
+            // Short-circuited on the block setting so an unconfigured block does
+            // not pay for it.
+            var addPageConfigured = GetAttributeValue( AttributeKey.AddPage ).AsGuidOrNull().HasValue;
+
             return ActionOk( new GetConnectionOpportunitySummariesResponseBag
             {
                 ConnectionType = new ConnectionTypeHeaderBag
@@ -156,7 +163,9 @@ namespace Rock.Blocks.Mobile.Connection
                     IconCssClass = connectionType.IconCssClass,
                     Description = connectionType.Description
                 },
-                Opportunities = LoadConnectionOpportunitySummaries( RockContext, connectionType, options )
+                Opportunities = LoadConnectionOpportunitySummaries( RockContext, connectionType, options ),
+                IsAddEnabled = addPageConfigured
+                    && ConnectionRequestAuthorization.CanAddRequestAnywhere( RockContext, GetCurrentPerson() )
             } );
         }
 

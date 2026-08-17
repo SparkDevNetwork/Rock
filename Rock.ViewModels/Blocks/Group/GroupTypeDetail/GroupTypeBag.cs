@@ -67,6 +67,11 @@ namespace Rock.ViewModels.Blocks.Group.GroupTypeDetail
         public bool AllowMultipleLocations { get; set; }
 
         /// <summary>
+        /// Gets or sets a flag indicating if the Meeting Style field is available on Groups of this type.
+        /// </summary>
+        public bool IsMeetingStyleEnabled { get; set; }
+
+        /// <summary>
         /// Gets or sets a flag indicating if specific groups are allowed to have their own member attributes.
         /// </summary>
         public bool AllowSpecificGroupMemberAttributes { get; set; }

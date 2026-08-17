@@ -50,6 +50,8 @@ namespace Rock.Blocks.Core
     [TextField( "Heading",
         Description = "The Lava template to use for the heading. <span class='tip tip-lava'></span>",
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "{{ Entity.EntityStringValue }} (ID:{{ Entity.Id }})",
         Order = 0,
         Key = AttributeKey.Heading )]

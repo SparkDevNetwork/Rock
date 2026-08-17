@@ -8,7 +8,8 @@
         <ScheduleBuilder label="Schedule Builder"
                          v-model="value"
                          :hideStartDateTime="hideStartDateTime"
-                         :hideDuration="hideDuration" />
+                         :hideDuration="hideDuration"
+                         :displayScheduleFriendlyTextBesideLabel="displayScheduleFriendlyTextBesideLabel" />
 
         <template #settings>
             <div class="row">
@@ -17,6 +18,9 @@
                 </div>
                 <div class="col-md-4">
                     <CheckBox label="Hide Duration" v-model="hideDuration" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Display Schedule Friendly Text Beside Label" v-model="displayScheduleFriendlyTextBesideLabel" />
                 </div>
             </div>
         </template>
@@ -33,6 +37,7 @@
     const value = ref("");
     const hideStartDateTime = ref(false);
     const hideDuration = ref(false);
+    const displayScheduleFriendlyTextBesideLabel = ref(false);
     const importCode = getSfcControlImportPath("scheduleBuilder");
-    const exampleCode = `<ScheduleBuilder label="Schedule Builder" v-model="value" :hideStartDateTime="false" :hideDuration="false" />`;
+    const exampleCode = `<ScheduleBuilder label="Schedule Builder" v-model="value" :hideStartDateTime="false" :hideDuration="false" :displayScheduleFriendlyTextBesideLabel="false" />`;
 </script>

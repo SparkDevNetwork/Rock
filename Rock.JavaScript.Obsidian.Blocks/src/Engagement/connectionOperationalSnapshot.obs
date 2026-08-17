@@ -23,19 +23,19 @@
 
                             <div class="row row-grouped gutter-0" :class="breakpointHelper?.breakpoint">
                                 <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
-                                    <KpiTile noBorders label="Active" :value="currentMetricsKpis.active.value" />
+                                    <KpiTile isBorderless label="Active" :value="currentMetricsKpis.active.value" />
                                 </div>
 
                                 <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
-                                    <KpiTile noBorders label="Unassigned" :value="currentMetricsKpis.unassigned.value" />
+                                    <KpiTile isBorderless label="Unassigned" :value="currentMetricsKpis.unassigned.value" />
                                 </div>
 
                                 <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
-                                    <KpiTile noBorders label="Due Soon" :value="currentMetricsKpis.dueSoon.value" :valueColor="currentMetricsKpis.dueSoon.color" />
+                                    <KpiTile isBorderless label="Due Soon" :value="currentMetricsKpis.dueSoon.value" :valueColor="currentMetricsKpis.dueSoon.color" />
                                 </div>
 
                                 <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
-                                    <KpiTile noBorders label="Overdue" :value="currentMetricsKpis.overdue.value" :valueColor="currentMetricsKpis.overdue.color" />
+                                    <KpiTile isBorderless label="Overdue" :value="currentMetricsKpis.overdue.value" :valueColor="currentMetricsKpis.overdue.color" />
                                 </div>
                             </div>
 
@@ -151,9 +151,7 @@
                         <PersonColumn :field="getGridRowPropertyName('person')"
                                       :name="getGridRowPropertyName('person')"
                                       title="Name"
-                                      :filter="pickExistingValueFilter"
-                                      :filterValue="getPersonTextValue"
-                                      :quickFilterValue="getPersonTextValue"><template #></template></PersonColumn>
+                                      :filter="pickExistingValueFilter" />
 
                         <NumberColumn :field="getGridRowPropertyName('activeRequestCount')"
                                       :name="getGridRowPropertyName('activeRequestCount')"
@@ -354,8 +352,8 @@
     import { computed, ref, watch } from "vue";
     import BreakpointObserver from "./ConnectionOperationalSnapshot/breakpointObserver.partial.obs";
     import ChartPanel from "./ConnectionOperationalSnapshot/chartPanel.partial.obs";
-    import { ellipsisTooltip as vEllipsisTooltip } from "./ConnectionOperationalSnapshot/ellipsisTooltipDirective.partial";
-    import KpiTile from "./ConnectionOperationalSnapshot/kpiTile.partial.obs";
+    import { vEllipsisTooltip } from "@Obsidian/Directives/ellipsisTooltip";
+    import KpiTile from "@Obsidian/Controls/kpiTile.obs";
     import { BreakpointHelper } from "./ConnectionOperationalSnapshot/types.partial";
     import BarChart from "@Obsidian/Controls/barChart.obs";
     import ContextSlicer from "@Obsidian/Controls/contextSlicer.obs";
@@ -609,16 +607,6 @@
     function getTimelineColor(index: number): string {
         const colors = ["#2C5282", "#3182CE", "#90CDF4"];
         return colors[index % colors.length];
-    }
-
-    /**
-     * Gets the text value for the "Person" column.
-     *
-     * @param row The row whose value to get.
-     */
-    function getPersonTextValue(row: Record<string, unknown>): string {
-        const person = (row as ConnectorBag).person;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     function wrapByWords(text: string, lineSize: number): string | string[] {

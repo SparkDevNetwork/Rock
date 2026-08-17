@@ -24,6 +24,13 @@
     color: inherit; // allow for links in labels
   }
 
+  &-form-control {
+    --label-height: 20px; // Override default label height
+    position: absolute;
+    margin-left: var(--spacing-tiny);
+    align-self: end;
+  }
+
 }
 
 .label-outline {

@@ -77,16 +77,6 @@ namespace Rock.ViewModels.Blocks.Group.GroupList
         public string GroupTypeName { get; set; }
 
         /// <summary>
-        /// Gets or sets the display order of the group's GroupType. Used for default grid sorting.
-        /// </summary>
-        public int GroupTypeOrder { get; set; }
-
-        /// <summary>
-        /// Gets or sets the display order of the group within its type. Used for default grid sorting.
-        /// </summary>
-        public int GroupOrder { get; set; }
-
-        /// <summary>
         /// Gets or sets the group's description. Shown in the Description column or as a
         /// tooltip when the column is hidden.
         /// </summary>

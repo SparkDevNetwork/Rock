@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -199,7 +199,7 @@ END
 
         /// <summary>
         /// Deletes the placed PMM Settings block, the PMM Settings block type, the PMM admin
-        /// page route, and the PMM admin page itself. Uses <see cref="RockMigrationHelper"/>
+        /// page route, and the PMM admin page itself. <c>RockMigrationHelper</c>
         /// helpers so any related Auth rows are cleaned up too.
         /// </summary>
         private void DeletePmmAdminPageAndBlocks()

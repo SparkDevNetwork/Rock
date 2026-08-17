@@ -478,6 +478,10 @@ namespace Rock.Configuration.ConnectedServices
 
                 configuration.RockIntelligence = RockIntelligence.ServiceConfiguration.FromEntry( rockIqEntry );
 
+                var knowledgeBaseEntry = manifest.Services.FirstOrDefault( se => se.ServiceId == "knowledge-base" );
+
+                configuration.KnowledgeBase = KnowledgeBase.ServiceConfiguration.FromEntry( knowledgeBaseEntry );
+
                 return true;
             } );
         }

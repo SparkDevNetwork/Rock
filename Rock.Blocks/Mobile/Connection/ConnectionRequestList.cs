@@ -231,9 +231,12 @@ namespace Rock.Blocks.Mobile.Connection
                     } )
                     .ToList();
 
+                // The add gate authorizes against the opportunity (or a request
+                // stub when the type enables request security) and falls back to
+                // connector group membership, matching the web Connections Hub.
                 var addPageGuid = GetAttributeValue( AttributeKey.AddPage ).AsGuidOrNull();
                 response.IsAddEnabled = addPageGuid.HasValue
-                    && connectionType.IsAuthorized( Authorization.EDIT, currentPerson );
+                    && ConnectionRequestAuthorization.CanAddRequest( rockContext, connectionOpportunity, currentPerson );
             }
 
             return ActionOk( response );

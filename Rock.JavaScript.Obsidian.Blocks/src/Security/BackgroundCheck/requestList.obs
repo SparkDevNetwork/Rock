@@ -14,8 +14,6 @@
                       field="name"
                       title="Name"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getPersonFilterValue"
-                      :quickFilterValue="getPersonFilterValue"
                       visiblePriority="xs"
                       width="15%" />
 
@@ -163,14 +161,6 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
-    }
-
-    /**
-     * Gets the filter value for the person column.
-     */
-    function getPersonFilterValue(row: Record<string, unknown>): string {
-        const person = row.name as PersonFieldBag;
-        return person ? `${person.nickName} ${person.lastName}` : "";
     }
 
     /**

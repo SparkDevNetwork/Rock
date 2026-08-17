@@ -556,7 +556,6 @@ namespace Rock.Blocks.AI
             var agent = _agentBuilder.Build( agentCache.Id, new ChatAgentOptions
             {
                 IsDebugEnabled = request.IsDebugEnabled,
-                IsSecurityEnabled = true
             } );
 
             await agent.LoadSessionAsync( IdHasher.Instance.GetId( request.SessionIdKey ) ?? 0 );
@@ -655,10 +654,7 @@ namespace Rock.Blocks.AI
                 return ActionBadRequest( "You are not authorized to access this agent." );
             }
 
-            var agent = _agentBuilder.Build( agentCache.Id, new ChatAgentOptions
-            {
-                IsSecurityEnabled = true
-            } );
+            var agent = _agentBuilder.Build( agentCache.Id, new ChatAgentOptions() );
 
             // Start a new session.
             await agent.StartNewSessionAsync( IsDockedMode ? SessionType.Docked : SessionType.Standard );
@@ -838,10 +834,7 @@ namespace Rock.Blocks.AI
                 return ActionBadRequest( "Entity not found." );
             }
 
-            var agent = _agentBuilder.Build( agentCache.Id, new ChatAgentOptions
-            {
-                IsSecurityEnabled = true
-            } );
+            var agent = _agentBuilder.Build( agentCache.Id, new ChatAgentOptions() );
 
             await agent.LoadSessionAsync( sessionId );
             await agent.AddAnchorAsync( entity );
@@ -871,10 +864,7 @@ namespace Rock.Blocks.AI
                 return ActionBadRequest( "You are not authorized to access this agent." );
             }
 
-            var agent = _agentBuilder.Build( agentCache.Id, new ChatAgentOptions
-            {
-                IsSecurityEnabled = true
-            } );
+            var agent = _agentBuilder.Build( agentCache.Id, new ChatAgentOptions() );
 
             await agent.LoadSessionAsync( sessionId );
             await agent.RemoveAnchorAsync( entityTypeId );
