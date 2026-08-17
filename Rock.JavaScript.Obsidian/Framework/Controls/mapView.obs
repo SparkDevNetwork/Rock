@@ -1,0 +1,1613 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="map-view">
+        <div v-show="!isUnavailable" ref="mapContainer" class="map-view-canvas"></div>
+        <div v-if="isUnavailable" class="map-view-unavailable text-muted">
+            <i class="ti ti-map-off"></i> The map could not be loaded.
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.map-view {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 300px;
+}
+
+.map-view-canvas {
+    width: 100%;
+    height: 100%;
+    min-height: 300px;
+}
+
+.map-view-unavailable {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xsmall);
+    min-height: 300px;
+}
+</style>
+
+<script setup lang="ts">
+    /* global google */
+    import { computed, nextTick, onBeforeMount, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import { Guid } from "@Obsidian/Types";
+    import { MapViewMarker } from "@Obsidian/Types/Controls/mapView";
+    import { loadMapResources } from "@Obsidian/Utility/geo";
+    import { GeoPickerGoogleMapSettingsBag } from "@Obsidian/ViewModels/Rest/Controls/geoPickerGoogleMapSettingsBag";
+    import { GeoPickerSettingsBag } from "@Obsidian/ViewModels/Rest/Controls/geoPickerSettingsBag";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import { MarkerClusterer, Cluster, Marker } from "@Obsidian/Libs/markerClusterer";
+
+    // #region Types
+
+    type PlottedMarker = {
+        circle: google.maps.Circle | null;
+        dot: MapMarker | null;
+        position: google.maps.LatLng;
+        // The circle's full radius in meters, used by the dot-to-circle crossover to tell when the
+        // circle has outgrown the resting dot. Zero when the marker has no circle.
+        radiusMeters: number;
+    };
+
+    // A map marker whose concrete Google type is chosen at creation: a legacy google.maps.Marker, or an
+    // AdvancedMarkerElement when the map has a Map ID (advanced markers require one). The marker is kept as
+    // plain data and all behavior lives in the setMarker* free functions, so a map with many markers pays
+    // for the data per marker, not a copy of the operations (which a per-instance method object would cost).
+    type MapMarker =
+        | { kind: "legacy"; raw: google.maps.Marker }
+        | { kind: "advanced"; raw: google.maps.marker.AdvancedMarkerElement; content: HTMLElement };
+
+    // The look of a marker, resolved to a legacy icon or an advanced DOM element per marker kind. "image"
+    // is a fixed SVG (the reference "you are here" pin); "circle" is a filled, stroked dot (a marker's
+    // resting dot); "hidden" is an invisible-but-still-counted placeholder used to take a marker
+    // off screen without dropping it from the clusterer's count.
+    type MarkerVisual =
+        | { kind: "image"; svg: string; widthPx: number; heightPx: number; anchorXPx: number; anchorYPx: number }
+        | { kind: "circle"; radiusPx: number; fillColor: string; fillOpacity: number; strokeColor: string; strokeOpacity: number; strokeWeight: number }
+        | { kind: "hidden"; radiusPx: number };
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** The points to plot. Changing the list re-plots the map and refits the viewport. */
+        markers: {
+            type: Array as PropType<MapViewMarker[]>,
+            default: () => []
+        },
+
+        /** The id of the selected marker. Two-way bound so the map and an external list stay in sync. */
+        selectedMarkerId: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** The id of the hovered marker. Two-way bound so hovering a marker or its external list row highlights the marker without selecting it. */
+        hoveredMarkerId: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** The GUID of a Map Styles DefinedValue that determines the map's appearance. */
+        mapStyleValueGuid: {
+            type: String as PropType<Guid>,
+            default: DefinedValue.MapStyleRock
+        },
+
+        /** The latitude to center on when there are no markers. Not reactive. */
+        centerLatitude: {
+            type: Number as PropType<number>,
+            default: null
+        },
+
+        /** The longitude to center on when there are no markers. Not reactive. */
+        centerLongitude: {
+            type: Number as PropType<number>,
+            default: null
+        },
+
+        /** The marker/circle color (a CSS color such as "#D70015"). Overrides the map style's color; empty falls back to the style. Not reactive. */
+        markerColor: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The fraction of the map height to shift a card-selected marker upward when focusing it (0 = centered). Use where an overlay covers the lower map (e.g. the mobile card sheet) so the focused marker is not hidden behind it. */
+        selectionOffsetFraction: {
+            type: Number as PropType<number>,
+            default: 0
+        },
+
+        /**
+         * When true, clicking a marker on the map focuses it (zoom/pan) the same way a card click does,
+         * but only while the map is still at the zoom it last fit its results to; once the visitor has
+         * zoomed in past that, the click just selects (the marker is already prominent). Off by default,
+         * where a marker click only selects.
+         */
+        focusMarkerOnClickAtDefaultZoom: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * A single reference point to mark distinctly on the map (e.g. the visitor's own location), so it
+         * is easy to see where it sits relative to the plotted markers. Rendered as a pin above the
+         * markers, non-interactive and never clustered, with an optional hover title. Null (the default)
+         * shows none.
+         */
+        referenceLocation: {
+            type: Object as PropType<{ latitude: number; longitude: number; title?: string } | null>,
+            default: null
+        },
+
+        /**
+         * The fill color of the reference-location ("you are here") pin. Any CSS color string. When
+         * omitted, the pin falls back to a high-contrast rose.
+         */
+        referenceLocationColor: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /**
+         * The color painted behind the map while tiles load (the grey seen when panning outruns tile
+         * loading). Any CSS color string, including "transparent" to let whatever sits behind the map show
+         * through. Applied at construction and reapplied when the map rebuilds on a theme change; empty (the
+         * default) leaves Google's default grey.
+         */
+        backgroundColor: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:selectedMarkerId", value: string | null): void;
+        (e: "update:hoveredMarkerId", value: string | null): void;
+        (e: "markerClick", value: string): void;
+        (e: "visibleMarkersChanged", value: string[]): void;
+        (e: "boundsChanged", value: { north: number; south: number; east: number; west: number; isUserMove: boolean; isAtMaxZoom: boolean }): void;
+    }>();
+
+    // #region Values
+
+    const mapContainer = ref<HTMLDivElement | null>(null);
+
+    const isGoogleLoaded = ref(false);
+    const isMounted = ref(false);
+    const isUnavailable = ref(false);
+    const isReady = computed((): boolean => isGoogleLoaded.value && isMounted.value);
+
+    // Google Maps objects are not reactive; keep them out of Vue's reactivity.
+    let map: google.maps.Map | null = null;
+    let markerClusterer: MarkerClusterer | null = null;
+    // Watches the document's "theme" attribute so an in-app light/dark toggle rebuilds a theme-driven map.
+    let themeObserver: MutationObserver | null = null;
+    // Watches the OS color scheme so a system/unset theme still rebuilds the map when the OS flips, since
+    // that flip does not touch the "theme" attribute the observer above watches.
+    let colorSchemeMediaQuery: MediaQueryList | null = null;
+    // The color scheme the current map was built with, so a theme or OS change that resolves to the same
+    // scheme is a no-op instead of a needless (and visibly flickering) teardown and rebuild.
+    let builtColorScheme: google.maps.ColorScheme | null = null;
+    // True while a programmatic move (fitBounds/setView) is settling, so the idle it produces is
+    // reported as a non-user move. Lets a consumer distinguish the visitor panning/zooming from the
+    // map recentering itself (e.g. onto a search origin), which must not be treated as a user pan.
+    let isProgrammaticMove = false;
+    // The map view (center + zoom) captured before focusing a card-selected marker, so clearing the
+    // selection can return the map to where it was. A marker click on the map is not a focus - it sets
+    // isMarkerClickSelection so the selection watcher skips the pan/restore for it (the marker is
+    // already where the visitor clicked).
+    let savedViewCenter: google.maps.LatLng | null = null;
+    let savedViewZoom: number | null = null;
+    let isMarkerClickSelection = false;
+    // The zoom the map last fit its results to. Used to tell whether the visitor has since zoomed in,
+    // so a marker click can focus like a card click only while still at that default results zoom.
+    let lastFitZoom: number | null = null;
+    // A distinct pin for the reference location (props.referenceLocation), kept in sync with that prop.
+    let referenceLocationMarker: MapMarker | null = null;
+    const focusMarkerZoom = 15;
+    const plottedMarkers: Record<string, PlottedMarker> = {};
+    let styles: google.maps.MapTypeStyle[] = [];
+    // The Map Style's Google cloud Map ID (core_GoogleMapId), when configured. Present means cloud styling
+    // governs the map (native light/dark) and the JSON style is ignored; empty falls back to the JSON path.
+    let mapId = "";
+    let centerLatitude = props.centerLatitude;
+    let centerLongitude = props.centerLongitude;
+    let markerColor = "#0088cc";
+
+    // The fixed pixel radius of a marker's resting dot, constant at every zoom so packed points stay
+    // distinct and selectable until the map zooms in enough for the circle to take over.
+    const chipRadiusPx = 7;
+    // Circle stroke/fill opacities, all applied to the single configured marker color: a solid 2px
+    // border with a light fill when hovered/selected, and a lighter border and fill at rest. Driving
+    // all four states from one color via opacity is why the block needs only a single color setting.
+    const highlightedCircleStrokeOpacity = 1;
+    const highlightedCircleFillOpacity = 0.2;
+    const restingCircleStrokeOpacity = 0.5;
+    const restingCircleFillOpacity = 0.15;
+
+    // The running rAF handle for a smooth setView tween, so a new recenter can supersede one in flight.
+    let viewAnimation: number | null = null;
+
+    // Whether the map has performed its one-time initial fit. With autoFit off, the map fits to the
+    // markers on the first render and then holds its viewport (see renderMarkers / fitToMarkers).
+    let hasFitted = false;
+
+    // One-shot: when set, the next programmatic selectedMarkerId change skips its focus-zoom, so a caller
+    // that will reframe the map itself (e.g. fitToMarkers after a search) owns the camera instead.
+    let suppressSelectionFocus = false;
+
+    // #endregion Values
+
+    // #region Functions
+
+    // Rock keys its theme off a "theme" attribute on the document element: "dark" and "light" are
+    // explicit, while "system" or no attribute follows the OS. Map that to Google's ColorScheme so the
+    // base map matches the rest of the page (mirrors the rule in styles-v2/core.css). Used on the Map ID
+    // and default base-map paths; a painted JSON style keeps its own light look and does not use this.
+    //
+    // The system/unset case resolves to an explicit DARK or LIGHT from the media query rather than Google's
+    // FOLLOW_SYSTEM. A Map ID vector map given FOLLOW_SYSTEM paints the light base first and only swaps to
+    // dark once it resolves the OS preference, which flashes on load; handing Google an explicit scheme
+    // renders the final look from the first frame. startThemeWatch listens for OS flips so the live
+    // following FOLLOW_SYSTEM would have given us is preserved.
+    function resolveColorScheme(): google.maps.ColorScheme {
+        const theme = document.documentElement.getAttribute("theme");
+
+        if (theme === "dark") {
+            return google.maps.ColorScheme.DARK;
+        }
+
+        if (theme === "light") {
+            return google.maps.ColorScheme.LIGHT;
+        }
+
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        return prefersDark ? google.maps.ColorScheme.DARK : google.maps.ColorScheme.LIGHT;
+    }
+
+    async function initialize(ready: boolean): Promise<void> {
+        if (!ready || isUnavailable.value) {
+            return;
+        }
+
+        // Let any pending render settle before reaching for the container element.
+        await nextTick();
+
+        if (!mapContainer.value) {
+            return;
+        }
+
+        buildMap();
+
+        // Rebuild the map on a Rock theme change so a Map ID or default base map re-renders in the new
+        // scheme (Google fixes colorScheme at map creation). Set up once here.
+        startThemeWatch();
+    }
+
+    // Creates the Google map for the current Map Style and theme, wires its map-level listeners, and plots
+    // the markers. Split out from initialize so a theme change can tear the map down and rebuild it in the
+    // new color scheme (see rebuildForColorScheme).
+    function buildMap(): void {
+        if (!mapContainer.value) {
+            return;
+        }
+
+        // The Map Style decides the look. A Google cloud Map ID (core_GoogleMapId) wins when present:
+        // Google renders its cloud style and drives light/dark from the map's color scheme. Otherwise the
+        // Dynamic Map Style JSON is painted as a StyledMapType. With neither, the default base map shows.
+        // The Map Style is the sole authority for POI/label visibility; the control injects no styling.
+        const hasMapId = mapId.trim().length > 0;
+        const hasJsonStyle = !hasMapId && styles.length > 0;
+
+        // A painted JSON style is light-tuned and keeps its own look; every other path follows the theme.
+        // Recorded so a later theme or OS change that resolves to this same scheme skips the rebuild.
+        const colorScheme = hasJsonStyle ? google.maps.ColorScheme.LIGHT : resolveColorScheme();
+        builtColorScheme = colorScheme;
+
+        map = new google.maps.Map(mapContainer.value, {
+            center: new google.maps.LatLng(centerLatitude, centerLongitude),
+            zoom: 12,
+            streetViewControl: false,
+            fullscreenControl: false,
+            mapTypeControl: false,
+            // Zoom-only drops all default Google controls and re-adds just Google's native zoom buttons, so
+            // a future Google UI default (e.g. the camera/tilt control) cannot reintroduce extras. For the
+            // JS API, control visibility is a client MapOptions concern, not the map style or the Map ID's
+            // cloud config, so this applies on every path (raster and Map ID/vector alike). No custom
+            // control is drawn; only Google's own zoom control is kept.
+            disableDefaultUI: true,
+            zoomControl: true,
+            // A painted JSON style is light-tuned and governs its own look, so keep the base light and do
+            // not let the theme darken it. The Map ID and default base maps follow the Rock theme, so Google
+            // renders the matching light/dark scheme.
+            colorScheme,
+            // POIs are never interactive: a POI click opens Google's place card and swallows the map click
+            // the control relies on to clear the selection. The Map Style owns POI visibility; this governs
+            // only interactivity.
+            clickableIcons: false,
+            // Greedy so a one-finger drag or a plain scroll pans and zooms the map directly, instead of the
+            // cooperative default that demands ctrl/cmd-scroll (or two fingers) and flashes a "use ctrl to
+            // zoom" overlay. The card column owns the page scroll in the side-by-side layout, so letting the
+            // map claim its own gestures does not fight the page.
+            gestureHandling: "greedy",
+            // Paint the space behind unloaded tiles with the caller's color (the block background, or
+            // "transparent" to let whatever is behind the map show through), so panning across not-yet-loaded
+            // areas blends with the surroundings instead of flashing Google's default grey.
+            ...(props.backgroundColor.trim().length > 0 && { backgroundColor: props.backgroundColor }),
+            // A cloud Map ID switches Google to its cloud-styled vector map. Omitted for the JSON/default
+            // paths so they keep the raster map the JSON styling targets.
+            ...(hasMapId && { mapId })
+        });
+
+        // The initial view comes from the configured center/zoom (or the marker fit below), not a user
+        // pan, so the map's first settle is a programmatic move. Without this an empty map (no markers to
+        // fit) reports its first idle as a user move, which a consumer could read as a pan re-query.
+        isProgrammaticMove = true;
+
+        // Paint the Dynamic Map Style JSON only when there is no Map ID (Google ignores JSON styles once a
+        // mapId is set). A Map ID map is styled entirely in the cloud; the default base map is left as-is.
+        if (hasJsonStyle) {
+            const styledMap = new google.maps.StyledMapType(styles, { name: "Styled Map" });
+            map.mapTypes.set("map_style", styledMap);
+            map.setMapTypeId("map_style");
+        }
+
+        // Clicking empty map space clears the selection and the hover. Clearing the hover matters on
+        // touch, where tapping a list row fires a mouseenter but no matching mouseleave, so the hover
+        // would otherwise stick and keep that marker highlighted after the selection is gone.
+        google.maps.event.addListener(map, "click", (): void => {
+            emit("update:selectedMarkerId", null);
+            emit("update:hoveredMarkerId", null);
+        });
+
+        // A drag is unambiguously the visitor, so clear any programmatic-move flag left set by a
+        // recenter that produced no idle (e.g. a setView to the current center); the ensuing idle is
+        // then correctly reported as a user move.
+        google.maps.event.addListener(map, "dragstart", (): void => {
+            isProgrammaticMove = false;
+        });
+
+        // Report which markers sit inside the viewport after every pan or zoom (idle fires once the
+        // movement settles), so a consumer can filter its list to the visible area.
+        google.maps.event.addListener(map, "idle", emitVisibleMarkers);
+
+        // In circle-only clustering a marker rests as a fixed-size dot and swaps to its true approximation
+        // circle once zooming in makes the circle the larger of the two on screen. Re-evaluate the swap as
+        // the zoom changes so a marker never vanishes mid-zoom: the circle scales natively with the map,
+        // and only the fixed-size dot toggles on or off at the crossover.
+        google.maps.event.addListener(map, "zoom_changed", syncClusteredCircles);
+
+        renderMarkers();
+        syncReferenceLocationMarker();
+    }
+
+    // Tears down the current map: cancels in-flight animations, disposes the clusterer, removes every
+    // plotted and reference marker, detaches the map listeners, and clears Google's rendered DOM. Leaves
+    // the plot state empty so a following buildMap starts clean.
+    function teardownMap(): void {
+        if (!map) {
+            return;
+        }
+
+        if (viewAnimation != null) {
+            cancelAnimationFrame(viewAnimation);
+            viewAnimation = null;
+        }
+
+        if (markerClusterer) {
+            google.maps.event.clearInstanceListeners(markerClusterer);
+            markerClusterer.clearMarkers();
+            markerClusterer.setMap(null);
+            markerClusterer = null;
+        }
+
+        for (const id of Object.keys(plottedMarkers)) {
+            const plotted = plottedMarkers[id];
+            plotted.circle?.setMap(null);
+            if (plotted.dot) {
+                setMarkerMap(plotted.dot, null);
+            }
+            delete plottedMarkers[id];
+        }
+
+        if (referenceLocationMarker) {
+            setMarkerMap(referenceLocationMarker, null);
+            referenceLocationMarker = null;
+        }
+
+        google.maps.event.clearInstanceListeners(map);
+        map = null;
+        if (mapContainer.value) {
+            mapContainer.value.innerHTML = "";
+        }
+    }
+
+    // Rebuilds the map so a Map ID or default base map re-renders in the current theme's color scheme,
+    // which Google fixes at map creation. A painted JSON style is theme-independent (always light) and is
+    // skipped. The viewport is captured and restored so the toggle never moves the map.
+    function rebuildForColorScheme(): void {
+        if (!map || !mapContainer.value) {
+            return;
+        }
+
+        const isThemeDriven = mapId.trim().length > 0 || styles.length === 0;
+        if (!isThemeDriven) {
+            return;
+        }
+
+        // A theme attribute write or an OS flip can resolve to the scheme the map already has (e.g. toggling
+        // "system" to an explicit "dark" while the OS is already dark). Rebuilding then would tear down and
+        // recreate the map for an identical result, which itself flickers, so only rebuild on a real change.
+        if (resolveColorScheme() === builtColorScheme) {
+            return;
+        }
+
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+
+        teardownMap();
+        buildMap();
+
+        // Restore the viewport last so it wins over any refit buildMap's renderMarkers may have run.
+        if (center) {
+            isProgrammaticMove = true;
+            map?.setCenter(center);
+        }
+        if (zoom != null) {
+            map?.setZoom(zoom);
+        }
+    }
+
+    // Starts watching the document's theme attribute (once) so an in-app light/dark toggle rebuilds a
+    // theme-driven map. Disconnected on unmount.
+    function startThemeWatch(): void {
+        if (themeObserver) {
+            return;
+        }
+
+        themeObserver = new MutationObserver((): void => rebuildForColorScheme());
+        themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["theme"] });
+
+        // In system/unset mode the OS flipping light/dark never touches the "theme" attribute, so watch the
+        // media query too - matching Rock's CSS, which reflows the whole page on that flip. rebuildForColorScheme's
+        // scheme guard makes this a no-op whenever an explicit theme already pins the scheme.
+        colorSchemeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+        colorSchemeMediaQuery.addEventListener("change", rebuildForColorScheme);
+    }
+
+    // Report the current viewport after every pan or zoom: both its bounds (for a consumer that
+    // re-queries the server by area) and the ids of the markers inside it (for in-memory filtering).
+    function emitVisibleMarkers(): void {
+        const bounds = map?.getBounds();
+        if (!bounds) {
+            return;
+        }
+
+        const northEast = bounds.getNorthEast();
+        const southWest = bounds.getSouthWest();
+
+        // Whether the map is zoomed in as far as it can go, so a consumer can tell when zooming can no
+        // longer narrow a dense result set (and paging is the remaining option). Uses the configured
+        // max zoom when one is set; with no ceiling this stays false (there is always more zoom).
+        const currentZoom = map?.getZoom() ?? 0;
+        const ceilingZoom = (map?.get("maxZoom") as number | null) ?? Number.POSITIVE_INFINITY;
+        const isAtMaxZoom = currentZoom >= ceilingZoom;
+
+        emit("boundsChanged", {
+            north: northEast.lat(),
+            south: southWest.lat(),
+            east: northEast.lng(),
+            west: southWest.lng(),
+            isUserMove: !isProgrammaticMove,
+            isAtMaxZoom
+        });
+
+        // The programmatic move that produced this idle has settled; later moves are the user's until
+        // the next fitBounds/setView sets the flag again.
+        isProgrammaticMove = false;
+
+        const visibleIds = Object.keys(plottedMarkers).filter(id => bounds.contains(plottedMarkers[id].position));
+        emit("visibleMarkersChanged", visibleIds);
+    }
+
+    // The on-screen meters-per-pixel at a latitude for the current zoom (Web Mercator). Used by the
+    // dot-to-circle crossover to weigh the circle's real-world radius against the dot's pixel radius.
+    function metersPerPixel(latitude: number): number {
+        const zoom = map?.getZoom() ?? 12;
+        return 156543.03392 * Math.cos(latitude * Math.PI / 180) / Math.pow(2, zoom);
+    }
+
+    // Whether the true approximation circle would render at least as large as the fixed-size dot on
+    // screen at the current zoom. The circle's radius is a fixed real-world distance, so zooming in grows
+    // it; once its on-screen radius reaches the dot's constant pixel radius the circle is the better cue,
+    // and below that the dot is (the circle would be a sub-dot speck). This is the dot-to-circle crossover.
+    function isCircleLargerThanDot(radiusMeters: number, latitude: number): boolean {
+        if (radiusMeters <= 0) {
+            return false;
+        }
+
+        return radiusMeters / metersPerPixel(latitude) >= chipRadiusPx;
+    }
+
+    // Re-run the circle-only clustering sync so each unclustered marker shows as its resting dot or its
+    // approximation circle for the current zoom and highlight state.
+    function applyMarkerVisibility(): void {
+        syncClusteredCircles();
+    }
+
+    // In circle-only clustering a marker shows nothing while folded into a cluster bubble, and while
+    // unclustered it rests as a fixed-size dot until zooming in makes its true approximation circle the
+    // larger of the two on screen, at which point it swaps to the circle. The clusterer places an
+    // unclustered marker's proxy dot on the map and pulls a clustered one off it, so the dot's map
+    // membership tells us which markers are loose; the crossover (see isCircleLargerThanDot) decides
+    // dot vs circle for each loose marker. The circle is a real-world radius Google scales natively, so
+    // it grows in behind the dot and is revealed seamlessly the moment the dot toggles off at the
+    // crossover - no resize needed. Re-run on every zoom, on each re-cluster (clusteringend), and after
+    // re-plots.
+    function syncClusteredCircles(): void {
+        for (const id of Object.keys(plottedMarkers)) {
+            const { circle, dot, position, radiusMeters } = plottedMarkers[id];
+            const isUnclustered = !!dot && isMarkerOnMap(dot);
+            const showCircle = isUnclustered && !!circle && isCircleLargerThanDot(radiusMeters, position.lat());
+            const showDot = isUnclustered && !showCircle;
+
+            circle?.setVisible(showCircle);
+
+            if (dot) {
+                // Never toggle the dot's `visible` flag - the clusterer counts bubble size from marker
+                // visibility, so a hidden-via-visible dot renders a "0" bubble. Draw it (as its circle in
+                // miniature, highlighted to match a selected/hovered circle) or draw it transparent
+                // instead, and it stays counted and clustered throughout.
+                const isSelected = id === props.selectedMarkerId;
+                const isHovered = id === props.hoveredMarkerId;
+                setMarkerVisual(dot, showDot ? circleDotIcon(isSelected, isHovered) : transparentDotIcon());
+                setMarkerZIndex(dot, isSelected || isHovered ? 1000 : 1);
+
+                // The transparent dot keeps a hit area even when invisible, so while the circle is the
+                // element showing, drop the dot's interactivity and let the circle own hover and click.
+                // Otherwise the dot's mouseout clears the hover mid-circle and the circle's mouseover
+                // never re-fires (the pointer never geometrically left the circle).
+                setMarkerClickable(dot, showDot);
+            }
+        }
+    }
+
+    // Reads the clusterer's current clusters, which live in a protected field with no public accessor.
+    // The access is isolated to this one helper rather than repeated at the call site.
+    function getClusters(clusterer: MarkerClusterer): Cluster[] {
+        // @ts-expect-error clusters is a protected member with no public accessor; read here for cluster-hover highlighting.
+        return clusterer.clusters;
+    }
+
+    // Narrows a clusterer marker (a legacy Marker or an AdvancedMarkerElement) to a legacy
+    // google.maps.Marker, the type the default renderer produces and the only one with setIcon/setZIndex.
+    function isLegacyMarker(marker: Marker): marker is google.maps.Marker {
+        return marker instanceof google.maps.Marker;
+    }
+
+    // When a marker is hovered in the external list but it is folded into a cluster bubble,
+    // there is no individual circle to highlight, so highlight the containing bubble instead (the same
+    // hovered styling its mouseover gives it). Every bubble is recomputed so moving the hover moves the
+    // highlight, and it re-runs after each re-cluster so a bubble rendered fresh keeps an active hover.
+    function applyClusterHover(): void {
+        if (!markerClusterer) {
+            return;
+        }
+
+        const hoveredId = props.hoveredMarkerId;
+        const hoveredProxy = hoveredId
+            ? (plottedMarkers[hoveredId]?.dot?.raw ?? null)
+            : null;
+
+        for (const cluster of getClusters(markerClusterer)) {
+            const bubble = cluster.marker;
+
+            // A lone marker shows as its own circle, not a bubble, so it has no cluster hover state here.
+            if (!bubble || cluster.count <= 1) {
+                continue;
+            }
+
+            const isHovered = hoveredProxy != null && cluster.markers?.includes(hoveredProxy) === true;
+            styleClusterBubble(bubble, cluster.count, isHovered);
+        }
+    }
+
+    // Reconcile the plotted markers with props.markers by diffing on id: markers whose id left the
+    // set are removed, ids new to the set are created, and markers common to both are left in
+    // place. Keeping a persisting marker's map objects and highlight state intact across a viewport
+    // re-query avoids the flicker, lost selection, and wasted work of rebuilding every marker on each pan.
+    function renderMarkers(): void {
+        if (!map) {
+            return;
+        }
+
+        const incomingIds = new Set(props.markers.map(m => m.id));
+
+        // Remove the markers whose id is no longer in the set.
+        const removedClusterMarkers: Marker[] = [];
+        for (const id of Object.keys(plottedMarkers)) {
+            if (incomingIds.has(id)) {
+                continue;
+            }
+
+            const plotted = plottedMarkers[id];
+            const clusterMarker = plotted.dot ? plotted.dot.raw : null;
+            if (clusterMarker) {
+                removedClusterMarkers.push(clusterMarker);
+            }
+            plotted.circle?.setMap(null);
+            if (plotted.dot) {
+                setMarkerMap(plotted.dot, null);
+            }
+            delete plottedMarkers[id];
+        }
+
+        // Create markers new to the set, and update a persisting marker in place when its
+        // coordinates or radius changed (the id is stable, so it is reused rather than torn down).
+        const addedClusterMarkers: Marker[] = [];
+        for (const markerData of props.markers) {
+            if (plottedMarkers[markerData.id]) {
+                updatePlottedMarkerIfMoved(markerData);
+                continue;
+            }
+
+            const clusterMarker = createPlottedMarker(markerData);
+            if (clusterMarker) {
+                addedClusterMarkers.push(clusterMarker);
+            }
+        }
+
+        syncClusterer(addedClusterMarkers, removedClusterMarkers);
+
+        applyMarkerStyles();
+        applyMarkerVisibility();
+
+        // Fit once on the first render, then hold the viewport so a viewport-driven marker set does not
+        // fight the user's pan.
+        if (!hasFitted) {
+            // The one-time initial fit snaps into place; deliberate later refits (a search) ease.
+            fitToMarkers(false);
+            hasFitted = true;
+        }
+    }
+
+    // Reapply a persisting marker's geometry when its coordinates or approximation radius changed
+    // between renders (e.g. its underlying location was edited). Only the moved values are
+    // written, so an unchanged marker costs a pair of comparisons and nothing else.
+    function updatePlottedMarkerIfMoved(markerData: MapViewMarker): void {
+        const plotted = plottedMarkers[markerData.id];
+        if (!plotted) {
+            return;
+        }
+
+        const hasMoved = plotted.position.lat() !== markerData.latitude || plotted.position.lng() !== markerData.longitude;
+        if (hasMoved) {
+            const position = new google.maps.LatLng(markerData.latitude, markerData.longitude);
+            if (plotted.dot) {
+                setMarkerPosition(plotted.dot, position);
+            }
+            plotted.circle?.setCenter(position);
+            plotted.position = position;
+        }
+
+        const newRadius = markerData.circleRadiusMeters ?? 0;
+        if (plotted.radiusMeters !== newRadius) {
+            plotted.circle?.setRadius(newRadius);
+            plotted.radiusMeters = newRadius;
+        }
+    }
+
+    // Create the map objects for one marker - the approximation circle and the clusterer's proxy dot -
+    // wire its interaction handlers, and record it in plottedMarkers. Returns the proxy dot for the
+    // clusterer to manage, or null when the marker has no circle to cluster.
+    function createPlottedMarker(markerData: MapViewMarker): Marker | null {
+        const position = new google.maps.LatLng(markerData.latitude, markerData.longitude);
+
+        // The circle is the interactive element, so it must be clickable.
+        let circle: google.maps.Circle | null = null;
+        if (markerData.circleRadiusMeters) {
+            circle = new google.maps.Circle({
+                map,
+                center: position,
+                radius: markerData.circleRadiusMeters,
+                strokeColor: markerColor,
+                strokeOpacity: restingCircleStrokeOpacity,
+                strokeWeight: 1,
+                fillColor: markerColor,
+                fillOpacity: restingCircleFillOpacity,
+                clickable: true,
+                // A clustered circle is shown only while its marker is unclustered (see
+                // syncClusteredCircles), so it starts hidden.
+                visible: false
+            });
+        }
+
+        // The dot is the clusterer's marker and the fixed-size resting dot shown when zoomed out,
+        // swapping to its circle at the crossover (see syncClusteredCircles). syncClusteredCircles
+        // decides what actually shows, so it starts hidden.
+        let dot: MapMarker | null = null;
+        if (circle) {
+            // Handed to the clusterer, which owns its map; it stays a member for its whole life so the
+            // clusterer keeps counting it. It starts hidden - syncClusteredCircles draws it as a dot or
+            // leaves it hidden as the zoom and clustering change, and toggles its interactivity to match.
+            dot = createMapMarker(position, transparentDotIcon(), {
+                map: null,
+                clickable: false
+            });
+        }
+
+        const onSelect = (): void => {
+            // A marker click is a self-initiated selection: the selection watcher should not pan/zoom to
+            // it (it is already where the visitor clicked). Flag it only when the selection will actually
+            // change - re-clicking the already-selected marker emits an unchanged id, so no selection
+            // watcher fires to clear the flag and it would leak into the next selection, making a following
+            // card click misread as a marker click and skip its focus.
+            isMarkerClickSelection = markerData.id !== props.selectedMarkerId;
+            emit("update:selectedMarkerId", markerData.id);
+            emit("markerClick", markerData.id);
+        };
+        const onHoverIn = (): void => emit("update:hoveredMarkerId", markerData.id);
+        const onHoverOut = (): void => emit("update:hoveredMarkerId", null);
+
+        // The circle is the interactive element. The dot is interactive too while it is the resting
+        // marker (it swaps with the circle on zoom), so a click lands whether the dot or the circle is
+        // the one showing.
+        const primaryInteractive = circle;
+        if (primaryInteractive) {
+            google.maps.event.addListener(primaryInteractive, "click", onSelect);
+            google.maps.event.addListener(primaryInteractive, "mouseover", onHoverIn);
+            google.maps.event.addListener(primaryInteractive, "mouseout", onHoverOut);
+        }
+
+        if (dot) {
+            addMarkerClick(dot, onSelect);
+            addMarkerHover(dot, onHoverIn, onHoverOut);
+        }
+
+        plottedMarkers[markerData.id] = { circle, dot, position, radiusMeters: markerData.circleRadiusMeters ?? 0 };
+
+        return dot ? dot.raw : null;
+    }
+
+    // Reconcile the clusterer with the marker delta. It is created lazily on the first markers to
+    // cluster, then updated with just the added and removed markers so persisting markers keep their
+    // place instead of the whole set being re-clustered from scratch on every pan.
+    function syncClusterer(added: Marker[], removed: Marker[]): void {
+        if (!map) {
+            return;
+        }
+
+        if (!markerClusterer) {
+            const markers = Object.keys(plottedMarkers)
+                .map(id => {
+                    const plotted = plottedMarkers[id];
+                    return plotted.dot ? plotted.dot.raw : null;
+                })
+                .filter((m): m is Marker => m != null);
+            if (!markers.length) {
+                return;
+            }
+
+            markerClusterer = new MarkerClusterer({
+                map,
+                markers,
+                renderer: {
+                    // Draw the cluster bubble as a solid marker-color disc with a contrasting count, so it
+                    // reads as its own distinct object rather than blending into the semitransparent marker
+                    // circles. An advanced-marker bubble is used on a Map ID map (matching the marker dots), a
+                    // legacy one otherwise. Hovering (here or from the list) darkens and lifts it. The
+                    // clusterer owns the bubble's map membership and click-to-zoom.
+                    render(cluster): Marker {
+                        const bubble = createClusterBubble(cluster.position, cluster.count);
+                        addClusterHoverListeners(bubble, cluster.count);
+                        return bubble;
+                    }
+                }
+            });
+
+            // After each (re)cluster, show the circles of unclustered markers and hide those folded
+            // into a bubble (circle-only mode). clusteringend fires on load and every pan/zoom settle.
+            google.maps.event.addListener(markerClusterer, "clusteringend", (): void => {
+                syncClusteredCircles();
+                applyClusterHover();
+            });
+            return;
+        }
+
+        if (!added.length && !removed.length) {
+            return;
+        }
+
+        // Suppress the per-call redraw and render once after both the removals and additions are
+        // applied, so the clusterer re-clusters a single time for the whole delta.
+        if (removed.length) {
+            markerClusterer.removeMarkers(removed, true);
+        }
+        if (added.length) {
+            markerClusterer.addMarkers(added, true);
+        }
+        markerClusterer.render();
+    }
+
+    // The fixed-size dot a circle-only clustered marker rests as when zoomed out, drawn as its
+    // approximation circle in miniature: the same marker-color fill and ring at the same resting and
+    // highlighted opacities, so the dot reads as the circle and the crossover swap is a pure size (and
+    // style) match. Hover and selection bolden the ring and fill to mirror the circle's highlight, and
+    // selection also enlarges it so it reads on its own.
+    function circleDotIcon(isSelected: boolean, isHighlighted: boolean): MarkerVisual {
+        const highlighted = isSelected || isHighlighted;
+        return {
+            kind: "circle",
+            radiusPx: isSelected ? chipRadiusPx + 3 : chipRadiusPx,
+            fillColor: markerColor,
+            fillOpacity: highlighted ? highlightedCircleFillOpacity : restingCircleFillOpacity,
+            strokeColor: markerColor,
+            strokeOpacity: highlighted ? highlightedCircleStrokeOpacity : restingCircleStrokeOpacity,
+            strokeWeight: highlighted ? 2 : 1
+        };
+    }
+
+    // The "hidden" visual for a circle-only cluster dot: keeps its place without dropping from the
+    // clusterer's count. On legacy it renders as a fully transparent circle (Cluster.count filters on
+    // getVisible, so a hidden-via-visible dot would drop out and show a "0" bubble); on advanced it is an
+    // empty content element that stays a member, which is how the clusterer counts there.
+    function transparentDotIcon(): MarkerVisual {
+        return { kind: "hidden", radiusPx: chipRadiusPx };
+    }
+
+    // The cluster bubble icon in the same faint marker-color family as the approximation circles, with
+    // a resting and a hovered state that mirror a marker circle's (bolder ring/fill, thicker, and a bit
+    // larger when hovered). The count grows the base size a little.
+    // The resting radius, in pixels, of a cluster bubble, growing in a few steps as the count rises so a
+    // bigger cluster reads as bigger. A hovered bubble adds a couple of pixels on top of this.
+    function clusterRadiusPx(count: number): number {
+        return count < 10 ? 16 : count < 50 ? 20 : 24;
+    }
+
+    // Normalize a color to a 6-digit "rrggbb" (no leading #), expanding a 3-digit shorthand. The bubble
+    // color math needs three real hex channels, so a value that is not hex (a named or functional CSS
+    // color) falls back to the default marker color rather than producing NaN channels.
+    function normalizeHexChannels(hex: string): string {
+        const value = hex.trim().replace(/^#/, "");
+        if (/^[0-9a-fA-F]{6}$/.test(value)) {
+            return value.toLowerCase();
+        }
+        if (/^[0-9a-fA-F]{3}$/.test(value)) {
+            return value.toLowerCase().replace(/(.)/g, "$1$1");
+        }
+        return "0088cc";
+    }
+
+    // A legible count color for a solid fill of the given color. Google does not auto-contrast a marker
+    // label or DOM text against its background, so choose black or white from the color's perceived
+    // luminance (the 0.299/0.587/0.114 weighting) so the number stays readable on any marker color.
+    function contrastingTextColor(hex: string): string {
+        const value = normalizeHexChannels(hex);
+        const red = parseInt(value.slice(0, 2), 16);
+        const green = parseInt(value.slice(2, 4), 16);
+        const blue = parseInt(value.slice(4, 6), 16);
+        const luminance = (0.299 * red + 0.587 * green + 0.114 * blue) / 255;
+        return luminance > 0.6 ? "#000000" : "#ffffff";
+    }
+
+    // Darken a hex color toward black by a 0-1 fraction, used for a bubble's hover fill.
+    function darkenColor(hex: string, fraction: number): string {
+        const value = normalizeHexChannels(hex);
+        const channel = (start: number): string => {
+            const scaled = Math.round(parseInt(value.slice(start, start + 2), 16) * (1 - fraction));
+            return Math.max(0, Math.min(255, scaled)).toString(16).padStart(2, "0");
+        };
+        return `#${channel(0)}${channel(2)}${channel(4)}`;
+    }
+
+    // The count text for a legacy bubble, colored to contrast with its solid fill.
+    function clusterLabel(count: number): google.maps.MarkerLabel {
+        return {
+            text: String(count),
+            color: contrastingTextColor(markerColor),
+            fontSize: "12px",
+            fontWeight: "600"
+        };
+    }
+
+    // The legacy bubble shape: a translucent marker-color disc with a solid marker-color ring. Hovering
+    // darkens the fill and grows it a touch.
+    function clusterSymbol(count: number, isHovered: boolean): google.maps.Symbol {
+        const radius = clusterRadiusPx(count);
+        return {
+            path: google.maps.SymbolPath.CIRCLE,
+            fillColor: isHovered ? darkenColor(markerColor, 0.15) : markerColor,
+            fillOpacity: 0.85,
+            strokeColor: markerColor,
+            strokeOpacity: 1,
+            strokeWeight: 2,
+            scale: isHovered ? radius + 2 : radius
+        };
+    }
+
+    // Style a cluster bubble's DOM element (the advanced-marker path) as the same translucent disc with a
+    // ring, in place so a hover restyle keeps the element and its listeners. The element grows a touch on hover to match the
+    // legacy bubble. AdvancedMarkerElement pins the content's bottom center to the coordinate, so shift the
+    // disc down by its radius to land its center there instead (matching the marker circle's centering).
+    function styleClusterElement(element: HTMLElement, count: number, isHovered: boolean): void {
+        const radius = clusterRadiusPx(count) + (isHovered ? 2 : 0);
+        const diameter = radius * 2;
+        element.style.width = `${diameter}px`;
+        element.style.height = `${diameter}px`;
+        element.style.borderRadius = "50%";
+        element.style.boxSizing = "border-box";
+        element.style.display = "flex";
+        element.style.alignItems = "center";
+        element.style.justifyContent = "center";
+        element.style.background = `color-mix(in srgb, ${isHovered ? darkenColor(markerColor, 0.15) : markerColor} 85%, transparent)`;
+        element.style.border = `2px solid ${markerColor}`;
+        element.style.color = contrastingTextColor(markerColor);
+        element.style.fontSize = "12px";
+        element.style.fontWeight = "600";
+        element.style.lineHeight = "1";
+        element.style.cursor = "pointer";
+        element.style.transform = `translate(0px, ${radius}px)`;
+    }
+
+    // The advanced (HTML) bubble element: a solid disc with the count centered inside it.
+    function buildClusterElement(count: number): HTMLElement {
+        const element = document.createElement("div");
+        element.textContent = String(count);
+        styleClusterElement(element, count, false);
+        return element;
+    }
+
+    // Create the cluster bubble the clusterer will manage: an advanced marker when the map has a Map ID (to
+    // match the advanced marker dots), a legacy marker otherwise. The clusterer owns the bubble's map
+    // membership and click-to-zoom, so neither is set here.
+    function createClusterBubble(position: google.maps.LatLng, count: number): Marker {
+        if (mapId.trim().length > 0) {
+            return new google.maps.marker.AdvancedMarkerElement({
+                position,
+                content: buildClusterElement(count),
+                zIndex: 1,
+                gmpClickable: true
+            });
+        }
+
+        return new google.maps.Marker({
+            position,
+            icon: clusterSymbol(count, false),
+            label: clusterLabel(count),
+            zIndex: 1
+        });
+    }
+
+    // Apply the resting or hovered look to an existing bubble of either kind.
+    function styleClusterBubble(bubble: Marker, count: number, isHovered: boolean): void {
+        if (isLegacyMarker(bubble)) {
+            bubble.setIcon(clusterSymbol(count, isHovered));
+            bubble.setZIndex(isHovered ? 1000 : 1);
+        }
+        else {
+            const element = bubble.content as HTMLElement | null;
+            if (element) {
+                styleClusterElement(element, count, isHovered);
+            }
+            bubble.zIndex = isHovered ? 1000 : 1;
+        }
+    }
+
+    // Wire a bubble's own hover highlight (the pointer directly over it), mirroring applyClusterHover's
+    // list-driven highlight. Legacy uses map events; advanced uses DOM events on its content element.
+    function addClusterHoverListeners(bubble: Marker, count: number): void {
+        if (isLegacyMarker(bubble)) {
+            bubble.addListener("mouseover", (): void => styleClusterBubble(bubble, count, true));
+            bubble.addListener("mouseout", (): void => styleClusterBubble(bubble, count, false));
+        }
+        else {
+            const element = bubble.content as HTMLElement | null;
+            if (element) {
+                element.addEventListener("mouseenter", (): void => styleClusterBubble(bubble, count, true));
+                element.addEventListener("mouseleave", (): void => styleClusterBubble(bubble, count, false));
+            }
+        }
+    }
+
+    // The reference-location ("you are here") marker: Tabler's filled map-pin in a single reference color.
+    // It stays a pin so it reads distinctly against the plotted markers, which render as circles. Built as
+    // an SVG icon so it renders on every map path. Its tip is at the bottom center of the art, so the
+    // anchor lands the point right on the coordinate.
+    function referenceLocationVisual(): MarkerVisual {
+        // The color comes from the consumer (a block setting); fall back to a high-contrast rose.
+        const pinColor = props.referenceLocationColor || "#e11d48";
+
+        // Tabler's filled map-pin (a solid pin with the head cut out as a hole).
+        const path = "M18.364 4.636a9 9 0 0 1 .203 12.519l-.203 .21l-4.243 4.242a3 3 0 0 1 -4.097 .135l-.144 -.135l-4.244 -4.243a9 9 0 0 1 12.728 -12.728zm-6.364 3.364a3 3 0 1 0 0 6a3 3 0 0 0 0 -6";
+        const svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"36\" height=\"36\" viewBox=\"0 0 24 24\">"
+            + `<path d="${path}" fill="${pinColor}" />`
+            + "</svg>";
+
+        return { kind: "image", svg, widthPx: 36, heightPx: 36, anchorXPx: 18, anchorYPx: 32 };
+    }
+
+    // A data URI for an SVG string.
+    function svgDataUri(svg: string): string {
+        return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+    }
+
+    // The legacy icon (an SVG-image Icon or a Symbol) for a marker visual.
+    function markerVisualIcon(visual: MarkerVisual): google.maps.Icon | google.maps.Symbol {
+        if (visual.kind === "image") {
+            return {
+                url: svgDataUri(visual.svg),
+                scaledSize: new google.maps.Size(visual.widthPx, visual.heightPx),
+                anchor: new google.maps.Point(visual.anchorXPx, visual.anchorYPx)
+            };
+        }
+
+        if (visual.kind === "circle") {
+            return {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: visual.radiusPx,
+                fillColor: visual.fillColor,
+                fillOpacity: visual.fillOpacity,
+                strokeColor: visual.strokeColor,
+                strokeOpacity: visual.strokeOpacity,
+                strokeWeight: visual.strokeWeight
+            };
+        }
+
+        // hidden: a fully transparent circle of the same footprint, so the marker keeps its place and
+        // stays counted by the clusterer (which reads getVisible) while showing nothing.
+        return {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: visual.radiusPx,
+            fillOpacity: 0,
+            strokeOpacity: 0
+        };
+    }
+
+    // Render a visual into a reusable wrapper element, in place. AdvancedMarkerElement pins the content's
+    // bottom center to the coordinate, so the wrapper is translated to land the visual's own anchor there
+    // instead (matching the legacy icon anchor). Updating the same element rather than replacing it keeps
+    // any hover listeners bound to it, so a marker can restyle without losing its interactivity.
+    function renderVisualInto(element: HTMLElement, visual: MarkerVisual): void {
+        if (visual.kind === "hidden") {
+            element.innerHTML = "";
+            element.style.transform = "";
+            return;
+        }
+
+        if (visual.kind === "circle") {
+            const diameter = visual.radiusPx * 2;
+            element.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="${diameter}" height="${diameter}" viewBox="0 0 ${diameter} ${diameter}" style="display: block;">`
+                + `<circle cx="${visual.radiusPx}" cy="${visual.radiusPx}" r="${visual.radiusPx - visual.strokeWeight / 2}" `
+                + `fill="${visual.fillColor}" fill-opacity="${visual.fillOpacity}" `
+                + `stroke="${visual.strokeColor}" stroke-opacity="${visual.strokeOpacity}" stroke-width="${visual.strokeWeight}" />`
+                + "</svg>";
+            // Center the circle on the coordinate (anchor at its center, height = diameter).
+            element.style.transform = `translate(0px, ${visual.radiusPx}px)`;
+            return;
+        }
+
+        // image: inline the SVG (it carries its own width/height); the transform lands its anchor.
+        element.innerHTML = visual.svg;
+        const shiftX = visual.widthPx / 2 - visual.anchorXPx;
+        const shiftY = visual.heightPx - visual.anchorYPx;
+        element.style.transform = `translate(${shiftX}px, ${shiftY}px)`;
+    }
+
+    // Create a content wrapper for an advanced marker with the visual rendered into it.
+    function markerVisualElement(visual: MarkerVisual): HTMLElement {
+        const wrapper = document.createElement("div");
+        wrapper.style.display = "block";
+        renderVisualInto(wrapper, visual);
+        return wrapper;
+    }
+
+    // Create a marker of the right kind for the current map: an AdvancedMarkerElement when a Map ID is set
+    // (advanced markers require one), or a legacy Marker otherwise. Position, look, stacking, hover title,
+    // and clickability are set up front; later changes go through the setMarker* helpers.
+    function createMapMarker(position: google.maps.LatLng, visual: MarkerVisual, options: { map?: google.maps.Map | null; zIndex?: number; title?: string; clickable?: boolean }): MapMarker {
+        if (mapId.trim().length > 0) {
+            const content = markerVisualElement(visual);
+            if (!(options.clickable ?? false)) {
+                content.style.pointerEvents = "none";
+            }
+            const advanced = new google.maps.marker.AdvancedMarkerElement({
+                map: options.map ?? null,
+                position,
+                content,
+                zIndex: options.zIndex,
+                title: options.title ?? "",
+                gmpClickable: options.clickable ?? false
+            });
+            return { kind: "advanced", raw: advanced, content };
+        }
+
+        const legacy = new google.maps.Marker({
+            map: options.map ?? null,
+            position,
+            icon: markerVisualIcon(visual),
+            zIndex: options.zIndex,
+            title: options.title ?? "",
+            clickable: options.clickable ?? false
+        });
+        return { kind: "legacy", raw: legacy };
+    }
+
+    // Move a marker to a new coordinate.
+    function setMarkerPosition(marker: MapMarker, position: google.maps.LatLng): void {
+        if (marker.kind === "legacy") {
+            marker.raw.setPosition(position);
+        }
+        else {
+            marker.raw.position = position;
+        }
+    }
+
+    // Attach a marker to a map, or detach it with null.
+    function setMarkerMap(marker: MapMarker, targetMap: google.maps.Map | null): void {
+        if (marker.kind === "legacy") {
+            marker.raw.setMap(targetMap);
+        }
+        else {
+            marker.raw.map = targetMap;
+        }
+    }
+
+    // Set a marker's hover title.
+    function setMarkerTitle(marker: MapMarker, title: string): void {
+        if (marker.kind === "legacy") {
+            marker.raw.setTitle(title);
+        }
+        else {
+            marker.raw.title = title;
+        }
+    }
+
+    // Change a marker's look. The "hidden" visual takes it off screen while keeping it counted by the
+    // clusterer, so hide a marker with this rather than a visible flag.
+    function setMarkerVisual(marker: MapMarker, visual: MarkerVisual): void {
+        if (marker.kind === "legacy") {
+            marker.raw.setIcon(markerVisualIcon(visual));
+        }
+        else {
+            renderVisualInto(marker.content, visual);
+        }
+    }
+
+    // Set a marker's stacking order.
+    function setMarkerZIndex(marker: MapMarker, zIndex: number): void {
+        if (marker.kind === "legacy") {
+            marker.raw.setZIndex(zIndex);
+        }
+        else {
+            marker.raw.zIndex = zIndex;
+        }
+    }
+
+    // Set whether a marker receives pointer events. For an advanced marker the content is a real element,
+    // so its pointer-events are dropped too, otherwise a hidden marker would still swallow hover meant for
+    // the circle beneath it.
+    function setMarkerClickable(marker: MapMarker, clickable: boolean): void {
+        if (marker.kind === "legacy") {
+            marker.raw.setClickable(clickable);
+        }
+        else {
+            marker.raw.gmpClickable = clickable;
+            marker.content.style.pointerEvents = clickable ? "auto" : "none";
+        }
+    }
+
+    // Register a click handler on a marker.
+    function addMarkerClick(marker: MapMarker, handler: () => void): void {
+        if (marker.kind === "legacy") {
+            marker.raw.addListener("click", handler);
+        }
+        else {
+            marker.raw.addListener("gmp-click", handler);
+        }
+    }
+
+    // Register hover-in / hover-out handlers on a marker.
+    function addMarkerHover(marker: MapMarker, enter: () => void, leave: () => void): void {
+        if (marker.kind === "legacy") {
+            marker.raw.addListener("mouseover", enter);
+            marker.raw.addListener("mouseout", leave);
+        }
+        else {
+            marker.content.addEventListener("mouseenter", enter);
+            marker.content.addEventListener("mouseleave", leave);
+        }
+    }
+
+    // Whether a marker is currently attached to a map. The clusterer pulls a clustered marker off the map
+    // and places a loose one on it, so this tells the two apart.
+    function isMarkerOnMap(marker: MapMarker): boolean {
+        if (marker.kind === "legacy") {
+            return marker.raw.getMap() != null;
+        }
+        return marker.raw.map != null;
+    }
+
+    // Add, move, or remove the reference-location pin to match props.referenceLocation. It sits above the
+    // plotted markers and is non-interactive (a reference point, not a result).
+    function syncReferenceLocationMarker(): void {
+        if (!map) {
+            return;
+        }
+
+        const location = props.referenceLocation;
+        if (!location) {
+            if (referenceLocationMarker) {
+                setMarkerMap(referenceLocationMarker, null);
+                referenceLocationMarker = null;
+            }
+            return;
+        }
+
+        const position = new google.maps.LatLng(location.latitude, location.longitude);
+        if (!referenceLocationMarker) {
+            referenceLocationMarker = createMapMarker(position, referenceLocationVisual(), {
+                zIndex: 2000,
+                title: location.title,
+                clickable: false
+            });
+            setMarkerMap(referenceLocationMarker, map);
+        }
+        else {
+            setMarkerPosition(referenceLocationMarker, position);
+            setMarkerTitle(referenceLocationMarker, location.title ?? "");
+            setMarkerMap(referenceLocationMarker, map);
+        }
+    }
+
+    // Reflects hover and selection on the map: either one highlights a marker's circle with a darker
+    // border and fill.
+    function applyMarkerStyles(): void {
+        for (const id of Object.keys(plottedMarkers)) {
+            const isSelected = id === props.selectedMarkerId;
+            const isHovered = id === props.hoveredMarkerId;
+            const { circle } = plottedMarkers[id];
+
+            // The circle is the marker, so both hover and selection highlight it. The circle-only cluster
+            // dot's icon and z-index are owned by syncClusteredCircles (which also decides whether it
+            // shows as a dot or transparent), so it is left alone here to avoid the two fighting over it.
+            const isCircleHighlighted = isSelected || isHovered;
+            circle?.setOptions({
+                strokeWeight: isCircleHighlighted ? 2 : 1,
+                strokeOpacity: isCircleHighlighted ? highlightedCircleStrokeOpacity : restingCircleStrokeOpacity,
+                fillOpacity: isCircleHighlighted ? highlightedCircleFillOpacity : restingCircleFillOpacity,
+                zIndex: isCircleHighlighted ? 1000 : 1
+            });
+        }
+    }
+
+    // Refit the map to the currently plotted markers, framing their actual extent so the view tightens
+    // when results cluster and widens when they spread. Eases to the fit (see fitToBounds) rather than
+    // snapping. A single or tightly-clustered result frames at a neighborhood zoom because zoomForBounds
+    // caps how far in it goes. Consumers that hold the viewport (autoFit off) call this to deliberately
+    // recenter, e.g. after a new search changes the result set.
+    function fitToMarkers(smooth: boolean = true): void {
+        if (!map) {
+            return;
+        }
+
+        const ids = Object.keys(plottedMarkers);
+        if (!ids.length) {
+            return;
+        }
+
+        const bounds = new google.maps.LatLngBounds();
+        for (const id of ids) {
+            bounds.extend(plottedMarkers[id].position);
+        }
+
+        const northEast = bounds.getNorthEast();
+        const southWest = bounds.getSouthWest();
+        fitToBounds(northEast.lat(), southWest.lat(), northEast.lng(), southWest.lng(), smooth);
+    }
+
+    // Center the map on a specific point at a given zoom on demand, independent of the marker fit
+    // (e.g. to recenter on the visitor's device location once it resolves). Pass smooth to ease the
+    // camera to the target rather than snapping, e.g. when following a new search origin.
+    function setView(latitude: number, longitude: number, zoom: number, smooth: boolean = false): void {
+        if (!map) {
+            return;
+        }
+
+        // Supersede any in-flight tween so overlapping recenters do not fight each other.
+        if (viewAnimation !== null) {
+            cancelAnimationFrame(viewAnimation);
+            viewAnimation = null;
+        }
+
+        // Mark the resulting idle as a programmatic move so the recenter is not read as a user pan.
+        isProgrammaticMove = true;
+
+        if (!smooth) {
+            map.setCenter(new google.maps.LatLng(latitude, longitude));
+            map.setZoom(zoom);
+            return;
+        }
+
+        /*
+            07/22/26 - JMH
+
+            Google's JS Maps API has no eased fly-to (panTo animates only short hops and leaves zoom
+            snapping), so interpolate the center and zoom per frame to glide across any distance. The
+            map moves continuously for the whole tween, so it stays busy and fires a single idle at the
+            end; the programmatic-move flag is re-asserted each frame so that final idle still reads as
+            a recenter rather than a user pan.
+
+            Reason: A recenter onto a search origin should glide, not teleport.
+        */
+        const startCenter = map.getCenter();
+        const startLatitude = startCenter?.lat() ?? latitude;
+        const startLongitude = startCenter?.lng() ?? longitude;
+        const startZoom = map.getZoom() ?? zoom;
+        const durationMs = 500;
+        let startTime: number | null = null;
+
+        const step = (now: number): void => {
+            if (!map) {
+                viewAnimation = null;
+                return;
+            }
+
+            if (startTime === null) {
+                startTime = now;
+            }
+
+            const progress = Math.min(1, (now - startTime) / durationMs);
+            // Cubic ease-in-out: accelerate away, decelerate into the target.
+            const eased = progress < 0.5
+                ? 4 * progress * progress * progress
+                : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+            isProgrammaticMove = true;
+            map.setCenter(new google.maps.LatLng(
+                startLatitude + (latitude - startLatitude) * eased,
+                startLongitude + (longitude - startLongitude) * eased
+            ));
+            map.setZoom(startZoom + (zoom - startZoom) * eased);
+
+            if (progress < 1) {
+                viewAnimation = requestAnimationFrame(step);
+            }
+            else {
+                viewAnimation = null;
+            }
+        };
+
+        viewAnimation = requestAnimationFrame(step);
+    }
+
+    // The Web Mercator zoom at which the given bounds just fill the map canvas. Used to frame a search
+    // area (a geocoded viewport or a radius box) rather than a single point. Returns a fractional zoom
+    // (vector maps honor it) rather than flooring to an integer, which could waste nearly a whole level
+    // and show up to ~2x the intended area.
+    function zoomForBounds(north: number, south: number, east: number, west: number): number {
+        const worldPx = 256;
+        const maxZoom = 15;
+        const width = mapContainer.value?.clientWidth ?? 640;
+        const height = mapContainer.value?.clientHeight ?? 480;
+
+        // The Mercator y in world-normalized units: the raw value spans [-pi, pi] across the globe, so
+        // halving it (and clamping to that range) makes the north/south difference a true fraction of
+        // the world when divided by pi below. Omitting the halving zooms a level too far out.
+        const latRadians = (latitude: number): number => {
+            const sin = Math.sin(latitude * Math.PI / 180);
+            const y = Math.log((1 + sin) / (1 - sin)) / 2;
+            return Math.max(Math.min(y, Math.PI), -Math.PI) / 2;
+        };
+
+        const latFraction = (latRadians(north) - latRadians(south)) / Math.PI;
+        let lngDiff = east - west;
+        if (lngDiff < 0) {
+            lngDiff += 360;
+        }
+        const lngFraction = lngDiff / 360;
+
+        const latZoom = latFraction > 0 ? Math.log2(height / worldPx / latFraction) : maxZoom;
+        const lngZoom = lngFraction > 0 ? Math.log2(width / worldPx / lngFraction) : maxZoom;
+
+        // Fit exactly (fractional), less a small margin so the bounds sit just off the edge rather than
+        // edge-to-edge.
+        const zoom = Math.min(latZoom, lngZoom) - 0.2;
+        return Math.max(0, Math.min(zoom, maxZoom));
+    }
+
+    // Frame the map on a bounding box (a search area). Reuses setView so the move eases like any other
+    // recenter, gliding across distance rather than snapping the way Google's native fitBounds does.
+    function fitToBounds(north: number, south: number, east: number, west: number, smooth: boolean = true): void {
+        if (!map) {
+            return;
+        }
+
+        const centerLatitude = (north + south) / 2;
+        const centerLongitude = (east + west) / 2;
+        const fitZoom = zoomForBounds(north, south, east, west);
+
+        // Remember the results-fit zoom so a later marker click can tell whether the visitor has zoomed
+        // in since (see the selection watcher).
+        lastFitZoom = fitZoom;
+
+        setView(centerLatitude, centerLongitude, fitZoom, smooth);
+    }
+
+    /** Skip the focus-zoom on the next programmatic selection change, so a caller reframing the map owns the camera. */
+    function suppressNextSelectionFocus(): void {
+        suppressSelectionFocus = true;
+    }
+
+    defineExpose({ fitToMarkers, setView, fitToBounds, focusMarker: focusSelectedMarker, suppressNextSelectionFocus });
+
+    // Whether the map is still at (or below) the zoom it last fit its results to - i.e. the visitor has
+    // not zoomed in since. True when no results fit has happened yet.
+    function isAtResultsFitZoom(): boolean {
+        if (lastFitZoom == null) {
+            return true;
+        }
+
+        const currentZoom = map?.getZoom();
+        return currentZoom == null || currentZoom <= lastFitZoom + 0.05;
+    }
+
+    // Center and zoom in on a marker selected from outside the map (a card click), saving the current
+    // view first so it can be restored when the selection clears. Card-to-card selections keep the
+    // original saved view (it is captured only once) so a later clear returns all the way back.
+    function focusSelectedMarker(id: string): void {
+        if (!map) {
+            return;
+        }
+
+        const marker = plottedMarkers[id];
+        if (!marker) {
+            return;
+        }
+
+        if (!savedViewCenter) {
+            const center = map.getCenter();
+            if (center) {
+                savedViewCenter = center;
+                savedViewZoom = map.getZoom() ?? focusMarkerZoom;
+            }
+        }
+
+        // Zoom in to at least the focus level so the marker stands out, but never zoom back out if the
+        // visitor was already closer.
+        const zoom = Math.max(map.getZoom() ?? focusMarkerZoom, focusMarkerZoom);
+
+        // Shift the target up when a lower overlay (the mobile card sheet) would otherwise cover a
+        // centered marker: moving the map center south of the marker raises the marker on screen into
+        // the visible upper area.
+        let targetLatitude = marker.position.lat();
+        const mapHeightPx = mapContainer.value?.clientHeight ?? 0;
+        if (props.selectionOffsetFraction > 0 && mapHeightPx > 0) {
+            const metersPerPixel = 156543.03392 * Math.cos(targetLatitude * Math.PI / 180) / Math.pow(2, zoom);
+            const viewportHeightDegrees = (mapHeightPx * metersPerPixel) / 111320;
+            targetLatitude -= props.selectionOffsetFraction * viewportHeightDegrees;
+        }
+
+        setView(targetLatitude, marker.position.lng(), zoom, true);
+    }
+
+    // Return the map to the view saved before the first focus, then forget it. A no-op when nothing was
+    // focused (e.g. the selection came from a marker click, which never saves a view).
+    function restoreSavedView(): void {
+        if (!map || !savedViewCenter) {
+            return;
+        }
+
+        setView(savedViewCenter.lat(), savedViewCenter.lng(), savedViewZoom ?? focusMarkerZoom, true);
+        savedViewCenter = null;
+        savedViewZoom = null;
+    }
+
+    // loadMapResources is typed to the base settings bag but returns the Google-specific bag at runtime.
+    // This guard confirms the googleMapId field is present so a caller can read it without an assertion.
+    function hasGoogleMapId(settings: GeoPickerSettingsBag): settings is GeoPickerGoogleMapSettingsBag {
+        return "googleMapId" in settings;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(isReady, initialize);
+
+    watch(() => props.markers, (): void => {
+        if (isReady.value && !isUnavailable.value) {
+            renderMarkers();
+        }
+    }, { deep: true });
+
+    watch(() => props.selectedMarkerId, (): void => {
+        applyMarkerVisibility();
+        applyMarkerStyles();
+
+        // A caller that will reframe the map itself asked us to skip this selection's focus-zoom.
+        if (suppressSelectionFocus) {
+            suppressSelectionFocus = false;
+            return;
+        }
+
+        // A selection made outside the map (a card click) focuses the map on that marker; clearing the
+        // selection returns the map to where it was before the focus. A marker click on the map is not
+        // normally a focus (it is already where the visitor clicked) - but with
+        // focusMarkerOnClickAtDefaultZoom set, a marker clicked while the map is still at its results-fit
+        // zoom focuses like a card click, so a tap on a small/clustered marker zooms in to it.
+        if (isMarkerClickSelection) {
+            isMarkerClickSelection = false;
+            if (props.focusMarkerOnClickAtDefaultZoom && props.selectedMarkerId && isAtResultsFitZoom()) {
+                focusSelectedMarker(props.selectedMarkerId);
+            }
+        }
+        else if (props.selectedMarkerId) {
+            focusSelectedMarker(props.selectedMarkerId);
+        }
+        else {
+            restoreSavedView();
+        }
+    });
+
+    // Hovering re-styles the markers and, when collapsed, expands the target to its full circle; it
+    // never selects (that is a click).
+    watch(() => props.hoveredMarkerId, (): void => {
+        applyMarkerVisibility();
+        applyMarkerStyles();
+        applyClusterHover();
+    });
+
+    // Add, move, or clear the searched-location pin as the prop changes.
+    watch(() => props.referenceLocation, syncReferenceLocationMarker, { deep: true });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onBeforeMount(async (): Promise<void> => {
+        const settings = await loadMapResources({ mapStyleValueGuid: props.mapStyleValueGuid });
+
+        // The map renders whenever the Maps script loaded, even without an API key
+        // (Google shows a development watermark), matching the legacy block. Only fall
+        // back when the script itself failed to load.
+        if (typeof google === "undefined" || !google.maps) {
+            isUnavailable.value = true;
+            isGoogleLoaded.value = true;
+            return;
+        }
+
+        centerLatitude = centerLatitude ?? settings.centerLatitude ?? 33.590795;
+        centerLongitude = centerLongitude ?? settings.centerLongitude ?? -112.126459;
+        markerColor = props.markerColor || (settings.markerColor ? "#" + settings.markerColor : "#0088cc");
+
+        try {
+            styles = JSON.parse(settings.mapStyle ?? "");
+        }
+        catch {
+            // Intentionally ignored: an unparseable style just falls back to the default map look.
+        }
+
+        // The Map Style's Google cloud Map ID, when configured. Present takes precedence over the JSON style.
+        mapId = hasGoogleMapId(settings) ? settings.googleMapId ?? "" : "";
+
+        isGoogleLoaded.value = true;
+    });
+
+    onMounted((): void => {
+        isMounted.value = true;
+    });
+
+    onBeforeUnmount((): void => {
+        themeObserver?.disconnect();
+        themeObserver = null;
+        colorSchemeMediaQuery?.removeEventListener("change", rebuildForColorScheme);
+        colorSchemeMediaQuery = null;
+        teardownMap();
+    });
+
+    // #endregion Lifecycle Hooks
+</script>
