@@ -1503,6 +1503,11 @@ export const Page = {
      */
     SmsPhoneNumbers: "3F1EA6E5-6C61-444A-A80E-5B66F96F521B",
     /**
+     * The Spark Connected SErvices page guid.
+     * ParentPage: System Settings
+     */
+    SparkConnectedServices: "42c6994a-76e0-48e1-87a3-a011e238b906",
+    /**
      * Gets the SQL Command page guid
      * ParentPage: Power Tools
      */

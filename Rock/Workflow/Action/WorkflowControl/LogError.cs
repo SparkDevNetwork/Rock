@@ -33,7 +33,9 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Log Error" )]
     [TextField( "Message",
-        Description = "The error message to return. <span class='tip tip-lava'></span>" )]
+        Description = "The error message to return. <span class='tip tip-lava'></span>",
+        AllowHtml = true,
+        AllowLava = true )]
     [Rock.SystemGuid.EntityTypeGuid( "E1F593B9-FF5A-4064-845D-331BC491674A")]
     public class LogError : ActionComponent
     {

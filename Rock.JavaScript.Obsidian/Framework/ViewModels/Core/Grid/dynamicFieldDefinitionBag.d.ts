@@ -55,6 +55,15 @@ export type DynamicFieldDefinitionBag = {
      */
     name?: string | null;
 
+    /**
+     * Gets or sets the names of fields on the row bag to use as sort keys
+     * for this column, in priority order. Empty means the client sorts by
+     * the display value on Rock.ViewModels.Core.Grid.DynamicFieldDefinitionBag.Name. Populated by output helpers
+     * that project DataSelectComponent.SortProperties(selection)
+     * results into paired row fields.
+     */
+    sortFields?: string[] | null;
+
     /** Gets or sets the title to use for the column. */
     title?: string | null;
 

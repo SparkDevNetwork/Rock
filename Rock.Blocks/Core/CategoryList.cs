@@ -120,6 +120,13 @@ namespace Rock.Blocks.Core
             SystemGuid.EntityType.SERVICE_JOB.AsGuid()
         } );
 
+        /// <summary>
+        /// The number of direct child categories for each listed category, keyed by
+        /// category Id. Populated in <see cref="GetListItems"/> so the grid can show
+        /// the child count without lazy-loading each row's ChildCategories collection.
+        /// </summary>
+        private Dictionary<int, int> _childCategoryCountByParentId = new Dictionary<int, int>();
+
         #endregion
 
         #region Properties
@@ -345,6 +352,25 @@ namespace Rock.Blocks.Core
         }
 
         /// <inheritdoc/>
+        protected override List<Category> GetListItems( IQueryable<Category> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+
+            // Pre-compute the direct child count for every listed category in a single
+            // grouped query instead of lazy-loading each category's ChildCategories
+            // collection
+            var categoryIds = items.Select( c => c.Id ).ToList();
+            _childCategoryCountByParentId = new CategoryService( rockContext )
+                .Queryable()
+                .Where( c => c.ParentCategoryId.HasValue && categoryIds.Contains( c.ParentCategoryId.Value ) )
+                .GroupBy( c => c.ParentCategoryId.Value )
+                .Select( g => new { ParentCategoryId = g.Key, Count = g.Count() } )
+                .ToDictionary( g => g.ParentCategoryId, g => g.Count );
+
+            return items;
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<Category> GetGridBuilder()
         {
             return new GridBuilder<Category>()
@@ -354,8 +380,8 @@ namespace Rock.Blocks.Core
                 .AddTextField( "name", c => c.Name )
                 .AddTextField( "description", c => c.Description )
                 .AddTextField( "iconCssClass", c => c.IconCssClass )
-                .AddField( "childCount", c => c.ChildCategories.Count() )
-                .AddTextField( "entityTypeName", c => c.EntityType.Name )
+                .AddField( "childCount", c => _childCategoryCountByParentId.TryGetValue( c.Id, out var count ) ? count : 0 )
+                .AddTextField( "entityTypeName", c => EntityTypeCache.Get( c.EntityTypeId )?.Name )
                 .AddTextField( "entityQualifierField", c => c.EntityTypeQualifierColumn )
                 .AddTextField( "entityQualifierValue", c => c.EntityTypeQualifierValue )
                 .AddField( "isSystem", c => c.IsSystem );

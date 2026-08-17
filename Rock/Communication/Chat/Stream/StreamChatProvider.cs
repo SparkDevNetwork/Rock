@@ -3865,7 +3865,9 @@ namespace Rock.Communication.Chat
                 request.MentionedUsers = rockChatMessage.MentionedChatUserKeys.ToList();
             }
 
-            if ( rockChatMessage.Attachments.Any() )
+            // Attachments are optional, so the list might be null (e.g. when sent from a workflow action
+            // without an attachment configured).
+            if ( rockChatMessage.Attachments?.Any() == true )
             {
                 request.Attachments = rockChatMessage.Attachments
                     .Select( a => TryConvertToStreamAttachment( a ) )

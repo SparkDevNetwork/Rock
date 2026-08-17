@@ -29,7 +29,9 @@ using Rock;
 using Rock.Data;
 using Rock.Web.UI.Controls;
 using Newtonsoft.Json;
+using Rock.Lava;
 using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
@@ -262,6 +264,43 @@ namespace Rock.Reporting.DataSelect
             result.LavaMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, options );
 
             return result;
+        }
+
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            SelectionData data = DeserializeSelectionData( selection );
+            return new FormattedLavaField
+            {
+                LavaTemplate = data.Template,
+                LavaKey = data.Property
+            };
+        }
+
+        /// <summary>
+        /// Value-shaping subclass that resolves a Lava template against the
+        /// current column's own value (not peer columns), mirroring the
+        /// single-value merge behavior of WebForms <c>LavaBoundField</c>.
+        /// </summary>
+        private class FormattedLavaField : HtmlObsidianGridField
+        {
+            public string LavaTemplate { get; set; }
+
+            public string LavaKey { get; set; }
+
+            public override object TransformValue( object rawValue, ObsidianGridFieldContext context )
+            {
+                if ( string.IsNullOrWhiteSpace( LavaTemplate ) )
+                {
+                    return rawValue?.ToString() ?? string.Empty;
+                }
+
+                var options = new CommonMergeFieldsOptions();
+                var mergeFields = LavaHelper.GetCommonMergeFields( null, null, options );
+                mergeFields[LavaKey.IsNullOrWhiteSpace() ? "Item" : LavaKey] = rawValue;
+
+                return LavaTemplate.ResolveMergeFields( mergeFields );
+            }
         }
 
         /// <summary>

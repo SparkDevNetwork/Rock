@@ -340,10 +340,12 @@ namespace Rock.Blocks.Engagement
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
             var exclusionId = pageReference.GetPageParameter( PageParameterKey.StreakTypeExclusionId );
+            var isExistingExclusion = exclusionId.IsNotNullOrWhiteSpace();
             var exclusionLocationName = new StreakTypeExclusionService( RockContext )
                 .GetSelect( exclusionId, exclusion => exclusion.Location.Name );
             var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
-            var breadCrumb = new BreadCrumbLink( exclusionLocationName ?? "New Exclusion", breadCrumbPageRef );
+            var breadCrumbText = isExistingExclusion ? ( exclusionLocationName ?? "Unspecified Location" ) : "New Exclusion";
+            var breadCrumb = new BreadCrumbLink( breadCrumbText, breadCrumbPageRef );
 
             return new BreadCrumbResult
             {

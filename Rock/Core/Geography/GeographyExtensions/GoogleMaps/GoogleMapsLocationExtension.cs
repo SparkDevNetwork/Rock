@@ -112,13 +112,177 @@ namespace Rock.Core.Geography.GeographyExtensions.GoogleMaps
         }
 
         /// <summary>
+        /// Asynchronously geocodes the specified input string to a point and its recommended viewport using the Google Maps Geocoding API.
+        /// </summary>
+        /// <param name="input">The address, ZIP, city, or place to geocode.</param>
+        /// <returns>The point and viewport, or <c>null</c> when the input could not be resolved.</returns>
+        public async Task<GeocodeResult> GeocodeDetailed( string input )
+        {
+            if ( string.IsNullOrWhiteSpace( input ) )
+            {
+                return null;
+            }
+
+            using ( var httpClient = new HttpClient() )
+            {
+                string requestUri = $"https://maps.googleapis.com/maps/api/geocode/json?address={Uri.EscapeDataString( input )}&key={_apiKey}";
+
+                try
+                {
+                    var response = await httpClient.GetAsync( requestUri );
+
+                    if ( !response.IsSuccessStatusCode )
+                    {
+                        return null;
+                    }
+
+                    var json = await response.Content.ReadAsStringAsync();
+                    using ( var doc = JsonDocument.Parse( json ) )
+                    {
+                        var root = doc.RootElement;
+
+                        if ( root.GetProperty( "status" ).GetString() != "OK" )
+                        {
+                            return null;
+                        }
+
+                        var geometry = root.GetProperty( "results" )[0].GetProperty( "geometry" );
+
+                        var location = geometry.GetProperty( "location" );
+                        var point = new GeographyPoint(
+                            location.GetProperty( "lat" ).GetDouble(),
+                            location.GetProperty( "lng" ).GetDouble() );
+
+                        // Google always returns a viewport sized to the match (a ZIP, city, and street
+                        // address each come back with a differently sized box), which is exactly the
+                        // location-appropriate search boundary we want. It is optional in the schema, so
+                        // fall back to just the point when it is absent.
+                        GeographyBounds viewport = null;
+                        if ( geometry.TryGetProperty( "viewport", out var viewportElement ) )
+                        {
+                            var northeast = viewportElement.GetProperty( "northeast" );
+                            var southwest = viewportElement.GetProperty( "southwest" );
+                            viewport = new GeographyBounds(
+                                northeast.GetProperty( "lat" ).GetDouble(),
+                                southwest.GetProperty( "lat" ).GetDouble(),
+                                northeast.GetProperty( "lng" ).GetDouble(),
+                                southwest.GetProperty( "lng" ).GetDouble() );
+                        }
+
+                        return new GeocodeResult( point, viewport );
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    // A transient failure (network, quota, or an unexpected response shape) yields no
+                    // result; the caller treats the location as unresolved rather than erroring. Logged so
+                    // the failure is visible rather than silently swallowed.
+                    Rock.Model.ExceptionLogService.LogException( ex );
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Asynchronously retrieves address suggestions for a partial address using the Google Places API (New) Autocomplete endpoint.
+        /// </summary>
+        /// <param name="input">The partial address, ZIP, city, or place the visitor has typed so far.</param>
+        /// <returns>The matching suggestion texts, or an empty list when the input is blank or nothing matched.</returns>
+        public async Task<List<string>> GetAddressSuggestionsAsync( string input )
+        {
+            var suggestions = new List<string>();
+
+            if ( string.IsNullOrWhiteSpace( input ) )
+            {
+                return suggestions;
+            }
+
+            using ( var httpClient = new HttpClient() )
+            {
+                /*
+                    07/28/26 - JMH
+
+                    "geocode" biases predictions to addresses, ZIPs, cities, and regions (the things a
+                    location search targets) rather than businesses. Autocomplete bills per request and, unlike
+                    Text Search, returns the suggestion text without pushing the call into a higher billing tier.
+
+                    Reason: Keep address suggestions on the cheapest Places (New) endpoint.
+                */
+                var body = new
+                {
+                    input,
+                    includedPrimaryTypes = new[] { "geocode" }
+                };
+
+                var requestJson = body.ToJson();
+
+                var request = new HttpRequestMessage( HttpMethod.Post, "https://places.googleapis.com/v1/places:autocomplete" )
+                {
+                    Content = new StringContent( requestJson, Encoding.UTF8, "application/json" )
+                };
+
+                request.Headers.Add( "X-Goog-Api-Key", _apiKey );
+
+                // Ask only for each prediction's display text so the response stays small.
+                request.Headers.Add( "X-Goog-FieldMask", "suggestions.placePrediction.text.text" );
+
+                try
+                {
+                    var response = await httpClient.SendAsync( request );
+
+                    if ( !response.IsSuccessStatusCode )
+                    {
+                        return suggestions;
+                    }
+
+                    var json = await response.Content.ReadAsStringAsync();
+                    using ( var doc = JsonDocument.Parse( json ) )
+                    {
+                        var root = doc.RootElement;
+
+                        // A response with no "suggestions" array means nothing matched.
+                        if ( !root.TryGetProperty( "suggestions", out var suggestionElements ) )
+                        {
+                            return suggestions;
+                        }
+
+                        foreach ( var suggestion in suggestionElements.EnumerateArray() )
+                        {
+                            if ( suggestion.TryGetProperty( "placePrediction", out var placePrediction )
+                                && placePrediction.TryGetProperty( "text", out var textElement )
+                                && textElement.TryGetProperty( "text", out var textValue ) )
+                            {
+                                var text = textValue.GetString();
+                                if ( !string.IsNullOrWhiteSpace( text ) )
+                                {
+                                    suggestions.Add( text );
+                                }
+                            }
+                        }
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    // A transient failure (network, quota) just yields no suggestions; the visitor can still
+                    // type a full address and search. Logged so the failure is visible rather than silently
+                    // swallowed.
+                    Rock.Model.ExceptionLogService.LogException( ex );
+                    return suggestions;
+                }
+            }
+
+            return suggestions;
+        }
+
+        /// <summary>
         /// Asynchronously retrieves a driving matrix for the specified origin and list of destinations.
         /// </summary>
         /// <param name="origin">The origin lat/long </param>
         /// <param name="destinations">A list of up to 25 destination points. Each can be an address, lat/lng, ZIP code, or place ID.</param>
         /// <param name="mode">The travel mode to use for the calculation.</param>
+        /// <param name="detail">The detail level of result data to return.</param>
         /// <returns>A list of driving distances and durations for each destination.</returns>
-        public async Task<List<DistanceResult>> GetDrivingMatrixAsync( GeographyPoint origin, List<GeographyPoint> destinations, TravelMode mode )
+        public async Task<List<DistanceResult>> GetDrivingMatrixAsync( GeographyPoint origin, List<GeographyPoint> destinations, TravelMode mode, RouteMatrixDetail detail )
         {
             using ( var httpClient = new HttpClient() )
             {
@@ -167,7 +331,23 @@ namespace Rock.Core.Geography.GeographyExtensions.GoogleMaps
                     Content = new StringContent( requestJson, Encoding.UTF8, "application/json" )
                 };
 
-                request.Headers.Add( "X-Goog-FieldMask", "*" );
+                // Request only the fields the caller needs. Distance-only and distance-plus-static-duration
+                // both stay in the Essentials billing tier (the request is not traffic-aware); "*" can pull
+                // in Pro/Enterprise fields that bill at higher rates.
+                string fieldMask;
+                switch ( detail )
+                {
+                    case RouteMatrixDetail.DistanceOnly:
+                        fieldMask = "originIndex,destinationIndex,distanceMeters";
+                        break;
+                    case RouteMatrixDetail.DistanceAndDuration:
+                        fieldMask = "originIndex,destinationIndex,distanceMeters,duration";
+                        break;
+                    default:
+                        fieldMask = "*";
+                        break;
+                }
+                request.Headers.Add( "X-Goog-FieldMask", fieldMask );
 
                 var response = await httpClient.SendAsync( request );
 

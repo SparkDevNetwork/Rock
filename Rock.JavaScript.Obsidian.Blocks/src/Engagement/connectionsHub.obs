@@ -16,16 +16,13 @@
                               v-model="selectedConnector"
                               :items="staticConnectionTypeOptions?.connectorKeyItems ?? []"
                               blankValue="All Requests"
-                              enhanceForLongLists
-                              class="ant-select-sm" />
+                              enhanceForLongLists />
                 <DropDownList v-else-if="!selectedOpportunity"
                               v-model="selectedType"
                               :items="box.options?.connectionTypeItems ?? []"
-                              class="ant-select-sm"
                               blankValue="All Types" />
                 <DropDownList v-model="selectedOpportunity"
                               :items="connectionOpportunities ?? []"
-                              class="ant-select-sm"
                               blankValue="All Opportunities" />
             </template>
             <template #rightContent v-if="!isMyConnectionsView">

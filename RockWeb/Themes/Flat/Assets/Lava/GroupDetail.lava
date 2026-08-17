@@ -151,8 +151,10 @@
 							<small>({{ member.GroupRole.Name }})</small>
 
 							{% for phone in member.Person.PhoneNumbers %}
-							<br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
-							{% endfor %}
+                                {% if phone.NumberTypeValue.IsActive == true %}
+							        <br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
+                                {% endif %}
+                            {% endfor %}
 
 							{% assign memberAddress =  member.Person | Address:'Home' %}
 							{% if memberAddress != '' %}
@@ -220,8 +222,10 @@
 							<small>({{ member.GroupRole.Name }})</small>
 
 							{% for phone in member.Person.PhoneNumbers %}
-							<br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
-							{% endfor %}
+                                {% if phone.NumberTypeValue.IsActive == true %}
+							        <br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
+                                {% endif %}
+                            {% endfor %}
 
 							{% assign memberAddress =  member.Person | Address:'Home' %}
 							{% if memberAddress != '' %}
@@ -289,8 +293,10 @@
 							<small>({{ member.GroupRole.Name }})</small>
 
 							{% for phone in member.Person.PhoneNumbers %}
-							<br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
-							{% endfor %}
+                                {% if phone.NumberTypeValue.IsActive == true %}
+							        <br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
+                                {% endif %}
+                            {% endfor %}
 
 							{% assign memberAddress =  member.Person | Address:'Home' %}
 							{% if memberAddress != '' %}

@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 using Rock.Security;
 using Rock.ViewModels.Controls;
 
@@ -168,6 +169,60 @@ namespace Rock.Reporting
         public virtual string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
         {
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Describes how this DataSelect's value should render as a column in an
+        /// Obsidian Grid. The default implementation maps
+        /// <see cref="ColumnFieldType"/> to a built-in Obsidian column type
+        /// (boolean, currency, dateTime, number, text). Override when the raw
+        /// expression value needs transforming, or when the column configuration
+        /// depends on <paramref name="selection"/>.
+        /// </summary>
+        /// <param name="entityType">
+        /// The <see cref="Type"/> of the entity this applies to, such as
+        /// <see cref="Model.Person"/>.
+        /// </param>
+        /// <param name="selection">The selection string from the database.</param>
+        /// <param name="rockContext">
+        /// The context to use for any database access that is required at field
+        /// construction time. Do NOT store this on the returned instance;
+        /// <see cref="ObsidianGridField.TransformValue"/> receives a per-row
+        /// <see cref="ObsidianGridFieldContext"/> at call time.
+        /// </param>
+        /// <param name="requestContext">The context describing the current request.</param>
+        /// <returns>
+        /// A non-null <see cref="ObsidianGridField"/>. Overrides MUST NOT return
+        /// null; consumers treat null as a programmer error.
+        /// </returns>
+        public virtual ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var t = Nullable.GetUnderlyingType( ColumnFieldType ) ?? ColumnFieldType;
+
+            if ( t == typeof( bool ) )
+            {
+                return new BooleanObsidianGridField();
+            }
+
+            if ( t == typeof( decimal ) )
+            {
+                return new CurrencyObsidianGridField();
+            }
+
+            if ( t == typeof( DateTime ) )
+            {
+                return new DateTimeObsidianGridField();
+            }
+
+            if ( t == typeof( int )
+                 || t == typeof( long )
+                 || t == typeof( double )
+                 || t == typeof( float ) )
+            {
+                return new NumberObsidianGridField();
+            }
+
+            return new TextObsidianGridField();
         }
 
         #endregion

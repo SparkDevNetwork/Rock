@@ -2,7 +2,7 @@
 <template>
     <RockFormField :modelValue="internalValue" v-bind="standardProps" name="schedule-builder">
         <template #besideLabel v-if="displayScheduleFriendlyTextBesideLabel && scheduleSummary">
-            <div class="label label-info schedulebuilder-info">{{ scheduleSummary }}</div>
+            <div class="label label-info label-form-control">{{ scheduleSummary }}</div>
         </template>
 
         <div class="control-wrapper">

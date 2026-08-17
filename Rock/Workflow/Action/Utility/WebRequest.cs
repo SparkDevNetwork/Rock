@@ -46,6 +46,8 @@ namespace Rock.Workflow.Action
     [TextField( "URL",
         Description = "Sets the BaseUrl property for requests made by this client instance  <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         Key = "Url",
         Order = 1 )]
     [KeyValueListField( "Parameters",

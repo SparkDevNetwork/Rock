@@ -27,6 +27,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 using Rock.Utility;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
@@ -339,6 +340,18 @@ namespace Rock.Reporting.DataSelect.GroupMember
             }
 
             return boundField;
+        }
+
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = new SelectSettings( selection );
+            var entityFields = GetGroupMemberAttributeEntityFields( rockContext );
+
+            var entityField = entityFields.FirstOrDefault( f => f.UniqueName == settings.AttributeKey )
+                ?? entityFields.FirstOrDefault( f => f.Name == settings.AttributeKey );
+
+            return GroupAttributeSelect.AttributeFieldTypeToObsidianGridField( entityField?.FieldType?.Guid );
         }
 
         #endregion

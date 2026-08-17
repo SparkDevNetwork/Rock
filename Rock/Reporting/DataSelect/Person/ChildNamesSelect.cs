@@ -24,6 +24,7 @@ using System.Linq.Expressions;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 using Rock.ViewModels.Controls;
 using Rock.Web.UI.Controls;
 
@@ -190,6 +191,74 @@ namespace Rock.Reporting.DataSelect.Person
             };
 
             return callbackField;
+        }
+
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionParts = selection.Split( '|' );
+            return new ChildNamesField
+            {
+                IncludeGender = selectionParts.Length > 0 && selectionParts[0].AsBoolean(),
+                IncludeAge = selectionParts.Length > 1 && selectionParts[1].AsBoolean(),
+                IncludeGrade = selectionParts.Length > 2 && selectionParts[2].AsBoolean(),
+            };
+        }
+
+        /// <summary>
+        /// Value-shaping subclass that renders a list of <see cref="KidInfo"/>
+        /// items as a comma-delimited string of names, optionally suffixed with
+        /// gender / age / grade info. Mirrors the WebForms
+        /// <see cref="CallbackField"/> behavior.
+        /// </summary>
+        private class ChildNamesField : TextObsidianGridField
+        {
+            public bool IncludeGender { get; set; }
+
+            public bool IncludeAge { get; set; }
+
+            public bool IncludeGrade { get; set; }
+
+            public override object TransformValue( object rawValue, ObsidianGridFieldContext context )
+            {
+                if ( !( rawValue is IEnumerable<KidInfo> kids ) )
+                {
+                    return string.Empty;
+                }
+
+                var formattedList = new List<string>();
+                foreach ( var kid in kids )
+                {
+                    var name = Rock.Model.Person.FormatFullName( kid.NickName, kid.LastName, kid.SuffixValueId );
+                    var suffix = string.Empty;
+
+                    if ( IncludeGender && kid.Gender != Gender.Unknown )
+                    {
+                        suffix = kid.Gender == Gender.Female ? "F" : "M";
+                    }
+
+                    var age = Rock.Model.Person.GetAge( kid.BirthDate, kid.DeceasedDate );
+                    if ( IncludeAge && age.HasValue )
+                    {
+                        suffix += " " + age.Value.ToString();
+                    }
+
+                    if ( IncludeGrade && kid.GraduationYear.HasValue )
+                    {
+                        var grade = Rock.Model.Person.GradeAbbreviationFromGraduationYear( kid.GraduationYear );
+                        suffix += " " + grade;
+                    }
+
+                    if ( !string.IsNullOrWhiteSpace( suffix ) )
+                    {
+                        name += " (" + suffix.Trim() + ")";
+                    }
+
+                    formattedList.Add( name );
+                }
+
+                return formattedList.AsDelimited( ", " );
+            }
         }
 
         /// <summary>

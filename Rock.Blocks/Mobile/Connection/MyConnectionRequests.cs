@@ -136,16 +136,17 @@ namespace Rock.Blocks.Mobile.Connection
             var addPageConfigured = GetAttributeValue( AttributeKey.AddPage ).AsGuidOrNull().HasValue;
 
             // Cross-opportunity gate: the floating Add button shows when an Add
-            // page is configured AND the person can add a request somewhere (has
-            // EDIT on at least one active connection type). ConnectionTypeCache
-            // is cached, so this is no extra DB hit.
-            var canAddSomewhere = ConnectionTypeCache.All()
-                .Any( ct => ct.IsActive && ct.IsAuthorized( Authorization.EDIT, currentPerson ) );
+            // page is configured AND the person can add a request to at least one
+            // active opportunity somewhere, evaluated the way the web Connections
+            // Hub does. Short-circuited on the block setting so an unconfigured
+            // block does not pay for the lookup.
+            var canAddSomewhere = addPageConfigured
+                && ConnectionRequestAuthorization.CanAddRequestAnywhere( rockContext, currentPerson );
 
             var response = new GetMyConnectionRequestsResponseBag
             {
                 Requests = requests,
-                IsAddEnabled = addPageConfigured && canAddSomewhere
+                IsAddEnabled = canAddSomewhere
             };
 
             return ActionOk( response );

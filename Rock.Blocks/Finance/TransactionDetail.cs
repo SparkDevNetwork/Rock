@@ -351,37 +351,13 @@ namespace Rock.Blocks.Finance
                 ScheduledTransactionId = transaction.ScheduledTransactionId,
                 AuthorizedPersonAliasId = transaction.AuthorizedPersonAliasId,
                 ShowAsAnonymous = transaction.ShowAsAnonymous,
-                SourceType = sourceDefinedValue != null ? new ListItemBag
-                {
-                    Value = sourceDefinedValue.Guid.ToString(),
-                    Text = sourceDefinedValue.Value
-                }
-                : null,
-                TransactionType = new ListItemBag
-                {
-                    Value = transactionDefinedValue.Guid.ToString(),
-                    Text = transactionDefinedValue.Value
-                },
+                SourceType = sourceDefinedValue.ToListItemBag(),
+                TransactionType = transactionDefinedValue.ToListItemBag(),
                 TransactionCode = transaction.TransactionCode,
                 Summary = transaction.Summary,
-                FinancialGateway = financialGatewayDefinedValue != null ? new ListItemBag
-                {
-                    Value = financialGatewayDefinedValue.Guid.ToString(),
-                    Text = financialGatewayDefinedValue.Name
-                }
-                : null,
-                NonCashAssetType = assetTypeDefinedValue != null ? new ListItemBag
-                {
-                    Text = assetTypeDefinedValue.Value,
-                    Value = assetTypeDefinedValue.Guid.ToString()
-                }
-                : null,
-                CurrencyCode = currencyDefinedValue != null ? new ListItemBag
-                {
-                    Text = currencyDefinedValue.Value,
-                    Value = currencyDefinedValue.Guid.ToString()
-                }
-                : null,
+                FinancialGateway = financialGatewayDefinedValue.ToListItemBag(),
+                NonCashAssetType = assetTypeDefinedValue.ToListItemBag(),
+                CurrencyCode = currencyDefinedValue.ToListItemBag(),
                 TotalAmount = totalAmount,
                 TotalFeeAmount = totalFeeAmount,
                 TotalFeeCoverageAmount = totalFeeCoverageAmount,
@@ -406,6 +382,9 @@ namespace Rock.Blocks.Finance
                 PaymentDetail = GetPaymentDetailBag( transaction.FinancialPaymentDetail, creditCardGuid ),
                 RefundDetails = GetRefundDetailBag( transaction.RefundDetails ),
                 AuthorizedPerson = GetAuthorizedPersonBag( transaction.AuthorizedPersonAlias ),
+                PersonOrBusiness = transaction.AuthorizedPersonAlias?.Person == null
+                    ? null
+                    : transaction.AuthorizedPersonAlias.ToListItemBag( transaction.AuthorizedPersonAlias.Person.FullName ),
                 ScheduledTransaction = transaction.ScheduledTransaction != null
                     ? GetScheduledTransactionBag( transaction.ScheduledTransaction )
                     : null,
@@ -548,9 +527,17 @@ namespace Rock.Blocks.Finance
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var parentPageParams = new Dictionary<string, string>();
+
+            var batchId = PageParameter( PageParameterKey.BatchId );
+            if ( batchId.IsNotNullOrWhiteSpace() )
+            {
+                parentPageParams.Add( PageParameterKey.BatchId, batchId );
+            }
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( parentPageParams )
             };
         }
 
@@ -610,13 +597,7 @@ namespace Rock.Blocks.Finance
             {
                 OriginalTransactionId = refundDetails.OriginalTransactionId,
                 OriginalTransactionIdKey = refundDetails.OriginalTransactionId.HasValue ? IdHasher.Instance.GetHash( refundDetails.OriginalTransactionId.Value ) : null,
-                RefundReason = refundReasonDefinedValue == null
-                    ? null
-                    : new ListItemBag
-                    {
-                        Value = refundReasonDefinedValue.Guid.ToString(),
-                        Text = refundReasonDefinedValue.Value
-                    },
+                RefundReason = refundReasonDefinedValue.ToListItemBag(),
                 RefundReasonSummary = refundDetails.RefundReasonSummary
             };
         }
@@ -700,11 +681,7 @@ namespace Rock.Blocks.Finance
                     {
                         Guid = d.Guid,
                         Id = d.Id,
-                        Account = d.Account == null ? null : new ListItemBag
-                        {
-                            Text = d.Account.Name,
-                            Value = d.Account.Guid.ToString()
-                        },
+                        Account = d.Account?.ToListItemBag( d.Account.Name ),
                         Amount = d.FeeCoverageAmount.HasValue
                             ? d.Amount - d.FeeCoverageAmount.Value
                             : d.Amount,
@@ -836,19 +813,8 @@ namespace Rock.Blocks.Finance
 
             return new PaymentDetailBag
             {
-                CurrencyType = currencyType == null
-                    ? null
-                    : new ListItemBag {
-                        Text = currencyType.Value,
-                        Value = currencyType.Guid.ToString()
-                    },
-                CreditCardType = creditCardType == null
-                    ? null
-                    : new ListItemBag
-                    {
-                        Text = creditCardType.Value,
-                        Value = creditCardType.Guid.ToString()
-                    },
+                CurrencyType = currencyType.ToListItemBag(),
+                CreditCardType = creditCardType.ToListItemBag(),
                 NameOnCard = paymentDetail.NameOnCard,
                 AccountNumberMasked = paymentDetail.AccountNumberMasked,
                 ExpirationDate = paymentDetail.ExpirationDate,
@@ -1165,15 +1131,17 @@ namespace Rock.Blocks.Finance
                 entity.FinancialPaymentDetail = new FinancialPaymentDetail();
             }
 
-            if( box.Bag.AuthorizedPerson != null)
+            box.IfValidProperty( nameof( box.Bag.PersonOrBusiness ), () =>
             {
-                box.Bag.AuthorizedPersonAliasId = new PersonAliasService( RockContext ).GetId( box.Bag.AuthorizedPerson.Guid);
+                var personAliasId = box.Bag.PersonOrBusiness != null
+                    ? new PersonAliasService( RockContext ).GetId( box.Bag.PersonOrBusiness.Value.AsGuid() )
+                    : null;
 
-                if ( box.Bag.AuthorizedPersonAliasId.HasValue )
+                if ( personAliasId.HasValue )
                 {
-                    entity.AuthorizedPersonAliasId = box.Bag.AuthorizedPersonAliasId;
+                    entity.AuthorizedPersonAliasId = personAliasId;
                 }
-            }
+            } );
 
             if ( entity.Id == 0 && box.Bag.BatchId != null )
             {

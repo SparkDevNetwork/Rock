@@ -36,6 +36,8 @@ namespace Rock.Workflow.Action
     [TextField( "Status",
         Description = "The status to set workflow to. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 0 )]
     [WorkflowAttribute( "Workflow",
         Description = "The workflow to set the status of.",

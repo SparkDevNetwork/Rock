@@ -435,12 +435,16 @@ namespace Rock.Blocks.Administration
             if ( entityIdParam.IsNotNullOrWhiteSpace() && entityIdParam != "0" )
             {
                 securedEntity = Reflection.GetIEntityForEntityType( type, entityIdParam ) as ISecured;
-            }
 
-            // When no specific entity is requested (or it could not be found),
-            // secure the entity type itself.
-            if ( securedEntity == null )
+                if ( securedEntity == null )
+                {
+                    errorMessage = "Item not found. Please ensure the item is saved before setting the security.";
+                    return false;
+                }
+            }
+            else
             {
+                // No specific entity was requested; secure the entity type itself (its defaults).
                 securedEntity = Activator.CreateInstance( type ) as ISecured;
             }
 
@@ -487,29 +491,6 @@ namespace Rock.Blocks.Administration
         }
 
         /// <summary>
-        /// Resolves the secured entity and confirms the current person may administrate it.
-        /// </summary>
-        /// <param name="securedEntity">On return, the authorized secured entity.</param>
-        /// <returns><c>true</c> if the entity was resolved and the person is authorized; otherwise <c>false</c>.</returns>
-        private bool TryGetAuthorizedEntity( out ISecured securedEntity )
-        {
-            securedEntity = null;
-
-            if ( !TryGetSecuredEntity( out var entity, out _ ) )
-            {
-                return false;
-            }
-
-            if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
-            {
-                return false;
-            }
-
-            securedEntity = entity;
-            return true;
-        }
-
-        /// <summary>
         /// Resolves and authorizes the secured entity and confirms it supports the action.
         /// Combines the guard every editing block action shares so each one can fail fast
         /// with the correct result.
@@ -523,7 +504,13 @@ namespace Rock.Blocks.Administration
             securedEntity = null;
             errorResult = null;
 
-            if ( !TryGetAuthorizedEntity( out var entity ) )
+            if ( !TryGetSecuredEntity( out var entity, out var errorMessage ) )
+            {
+                errorResult = ActionBadRequest( errorMessage );
+                return false;
+            }
+
+            if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
             {
                 errorResult = ActionForbidden( NotAuthorizedMessage );
                 return false;

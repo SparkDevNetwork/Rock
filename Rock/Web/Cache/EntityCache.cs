@@ -354,7 +354,7 @@ namespace Rock.Web.Cache
         /// <param name="ids">The identifiers of the cache objects to retrieve.</param>
         /// <param name="rockContext">The rock context to use if database access is needed.</param>
         /// <returns>An enumeration of the cached objects.</returns>
-        internal static IEnumerable<T> GetMany( ICollection<int> ids, RockContext rockContext = null )
+        public static IEnumerable<T> GetMany( ICollection<int> ids, RockContext rockContext = null )
         {
             if ( ids == null )
             {
@@ -427,7 +427,7 @@ namespace Rock.Web.Cache
         /// <param name="guids">The unique identifiers of the cache objects to retrieve.</param>
         /// <param name="rockContext">The rock context to use if database access is needed.</param>
         /// <returns>An enumeration of the cached objects.</returns>
-        internal static IEnumerable<T> GetMany( ICollection<Guid> guids, RockContext rockContext = null )
+        public static IEnumerable<T> GetMany( ICollection<Guid> guids, RockContext rockContext = null )
         {
             if ( guids == null )
             {

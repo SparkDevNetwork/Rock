@@ -64,6 +64,7 @@
     "@cap.js/widget": "^0.1.31",
     "@capaj/pluralize": "^1.0.4",
     "@floating-ui/vue": "^1.1.9",
+    "@googlemaps/markerclusterer": "^2.6.2",
     "@server-sent-stream/web": "^1.0.3",
     "@types/pdfobject": "^2.2.5",
     "ant-design-vue": "^3.2.20",

@@ -19,7 +19,6 @@
                       title="Individual"
                       field="individual"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getPersonNameFilterValue"
                       visiblePriority="xs" />
 
         <TextColumn
@@ -87,7 +86,6 @@
     import { NavigationUrlKey } from "./LearningProgramCompletionList/types.partial";
     import { reactive, ref } from "vue";
     import { CompletionStatusDescription } from "@Obsidian/Enums/Lms/completionStatus";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<LearningProgramCompletionListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -105,16 +103,6 @@
     // #endregion
 
     // #region Functions
-
-    /**
-    * Gets the filter value text to use for the name column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getPersonNameFilterValue(row: Record<string, unknown>): string {
-        const person = row["individual"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
-    }
 
     /**
      * Called when the grid is requesting the row data be loaded.

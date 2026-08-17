@@ -41,7 +41,7 @@ export type SaveRockIntelligenceResponseBag = {
      * client should surface pending or declined outcomes with an
      * appropriate message.
      */
-    boostStatus?: string | null;
+    boostStatus: number;
 
     /**
      * The refreshed Rock Intelligence configuration reflecting the

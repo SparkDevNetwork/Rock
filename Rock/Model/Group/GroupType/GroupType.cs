@@ -131,6 +131,15 @@ namespace Rock.Model
         public bool AllowMultipleLocations { get; set; }
 
         /// <summary>
+        /// Gets or sets a flag indicating if the Meeting Style field is available on <see cref="Rock.Model.Group">Groups</see> of this GroupType.
+        /// </summary>
+        /// <value>
+        ///   A <see cref="System.Boolean"/> value that is <c>true</c> if Groups of this GroupType expose a Meeting Style; otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsMeetingStyleEnabled { get; set; }
+
+        /// <summary>
         /// Gets or sets a flag indicating if a <see cref="Rock.Model.Group"/> of this GroupType will be shown in the group list.
         /// </summary>
         /// <value>

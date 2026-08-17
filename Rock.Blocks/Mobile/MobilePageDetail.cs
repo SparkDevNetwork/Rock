@@ -1170,6 +1170,11 @@ namespace Rock.Blocks.Mobile
                 }
             }
 
+            // Adding a page-scoped block does not flush the page cache on its
+            // own, so flush it here to keep PageCache.Blocks (used to build the
+            // context parameter list, among other things) in sync.
+            PageCache.FlushPage( page.Id );
+
             return ActionOk( BuildBlockBag( block, blockType, blockCompiledType ) );
         }
 
@@ -1288,8 +1293,11 @@ namespace Rock.Blocks.Mobile
             blockService.Delete( block );
             RockContext.SaveChanges();
 
-            // The zone data is rebuilt from a live database query, so no page
-            // cache flush is needed here; the deleted block is simply absent.
+            // The returned zone data is rebuilt from a live database query, but
+            // the page cache still holds the deleted block, so flush it to keep
+            // PageCache.Blocks (used to build the context parameter list) in sync.
+            PageCache.FlushPage( page.Id );
+
             return ActionOk( LoadZonesAndBlocks( page, out _ ) );
         }
 

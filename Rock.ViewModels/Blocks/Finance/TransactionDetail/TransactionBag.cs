@@ -37,6 +37,12 @@ namespace Rock.ViewModels.Blocks.Finance.TransactionDetail
         public AuthorizedPersonBag AuthorizedPerson { get; set; }
 
         /// <summary>
+        /// Gets or sets the person or business credited with this transaction, bound to the
+        /// edit panel's person picker. The value is the person alias Guid.
+        /// </summary>
+        public ListItemBag PersonOrBusiness { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the donor's name should be hidden
         /// wherever this gift is displayed publicly.
         /// </summary>

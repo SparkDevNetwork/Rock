@@ -151,9 +151,7 @@
                         <PersonColumn :field="getGridRowPropertyName('person')"
                                       :name="getGridRowPropertyName('person')"
                                       title="Name"
-                                      :filter="pickExistingValueFilter"
-                                      :filterValue="getPersonTextValue"
-                                      :quickFilterValue="getPersonTextValue"><template #></template></PersonColumn>
+                                      :filter="pickExistingValueFilter" />
 
                         <NumberColumn :field="getGridRowPropertyName('activeRequestCount')"
                                       :name="getGridRowPropertyName('activeRequestCount')"
@@ -609,16 +607,6 @@
     function getTimelineColor(index: number): string {
         const colors = ["#2C5282", "#3182CE", "#90CDF4"];
         return colors[index % colors.length];
-    }
-
-    /**
-     * Gets the text value for the "Person" column.
-     *
-     * @param row The row whose value to get.
-     */
-    function getPersonTextValue(row: Record<string, unknown>): string {
-        const person = (row as ConnectorBag).person;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     function wrapByWords(text: string, lineSize: number): string | string[] {

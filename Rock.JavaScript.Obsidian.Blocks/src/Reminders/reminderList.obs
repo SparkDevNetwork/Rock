@@ -26,14 +26,14 @@
         </NotificationBox>
 
         <template v-else-if="reminders">
-            <div class="reminder-list-toolbar d-flex align-items-center gap-spacing-sm flex-wrap">
+            <div v-if="showFilters" class="reminder-list-toolbar d-flex align-items-center gap-spacing-sm flex-wrap">
                 <div class="reminder-list-toolbar-types">
                     <DropDownList v-model="reminderTypeIdKey"
                                   :items="reminderTypeDropdownItems"
                                   :showBlankItem="false" />
                 </div>
 
-                <div v-if="showFilters" class="ml-auto mb-0">
+                <div class="ml-auto mb-0">
                     <ButtonGroup v-model="completionFilter"
                                  :items="completionOptions"
                                  :btnSize="BtnSize.Small" />

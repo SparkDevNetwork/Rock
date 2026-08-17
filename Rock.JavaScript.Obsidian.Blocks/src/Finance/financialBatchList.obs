@@ -662,7 +662,7 @@
      * @param row The row associated with the delete button.
      */
     function onDeleteRowDisabled(row: Record<string, unknown>): boolean {
-        return (row as Row).status === BatchStatus.Closed;
+        return (row as Row).status === BatchStatus.Closed || (row as Row).isAutomated === true;
     }
 
     /**

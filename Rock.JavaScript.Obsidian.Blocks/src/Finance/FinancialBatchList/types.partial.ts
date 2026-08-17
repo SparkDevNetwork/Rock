@@ -53,6 +53,8 @@ export type Row = {
 
     status: BatchStatus;
 
+    isAutomated: boolean;
+
     startDateTime?: string | null;
 
     remoteSettlementKey?: string | null;

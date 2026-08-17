@@ -132,10 +132,17 @@ namespace Rock.Blocks.Mobile.Connection
             request = request ?? new GetOptionsRequestBag();
 
             var currentPerson = RequestContext.CurrentPerson;
+
+            // The set of connection types the person can actually add a request
+            // under, resolved once and reused for both the Type step's list and
+            // the authorization checks below so the wizard's gate cannot drift
+            // from the one the list blocks use to offer the Add button.
+            var addAuthorizedTypeIds = ConnectionRequestAuthorization.GetAddAuthorizedConnectionTypeIds( RockContext, currentPerson );
+
             var response = new GetOptionsResponseBag
             {
                 // Always returned.
-                Types = GetAuthorizedTypeOptions( currentPerson ),
+                Types = GetAuthorizedTypeOptions( addAuthorizedTypeIds ),
                 Campuses = GetActiveCampuses()
             };
 
@@ -160,7 +167,7 @@ namespace Rock.Blocks.Mobile.Connection
                     return ActionBadRequest( "The specified connection opportunity is not available." );
                 }
 
-                if ( !lockedOpportunity.ConnectionType.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                if ( !ConnectionRequestAuthorization.CanAddRequest( RockContext, lockedOpportunity, currentPerson ) )
                 {
                     return ActionUnauthorized( "You are not authorized to add a request for this opportunity." );
                 }
@@ -210,7 +217,7 @@ namespace Rock.Blocks.Mobile.Connection
             // Type-level options (opportunities, sources, default state).
             if ( connectionType != null )
             {
-                if ( !connectionType.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                if ( !addAuthorizedTypeIds.Contains( connectionType.Id ) )
                 {
                     return ActionUnauthorized( "You are not authorized to add a request for this connection type." );
                 }
@@ -285,7 +292,7 @@ namespace Rock.Blocks.Mobile.Connection
                 return ActionBadRequest( $"{ConnectionOpportunity.FriendlyTypeName} not found." );
             }
 
-            if ( !opportunity.ConnectionType.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !ConnectionRequestAuthorization.CanAddRequest( RockContext, opportunity, RequestContext.CurrentPerson ) )
             {
                 return ActionForbidden( "You are not authorized to add a request for this opportunity." );
             }
@@ -363,7 +370,7 @@ namespace Rock.Blocks.Mobile.Connection
 
             var connectionType = opportunity.ConnectionType;
 
-            if ( !connectionType.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !ConnectionRequestAuthorization.CanAddRequest( RockContext, opportunity, RequestContext.CurrentPerson ) )
             {
                 return ActionForbidden( "You are not authorized to add a request for this opportunity." );
             }
@@ -513,17 +520,35 @@ namespace Rock.Blocks.Mobile.Connection
         #region Private Methods - Options
 
         /// <summary>
-        /// Gets the connection types the current person has VIEW on, ordered.
+        /// Gets the connection types the current person may actually add a
+        /// request under, ordered. A type qualifies when at least one of its
+        /// active opportunities passes the same add gate the list blocks use to
+        /// decide whether to offer the Add button at all, so the wizard never
+        /// lists a type whose Opportunity step would come back empty.
         /// </summary>
-        /// <param name="currentPerson">The current person.</param>
+        /// <remarks>
+        /// The add gate is the only filter applied here. Layering
+        /// <c>ConnectionTypeService.GetViewAuthorizedConnectionTypes</c> on top
+        /// would be wrong: that method resolves VIEW on the type (plus a
+        /// self-assigned-connector grant for request-secured types) and knows
+        /// nothing about connector groups, so it would filter out exactly the
+        /// connectors the connector-group fallback just authorized.
+        /// </remarks>
+        /// <param name="addAuthorizedTypeIds">The identifiers of the connection types the person may add a request under.</param>
         /// <returns>The authorized connection type options.</returns>
-        private List<ConnectionTypeOptionBag> GetAuthorizedTypeOptions( Person currentPerson )
+        private List<ConnectionTypeOptionBag> GetAuthorizedTypeOptions( HashSet<int> addAuthorizedTypeIds )
         {
-            var connectionTypeService = new ConnectionTypeService( RockContext );
-            var query = connectionTypeService.GetConnectionTypesQuery( new ConnectionTypeQueryOptions { IncludeInactive = false } );
-            var types = connectionTypeService.GetViewAuthorizedConnectionTypes( query, currentPerson );
+            if ( addAuthorizedTypeIds.Count == 0 )
+            {
+                return new List<ConnectionTypeOptionBag>();
+            }
+
+            var types = new ConnectionTypeService( RockContext )
+                .GetConnectionTypesQuery( new ConnectionTypeQueryOptions { IncludeInactive = false } )
+                .ToList();
 
             return types
+                .Where( t => addAuthorizedTypeIds.Contains( t.Id ) )
                 .OrderBy( t => t.Order )
                 .ThenBy( t => t.Name )
                 .Select( t => new ConnectionTypeOptionBag
@@ -541,8 +566,10 @@ namespace Rock.Blocks.Mobile.Connection
         }
 
         /// <summary>
-        /// Gets the active opportunities of a type the current person has VIEW
-        /// on, ordered.
+        /// Gets the active opportunities of a type the current person may add a
+        /// request to, ordered. This is the same add gate the list blocks use,
+        /// so the wizard cannot offer an opportunity whose save would come back
+        /// Forbidden.
         /// </summary>
         /// <param name="connectionType">The connection type.</param>
         /// <param name="currentPerson">The current person.</param>
@@ -556,8 +583,9 @@ namespace Rock.Blocks.Mobile.Connection
                 ConnectionTypeGuids = new List<Guid> { connectionType.Guid }
             } );
 
-            return query.ToList()
-                .Where( o => o.IsAuthorized( Authorization.VIEW, currentPerson ) )
+            var authorizedOpportunities = ConnectionRequestAuthorization.FilterToAddAuthorized( RockContext, query.ToList(), currentPerson );
+
+            return authorizedOpportunities
                 .OrderBy( o => o.Order )
                 .ThenBy( o => o.Name )
                 .Select( o => new ConnectionOpportunityOptionBag

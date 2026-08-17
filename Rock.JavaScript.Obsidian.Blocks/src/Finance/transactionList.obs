@@ -6,6 +6,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Transaction"
+          liveUpdates
           :entityTypeGuid="EntityType.FinancialTransaction"
           :customActions="customActions"
           :showMergeTemplate="isTransactionEntityActionEnabled"

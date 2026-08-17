@@ -70,6 +70,15 @@ namespace Rock.Blocks.Event
 
         #endregion Keys
 
+        #region Fields
+
+        /// <summary>
+        /// Non-temporary registrant counts keyed by registration instance Id, populated once per grid load in <see cref="GetListItems"/>.
+        /// </summary>
+        private Dictionary<int, int> _registrantCounts = new Dictionary<int, int>();
+
+        #endregion
+
         #region Methods
 
         /// <inheritdoc/>
@@ -116,7 +125,7 @@ namespace Rock.Blocks.Event
         {
             var qry = new RegistrationInstanceService( rockContext )
                     .Queryable()
-                    .Include( i => i.Registrations.Select( r => r.Registrants ) )
+                    .Include( i => i.RegistrationTemplate.Category )
                     .Where( i =>
                         ( i.StartDateTime <= RockDateTime.Now || !i.StartDateTime.HasValue ) &&
                         ( i.EndDateTime > RockDateTime.Now || !i.EndDateTime.HasValue ) &&
@@ -134,11 +143,24 @@ namespace Rock.Blocks.Event
         /// <inheritdoc/>
         protected override List<RegistrationInstance> GetListItems( IQueryable<RegistrationInstance> queryable, RockContext rockContext )
         {
-            var listItems = base.GetListItems( queryable, rockContext );
-
-            return listItems
+            var listItems = base.GetListItems( queryable, RockContext )
                 .Where( i => i.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
                 .ToList();
+
+            if ( listItems.Count == 0 )
+            {
+                return listItems;
+            }
+
+            var instanceIds = listItems.ConvertAll( i => i.Id );
+
+            _registrantCounts = new RegistrationRegistrantService( RockContext ).Queryable().AsNoTracking()
+                .Where( rr => !rr.Registration.IsTemporary && instanceIds.Contains( rr.Registration.RegistrationInstanceId ) )
+                .GroupBy( rr => rr.Registration.RegistrationInstanceId )
+                .Select( g => new { RegistrationInstanceId = g.Key, Count = g.Count() } )
+                .ToDictionary( c => c.RegistrationInstanceId, c => c.Count );
+
+            return listItems;
         }
 
         /// <inheritdoc/>
@@ -151,7 +173,7 @@ namespace Rock.Blocks.Event
                 .AddDateTimeField( "startDateTime", a => a.StartDateTime )
                 .AddDateTimeField( "endDateTime", a => a.EndDateTime )
                 .AddTextField( "details", a => a.Details )
-                .AddField( "registrantsCount", a => a.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Count() )
+                .AddField( "registrantsCount", a => _registrantCounts.GetValueOrDefault( a.Id, 0 ) )
                 .AddField( "isActive", a => a.IsActive )
                 .AddAttributeFields( GetGridAttributes() );
         }

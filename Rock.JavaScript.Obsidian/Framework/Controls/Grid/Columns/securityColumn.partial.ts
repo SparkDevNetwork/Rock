@@ -77,6 +77,19 @@ export default defineComponent({
         disabledField: {
             type: String as PropType<string>,
             default: "isSecurityDisabled"
+        },
+
+        /**
+         * The field that contains the persisted identifier (IdKey or Guid)
+         * of the entity to secure. When not set, the grid row key is used.
+         * Set this when the row key is not the entity's persisted identifier,
+         * such as grids over in-memory collections whose unsaved rows have no
+         * database identity yet. The button is not rendered for rows whose
+         * identifier is missing or empty.
+         */
+        idField: {
+            type: String as PropType<string>,
+            required: false
         }
     }
 });

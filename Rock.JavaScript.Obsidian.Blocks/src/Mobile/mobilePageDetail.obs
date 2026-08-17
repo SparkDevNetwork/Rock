@@ -61,7 +61,7 @@
             </template>
         </DetailBlock>
 
-        <BlocksPanel v-if="isNativePage && panelMode === DetailPanelMode.View && config.isEditable && !isNewPage"></BlocksPanel>
+        <BlocksPanel v-show="isNativePage && panelMode === DetailPanelMode.View && config.isEditable && !isNewPage"></BlocksPanel>
     </div>
 </template>
 

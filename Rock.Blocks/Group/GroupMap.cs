@@ -204,7 +204,11 @@ namespace Rock.Blocks.Group
         <span class='label label-campus'>{{ Campus.Name }}</span>
     {% endif %}
 
-    <div style='margin: var(--spacing-xsmall) 0 var(--spacing-small); font-size: var(--font-size-h5); font-weight: var(--font-weight-bold);'>{{ GroupName }}</div>
+    <div style='margin: var(--spacing-xsmall) 0 var(--spacing-tiny); font-size: var(--font-size-h5); font-weight: var(--font-weight-bold);'>{{ GroupName }}</div>
+
+    {% if Location.Address and Location.Address != '' %}
+        <div style='margin-bottom: var(--spacing-small); color: var(--color-interface-medium);'>{{ Location.Address }}</div>
+    {% endif %}
 
     {% if GroupType.Guid != '790E3215-3B10-442B-AF69-616C0DCB998E' %}
         <div style='display: flex; gap: var(--spacing-xsmall);'>
@@ -537,7 +541,14 @@ namespace Rock.Blocks.Group
         {
             var members = new List<Dictionary<string, object>>();
 
-            foreach ( var member in group.Members.OrderBy( m => m.GroupRole.Order ).ThenBy( m => m.Person.BirthDate ) )
+            // Only active, non-archived members are shown, matching the group members map layer
+            // (the /Members/Active endpoint) so the roster agrees with the pins on the map.
+            var activeMembers = group.Members
+                .Where( m => !m.IsArchived && m.GroupMemberStatus == GroupMemberStatus.Active )
+                .OrderBy( m => m.GroupRole.Order )
+                .ThenBy( m => m.Person.BirthDate );
+
+            foreach ( var member in activeMembers )
             {
                 var phoneNumbers = member.Person.PhoneNumbers
                     .Select( p => new Dictionary<string, object>

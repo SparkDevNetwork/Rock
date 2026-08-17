@@ -70,7 +70,6 @@
                       title="Who"
                       field="person"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getPersonNameFilterValue"
                       showAsLink />
 
     </Grid>
@@ -95,7 +94,6 @@
     import { AuditListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AuditList/auditListOptionsBag";
     import { computed, reactive, ref, watch } from "vue";
     import AuditDetailsModal from "./AuditList/auditDetailsModal.partial.obs";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
     import GridSettingsModal from "./AuditList/gridSettingsModal.partial.obs";
 
@@ -124,16 +122,6 @@
     // #endregion
 
     // #region Functions
-
-    /**
-    * Gets the filter value text to use for the name column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getPersonNameFilterValue(row: Record<string, unknown>): string {
-        const person = row["person"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
-    }
 
     /**
      * Called when the grid is requesting the row data be loaded.

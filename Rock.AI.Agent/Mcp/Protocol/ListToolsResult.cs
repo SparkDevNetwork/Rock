@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -13,14 +13,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 
-namespace Rock.ViewModels.Blocks.Group.GroupSimpleRegisterConfirm
+using System.Collections.Generic;
+
+namespace Rock.AI.Agent.Mcp.Protocol;
+
+/// <summary>
+/// The server’s response to a tools/list request from the client.
+/// </summary>
+internal class ListToolsResult
 {
     /// <summary>
-    /// The additional configuration options for the Group Simple Register Confirm block.
+    /// The list of tools available on the server.
     /// </summary>
-    public class GroupSimpleRegisterConfirmOptionsBag
-    {
-    }
+    public List<Tool> Tools { get; set; }
+
+    /// <summary>
+    /// An opaque token representing the pagination position after the last
+    /// returned result. If present, there may be more results available.
+    /// </summary>
+    public string NextCursor { get; set; }
 }

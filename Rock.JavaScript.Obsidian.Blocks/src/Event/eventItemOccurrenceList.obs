@@ -97,7 +97,6 @@
         <PersonColumn name="contact"
                       title="Contact"
                       field="contact"
-                      :filterValue="getContactColumnFilterValue"
                       :filter="pickExistingValueFilter"
                       visiblePriority="xs"
                       :hideAvatar="true"
@@ -152,7 +151,6 @@
     import { EventItemOccurrenceListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/EventItemOccurrenceList/eventItemOccurrenceListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./EventItemOccurrenceList/types.partial";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const config = useConfigurationValues<ListBlockBox<EventItemOccurrenceListOptionsBag>>();
@@ -219,16 +217,6 @@
     */
     function getGroupColumnFilterValue(row: Record<string, unknown>): string {
         return row.group as string ?? "";
-    }
-
-    /**
-    * Gets the filter value text to use for the contact column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getContactColumnFilterValue(row: Record<string, unknown>): string {
-        const contact = row.contact as PersonFieldBag;
-        return !contact ? "" : `${contact.nickName} ${contact.lastName}`;
     }
 
     /**

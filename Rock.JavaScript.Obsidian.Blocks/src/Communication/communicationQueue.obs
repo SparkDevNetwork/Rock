@@ -24,9 +24,7 @@
                       title="Sender"
                       field="sender"
                       :hideAvatar="true"
-                      :filter="pickExistingValueFilter"
-                      :filterValue="getSenderFilterValue"
-                      :quickFilterValue="getSenderFilterValue" />
+                      :filter="pickExistingValueFilter" />
 
         <TextColumn name="subject"
                     title="Subject"
@@ -79,7 +77,6 @@
     import { CommunicationStatus, CommunicationStatusDescription } from "@Obsidian/Enums/Communication/communicationStatus";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { CommunicationQueueOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationQueue/communicationQueueOptionsBag";
     import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./CommunicationQueue/types.partial";
     import GridSettingsModal from "./CommunicationQueue/gridSettingsModal.partial.obs";
@@ -145,16 +142,6 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
-    }
-
-    /**
-     * Gets the searchable text value for the "Sender" person column.
-     *
-     * @param row The grid row.
-     */
-    function getSenderFilterValue(row: Record<string, unknown>): string {
-        const person = row["sender"] as PersonFieldBag | null | undefined;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     /**

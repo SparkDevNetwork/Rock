@@ -157,6 +157,15 @@
             default: .9
         },
 
+        /**
+         * The message shown when the individual has not watched enough of the video to satisfy
+         * the required watch percentage. If left blank a generic default message is used.
+         */
+        requiredErrorMessage: {
+            type: String,
+            default: ""
+        },
+
         /** The number of seconds to seek forward/backward when the fast-forward or rewind buttons are pressed */
         seekTime: {
             type: Number,
@@ -240,7 +249,7 @@
                     return true;
                 }
 
-                return "You did not watch enough of the video in order for it to be considered complete.";
+                return props.requiredErrorMessage || "You did not watch enough of the video in order for it to be considered complete.";
             });
             return rules;
         }

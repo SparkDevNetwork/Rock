@@ -337,6 +337,16 @@
         <ContentSection v-if="isMeetingAndSchedulingSectionVisible"
                         title="Meeting &amp; Scheduling Details" icon="ti ti-calendar-month">
 
+            <div v-if="groupTypeOptions.isMeetingStyleEnabled" class="row">
+                <div class="col-md-6">
+                    <DropDownList v-model="meetingStyleValue"
+                                  label="Meeting Style"
+                                  help="How this group meets: in person, online, or a combination of the two."
+                                  :items="meetingStyleItems"
+                                  showBlankItem />
+                </div>
+            </div>
+
             <ContentStack v-if="groupTypeOptions.isOverallScheduleStackVisible"
                           title="Overall Group Schedule"
                           description="Provide the schedule used to represent when this group meets as a whole.">
@@ -546,6 +556,7 @@
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { ParentGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/parentGroupBag";
     import { ScheduleType, ScheduleTypeDescription } from "@Obsidian/Enums/Group/scheduleType";
+    import { MeetingStyle, MeetingStyleDescription } from "@Obsidian/Enums/Group/meetingStyle";
     import { GroupLocationPickerMode } from "@Obsidian/Enums/Group/groupLocationPickerMode";
     import { GroupSyncBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupSyncBag";
     import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
@@ -696,6 +707,7 @@
     const inactiveReasonNote = propertyRef(props.modelValue.bag?.inactiveReasonNote ?? "", "InactiveReasonNote");
     const inactivateChildGroups = propertyRef(props.modelValue.bag?.inactivateChildGroups ?? false, "InactivateChildGroups");
     const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const meetingStyle = propertyRef(props.modelValue.bag?.meetingStyle ?? null, "MeetingStyle");
     const isPublic = propertyRef(props.modelValue.bag?.isPublic ?? false, "IsPublic");
     const photoBinaryFile = propertyRef<ListItemBag | null>(props.modelValue.bag?.photoBinaryFile ?? null, "PhotoBinaryFile");
     const groupTypeId = propertyRef<number | null>(props.modelValue.bag?.groupTypeId ?? null, "GroupTypeId");
@@ -745,7 +757,7 @@
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [
-        name, isActive, inactiveReasonValueId, inactiveReasonNote, inactivateChildGroups, description, isPublic, photoBinaryFile,
+        name, isActive, inactiveReasonValueId, inactiveReasonNote, inactivateChildGroups, description, meetingStyle, isPublic, photoBinaryFile,
         groupTypeId, parentGroup, campus, statusValueId, groupAdministrator, groupCapacity, requiredSignatureDocumentTemplateId,
         recordSourceValue, isSecurityRole, elevatedSecurityLevel, overrideRelationshipStrength, relationshipStrengthOverride, relationshipGrowthEnabledOverride,
         leaderToLeaderRelationshipMultiplierOverride, leaderToNonLeaderRelationshipMultiplierOverride,
@@ -829,6 +841,7 @@
         const options = props.groupTypeOptions;
 
         return options.isOverallScheduleStackVisible === true                  // Overall Group Schedule stack
+            || options.isMeetingStyleEnabled === true                          // Meeting Style dropdown
             || options.locationSelectionMode !== GroupLocationPickerMode.None  // Locations panel
             || options.isSchedulingEnabled === true                            // Member Scheduling & Check-in stack
             || options.isCheckInRequirementsVisible === true;                  // Member Scheduling & Check-in stack
@@ -1083,6 +1096,23 @@
     const scheduleConfirmationLogicItems = computed((): ListItemBag[] => enumToListItemBag(ScheduleConfirmationLogicDescription));
 
     /**
+     * String-typed proxy of `meetingStyle` for the Meeting Style dropdown.
+     */
+    const meetingStyleValue = computed<string>({
+        get(): string {
+            return meetingStyle.value?.toString() ?? "";
+        },
+        set(newValue: string) {
+            meetingStyle.value = (newValue ? parseInt(newValue, 10) : null) as MeetingStyle | null;
+        }
+    });
+
+    /**
+     * Meeting Style options for the dropdown.
+     */
+    const meetingStyleItems = computed((): ListItemBag[] => enumToListItemBag(MeetingStyleDescription));
+
+    /**
      * Multi-select string-array proxy of the `scheduleCoordinatorNotificationTypes`
      * bitmask for the Coordinator Notifications checkbox list.
      */
@@ -1244,6 +1274,7 @@
         updateRefValue(inactiveReasonNote, props.modelValue.bag?.inactiveReasonNote ?? "");
         updateRefValue(inactivateChildGroups, props.modelValue.bag?.inactivateChildGroups ?? false);
         updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(meetingStyle, props.modelValue.bag?.meetingStyle ?? null);
         updateRefValue(isPublic, props.modelValue.bag?.isPublic ?? false);
         updateRefValue(photoBinaryFile, props.modelValue.bag?.photoBinaryFile ?? null);
         updateRefValue(groupTypeId, props.modelValue.bag?.groupTypeId ?? null);
@@ -1308,6 +1339,7 @@
         setPropertiesBoxValue(newValue, "inactiveReasonNote", inactiveReasonNote.value);
         setPropertiesBoxValue(newValue, "inactivateChildGroups", inactivateChildGroups.value);
         setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "meetingStyle", meetingStyle.value);
         setPropertiesBoxValue(newValue, "isPublic", isPublic.value);
         setPropertiesBoxValue(newValue, "photoBinaryFile", photoBinaryFile.value);
         setPropertiesBoxValue(newValue, "groupTypeId", groupTypeId.value);

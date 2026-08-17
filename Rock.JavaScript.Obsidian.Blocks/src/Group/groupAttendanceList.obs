@@ -1,11 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 
 <template>
-    <NotificationBox v-if="!config.options?.isAuthorized" alertType="warning">
+    <NotificationBox v-if="!config.options?.isAuthorized && config.options?.groupIdKey" alertType="warning">
         <strong>Note</strong> You are not authorized to view this group's attendance.
     </NotificationBox>
 
-    <template v-else>
+    <template v-else-if="config.options?.isAuthorized">
         <Grid :definition="config.gridDefinition ?? undefined"
               :data="gridDataSource"
               keyField="idKey"

@@ -114,6 +114,12 @@ namespace Rock.ViewModels.Blocks.Group.GroupDetail
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets how this group meets (in person, online, or hybrid), or null when unspecified.
+        /// Only editable when the group's type has meeting style enabled.
+        /// </summary>
+        public MeetingStyle? MeetingStyle { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the group is publicly
         /// visible.
         /// </summary>

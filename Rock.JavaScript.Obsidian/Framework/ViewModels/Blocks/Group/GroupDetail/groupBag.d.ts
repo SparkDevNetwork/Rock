@@ -23,6 +23,7 @@
 
 import { ChatNotificationMode } from "@Obsidian/Enums/Communication/Chat/chatNotificationMode";
 import { AttendanceRecordRequiredForCheckIn } from "@Obsidian/Enums/Group/attendanceRecordRequiredForCheckIn";
+import { MeetingStyle } from "@Obsidian/Enums/Group/meetingStyle";
 import { RelationshipStrength } from "@Obsidian/Enums/Group/relationshipStrength";
 import { ScheduleConfirmationLogic } from "@Obsidian/Enums/Group/scheduleConfirmationLogic";
 import { ScheduleCoordinatorNotificationType } from "@Obsidian/Enums/Group/scheduleCoordinatorNotificationType";
@@ -279,6 +280,12 @@ export type GroupBag = {
      * panel.
      */
     meetingLocations?: GroupMeetingLocationBag[] | null;
+
+    /**
+     * Gets or sets how this group meets (in person, online, or hybrid), or null when unspecified.
+     * Only editable when the group's type has meeting style enabled.
+     */
+    meetingStyle?: MeetingStyle | null;
 
     /**
      * Gets or sets the count of currently-active members of the
