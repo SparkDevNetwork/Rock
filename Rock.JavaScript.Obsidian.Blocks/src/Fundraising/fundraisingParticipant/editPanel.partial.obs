@@ -1,0 +1,108 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="margin-b-lg">
+        <h1>{{ editBag?.profileTitle }}</h1>
+        <span>{{ editBag?.dateRange }}</span>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <ImageEditor v-model="photo"
+                         label="Photo"
+                         :binaryFileTypeGuid="BinaryFiletype.PersonImage"
+                         :noPictureUrl="editBag?.noPictureUrl ?? undefined" />
+        </div>
+
+        <div class="col-md-9">
+            <AttributeValuesContainer v-model="groupMemberAttributeValues"
+                                      :attributes="editBag?.groupMemberAttributes ?? {}"
+                                      isEditMode />
+            <AttributeValuesContainer v-model="personAttributeValues"
+                                      :attributes="editBag?.personAttributes ?? {}"
+                                      isEditMode
+                                      :showCategoryLabel="false" />
+        </div>
+    </div>
+
+    <div class="actions">
+        <RockButton btnType="primary" @click="onSaveClick">Save</RockButton>
+        <RockButton btnType="link" @click="onCancelClick">Cancel</RockButton>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { FundraisingParticipantEditBag } from "@Obsidian/ViewModels/Blocks/Fundraising/FundraisingParticipant/fundraisingParticipantEditBag";
+    import { FundraisingParticipantSaveBag } from "@Obsidian/ViewModels/Blocks/Fundraising/FundraisingParticipant/fundraisingParticipantSaveBag";
+    import { FundraisingParticipantInitializationBox } from "@Obsidian/ViewModels/Blocks/Fundraising/FundraisingParticipant/fundraisingParticipantInitializationBox";
+
+    // #region Values
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const editBag = ref<FundraisingParticipantEditBag>();
+    const photo = ref<ListItemBag | undefined>();
+    const groupMemberAttributeValues = ref<Record<string, string>>({});
+    const personAttributeValues = ref<Record<string, string>>({});
+
+    const emit = defineEmits<{
+        (e: "save", box: FundraisingParticipantInitializationBox): void;
+        (e: "cancel"): void;
+    }>();
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Loads the participant's edit details from the server.
+     */
+    async function loadEditDetails(): Promise<void> {
+        const result = await invokeBlockAction<FundraisingParticipantEditBag>("GetEditDetails");
+
+        if (result.isSuccess && result.data) {
+            editBag.value = result.data;
+            photo.value = result.data.photoBinaryFile ?? undefined;
+            groupMemberAttributeValues.value = result.data.groupMemberAttributeValues ?? {};
+            personAttributeValues.value = result.data.personAttributeValues ?? {};
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Saves the edited profile details.
+     */
+    async function onSaveClick(): Promise<void> {
+        const bag: FundraisingParticipantSaveBag = {
+            photoBinaryFile: photo.value ?? null,
+            groupMemberAttributeValues: groupMemberAttributeValues.value,
+            personAttributeValues: personAttributeValues.value
+        };
+
+        const result = await invokeBlockAction<FundraisingParticipantInitializationBox>("SaveEditDetails", { bag });
+
+        if (result.isSuccess && result.data) {
+            emit("save", result.data);
+        }
+    }
+
+    /**
+     * Cancels editing without saving.
+     */
+    function onCancelClick(): void {
+        emit("cancel");
+    }
+
+    // #endregion Event Handlers
+
+    loadEditDetails();
+</script>

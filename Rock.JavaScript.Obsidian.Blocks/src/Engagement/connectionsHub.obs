@@ -1,733 +1,923 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ContextSlicer title="Filters"
-                   class="mb-spacing-lg"
-                   showCampus>
-        <template #default>
-            <DropDownList v-model="areOnlyMyRequestsVisible"
-                          :items="requestToggleItems"
-                          :showBlankItem="false" />
-            <DropDownList v-model="selectedOpportunity"
-                          :items="box.options?.connectionOpportunities ?? []"
-                          blankValue="All Opportunities" />
-        </template>
-    </ContextSlicer>
+    <div class="connections-hub">
+        <ContextSlicer title="View"
+                       class="connections-hub-slicer"
+                       showCampus
+                       isContentWrapped>
+            <template #default>
+                <div class="connections-hub-view-toggle">
+                    <ButtonGroup v-show="enabledViews.length > 1"
+                                 v-model="selectedView"
+                                 :items="enabledViews"
+                                 :btnSize="BtnSize.ExtraSmall" />
+                </div>
+                <DropDownList v-if="!isMyConnectionsView"
+                              v-model="selectedConnector"
+                              :items="staticConnectionTypeOptions?.connectorKeyItems ?? []"
+                              blankValue="All Requests"
+                              enhanceForLongLists />
+                <DropDownList v-else-if="!selectedOpportunity"
+                              v-model="selectedType"
+                              :items="box.options?.connectionTypeItems ?? []"
+                              blankValue="All Types" />
+                <DropDownList v-model="selectedOpportunity"
+                              :items="connectionOpportunities ?? []"
+                              blankValue="All Opportunities" />
+            </template>
+            <template #rightContent v-if="!isMyConnectionsView">
+                <RockButton isSquare
+                            title="My Connections"
+                            :btnSize="BtnSize.Small"
+                            @click="onMyConnectionsClick">
+                    <i class="ti ti-user-circle"></i>
+                </RockButton>
+            </template>
+        </ContextSlicer>
 
-    <GroupedGridPanel v-model:quickFilterValue="rawQuickFilter"
+        <GroupedPanel v-model:quickFilterValue="rawQuickFilter"
                       v-model:groupingKey="selectedGrouping"
                       v-model:orderedRequestKeys="orderedRequestKeys"
-                      ref="groupedGridPanel"
+                      v-model:viewMode="selectedView"
+                      ref="groupedPanel"
                       :title="box.options?.title ?? ''"
                       :titleIconCssClass="`${box.options?.iconCssClass ?? ''} panel-icon`"
                       :isSelectedView="hasAnySelectedKeys"
                       :rows="gridData?.rows ?? []"
-                      :filteredAndSortedRows="visibleRows"
+                      :filteredAndSortedRows="visibleRowsFilteredByGrid"
                       :panelSettingsActive="hasSettingsFilters"
                       :groupingFields="groupingFields"
                       itemTerm="Request"
+                      :isCountMessageVisible="isGroupCountMessageVisible"
                       hasFullscreen
                       :onAddItem="canEditConnectionRequests ? onAddItem : undefined"
                       :onPanelSettingsClick="onPanelSettingsClick"
                       :isAutoCollapseEnabled="isAutoCollapseEnabled"
-                      :headerSecondaryActions="secondaryActions">
-        <template #selectedActionToolbar>
-            <div class="left-actions d-flex align-items-center gap-spacing-md">
-                <div class="d-flex align-items-center gap-spacing-tiny">
-                    <RockLabel class="text-info-strong mb-0">Selected</RockLabel>
-                    <Badge class="font-weight-semibold bg-info-strong">{{ allSelectedKeys.length }}</Badge>
-                </div>
-                <div class="d-flex align-items-center gap-spacing-xs">
-                    <RockButton class="activity-btn" @click="showAssignRequestModal" :disabled="!canEditConnectionRequests">
-                        <i class="ti ti-user-circle"></i>
-                        <span class="activity-btn-label">Assign</span>
-                    </RockButton>
-                    <RockButton @click="showChangeStatusModal" class="activity-btn" :disabled="!canEditConnectionRequests">
-                        <template v-if="box.options?.isSequentialStatusMode">
-                            <i class="ti ti-arrow-right"></i>
-                            <span class="activity-btn-label">Advance to Next Status</span>
-                        </template>
-                        <template v-else>
-                            <i class="ti ti-select"></i>
-                            <span class="activity-btn-label">Change Status</span>
-                        </template>
-                    </RockButton>
-                    <RockButton @click="showLaunchWorkflowModal()" class="activity-btn">
-                        <i class="ti ti-settings-cog"></i>
-                        <span class="activity-btn-label">Launch Workflow</span>
-                    </RockButton>
-                    <RockButton class="activity-btn" @click="showChangeStateModal(ConnectionState.Connected)" :disabled="!canEditConnectionRequests">
-                        <i class="ti ti-circle-check"></i>
-                        <span class="activity-btn-label">Complete</span>
-                    </RockButton>
-                    <div v-if="canEditConnectionRequests" class="dropdown">
-                        <i class="ti ti-dots-vertical cursor-pointer" data-toggle="dropdown"></i>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <button type="button"
-                                        @click="showChangeStateModal(ConnectionState.Active)"
-                                        class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                    <i class="ti ti-user pr-spacing-sm text-interface-medium"></i>Set as Active
-                                </button>
-                            </li>
-                            <li>
-                                <button type="button"
-                                        @click="showChangeStateModal(ConnectionState.Inactive)"
-                                        class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                    <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
-                                </button>
-                            </li>
-                            <li v-if="box.options?.isFutureFollowUpEnabled">
-                                <button type="button"
-                                        @click="showChangeStateModal(ConnectionState.FutureFollowUp)"
-                                        class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                    <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
-                                </button>
-                            </li>
-                            <li>
-                                <button type="button"
-                                        @click="showDeleteRequestModal()"
-                                        class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold text-danger">
-                                    <i class="ti ti-trash pr-spacing-sm text-danger"></i>Delete
-                                </button>
-                            </li>
-                        </ul>
+                      :headerSecondaryActions="secondaryActions"
+                      :availableGroups="availableGroups"
+                      :canDropOnGroup="canDropOnGroup"
+                      :isGroupDrag="isCardInGroupDrag"
+                      :selectedCount="allSelectedKeys.length"
+                      :onSnapshotClick="isMyConnectionsView ? onSnapshotClick : undefined"
+                      :isSnapshotVisible="isSnapshotVisible"
+                      @cardMoved="onCardMoved">
+            <template #snapshot>
+                <Snapshot :metrics="snapshotMetrics" />
+            </template>
+            <template #selectedActionToolbar>
+                <div ref="toolbarElement" class="left-actions">
+                    <div class="selected-count">
+                        <RockLabel class="selected-count-label">Selected</RockLabel>
+                        <Badge class="selected-count-badge">{{ allSelectedKeys.length }}</Badge>
                     </div>
-                </div>
-            </div>
-            <div class="right-actions d-flex align-items-center gap-spacing-md">
-                <div class="pl-spacing-md d-flex align-items-center gap-spacing-xs">
-                    <RockButton @click="showSMSModal()" class="activity-btn">
-                        <i class="ti ti-message-circle-plus"></i>
-                        <span class="activity-btn-label">SMS</span>
-                    </RockButton>
-                    <RockButton @click="showEmailModal()" class="activity-btn">
-                        <i class="ti ti-mail-plus"></i>
-                        <span class="activity-btn-label">Email</span>
-                    </RockButton>
-                </div>
-                <div class="border-left-divider pl-spacing-md d-flex align-items-center gap-spacing-md">
-                    <RockButton class="activity-btn" @click="showAddActivityModal()" :disabled="!canEditConnectionRequests">
-                        <i class="ti ti-activity"></i>
-                        <span class="activity-btn-label">Add Activity</span>
-                    </RockButton>
-                    <RockButton class="activity-btn" @click="showBulkTransferModal()" :disabled="!canEditConnectionRequests">
-                        <i class="ti ti-switch-3"></i>
-                        <span class="activity-btn-label">Transfer</span>
-                    </RockButton>
-                    <div class="d-flex align-items-center gap-spacing-sm">
-                        <i class="ti ti-x cursor-pointer" @click="clearAllSelections"></i>
-                    </div>
-                </div>
-            </div>
-        </template>
-        <template #headerActions="{ groupRows }" v-if="selectedGrouping !== 'dueStatusGrouping'">
-            <HighlightLabel labelType="warning">
-                {{ getDueSoonCount(groupRows) }} Due Soon
-            </HighlightLabel>
-            <HighlightLabel labelType="danger">
-                {{ getOverdueCount(groupRows) }} Overdue
-            </HighlightLabel>
-        </template>
-        <template #grid="{ group, setGridRef }">
-            <Grid :definition="box.gridDefinition ?? undefined"
-                  :ref="setGridRef"
-                  :data="group.gridData"
-                  keyField="idKey"
-                  :isTitleHidden="true"
-                  :isSearchVisible="false"
-                  :isFooterHidden="true"
-                  :showExport="false"
-                  :showMergeTemplate="false"
-                  :isCountMessageVisible="false"
-                  :hideFilterHeaderRow="true"
-                  light
-                  :forceVirtualRowsOnLight="true"
-                  class="grid-hover"
-                  @selectedKeysChanged="state => onSelectedKeysChanged(group.key, state)"
-                  @selectItem="onSelectItem"
-                  @onLoad="state => onGridLoad(group.key, state)"
-                  @onUnload="state => onGridUnload(group.key, state)">
-                <SelectColumn />
-
-                <PersonColumn name="requestDetails"
-                              title="Request Details"
-                              field="requestDetails" />
-
-                <Column v-if="viewOptions.gridDataToShow?.includes('connectionOpportunity') && selectedGrouping !== 'opportunityGrouping'"
-                        name="connectionOpportunity"
-                        field="connectionOpportunity">
-                    <template #format="{ row }">
-                        <div class="d-flex flex-column align-items-start gap-spacing-tiny">
-                            <HighlightLabel labelType="custom"
-                                            customClass="label-default text-xs text-semibold text-interface-strong">
-                                {{ row.connectionOpportunity }}
-                            </HighlightLabel>
-                            <span v-if="!isNullOrWhiteSpace(row.connectionTypeSource) && viewOptions.isRequestSourceShown"
-                                  class="text-small text-interface-medium">
-                                {{ row.connectionTypeSource }}
-                            </span>
-                        </div>
-                    </template>
-                </Column>
-
-                <Column v-if="selectedGrouping !== 'connectorGrouping'"
-                        title="Connector"
-                        name="connectorDetails"
-                        field="connectorDetails">
-                    <template #format="{ row }">
-                        {{ row.connectorDetails?.text }}
-                    </template>
-                </Column>
-
-                <Column v-if="selectedGrouping !== 'campusGrouping'"
-                        name="campus"
-                        title="Campus"
-                        field="campus">
-                    <template #format="{ row }">
-                        <div v-if="!!row.campus">
-                            {{ row.campus }}
-                        </div>
-                        <div v-else>
-                            <i class="ti ti-minus"></i>
-                        </div>
-                    </template>
-                </Column>
-
-                <Column v-if="box.options?.areGroupPlacementsEnabled"
-                        name="group"
-                        title="Group"
-                        field="group">
-                    <template #format="{ row }">
-                        <div v-if="!!row.group" :class="{ 'text-muted': !!row.isPlacementGroupInactiveOrArchived }">
-                            {{ row.group }}
-                        </div>
-                        <div v-else>
-                            <i class="ti ti-minus"></i>
-                        </div>
-                    </template>
-                </Column>
-
-                <Column v-if="viewOptions.gridDataToShow?.includes('activity')"
-                        name="activity"
-                        title="Activity"
-                        field="activity">
-                    <template #format="{ row }">
-                        <div v-if="!!row.lastActivityDateTime && !!row.activityCount"
-                             class="d-flex align-items-center gap-spacing-tiny">
-                            <div class="activity-metric activity-date">
-                                <i class="ti ti-calendar-month"></i>
-                                <span>
-                                    {{ getElapsedShortTime(row.lastActivityDateTime) }}
-                                </span>
-                            </div>
-                            <div class="activity-metric activity-count">
-                                <i class="ti ti-bolt"></i>
-                                <span>
-                                    {{ row.activityCount }}
-                                </span>
-                            </div>
-                        </div>
-                        <div v-else>
-                            <i class="ti ti-minus"></i>
-                        </div>
-                    </template>
-                </Column>
-
-                <Column v-if="viewOptions.gridDataToShow?.includes('dueDate')"
-                        name="dueDate"
-                        title="Due"
-                        field="dueDate"
-                        width="2%">
-                    <template #format="{ row }">
-                        <div v-if="!!row.dueDate && row.connectionState !== ConnectionState.Inactive" :class="getDueDateColor(row.dueStatus, row.connectionState === ConnectionState.Connected)">
-                            {{ formatDueDateShortLabel(row.dueDate, row.connectionState === ConnectionState.Connected, row.completedDateTime) }}
-                        </div>
-                        <div v-else>
-                            <i class="ti ti-minus"></i>
-                        </div>
-                    </template>
-                </Column>
-
-                <AttributeColumns :attributes="attributesToShow" />
-
-                <Column v-if="box.options?.areCelebrationsEnabled"
-                        name="celebration"
-                        field="celebration"
-                        width="52">
-                    <template #format="{ row }">
-                        <i v-if="isNullOrWhiteSpace(row.celebrationText)"
-                           class="ti ti-confetti cursor-pointer"
-                           :ref="(el) => addTooltip(el as Element)"
-                           data-toggle="tooltip"
-                           data-placement="auto"
-                           data-container="body"
-                           data-original-title="Add Celebration"
-                           @click.stop="showCelebrationModal(row)">
-                        </i>
-                        <i v-else
-                           class="ti ti-confetti-filled cursor-pointer text-info-strong"
-                           :ref="(el) => addTooltip(el as Element)"
-                           data-toggle="tooltip"
-                           data-placement="auto"
-                           data-container="body"
-                           data-original-title="Has Celebration"
-                           @click.stop="showCelebrationModal(row)">
-                        </i>
-                    </template>
-                </Column>
-
-                <Column v-if="box.options?.areRemindersEnabled"
-                        name="reminder"
-                        field="reminder"
-                        width="52">
-                    <template #format="{ row }">
-                        <i v-if="row.reminderCount > 0"
-                           class="ti ti-bell-filled cursor-pointer text-info-strong"
-                           :ref="(el) => addTooltip(el as Element)"
-                           data-toggle="tooltip"
-                           data-placement="auto"
-                           data-container="body"
-                           :data-original-title="`${row.reminderCount} ${pluralize('Reminder', row.reminderCount)}`"
-                           @click.stop="showReminderModal(row)">
-                        </i>
-                        <i v-else
-                           class="ti ti-bell cursor-pointer"
-                           :ref="(el) => addTooltip(el as Element)"
-                           data-toggle="tooltip"
-                           data-placement="auto"
-                           data-container="body"
-                           data-original-title="Add Reminder"
-                           @click.stop="showReminderModal(row)">
-                        </i>
-                    </template>
-                </Column>
-
-                <Column name="connectionStatus"
-                        field="connectionStatus">
-                    <template #format="{ row }">
-                        <div class="w-100">
-                            <template v-if="row.connectionState === ConnectionState.Active">
-                                <ConnectionStatusButton :isSequentialStatusMode="box.options?.isSequentialStatusMode"
-                                                        :highlightColor="row.connectionStatus.highlightColor"
-                                                        :currentStatusName="row.connectionStatus.name"
-                                                        :disabled="!canEditConnectionRequests"
-                                                        @click.stop="(e) => onStatusClick(row, e)" />
+                    <div class="toolbar-primary-actions">
+                        <!-- Primary actions are always shown as buttons in both layouts. -->
+                        <RockButton class="activity-btn" @click="showAssignRequestModal" :disabled="!canEditConnectionRequests || disableConnectionTypeSpecificBulkActions">
+                            <i class="ti ti-user-circle"></i>
+                            <span class="activity-btn-label">Assign</span>
+                        </RockButton>
+                        <RockButton @click="showChangeStatusModal()" class="activity-btn" :disabled="!canEditConnectionRequests || disableConnectionTypeSpecificBulkActions">
+                            <template v-if="bulkConnectionTypeOptions?.isSequentialStatusMode">
+                                <i class="ti ti-arrow-right"></i>
+                                <span class="activity-btn-label">Advance to Next Status</span>
                             </template>
-                            <div v-else-if="row.connectionState === ConnectionState.Inactive"
-                                 class=" font-size-sm text-center text-semibold text-slate">
-                                {{ ConnectionStateDescription[ConnectionState.Inactive] }}
-                            </div>
-                            <div v-else-if="row.connectionState === ConnectionState.FutureFollowUp"
-                                 class="font-size-sm text-center text-semibold text-info-strong">
-                                {{ ConnectionStateDescription[ConnectionState.FutureFollowUp] }} - {{ asLocaleString(row.followUpDate) }}
-                            </div>
-                            <div v-else-if="row.connectionState === ConnectionState.Connected"
-                                 class="font-size-sm text-center text-semibold text-emerald">
-                                {{ ConnectionStateDescription[ConnectionState.Connected] }}
-                            </div>
-                        </div>
-                    </template>
-                </Column>
+                            <template v-else>
+                                <i class="ti ti-select"></i>
+                                <span class="activity-btn-label">Change Status</span>
+                            </template>
+                        </RockButton>
 
-                <Column name="options"
-                        field="options"
-                        width="52"
-                        itemClass="grid-cell-overflow">
-                    <template #format="{ row }">
-                        <div :class="['dropdown', 'dropdown-right', { 'open': openDropdownIndex === row.idKey }]">
-                            <i class="ti ti-dots-vertical cursor-pointer" data-toggle="dropdown" @click.stop="toggleGridRowDropdown(row.idKey)"></i>
-                            <ul class="dropdown-menu">
-                                <template v-if="canEditConnectionRequests">
-                                    <li>
-                                        <button type="button"
-                                                @click.stop="showChangeStateModal(ConnectionState.Active, row)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                            <i class="ti ti-user pr-spacing-sm text-interface-medium"></i>Set as Active
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button type="button"
-                                                @click.stop="showChangeStateModal(ConnectionState.Inactive, row)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                            <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
-                                        </button>
-                                    </li>
-                                    <li v-if="box.options?.isFutureFollowUpEnabled">
-                                        <button type="button"
-                                                @click.stop="showChangeStateModal(ConnectionState.FutureFollowUp, row)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                            <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button type="button"
-                                                @click.stop="showChangeStateModal(ConnectionState.Connected, row)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                            <i class="ti ti-circle-check pr-spacing-sm text-interface-medium"></i>Mark Complete
-                                        </button>
-                                    </li>
+                        <!-- Left-hand secondary actions: buttons on wide screens, folded into the overflow menu when compact. -->
+                        <template v-if="!isToolbarCompact">
+                            <RockButton v-for="action in primaryToolbarActions"
+                                        :key="action.key"
+                                        class="activity-btn"
+                                        :disabled="isToolbarActionDisabled(action)"
+                                        @click="action.handler()">
+                                <i :class="action.iconCssClass"></i>
+                                <span class="activity-btn-label">{{ action.label }}</span>
+                            </RockButton>
+                        </template>
+
+                        <!--
+                            A single overflow menu. On wide screens it holds only the edit-only state
+                            changes; when the toolbar collapses (isToolbarCompact) the secondary
+                            actions fold in above them.
+                        -->
+                        <DropDownContent v-if="isToolbarOverflowMenuShown"
+                                         v-model="isToolbarOverflowMenuOpen"
+                                         enableFlip
+                                         :placement="isToolbarCompact ? 'bottom-end' : 'bottom-start'"
+                                         preventAnchorClickPropagation>
+                            <template #anchor>
+                                <i class="ti ti-dots-vertical dropdown-anchor-icon"></i>
+                            </template>
+                            <div class="dropdown-content">
+                                <template v-if="isToolbarCompact">
+                                    <div v-for="action in foldedToolbarActions"
+                                         :key="action.key"
+                                         class="dropdown-content-item dropdown-content-item--menu-action"
+                                         :class="{ 'dropdown-content-item--danger': action.isDanger, disabled: isToolbarActionDisabled(action) }"
+                                         @click.stop="onToolbarMenuActionClick(action)">
+                                        <i :class="getToolbarMenuIconClass(action)"></i>{{ action.label }}
+                                    </div>
+                                    <div v-if="canEditConnectionRequests" class="dropdown-content-divider"></div>
                                 </template>
-                                <li>
-                                    <button type="button"
-                                            @click.stop="showLaunchWorkflowModal(row)"
-                                            class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                        <i class="ti ti-settings-cog pr-spacing-sm text-interface-medium"></i>Launch Workflow
-                                    </button>
-                                </li>
                                 <template v-if="canEditConnectionRequests">
-                                    <li v-if="box.options?.isRequestSecurityEnabled">
-                                        <button type="button"
-                                                @click.stop="showSecurityModal(row.idKey)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                            <i class="ti ti-lock pr-spacing-sm text-interface-medium"></i>Security
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button type="button"
-                                                @click.stop="showDeleteRequestModal(row)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold text-danger">
-                                            <i class="ti ti-trash pr-spacing-sm text-danger"></i>Delete
-                                        </button>
-                                    </li>
+                                    <div v-for="action in stateToolbarActions"
+                                         :key="action.key"
+                                         class="dropdown-content-item dropdown-content-item--menu-action"
+                                         :class="{ 'dropdown-content-item--danger': action.isDanger, disabled: isToolbarActionDisabled(action) }"
+                                         @click.stop="onToolbarMenuActionClick(action)">
+                                        <i :class="getToolbarMenuIconClass(action)"></i>{{ action.label }}
+                                    </div>
                                 </template>
-                            </ul>
+                            </div>
+                        </DropDownContent>
+                    </div>
+                </div>
+                <div class="right-actions">
+                    <!-- Right-hand secondary actions: buttons on wide screens, folded into the overflow menu when compact. -->
+                    <template v-if="!isToolbarCompact">
+                        <div class="toolbar-communication-actions">
+                            <RockButton v-for="action in communicationToolbarActions"
+                                        :key="action.key"
+                                        class="activity-btn"
+                                        :disabled="isToolbarActionDisabled(action)"
+                                        @click="action.handler()">
+                                <i :class="action.iconCssClass"></i>
+                                <span class="activity-btn-label">{{ action.label }}</span>
+                            </RockButton>
+                        </div>
+                        <div class="border-left-divider toolbar-management-actions">
+                            <RockButton v-for="action in managementToolbarActions"
+                                        :key="action.key"
+                                        class="activity-btn"
+                                        :disabled="isToolbarActionDisabled(action)"
+                                        @click="action.handler()">
+                                <i :class="action.iconCssClass"></i>
+                                <span class="activity-btn-label">{{ action.label }}</span>
+                            </RockButton>
                         </div>
                     </template>
-                </Column>
-            </Grid>
-        </template>
-        <template #emptyView>
-            <template v-if="areRequestsLoading">
-                <div class="skeleton-list">
-                    <div v-for="index in skeletonCount" :key="index" class="skeleton rounded" style="height: 300px"></div>
-                </div>
-            </template>
-            <template v-else>
-                <NotificationBox v-if="!isNullOrWhiteSpace(requestListErrorMessage)"
-                                 alertType="danger">
-                    {{ requestListErrorMessage }}
-                </NotificationBox>
-                <div class="empty-list">
-                    <i class="ti ti-id-off text-interface-medium" style="font-size: 20px;"></i>
-                    <div class="text-interface-medium text-semibold text-lg">
-                        No Connection Requests Available
-                    </div>
-                    <div v-if="canEditConnectionRequests"
-                         class="text-link cursor-pointer"
-                         @click="onAddItem">
-                        Add a Request to Get Started
+                    <div class="toolbar-clear-selection">
+                        <i class="ti ti-x" @click="clearAllSelections"></i>
                     </div>
                 </div>
             </template>
-        </template>
-    </GroupedGridPanel>
+            <template #headerActions="{ groupRows }">
+                <HighlightLabel v-if="shouldShowDueSoonHighlight(groupRows)" labelType="warning">
+                    {{ getDueSoonCount(groupRows) }} Due Soon
+                </HighlightLabel>
+                <HighlightLabel v-if="shouldShowOverdueHighlight(groupRows)" labelType="danger">
+                    {{ getOverdueCount(groupRows) }} Overdue
+                </HighlightLabel>
+            </template>
+            <template #grid="{ group, setGridRef }">
+                <Grid :definition="box.gridDefinition ?? undefined"
+                      :ref="setGridRef"
+                      :data="group.gridData"
+                      keyField="idKey"
+                      :isTitleHidden="true"
+                      :isSearchVisible="false"
+                      :isFooterHidden="true"
+                      :showExport="false"
+                      :showMergeTemplate="false"
+                      :isCountMessageVisible="false"
+                      :hideFilterHeaderRow="true"
+                      light
+                      :forceVirtualRowsOnLight="true"
+                      class="grid-hover"
+                      @selectedKeysChanged="state => onSelectedKeysChanged(group.key, state)"
+                      @selectItem="onSelectItem"
+                      @onLoad="state => onGridLoad(group.key, state)"
+                      @onUnload="state => onGridUnload(group.key, state)">
+                    <SelectColumn />
 
-    <ChangeStatusFlyout v-model="isFlyoutOpen"
-                        :errorMessage="flyoutErrorMessage"
-                        :isCompletionButtonLoading="isFlyoutCompletionButtonLoading"
-                        :isSaving="isFlyoutSaving"
-                        :anchorEl="flyoutAnchorEl"
-                        :connectionRequestUpdateBag="connectionRequestUpdateBag"
-                        :isNoteRequired="isNoteRequired"
-                        :isSequentialMode="isSequentialStatus"
-                        :connectionStatusItems="connectionStatusItems"
-                        @updateStatus="changeRequestStatus"
-                        @updateState="updateStateFromFlyout"
-                        @dismissErrorMessage="flyoutErrorMessage = ''"
-                        @close="onFlyoutClose" />
+                    <PersonColumn name="requestDetails"
+                                  title="Request Details"
+                                  field="requestDetails" />
 
-    <AddConnectionRequestModal :modelValue="newConnectionRequest"
-                               v-model:visible="isAddConnectionRequestModalVisible"
-                               :options="box.options"
-                               :connectionOpportunityDetails="connectionOpportunityDetails"
-                               :placementGroupDetails="placementGroupDetails"
-                               :isConnectionOpportunityFilterSelected="hasSelectedOpportunity"
-                               :isExistingActiveRequesterOnConnectionType="isExistingActiveRequesterOnConnectionType"
-                               :isSaving="isModalSaving"
-                               :errorMessage="modalErrorMessage"
-                               @dismissErrorMessage="onModalErrorMessageDismissed"
-                               @checkForActiveRequester="checkForActiveRequester"
-                               @save="onAddRequest"
-                               @close="resetNewConnectionRequest"
-                               @fetchConnectionOpportunityDetails="fetchConnectionOpportunityDetails"
-                               @fetchConnectorOptions="fetchConnectorOptionsForAdd"
-                               @fetchPlacementGroupItems="fetchPlacementGroupItems"
-                               @fetchPlacementGroupDetails="fetchPlacementGroupDetails" />
+                    <Column v-if="isMyConnectionsView"
+                            name="type"
+                            field="connectionTypeName"
+                            width="80px">
+                        <template #format="{ row }">
+                            <div class="type-icon-container" v-tooltip="`Type: ${row.connectionTypeName}`">
+                                <i :class="row.connectionTypeIconCssClass" class="type-icon"></i>
+                            </div>
+                        </template>
+                    </Column>
 
-    <AddFromCampaignModal v-model:visible="isAddFromCampaignModalVisible"
-                          :selectedOpportunityGuid="selectedOpportunity"
-                          :allConnectionOpportunityItems="box.options?.connectionOpportunities ?? []"
-                          :isLoading="areCampaignsLoading"
+                    <Column v-if="viewOptions.gridDataToShow?.includes('connectionOpportunity') && selectedGrouping !== 'opportunityGrouping'"
+                            name="connectionOpportunity"
+                            field="connectionOpportunity">
+                        <template #format="{ row }">
+                            <div class="grid-opportunity-cell">
+                                <HighlightLabel labelType="custom"
+                                                customClass="label-default grid-opportunity-cell-label">
+                                    {{ row.connectionOpportunity }}
+                                </HighlightLabel>
+                                <span v-if="!isNullOrWhiteSpace(row.connectionTypeSource) && viewOptions.isRequestSourceShown"
+                                      class="grid-cell-subtext">
+                                    {{ row.connectionTypeSource }}
+                                </span>
+                            </div>
+                        </template>
+                    </Column>
+
+                    <Column v-if="selectedGrouping !== 'connectorGrouping'"
+                            title="Connector"
+                            name="connectorDetails"
+                            field="connectorDetails">
+                        <template #format="{ row }">
+                            {{ row.connectorDetails?.text }}
+                        </template>
+                    </Column>
+
+                    <Column v-if="selectedGrouping !== 'campusGrouping'"
+                            name="campus"
+                            title="Campus"
+                            field="campus">
+                        <template #format="{ row }">
+                            <div v-if="!!row.campus">
+                                {{ row.campus }}
+                            </div>
+                            <div v-else>
+                                <i class="ti ti-minus"></i>
+                            </div>
+                        </template>
+                    </Column>
+
+                    <Column v-if="allConnectionTypeOptions.some(t => t.areGroupPlacementsEnabled)"
+                            name="group"
+                            title="Group"
+                            field="group">
+                        <template #format="{ row }">
+                            <template v-if="!!row.group && connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.areGroupPlacementsEnabled">
+                                <div v-if="row.isPendingMember" class="grid-group-cell" :class="{ 'grid-group-cell--archived': !!row.isPlacementGroupInactiveOrArchived }" v-tooltip="'Pending group member. The requester will be added once the request is completed.'">
+                                    {{ row.group }}
+                                    <i class="ti ti-user-share"></i>
+                                </div>
+                                <div v-else class="grid-group-cell" :class="{ 'grid-group-cell--archived': !!row.isPlacementGroupInactiveOrArchived }">
+                                    {{ row.group }}
+                                </div>
+                            </template>
+                            <div v-else>
+                                <i class="ti ti-minus"></i>
+                            </div>
+                        </template>
+                    </Column>
+
+                    <Column v-if="viewOptions.gridDataToShow?.includes('activity')"
+                            name="activity"
+                            title="Activity"
+                            field="activity">
+                        <template #format="{ row }">
+                            <div v-if="!!row.lastActivityDateTime && !!row.activityCount"
+                                 class="grid-activity-cell">
+                                <div class="activity-metric activity-metric--date">
+                                    <i class="ti ti-calendar-month"></i>
+                                    <span>
+                                        {{ getElapsedShortTime(row.lastActivityDateTime) }}
+                                    </span>
+                                </div>
+                                <div class="activity-metric activity-metric--count">
+                                    <i class="ti ti-bolt"></i>
+                                    <span>
+                                        {{ row.activityCount }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div v-else>
+                                <i class="ti ti-minus"></i>
+                            </div>
+                        </template>
+                    </Column>
+
+                    <Column v-if="viewOptions.gridDataToShow?.includes('dueDate')"
+                            name="dueDate"
+                            title="Due"
+                            field="dueDate"
+                            width="2%">
+                        <template #format="{ row }">
+                            <div v-if="!!row.dueDate && row.connectionState !== ConnectionState.Inactive" :class="getDueDateColor(row.dueStatus, row.connectionState === ConnectionState.Connected)">
+                                {{ formatDueDateShortLabel(row.dueDate, row.connectionState === ConnectionState.Connected, row.completedDateTime) }}
+                            </div>
+                            <div v-else>
+                                <i class="ti ti-minus"></i>
+                            </div>
+                        </template>
+                    </Column>
+
+                    <AttributeColumns :attributes="attributesToShow" />
+
+                    <Column v-if="allConnectionTypeOptions.some(t => t.areCelebrationsEnabled)"
+                            name="celebration"
+                            field="celebration"
+                            width="52">
+                        <template #format="{ row }">
+                            <template v-if="!isMyConnectionsView || connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.areCelebrationsEnabled === true">
+                                <i v-if="isNullOrWhiteSpace(row.celebrationText)"
+                                   class="ti ti-confetti grid-action-icon"
+                                   :ref="(el) => addTooltip(el as Element)"
+                                   data-toggle="tooltip"
+                                   data-placement="auto"
+                                   data-container="body"
+                                   data-original-title="Add Celebration"
+                                   @click.stop="showCelebrationModal(row)">
+                                </i>
+                                <i v-else
+                                   class="ti ti-confetti-filled grid-action-icon grid-action-icon--active"
+                                   :ref="(el) => addTooltip(el as Element)"
+                                   data-toggle="tooltip"
+                                   data-placement="auto"
+                                   data-container="body"
+                                   data-original-title="Has Celebration"
+                                   @click.stop="showCelebrationModal(row)">
+                                </i>
+                            </template>
+                            <template v-else>
+                                <i class="ti ti-confetti disabled"></i>
+                            </template>
+                        </template>
+                    </Column>
+
+                    <Column v-if="allConnectionTypeOptions.some(t => t.areRemindersEnabled)"
+                            name="reminder"
+                            field="reminder"
+                            width="52">
+                        <template #format="{ row }">
+                            <template v-if="!isMyConnectionsView || connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.areRemindersEnabled === true">
+                                <i v-if="row.reminderCount > 0"
+                                   class="ti ti-bell-filled grid-action-icon grid-action-icon--active"
+                                   :ref="(el) => addTooltip(el as Element)"
+                                   data-toggle="tooltip"
+                                   data-placement="auto"
+                                   data-container="body"
+                                   :data-original-title="`${row.reminderCount} ${pluralize('Reminder', row.reminderCount)}`"
+                                   @click.stop="showReminderModal(row)">
+                                </i>
+                                <i v-else
+                                   class="ti ti-bell grid-action-icon"
+                                   :ref="(el) => addTooltip(el as Element)"
+                                   data-toggle="tooltip"
+                                   data-placement="auto"
+                                   data-container="body"
+                                   data-original-title="Add Reminder"
+                                   @click.stop="showReminderModal(row)">
+                                </i>
+                            </template>
+                            <template v-else>
+                                <i class="ti ti-bell disabled"></i>
+                            </template>
+                        </template>
+                    </Column>
+
+                    <Column name="connectionStatus"
+                            field="connectionStatus">
+                        <template #format="{ row }">
+                            <div class="grid-status-cell">
+                                <template v-if="row.connectionState === ConnectionState.Active">
+                                    <ConnectionStatusButton :isSequentialStatusMode="connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.isSequentialStatusMode"
+                                                            :highlightColor="row.connectionStatus.highlightColor"
+                                                            :currentStatusName="row.connectionStatus.name"
+                                                            :disabled="!canEditConnectionRequests"
+                                                            @click.stop="(e) => onStatusClick(row, e)" />
+                                </template>
+                                <div v-else-if="row.connectionState === ConnectionState.Inactive"
+                                     class="grid-status-cell-state-label text-slate">
+                                    {{ ConnectionStateDescription[ConnectionState.Inactive] }}
+                                </div>
+                                <div v-else-if="row.connectionState === ConnectionState.FutureFollowUp"
+                                     class="grid-status-cell-state-label grid-status-cell-state-label--future-follow-up">
+                                    {{ ConnectionStateDescription[ConnectionState.FutureFollowUp] }} - {{ asLocaleString(row.followUpDate) }}
+                                </div>
+                                <div v-else-if="row.connectionState === ConnectionState.Connected"
+                                     class="grid-status-cell-state-label text-emerald">
+                                    {{ ConnectionStateDescription[ConnectionState.Connected] }}
+                                </div>
+                            </div>
+                        </template>
+                    </Column>
+
+                    <Column name="options"
+                            field="options"
+                            width="52"
+                            itemClass="grid-cell-overflow">
+                        <template #format="{ row }">
+                            <DropDownContent :modelValue="openDropdownIndex === row.idKey"
+                                             @update:modelValue="val => openDropdownIndex = val ? row.idKey : null"
+                                             enableFlip
+                                             placement="bottom-end"
+                                             preventAnchorClickPropagation>
+                                <template #anchor>
+                                    <i class="ti ti-dots-vertical dropdown-anchor-icon"></i>
+                                </template>
+                                <div class="dropdown-content">
+                                    <template v-if="canEditConnectionRequests">
+                                        <div class="dropdown-content-item dropdown-content-item--menu-action"
+                                             @click.stop="showChangeStateModal(ConnectionState.Active, row)">
+                                            <i class="ti ti-user"></i>Set as Active
+                                        </div>
+                                        <div class="dropdown-content-item dropdown-content-item--menu-action"
+                                             @click.stop="showChangeStateModal(ConnectionState.Inactive, row)">
+                                            <i class="ti ti-user-off"></i>Set as Inactive
+                                        </div>
+                                        <div v-if="box.options?.connectionTypeOptionsByIdKey && box.options.connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.isFutureFollowUpEnabled"
+                                             class="dropdown-content-item dropdown-content-item--menu-action"
+                                             @click.stop="showChangeStateModal(ConnectionState.FutureFollowUp, row)">
+                                            <i class="ti ti-calendar"></i>Set as Future Follow-Up
+                                        </div>
+                                        <div class="dropdown-content-item dropdown-content-item--menu-action"
+                                             @click.stop="showChangeStateModal(ConnectionState.Connected, row)">
+                                            <i class="ti ti-circle-check"></i>Mark Complete
+                                        </div>
+                                    </template>
+                                    <div class="dropdown-content-item dropdown-content-item--menu-action"
+                                         @click.stop="showLaunchWorkflowModal(row)">
+                                        <i class="ti ti-settings-cog"></i>Launch Workflow
+                                    </div>
+                                    <template v-if="canEditConnectionRequests">
+                                        <div v-if="!row.isRequestSecurityDisabled"
+                                             class="dropdown-content-item dropdown-content-item--menu-action"
+                                             @click.stop="showSecurityModal(row.idKey)">
+                                            <i class="ti ti-lock"></i>Security
+                                        </div>
+                                        <div class="dropdown-content-item dropdown-content-item--menu-action dropdown-content-item--danger"
+                                             @click.stop="showDeleteRequestModal(row)">
+                                            <i class="ti ti-trash"></i>Delete
+                                        </div>
+                                    </template>
+                                </div>
+                            </DropDownContent>
+                        </template>
+                    </Column>
+                </Grid>
+            </template>
+            <template #emptyView>
+                <template v-if="areRequestsLoading">
+                    <!-- Board View Skeleton -->
+                    <div v-if="selectedView === 'board'" class="skeleton-board">
+                        <div v-for="columnIndex in skeletonCount" :key="`board-col-${columnIndex}`" class="skeleton-board-column">
+                            <div class="skeleton skeleton-heading"></div>
+                            <div v-for="cardIndex in 4" :key="`board-card-${columnIndex}-${cardIndex}`"
+                                 class="skeleton skeleton-board-card"></div>
+                        </div>
+                    </div>
+                    <!-- Grid View Skeleton -->
+                    <div v-else-if="selectedView === 'grid'" class="skeleton-grid">
+                        <div v-for="rowIndex in 16" :key="`grid-row-${rowIndex}`" class="skeleton-grid-row" :class="{ 'skeleton-grid-row--alt': rowIndex % 2 === 0 }">
+                            <div v-for="colIndex in 8" :key="`grid-col-${colIndex}`"
+                                 :style="colIndex % 2 === 0 ? 'max-width: 260px;' : 'max-width: 160px;'"
+                                 class="skeleton skeleton-text" />
+                        </div>
+                    </div>
+                    <!-- List View Skeleton -->
+                    <div v-else class="skeleton-list">
+                        <div v-for="index in skeletonCount" :key="`list-${index}`" class="skeleton skeleton-list-item"></div>
+                    </div>
+                </template>
+                <template v-else>
+                    <NotificationBox v-if="!isNullOrWhiteSpace(requestListErrorMessage)"
+                                     alertType="danger">
+                        {{ requestListErrorMessage }}
+                    </NotificationBox>
+                    <div class="empty-list">
+                        <i class="ti ti-id-off empty-list-icon"></i>
+                        <div class="empty-list-message">
+                            No Connection Requests Available
+                        </div>
+                        <div v-if="canEditConnectionRequests"
+                             class="empty-list-cta"
+                             @click="onAddItem">
+                            Add a Request to Get Started
+                        </div>
+                    </div>
+                </template>
+            </template>
+            <template #boardCard="{ row }">
+                <ConnectionRequestCard :connectionRequest="row"
+                                       :options="box.options"
+                                       :connectionTypeOptions="staticConnectionTypeOptions"
+                                       :canEditConnectionRequests="canEditConnectionRequests"
+                                       :hideCampusLabel="selectedCampus !== null"
+                                       :viewOptions="viewOptions"
+                                       :attributesToShow="attributesToShow"
+                                       :currentPersonIdKey="currentPerson?.idKey"
+                                       :isSelected="allSelectedKeySet.has(row.idKey as string)"
+                                       @selectItem="onSelectBoardCard"
+                                       @toggleSelection="onToggleBoardCardSelection"
+                                       @changeState="showChangeStateModal"
+                                       @launchWorkflow="showLaunchWorkflowModal"
+                                       @showSecurity="showSecurityModal"
+                                       @delete="showDeleteRequestModal" />
+            </template>
+            <template #emptyColumn>
+                <div class="grid-empty-column">No requests available.</div>
+            </template>
+            <template #gridView>
+                <Grid :definition="box.gridDefinition ?? undefined"
+                      :data="gridViewData"
+                      ref="gridViewGridRef"
+                      keyField="idKey"
+                      personKeyField="personIdKey"
+                      :isTitleHidden="true"
+                      :isSearchVisible="false"
+                      :isFooterHidden="true"
+                      :showExport="false"
+                      :showMergeTemplate="false"
+                      :isCountMessageVisible="false"
+                      :hideFilterHeaderRow="true"
+                      :entityTypeGuid="EntityType.ConnectionRequest"
+                      class="grid-hover connections-hub-list-grid"
+                      @selectItem="onSelectItem"
+                      @selectedKeysChanged="state => onSelectedKeysChanged('all', state)"
+                      @filteredRowsChanged="onFilteredRowsChanged">
+                    <SelectColumn />
+
+                    <Column name="requestDetails"
+                            title="Name"
+                            field="requestDetails"
+                            :filter="pickExistingValueFilter"
+                            :filterValue="getRequesterFilterValue"
+                            :sortValue="getRequesterFilterValue">
+                        <template #format="{ row }">
+                            {{ row.requestDetails.nickName }} {{ row.requestDetails.lastName }}
+                        </template>
+                    </Column>
+
+                    <Column title="Connector"
+                            name="connectorDetails"
+                            field="connectorDetails"
+                            :filter="pickExistingValueFilter"
+                            :filterValue="getConnectorFilterValue"
+                            :sortValue="getConnectorFilterValue">
+                        <template #format="{ row }">
+                            {{ row.connectorDetails?.text }}
+                        </template>
+                    </Column>
+
+                    <Column name="campus"
+                            title="Campus"
+                            field="campus"
+                            :filter="pickExistingValueFilter">
+                        <template #format="{ row }">
+                            <div v-if="!!row.campus">
+                                {{ row.campus }}
+                            </div>
+                            <div v-else>
+                                <i class="ti ti-minus"></i>
+                            </div>
+                        </template>
+                    </Column>
+
+                    <TextColumn name="connectionTypeName"
+                                title="Type"
+                                field="connectionTypeName"
+                                :filter="pickExistingValueFilter" />
+
+                    <Column v-if="viewOptions.gridDataToShow?.includes('connectionOpportunity')"
+                            name="connectionOpportunity"
+                            title="Opportunity"
+                            field="connectionOpportunity"
+                            :filter="pickExistingValueFilter">
+                        <template #format="{ row }">
+                            <div class="grid-opportunity-cell">
+                                <div>
+                                    {{ row.connectionOpportunity }}
+                                </div>
+                                <span v-if="!isNullOrWhiteSpace(row.connectionTypeSource) && viewOptions.isRequestSourceShown"
+                                      class="grid-cell-subtext">
+                                    {{ row.connectionTypeSource }}
+                                </span>
+                            </div>
+                        </template>
+                        <template #condensed="{ row }">
+                            {{ row.connectionOpportunity }}
+                        </template>
+                    </Column>
+
+                    <Column v-if="allConnectionTypeOptions.some(t => t.areGroupPlacementsEnabled)"
+                            name="group"
+                            title="Group"
+                            field="group"
+                            :filter="pickExistingValueFilter">
+                        <template #format="{ row }">
+                            <template v-if="!!row.group && (!isMyConnectionsView || connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.areGroupPlacementsEnabled === true)">
+                                <div v-if="row.isPendingMember" class="grid-group-cell" v-tooltip="'Pending group member. The requester will be added once the request is completed.'">
+                                    {{ row.group }}
+                                    <i class="ti ti-user-share"></i>
+                                </div>
+                                <div v-else>
+                                    {{ row.group }}
+                                </div>
+                            </template>
+                            <div v-else>
+                                <i class="ti ti-minus"></i>
+                            </div>
+                        </template>
+                        <template #condensed="{ row }">
+                            <div v-if="!!row.group">
+                                {{ row.group }}
+                            </div>
+                            <div v-else>
+                                <i class="ti ti-minus"></i>
+                            </div>
+                        </template>
+                    </Column>
+
+                    <Column v-if="viewOptions.gridDataToShow?.includes('activity')"
+                            name="activityCount"
+                            title="Activity"
+                            field="activityCount">
+                        <template #format="{ row }">
+                            <div v-if="!!row.lastActivityDateTime && !!row.activityCount"
+                                 class="grid-activity-count-cell">
+                                <div>
+                                    {{ row.activityCount }} {{ pluralize("Activity", row.activityCount) }}
+                                </div>
+                                <div class="grid-cell-subtext" v-tooltip="`Last Activity: ${formatColumnDate(row.lastActivityDateTime)}`">
+                                    Last Activity: {{ getElapsedShortTime(row.lastActivityDateTime) }}
+                                </div>
+                            </div>
+                            <div v-else>
+                                <i class="ti ti-minus"></i>
+                            </div>
+                        </template>
+                    </Column>
+
+                    <Column v-if="viewOptions.gridDataToShow?.includes('dueDate')"
+                            name="dueDate"
+                            title="Due Date"
+                            field="dueDate"
+                            width="5%"
+                            :filter="dateValueFilter"
+                            :sortValue="getDueDateSortValue">
+                        <template #format="{ row }">
+                            <div v-if="!!row.dueDate && row.connectionState !== ConnectionState.Inactive" :class="getDueDateColor(row.dueStatus, row.connectionState === ConnectionState.Connected)">
+                                {{ formatColumnDate(row.dueDate) }}
+                            </div>
+                            <div v-else>
+                                <i class="ti ti-minus"></i>
+                            </div>
+                        </template>
+                    </Column>
+
+                    <Column name="connectionState"
+                            title="State"
+                            field="connectionState"
+                            :filter="pickExistingValueFilter">
+                        <template #format="{ row }">
+                            <HighlightLabel :labelType="getConnectionStateLabel(row.connectionState)">
+                                {{ ConnectionStateDescription[row.connectionState] }}<template v-if="row.connectionState === ConnectionState.FutureFollowUp"> - {{ formatColumnDate(row.followUpDate) }}</template>
+                            </HighlightLabel>
+                        </template>
+                        <template #condensed="{ row }">
+                            <HighlightLabel :labelType="getConnectionStateLabel(row.connectionState)">
+                                {{ ConnectionStateDescription[row.connectionState] }}
+                            </HighlightLabel>
+                        </template>
+                    </Column>
+
+                    <Column name="connectionStatus"
+                            title="Status"
+                            field="connectionStatus"
+                            width="5%"
+                            :filter="pickExistingValueFilter"
+                            :filterValue="getStatusFilterValue"
+                            :sortValue="getStatusFilterValue">
+                        <template #format="{ row }">
+                            <HighlightLabel labelType="custom"
+                                            :style="`background-color: ${row.connectionStatus.highlightColor};`">
+                                <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" v-tooltip.overflow="row.connectionStatus.name">
+                                    {{ row.connectionStatus.name }}
+                                </div>
+                            </HighlightLabel>
+                        </template>
+                    </Column>
+
+                    <AttributeColumns :attributes="attributesToShow" />
+
+                    <SecurityColumn v-if="canEditConnectionRequests" disabledField="isRequestSecurityDisabled" :itemTitle="() => 'Item'" />
+                </Grid>
+            </template>
+        </GroupedPanel>
+
+        <ChangeStatusFlyout v-model="isFlyoutOpen"
+                            :errorMessage="flyoutErrorMessage"
+                            :isCompletionButtonLoading="isFlyoutCompletionButtonLoading"
+                            :isSaving="isFlyoutSaving"
+                            :anchorEl="flyoutAnchorEl"
+                            :connectionRequestUpdateBag="connectionRequestUpdateBag"
+                            :isNoteRequired="isNoteRequired"
+                            :connectionTypeOptions="activeActionConnectionTypeOptions"
+                            @updateStatus="changeRequestStatus"
+                            @updateState="updateStateFromFlyout"
+                            @dismissErrorMessage="flyoutErrorMessage = ''"
+                            @close="onFlyoutClose" />
+
+        <AddConnectionRequestModal :modelValue="newConnectionRequest"
+                                   v-model:visible="isAddConnectionRequestModalVisible"
+                                   :options="box.options"
+                                   :connectionStateItems="connectionStateItems"
+                                   :connectionTypeOptionsByIdKey="connectionTypeOptionsByIdKey"
+                                   :selectedConnectionTypeOptions="selectedConnectionTypeOptions"
+                                   :connectionOpportunityDetails="connectionOpportunityDetails"
+                                   :placementGroupDetails="placementGroupDetails"
+                                   :isConnectionOpportunityFilterSelected="hasSelectedOpportunity"
+                                   :isExistingActiveRequesterOnConnectionType="isExistingActiveRequesterOnConnectionType"
+                                   :isSaving="isModalSaving"
+                                   :errorMessage="modalErrorMessage"
+                                   @dismissErrorMessage="onModalErrorMessageDismissed"
+                                   @checkForActiveRequester="checkForActiveRequester"
+                                   @save="onAddRequest"
+                                   @close="resetNewConnectionRequest"
+                                   @fetchConnectionOpportunityDetails="fetchConnectionOpportunityDetails"
+                                   @fetchConnectorOptions="fetchConnectorOptionsForAdd"
+                                   @fetchPlacementGroupItems="fetchPlacementGroupItems"
+                                   @fetchPlacementGroupDetails="fetchPlacementGroupDetails" />
+
+        <AddFromCampaignModal v-model:visible="isAddFromCampaignModalVisible"
+                              :selectedOpportunityGuid="selectedOpportunity"
+                              :allConnectionOpportunityItems="connectionOpportunities ?? []"
+                              :isLoading="areCampaignsLoading"
+                              :isSaving="isModalSaving"
+                              :campaignRecordBags="campaignRecordBags"
+                              :errorMessage="modalErrorMessage"
+                              @dismissErrorMessage="onModalErrorMessageDismissed"
+                              @close="onModalErrorMessageDismissed"
+                              @assignRequests="assignRequestsFromCampaign" />
+
+        <CelebrationModal v-model:visible="isCelebrationModalVisible"
+                          :requestDetails="requestDetailsForModal"
+                          :viewOptions="viewOptions"
                           :isSaving="isModalSaving"
-                          :campaignRecordBags="campaignRecordBags"
+                          :canEditCelebration="canEditConnectionRequests"
                           :errorMessage="modalErrorMessage"
                           @dismissErrorMessage="onModalErrorMessageDismissed"
                           @close="onModalErrorMessageDismissed"
-                          @assignRequests="assignRequestsFromCampaign" />
+                          @upsertCelebration="upsertCelebration" />
 
-    <CelebrationModal v-model:visible="isCelebrationModalVisible"
-                      :requestDetails="requestDetailsForModal"
-                      :viewOptions="viewOptions"
-                      :isSaving="isModalSaving"
-                      :canEditCelebration="canEditConnectionRequests"
-                      :errorMessage="modalErrorMessage"
-                      @dismissErrorMessage="onModalErrorMessageDismissed"
-                      @close="onModalErrorMessageDismissed"
-                      @upsertCelebration="upsertCelebration" />
+        <ReminderModal v-model="isReminderModalVisible"
+                       :contextEntityGuid="reminderEntityGuid"
+                       :contextEntityTypeGuid="EntityType.PersonAlias"
+                       :areDetailsRequired="true"
+                       :isAdditionalOptionsLinkVisible="false"
+                       @reminderClosed="decreaseReminderCount"
+                       @addSuccess="increaseReminderCount">
+            <template #postBody>
+                <RequestTable :requestDetails="requestDetailsForModal"
+                              :viewOptions="viewOptions"
+                              :isConnectorVisible="true" />
+            </template>
+        </ReminderModal>
 
-    <ReminderModal v-model="isReminderModalVisible"
-                   :contextEntityGuid="reminderEntityGuid"
-                   :contextEntityTypeGuid="EntityType.PersonAlias"
-                   :areDetailsRequired="true"
-                   :isAdditionalOptionsLinkVisible="false"
-                   @reminderClosed="decreaseReminderCount"
-                   @addSuccess="increaseReminderCount">
-        <template #postBody>
-            <RequestTable :requestDetails="requestDetailsForModal"
+        <AssignRequestModal v-model:visible="isAssignRequestModalVisible"
+                            :connectorItems="bulkConnectionTypeOptions?.connectorAliasItems ?? []"
+                            :requestDetails="requestDetailsForModal"
+                            :viewOptions="viewOptions"
+                            :isSaving="isModalSaving"
+                            :errorMessage="modalErrorMessage"
+                            @dismissErrorMessage="onModalErrorMessageDismissed"
+                            @close="onModalErrorMessageDismissed"
+                            @updateConnector="updateConnectorFromModal" />
+        <ChangeStateModal v-model:visible="isChangeStateModalVisible"
+                          :isLoading="areRequestDetailsForModalLoading"
+                          :isSaving="isModalSaving"
+                          :connectionState="changeStateTo"
+                          :requestDetails="requestDetailsForModal"
+                          :failingRequestDetails="failingRequestDetailsForModal"
                           :viewOptions="viewOptions"
-                          :isConnectorVisible="true" />
-        </template>
-    </ReminderModal>
-
-    <AssignRequestModal v-model:visible="isAssignRequestModalVisible"
-                        :connectorItems="allPossibleConnectors"
-                        :requestDetails="requestDetailsForModal"
-                        :viewOptions="viewOptions"
-                        :isSaving="isModalSaving"
-                        :errorMessage="modalErrorMessage"
-                        @dismissErrorMessage="onModalErrorMessageDismissed"
-                        @close="onModalErrorMessageDismissed"
-                        @updateConnector="updateConnectorFromModal" />
-    <ChangeStateModal v-model:visible="isChangeStateModalVisible"
-                      :isLoading="areRequestDetailsForModalLoading"
-                      :isSaving="isModalSaving"
-                      :connectionState="changeStateTo"
-                      :requestDetails="requestDetailsForModal"
-                      :failingRequestDetails="failingRequestDetailsForModal"
-                      :viewOptions="viewOptions"
-                      :errorMessage="modalErrorMessage"
-                      @dismissErrorMessage="onModalErrorMessageDismissed"
-                      @close="onModalErrorMessageDismissed"
-                      @updateState="updateStateFromModal" />
-    <DeleteRequestModal v-model:visible="isDeleteRequestModalVisible"
-                        :requestDetails="requestDetailsForModal"
-                        :viewOptions="viewOptions"
-                        :isSaving="isModalSaving"
-                        :errorMessage="modalErrorMessage"
-                        @dismissErrorMessage="onModalErrorMessageDismissed"
-                        @close="onModalErrorMessageDismissed"
-                        @deleteRequests="deleteRequestsFromModal" />
-    <ActivityModal v-model:visible="isActivityModalVisible"
-                   :connectorItems="allPossibleConnectors"
-                   :requestDetails="requestDetailsForModal"
-                   :connectionActivities="connectionActivityItems ?? []"
-                   :viewOptions="viewOptions"
-                   :currentPerson="currentPerson"
-                   :activityToEdit="activityToEdit"
-                   :isSaving="isModalSaving"
-                   :errorMessage="modalErrorMessage"
-                   @dismissErrorMessage="onModalErrorMessageDismissed"
-                   @close="onModalErrorMessageDismissed"
-                   @upsertActivity="upsertActivity" />
-    <ChangeStatusModal v-model:visible="isChangeStatusModalVisible"
-                       :connectionStatusItems="connectionStatusItems"
-                       :isSequentialMode="box.options?.isSequentialStatusMode ?? false"
-                       :isSaving="isModalSaving"
+                          :errorMessage="modalErrorMessage"
+                          @dismissErrorMessage="onModalErrorMessageDismissed"
+                          @close="onModalErrorMessageDismissed"
+                          @updateState="updateStateFromModal" />
+        <DeleteRequestModal v-model:visible="isDeleteRequestModalVisible"
+                            :requestDetails="requestDetailsForModal"
+                            :viewOptions="viewOptions"
+                            :isSaving="isModalSaving"
+                            :errorMessage="modalErrorMessage"
+                            @dismissErrorMessage="onModalErrorMessageDismissed"
+                            @close="onModalErrorMessageDismissed"
+                            @deleteRequests="deleteRequestsFromModal" />
+        <ActivityModal v-model:visible="isActivityModalVisible"
+                       :connectorItems="activeActionConnectionTypeOptions?.connectorAliasItems ?? []"
                        :requestDetails="requestDetailsForModal"
+                       :connectionActivities="connectionActivityItems ?? []"
                        :viewOptions="viewOptions"
+                       :currentPerson="currentPerson"
+                       :activityToEdit="activityToEdit"
+                       :isSaving="isModalSaving"
                        :errorMessage="modalErrorMessage"
                        @dismissErrorMessage="onModalErrorMessageDismissed"
                        @close="onModalErrorMessageDismissed"
-                       @updateStatus="updateStatusFromModal" />
-    <LaunchWorkflowModal v-model:visible="isLaunchWorkflowModalVisible"
-                         :workflowItems="box.options?.workflowItems ?? []"
-                         :requestDetails="requestDetailsForModal"
-                         :viewOptions="viewOptions"
-                         :isSaving="isModalSaving"
-                         :errorMessage="modalErrorMessage"
-                         @dismissErrorMessage="onModalErrorMessageDismissed"
-                         @close="onModalErrorMessageDismissed"
-                         @launchWorkflows="launchWorkflowForRequests" />
-    <SendSMSModal v-model:visible="isSendSMSModalVisible"
-                  :communicationRecipients="communicationRecipients"
-                  :smsFromSystemPhoneNumbers="smsFromSystemPhoneNumbers"
-                  :smsSnippets="smsSnippets"
-                  @onSuccessfulSend="refreshActivityEntries(dockedPanelDetailsBox?.entity?.connectionRequestIdKey)" />
-    <SendEmailModal v-model:visible="isSendEmailModalVisible"
-                    :communicationRecipients="communicationRecipients"
-                    :communicationTemplates="communicationTemplates"
-                    :fromName="emailFromName"
-                    :fromEmail="emailFromEmail"
-                    @onSuccessfulSend="refreshActivityEntries(dockedPanelDetailsBox?.entity?.connectionRequestIdKey)" />
-    <ViewOptionsModal :modelValue="viewOptionsForModal"
-                      @update:modelValue="onViewOptionsUpdate"
-                      v-model:visible="isViewOptionsModalVisible"
-                      :gridDataToShowItems="filteredGridDataToShowItems"
-                      :connectionStates="box.options?.connectionStates ?? []"
-                      :connectionStatuses="box.options?.connectionStatuses ?? []" />
+                       @upsertActivity="upsertActivity" />
+        <ChangeStatusModal v-model:visible="isChangeStatusModalVisible"
+                           :connectionStatusItems="connectionStatusItems"
+                           :isSequentialMode="activeActionConnectionTypeOptions?.isSequentialStatusMode ?? false"
+                           :isSaving="isModalSaving"
+                           :requestDetails="requestDetailsForModal"
+                           :viewOptions="viewOptions"
+                           :errorMessage="modalErrorMessage"
+                           :selectedStatus="selectedStatus"
+                           @dismissErrorMessage="onModalErrorMessageDismissed"
+                           @close="onModalErrorMessageDismissed"
+                           @updateStatus="updateStatusFromModal" />
+        <LaunchWorkflowModal v-model:visible="isLaunchWorkflowModalVisible"
+                             :workflowItems="activeActionConnectionTypeOptions?.workflowItems ?? []"
+                             :requestDetails="requestDetailsForModal"
+                             :viewOptions="viewOptions"
+                             :isSaving="isModalSaving"
+                             :errorMessage="modalErrorMessage"
+                             @dismissErrorMessage="onModalErrorMessageDismissed"
+                             @close="onModalErrorMessageDismissed"
+                             @launchWorkflows="launchWorkflowForRequests" />
+        <SendSMSModal v-model:visible="isSendSMSModalVisible"
+                      :communicationRecipients="communicationRecipients"
+                      :smsFromSystemPhoneNumbers="smsFromSystemPhoneNumbers"
+                      :smsSnippets="smsSnippets"
+                      @onSuccessfulSend="refreshActivityEntries(dockedPanelDetailsBox?.entity?.connectionRequestIdKey)" />
+        <SendEmailModal v-model:visible="isSendEmailModalVisible"
+                        :communicationRecipients="communicationRecipients"
+                        :communicationTemplates="communicationTemplates"
+                        :fromName="emailFromName"
+                        :fromEmail="emailFromEmail"
+                        @onSuccessfulSend="refreshActivityEntries(dockedPanelDetailsBox?.entity?.connectionRequestIdKey)" />
+        <ViewOptionsModal :modelValue="viewOptionsForModal"
+                          @update:modelValue="onViewOptionsUpdate"
+                          v-model:visible="isViewOptionsModalVisible"
+                          :gridDataToShowItems="filteredGridDataToShowItems"
+                          :connectionStates="connectionStateItems"
+                          :connectionStatuses="staticConnectionTypeOptions?.connectionStatuses ?? []"
+                          :attributeFilters="visibleAttributeFilters"
+                          :isMyConnectionsView="isMyConnectionsView" />
 
-    <ModalAlert v-model="isModalAlertVisible">
-        <p>{{ modalAlertText }}</p>
-    </ModalAlert>
+        <ModalAlert v-model="isModalAlertVisible">
+            <p>{{ modalAlertText }}</p>
+        </ModalAlert>
 
-    <ConnectionRequestDockedPanel v-model="isDockedPanelVisible"
-                                  ref="connectionRequestDockedPanelRef"
-                                  :currentKey="selectedRequestKeyForDockedPanel"
-                                  :connectionRequestBreadcrumbs="connectionRequestBreadcrumbs"
-                                  :orderedKeys="orderedRequestKeys ?? []"
-                                  :detailsBox="dockedPanelDetailsBox"
-                                  :dockedPanelCloseOnOutsideClick="dockedPanelCloseOnOutsideClick"
-                                  :navigationUrls="box.navigationUrls ?? {}"
-                                  @navigate="updateSelectedRequestKey"
-                                  @navigateToBreadcrumb="navigateToBreadcrumb"
-                                  @navigateToAdditionalRequest="navigateToAdditionalRequest"
-                                  @editActivity="onEditActivity"
-                                  :isSaving="isDockedPanelSaving"
-                                  @editRequest="onEditRequest"
-                                  @transferRequest="onTransferClick"
-                                  @addActivity="showAddActivityModal(dockedPanelDetailsBox)"
-                                  @onCelebrationClick="box => showCelebrationModal(null, box)"
-                                  @onReminderClick="box => showReminderModal(null, box)"
-                                  @onSMSClick="showSMSModal(true)"
-                                  @onEmailClick="showEmailModal(true)"
-                                  @onReassignConnector="(connector) => reassignConnector([dockedPanelDetailsBox?.entity?.connectionRequestIdKey ?? ''], connector, true)"
-                                  @onRequestStateChanged="updateRequestStates"
-                                  @onStatusButtonClick="onStatusClickFromDockedPanel"
-                                  @launchWorkflow="launchWorkflowForRequests"
-                                  @deleteRequest="showDeleteRequestModal(null, dockedPanelDetailsBox)" />
+        <ConnectionRequestDockedPanel v-model="isDockedPanelVisible"
+                                      ref="connectionRequestDockedPanelRef"
+                                      :currentKey="selectedRequestKeyForDockedPanel"
+                                      :connectionRequestBreadcrumbs="connectionRequestBreadcrumbs"
+                                      :orderedKeys="orderedRequestKeys ?? []"
+                                      :detailsBox="dockedPanelDetailsBox"
+                                      :dockedPanelCloseOnOutsideClick="dockedPanelCloseOnOutsideClick"
+                                      :navigationUrls="box.navigationUrls ?? {}"
+                                      @navigate="updateSelectedRequestKey"
+                                      @navigateToBreadcrumb="navigateToBreadcrumb"
+                                      @navigateToAdditionalRequest="navigateToAdditionalRequest"
+                                      @editActivity="onEditActivity"
+                                      :isSaving="isDockedPanelSaving"
+                                      @editRequest="onEditRequest"
+                                      @transferRequest="onTransferClick"
+                                      @addActivity="showAddActivityModal(dockedPanelDetailsBox)"
+                                      @onCelebrationClick="box => showCelebrationModal(null, box)"
+                                      @onReminderClick="box => showReminderModal(null, box)"
+                                      @onSMSClick="showSMSModal(true)"
+                                      @onEmailClick="showEmailModal(true)"
+                                      @onReassignConnector="(connector) => reassignConnector([dockedPanelDetailsBox?.entity?.connectionRequestIdKey ?? ''], connector, true)"
+                                      @onRequestStateChanged="updateRequestStates"
+                                      @onStatusButtonClick="onStatusClickFromDockedPanel"
+                                      @launchWorkflow="launchWorkflowForRequests"
+                                      @deleteRequest="showDeleteRequestModal(null, dockedPanelDetailsBox)" />
 
-    <TransferConnectionRequestModal v-model="isTransferModalVisible"
-                                    :isLoading="areTransferDetailsLoading"
-                                    :transferDetails="transferRequestDetails"
-                                    :isSaving="isModalSaving"
-                                    :errorMessage="modalErrorMessage"
-                                    :isBulkTransfer="isBulkTransfer"
-                                    :requestDetails="requestDetailsForModal"
-                                    :viewOptions="viewOptions"
-                                    @fetchConnectorOptions="fetchConnectorOptionsForTransfer"
-                                    @dismissErrorMessage="onModalErrorMessageDismissed"
-                                    @close="onTransferModalClose"
-                                    @transfer="selectTransferProcess" />
+        <TransferConnectionRequestModal v-model="isTransferModalVisible"
+                                        :isLoading="areTransferDetailsLoading"
+                                        :transferDetails="transferRequestDetails"
+                                        :isSaving="isModalSaving"
+                                        :errorMessage="modalErrorMessage"
+                                        :isBulkTransfer="isBulkTransfer"
+                                        :requestDetails="requestDetailsForModal"
+                                        :viewOptions="viewOptions"
+                                        @fetchConnectorOptions="fetchConnectorOptionsForTransfer"
+                                        @dismissErrorMessage="onModalErrorMessageDismissed"
+                                        @close="onTransferModalClose"
+                                        @transfer="selectTransferProcess" />
+    </div>
 </template>
-
-<style>
-/* Temporary fix. See https://app.asana.com/1/20866866924293/project/1208321217019996/task/1212533216082714?focus=true */
-.panel-icon {
-    color: var(--color-interface-stronger) !important;
-}
-</style>
-
-<style scoped>
-.connection-source {
-    font-size: var(--font-size-small);
-    font-weight: var(--font-weight-regular);
-    color: var(--color-interface-medium);
-}
-
-/* The .grid-cell class sets overflow: hidden. This prevens the dropdown menu from working within the cell. This class will set overflow: visible for any grid column with the itemClass "grid-cell-overflow" */
-:deep(.grid-cell.grid-cell-overflow) {
-    overflow: visible;
-}
-
-:deep(.grid-body) {
-    border-bottom-left-radius: var(--rounded-medium);
-    border-bottom-right-radius: var(--rounded-medium);
-}
-
-:deep(.grid-body > .grid-row:has(+ div) .grid-cell) {
-    border-bottom: none;
-}
-
-.activity-metric {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-}
-
-.skeleton-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-medium);
-}
-
-.empty-list {
-    min-height: calc(70vh - 200px);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-xsmall);
-}
-
-.ddl-min-width {
-    min-width: 150px;
-}
-
-.activity-date {
-    color: var(--color-interface-strong);
-}
-
-.activity-count {
-    color: var(--color-interface-medium);
-}
-
-.border-left-divider {
-    border-left: 1px solid var(--color-interface-softer);
-}
-
-.text-slate {
-    color: #64748B;
-}
-
-.text-emerald {
-    color: #10B981;
-}
-
-.dropdown-menu {
-    width: 230px;
-}
-
-:deep(.dropdown-min-width) {
-    min-width: var(--vs-dropdown-min-width);
-}
-
-.activity-btn i {
-    padding-right: var(--spacing-tiny);
-}
-
-@media (max-width: 1418px) {
-    .right-actions .activity-btn-label {
-        display: none;
-    }
-
-    .right-actions .activity-btn i {
-        padding: 0;
-    }
-}
-
-@media (max-width: 1125px) {
-    .left-actions .activity-btn-label {
-        display: none;
-    }
-
-    .left-actions .activity-btn i {
-        padding: 0;
-    }
-}
-</style>
 
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { computed, reactive, ref, watch } from "vue";
+    import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
+    import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
+    import { ConnectionTypeOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionTypeOptionsBag";
+    import Grid, { Column, PersonColumn, SelectColumn, AttributeColumns, SecurityColumn, pickExistingValueFilter, dateValueFilter } from "@Obsidian/Controls/grid";
     import { GridDataToShowItemBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/gridDataToShowItemBag";
-    import Grid, { Column, PersonColumn, SelectColumn, AttributeColumns } from "@Obsidian/Controls/grid";
+    import { ConnectionRequestAttributeFilterBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestAttributeFilterBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
-    import GroupedGridPanel from "@Obsidian/Controls/Internal/groupedGridPanel.obs";
+    import GroupedPanel from "@Obsidian/Controls/Internal/groupedPanel.obs";
+    import { GroupedGrid } from "@Obsidian/Controls/Internal/GroupedPanel/types.partial";
+    import Snapshot from "./ConnectionsHub/snapshot.partial.obs";
+    import { CompletionMetricsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/completionMetricsBag";
     import { isNullOrWhiteSpace, pluralize, safeParseJson } from "@Obsidian/Utility/stringUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { tooltip } from "@Obsidian/Utility/tooltip";
@@ -750,7 +940,7 @@
     import { GetSmsConfigurationResponseBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/getSmsConfigurationResponseBag";
     import { PlacementGroupDetailsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/placementGroupDetailsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
-    import { PreferenceKey, ViewOptions } from "./ConnectionsHub/types.partial";
+    import { NavigationUrlKey, PreferenceKey, ViewOptions } from "./ConnectionsHub/types.partial";
     import { IGridState } from "@Obsidian/Types/Controls/grid";
     import { HttpResult } from "@Obsidian/Types/Utility/http";
     import { asBoolean } from "@Obsidian/Utility/booleanUtils";
@@ -790,10 +980,12 @@
     import ReminderModal from "@Obsidian/Controls/Internal/reminderModal.obs";
     import RequestTable from "./ConnectionsHub/requestTable.partial.obs";
     import ConnectionRequestDockedPanel from "./ConnectionsHub/connectionRequestDockedPanel.partial.obs";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { downloadFile } from "@Obsidian/Utility/file";
+    import { debounce, deepEqual } from "@Obsidian/Utility/util";
     import { removeCurrentUrlQueryParams } from "@Obsidian/Utility/url";
     import { ConnectionRequestDetailBox } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestDetailBox";
     import { ConnectionListUpdateBox } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionListUpdateBox";
+    import { ConnectionsHubGridDataBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubGridDataBag";
     import { TransferConnectionRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/transferConnectionRequestBag";
     import TransferConnectionRequestModal from "./ConnectionsHub/transferConnectionRequestModal.partial.obs";
     import { TransferConnectionRequestDetailsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/transferConnectionRequestDetailsBag";
@@ -802,6 +994,11 @@
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { ConnectorOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectorOptionsBag";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import ConnectionRequestCard from "./ConnectionsHub/connectionRequestCard.partial.obs";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
 
     const box = useConfigurationValues<ListBlockBox<ConnectionsHubOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -833,6 +1030,10 @@
             value: "statusGrouping"
         },
         {
+            text: "Type",
+            value: "typeGrouping"
+        },
+        {
             text: "Opportunity",
             value: "opportunityGrouping"
         },
@@ -843,32 +1044,89 @@
         {
             text: "Due Status",
             value: "dueStatusGrouping"
-        },
+        }
     ];
 
+    type IconListItemBag = {
+        text: string;
+        value: string;
+        iconCssClass?: string;
+    };
+
+    const enabledViews = <IconListItemBag[]>[];
+    if (box.options?.isListViewEnabled) {
+        enabledViews.push({
+            text: "List",
+            iconCssClass: "ti ti-layout-list",
+            value: "list"
+        });
+    }
+    if (box.options?.isBoardViewEnabled) {
+        enabledViews.push({
+            text: "Board",
+            iconCssClass: "ti ti-layout-cards",
+            value: "board"
+        });
+    }
+    if (box.options?.isGridViewEnabled) {
+        enabledViews.push({
+            text: "Grid",
+            iconCssClass: "ti ti-table",
+            value: "grid"
+        });
+    }
+
+    const isMyConnectionsView = ref<boolean>(box.options?.isMyConnectionsView ?? false);
+
+    const myConnectionsPageUrl = ref(box.navigationUrls?.[NavigationUrlKey.MyConnectionsPage]);
+
+    function onMyConnectionsClick(): void {
+        if (myConnectionsPageUrl.value) {
+            window.location.href = myConnectionsPageUrl.value;
+        }
+    }
+
+    // Always-defined view of the per-Connection-Type options dictionary, so consumers can
+    // index into it without repeating the null and optional-chain dance on every access.
+    const connectionTypeOptionsByIdKey = computed<Record<string, ConnectionTypeOptionsBag>>(() => box.options?.connectionTypeOptionsByIdKey ?? {});
+
+    // Flat list of per-Connection-Type options. Use with `.some()` / `.every()` / `.filter()`
+    // when you need to check or aggregate a property across all loaded Connection Types.
+    const allConnectionTypeOptions = computed<ConnectionTypeOptionsBag[]>(() => Object.values(connectionTypeOptionsByIdKey.value));
+
+    const connectionStateItems = computed<ListItemBag[]>(() => {
+        if (allConnectionTypeOptions.value.some(t => t.isFutureFollowUpEnabled)) {
+            return enumToListItemBag(ConnectionStateDescription);
+        }
+
+        return enumToListItemBag(ConnectionStateDescription).filter(s => parseInt(s.value ?? "") !== ConnectionState.FutureFollowUp);
+    });
+
+    // In Standard mode the server populates the dictionary with a single entry: the
+    // Connection Type this page is anchored to. This computed surfaces that type so
+    // consumers can read its options without having to derive "first/only entry" inline.
+    // Returns undefined in My Connections mode, where the active type is user-driven.
+    const staticConnectionTypeOptions = computed<ConnectionTypeOptionsBag | undefined>(() => {
+        if (isMyConnectionsView.value) {
+            return undefined;
+        }
+        return allConnectionTypeOptions.value[0];
+    });
+
     // Soft security check to see if the user can edit the list of connection requests.
-    const canEditGlobalConnectionRequests = ref<boolean>(box.options?.canEditConnectionRequests ?? false);
+    const canEditGlobalConnectionRequests = ref<boolean>((() => {
+        if (!isMyConnectionsView.value) {
+            return staticConnectionTypeOptions.value?.canEditConnectionRequests ?? false;
+        }
+
+        return allConnectionTypeOptions.value.flatMap(t => t.canEditConnectionRequests).some(t => t === true);
+    })());
 
     // Context Slicer configuration
-    const selectedGrouping = ref<string>(isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedGroupByMode)) ? "connectorGrouping" : preferences.getValue(PreferenceKey.SelectedGroupByMode));
     const selectedCampus = ref<ListItemBag | null>(null);
-    const areOnlyMyRequestsVisible = ref<string>(isNullOrWhiteSpace(preferences.getValue(PreferenceKey.AreOnlyMyRequestsVisible)) ? "true" : preferences.getValue(PreferenceKey.AreOnlyMyRequestsVisible));
+    const selectedConnector = ref<string>(isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedConnector)) ? (store.state.currentPerson?.idKey ?? "") : preferences.getValue(PreferenceKey.SelectedConnector));
+    const internalSelectedType = ref(preferences.getValue(PreferenceKey.FilterConnectionType));
     const internalSelectedOpportunity = ref(box.options?.connectionOpportunityGuidFromPageParameter ?? preferences.getValue(getConnectionFilterKey(PreferenceKey.ConnectionmOpportunityFilterConnectionTypeIdKey)));
-    const internalSelectedConnector = ref<ListItemBag | null | undefined>(box.options?.selectedConnector);
-    const requestToggleItems = ref<ListItemBag[]>([
-        {
-            text: "My Requests",
-            value: "true"
-        },
-        {
-            text: "All Requests",
-            value: "false"
-        }
-    ]);
-    if (internalSelectedConnector.value?.value && !isNullOrWhiteSpace(internalSelectedConnector.value.value)) {
-        requestToggleItems.value.push(internalSelectedConnector.value);
-        areOnlyMyRequestsVisible.value = internalSelectedConnector.value.value;
-    }
 
     // Add Connection Request Configuration
     const newConnectionRequest = ref<ValidPropertiesBox<ConnectionRequestBag>>({ bag: { connectionOpportunityGuid: internalSelectedOpportunity.value, campusGuid: selectedCampus.value?.value } as ConnectionRequestBag });
@@ -880,15 +1138,24 @@
     // Grouped Grid Configuration
     const selectedKeys = ref<Record<string, string[]>>({});
     const selectedKeysOnUnmount = ref<Record<string, string[]>>({});
-    const groupedGridPanel = ref();
+    const groupedPanel = ref();
     const rawQuickFilter = ref("");
     const debouncedQuickFilter = ref(rawQuickFilter.value);
     const isAutoCollapseEnabled = ref<boolean>(asBoolean(preferences.getValue(PreferenceKey.IsAutoCollapseEnabled)));
     const openDropdownIndex = ref<string | null | undefined>();
     // Holds the raw grid data returned from the server
     const gridData = ref<GridDataBag>();
+
+    /**
+     * Grouping metadata for connectors discovered from grid data and row updates
+     * that are not part of the block-load connector groupings, e.g. a connector
+     * who is not a member of any connector group. Keyed by grouping key.
+     */
+    const supplementalConnectorGroupings = ref<Record<string, GroupingFieldBag>>({});
     const requestListErrorMessage = ref<string>("");
     const areRequestsLoading = ref<boolean>(true);
+    const isSnapshotVisible = ref<boolean>(false);
+    const snapshotMetrics = ref<CompletionMetricsBag | null>(null);
 
     // Modal Configuration
     const modalErrorMessage = ref<string>("");
@@ -926,8 +1193,9 @@
         stateFilter: safeParseJson(preferences.getValue(getConnectionFilterKey(PreferenceKey.FilterStateConnectionTypIdKey))),
         statusFilter: safeParseJson(preferences.getValue(getConnectionFilterKey(PreferenceKey.FilterStatusConnectionTypIdKey))),
         dueFilter: safeParseJson(preferences.getValue(getConnectionFilterKey(PreferenceKey.FilterDueConnectionTypIdKey))),
+        attributeFilterValues: safeParseJson(preferences.getValue(getConnectionFilterKey(PreferenceKey.FilterAttributeValuesConnectionTypeIdKey))) ?? {},
     });
-    const allPossibleConnectors = ref(box.options?.allPossibleConnectors ?? []);
+    const selectedStatus = ref<string | null | undefined>();
     const isBulkTransfer = ref<boolean>(false);
     // SMS and Email modal state
     const communicationRecipients = ref<CommunicationRecipientBag[] | null | undefined>();
@@ -945,6 +1213,11 @@
     const flyoutAnchorEl = ref<HTMLElement | null>(null);
     const isNoteRequired = ref(false);
 
+    /** The idKey of the card that the most recent board drag was dropped before,
+     *  used to attach positional data to status update bags sent to the server.
+     *  Null means the card was dropped at the end of the column. */
+    const cardMovedBeforeIdKey = ref<string | null>(null);
+
     // Docked Panel Configuration
     const isDockedPanelSaving = ref<boolean>(false);
     const connectionRequestUpdateBag = ref<ConnectionRequestUpdateBag>({} as ConnectionRequestUpdateBag);
@@ -956,6 +1229,40 @@
     const dockedPanelCloseOnOutsideClick = ref<boolean>(true);
     // Breadcrumbs are used when a user navigates to an "additional request"
     const connectionRequestBreadcrumbs = ref<ListItemBag[]>([]);
+
+    /*
+        Connection Type scope state.
+
+        Two independent action scopes exist on this block and are derived separately:
+
+        - Bulk scope: driven entirely by the current selection set (computed below).
+        - Per-row scope: set by every per-row entry point through prepareRequestDetailsForModal
+          (or directly via the helpers for the flyout, which does not go through that path).
+
+        isBulkAction selects which scope shared modals (Change Status, Change State,
+        Launch Workflow, Delete Request, Add Activity) should read through
+        activeActionConnectionTypeOptions.
+    */
+    const activeRowConnectionTypeIdKey = ref<string | null>(null);
+    const isBulkAction = ref<boolean>(false);
+
+    const selectedView = ref<string>((() => {
+        const preferenceValue = preferences.getValue(getConnectionFilterKey(PreferenceKey.SelectedViewConnectionTypeIdKey));
+        return isNullOrWhiteSpace(preferenceValue) ? enabledViews[0]?.value : preferenceValue;
+    })());
+
+    const selectedGrouping = ref<string>((() => {
+        if (selectedView.value === "board") {
+            return "statusGrouping";
+        }
+
+        const defaultGrouping = isMyConnectionsView.value ? "dueStatusGrouping" : "connectorGrouping";
+
+        return isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedGroupByMode)) ? defaultGrouping : preferences.getValue(PreferenceKey.SelectedGroupByMode);
+    })());
+
+    const gridViewGridRef = ref();
+    const gridViewFilteredRows = ref<Record<string, unknown>[]>();
 
     // #region Computed Values
 
@@ -976,26 +1283,79 @@
      * Gets the list of secondary action items to be included in the panel.
      * This is computed because the auto-collapse toggle title depends on reactive state.
      */
-    const secondaryActions = computed((): PanelAction[] => [
-        {
-            type: "default",
-            iconCssClass: "ti ti-plus",
-            title: "Add From Campaign",
-            handler: showAddFromCampaignModal
-        },
-        {
-            type: "default",
-            iconCssClass: "ti ti-viewport-short",
-            title: isAutoCollapseEnabled.value ? "Turn Off Auto-Collapse" : "Turn On Auto-Collapse",
-            handler: toggleAutoCollapse
-        },
-        {
-            type: "default",
-            iconCssClass: "ti ti-chevrons-up",
-            title: "Collapse All",
-            handler: collapseAll
+    const secondaryActions = computed((): PanelAction[] => {
+        const actions: PanelAction[] = [
+            {
+                type: "default",
+                iconCssClass: "ti ti-plus",
+                title: "Add From Campaign",
+                handler: showAddFromCampaignModal
+            }
+        ];
+
+        if (selectedView.value === "list") {
+            actions.push(
+                {
+                    type: "default",
+                    iconCssClass: "ti ti-viewport-short",
+                    title: isAutoCollapseEnabled.value ? "Turn Off Auto-Collapse" : "Turn On Auto-Collapse",
+                    handler: toggleAutoCollapse
+                },
+                {
+                    type: "default",
+                    iconCssClass: "ti ti-chevrons-up",
+                    title: "Collapse All",
+                    handler: collapseAll
+                }
+            );
         }
-    ]);
+        else if (selectedView.value === "grid") {
+            actions.push(
+                {
+                    type: "default",
+                    iconCssClass: "ti ti-message",
+                    title: "Communicate",
+                    handler: onCommunicate
+                },
+                {
+                    type: "default",
+                    iconCssClass: "ti ti-files",
+                    title: "Merge Template",
+                    handler: mergeTemplate
+                },
+                {
+                    type: "default",
+                    iconCssClass: "ti ti-users",
+                    title: "Merge People",
+                    handler: mergePerson
+                }
+            );
+        }
+
+        actions.push({
+            type: "default",
+            iconCssClass: "ti ti-file-excel",
+            title: "Export to Excel",
+            handler: exportToExcel
+        });
+
+        actions.push({
+            type: "default",
+            iconCssClass: "ti ti-file-spreadsheet",
+            title: "Export to CSV",
+            handler: exportToCsv
+        });
+
+        return actions;
+    });
+
+    // Computed setter normalizes v-model updates so the dropdown’s blank "All Types" value is never stored in component state.
+    const selectedType = computed({
+        get: () => internalSelectedType.value,
+        set: value => {
+            internalSelectedType.value = toGuidOrNull(value) ?? "";
+        }
+    });
 
     // Computed setter normalizes v-model updates so the dropdown’s blank "All Opportunities" value is never stored in component state.
     const selectedOpportunity = computed({
@@ -1005,8 +1365,58 @@
         }
     });
 
+    const connectionOpportunities = computed(() => {
+        if (!isMyConnectionsView.value) {
+            return staticConnectionTypeOptions.value?.connectionOpportunities;
+        }
+
+        if (isNullOrWhiteSpace(selectedType.value)) {
+            return allConnectionTypeOptions.value.flatMap(t => t.connectionOpportunities ?? []);
+        }
+
+        return allConnectionTypeOptions.value.find(t => areEqual(t.guid, selectedType.value))?.connectionOpportunities ?? [];
+    });
+
+    // Resolves the per-Type options bag the Add Connection Request modal should
+    // drive its Status, Source, IsSequentialStatusMode, and Connectors lists from.
+    // Standard mode populates the dictionary with a single entry on the server,
+    // so the lookup-by-filter falls through to "first entry" when no filter is set.
+    // In My Connections mode with no Type filter selected, the modal will resolve
+    // the Type from whichever Opportunity the user picks.
+    const selectedConnectionTypeOptions = computed(() => {
+        if (!isNullOrWhiteSpace(selectedType.value)) {
+            return allConnectionTypeOptions.value.find(t => areEqual(t.guid, selectedType.value)) ?? null;
+        }
+
+        if (allConnectionTypeOptions.value.length === 1) {
+            return allConnectionTypeOptions.value[0];
+        }
+
+        return null;
+    });
+
     const groupingFields = computed(() => {
         let filteredGroupingFields = allGroupingFields;
+
+        // No grouping on Grid View
+        if (selectedView.value === "grid") {
+            return [];
+        }
+
+        if (isMyConnectionsView.value) {
+            filteredGroupingFields = filteredGroupingFields.filter(g => g.value !== "opportunityGrouping" && g.value !== "connectorGrouping");
+            if (!isNullOrWhiteSpace(selectedType.value)) {
+                filteredGroupingFields = filteredGroupingFields.filter(g => g.value !== "typeGrouping");
+            }
+        }
+        else {
+            filteredGroupingFields = filteredGroupingFields.filter(g => g.value !== "typeGrouping");
+        }
+
+        // Board mode only allows status grouping.
+        if (selectedView.value === "board") {
+            return filteredGroupingFields.filter(g => g.value === "statusGrouping");
+        }
 
         if (!isNullOrWhiteSpace(selectedOpportunity.value)) {
             filteredGroupingFields = filteredGroupingFields.filter(g => g.value !== "opportunityGrouping");
@@ -1016,6 +1426,55 @@
         }
 
         return filteredGroupingFields;
+    });
+
+    /** Converts the backend available groupings into the format expected by GroupedPanel. */
+    const availableGroups = computed<Record<string, GroupedGrid[]> | undefined>(() => {
+        const raw = box.options?.availableGroupings;
+        if (!raw) {
+            return undefined;
+        }
+
+        // When a status filter is active, restrict available status columns to
+        // only the allowed statuses so excluded ones don't appear as empty board
+        // columns. Map filter GUIDs to IdKeys via connectionStatuses on the
+        // filter-driven Connection Type (which is the only one represented in board view).
+        const activeStatusFilter = viewOptions.value.statusFilter;
+        const allowedStatusKeys = activeStatusFilter?.length
+            ? (selectedConnectionTypeOptions.value?.connectionStatuses ?? [])
+                .filter(s => activeStatusFilter.includes(s.guid) && s.idKey)
+                .map(s => s.idKey!)
+            : null;
+
+        const result: Record<string, GroupedGrid[]> = {};
+        for (const [key, bags] of Object.entries(raw)) {
+            const filteredBags = key === "statusGrouping" && allowedStatusKeys?.length
+                ? bags.filter(bag => bag.key && allowedStatusKeys.includes(bag.key))
+                : bags;
+
+            result[key] = filteredBags.map(bag => ({
+                ...bag,
+                gridData: { rows: [] }
+            }));
+        }
+
+        // Union in connectors discovered from grid data and row updates that are
+        // not part of the block-load connector groupings. Without this the grouped
+        // panel would fall back to showing the raw grouping key as the group label.
+        const connectorGroups = result["connectorGrouping"];
+        if (connectorGroups) {
+            const knownKeys = new Set(connectorGroups.map(g => g.key));
+            for (const bag of Object.values(supplementalConnectorGroupings.value)) {
+                if (bag.key && !knownKeys.has(bag.key)) {
+                    connectorGroups.push({
+                        ...bag,
+                        gridData: { rows: [] }
+                    });
+                }
+            }
+        }
+
+        return result;
     });
 
     const hasSelectedOpportunity = computed(() => !isNullOrWhiteSpace(selectedOpportunity.value));
@@ -1055,6 +1514,33 @@
     });
 
     /**
+     * Attribute filters shown in the View Options modal. Mirrors the column-visibility
+     * rule above: type-level attributes are always shown, opportunity-scoped attributes
+     * are hidden when an unrelated opportunity is the active filter. Persisted filter
+     * values for hidden attributes stay in viewOptions.attributeFilterValues and become
+     * inert server-side; switching back to a relevant opportunity restores them.
+     */
+    const visibleAttributeFilters = computed<PublicAttributeBag[]>(() => {
+        const items: ConnectionRequestAttributeFilterBag[] = box.options?.attributeFilters ?? [];
+        const activeOpportunityGuid = selectedOpportunity.value;
+        const hasActiveFilter = !isNullOrWhiteSpace(activeOpportunityGuid);
+
+        return items
+            .filter(item => {
+                const scopeGuids = item.connectionOpportunityGuids;
+                if (!scopeGuids || scopeGuids.length === 0) {
+                    return true;
+                }
+                if (!hasActiveFilter) {
+                    return true;
+                }
+                return scopeGuids.some(g => areEqual(g, activeOpportunityGuid));
+            })
+            .map(item => item.attribute)
+            .filter((attr): attr is PublicAttributeBag => !!attr);
+    });
+
+    /**
      * View Options to present to the modal: identical to the saved view options except
      * gridDataToShow is narrowed to values that exist in the modal's items list. Out-of-scope
      * saved selections are intentionally excluded from the dropdown's v-model so the multi-select
@@ -1066,22 +1552,181 @@
             .filter(v => inScopeGridDataToShowValues.value.has(v)),
     }));
 
-    const skeletonCount = computed<number>(() => selectedGrouping.value === "connectorGrouping" && asBoolean(areOnlyMyRequestsVisible.value) ? 1 : 3);
+    const skeletonCount = computed<number>(() => selectedGrouping.value === "connectorGrouping" && !isNullOrWhiteSpace(selectedConnector.value) && selectedConnector.value !== "All Requests" ? 1 : 3);
 
     const allSelectedKeys = computed(() => Object.values(selectedKeys.value).flat());
+    const allSelectedKeySet = computed(() => new Set(allSelectedKeys.value));
     const hasAnySelectedKeys = computed(() => allSelectedKeys.value.length > 0);
+
+    // #region Selected-Row Action Toolbar
+
+    /**
+     * Describes one action in the selected-row toolbar. The same definition renders as
+     * a toolbar button on wide screens and as an overflow-menu item when the toolbar
+     * collapses, so each action exists in the DOM exactly once.
+     */
+    type SelectedRowAction = {
+        /** Stable key for v-for. */
+        key: string;
+        /** Button label, menu text, and tooltip. */
+        label: string;
+        /** Tabler icon CSS class, e.g. "ti ti-mail-plus". */
+        iconCssClass: string;
+        /** Invoked when the action is clicked. */
+        handler: () => void;
+        /** When true, the action is disabled unless the user can edit connection requests. */
+        requiresEditPermission?: boolean;
+        /**
+         * When true, the action is connection-type-specific and is disabled when the current
+         * bulk selection spans multiple connection types (disableConnectionTypeSpecificBulkActions).
+         */
+        isConnectionTypeSpecific?: boolean;
+        /** When true, the action is styled as destructive. */
+        isDanger?: boolean;
+    };
+
+    /*
+        The toolbar folds its secondary actions into a single overflow menu once it is too
+        narrow to show them all as buttons. Its width is measured directly with a
+        ResizeObserver rather than a viewport media query, so the collapse tracks the space
+        the toolbar actually has - which shrinks when the docked request panel is open or the
+        block sits in a narrow column - not the window size. This mirrors the docked panel's
+        own width-driven button collapse. Each action is still rendered exactly once, as a
+        button (wide) or a menu item (compact).
+    */
+
+    /** Width (px) below which the secondary actions collapse into the overflow menu. */
+    const toolbarCompactWidthThreshold = 700;
+
+    /** The toolbar container's measured width; 0 until the first measurement, which reads as wide. */
+    const toolbarPixelWidth = ref<number>(0);
+
+    /** Element ref on the toolbar content, used to locate and measure its container. */
+    const toolbarElement = ref<HTMLElement | null>(null);
+
+    /** True when the toolbar is too narrow to show every secondary action as a button. */
+    const isToolbarCompact = computed<boolean>(() => toolbarPixelWidth.value > 0 && toolbarPixelWidth.value < toolbarCompactWidthThreshold);
+
+    // Measures the toolbar's actual rendered width. The .action-toolbar container is sized by
+    // the panel, not by the buttons inside it, so collapsing the content cannot feed back and
+    // change the measured width (which would otherwise loop).
+    const toolbarResizeObserver = new ResizeObserver(entries => {
+        for (const entry of entries) {
+            toolbarPixelWidth.value = entry.contentRect.width;
+        }
+    });
+
+    // The toolbar only renders while rows are selected, so (re-)attach the observer to its
+    // container whenever the content mounts or unmounts.
+    watch(toolbarElement, (element) => {
+        toolbarResizeObserver.disconnect();
+
+        const container = element?.closest(".action-toolbar");
+        if (container) {
+            toolbarResizeObserver.observe(container);
+        }
+    });
+
+    onBeforeUnmount(() => toolbarResizeObserver.disconnect());
+
+    /** Left-hand secondary actions - buttons on wide screens, folded into the menu when compact. */
+    const primaryToolbarActions: SelectedRowAction[] = [
+        { key: "launchWorkflow", label: "Launch Workflow", iconCssClass: "ti ti-settings-cog", handler: () => showLaunchWorkflowModal(), isConnectionTypeSpecific: true },
+        { key: "complete", label: "Complete", iconCssClass: "ti ti-circle-check", handler: () => showChangeStateModal(ConnectionState.Connected), requiresEditPermission: true },
+    ];
+
+    /** Communication actions - buttons on the right of the wide toolbar, folded into the menu when compact. */
+    const communicationToolbarActions: SelectedRowAction[] = [
+        { key: "sms", label: "SMS", iconCssClass: "ti ti-message-circle-plus", handler: () => showSMSModal(), isConnectionTypeSpecific: true },
+        { key: "email", label: "Email", iconCssClass: "ti ti-mail-plus", handler: () => showEmailModal(), isConnectionTypeSpecific: true },
+    ];
+
+    /** Management actions - buttons on the right of the wide toolbar, folded into the menu when compact. */
+    const managementToolbarActions: SelectedRowAction[] = [
+        { key: "addActivity", label: "Add Activity", iconCssClass: "ti ti-activity", handler: () => showAddActivityModal(), requiresEditPermission: true, isConnectionTypeSpecific: true },
+        { key: "transfer", label: "Transfer", iconCssClass: "ti ti-switch-3", handler: () => showBulkTransferModal(), requiresEditPermission: true, isConnectionTypeSpecific: true },
+    ];
+
+    /** State-change actions - always shown in the overflow menu (edit-only) in both layouts. */
+    const stateToolbarActions = computed<SelectedRowAction[]>(() => {
+        const actions: SelectedRowAction[] = [
+            { key: "setActive", label: "Set as Active", iconCssClass: "ti ti-user", handler: () => showChangeStateModal(ConnectionState.Active), requiresEditPermission: true },
+            { key: "setInactive", label: "Set as Inactive", iconCssClass: "ti ti-user-off", handler: () => showChangeStateModal(ConnectionState.Inactive), requiresEditPermission: true },
+        ];
+
+        // Future follow-up is only a valid state when the selected requests' connection type enables it.
+        // When the bulk selection spans multiple connection types, bulkConnectionTypeOptions is null and
+        // this stays hidden, matching how the other connection-type-specific actions are disabled.
+        if (bulkConnectionTypeOptions.value?.isFutureFollowUpEnabled) {
+            actions.push({ key: "futureFollowUp", label: "Set as Future Follow-Up", iconCssClass: "ti ti-calendar", handler: () => showChangeStateModal(ConnectionState.FutureFollowUp), requiresEditPermission: true });
+        }
+
+        actions.push({ key: "delete", label: "Delete", iconCssClass: "ti ti-trash", handler: () => showDeleteRequestModal(), requiresEditPermission: true, isDanger: true });
+
+        return actions;
+    });
+
+    /** Every secondary action that folds into the overflow menu when the toolbar is compact. */
+    const foldedToolbarActions = computed<SelectedRowAction[]>(() => [
+        ...primaryToolbarActions,
+        ...communicationToolbarActions,
+        ...managementToolbarActions,
+    ]);
+
+    /** The overflow menu is shown when compact (it holds the folded actions) or when the user can edit (it holds the state changes). */
+    const isToolbarOverflowMenuShown = computed<boolean>(() => isToolbarCompact.value || canEditConnectionRequests.value);
+
+    /** True while the toolbar overflow menu (the "..." DropDownContent) is open. */
+    const isToolbarOverflowMenuOpen = ref<boolean>(false);
+
+    /**
+     * True when an action is unavailable - either it needs edit permission the current user
+     * does not have, or it is connection-type-specific and the bulk selection spans multiple
+     * connection types.
+     */
+    function isToolbarActionDisabled(action: SelectedRowAction): boolean {
+        if (action.requiresEditPermission && !canEditConnectionRequests.value) {
+            return true;
+        }
+
+        if (action.isConnectionTypeSpecific && disableConnectionTypeSpecificBulkActions.value) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /** Builds the icon class for an overflow-menu item, tinting destructive actions red. */
+    function getToolbarMenuIconClass(action: SelectedRowAction): string {
+        return action.iconCssClass;
+    }
+
+    /**
+     * Runs an overflow-menu action and closes the menu. Disabled actions are ignored
+     * so the DropDownContent items behave like the disabled buttons they replaced.
+     * The menu is closed explicitly here because the action handlers open modals
+     * rather than triggering the outside-click that would otherwise dismiss it.
+     */
+    function onToolbarMenuActionClick(action: SelectedRowAction): void {
+        if (isToolbarActionDisabled(action)) {
+            return;
+        }
+
+        isToolbarOverflowMenuOpen.value = false;
+        action.handler();
+    }
+
+    // #endregion Selected-Row Action Toolbar
 
     const selectedRequestDetails = computed((): BulkRequestViewBag[] => {
         if (!gridData.value?.rows?.length) {
             return [];
         }
 
-        const selectedKeySet = new Set(allSelectedKeys.value);
-
         return gridData.value.rows.map(row => {
             const idKey = row["idKey"] as string | null | undefined;
 
-            if (!idKey || !selectedKeySet.has(idKey)) {
+            if (!idKey || !allSelectedKeySet.value.has(idKey)) {
                 return null;
             }
 
@@ -1117,21 +1762,17 @@
 
     const normalizedQuickFilter = computed(() => debouncedQuickFilter.value.toLowerCase());
 
-    const isSequentialStatus = computed<boolean>(() => {
-        if (isDockedPanelVisible.value) {
-            return dockedPanelDetailsBox.value?.options?.isSequentialStatusMode ?? false;
-        }
-        return box.options?.isSequentialStatusMode ?? false;
-    });
-
     const connectionStatusItems = computed<ListItemBag[]>(() => {
         let statuses: ConnectionStatusBag[] | null | undefined;
 
         if (isDockedPanelVisible.value && dockedPanelDetailsBox.value?.options?.connectionStatuses) {
             statuses = dockedPanelDetailsBox.value.options.connectionStatuses;
         }
+        else if (isMyConnectionsView.value) {
+            statuses = activeActionConnectionTypeOptions.value?.connectionStatuses;
+        }
         else {
-            statuses = box.options?.connectionStatuses;
+            statuses = staticConnectionTypeOptions.value?.connectionStatuses;
         }
 
         return (
@@ -1146,7 +1787,7 @@
 
     const connectionActivityItems = computed<ConnectionActivityTypeBag[] | null | undefined>(() => {
         const activities = dockedPanelDetailsBox.value?.options?.connectionActivities
-            ?? box.options?.connectionActivities;
+            ?? activeActionConnectionTypeOptions.value?.connectionActivities;
 
         return activities;
     });
@@ -1163,6 +1804,93 @@
 
         return rows;
     });
+
+    const gridViewData = computed<GridDataBag>(() => ({
+        rows: visibleRows.value
+    }));
+
+    /*
+    * Computed value that applies column filters from Grid View to the visibleRows computed property.
+    * When the Connections Hub is not in Grid View, the visible rows property will be returned and no
+    * Grid column filtering will be applied.
+    *
+    * Used to populate the count label in the Grouped Panel and as the filtered row set from which
+    * the Block exports to Excel.
+    */
+    const visibleRowsFilteredByGrid = computed(() => {
+        if (selectedView.value !== "grid") {
+            return visibleRows.value;
+        }
+
+        // When in grid view, the grid has already applied its own column filters and
+        // reported back the surviving rows via onFilteredRowsChanged. Filter the
+        // source rows down to only those whose idKey appears in that set so the panel
+        // counts/display stay in sync with what the grid is showing.
+        if (gridViewFilteredRows.value) {
+            const filteredKeySet = new Set(gridViewFilteredRows.value.map(r => r["idKey"]));
+            return visibleRows.value.filter(r => filteredKeySet.has(r["idKey"]));
+        }
+
+        return visibleRows.value;
+    });
+
+    // Distinct Connection Type Id Keys among the currently selected rows. Drives
+    // the bulk scope and is also sent to the server for bulk state updates.
+    const distinctSelectedConnectionTypeIdKeys = computed<string[]>(() => {
+        if (!hasAnySelectedKeys.value) {
+            return [];
+        }
+
+        return [...new Set(
+            visibleRowsFilteredByGrid.value
+                .filter(row => {
+                    const idKey = row["idKey"] as string | null | undefined;
+                    return !!idKey && allSelectedKeySet.value.has(idKey);
+                })
+                .map(row => row["connectionTypeIdKey"] as string | null | undefined)
+                .filter((key): key is string => !!key)
+        )];
+    });
+
+    // Bulk-scope Connection Type Id Key. Null when no selection exists, or when
+    // a mixed-type selection in My Connections view prevents single-type bulk actions.
+    const bulkConnectionTypeIdKey = computed<string | null>(() => {
+        if (!hasAnySelectedKeys.value) {
+            return null;
+        }
+
+        if (!isMyConnectionsView.value) {
+            return staticConnectionTypeOptions.value?.idKey ?? null;
+        }
+
+        return distinctSelectedConnectionTypeIdKeys.value.length === 1
+            ? distinctSelectedConnectionTypeIdKeys.value[0]
+            : null;
+    });
+
+    // Bulk-scope Connection Type Options. Read by the bulk action toolbar
+    // and by any bulk-only modal.
+    const bulkConnectionTypeOptions = computed<ConnectionTypeOptionsBag | null>(() =>
+        bulkConnectionTypeIdKey.value
+            ? connectionTypeOptionsByIdKey.value[bulkConnectionTypeIdKey.value] ?? null
+            : null);
+
+    // Per-row scope Connection Type Options.
+    const activeRowConnectionTypeOptions = computed<ConnectionTypeOptionsBag | null>(() =>
+        activeRowConnectionTypeIdKey.value
+            ? connectionTypeOptionsByIdKey.value[activeRowConnectionTypeIdKey.value] ?? null
+            : null);
+
+    // Resolves to the bulk or per-row scope depending on which entry point opened
+    // the action. Bind shared modals (Change Status, Change State, Launch Workflow,
+    // Delete Request, Add Activity) here so they read from the scope that opened them.
+    const activeActionConnectionTypeOptions = computed<ConnectionTypeOptionsBag | null>(() =>
+        isBulkAction.value ? bulkConnectionTypeOptions.value : activeRowConnectionTypeOptions.value);
+
+    // Disabled in the bulk toolbar when a selection exists but no single Connection
+    // Type can be resolved (mixed-type selection in My Connections view).
+    const disableConnectionTypeSpecificBulkActions = computed<boolean>(() =>
+        hasAnySelectedKeys.value && bulkConnectionTypeOptions.value === null);
 
     // #endregion Computed Values
 
@@ -1213,7 +1941,14 @@
         const sortBy = viewOptions.value.sortBy;
 
         if (isNullOrWhiteSpace(sortBy)) {
-            return rows;
+            // When no explicit sort is selected, sort by the persisted
+            // order on the connection request (ascending).
+            return rows.sort((a, b) => {
+                const aOrder = (a["order"] as number | null | undefined) ?? 0;
+                const bOrder = (b["order"] as number | null | undefined) ?? 0;
+
+                return aOrder - bOrder;
+            });
         }
 
         return rows.sort((a, b) => {
@@ -1326,17 +2061,16 @@
             }
         }
 
-        // Requests Assigned to Me
-        if (areOnlyMyRequestsVisible.value === "true") {
+        // Connector filter
+        if (!isNullOrWhiteSpace(selectedConnector.value) && selectedConnector.value !== "All Requests") {
             const connectorValue = row["connectorDetails"] as ListItemBag | undefined;
 
             if (!connectorValue || typeof connectorValue !== "object") {
                 return false;
             }
 
-            if (currentPerson.value?.idKey !== connectorValue.value) {
-                return false;
-            }
+            // Check against the selected connector filter.
+            return connectorValue?.value === selectedConnector.value;
         }
 
         // Campus Filter
@@ -1366,6 +2100,39 @@
         return rows.filter(r => r["dueStatus"] === DueStatus.DueSoon).length;
     }
 
+    /*
+        Each row within a "Due Status" group shares the same dueStatus, so we can
+        infer the group's status from any row to decide which highlight label belongs
+        in that group's header.
+    */
+    function shouldShowDueSoonHighlight(rows: Record<string, unknown>[]): boolean {
+        if (selectedGrouping.value !== "dueStatusGrouping") {
+            return true;
+        }
+        return rows[0]?.["dueStatus"] === DueStatus.DueSoon;
+    }
+
+    function shouldShowOverdueHighlight(rows: Record<string, unknown>[]): boolean {
+        if (selectedGrouping.value !== "dueStatusGrouping") {
+            return true;
+        }
+        return rows[0]?.["dueStatus"] === DueStatus.Overdue;
+    }
+
+    /*
+        In Due Status grouping, the Overdue and Due Soon sections show their own
+        status-specific highlight label, so the generic "X Requests" label is
+        suppressed there to avoid duplication. The other group (On Track)
+        keeps the generic label.
+    */
+    function isGroupCountMessageVisible(group: GroupedGrid): boolean {
+        if (selectedGrouping.value !== "dueStatusGrouping") {
+            return true;
+        }
+        const groupDueStatus = group.gridData.rows[0]?.["dueStatus"];
+        return groupDueStatus !== DueStatus.Overdue && groupDueStatus !== DueStatus.DueSoon;
+    }
+
     /**
      * Called when a row has been selected by the individual.
      *
@@ -1380,11 +2147,132 @@
         isDockedPanelVisible.value = true;
     }
 
+    /**
+     * Handles a plain click on a board card. Clears any active multi-selection
+     * before opening the docked detail panel so plain click is a "focus one"
+     * action. Ctrl+click goes through onToggleBoardCardSelection instead.
+     */
+    function onSelectBoardCard(key: string): void {
+        if (hasAnySelectedKeys.value) {
+            clearAllSelections();
+        }
+
+        onSelectItem(key);
+    }
+
+    /**
+     * Toggles a card in/out of the board-view selection bucket. Board-view
+     * selections live under the "board" key in `selectedKeys` so they flow
+     * through `allSelectedKeys` and drive the shared bulk-action toolbar.
+     */
+    function onToggleBoardCardSelection(groupKey: string, idKey: string): void {
+        const current = selectedKeys.value[groupKey] ?? [];
+
+        // If the connection type has sequential status configured then we must clear
+        // selections in any status grouping that does not match the selected group key.
+        // We can use static connection type options here because the board view can only
+        // be rendered with 1 Connection Type.
+        if (staticConnectionTypeOptions.value?.isSequentialStatusMode) {
+            Object.keys(selectedKeys.value)
+                .filter(key => key !== groupKey)
+                .forEach(key => selectedKeys.value[key] = []);
+        }
+
+        selectedKeys.value[groupKey] = current.includes(idKey)
+            ? current.filter(k => k !== idKey)
+            : [...current, idKey];
+    }
+
     function onAddItem(): void {
         isAddConnectionRequestModalVisible.value = true;
     }
 
+    /**
+     * Called when the rows that match the user filters have changed.
+     *
+     * @param state The state object that describes the grid.
+     */
+    function onFilteredRowsChanged(state: IGridState): void {
+        gridViewFilteredRows.value = [...state.filteredRows];
+    }
+
     // #endregion Grid Functions
+
+    // #region Board Functions
+
+    /**
+     * When sequential status mode is active and grouped by status,
+     * only allow drops on the next sequential status column.
+     */
+    const canDropOnGroup = computed<((sourceGroupKey: string, targetGroupKey: string) => boolean) | undefined>(() => {
+        if (!staticConnectionTypeOptions.value?.isSequentialStatusMode || selectedGrouping.value !== "statusGrouping") {
+            return undefined;
+        }
+
+        const statuses = staticConnectionTypeOptions.value.connectionStatuses ?? [];
+        const sortedStatuses = [...statuses].sort((a, b) => a.order - b.order);
+        const nextKeyByKey = new Map<string, string>();
+
+        for (let i = 0; i < sortedStatuses.length - 1; i++) {
+            const currentKey = sortedStatuses[i].idKey;
+            const nextKey = sortedStatuses[i + 1].idKey;
+
+            if (currentKey && nextKey) {
+                nextKeyByKey.set(currentKey, nextKey);
+            }
+        }
+
+        return (sourceGroupKey: string, targetGroupKey: string): boolean => {
+            return nextKeyByKey.get(sourceGroupKey) === targetGroupKey;
+        };
+    });
+
+    /**
+     * Reports whether a card is part of a multi-card selection so the board
+     * view can apply group-drag styling to the mirror and transit previews.
+     * Matches the group-drag trigger condition in onCardMoved.
+     */
+    function isCardInGroupDrag(idKey: string): boolean {
+        return allSelectedKeys.value.length > 1 && allSelectedKeySet.value.has(idKey);
+    }
+
+    function onCardMoved(idKey: string, fromGroupKey: string, toGroupKey: string, beforeIdKey: string | null): void {
+        // If the from key and to key are the same then we just need to reorder the request.
+        if (fromGroupKey === toGroupKey) {
+            // Don't reorder if the board is sorted by a custom field.
+            if (viewOptions.value.sortBy) {
+                return;
+            }
+            reorderConnectionRequest(idKey, beforeIdKey, toGroupKey);
+            return;
+        }
+
+        if (!gridData.value?.rows) {
+            return;
+        }
+        const row = gridData.value.rows.find(r => r.idKey === idKey);
+
+        // Only set value needed for reorder if the sortBy filter is empty (defaulting to Order).
+        if (isNullOrWhiteSpace(viewOptions.value.sortBy)) {
+            cardMovedBeforeIdKey.value = beforeIdKey;
+        }
+
+        // Group drag: dragged card is part of a multi-card selection.
+        // Fall through to single-card path if not selected or sole selection,
+        // so we never move cards the user didn't drag.
+        const isGroupDrag = allSelectedKeys.value.length > 1 && allSelectedKeySet.value.has(idKey);
+
+        // This Block only supports status grouping, so a cross-column move
+        // always represents a status change. Other groupings (connector, state,
+        // opportunity, campus, due status) are not supported on the Block at this time.
+        selectedStatus.value = staticConnectionTypeOptions.value?.connectionStatuses?.find(s => s.idKey === toGroupKey)?.guid;
+
+        // Pass in null if the card was moved from a group drag, otherwise pass in the data row
+        // of the card that has been dragged.
+        showChangeStatusModal(isGroupDrag ? null : row);
+    }
+
+    // #endregion Board Functions
 
     // #region Docked Panel Functions
 
@@ -1443,6 +2331,59 @@
         return 0;
     }
 
+    /**
+    * Gets the filter value text to use for the requester column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getRequesterFilterValue(row: Record<string, unknown>): string {
+        const person = row["requestDetails"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+    * Gets the filter value text to use for the connector column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getConnectorFilterValue(row: Record<string, unknown>): string {
+        const connectorItem = row["connectorDetails"] as ListItemBag;
+        return !connectorItem ? "" : `${connectorItem.text}`;
+    }
+
+    /**
+    * Gets the filter value text to use for the status column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getStatusFilterValue(row: Record<string, unknown>): string {
+        const statusBag = row["connectionStatus"] as ConnectionStatusBag;
+        return !statusBag ? "" : `${statusBag.name}`;
+    }
+
+    /*
+        5/7/26 - KBH
+
+        Inactive requests render the due date cell as "-" even when the underlying DueDate has a value.
+        Returning undefined here keeps those rows aligned with rows that truly have no due date so
+        sorting matches what the user sees rather than the hidden ISO string.
+
+        Reason: Hide-on-Inactive cells must sort like empty cells.
+    */
+    function getDueDateSortValue(row: Record<string, unknown>): string | undefined {
+        const dueDate = row["dueDate"] as string | null | undefined;
+        const connectionState = row["connectionState"] as ConnectionState | null | undefined;
+
+        if (!dueDate || connectionState === ConnectionState.Inactive) {
+            return undefined;
+        }
+
+        return dueDate;
+    }
+
+    function formatColumnDate(date: string | null | undefined): string {
+        return RockDateTime.parseISO(date as string)?.toASPString("d") ?? "";
+    }
 
     function formatDueDateShortLabel(dueDate: string | null | undefined, isCompleted: boolean, completedDateTime: string | null | undefined): string {
         // Use the completion date as the reference point if completed, otherwise use today
@@ -1471,13 +2412,28 @@
     function getDueDateColor(dueStatus: DueStatus | null | undefined, isCompleted: boolean): string {
         switch (dueStatus) {
             case DueStatus.DueLater:
-                return isCompleted ? "text-emerald text-semibold" : "text-interface-strong";
+                return isCompleted ? "grid-due-date-label grid-due-date-label--completed-early" : "grid-due-date-label grid-due-date-label--neutral";
             case DueStatus.DueSoon:
-                return "text-warning text-semibold";
+                return "grid-due-date-label grid-due-date-label--due-soon";
             case DueStatus.Overdue:
-                return "text-danger text-semibold";
+                return "grid-due-date-label grid-due-date-label--overdue";
             default:
-                return "text-interface-strong";
+                return "grid-due-date-label grid-due-date-label--neutral";
+        }
+    }
+
+    function getConnectionStateLabel(state: ConnectionState | undefined): "default" | "primary" | "success" | "info" | "warning" | "danger" | "campus" | "type" | "custom" {
+        switch (state) {
+            case ConnectionState.Active:
+                return "default";
+            case ConnectionState.FutureFollowUp:
+                return "info";
+            case ConnectionState.Inactive:
+                return "warning";
+            case ConnectionState.Connected:
+                return "success";
+            default:
+                return "default";
         }
     }
 
@@ -1501,11 +2457,14 @@
      * @returns The resolved preference key, or an empty string if unavailable.
      */
     function getConnectionFilterKey(preferenceKey: string): string {
-        if (!box.options?.connectionTypeIdKey) {
+        if (isMyConnectionsView.value) {
+            return preferenceKey.replace("{0}", "my-connections");
+        }
+        else if (!staticConnectionTypeOptions.value?.idKey) {
             return "";
         }
 
-        return preferenceKey.replace("{0}", box.options.connectionTypeIdKey);
+        return preferenceKey.replace("{0}", staticConnectionTypeOptions.value.idKey);
     }
 
     /** Adds the tooltip behavior to the element. */
@@ -1519,6 +2478,14 @@
 
     function onPanelSettingsClick(): void {
         isViewOptionsModalVisible.value = true;
+    }
+
+    function onSnapshotClick(): void {
+        isSnapshotVisible.value = !isSnapshotVisible.value;
+        // Fetch snapshot data on true.
+        if (isSnapshotVisible.value === true) {
+            getSnapshotMetrics();
+        }
     }
 
     /**
@@ -1567,10 +2534,6 @@
         }
     }
 
-    function toggleGridRowDropdown(key: string | null | undefined): void {
-        openDropdownIndex.value = openDropdownIndex.value === key ? null : key;
-    }
-
     /**
      * Called when the individual changes which rows are selected.
      *
@@ -1580,6 +2543,7 @@
         if (!key) {
             return;
         }
+
         selectedKeys.value[key] = [...state.selectedKeys];
     }
 
@@ -1678,21 +2642,452 @@
     }
 
     function prepareRequestDetailsForModal(row: Record<string, unknown> | null = null, dockedPanelBox: ConnectionRequestDetailBox | null = null): void {
-        // If row is null then we are in bulk action mode.
+        // If row and dockedPanelBox are both null then we are in bulk action mode.
         if (row === null && dockedPanelBox === null) {
             requestDetailsForModal.value = selectedRequestDetails.value;
+            isBulkAction.value = true;
+            activeRowConnectionTypeIdKey.value = null;
+            return;
         }
-        else {
-            setSingleRequestDetail(row, dockedPanelBox);
+
+        setSingleRequestDetail(row, dockedPanelBox);
+        isBulkAction.value = false;
+
+        if (row) {
+            activeRowConnectionTypeIdKey.value = (row["connectionTypeIdKey"] as string | null | undefined) ?? null;
+        }
+        else if (dockedPanelBox) {
+            activeRowConnectionTypeIdKey.value = dockedPanelBox.options?.connectionTypeIdKey ?? null;
         }
     }
 
     function collapseAll(): void {
-        groupedGridPanel.value.collapseAll();
+        groupedPanel.value.collapseAll();
     }
 
     function toggleAutoCollapse(): void {
         isAutoCollapseEnabled.value = !isAutoCollapseEnabled.value;
+    }
+
+    // #region Export to Excel or CSV
+
+    /**
+     * Builds the workbook containing the currently visible connection requests,
+     * along with the raw row data and the title used for the export. This is
+     * shared by the Excel and CSV export paths so the two formats stay in sync.
+     * Follows the same pattern as the Grid component's getExportWorkbook
+     * (grid.partial.obs).
+     */
+    async function getExportWorkbook(): Promise<{ workbook: import("@Obsidian/Libs/exceljs").Workbook, rowData: Record<string, unknown>[], title: string } | null> {
+        // When the user has selected specific rows, limit the export to just
+        // those rows. Otherwise, export every currently visible row.
+        let rows = visibleRowsFilteredByGrid.value;
+
+        if (hasAnySelectedKeys.value) {
+            rows = rows.filter(row => {
+                const idKey = row["idKey"] as string | null | undefined;
+                return !!idKey && allSelectedKeySet.value.has(idKey);
+            });
+        }
+
+        if (!rows.length) {
+            return null;
+        }
+
+        // Build the list of columns to export based on current view options.
+        type ExportColumn = {
+            key: string;
+            title: string;
+            getValue: (row: Record<string, unknown>) => unknown;
+        };
+
+        const columns: ExportColumn[] = [];
+
+        columns.push({
+            key: "id",
+            title: "Id",
+            getValue: (row) => row.id
+        });
+
+        columns.push({
+            key: "name",
+            title: "Name",
+            getValue: (row) => {
+                const person = row.requestDetails as PersonFieldBag | null;
+                return person ? `${person.nickName ?? ""} ${person.lastName ?? ""}`.trim() : "";
+            }
+        });
+
+        const gridDataToShow = viewOptions.value.gridDataToShow ?? [];
+
+        if (gridDataToShow.includes("connectionOpportunity")) {
+            columns.push({
+                key: "connectionOpportunity",
+                title: "Connection Opportunity",
+                getValue: (row) => (row.connectionOpportunity as string) ?? ""
+            });
+
+            if (viewOptions.value.isRequestSourceShown) {
+                columns.push({
+                    key: "connectionTypeSource",
+                    title: "Connection Request Source",
+                    getValue: (row) => (row.connectionTypeSource as string) ?? ""
+                });
+            }
+        }
+
+        columns.push({
+            key: "connectorDetails",
+            title: "Connector",
+            getValue: (row) => (row.connectorDetails as ListItemBag | null)?.text ?? ""
+        });
+
+        columns.push({
+            key: "campus",
+            title: "Campus",
+            getValue: (row) => (row.campus as string) ?? ""
+        });
+
+        if (allConnectionTypeOptions.value.some(t => t.areGroupPlacementsEnabled)) {
+            columns.push({
+                key: "group",
+                title: "Placement Group",
+                getValue: (row) => (row.group as string) ?? ""
+            });
+        }
+
+        if (gridDataToShow.includes("activity")) {
+            columns.push({
+                key: "lastActivityDateTime",
+                title: "Last Activity Date",
+                getValue: (row) => toExcelDate(row.lastActivityDateTime as string | null | undefined)
+            });
+
+            columns.push({
+                key: "activityCount",
+                title: "Activity Count",
+                getValue: (row) => (row.activityCount as number) ?? ""
+            });
+        }
+
+        if (gridDataToShow.includes("dueDate")) {
+            columns.push({
+                key: "dueDate",
+                title: "Due Date",
+                getValue: (row) => toExcelDate(row.dueDate as string | null | undefined)
+            });
+            columns.push({
+                key: "dueSoonDate",
+                title: "Due Soon Date",
+                getValue: (row) => toExcelDate(row.dueSoonDate as string | null | undefined)
+            });
+        }
+
+        columns.push({
+            key: "connectionStatus",
+            title: "Connection Status",
+            getValue: (row) => (row.connectionStatus as ConnectionStatusBag | null)?.name ?? ""
+        });
+
+        columns.push({
+            key: "connectionState",
+            title: "Connection State",
+            getValue: (row) => {
+                const state = row.connectionState as ConnectionState | null | undefined;
+                return state != null ? (ConnectionStateDescription[state] ?? "") : "";
+            }
+        });
+
+        columns.push({
+            key: "createdDateTime",
+            title: "Created Date",
+            getValue: (row) => toExcelDate(row.createdDateTime as string | null | undefined)
+        });
+
+        if (allConnectionTypeOptions.value.some(t => t.isFutureFollowUpEnabled)) {
+            columns.push({
+                key: "followUpDate",
+                title: "Follow-Up Date",
+                getValue: (row) => toExcelDate(row.followUpDate as string | null | undefined)
+            });
+        }
+
+        columns.push({
+            key: "completedDateTime",
+            title: "Completed Date",
+            getValue: (row) => toExcelDate(row.completedDateTime as string | null | undefined)
+        });
+
+        columns.push({
+            key: "order",
+            title: "Order",
+            getValue: (row) => row.order
+        });
+
+        // Attribute columns the user has selected.
+        for (const attr of (attributesToShow.value ?? [])) {
+            const attrName = attr.name;
+            if (!attrName) {
+                return null;
+            }
+            columns.push({
+                key: attrName,
+                title: attr.title ?? attrName,
+                getValue: (row) => {
+                    const value = row[attrName];
+
+                    if (!value || typeof value !== "object") {
+                        return undefined;
+                    }
+
+                    if (typeof value["text"] !== "string") {
+                        return undefined;
+                    }
+
+                    return value["text"];
+                }
+            });
+        }
+
+        columns.push({
+            key: "requesterPersonAliasGuid",
+            title: "Person Alias Guid",
+            getValue: (row) => row.requesterPersonAliasGuid
+        });
+
+        columns.push({
+            key: "connectionOpportunityGuid",
+            title: "Connection Opportunity Guid",
+            getValue: (row) => row.connectionOpportunityGuid
+        });
+
+        columns.push({
+            key: "campusGuid",
+            title: "Campus Guid",
+            getValue: (row) => row.campusGuid
+        });
+
+        // Dynamically import ExcelJS so it is only loaded when needed.
+        const exceljs = await import("@Obsidian/Libs/exceljs");
+        const title = box.options?.title || "Connection Requests";
+
+        const workbook = new exceljs.Workbook();
+        workbook.created = new Date();
+        workbook.modified = new Date();
+        const worksheet = workbook.addWorksheet(title);
+
+        // Set the column headers.
+        worksheet.columns = columns.map(c => ({
+            header: c.title,
+            key: c.key
+        }));
+
+        // Build the data rows.
+        const rowData: Record<string, unknown>[] = [];
+        for (const row of rows) {
+            const record: Record<string, unknown> = {};
+            for (const col of columns) {
+                record[col.key] = col.getValue(row);
+            }
+            rowData.push(record);
+        }
+
+        worksheet.addRows(rowData);
+
+        return { workbook, rowData, title };
+    }
+
+    /**
+     * Triggers an automatic download of the workbook so it can be saved to
+     * the filesystem. Mirrors the Grid component's downloadWorkbook helper
+     * (grid.partial.obs) so CSV and Excel paths share a single download flow.
+     *
+     * @param workbook The workbook to be downloaded by the browser.
+     * @param title The title of the workbook, used as the base for the filename.
+     * @param format The format to use when downloading the workbook.
+     */
+    async function downloadWorkbook(workbook: import("@Obsidian/Libs/exceljs").Workbook, title: string, format: "csv" | "xlsx"): Promise<void> {
+        const buffer = format === "xlsx"
+            ? await workbook.xlsx.writeBuffer()
+            : await workbook.csv.writeBuffer();
+
+        const data = new Blob([buffer], { type: "application/octet-stream" });
+
+        await downloadFile(data, `${title.replace(/[^a-zA-Z0-9\-_]/g, "")}.${format}`);
+    }
+
+    /**
+     * Exports the currently visible connection requests to an Excel file.
+     * Follows the same formatting pattern as the Grid component's built-in
+     * export (grid.partial.obs).
+     */
+    async function exportToExcel(): Promise<void> {
+        const result = await getExportWorkbook();
+
+        if (!result) {
+            return;
+        }
+
+        const { workbook, rowData, title } = result;
+        const worksheet = workbook.getWorksheet(title);
+
+        if (!worksheet) {
+            return;
+        }
+
+        // Apply formatting to data rows.
+        const lineHeight = 15;
+        const padding = 2;
+
+        worksheet.eachRow((row, index) => {
+            let maxLines = 1;
+
+            row.eachCell((cell) => {
+                const text = cell.value?.toString() ?? "";
+
+                if (text.includes("\n")) {
+                    const lineCount = text.split("\n").length;
+                    if (lineCount > maxLines) {
+                        maxLines = lineCount;
+                    }
+
+                    cell.alignment = { wrapText: true, vertical: "top" };
+                }
+                else {
+                    cell.alignment = { wrapText: false, vertical: "top" };
+                }
+
+                row.height = (maxLines * lineHeight) + padding;
+
+                // Zebra striping every other row.
+                if ((index + 1) % 2 === 0) {
+                    cell.fill = {
+                        type: "pattern",
+                        pattern: "solid",
+                        fgColor: { argb: "ffc6f1c7" }
+                    };
+                }
+            });
+        });
+
+        // Freeze the header rows.
+        worksheet.views = [{ state: "frozen", ySplit: 3 }];
+
+        // Auto-fit column widths.
+        for (const column of worksheet.columns) {
+            if (!column.key) {
+                continue;
+            }
+
+            let maxLength: number = (column.header?.toString() ?? "").length + 3;
+
+            for (const row of rowData) {
+                const value = row[column.key];
+
+                if (typeof value === "string") {
+                    const longestLineLength = value.split("\n").reduce((max, str) => Math.max(max, str.length), 0);
+                    maxLength = Math.max(maxLength, longestLineLength + 1);
+                }
+                else if (typeof value === "boolean") {
+                    maxLength = Math.max(maxLength, 6);
+                }
+                else if (value instanceof Date) {
+                    maxLength = Math.max(maxLength, 11);
+                }
+                else {
+                    maxLength = Math.max(maxLength, String(value).length + 1);
+                }
+            }
+
+            column.width = Math.min(80, Math.max(4, maxLength));
+        }
+
+        // Insert the title and export timestamp header rows.
+        worksheet.insertRows(1, [{}, {}]);
+        worksheet.getCell(1, 1).value = title;
+        worksheet.getCell(2, 1).value = `Exported on ${RockDateTime.now().toASPString("G")}`;
+        worksheet.getCell(1, 1).font = { size: 18 };
+
+        // Style header rows (title, timestamp, column headers).
+        worksheet.getRows(1, 3)?.forEach(row => {
+            row.eachCell(cell => {
+                cell.fill = {
+                    type: "pattern",
+                    pattern: "solid",
+                    fgColor: { argb: "ffdedede" }
+                };
+                cell.font = cell.font ?? {};
+                cell.font.bold = true;
+            });
+        });
+
+        worksheet.mergeCells(1, 1, 1, worksheet.columns.length);
+        worksheet.mergeCells(2, 1, 2, worksheet.columns.length);
+
+        // Set up auto-filter on the data range.
+        worksheet.autoFilter = {
+            from: { row: 3, column: 1 },
+            to: { row: rowData.length + 3, column: worksheet.columns.length }
+        };
+
+        await downloadWorkbook(workbook, title, "xlsx");
+    }
+
+    /**
+     * Exports the currently visible connection requests to a CSV file. Skips
+     * Excel-only formatting (styling, merged header rows, auto-filter) since
+     * CSV is a plain text format. Mirrors onExportToCsv in grid.partial.obs.
+     */
+    async function exportToCsv(): Promise<void> {
+        const result = await getExportWorkbook();
+
+        if (!result) {
+            return;
+        }
+
+        const { workbook, title } = result;
+
+        await downloadWorkbook(workbook, title, "csv");
+    }
+
+    /**
+     * Converts an ISO date string to a UTC Date object suitable for Excel.
+     * Excel is not timezone aware, so we strip the zone information.
+     */
+    function toExcelDate(isoDate: string | null | undefined): Date | string {
+        const parsed = RockDateTime.parseISO(isoDate ?? "");
+
+        if (!parsed) {
+            return "";
+        }
+
+        return new Date(Date.UTC(parsed.year, parsed.month - 1, parsed.day, parsed.hour, parsed.minute, parsed.second));
+    }
+
+    // #endregion Export to Excel or CSV
+
+    async function onCommunicate(): Promise<void> {
+        if (!gridViewGridRef.value) {
+            return;
+        }
+
+        await gridViewGridRef.value.onCommunicate();
+    }
+
+    async function mergeTemplate(): Promise<void> {
+        if (!gridViewGridRef.value) {
+            return;
+        }
+
+        await gridViewGridRef.value.onMergeTemplate();
+    }
+
+    async function mergePerson(): Promise<void> {
+        if (!gridViewGridRef.value) {
+            return;
+        }
+
+        await gridViewGridRef.value.onPersonMerge();
     }
 
     function showCelebrationModal(row: Record<string, unknown> | null = null, detailsBox: ConnectionRequestDetailBox | null = null): void {
@@ -1763,8 +3158,8 @@
         isActivityModalVisible.value = true;
     }
 
-    function showChangeStatusModal(): void {
-        prepareRequestDetailsForModal();
+    function showChangeStatusModal(row: Record<string, unknown> | null = null): void {
+        prepareRequestDetailsForModal(row);
         isChangeStatusModalVisible.value = true;
     }
 
@@ -1788,15 +3183,14 @@
         const statusUpdateBags: ConnectionRequestUpdateBag[] = [];
         const completedRequests: string[] = [];
 
-        if (box.options?.isSequentialStatusMode) {
+        if (activeActionConnectionTypeOptions.value?.isSequentialStatusMode) {
             const statusIndexByGuid = new Map(
                 connectionStatusItems.value.map((s, i) => [s.value, i])
             );
 
             const lastStatusIndex = connectionStatusItems.value.length - 1;
 
-
-            for (const request of selectedRequestDetails.value) {
+            for (const request of requestDetailsForModal.value) {
                 const currentIndex = statusIndexByGuid.get(request.connectionStatus?.guid);
                 if (currentIndex === undefined || isNullOrWhiteSpace(request.idKey)) {
                     continue;
@@ -1813,17 +3207,19 @@
 
                 statusUpdateBags.push({
                     connectionRequestIdKey: request.idKey,
-                    connectionStatusGuid: nextStatus.value,
-                    note: bag.note
+                    connectionStatusKey: nextStatus.value,
+                    note: bag.note,
+                    beforeIdKey: cardMovedBeforeIdKey.value
                 });
             }
         }
         else {
-            for (const key of allSelectedKeys.value) {
+            for (const request of requestDetailsForModal.value) {
                 statusUpdateBags.push({
-                    connectionRequestIdKey: key,
-                    connectionStatusGuid: bag.connectionStatusGuid,
-                    note: bag.note
+                    connectionRequestIdKey: request.idKey,
+                    connectionStatusKey: bag.connectionStatusKey,
+                    note: bag.note,
+                    beforeIdKey: cardMovedBeforeIdKey.value
                 });
             }
         }
@@ -1837,6 +3233,7 @@
         }
         finally {
             isModalSaving.value = false;
+            cardMovedBeforeIdKey.value = null;
         }
     }
 
@@ -1894,10 +3291,11 @@
     async function loadGridData(): Promise<void> {
         gridData.value = undefined;
         areRequestsLoading.value = true;
-        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+        const result = await invokeBlockAction<ConnectionsHubGridDataBag>("GetGridData");
 
-        if (result.isSuccess && result.data) {
-            gridData.value = reactive(result.data);
+        if (result.isSuccess && result.data?.gridData) {
+            gridData.value = reactive(result.data.gridData);
+            mergeConnectorGroupings(result.data.connectorGroupings);
         }
         else {
             requestListErrorMessage.value = result.errorMessage ?? "Error loading grid data.";
@@ -1906,8 +3304,11 @@
     }
 
     async function refreshUserEditPermissions(): Promise<void> {
+        // Refresh permissions for whichever Connection Type the user has filtered to.
+        // In Standard mode this is the page's static type; in My Connections it follows
+        // the type dropdown (and falls back to the single loaded type when only one exists).
         const result = await invokeBlockAction<boolean>("RefreshUserEditPermissions", {
-            connectionTypeIdKey: box.options?.connectionTypeIdKey
+            connectionTypeIdKey: selectedConnectionTypeOptions.value?.idKey
         });
 
         if (result.isSuccess) {
@@ -1918,6 +3319,14 @@
     async function updateStateFromModal(bag: UpdateConnectionRequestStatesBag): Promise<void> {
         try {
             isModalSaving.value = true;
+
+            if (isBulkAction.value) {
+                bag.connectionTypeIdKeys = distinctSelectedConnectionTypeIdKeys.value;
+            }
+            else {
+                bag.connectionTypeIdKeys = [activeRowConnectionTypeIdKey.value ?? ""];
+            }
+
             const errorMessage = await updateRequestStates(bag);
 
             if (!errorMessage) {
@@ -1936,6 +3345,14 @@
     async function updateStateFromFlyout(bag: UpdateConnectionRequestStatesBag): Promise<void> {
         try {
             isFlyoutSaving.value = true;
+
+            if (isBulkAction.value) {
+                bag.connectionTypeIdKeys = distinctSelectedConnectionTypeIdKeys.value;
+            }
+            else {
+                bag.connectionTypeIdKeys = [activeRowConnectionTypeIdKey.value ?? ""];
+            }
+
             const errorMessage = await updateRequestStates(bag);
 
             if (!errorMessage) {
@@ -1987,6 +3404,7 @@
         const status = row["connectionStatus"] as ConnectionStatusBag | undefined;
         const hasPlacementGroup = row["hasPlacementGroup"] as boolean | undefined;
         const hasRequiredGroupRequirements = row["hasRequiredGroupRequirements"] as boolean | undefined;
+        const connectionTypeIdKey = row["connectionTypeIdKey"] as string | null | undefined;
 
         if (!status
             || !key
@@ -1994,11 +3412,13 @@
             || state === undefined
             || hasPlacementGroup === undefined
             || hasRequiredGroupRequirements === undefined
+            || !connectionTypeIdKey
             || typeof status !== "object"
             || typeof key !== "string"
             || typeof state !== "number"
             || typeof hasPlacementGroup !== "boolean"
-            || typeof hasRequiredGroupRequirements !== "boolean") {
+            || typeof hasRequiredGroupRequirements !== "boolean"
+            || typeof connectionTypeIdKey !== "string") {
             return;
         }
 
@@ -2009,11 +3429,17 @@
 
         connectionRequestUpdateBag.value = {
             connectionRequestIdKey: key,
-            connectionStatusGuid: status.guid,
+            connectionStatusKey: status.guid,
             connectionState: state
         };
 
-        if (box?.options?.requiresPlacementGroupToComplete && !hasPlacementGroup) {
+        // Activate the per-row scope for the flyout (and any other per-row UI it triggers).
+        activeRowConnectionTypeIdKey.value = connectionTypeIdKey;
+        isBulkAction.value = false;
+
+        const rowConnectionTypeOptions = connectionTypeOptionsByIdKey.value[connectionTypeIdKey];
+
+        if (rowConnectionTypeOptions?.areGroupPlacementsEnabled && !hasPlacementGroup) {
             connectionRequestUpdateBag.value.canCompleteRequest = false;
         }
         else if (hasRequiredGroupRequirements) {
@@ -2036,10 +3462,14 @@
 
         connectionRequestUpdateBag.value = {
             connectionRequestIdKey: dockedPanelDetailsBox.value?.entity?.connectionRequestIdKey,
-            connectionStatusGuid: dockedPanelDetailsBox.value?.entity?.connectionStatus?.guid,
+            connectionStatusKey: dockedPanelDetailsBox.value?.entity?.connectionStatus?.guid,
             connectionState: dockedPanelDetailsBox.value?.entity?.connectionState,
             canCompleteRequest
         };
+
+        // Activate the per-row scope from the docked panel's Connection Type.
+        activeRowConnectionTypeIdKey.value = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey ?? null;
+        isBulkAction.value = false;
 
         isNoteRequired.value = dockedPanelDetailsBox.value?.entity?.connectionStatus?.isNoteRequiredOnCompletion ?? false;
         flyoutAnchorEl.value = event.currentTarget as HTMLElement;
@@ -2058,6 +3488,33 @@
         connectionRequestUpdateBag.value = {} as ConnectionRequestUpdateBag;
         isNoteRequired.value = false;
         flyoutAnchorEl.value = null;
+    }
+
+    /**
+     * Merges connector grouping metadata returned by block actions into the
+     * supplemental groupings map so connectors that are missing from the
+     * block-load groupings list still render with a labeled group.
+     *
+     * @param bags The connector grouping bags to merge. Null entries are skipped.
+     */
+    function mergeConnectorGroupings(bags: (GroupingFieldBag | null | undefined)[] | null | undefined): void {
+        if (!bags) {
+            return;
+        }
+
+        let hasNewEntries = false;
+        const merged = { ...supplementalConnectorGroupings.value };
+
+        for (const bag of bags) {
+            if (bag?.key && !merged[bag.key]) {
+                merged[bag.key] = bag;
+                hasNewEntries = true;
+            }
+        }
+
+        if (hasNewEntries) {
+            supplementalConnectorGroupings.value = merged;
+        }
     }
 
     function syncGridData(gridRow: Record<string, unknown>): void {
@@ -2106,7 +3563,7 @@
         }
         else {
             selectedKeys = allSelectedKeys.value;
-            connectionTypeIdKey = box.options?.connectionTypeIdKey;
+            connectionTypeIdKey = bulkConnectionTypeOptions.value?.idKey;
         }
 
         const result = await getSmsConfiguration(selectedKeys, connectionTypeIdKey);
@@ -2136,7 +3593,7 @@
         }
         else {
             selectedKeys = allSelectedKeys.value;
-            connectionTypeIdKey = box.options?.connectionTypeIdKey;
+            connectionTypeIdKey = bulkConnectionTypeOptions.value?.idKey;
         }
 
         const result = await getEmailConfiguration(selectedKeys, connectionTypeIdKey);
@@ -2161,9 +3618,37 @@
     }
 
     function clearAllSelections(): void {
-        groupedGridPanel.value.clearSelectedKeys();
+        groupedPanel.value.clearSelectedKeys();
+        gridViewGridRef.value?.clearSelectedKeys();
         selectedKeys.value = {};
         selectedKeysOnUnmount.value = {};
+    }
+
+    /*
+        4/20/26 - KBH
+
+        Clears the board multi-selection when the user clicks away from
+        the cards and the bulk-action toolbar. Excludes clicks inside cards,
+        the action toolbar, and any open modal/dropdown/popover so bulk
+        actions can finish flowing through the modal snapshot before the
+        selection is torn down.
+
+        Reason: Users expect an "outside click" to deselect, matching the
+        mental model set by the multi-select UI and common kanban patterns.
+    */
+    const ignoreOutsideClickSelectors = ".board-card-wrapper, .action-toolbar, .modal, .floating-dropdown, .popover";
+
+    function handleOutsideClick(event: MouseEvent): void {
+        if (!hasAnySelectedKeys.value || selectedView.value !== "board") {
+            return;
+        }
+
+        const target = event.target as Element | null;
+        if (target?.closest(ignoreOutsideClickSelectors)) {
+            return;
+        }
+
+        clearAllSelections();
     }
 
     async function getSmsConfiguration(selectedKeys: string[], connectionTypeIdKey: string | null | undefined): Promise<HttpResult<GetSmsConfigurationResponseBag>> {
@@ -2196,6 +3681,7 @@
         const result = await invokeBlockAction<ConnectionListGridUpdateBag[]>("UpdateRequestStatuses", {
             statusUpdateBags: statusUpdateBags,
             completedRequestIdKeys: completedRequestIdKeys,
+            connectionTypeIdKey: activeActionConnectionTypeOptions.value?.idKey
         });
 
         if (result.isSuccess && result.data) {
@@ -2209,6 +3695,18 @@
                     continue;
                 }
 
+                // Mirror the server-side BulkUpdate: increment the order of
+                // all sibling rows in the target status that are at or after
+                // the new order so client-side sorting stays in sync.
+                const newOrder = updateBag.order;
+                if (newOrder !== undefined && gridData.value?.rows) {
+                    for (const sibling of gridData.value.rows) {
+                        if (sibling.idKey !== updateBag.idKey && sibling.statusGrouping === updateBag.statusGrouping && (sibling.order as number) >= newOrder) {
+                            (sibling.order as number) += 1;
+                        }
+                    }
+                }
+
                 row.stateGrouping = updateBag.stateGrouping;
                 row.statusGrouping = updateBag.statusGrouping;
                 row.connectionStatus = updateBag.connectionStatusBag;
@@ -2219,6 +3717,7 @@
                 row.dueSoonDate = updateBag.dueSoonDate;
                 row.followUpDate = updateBag.followUpDate;
                 row.completedDateTime = updateBag.completedDateTime;
+                row.order = newOrder;
             }
 
             // Need to validate the updated rows still meet server filter requirements.
@@ -2242,6 +3741,9 @@
             let connectionTypeIdKey: string | null | undefined;
             if (isDockedPanelVisible.value) {
                 connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            }
+            else {
+                connectionTypeIdKey = activeRowConnectionTypeIdKey.value;
             }
 
             const result = await invokeBlockAction<ConnectionListGridUpdateBag>("ChangeRequestStatus", {
@@ -2303,7 +3805,7 @@
         if (result.isSuccess && result.data) {
             const notMeetingIdKeys = result.data;
 
-            const isPlacementGroupRequired = box.options?.requiresPlacementGroupToComplete;
+            const isPlacementGroupRequired = activeActionConnectionTypeOptions.value?.requiresPlacementGroupToComplete ?? false;
 
             const { meeting, notMeeting } = requestDetailsForModal.value.reduce(
                 (acc, request) => {
@@ -2347,14 +3849,12 @@
 
     async function updateRequestStates(bag: UpdateConnectionRequestStatesBag): Promise<string | null> {
         // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
-        let connectionTypeIdKey: string | null | undefined;
         if (isDockedPanelVisible.value) {
-            connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            bag.connectionTypeIdKeys = [dockedPanelDetailsBox.value?.options?.connectionTypeIdKey ?? ""];
         }
 
         const result = await invokeBlockAction<ConnectionListGridUpdateBag[]>("UpdateRequestStates", {
-            bag: bag,
-            connectionTypeIdKey
+            bag: bag
         });
 
         if (result.isSuccess && result.data) {
@@ -2369,6 +3869,7 @@
                     row.stateGrouping = resultBag.stateGrouping;
                     row.connectionState = resultBag.connectionState;
                     row.followUpDate = resultBag.followUpDate;
+                    row.completedDateTime = resultBag.completedDateTime;
 
                     // If this row stopped meeting server filters then splice it.
                     if (!isRowVisibleWithServerFilters(row)) {
@@ -2419,6 +3920,9 @@
             if (isDockedPanelVisible.value) {
                 connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
             }
+            else {
+                connectionTypeIdKey = activeActionConnectionTypeOptions.value?.idKey;
+            }
 
             const result = await invokeBlockAction<LaunchWorkflowResultBag>("LaunchWorkflowForRequests", {
                 bag: bag,
@@ -2453,14 +3957,20 @@
 
     async function deleteRequests(connectionRequestIdKeys: string[]): Promise<string | null> {
         // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
-        let connectionTypeIdKey: string | null | undefined;
-        if (isDockedPanelVisible.value) {
-            connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+        let connectionTypeIdKeys;
+        if (isBulkAction.value) {
+            connectionTypeIdKeys = distinctSelectedConnectionTypeIdKeys.value;
+        }
+        else if (isDockedPanelVisible.value) {
+            connectionTypeIdKeys = [dockedPanelDetailsBox.value?.options?.connectionTypeIdKey ?? ""];
+        }
+        else {
+            connectionTypeIdKeys = [activeRowConnectionTypeIdKey.value ?? ""];
         }
 
         const result = await invokeBlockAction("DeleteRequests", {
             connectionRequestIdKeys: connectionRequestIdKeys,
-            connectionTypeIdKey
+            connectionTypeIdKeys
         });
 
         if (result.isSuccess) {
@@ -2493,6 +4003,9 @@
             let connectionTypeIdKey: string | null | undefined;
             if (isDockedPanelVisible.value) {
                 connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            }
+            else {
+                connectionTypeIdKey = activeActionConnectionTypeOptions.value?.idKey;
             }
 
             // If we have an activity Id Key then we are in update mode.
@@ -2632,6 +4145,8 @@
                     syncGridData(result.data.gridRow);
                 }
 
+                mergeConnectorGroupings([result.data.connectorGroupingField]);
+
                 dockedPanelDetailsBox.value = result.data.detailBox;
 
                 connectionRequestDockedPanelRef.value?.setEditMode(false);
@@ -2709,6 +4224,7 @@
                     row.completedDateTime = updateBag.completedDateTime;
                     row.connectionOpportunity = updateBag.connectionOpportunity;
                     row.connectionOpportunityGuid = updateBag.connectionOpportunityGuid;
+                    row.connectionOpportunityIconCssClass = updateBag.connectionOpportunityIconCssClass;
                     row.campus = updateBag.campus;
                     row.campusGuid = updateBag.campusGuid;
                     row.lastActivityDateTime = updateBag.lastActivityDateTime;
@@ -2720,6 +4236,8 @@
                         row.connectorDetails = updateBag.connectorDetails;
                     }
                 }
+
+                mergeConnectorGroupings(result.data.map(u => u.connectorGroupingField));
 
                 // Need to validate the updated rows still meet server filter requirements.
                 applyServerFilters();
@@ -2767,6 +4285,8 @@
                     syncGridData(result.data.gridRow);
                 }
 
+                mergeConnectorGroupings([result.data.connectorGroupingField]);
+
                 dockedPanelDetailsBox.value = result.data.detailBox;
 
                 isTransferModalVisible.value = false;
@@ -2780,9 +4300,10 @@
         }
     }
 
-    async function checkForActiveRequester(requesterPersonAliasGuid: string): Promise<void> {
+    async function checkForActiveRequester(requesterPersonAliasGuid: string, typeIdKey: string): Promise<void> {
         const result = await invokeBlockAction<boolean>("CheckForActiveRequest", {
             requesterPersonAliasGuid,
+            connectionTypeIdKey: typeIdKey
         });
 
         if (result.isSuccess && result.data !== null) {
@@ -2803,6 +4324,8 @@
                 if (result.data.gridRow) {
                     syncGridData(result.data.gridRow);
                 }
+
+                mergeConnectorGroupings([result.data.connectorGroupingField]);
 
                 isAddConnectionRequestModalVisible.value = false;
                 return;
@@ -2840,6 +4363,10 @@
         if (isDockedPanelVisible.value) {
             connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
         }
+        else {
+            // AssignRequestModal (the only non-docked-panel caller) is bulk-only.
+            connectionTypeIdKey = bulkConnectionTypeOptions.value?.idKey;
+        }
 
         const result = await invokeBlockAction<ConnectionListGridUpdateBag[]>("ReassignConnector", {
             connectionRequestIdKeys: connectionRequestIdKeys,
@@ -2861,6 +4388,8 @@
                 row.connectorGrouping = updateBag.connectorGrouping;
                 row.connectorDetails = updateBag.connectorDetails;
             }
+
+            mergeConnectorGroupings(result.data.map(u => u.connectorGroupingField));
 
             // Need to validate the updated rows still meet server filter requirements.
             applyServerFilters();
@@ -2915,6 +4444,9 @@
             let connectionTypeIdKey: string | null | undefined;
             if (isDockedPanelVisible.value) {
                 connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            }
+            else {
+                connectionTypeIdKey = activeRowConnectionTypeIdKey.value;
             }
 
             const result = await invokeBlockAction<ConnectionListGridUpdateBag>("UpsertCelebrationText", { bag, connectionTypeIdKey });
@@ -2978,6 +4510,55 @@
         }
     }
 
+    async function reorderConnectionRequest(idKey: string, beforeIdKey: string | null, statusGroupKey: string): Promise<void> {
+        const result = await invokeBlockAction<number>("ReorderConnectionRequest", {
+            connectionRequestIdKey: idKey,
+            beforeIdKey
+        });
+        const rowIndex = gridData.value?.rows?.findIndex(r => r.idKey === idKey) ?? -1;
+
+        if (result.isSuccess && gridData.value?.rows && rowIndex !== -1) {
+            const newOrder = result.data as number;
+
+            // Mirror the server-side BulkUpdate: increment sibling orders
+            // in the same status column at or after the new position.
+            for (const sibling of gridData.value.rows) {
+                if (sibling.idKey !== idKey
+                    && sibling.statusGrouping === statusGroupKey
+                    && (sibling.order as number) >= newOrder) {
+                    (sibling.order as number) += 1;
+                }
+            }
+
+            const row = gridData.value.rows[rowIndex];
+            row.order = newOrder;
+        }
+        else {
+            console.error(result.errorMessage ?? "An error occurred while reordering the Connection Request.");
+        }
+    }
+
+    async function getSnapshotMetrics(): Promise<void> {
+        const result = await invokeBlockAction<CompletionMetricsBag>("GetSnapshotMetrics");
+
+        if (result.isSuccess && result.data) {
+            snapshotMetrics.value = result.data;
+        }
+        else {
+            console.error(result.errorMessage ?? "An unknown error occurred while fetching the snapshot metrics.");
+        }
+    }
+
+    // Refetches the snapshot metrics when the snapshot is open so it reflects the current
+    // Connection Type, Opportunity, and Campus filters. The server reads the Type and
+    // Opportunity filters from person preferences, so callers must persist those preferences
+    // before invoking this; Campus is read from the request context entity.
+    function refreshSnapshotMetricsIfVisible(): void {
+        if (isSnapshotVisible.value) {
+            getSnapshotMetrics();
+        }
+    }
+
     // #endregion Block Actions
 
     // When any modal is open, disable close-on-outside-click for the docked panel so that
@@ -2986,21 +4567,17 @@
         handleClickOutsideSettingForDockedPanel(!values.some(Boolean));
     });
 
-    watch(areOnlyMyRequestsVisible, async () => {
-        // This prevents saving a "Selected Connector" as this person prefernce
-        if (areOnlyMyRequestsVisible.value !== "true" && areOnlyMyRequestsVisible.value !== "false") {
-            return;
+    watch(isChangeStatusModalVisible, () => {
+        // Clear selected status whenever the change status modal is closed.
+        if (!isChangeStatusModalVisible.value) {
+            selectedStatus.value = null;
         }
+    });
 
-        preferences.setValue(PreferenceKey.AreOnlyMyRequestsVisible, areOnlyMyRequestsVisible.value);
+    watch(selectedConnector, async () => {
+        preferences.setValue(PreferenceKey.SelectedConnector, selectedConnector.value);
 
-        const connectorIndex = requestToggleItems.value.findIndex(i => i.value !== "true" && i.value !== "false");
-        if (connectorIndex !== -1) {
-            // Clears the selected connector person preference, removes their item from the dropdown, and clears the query param.
-            preferences.setValue(PreferenceKey.SelectedConnector, "");
-            requestToggleItems.value.splice(connectorIndex, 1);
-            removeCurrentUrlQueryParams("Connector");
-        }
+        removeCurrentUrlQueryParams("Connector");
 
         await preferences.save();
 
@@ -3012,12 +4589,41 @@
             ...newConnectionRequest.value.bag,
             campusGuid: selectedCampus.value?.value ?? null
         };
+
+        refreshSnapshotMetricsIfVisible();
+    });
+
+    watch(selectedType, async () => {
+        if (!isMyConnectionsView.value) {
+            return;
+        }
+
+        preferences.setValue(PreferenceKey.FilterConnectionType, selectedType.value);
+
+        await preferences.save();
+
+        // Once the individual changes or clears the type filter, the FilterConnectionType
+        // preference is the source of truth. Clear the ConnectionType query string param (used
+        // only to seed the filter on arrival) so a page reload doesn't re-apply the seeded type.
+        removeCurrentUrlQueryParams("ConnectionType");
+
+        if (!isNullOrWhiteSpace(selectedType.value)) {
+            await refreshUserEditPermissions();
+        }
+        else {
+            canEditGlobalConnectionRequests.value = allConnectionTypeOptions.value.flatMap(t => t.canEditConnectionRequests).some(t => t === true);
+        }
+
+        refreshSnapshotMetricsIfVisible();
+        loadGridData();
     });
 
     watch(selectedOpportunity, async () => {
         preferences.setValue(getConnectionFilterKey(PreferenceKey.ConnectionmOpportunityFilterConnectionTypeIdKey), selectedOpportunity.value);
 
         await preferences.save();
+
+        refreshSnapshotMetricsIfVisible();
 
         newConnectionRequest.value.bag = {
             connectionOpportunityGuid: selectedOpportunity.value
@@ -3034,10 +4640,10 @@
 
         // If there is no connection type query string parameter present, we need to add it
         // because we've just removed the Connection Opportunity query string parameter.
-        if (box.options?.connectionTypeIdKey) {
+        if (staticConnectionTypeOptions.value?.idKey) {
             const url = new URL(window.location.href);
             if (!url.searchParams.has("ConnectionType")) {
-                url.searchParams.set("ConnectionType", box.options.connectionTypeIdKey);
+                url.searchParams.set("ConnectionType", staticConnectionTypeOptions.value.idKey);
                 history.replaceState(null, "", url.toString());
             }
         }
@@ -3068,6 +4674,37 @@
         await preferences.save();
     });
 
+    // Attribute filters apply server-side, so persist them and reload the grid
+    // whenever the user saves a change to them from the View Options modal.
+    //
+    // The modal's onSave creates a new attributeFilterValues object on every emit
+    // (via { ...attributeFilterValues.value }), which means a reference-only watch
+    // would fire even when an unrelated client-side filter (status, due) changed.
+    // We compare the new value against the previous value deeply so that this
+    // watcher only triggers a grid reload when an attribute filter actually changed.
+    watch(() => viewOptions.value.attributeFilterValues, async (newValue, oldValue) => {
+        if (deepEqual(newValue, oldValue, true)) {
+            return;
+        }
+
+        preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterAttributeValuesConnectionTypeIdKey), JSON.stringify(newValue ?? {}));
+        await preferences.save();
+        loadGridData();
+    });
+
+    watch(selectedView, async () => {
+        removeCurrentUrlQueryParams("SelectedView");
+        clearAllSelections();
+
+        if (selectedView.value === "list") {
+            selectedGrouping.value = isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedGroupByMode)) ? selectedGrouping.value : preferences.getValue(PreferenceKey.SelectedGroupByMode);
+        }
+
+        preferences.setValue(getConnectionFilterKey(PreferenceKey.SelectedViewConnectionTypeIdKey), selectedView.value);
+
+        await preferences.save();
+    });
+
     watch(() => viewOptions.value.stateFilter, async () => {
         preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterStateConnectionTypIdKey), JSON.stringify(viewOptions.value.stateFilter));
         await preferences.save();
@@ -3078,10 +4715,18 @@
     //     onAddRequest(newConnectionRequest.value);
     // });
 
-    watch([selectedGrouping, isAutoCollapseEnabled], async () => {
-        preferences.setValue(PreferenceKey.SelectedGroupByMode, selectedGrouping.value);
-        preferences.setValue(PreferenceKey.IsAutoCollapseEnabled, isAutoCollapseEnabled.value.toString());
+    watch(selectedGrouping, async () => {
+        // Only update the selected group by mode person preference when the selected view is "List".
+        if (selectedView.value !== "list") {
+            return;
+        }
 
+        preferences.setValue(PreferenceKey.SelectedGroupByMode, selectedGrouping.value);
+        await preferences.save();
+    });
+
+    watch(isAutoCollapseEnabled, async () => {
+        preferences.setValue(PreferenceKey.IsAutoCollapseEnabled, isAutoCollapseEnabled.value.toString());
         await preferences.save();
     });
 
@@ -3102,11 +4747,26 @@
     }, 150));
 
     loadContextValues();
-    loadGridData();
+
+    if (isNullOrWhiteSpace(box.options?.errorMessage)) {
+        loadGridData();
+    }
+    else {
+        requestListErrorMessage.value = box.options?.errorMessage ?? "An error occurred while loading the Block.";
+        areRequestsLoading.value = false;
+    }
 
     if (!isNullOrWhiteSpace(box.options?.connectionRequestIdKey)) {
         onSelectItem(box.options!.connectionRequestIdKey!);
     }
 
     onConfigurationValuesChanged(useReloadBlock());
+
+    onMounted(() => {
+        document.addEventListener("click", handleOutsideClick);
+    });
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("click", handleOutsideClick);
+    });
 </script>

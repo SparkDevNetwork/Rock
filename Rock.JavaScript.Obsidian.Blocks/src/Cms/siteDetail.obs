@@ -130,7 +130,7 @@
     const submitForm = ref(false);
     const showAuditDetailsModal = ref(false);
     const isCompiling = ref(false);
-    const siteUrl = ref(siteViewBag.value?.siteUrl ?? "/");
+    const siteUrl = computed((): string => siteViewBag.value?.siteUrl ?? "/");
     const isShowing = ref(false);
     const alertType = ref<ModalAlertType>();
     const compileMessage = ref("");
@@ -193,7 +193,7 @@
     });
 
     const options = computed((): SiteDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? {} as SiteDetailOptionsBag;
     });
 
     // #endregion
@@ -206,7 +206,7 @@
 
     const onVisitSite = (): void => {
         if (siteUrl.value) {
-            window.location.href = makeUrlRedirectSafe(siteUrl.value);
+            window.open(makeUrlRedirectSafe(siteUrl.value), "_blank");
         }
     };
 
@@ -285,7 +285,7 @@
             window.location.href = makeUrlRedirectSafe(result.data);
         }
         else {
-            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete group member schedule template.";
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete site.";
         }
     }
 

@@ -32,9 +32,9 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public string ConnectionRequestIdKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the GUID of the connection status to assign to this request.
+        /// Gets or sets the key (Guid, IdKey, or Id) of the connection status to assign to this request.
         /// </summary>
-        public string ConnectionStatusGuid { get; set; }
+        public string ConnectionStatusKey { get; set; }
 
         /// <summary>
         /// Gets or sets an optional note to record with this update.
@@ -52,13 +52,19 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public DateTimeOffset? FollowUpDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the GUID of the connector's person alias to assign to this request.
+        /// Gets or sets the key (Guid, IdKey, or Id) of the connector's person alias to assign to this request.
         /// </summary>
-        public string ConnectorPersonAliasGuid { get; set; }
+        public string ConnectorPersonAliasKey { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this update includes completing the request.
         /// </summary>
         public bool? CanCompleteRequest { get; set; }
+
+        /// <summary>
+        /// Gets or sets the IdKey of the Connection Request that the moved request
+        /// should be placed before. Null means place at the end of the column.
+        /// </summary>
+        public string BeforeIdKey { get; set; }
     }
 }

@@ -9,7 +9,9 @@ using Moq;
 using Rock.CheckIn.v2;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Utility;
 using Rock.ViewModels.CheckIn;
@@ -656,7 +658,7 @@ DELETE [AV]
             }
 
             int familyId;
-            var expectedStreet = "1234 Elm Street";
+            var expectedStreet = "1234 Elm St";
             var expectedCity = "Nowhere";
             var expectedState = "AZ";
             var expectedPostalCode = "12345";
@@ -855,7 +857,7 @@ DELETE [AV]
                 Assert.AreEqual( homeLocationTypeId, deckerFamily.GroupLocations.First().GroupLocationTypeValueId );
             }
 
-            var expectedStreet = "1234 Elm Street";
+            var expectedStreet = "1234 Elm St";
             var expectedCity = "Nowhere";
             var expectedState = "AZ";
             var expectedPostalCode = "12345";

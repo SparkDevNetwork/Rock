@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
@@ -170,6 +171,67 @@ namespace Rock.Reporting.DataSelect.Group
             };
 
             return callbackField;
+        }
+
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionParts = selection.Split( '|' );
+            var showAsLinkType = selectionParts.Length > 0
+                ? selectionParts[0].ConvertToEnum<ShowAsLinkType>( ShowAsLinkType.NameOnly )
+                : ShowAsLinkType.NameOnly;
+
+            return new MemberListField
+            {
+                ShowAs = showAsLinkType,
+                BasePersonUrl = "/Person/",
+                BaseGroupMemberUrl = "/GroupMember/"
+            };
+        }
+
+        /// <summary>
+        /// Value-shaping subclass that renders a list of
+        /// <see cref="MemberInfo"/> items as a comma-delimited HTML string of
+        /// names, optionally wrapped in anchors. Mirrors the WebForms
+        /// <see cref="CallbackField"/> behavior.
+        /// </summary>
+        private class MemberListField : HtmlObsidianGridField
+        {
+            public ShowAsLinkType ShowAs { get; set; }
+
+            public string BasePersonUrl { get; set; }
+
+            public string BaseGroupMemberUrl { get; set; }
+
+            public override object TransformValue( object rawValue, ObsidianGridFieldContext context )
+            {
+                if ( !( rawValue is IEnumerable<MemberInfo> members ) )
+                {
+                    return string.Empty;
+                }
+
+                var formattedList = new List<string>();
+                foreach ( var m in members )
+                {
+                    var name = Rock.Model.Person.FormatFullName( m.NickName, m.LastName, m.SuffixValueId );
+                    string html;
+                    if ( ShowAs == ShowAsLinkType.PersonLink )
+                    {
+                        html = $"<a href='{BasePersonUrl}{m.PersonId}'>{name}</a>";
+                    }
+                    else if ( ShowAs == ShowAsLinkType.GroupMemberLink )
+                    {
+                        html = $"<a href='{BaseGroupMemberUrl}{m.GroupMemberId}'>{name}</a>";
+                    }
+                    else
+                    {
+                        html = name;
+                    }
+                    formattedList.Add( html );
+                }
+
+                return formattedList.AsDelimited( ", " );
+            }
         }
 
         /// <summary>

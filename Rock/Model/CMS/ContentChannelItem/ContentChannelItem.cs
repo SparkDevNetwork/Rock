@@ -33,6 +33,7 @@ using Rock.Lava;
 using Rock.Security;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -45,7 +46,7 @@ namespace Rock.Model
     [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CONTENT_CHANNEL_ITEM )]
     [ContentCollectionIndexable( typeof( Rock.Cms.ContentCollection.Indexers.ContentChannelItemIndexer ), typeof( Rock.Cms.ContentCollection.IndexDocuments.ContentChannelItemDocument ) )]
-    public partial class ContentChannelItem : Model<ContentChannelItem>, IOrdered, IRockIndexable, IHasAdditionalSettings
+    public partial class ContentChannelItem : Model<ContentChannelItem>, IOrdered, IRockIndexable, IHasAdditionalSettings, ICacheable
     {
         #region Entity Properties
 

@@ -15,6 +15,10 @@
                     </slot>
                 </h1>
 
+                <div v-if="$slots.panelLabels" class="panel-labels">
+                    <slot name="panelLabels" />
+                </div>
+
                 <div class="panel-header-actions">
 
                     <slot name="headerActions" />
@@ -89,6 +93,10 @@
                     </button>
                 </div>
             </div>
+
+            <template v-else-if="$slots.panelHeader">
+                <slot name="panelHeader" />
+            </template>
 
             <div v-if="$slots.subheaderLeft || $slots.subheaderRight" class="panel-sub-header">
                 <div class="panel-sub-header-left">

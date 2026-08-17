@@ -38,9 +38,17 @@ namespace Rock.Jobs
     [DisplayName( "Send Data View Email" )]
     [Description( "This job will send a Lava email template to a list of people returned from the dataview." )]
 
-    [SystemCommunicationField( "System Email", "The email template that will be sent.", true, "" )]
-    [DataViewField( "DataView", "The dataview the email will be sent to.", true, "", "Rock.Model.Person" )]
-    [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180 )]
+    [SystemCommunicationField( "System Email",
+        Description = "The email template that will be sent.",
+        IsRequired = true )]
+    [DataViewField( "DataView",
+        Description = "The dataview the email will be sent to.",
+        IsRequired = true,
+        EntityTypeName = "Rock.Model.Person" )]
+    [IntegerField( "Database Timeout",
+        Description = "The number of seconds to wait before reporting a database timeout.",
+        IsRequired = false,
+        DefaultIntegerValue = 180 )]
     public class SendDataViewEmail : RockJob
     {
         /// <summary>

@@ -113,6 +113,8 @@ namespace Rock.Blocks.Cms
     [TextField( "Filters",
         Description = "The configured filter settings for this block instance.",
         DefaultValue = "",
+        AllowHtml = true,
+        AllowLava = true,
         Category = "CustomSetting",
         Key = AttributeKey.Filters )]
 
@@ -133,24 +135,32 @@ namespace Rock.Blocks.Cms
 <div class=""actions"">
    <a href=""#"" class=""btn btn-default js-more"">Show More</a>
 </div>",
+        AllowHtml = true,
+        AllowLava = true,
         Category = "CustomSetting",
         Key = AttributeKey.ResultsTemplate )]
 
     [TextField( "Group Header Template",
         Description = "The lava template to use to render the group headers. This will display above each content collection source.",
         DefaultValue = DefaultMobileGroupHeaderTemplate,
+        AllowHtml = true,
+        AllowLava = true,
         Category = "CustomSetting",
         Key = AttributeKey.GroupHeaderTemplate )]
 
     [TextField( "Item Template",
         Description = "The lava template to use to render a single result.",
         DefaultValue = DefaultTemplateMarker,
+        AllowHtml = true,
+        AllowLava = true,
         Category = "CustomSetting",
         Key = AttributeKey.ItemTemplate )]
 
     [TextField( "Pre-Search Template",
         Description = "The lava template to use to render the content displayed before a search happens. This will not be used if Search on Load is enabled.",
         DefaultValue = DefaultTemplateMarker,
+        AllowHtml = true,
+        AllowLava = true,
         Category = "CustomSetting",
         Key = AttributeKey.PreSearchTemplate )]
 
@@ -176,7 +186,7 @@ namespace Rock.Blocks.Cms
         Description = "The amount of boost to apply to matches on personalization request filters.",
         DefaultValue = null,
         Category = "CustomSetting",
-        Key = AttributeKey.SegmentBoostAmount )]
+        Key = AttributeKey.RequestFilterBoostAmount )]
 
     [BooleanField("Show Unapproved Items",
         Description = "Determines if unapproved items should be shown.",

@@ -42,11 +42,21 @@ namespace Rock.Attribute
         /// <param name="key">The key.</param>
         /// <param name="isPassword">if set to <c>true</c> [is password].</param>
         /// <param name="fieldTypeClass">The field type class.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public TextFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", 
             int order = 0, string key = null, bool isPassword = false, string fieldTypeClass = null  )
             : base( name, description, required, defaultValue, category, order, key, fieldTypeClass )
         {
-            
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TextFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public TextFieldAttribute( string name )
+            : base( SystemGuid.FieldType.TEXT.AsGuid(), name )
+        {
         }
 
         /// <summary>
@@ -65,7 +75,7 @@ namespace Rock.Attribute
             set
             {
                 var isPasswordValue = new Field.ConfigurationValue( value.ToString() );
-                FieldConfigurationValues.Add( IS_PASSWORD_KEY, isPasswordValue );
+                FieldConfigurationValues.AddOrReplace( IS_PASSWORD_KEY, isPasswordValue );
             }
         }
 

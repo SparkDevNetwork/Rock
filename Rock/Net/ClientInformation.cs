@@ -15,10 +15,12 @@
 // </copyright>
 //
 using System;
-using System.Collections.Concurrent;
 using System.Linq;
 using System.Web;
 
+using Microsoft.Extensions.DependencyInjection;
+
+using Rock.Configuration;
 using Rock.Net.Geolocation;
 using Rock.Web.HttpModules;
 
@@ -31,20 +33,6 @@ namespace Rock.Net
     /// </summary>
     public class ClientInformation
     {
-        #region Private Fields
-
-        /// <summary>
-        /// Cached copies of the client info for a given user agent string.
-        /// </summary>
-        private static readonly ConcurrentDictionary<string, ClientInfo> _cachedBrowserInfo = new ConcurrentDictionary<string, ClientInfo>();
-
-        /// <summary>
-        /// The shared UA parser that will be used.
-        /// </summary>
-        private static readonly Parser _uaParser = Parser.GetDefault();
-
-        #endregion
-
         #region Properties
 
         /// <summary>
@@ -56,12 +44,20 @@ namespace Rock.Net
         public string IpAddress { get; }
 
         /// <summary>
+        /// Gets the parsed details of the browser making the request.
+        /// </summary>
+        /// <value>The parsed browser details, or <c>null</c> when no user-agent string was supplied.</value>
+        public UserAgentInfo BrowserInfo { get; }
+
+        /// <summary>
         /// Gets the browser object that identifies what we know about the browser.
         /// </summary>
         /// <value>
         /// The browser object that identifies what we know about the browser.
         /// </value>
-        public ClientInfo Browser => GetClientInfoForUserAgent( UserAgent );
+        [Obsolete( "Use BrowserInfo instead. The new property returns a Rock-owned type that does not depend on UAParser." )]
+        [RockObsolete( "20.0" )]
+        public ClientInfo Browser => BrowserInfo?.OriginalClientInfo;
 
         /// <summary>
         /// Gets the user agent identifier string.
@@ -106,6 +102,11 @@ namespace Rock.Net
             {
                 Geolocation = geolocation;
             }
+
+            if ( UserAgent.IsNotNullOrWhiteSpace() )
+            {
+                BrowserInfo = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( UserAgent );
+            }
         }
 
         /// <summary>
@@ -127,32 +128,6 @@ namespace Rock.Net
             Geolocation = IpGeoLookup.Instance.GetGeolocation( IpAddress );
 
             UserAgent = request.Headers.GetValues( "USER-AGENT" )?.FirstOrDefault() ?? string.Empty;
-        }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Gets the client information from the user agent string. This uses
-        /// caching to reduce overhead from parsing.
-        /// </summary>
-        /// <param name="userAgent">The user agent string.</param>
-        /// <returns>The details from the user agent string.</returns>
-        internal static ClientInfo GetClientInfoForUserAgent( string userAgent )
-        {
-            if ( userAgent.IsNullOrWhiteSpace() )
-            {
-                return null;
-            }
-
-            // Prevent abuse of cache.
-            if ( _cachedBrowserInfo.Count > 10_000 )
-            {
-                _cachedBrowserInfo.Clear();
-            }
-
-            return _cachedBrowserInfo.GetOrAdd( userAgent, ua => _uaParser.Parse( ua ) );
         }
 
         #endregion

@@ -308,10 +308,10 @@ namespace Rock.Blocks.Finance
         {
             var entity = GetInitialEntity<FinancialAccount, FinancialAccountService>( RockContext, PageParameterKey.FinancialAccountId );
 
-            var parentAccountId = PageParameter( PageParameterKey.ParentAccountId ).AsIntegerOrNull();
-            if ( entity != null && entity.Id == 0 && parentAccountId.HasValue )
+            var parentAccountKey = PageParameter( PageParameterKey.ParentAccountId );
+            if ( entity != null && entity.Id == 0 && parentAccountKey.IsNotNullOrWhiteSpace() )
             {
-                entity.ParentAccount = new FinancialAccountService( RockContext ).Get( parentAccountId.Value );
+                entity.ParentAccount = new FinancialAccountService( RockContext ).Get( parentAccountKey, !PageCache.Layout.Site.DisablePredictableIds );
             }
 
             return entity;
@@ -323,13 +323,15 @@ namespace Rock.Blocks.Finance
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
-            var parentAccountId = PageParameter( PageParameterKey.ParentAccountId ).AsIntegerOrNull();
-            if ( parentAccountId.HasValue )
+            var parentAccountKey = PageParameter( PageParameterKey.ParentAccountId );
+            if ( parentAccountKey.IsNotNullOrWhiteSpace() )
             {
                 var qryParams = new Dictionary<string, string>();
-                if ( parentAccountId != 0 )
+
+                var parentAccount = new FinancialAccountService( RockContext ).Get( parentAccountKey, !PageCache.Layout.Site.DisablePredictableIds );
+                if ( parentAccount != null )
                 {
-                    qryParams["AccountId"] = parentAccountId.ToString();
+                    qryParams["AccountId"] = parentAccount.IdKey;
                 }
 
                 qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );

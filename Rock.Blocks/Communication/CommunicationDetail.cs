@@ -387,16 +387,12 @@ namespace Rock.Blocks.Communication
 
             if ( box.IsHidden )
             {
-                // If a hidden legacy communication has no legacy editor on this page to fall back to, send it to the
-                // legacy [wizard] page, which can render and edit it. The communication came from a projected query, so
-                // its CommunicationTemplate navigation is not loaded; the projected template version is used instead.
-                var shouldRedirectToLegacyWizardPage = communication != null
-                    && IsLegacyCommunication( communication.Segments, communicationInfo.CommunicationTemplateVersion )
-                    && IsLegacyWizardMissingFromCurrentPage();
-
-                if ( shouldRedirectToLegacyWizardPage )
+                // The block is hidden because this page cannot edit the communication in its current state. If
+                // another page can edit it - the legacy [wizard] page or the simple communication page - redirect
+                // there; otherwise it stays on this page.
+                if ( communication != null )
                 {
-                    box.LegacyRedirectUrl = GetLegacyCommunicationUrl( GetPageParamsForReload( communication.Id ) );
+                    box.RedirectUrl = GetHiddenCommunicationRedirectUrl( communication, GetPageParamsForReload( communication.Id ) );
                 }
 
                 // Return early if the block should be hidden.
@@ -828,39 +824,19 @@ namespace Rock.Blocks.Communication
                  */
                 if ( communication.CommunicationTemplate == null || !communication.CommunicationTemplate.SupportsEmailWizard() )
                 {
-                    var wizardBlock = this.PageCache.Blocks.FirstOrDefault( b =>
-                        b.BlockType.Guid == SystemGuid.BlockType.COMMUNICATION_ENTRY_WIZARD.AsGuid() // Legacy Communication Entry Wizard
-                        || b.BlockType.Guid == "9FFC7A4F-2061-4F30-AF79-D68C85EE9F27".AsGuid() // Obsidian Communication Entry Wizard
-                    );
-
-                    var simpleCommunicationPageAttributeValue = wizardBlock?.GetAttributeValue( "SimpleCommunicationPage" );
-
-                    if ( simpleCommunicationPageAttributeValue.IsNotNullOrWhiteSpace() )
+                    var simpleCommunicationPageUrl = GetSimpleCommunicationPageUrl( pageParams );
+                    if ( simpleCommunicationPageUrl.IsNotNullOrWhiteSpace() )
                     {
-                        var pageReference = new Rock.Web.PageReference( simpleCommunicationPageAttributeValue, pageParams != null ? new Dictionary<string, string>( pageParams ) : null );
-
-                        if ( pageReference.PageId > 0 )
-                        {
-                            // If a single route exists, use it to keep the redirect URL user friendly
-                            // rather than falling back to "/page/{id}".
-                            if ( pageReference.RouteId == 0 )
-                            {
-                                var pageCache = PageCache.Get( pageReference.PageId );
-                                if ( pageCache.PageRoutes.Count == 1 )
-                                {
-                                    pageReference.RouteId = pageCache.PageRoutes.First().Id;
-                                }
-                            }
-
-                            redirectUrl = pageReference.BuildUrl();
-                            hasEditorRedirect = true;
-                        }
+                        redirectUrl = simpleCommunicationPageUrl;
+                        hasEditorRedirect = true;
                     }
                 }
 
-                // If a hidden legacy communication has no legacy editor on this page to fall back to (if it was not
-                // already sent to a usable editor), send it to the legacy [wizard] page, which can render and edit it.
-                if ( !hasEditorRedirect && IsLegacyCommunication( communication ) && IsLegacyWizardMissingFromCurrentPage() )
+                // If the communication requires the WebForms wizard and that wizard is not on this page (and it was
+                // not already sent to a usable editor), send it to the legacy [wizard] page, which can render it.
+                if ( !hasEditorRedirect
+                    && RequiresWebFormsWizard( communication.CommunicationTemplateId )
+                    && IsLegacyWizardMissingFromCurrentPage() )
                 {
                     var legacyUrl = GetLegacyCommunicationUrl( pageParams );
                     if ( legacyUrl.IsNotNullOrWhiteSpace() )
@@ -1025,8 +1001,9 @@ namespace Rock.Blocks.Communication
             var pageParams = GetPageParamsForReload( newCommunicationId.Value );
             pageParams.Remove( PageParameterKey.Tab );
 
+            // The copy uses the same template as the source, so the source determines whether the WebForms wizard is required.
             string communicationUrl = null;
-            if ( IsLegacyCommunication( communicationService, newCommunicationId.Value ) )
+            if ( RequiresWebFormsWizard( communication.CommunicationTemplateId ) )
             {
                 communicationUrl = GetLegacyCommunicationUrl( pageParams );
             }
@@ -1179,58 +1156,71 @@ namespace Rock.Blocks.Communication
         #region Private Methods
 
         /// <summary>
-        /// Determines whether the specified communication is considered a legacy communication.
+        /// Determines whether a communication requires the legacy WebForms Communication Entry Wizard to be edited.
         /// </summary>
-        /// <param name="communication">
-        /// The communication to evaluate. Its <see cref="Rock.Model.Communication.CommunicationTemplate"/> must be loaded.
+        /// <param name="communicationTemplate">
+        /// The communication's template, or <see langword="null"/> if it has none. Its
+        /// <see cref="Rock.Model.CommunicationTemplate.Message"/> must be loaded.
         /// </param>
-        /// <returns>
-        /// <see langword="true"/> if the communication is identified as a legacy communication; otherwise, <see langword="false"/>.
-        /// </returns>
-        private bool IsLegacyCommunication( Rock.Model.Communication communication )
+        /// <returns><see langword="true"/> if the communication requires the WebForms wizard; otherwise, <see langword="false"/>.</returns>
+        /// <remarks>
+        /// A communication requires the WebForms wizard only when it uses an email-wizard template - one whose
+        /// message was authored for the drag-and-drop email editor (see <see cref="CommunicationTemplate.SupportsEmailWizard"/>) -
+        /// whose message is compatible only with the WebForms email editor, i.e. the template's version is
+        /// <see cref="CommunicationTemplateVersion.Legacy"/>. Beta and later wizard templates are edited by the
+        /// Obsidian wizard, and non-wizard communications are edited by the simple editor, so neither requires the
+        /// WebForms wizard. Version alone is not sufficient: it is meaningful only for wizard templates (the simple
+        /// editor ignores it), so the template must also support the email wizard.
+        /// </remarks>
+        private bool RequiresWebFormsWizard( CommunicationTemplate communicationTemplate )
         {
-            return communication != null
-                && IsLegacyCommunication( communication.Segments, communication.CommunicationTemplate?.Version );
+            // Check the version first to avoid resolving and parsing the template message unless it could matter.
+            if ( communicationTemplate == null || communicationTemplate.Version != CommunicationTemplateVersion.Legacy )
+            {
+                return false;
+            }
+
+            return GetSupportsEmailWizard( communicationTemplate );
         }
 
         /// <summary>
-        /// Determines whether the specified communication is considered a legacy communication.
+        /// Determines whether the communication with the specified template requires the legacy WebForms Communication Entry Wizard to be edited.
         /// </summary>
-        /// <param name="communicationService">The service used to query communication data.</param>
-        /// <param name="communicationId">The identifier of the communication to evaluate.</param>
-        /// <returns>
-        /// <see langword="true"/> if the communication is identified as a legacy communication; otherwise, <see langword="false"/>.
-        /// </returns>
-        private bool IsLegacyCommunication( CommunicationService communicationService, int communicationId )
+        /// <param name="communicationTemplateId">The communication's <see cref="Rock.Model.Communication.CommunicationTemplateId"/>, or <see langword="null"/> if it has none.</param>
+        /// <returns><see langword="true"/> if the communication requires the WebForms wizard; otherwise, <see langword="false"/>.</returns>
+        /// <seealso cref="RequiresWebFormsWizard(CommunicationTemplate)"/>
+        private bool RequiresWebFormsWizard( int? communicationTemplateId )
         {
-            var data = communicationService.Queryable()
-                .Where( c => c.Id == communicationId )
-                .Select( c => new
-                {
-                    CommunicationTemplateVersion = ( CommunicationTemplateVersion? ) c.CommunicationTemplate.Version,
-                    c.Segments
-                } )
-                .FirstOrDefault();
+            if ( !communicationTemplateId.HasValue )
+            {
+                return false;
+            }
 
-            return data != null
-                && IsLegacyCommunication( data.Segments, data.CommunicationTemplateVersion );
+            var communicationTemplate = new CommunicationTemplateService( RockContext ).Get( communicationTemplateId.Value );
+
+            return RequiresWebFormsWizard( communicationTemplate );
         }
 
         /// <summary>
-        /// Determines whether a communication is legacy from its raw <see cref="Rock.Model.Communication.Segments"/>
-        /// and template version. Legacy communications use DataView-based segments or a legacy communication template.
+        /// Determines whether a communication template's message supports the email wizard, caching the result.
         /// </summary>
-        /// <param name="segments">The communication's <see cref="Rock.Model.Communication.Segments"/> value.</param>
-        /// <param name="communicationTemplateVersion">
-        /// The communication template's version, or <see langword="null"/> if there is no template.
-        /// </param>
-        /// <returns>
-        /// <see langword="true"/> if the communication is identified as a legacy communication; otherwise, <see langword="false"/>.
-        /// </returns>
-        private static bool IsLegacyCommunication( string segments, CommunicationTemplateVersion? communicationTemplateVersion )
+        /// <param name="communicationTemplate">The communication template to check.</param>
+        /// <returns><see langword="true"/> if the template supports the email wizard; otherwise, <see langword="false"/>.</returns>
+        private bool GetSupportsEmailWizard( CommunicationTemplate communicationTemplate )
         {
-            return segments.IsNotNullOrWhiteSpace()
-                || communicationTemplateVersion == CommunicationTemplateVersion.Legacy;
+            /*
+                07/02/26 - JMH
+
+                SupportsEmailWizard() resolves the Lava in the template's full message HTML and parses the result
+                just to detect a dropzone element. Any database-querying Lava in the template runs on each call, so
+                the result is cached per person (the Lava can reference the current person) and per template version.
+                This mirrors the caching in the Communication Entry Wizard block.
+
+                Reason: Avoid re-resolving the template's Lava on every page load.
+            */
+            var cacheKey = $"{nameof( CommunicationDetail )}:SupportsEmailWizard:{GetCurrentPerson()?.Id ?? 0}:{communicationTemplate.Id}:{communicationTemplate.ModifiedDateTime?.Ticks ?? 0}";
+
+            return ( bool ) RockCache.GetOrAddExisting( cacheKey, null, () => communicationTemplate.SupportsEmailWizard(), TimeSpan.FromMinutes( 10 ) );
         }
 
         /// <summary>
@@ -1253,15 +1243,96 @@ namespace Rock.Blocks.Communication
         }
 
         /// <summary>
-        /// Gets the URL to redirect to after a reload-style action. A hidden legacy communication is sent
-        /// to the legacy page, which can render and edit it; everything else reloads the current page.
+        /// Constructs a URL for the configured Simple Communication Page from the Communication Entry Wizard block's
+        /// <c>SimpleCommunicationPage</c> setting on the current page.
+        /// </summary>
+        /// <param name="pageParams">The page parameters to include in the URL.</param>
+        /// <returns>The Simple Communication Page URL, or <see langword="null"/> if none is configured or resolvable.</returns>
+        private string GetSimpleCommunicationPageUrl( IDictionary<string, string> pageParams )
+        {
+            var wizardBlock = this.PageCache.Blocks.FirstOrDefault( b =>
+                b.BlockType.Guid == SystemGuid.BlockType.COMMUNICATION_ENTRY_WIZARD.AsGuid() // Legacy Communication Entry Wizard
+                || b.BlockType.Guid == "9FFC7A4F-2061-4F30-AF79-D68C85EE9F27".AsGuid() // Obsidian Communication Entry Wizard
+            );
+
+            var simpleCommunicationPageAttributeValue = wizardBlock?.GetAttributeValue( "SimpleCommunicationPage" );
+            if ( simpleCommunicationPageAttributeValue.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var pageReference = new Rock.Web.PageReference( simpleCommunicationPageAttributeValue, pageParams != null ? new Dictionary<string, string>( pageParams ) : null );
+            if ( pageReference.PageId <= 0 )
+            {
+                return null;
+            }
+
+            // If a single route exists, use it to keep the redirect URL user friendly rather than falling back to "/page/{id}".
+            if ( pageReference.RouteId == 0 )
+            {
+                var pageCache = PageCache.Get( pageReference.PageId );
+                if ( pageCache.PageRoutes.Count == 1 )
+                {
+                    pageReference.RouteId = pageCache.PageRoutes.First().Id;
+                }
+            }
+
+            return pageReference.BuildUrl();
+        }
+
+        /// <summary>
+        /// Gets the URL a hidden communication must be redirected to when the current page cannot edit it.
+        /// </summary>
+        /// <param name="communication">The communication being evaluated.</param>
+        /// <param name="pageParams">The page parameters to include in the URL.</param>
+        /// <returns>The redirect URL, or <see langword="null"/> if the current page can edit the communication.</returns>
+        /// <remarks>
+        /// A communication that requires the WebForms wizard is sent to the legacy [wizard] page. A communication
+        /// whose template does not support the email wizard is edited in the simple editor, so it is sent to the
+        /// Simple Communication Page when that editor is absent from the current page. A communication with no
+        /// template is transient and stays on the current page so the individual can choose an editor.
+        /// </remarks>
+        private string GetHiddenCommunicationRedirectUrl( Rock.Model.Communication communication, IDictionary<string, string> pageParams )
+        {
+            if ( communication == null )
+            {
+                return null;
+            }
+
+            var communicationTemplate = communication.CommunicationTemplateId.HasValue
+                ? new CommunicationTemplateService( RockContext ).Get( communication.CommunicationTemplateId.Value )
+                : null;
+
+            // A legacy WebForms wizard communication can only be edited on the legacy [wizard] page.
+            if ( RequiresWebFormsWizard( communicationTemplate ) && IsLegacyWizardMissingFromCurrentPage() )
+            {
+                return GetLegacyCommunicationUrl( pageParams );
+            }
+
+            // A communication with a non-wizard template is edited in the simple editor; send it there when the
+            // simple editor is not on this page.
+            if ( communicationTemplate != null
+                && !GetSupportsEmailWizard( communicationTemplate )
+                && IsSimpleEditorMissingFromCurrentPage() )
+            {
+                return GetSimpleCommunicationPageUrl( pageParams );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the URL to redirect to after a reload-style action. A hidden communication that requires the
+        /// WebForms wizard is sent to the legacy page, which can render and edit it; everything else reloads the current page.
         /// </summary>
         /// <param name="communication">The communication being redirected to.</param>
         /// <param name="pageParams">The page parameters to include in the URL.</param>
         /// <returns>The redirect URL.</returns>
         private string GetReloadRedirectUrl( Rock.Model.Communication communication, IDictionary<string, string> pageParams )
         {
-            if ( GetIsBlockHidden( communication ) && IsLegacyCommunication( communication ) && IsLegacyWizardMissingFromCurrentPage() )
+            if ( GetIsBlockHidden( communication )
+                && RequiresWebFormsWizard( communication.CommunicationTemplateId )
+                && IsLegacyWizardMissingFromCurrentPage() )
             {
                 var legacyUrl = GetLegacyCommunicationUrl( pageParams );
                 if ( legacyUrl.IsNotNullOrWhiteSpace() )
@@ -1283,6 +1354,18 @@ namespace Rock.Blocks.Communication
         private bool IsLegacyWizardMissingFromCurrentPage()
         {
             return !this.PageCache.Blocks.Any( b => b.BlockType.Guid == SystemGuid.BlockType.COMMUNICATION_ENTRY_WIZARD.AsGuid() );
+        }
+
+        /// <summary>
+        /// Determines whether the simple Communication Entry block is absent from the current page. A non-wizard
+        /// communication is edited by that block, so when it is absent such a communication must be redirected to
+        /// the Simple Communication Page. Checking this also prevents the simple page from redirecting to itself.
+        /// </summary>
+        /// <returns><see langword="true"/> if the simple Communication Entry block is not on the current page; otherwise, <see langword="false"/>.</returns>
+        private bool IsSimpleEditorMissingFromCurrentPage()
+        {
+            // Obsidian Communication Entry (simple editor) block type.
+            return !this.PageCache.Blocks.Any( b => b.BlockType.Guid == "F6A780EB-66A7-475D-A42E-3C29AD5A89D3".AsGuid() );
         }
 
         /// <summary>

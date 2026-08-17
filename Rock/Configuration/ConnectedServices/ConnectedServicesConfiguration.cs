@@ -32,5 +32,11 @@ namespace Rock.Configuration.ConnectedServices
         /// be <c>null</c> if the service is not configured or available.
         /// </summary>
         public RockIntelligence.ServiceConfiguration RockIntelligence { get; set; }
+
+        /// <summary>
+        /// The configured settings for the Knowledge Base service. May
+        /// be <c>null</c> if the service is not configured or available.
+        /// </summary>
+        public KnowledgeBase.ServiceConfiguration KnowledgeBase { get; set; }
     }
 }

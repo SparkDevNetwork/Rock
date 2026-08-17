@@ -34,8 +34,19 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public CurrencyFieldAttribute( string name, string description = "", bool required = true, double defaultValue = double.MinValue, string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue == double.MinValue ? "" : defaultValue.ToString(), category, order, key, typeof( Rock.Field.Types.CurrencyFieldType ).FullName )
+            : base( SystemGuid.FieldType.CURRENCY.AsGuid(), name, description, required, defaultValue == double.MinValue ? "" : defaultValue.ToString(), category, order, key )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CurrencyFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public CurrencyFieldAttribute( string name )
+            : base( SystemGuid.FieldType.CURRENCY.AsGuid(), name )
         {
         }
     }

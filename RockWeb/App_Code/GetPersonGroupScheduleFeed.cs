@@ -20,9 +20,13 @@ using System.Linq;
 using System.Web;
 using System.Net;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Ical.Net.DataTypes;
 using Calendar = Ical.Net.Calendar;
 
@@ -56,7 +60,7 @@ namespace RockWeb
         /// <param name="httpContext">The HTTP context.</param>
         public void ProcessRequest( HttpContext httpContext )
         {
-            string interactionDeviceType = InteractionDeviceType.GetClientType( httpContext.Request.UserAgent );
+            string interactionDeviceType = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( httpContext.Request.UserAgent ).ClientType;
 
             try
             {

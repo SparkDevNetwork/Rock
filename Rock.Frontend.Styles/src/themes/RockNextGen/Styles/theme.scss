@@ -1101,7 +1101,8 @@ $hamburger-spacing: 4px;
   padding: var(--spacing-medium);
 }
 
-.group-detail .panel-block > .panel-heading .panel-title i {
+.group-detail .panel-block > .panel-heading .panel-title i,
+.group-detail .panel-block > .panel-header .panel-title i {
   display: inline;
 }
 

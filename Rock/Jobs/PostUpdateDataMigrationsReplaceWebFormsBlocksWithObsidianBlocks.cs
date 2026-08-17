@@ -92,7 +92,7 @@ namespace Rock.Jobs
         {
             get
             {
-                return new Field.Types.KeyValueListFieldType().GetValuesFromString( null, GetAttributeValue( AttributeKey.BlockTypeGuidReplacementPairs ), null, false )
+                return Field.Helper.GetKeyValueListValuesFromString( GetAttributeValue( AttributeKey.BlockTypeGuidReplacementPairs ), null, false )
                     // Calling Guid?.Value intentionally on the next line so that exceptions are thrown if the field value is invalid.
                     .ToDictionary( kvp => kvp.Key.AsGuidOrNull().Value, kvp => kvp.Value.ToString().AsGuidOrNull().Value );
             }
@@ -102,7 +102,7 @@ namespace Rock.Jobs
         {
             get
             {
-                return new Field.Types.KeyValueListFieldType().GetValuesFromString( null, GetAttributeValue( AttributeKey.BlockAttributeKeysToIgnore ), null, false )
+                return Field.Helper.GetKeyValueListValuesFromString( GetAttributeValue( AttributeKey.BlockAttributeKeysToIgnore ), null, false )
                     // Calling Guid?.Value intentionally on the next line so that exceptions are thrown if the field value is invalid.
                     .ToDictionary( kvp => kvp.Key.AsGuidOrNull().Value, kvp => kvp.Value.ToString().SplitDelimitedValues().ToHashSet() );
             }
@@ -292,12 +292,15 @@ namespace Rock.Jobs
                 .Select( a => a.Key )
                 .ToHashSet( StringComparer.OrdinalIgnoreCase );
 
+            var possibleMissingBlockAttributes = new HashSet<string>( oldBlockTypeAttributeKeys, StringComparer.OrdinalIgnoreCase );
+            possibleMissingBlockAttributes.RemoveAll( newBlockTypeAttributeKeys );
+            // Remove these checks since we're not concerned with these if they are missing from the new block.
+            possibleMissingBlockAttributes.RemoveAll( new[] { "core.CustomGridEnableStickyHeaders", "core.CustomActionsConfigs", "core.EnableDefaultWorkflowLauncher" } );
+
             // If the new block type fails to have all the required attributes of the old block type which it is replacing, skip it.
-            if ( !oldBlockTypeAttributeKeys.IsSubsetOf( newBlockTypeAttributeKeys ) )
+            if ( possibleMissingBlockAttributes.Count > 0 )
             {
-                var missingBlockAttributes = new HashSet<string>( oldBlockTypeAttributeKeys, StringComparer.OrdinalIgnoreCase );
-                missingBlockAttributes.RemoveAll( newBlockTypeAttributeKeys );
-                ErrorMessage.Add( $"The new {BlockTypeCache.Get( newBlockTypeId.Value ).Name} block does not have the attribute(s): {missingBlockAttributes.Select( a => a ).JoinStrings( ", " )} of the previous {BlockTypeCache.Get( oldBlockTypeId.Value ).Name} block. Skipping this block for now." );
+                ErrorMessage.Add( $"The new {BlockTypeCache.Get( newBlockTypeId.Value ).Name} block does not have the attribute(s): {possibleMissingBlockAttributes.Select( a => a ).JoinStrings( ", " )} of the previous {BlockTypeCache.Get( oldBlockTypeId.Value ).Name} block. Skipping this block for now." );
                 return;
             }
 

@@ -36,7 +36,11 @@ namespace Rock.Jobs
     [DisplayName( "Registration Reminder" )]
     [Description( "Send any registration reminders that are due to be sent." )]
 
-    [IntegerField( "Expire Date", "The number of days past the registration reminder to refrain from sending the email. This would only be used if something went wrong and acts like a safety net to prevent sending the reminder after the fact.", true, 1, key: "ExpireDate" )]
+    [IntegerField( "Expire Date",
+        Description = "The number of days past the registration reminder to refrain from sending the email. This would only be used if something went wrong and acts like a safety net to prevent sending the reminder after the fact.",
+        IsRequired = true,
+        DefaultIntegerValue = 1,
+        Key = "ExpireDate" )]
     public class SendRegistrationReminders : RockJob
     {
         /// <summary>

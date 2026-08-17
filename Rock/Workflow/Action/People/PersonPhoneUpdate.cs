@@ -36,15 +36,46 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Person Phone Update" )]
 
-    [WorkflowAttribute( "Person", "Workflow attribute that contains the person to update.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [WorkflowAttribute( "Phone Type (From Attribute)", "The attribute that contains the phone number type to update.", false, "", "", 1, "PhoneTypeAttribute",
-        new string[] { "Rock.Field.Types.DefinedValueFieldType" } )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Type", "The type of phone number to update (if attribute is not specified or is an invalid value).", true, false, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME, "", 2 )]
-    [WorkflowTextOrAttribute( "Phone Number", "Attribute Value", "The value or attribute value to set the phone number to. <span class='tip tip-lava'></span>", false, "", "", 3, "PhoneNumber" )]
-    [WorkflowTextOrAttribute( "Unlisted", "Attribute Value", "The value or attribute value to indicate if number should be unlisted. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 4, "Unlisted" )]
-    [WorkflowTextOrAttribute( "Messaging Enabled", "Attribute Value", "The value or attribute value to indicate if messaging (SMS) should be enabled for phone. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 5, "MessagingEnabled" )]
-    [BooleanField( "Ignore Blank Values", "If a value is blank should it be ignored, or should it be used to wipe out the current phone number?", true, order: 6 )]
+    [WorkflowAttribute( "Person",
+        Description = "Workflow attribute that contains the person to update.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowAttribute( "Phone Type (From Attribute)",
+        Description = "The attribute that contains the phone number type to update.",
+        IsRequired = false,
+        Order = 1,
+        Key = "PhoneTypeAttribute",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.DefinedValueFieldType" } )]
+    [DefinedValueField( "Phone Type",
+        Description = "The type of phone number to update (if attribute is not specified or is an invalid value).",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME,
+        Order = 2 )]
+    [WorkflowTextOrAttribute( "Phone Number",
+        "Attribute Value",
+        Description = "The value or attribute value to set the phone number to. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 3,
+        Key = "PhoneNumber" )]
+    [WorkflowTextOrAttribute( "Unlisted",
+        "Attribute Value",
+        Description = "The value or attribute value to indicate if number should be unlisted. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 4,
+        Key = "Unlisted" )]
+    [WorkflowTextOrAttribute( "Messaging Enabled",
+        "Attribute Value",
+        Description = "The value or attribute value to indicate if messaging (SMS) should be enabled for phone. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 5,
+        Key = "MessagingEnabled" )]
+    [BooleanField( "Ignore Blank Values",
+        Description = "If a value is blank should it be ignored, or should it be used to wipe out the current phone number?",
+        DefaultBooleanValue = true,
+        Order = 6 )]
     [Rock.SystemGuid.EntityTypeGuid( "65DFC198-B9F5-45CB-839D-AF30791C4FBF")]
     public class PersonPhoneUpdate : ActionComponent
     {

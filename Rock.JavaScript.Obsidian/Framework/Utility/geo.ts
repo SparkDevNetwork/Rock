@@ -152,7 +152,7 @@ export async function loadMapResources(options: GeoPickerGetSettingsOptionsBag =
         keyParam = `key=${googleMapSettings.googleApiKey}&`;
     }
 
-    await loadJavaScriptAsync(`https://maps.googleapis.com/maps/api/js?${keyParam}v=3.64&libraries=drawing,visualization,geometry,marker`, () => typeof (google) != "undefined" && typeof (google.maps) != "undefined", {}, false);
+    await loadJavaScriptAsync(`https://maps.googleapis.com/maps/api/js?${keyParam}libraries=visualization,geometry,marker`, () => typeof (google) != "undefined" && typeof (google.maps) != "undefined", {}, false);
 
     return googleMapSettings;
 }

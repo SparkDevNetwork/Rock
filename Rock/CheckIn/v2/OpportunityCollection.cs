@@ -153,7 +153,8 @@ namespace Rock.CheckIn.v2
                 .Select( id => NamedScheduleCache.Get( id, rockContext ) )
                 .Where( s => s != null
                     && s.IsActive
-                    && s.WasCheckInActive( now ) )
+                    && s.WasCheckInActive( now )
+                    && s.Name.IsNotNullOrWhiteSpace() )
                 .OrderBy( s => s.StartTimeOfDay )
                 .ToList();
 

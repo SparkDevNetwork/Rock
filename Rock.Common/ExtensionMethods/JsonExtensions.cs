@@ -36,10 +36,18 @@ namespace Rock
         /// Contains the singleton serialize settings that match the specified
         /// options key.
         /// </summary>
-        private static Dictionary<string, JsonSerializerSettings> _jsonSerializeSettingsCache = new Dictionary<string, JsonSerializerSettings>();
+        private static volatile Dictionary<string, JsonSerializerSettings> _jsonSerializeSettingsCache = new Dictionary<string, JsonSerializerSettings>();
 
         /// <inheritdoc cref="ReferenceEqualityComparer"/>
         private static IEqualityComparer _referenceEqualityComparer;
+
+        /// <summary>
+        /// The lock object used for write operations. We still use copy-on-write
+        /// for the cache so we don't have to lock for reads. But we do need to
+        /// lock for writes to ensure concurrency since we have two operations
+        /// that need to be atomic: updating the cache and updating the comparer.
+        /// </summary>
+        private static readonly object _cacheLock = new object();
 
         #endregion
 
@@ -54,33 +62,15 @@ namespace Rock
         {
             set
             {
-                _referenceEqualityComparer = value;
+                lock ( _cacheLock )
+                {
+                    _referenceEqualityComparer = value;
 
-                // Clear the cache to make sure we generate new settings with
-                // the new reference equality comparer.
-                _jsonSerializeSettingsCache = new Dictionary<string, JsonSerializerSettings>();
+                    // Clear the cache to make sure we generate new settings with
+                    // the new reference equality comparer.
+                    _jsonSerializeSettingsCache = new Dictionary<string, JsonSerializerSettings>();
+                }
             }
-        }
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// Handles initialization of any data required by the <see cref="JsonExtensions"/> class.
-        /// </summary>
-        static JsonExtensions()
-        {
-            // This effectively forces the cache to be initialized under single
-            // threaded conditions so we don't have to worry about concurrency.
-            GetSerializeSettings( false, false, false );
-            GetSerializeSettings( false, false, true );
-            GetSerializeSettings( false, true, false );
-            GetSerializeSettings( false, true, true );
-            GetSerializeSettings( true, false, false );
-            GetSerializeSettings( true, false, true );
-            GetSerializeSettings( true, true, false );
-            GetSerializeSettings( true, true, true );
         }
 
         #endregion
@@ -283,10 +273,21 @@ namespace Rock
             // Reading the dictionary is thread-safe.
             if ( !_jsonSerializeSettingsCache.TryGetValue( settingsKey, out var settings ) )
             {
-                // This is only the case during class initialization on a single thread.
-                settings = CreateSerializerSettings( indentOutput, ignoreErrors, camelCase );
+                lock ( _cacheLock )
+                {
+                    settings = CreateSerializerSettings( indentOutput, ignoreErrors, camelCase );
 
-                _jsonSerializeSettingsCache[settingsKey] = settings;
+                    var newCache = new Dictionary<string, JsonSerializerSettings>( _jsonSerializeSettingsCache )
+                    {
+                        [settingsKey] = settings
+                    };
+
+                    // The lock keeps us in sync between changes to the cache and
+                    // changes to the reference equality comparer. We still need
+                    // copy-on-write to ensure that we don't have a race condition
+                    // between reading the cache and writing to it.
+                    _jsonSerializeSettingsCache = newCache;
+                }
             }
 
             return settings;

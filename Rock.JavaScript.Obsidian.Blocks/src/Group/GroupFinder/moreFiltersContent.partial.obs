@@ -1,0 +1,45 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="more-filters-content">
+        <div v-for="filter in config.modalAttributeFilters ?? []"
+             :key="filter.attributeKey ?? ''"
+             class="form-group">
+            <template v-if="filter.attribute">
+                <RockLabel v-if="filter.attribute.name">{{ filter.attribute.name }}</RockLabel>
+                <div class="control-wrapper">
+                    <RockAttributeFilter :attribute="filter.attribute"
+                                         :modelValue="valueFor(filter.attributeKey)"
+                                         @update:modelValue="value => setValue(filter.attributeKey, value)" />
+                </div>
+            </template>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import RockAttributeFilter from "@Obsidian/Controls/rockAttributeFilter.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
+    import { useGroupFinderFilters } from "./filterState.partial";
+
+    // #region Values
+
+    const { config, modalAttributeValues } = useGroupFinderFilters();
+
+    // #endregion Values
+
+    // #region Functions
+
+    function valueFor(key: string | null | undefined): ComparisonValue {
+        return (key && modalAttributeValues.value[key]) || { value: "" };
+    }
+
+    function setValue(key: string | null | undefined, value: ComparisonValue): void {
+        if (!key) {
+            return;
+        }
+        modalAttributeValues.value = { ...modalAttributeValues.value, [key]: value };
+    }
+
+    // #endregion Functions
+</script>

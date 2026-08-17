@@ -339,6 +339,11 @@ function() {
         {
             var selectionConfig = SelectionConfig.Parse( selection );
 
+            if ( selectionConfig == null )
+            {
+                return null;
+            }
+
             var timeframe = selectionConfig.HidePastOpportunities
                 ? "Current"
                 : "Current or past";

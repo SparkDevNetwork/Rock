@@ -560,7 +560,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets the attendance analytics attendee first dates.
         /// </summary>
-        /// <param name="GroupTypeIds">The group type ids.</param>
+        /// <param name="groupTypeIds">The group type ids.</param>
         /// <param name="groupIds">The group ids.</param>
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
@@ -568,10 +568,10 @@ namespace Rock.Model
         /// <param name="includeNullCampusIds">The include null campus ids.</param>
         /// <param name="scheduleIds">The schedule ids.</param>
         /// <returns></returns>
-        public DataSet GetAttendanceAnalyticsAttendeeFirstDatesDataSet( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
+        public DataSet GetAttendanceAnalyticsAttendeeFirstDatesDataSet( List<int> groupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
             List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
         {
-            var parameters = GetAttendanceAnalyticsParameters( GroupTypeIds, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
+            var parameters = GetAttendanceAnalyticsParameters( groupTypeIds, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
             return new DbService( this.Context ).GetDataSetFromSqlCommand( "spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates", System.Data.CommandType.StoredProcedure, parameters );
         }
 
@@ -601,57 +601,57 @@ namespace Rock.Model
         /// <param name="campusIds">The campus ids.</param>
         /// <param name="includeNullCampusIds">The include null campus ids.</param>
         /// <param name="scheduleIds">The schedule ids.</param>
-        /// <param name="IncludeParentsWithChild">The include parents with child.</param>
-        /// <param name="IncludeChildrenWithParents">The include children with parents.</param>
+        /// <param name="includeParentsWithChild">The include parents with child.</param>
+        /// <param name="includeChildrenWithParents">The include children with parents.</param>
         /// <returns></returns>
         public DataSet GetAttendanceAnalyticsAttendeesDataSet( List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild, bool? IncludeChildrenWithParents )
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? includeParentsWithChild, bool? includeChildrenWithParents )
         {
-            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, IncludeParentsWithChild, IncludeChildrenWithParents );
+            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, includeParentsWithChild, includeChildrenWithParents );
             return new DbService( this.Context ).GetDataSetFromSqlCommand( "spCheckin_AttendanceAnalyticsQuery_Attendees", System.Data.CommandType.StoredProcedure, parameters );
         }
 
         /// <summary>
         /// Gets the attendance analytics non attendees.
         /// </summary>
-        /// <param name="GroupTypeIds">The group type ids.</param>
+        /// <param name="groupTypeIds">The group type ids.</param>
         /// <param name="groupIds">The group ids.</param>
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
         /// <param name="campusIds">The campus ids.</param>
         /// <param name="includeNullCampusIds">The include null campus ids.</param>
         /// <param name="scheduleIds">The schedule ids.</param>
-        /// <param name="IncludeParentsWithChild">The include parents with child.</param>
-        /// <param name="IncludeChildrenWithParents">The include children with parents.</param>
+        /// <param name="includeParentsWithChild">The include parents with child.</param>
+        /// <param name="includeChildrenWithParents">The include children with parents.</param>
         /// <returns></returns>
-        public DataSet GetAttendanceAnalyticsNonAttendeesDataSet( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild, bool? IncludeChildrenWithParents )
+        public DataSet GetAttendanceAnalyticsNonAttendeesDataSet( List<int> groupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? includeParentsWithChild, bool? includeChildrenWithParents )
         {
-            var parameters = GetAttendanceAnalyticsParameters( GroupTypeIds, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, IncludeParentsWithChild, IncludeChildrenWithParents );
+            var parameters = GetAttendanceAnalyticsParameters( groupTypeIds, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, includeParentsWithChild, includeChildrenWithParents );
             return new DbService( this.Context ).GetDataSetFromSqlCommand( "spCheckin_AttendanceAnalyticsQuery_NonAttendees", System.Data.CommandType.StoredProcedure, parameters );
         }
 
         /// <summary>
         /// Gets the attendance analytics parameters.
         /// </summary>
-        /// <param name="GroupTypeIds">The group type ids.</param>
+        /// <param name="groupTypeIds">The group type ids.</param>
         /// <param name="groupIds">The group ids.</param>
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
         /// <param name="campusIds">The campus ids.</param>
         /// <param name="includeNullCampusIds">The include null campus ids.</param>
         /// <param name="scheduleIds">The schedule ids.</param>
-        /// <param name="IncludeParentsWithChild">The include parents with child.</param>
-        /// <param name="IncludeChildrenWithParents">The include children with parents.</param>
+        /// <param name="includeParentsWithChild">The include parents with child.</param>
+        /// <param name="includeChildrenWithParents">The include children with parents.</param>
         /// <returns></returns>
-        private static Dictionary<string, object> GetAttendanceAnalyticsParameters( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild = null, bool? IncludeChildrenWithParents = null )
+        private static Dictionary<string, object> GetAttendanceAnalyticsParameters( List<int> groupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? includeParentsWithChild = null, bool? includeChildrenWithParents = null )
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
 
-            if ( GroupTypeIds != null && GroupTypeIds.Any() )
+            if ( groupTypeIds != null && groupTypeIds.Any() )
             {
-                parameters.Add( "GroupTypeIds", GroupTypeIds.AsDelimited( "," ) );
+                parameters.Add( "GroupTypeIds", groupTypeIds.AsDelimited( "," ) );
             }
 
             if ( groupIds != null && groupIds.Any() )
@@ -684,123 +684,18 @@ namespace Rock.Model
                 parameters.Add( "ScheduleIds", scheduleIds.AsDelimited( "," ) );
             }
 
-            if ( IncludeParentsWithChild.HasValue )
+            if ( includeParentsWithChild.HasValue )
             {
-                parameters.Add( "IncludeParentsWithChild", IncludeParentsWithChild.Value );
+                parameters.Add( "IncludeParentsWithChild", includeParentsWithChild.Value );
             }
 
-            if ( IncludeChildrenWithParents.HasValue )
+            if ( includeChildrenWithParents.HasValue )
             {
-                parameters.Add( "IncludeChildrenWithParents", IncludeChildrenWithParents.Value );
+                parameters.Add( "IncludeChildrenWithParents", includeChildrenWithParents.Value );
             }
 
             return parameters;
         }
-
-        #region Obsolete
-
-        /// <summary>
-        /// Gets the attendance analytics attendee dates.
-        /// </summary>
-        /// <param name="groupIds">The group ids.</param>
-        /// <param name="start">The start.</param>
-        /// <param name="end">The end.</param>
-        /// <param name="campusIds">The campus ids.</param>
-        /// <param name="includeNullCampusIds">The include null campus ids.</param>
-        /// <param name="scheduleIds">The schedule ids.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.13" )]
-        [Obsolete( "Use non-static GetAttendanceAnalyticsAttendeeDatesDataSet instead." )]
-        public static DataSet GetAttendanceAnalyticsAttendeeDates( List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
-        {
-            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
-            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_AttendeeDates", System.Data.CommandType.StoredProcedure, parameters, 300 );
-        }
-
-        /// <summary>
-        /// Gets the attendance analytics attendee first dates.
-        /// </summary>
-        /// <param name="GroupTypeIds">The group type ids.</param>
-        /// <param name="groupIds">The group ids.</param>
-        /// <param name="start">The start.</param>
-        /// <param name="end">The end.</param>
-        /// <param name="campusIds">The campus ids.</param>
-        /// <param name="includeNullCampusIds">The include null campus ids.</param>
-        /// <param name="scheduleIds">The schedule ids.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.13" )]
-        [Obsolete( "Use non-static GetAttendanceAnalyticsAttendeeFirstDatesDataSet instead." )]
-        public static DataSet GetAttendanceAnalyticsAttendeeFirstDates( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
-        {
-            var parameters = GetAttendanceAnalyticsParameters( GroupTypeIds, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
-            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates", System.Data.CommandType.StoredProcedure, parameters, 300 );
-        }
-
-        /// <summary>
-        /// Gets the attendance analytics attendee last attendance.
-        /// </summary>
-        /// <param name="groupIds">The group ids.</param>
-        /// <param name="start">The start.</param>
-        /// <param name="end">The end.</param>
-        /// <param name="campusIds">The campus ids.</param>
-        /// <param name="includeNullCampusIds">The include null campus ids.</param>
-        /// <param name="scheduleIds">The schedule ids.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.13" )]
-        [Obsolete( "Use non-static GetAttendanceAnalyticsAttendeeLastAttendanceDataSet instead." )]
-        public static DataSet GetAttendanceAnalyticsAttendeeLastAttendance( List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
-        {
-            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
-            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance", System.Data.CommandType.StoredProcedure, parameters, 300 );
-        }
-
-        /// <summary>
-        /// Gets the attendance analytics attendees.
-        /// </summary>
-        /// <param name="groupIds">The group ids.</param>
-        /// <param name="start">The start.</param>
-        /// <param name="end">The end.</param>
-        /// <param name="campusIds">The campus ids.</param>
-        /// <param name="includeNullCampusIds">The include null campus ids.</param>
-        /// <param name="scheduleIds">The schedule ids.</param>
-        /// <param name="IncludeParentsWithChild">The include parents with child.</param>
-        /// <param name="IncludeChildrenWithParents">The include children with parents.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.13" )]
-        [Obsolete( "Use non-static GetAttendanceAnalyticsAttendeesDataSet instead." )]
-        public static DataSet GetAttendanceAnalyticsAttendees( List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild, bool? IncludeChildrenWithParents )
-        {
-            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, IncludeParentsWithChild, IncludeChildrenWithParents );
-            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_Attendees", System.Data.CommandType.StoredProcedure, parameters, 300 );
-        }
-
-        /// <summary>
-        /// Gets the attendance analytics non attendees.
-        /// </summary>
-        /// <param name="GroupTypeIds">The group type ids.</param>
-        /// <param name="groupIds">The group ids.</param>
-        /// <param name="start">The start.</param>
-        /// <param name="end">The end.</param>
-        /// <param name="campusIds">The campus ids.</param>
-        /// <param name="includeNullCampusIds">The include null campus ids.</param>
-        /// <param name="scheduleIds">The schedule ids.</param>
-        /// <param name="IncludeParentsWithChild">The include parents with child.</param>
-        /// <param name="IncludeChildrenWithParents">The include children with parents.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.13" )]
-        [Obsolete( "Use non-static GetAttendanceAnalyticsNonAttendeesDataSet instead." )]
-        public static DataSet GetAttendanceAnalyticsNonAttendees( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild, bool? IncludeChildrenWithParents )
-        {
-            var parameters = GetAttendanceAnalyticsParameters( GroupTypeIds, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, IncludeParentsWithChild, IncludeChildrenWithParents );
-            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_NonAttendees", System.Data.CommandType.StoredProcedure, parameters, 300 );
-        }
-
-        #endregion Obsolete
 
         /// <summary>
         /// 
@@ -822,161 +717,6 @@ namespace Rock.Model
             /// The attendance.
             /// </value>
             public Attendance Attendance { get; set; }
-        }
-
-        /// <summary>
-        /// Sends the scheduled attendance confirmation emails and marks ScheduleConfirmationSent = true, then returns the number of emails sent.
-        /// Make sure to call rockContext.SaveChanges() after running this.
-        /// NOTE: This doesn't check <see cref="Attendance.ScheduleConfirmationSent" />, so you'll need to add that condition to the sendConfirmationAttendancesQuery parameter
-        /// </summary>
-        /// <param name="sendConfirmationAttendancesQuery">The send confirmation attendances query.</param>
-        /// <param name="errorMessages">The error messages.</param>
-        /// <returns></returns>
-        [Obsolete( "Use SendScheduleConfirmationCommunication instead." )]
-        [RockObsolete( "1.13" )]
-        public int SendScheduleConfirmationSystemEmails( IQueryable<Attendance> sendConfirmationAttendancesQuery, out List<string> errorMessages )
-        {
-            int emailsSent = 0;
-            errorMessages = new List<string>();
-
-            sendConfirmationAttendancesQuery = sendConfirmationAttendancesQuery.Where( a =>
-                a.PersonAlias.Person.Email != null
-                && a.PersonAlias.Person.Email != string.Empty
-                && a.PersonAlias.Person.EmailPreference != EmailPreference.DoNotEmail
-                && a.PersonAlias.Person.IsEmailActive );
-
-            var sendConfirmationAttendancesQueryList = sendConfirmationAttendancesQuery.ToList();
-            var attendancesBySystemEmailTypeList = sendConfirmationAttendancesQueryList
-                .GroupBy( a => a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId )
-                .Where( a => a.Key.HasValue )
-                .Select( s => new
-                {
-                    ScheduleConfirmationSystemCommunicationId = s.Key.Value,
-                    Attendances = s.ToList()
-                } ).ToList();
-
-            var rockContext = this.Context as RockContext;
-
-            List<Exception> exceptionList = new List<Exception>();
-
-            foreach ( var attendancesBySystemEmailType in attendancesBySystemEmailTypeList )
-            {
-                var scheduleConfirmationSystemEmail = new SystemCommunicationService( rockContext ).GetNoTracking( attendancesBySystemEmailType.ScheduleConfirmationSystemCommunicationId );
-
-                var attendancesByPersonList = attendancesBySystemEmailType.Attendances.GroupBy( a => a.PersonAlias.Person ).Select( s => new
-                {
-                    Person = s.Key,
-                    Attendances = s.ToList()
-                } );
-
-                foreach ( var attendancesByPerson in attendancesByPersonList )
-                {
-                    try
-                    {
-                        var emailMessage = new RockEmailMessage( scheduleConfirmationSystemEmail );
-                        var recipient = attendancesByPerson.Person;
-                        var attendances = attendancesByPerson.Attendances;
-
-                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-                        mergeFields.Add( "Attendance", attendances.FirstOrDefault() );
-                        mergeFields.Add( "Attendances", attendances );
-                        emailMessage.AddRecipient( new RockEmailMessageRecipient( recipient, mergeFields ) );
-                        List<string> sendErrors;
-                        bool sendSuccess = emailMessage.Send( out sendErrors );
-
-                        if ( sendSuccess )
-                        {
-                            emailsSent++;
-                            foreach ( var attendance in attendances )
-                            {
-                                attendance.ScheduleConfirmationSent = true;
-                            }
-                        }
-                        else
-                        {
-                            errorMessages.AddRange( sendErrors );
-                        }
-                    }
-                    catch ( Exception ex )
-                    {
-                        var emailException = new Exception( $"Exception occurred when trying to send Schedule Confirmation Email to {attendancesByPerson.Person}", ex );
-                        errorMessages.Add( emailException.Message );
-                        exceptionList.Add( emailException );
-                    }
-                }
-            }
-
-            // group messages that are exactly the same and put a count of those in the message
-            errorMessages = errorMessages.GroupBy( a => a ).Select( s => s.Count() > 1 ? $"{s.Key}  ({s.Count()})" : s.Key ).ToList();
-
-            if ( exceptionList.Any() )
-            {
-                ExceptionLogService.LogException( new AggregateException( "Errors Occurred sending schedule confirmation emails", exceptionList ) );
-            }
-
-            return emailsSent;
-        }
-
-        /// <summary>
-        /// Sends the scheduled attendance reminder emails and marks ScheduleReminderSent = true, then returns the number of emails sent.
-        /// </summary>
-        /// <param name="sendReminderAttendancesQuery">The send reminder attendances query.</param>
-        /// <returns></returns>
-        [Obsolete( "Use SendScheduleReminderSystemCommunication instead." )]
-        [RockObsolete( "1.13" )]
-        public int SendScheduleReminderSystemEmails( IQueryable<Attendance> sendReminderAttendancesQuery )
-        {
-            int emailsSent = 0;
-            var sendReminderAttendancesQueryList = sendReminderAttendancesQuery.ToList();
-            var attendancesBySystemEmailTypeList = sendReminderAttendancesQueryList
-                .GroupBy( a => a.Occurrence.Group.GroupType.ScheduleReminderSystemCommunicationId )
-                .Where( a => a.Key.HasValue ).Select( s => new
-                {
-                    ScheduleReminderSystemCommunicationId = s.Key.Value,
-                    Attendances = s.ToList()
-                } )
-                .ToList();
-
-            var rockContext = this.Context as RockContext;
-
-            foreach ( var attendancesBySystemEmailType in attendancesBySystemEmailTypeList )
-            {
-                var scheduleReminderSystemEmail = new SystemCommunicationService( rockContext ).GetNoTracking( attendancesBySystemEmailType.ScheduleReminderSystemCommunicationId );
-
-                var attendancesByPersonList = attendancesBySystemEmailType.Attendances.GroupBy( a => a.PersonAlias.Person ).Select( s => new
-                {
-                    Person = s.Key,
-                    Attendances = s.ToList()
-                } );
-
-                foreach ( var attendancesByPerson in attendancesByPersonList )
-                {
-                    try
-                    {
-                        var emailMessage = new RockEmailMessage( scheduleReminderSystemEmail );
-                        var recipient = attendancesByPerson.Person;
-                        var attendances = attendancesByPerson.Attendances;
-
-                        foreach ( var attendance in attendances )
-                        {
-                            attendance.ScheduleReminderSent = true;
-                        }
-
-                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-                        mergeFields.Add( "Attendance", attendances.FirstOrDefault() );
-                        mergeFields.Add( "Attendances", attendances );
-                        emailMessage.AddRecipient( new RockEmailMessageRecipient( recipient, mergeFields ) );
-                        emailMessage.Send();
-                        emailsSent++;
-                    }
-                    catch ( Exception ex )
-                    {
-                        ExceptionLogService.LogException( new Exception( $"Exception occurred trying to send SendScheduleReminderSystemEmails to {attendancesByPerson.Person}", ex ) );
-                    }
-                }
-            }
-
-            return emailsSent;
         }
 
         /// <summary>
@@ -2742,17 +2482,6 @@ namespace Rock.Model
             }
 
             return scheduledAttendance;
-        }
-
-        /// <summary>
-        /// Updates attendance record to indicate person is not pending, or confirmed, or declined
-        /// </summary>
-        /// <param name="attendanceId">The attendance identifier.</param>
-        [Obsolete( "Use ScheduledPersonClear instead." )]
-        [RockObsolete( "1.14.2" )]
-        public void ScheduledPersonRemove( int attendanceId )
-        {
-            ScheduledPersonClear( attendanceId );
         }
 
         /// <summary>

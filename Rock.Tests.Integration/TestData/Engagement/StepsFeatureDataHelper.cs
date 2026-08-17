@@ -25,6 +25,8 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
+using Rock.Tests.Shared.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.TestData.Engagement

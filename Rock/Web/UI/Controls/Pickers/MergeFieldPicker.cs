@@ -373,16 +373,12 @@ namespace Rock.Web.UI.Controls
             /// <returns></returns>
             public static string GetMergeFieldId<T>( EntityTypeQualifier[] entityTypeQualifiers )
             {
-                StringBuilder entityTypeMergeFieldIdBuilder = new StringBuilder( $"{EntityTypeCache.Get<T>().Name}" );
-                if ( entityTypeQualifiers?.Any() == true )
-                {
-                    foreach ( var entityTypeQualifier in entityTypeQualifiers )
-                    {
-                        entityTypeMergeFieldIdBuilder.Append( $"~{entityTypeQualifier.Column}+{entityTypeQualifier.Value}" );
-                    }
-                }
-
-                return entityTypeMergeFieldIdBuilder.ToString();
+                // The identifier format lives in a non-UI helper so code that must
+                // not reference WebForms controls can also build these identifiers.
+                return Rock.Utility.EntityMergeFieldIdHelper.GetMergeFieldId<T>(
+                    entityTypeQualifiers
+                        ?.Select( q => new Rock.Utility.EntityMergeFieldQualifier( q.Column, q.Value ) )
+                        .ToArray() );
             }
 
             /// <summary>

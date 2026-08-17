@@ -20,6 +20,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Lava;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -31,7 +32,7 @@ namespace Rock.Model
     [DataContract]
     [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "7C86EED3-C3F9-4B25-887B-F732FE3C35F0")]
-    public partial class ContentChannelItemAssociation : Model<ContentChannelItemAssociation>, IOrdered
+    public partial class ContentChannelItemAssociation : Model<ContentChannelItemAssociation>, IOrdered, ICacheable
     {
         #region Entity Properties
 

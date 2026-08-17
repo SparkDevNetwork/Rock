@@ -22,6 +22,8 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -32,8 +34,6 @@ using Rock.Net;
 using Rock.Reporting;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-
-using UAParser;
 
 namespace Rock.Lava
 {
@@ -55,6 +55,18 @@ namespace Rock.Lava
         /// The field key used to store the shared RockContext in the Lava context.
         /// </summary>
         internal static readonly string RockContextFieldKey = "rock_context";
+
+        /// <summary>
+        /// Cache of the Lava-visible properties for a given type. The cached list is treated as
+        /// read-only by callers.
+        /// </summary>
+        private static readonly ConcurrentDictionary<Type, List<PropertyInfo>> _lavaPropertiesCache = new ConcurrentDictionary<Type, List<PropertyInfo>>();
+
+        /// <summary>
+        /// Compiled regex used by <see cref="ParseCommandMarkup"/> to extract key/value parameter pairs
+        /// from a resolved markup string.
+        /// </summary>
+        private static readonly Regex _markupParamsRegex = new Regex( @"\S+:('[^']+'|\d+)", RegexOptions.Compiled );
 
         #region Constructors
 
@@ -170,16 +182,15 @@ namespace Rock.Lava
             {
                 if ( request != null && !string.IsNullOrEmpty( request.UserAgent ) )
                 {
-                    Parser uaParser = Parser.GetDefault();
-                    ClientInfo client = uaParser.Parse( request.UserAgent );
+                    var browserInfo = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( request.UserAgent );
                     if ( options.GetOSFamily )
                     {
-                        mergeFields.Add( "OSFamily", client.OS.Family.ToLower() );
+                        mergeFields.Add( "OSFamily", browserInfo.OSFamily.ToLower() );
                     }
 
                     if ( options.GetDeviceFamily )
                     {
-                        mergeFields.Add( "DeviceFamily", client.Device.Family );
+                        mergeFields.Add( "DeviceFamily", browserInfo.DeviceFamily );
                     }
                 }
             }
@@ -269,17 +280,6 @@ namespace Rock.Lava
                     return true;
                 }
 
-#pragma warning disable CS0618 // Type or member is obsolete
-                if ( pi.GetCustomAttributes( typeof( LavaIgnoreAttribute ) ).Count() > 0 )
-                {
-                    return false;
-                }
-                if ( pi.GetCustomAttributes( typeof( LavaIncludeAttribute ) ).Count() > 0 )
-                {
-                    return true;
-                }
-#pragma warning restore CS0618 // Type or member is obsolete
-
                 // otherwise return false
                 return false;
             } );
@@ -292,7 +292,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<PropertyInfo> GetLavaProperties( Type type )
         {
-            return type.GetProperties().Where( p => IsLavaProperty( p ) ).ToList();
+            return _lavaPropertiesCache.GetOrAdd( type, t => t.GetProperties().Where( IsLavaProperty ).ToList() );
         }
 
         /// <summary>
@@ -600,7 +600,7 @@ namespace Rock.Lava
             var resolvedMarkup = markup.ResolveMergeFields( mergeFields );
 
             // Harvest parameters.
-            var markupParms = Regex.Matches( resolvedMarkup, @"\S+:('[^']+'|\d+)" )
+            var markupParms = _markupParamsRegex.Matches( resolvedMarkup )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

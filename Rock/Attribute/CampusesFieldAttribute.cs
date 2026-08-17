@@ -38,10 +38,23 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public CampusesFieldAttribute( string name = "Campuses", string description = "", bool required = true, string defaultCampusGuids = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultCampusGuids, category, order, key, typeof( Rock.Field.Types.CampusesFieldType ).FullName )
+            : base( SystemGuid.FieldType.CAMPUSES.AsGuid(), name )
         {
-            FieldConfigurationValues.Add( INCLUDE_INACTIVE_KEY, new Field.ConfigurationValue( "False" ) );
+            Category = category;
+            DefaultValue = defaultCampusGuids;
+            Description = description;
+            IsRequired = required;
+            Order = order;
+
+            if ( key.IsNotNullOrWhiteSpace() )
+            {
+                Key = key;
+            }
+
+            IncludeInactive = false;
         }
 
         /// <summary>
@@ -55,10 +68,33 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public CampusesFieldAttribute( string name = "Campuses", string description = "", bool required = true, string defaultCampusGuids = "", bool includeInactive = false, string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultCampusGuids, category, order, key, typeof( Rock.Field.Types.CampusesFieldType ).FullName )
+            : base( SystemGuid.FieldType.CAMPUSES.AsGuid(), name )
         {
-            FieldConfigurationValues.Add( INCLUDE_INACTIVE_KEY, new Field.ConfigurationValue( includeInactive.ToString() ) );
+            Category = category;
+            DefaultValue = defaultCampusGuids;
+            Description = description;
+            IsRequired = required;
+            Order = order;
+
+            if ( key.IsNotNullOrWhiteSpace() )
+            {
+                Key = key;
+            }
+
+            IncludeInactive = includeInactive;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CampusesFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public CampusesFieldAttribute( string name )
+            : base( SystemGuid.FieldType.CAMPUSES.AsGuid(), name )
+        {
+            IncludeInactive = false;
         }
 
         /// <summary>
@@ -97,6 +133,15 @@ namespace Rock.Attribute
             {
                 FieldConfigurationValues.AddOrReplace( FILTER_CAMPUS_STATUS_KEY, new Field.ConfigurationValue( value ) );
             }
+        }
+
+        /// <summary>
+        /// Determines if inactive campuses are included.
+        /// </summary>
+        public bool IncludeInactive
+        {
+            get => FieldConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY )?.AsBoolean() ?? false;
+            set => FieldConfigurationValues.AddOrReplace( INCLUDE_INACTIVE_KEY, new Field.ConfigurationValue( value.ToString() ) );
         }
     }
 }

@@ -570,7 +570,7 @@ Obsidian.onReady(() => {{
         /// </remarks>
         private bool IsBrowserSupported()
         {
-            var browser = RequestContext.ClientInformation.Browser;
+            var browser = RequestContext.ClientInformation.BrowserInfo;
 
             // If no user agent, assume the browser is supported since it is
             // more likely to be supported than not supported.
@@ -579,8 +579,8 @@ Obsidian.onReady(() => {{
                 return true;
             }
 
-            var family = browser.UA.Family;
-            var major = browser.UA.Major.AsIntegerOrNull();
+            var family = browser.BrowserFamily;
+            var major = browser.BrowserVersion?.Major;
 
             // Logic taken from https://caniuse.com/?search=es6
             // Vue 3 uses ES6 functionality heavily.

@@ -210,21 +210,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="page">The page.</param>
         /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="titleField">The title field.</param>
-        [Obsolete( "Use the SecurityFieldTemplate constructor with the [string:title] parameter.", false )]
-        [RockObsolete( "1.14" )]
-        public SecurityFieldTemplate( System.Web.UI.Page page, int entityTypeId, string titleField )
-        {
-            this.page = page;
-            this.EntityTypeId = entityTypeId;
-            this.TitleField = titleField;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SecurityFieldTemplate" /> class.
-        /// </summary>
-        /// <param name="page">The page.</param>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="titleField">The title field.</param>
         /// <param name="title">The title name. Which will be used as a prefix to <seealso cref="TitleField"/> if one is specified.</param>
         public SecurityFieldTemplate( System.Web.UI.Page page, int entityTypeId, string titleField, string title )
         {

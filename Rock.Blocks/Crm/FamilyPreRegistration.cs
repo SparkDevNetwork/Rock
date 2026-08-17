@@ -53,12 +53,12 @@ namespace Rock.Blocks.Crm
         Order = 0 )]
 
     [CampusField(
-        name: "Default Campus",
-        description: "An optional campus to use by default when adding a new family.",
-        required: false,
-        includeInactive: true,
-        key: AttributeKey.DefaultCampus,
-        order: 1 )]
+        "Default Campus",
+        Description = "An optional campus to use by default when adding a new family.",
+        IsRequired = false,
+        IncludeInactive = true,
+        Key = AttributeKey.DefaultCampus,
+        Order = 1 )]
 
     [BooleanField(
         "Require Campus",

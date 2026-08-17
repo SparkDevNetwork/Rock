@@ -109,8 +109,9 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
 
         /// <summary>
         /// Gets or sets whether the current person is permitted to edit or delete this entry.
-        /// Populated for Activity entries so the UI only offers edit and delete actions when the
-        /// server will actually allow them, matching the authorization enforced by the block actions.
+        /// Populated for Activity entries and for status-change notes so the UI only offers edit and
+        /// delete actions when the server will actually allow them, matching the authorization enforced
+        /// by the block actions.
         /// </summary>
         public bool CanEdit { get; set; }
 
@@ -133,6 +134,32 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// Gets or sets the encrypted identifier key of the connection request this entry belongs to.
         /// </summary>
         public string ConnectionRequestIdKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the IdKey of the ConnectionRequestStatusHistory record linked to a status-change
+        /// entry, when one exists. Populated only for status updates that have a linked status-history
+        /// record (v19+); it is the key used by the note add/edit/delete block actions. Null when there is
+        /// no linked record (for example, the initial status assignment or a status change recorded before
+        /// the status-history table existed), in which case the client should not offer note editing.
+        /// </summary>
+        public string StatusHistoryIdKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether a note is required for this status-change entry because the status that
+        /// ended is configured to require one. Defaults to false.
+        /// </summary>
+        public bool IsNoteRequired { get; set; }
+
+        /// <summary>
+        /// Gets or sets the status the request moved from, for a status-change entry. Null for the
+        /// initial status assignment (which has no prior status).
+        /// </summary>
+        public string PreviousValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the status the request moved to, for a status-change entry.
+        /// </summary>
+        public string NewValue { get; set; }
     }
 
     /// <summary>

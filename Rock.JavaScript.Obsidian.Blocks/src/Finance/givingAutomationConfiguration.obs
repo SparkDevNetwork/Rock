@@ -1,0 +1,156 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel type="block"
+           title="Giving Automation Configuration"
+           titleIconCssClass="ti ti-filter-dollar">
+        <RockForm @submit="onSave">
+            <GeneralSettings v-model="settings" :options="options" />
+
+            <GivingJourneySettings v-model="settings" />
+
+            <GivingAlerts v-model="settings" :options="options" />
+
+            <div class="actions">
+                <RockButton btnType="primary"
+                            type="submit"
+                            accessKey="s"
+                            :isLoading="isSaving"
+                            loadingText="Saving...">
+                    Save
+                </RockButton>
+                <RockButton btnType="link"
+                            accessKey="c"
+                            @click="onCancel">
+                    Cancel
+                </RockButton>
+            </div>
+        </RockForm>
+
+        <Modal v-model="isFilterChangeModalOpen"
+               title="Filters Changed"
+               saveText="Confirm"
+               @save="onConfirmFilterChange">
+            <div class="alert alert-warning">
+                <strong>Giving Automation filters have been modified.</strong>
+            </div>
+
+            <p>
+                Changes to the <strong>Transaction Types</strong>, <strong>Accounts</strong>, or <strong>Include Child Accounts</strong> settings invalidate any previously calculated Giving Automation attributes.
+            </p>
+
+            <p>
+                When the <strong>Giving Automation</strong> job next runs, it will perform a full recalculation of <strong>all giving attributes defined within the job for all people</strong> using the updated filters. This operation may take significantly longer than a typical run.
+            </p>
+
+            <p>
+                Because this action will overwrite existing computed values across the entire system, it is <strong>potentially destructive</strong> and should only be performed when you are confident the new filters are correct.
+            </p>
+
+            <p>
+                Do you want to proceed with these changes?
+            </p>
+        </Modal>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { GivingAutomationConfigurationBag } from "@Obsidian/ViewModels/Blocks/Finance/GivingAutomationConfiguration/givingAutomationConfigurationBag";
+    import { GivingAutomationConfigurationOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/GivingAutomationConfiguration/givingAutomationConfigurationOptionsBag";
+    import { SaveConfigurationResponseBag } from "@Obsidian/ViewModels/Blocks/Finance/GivingAutomationConfiguration/saveConfigurationResponseBag";
+    import GeneralSettings from "./GivingAutomationConfiguration/generalSettings.partial.obs";
+    import GivingJourneySettings from "./GivingAutomationConfiguration/givingJourneySettings.partial.obs";
+    import GivingAlerts from "./GivingAutomationConfiguration/givingAlerts.partial.obs";
+
+    const config = useConfigurationValues<CustomBlockBox<GivingAutomationConfigurationBag, GivingAutomationConfigurationOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead).
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const settings = ref<GivingAutomationConfigurationBag>(config.bag ?? {} as GivingAutomationConfigurationBag);
+    const options = config.options ?? {} as GivingAutomationConfigurationOptionsBag;
+    const isFilterChangeModalOpen = ref(false);
+    const isSaving = ref(false);
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Sends the settings to the server, surfacing the filter-change confirmation when required
+     * and redirecting to the parent page on success.
+     *
+     * @param isFilterChangeConfirmed Whether the user has confirmed the full attribute recomputation.
+     */
+    async function saveConfiguration(isFilterChangeConfirmed: boolean): Promise<void> {
+        isSaving.value = true;
+
+        try {
+            const result = await invokeBlockAction<SaveConfigurationResponseBag>("SaveConfiguration", {
+                bag: settings.value,
+                isFilterChangeConfirmed
+            });
+
+            if (!result.isSuccess) {
+                await alert(result.errorMessage ?? "Unable to save the giving automation configuration.");
+                return;
+            }
+
+            if (result.data?.isFilterChangeConfirmationRequired) {
+                isFilterChangeModalOpen.value = true;
+                return;
+            }
+
+            if (options.parentPageUrl) {
+                window.location.href = options.parentPageUrl;
+            }
+            else {
+                await alert("Giving automation settings have been saved.");
+            }
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the main form being submitted.
+     */
+    async function onSave(): Promise<void> {
+        await saveConfiguration(false);
+    }
+
+    /**
+     * Event handler for the filter-change confirmation being accepted.
+     */
+    async function onConfirmFilterChange(): Promise<void> {
+        isFilterChangeModalOpen.value = false;
+        await saveConfiguration(true);
+    }
+
+    /**
+     * Event handler for the Cancel button. Returns to the parent page.
+     */
+    function onCancel(): void {
+        if (options.parentPageUrl) {
+            window.location.href = options.parentPageUrl;
+        }
+    }
+
+    // #endregion Event Handlers
+</script>

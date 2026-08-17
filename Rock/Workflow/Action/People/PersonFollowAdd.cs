@@ -57,7 +57,12 @@ namespace Rock.Workflow.Action
         Order = 1,
         Key = AttributeKey.EntityType )]
 
-    [WorkflowTextOrAttribute( "Entity To Follow", "Attribute Value", "The Entity Id or Guid or an attribute that contains the entity to follow. <span class='tip tip-lava'></span>", true, "", "", 2, AttributeKey.Entity )]
+    [WorkflowTextOrAttribute( "Entity To Follow",
+        "Attribute Value",
+        Description = "The Entity Id or Guid or an attribute that contains the entity to follow. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 2,
+        Key = AttributeKey.Entity )]
 
     [TextField(
         "Purpose Key",
@@ -213,7 +218,7 @@ namespace Rock.Workflow.Action
                     var entityFieldType = attribute.FieldType.Field as IEntityFieldType;
                     if ( entityFieldType != null )
                     {
-                        if ( entityFieldType is Rock.Field.Types.PersonFieldType && EntityTypeCache.Get<Model.PersonAlias>().Id == entityType.Id )
+                        if ( attribute.FieldType.Guid == SystemGuid.FieldType.PERSON.AsGuid() && EntityTypeCache.Get<Model.PersonAlias>().Id == entityType.Id )
                         {
                             var guidValue = attributeValue.AsGuidOrNull();
                             if ( guidValue.HasValue )

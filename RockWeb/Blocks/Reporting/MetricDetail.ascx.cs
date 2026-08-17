@@ -23,7 +23,9 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Chart;
@@ -184,39 +186,42 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
         {
             if ( !Page.IsPostBack )
             {
+                var rockContext = new RockContext();
+                var disablePredictableIds = PageCache.Layout.Site.DisablePredictableIds;
+                var metricService = new MetricService( rockContext );
+
                 // in case called normally
-                int? metricId = PageParameter( PageParameterKey.MetricId ).AsIntegerOrNull();
+                var metricId = PageParameter( PageParameterKey.MetricId );
+                var metric = metricService.GetNoTracking( metricId, !disablePredictableIds );
 
                 // in case called from CategoryTreeView
-                int? metricCategoryId = PageParameter( PageParameterKey.MetricCategoryId ).AsIntegerOrNull();
+                var metricCategoryId = PageParameter( PageParameterKey.MetricCategoryId );
 
-                if ( metricCategoryId.HasValue )
+                if ( !string.IsNullOrEmpty( metricCategoryId ) )
                 {
-                    if ( metricCategoryId.Value > 0 )
+                    if ( metricCategoryId != "0" )
                     {
                         // editing a metric, but get the metricId from the metricCategory
-                        var metricCategory = new MetricCategoryService( new RockContext() ).Get( metricCategoryId.Value );
+                        var metricCategory = new MetricCategoryService( rockContext ).GetNoTracking( metricCategoryId, !disablePredictableIds );
                         if ( metricCategory != null )
                         {
-                            hfMetricCategoryId.Value = metricCategory.Id.ToString();
-                            metricId = metricCategory.MetricId;
+                            hfMetricCategoryId.Value = metricCategory.IdKey;
+                            metric = metricService.GetNoTracking( metricCategory.MetricId );
                         }
                     }
-                    else
+                    else if ( string.IsNullOrEmpty( metricId ) )
                     {
-                        if ( !metricId.HasValue )
-                        {
-                            // adding a new metric
-                            metricId = 0;
-                        }
+                        // adding a new metric
+                        metricId = "0";
                     }
                 }
 
-                int? parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
+                var parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId );
+                var parentCategory = CategoryCache.Get( parentCategoryId, !disablePredictableIds );
 
-                if ( metricId.HasValue )
+                if ( metric != null || metricId == "0" )
                 {
-                    ShowDetail( metricId.Value, parentCategoryId );
+                    ShowDetail( metric != null ? metric.Id : 0, parentCategory != null ? parentCategory.Id : ( int? ) null );
                 }
                 else
                 {
@@ -289,22 +294,23 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
         protected void btnSave_Click( object sender, EventArgs e )
         {
             Metric metric;
-
             var rockContext = new RockContext();
+            var disablePredictableIds = PageCache.Layout.Site.DisablePredictableIds;
+
             MetricService metricService = new MetricService( rockContext );
             MetricCategoryService metricCategoryService = new MetricCategoryService( rockContext );
             MetricValueService metricValueService = new MetricValueService( rockContext );
             MetricPartitionService metricPartitionService = new MetricPartitionService( rockContext );
 
-            int metricId = hfMetricId.Value.AsInteger();
+            string metricId = hfMetricId.Value;
 
-            if ( metricId == 0 )
+            if ( metricId == "0" )
             {
                 metric = new Metric();
             }
             else
             {
-                metric = metricService.Get( metricId );
+                metric = metricService.Get( metricId, !disablePredictableIds );
 
                 // remove any metricPartitions that were removed in the UI
                 var selectedMetricPartitionGuids = MetricPartitionsState.Select( r => r.Guid );
@@ -569,15 +575,27 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             } );
 
             var qryParams = new Dictionary<string, string>();
-            qryParams[PageParameterKey.MetricId] = metric.Id.ToString();
-            if ( hfMetricCategoryId.ValueAsInt() == 0 )
+            qryParams[PageParameterKey.MetricId] = metric.IdKey;
+
+            if ( string.IsNullOrEmpty( hfMetricCategoryId.Value ) )
             {
-                int? parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
-                int? metricCategoryId = new MetricCategoryService( new RockContext() ).Queryable().Where( a => a.MetricId == metric.Id && a.CategoryId == parentCategoryId ).Select( a => a.Id ).FirstOrDefault();
-                hfMetricCategoryId.Value = metricCategoryId.ToString();
+                var parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId );
+                var parentCategory = CategoryCache.Get( parentCategoryId, !disablePredictableIds );
+
+                if ( parentCategory != null )
+                {
+                    var metricCategory = new MetricCategoryService( new RockContext() ).Queryable()
+                        .Where( a => a.MetricId == metric.Id && a.CategoryId == parentCategory.Id )
+                        .FirstOrDefault();
+
+                    if ( metricCategory != null )
+                    {
+                        hfMetricCategoryId.Value = metricCategory.IdKey;
+                    }
+                }
             }
 
-            if ( hfMetricCategoryId.ValueAsInt() != 0 )
+            if ( !string.IsNullOrEmpty( hfMetricCategoryId.Value ) )
             {
                 qryParams[PageParameterKey.MetricCategoryId] = hfMetricCategoryId.Value;
             }
@@ -597,14 +615,28 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            if ( hfMetricId.Value.Equals( "0" ) )
+            var disablePredictableIds = PageCache.Layout.Site.DisablePredictableIds;
+            if ( hfMetricId.Value == "0" )
             {
-                int? parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
-                if ( parentCategoryId.HasValue )
+                var parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId );
+                if ( !string.IsNullOrEmpty( parentCategoryId ) )
                 {
                     // Canceling on Add, and we know the parentCategoryId, so we are probably in TreeView mode, so navigate to the current page.
+                    var parentCategory = CategoryCache.Get( parentCategoryId, !disablePredictableIds );
+
                     var qryParams = new Dictionary<string, string>();
-                    qryParams[PageParameterKey.CategoryId] = parentCategoryId.ToString();
+
+                    if ( parentCategory != null )
+                    {
+                        qryParams[PageParameterKey.CategoryId] = parentCategory.IdKey;
+                    }
+
+                    var expandedIds = PageParameter( PageParameterKey.ExpandedIds );
+                    if ( !string.IsNullOrEmpty( expandedIds ) )
+                    {
+                        qryParams[PageParameterKey.ExpandedIds] = expandedIds;
+                    }
+
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
@@ -617,7 +649,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             {
                 // Canceling on Edit.  Return to Details.
                 MetricService metricService = new MetricService( new RockContext() );
-                Metric metric = metricService.Get( hfMetricId.Value.AsInteger() );
+                Metric metric = metricService.Get( hfMetricId.Value, !disablePredictableIds );
                 ShowReadonlyDetails( metric );
             }
         }
@@ -629,8 +661,9 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
+            var disablePredictableIds = PageCache.Layout.Site.DisablePredictableIds;
             MetricService metricService = new MetricService( new RockContext() );
-            Metric metric = metricService.Get( hfMetricId.Value.AsInteger() );
+            Metric metric = metricService.Get( hfMetricId.Value, !disablePredictableIds );
             ShowEditDetails( metric );
         }
 
@@ -642,15 +675,16 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
         protected void btnDelete_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
+            var disablePredictableIds = PageCache.Layout.Site.DisablePredictableIds;
             MetricService metricService = new MetricService( rockContext );
-            Metric metric = metricService.Get( hfMetricId.Value.AsInteger() );
+            Metric metric = metricService.Get( hfMetricId.Value, !disablePredictableIds );
 
             // intentionally get metricCategory with new RockContext() so we don't confuse SaveChanges()
-            int? parentCategoryId = null;
-            var metricCategory = new MetricCategoryService( new RockContext() ).Get( hfMetricCategoryId.ValueAsInt() );
+            string parentCategoryId = null;
+            var metricCategory = new MetricCategoryService( new RockContext() ).Get( hfMetricCategoryId.Value, !disablePredictableIds );
             if ( metricCategory != null )
             {
-                parentCategoryId = metricCategory.CategoryId;
+                parentCategoryId = CategoryCache.Get( metricCategory.CategoryId )?.IdKey;
             }
 
             if ( metric != null )
@@ -670,9 +704,9 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             }
 
             var qryParams = new Dictionary<string, string>();
-            if ( parentCategoryId != null )
+            if ( !string.IsNullOrEmpty( parentCategoryId ) )
             {
-                qryParams[PageParameterKey.CategoryId] = parentCategoryId.ToString();
+                qryParams[PageParameterKey.CategoryId] = parentCategoryId;
             }
 
             qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
@@ -756,7 +790,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
         {
             mdManualRunConfirm.Hide();
             mdManualRunInfo.Show( string.Format( "The manual metric for '{0}' has been started.", lReadOnlyTitle.Text ), ModalAlertType.Information );
-            ManualMetricRun( hfMetricId.Value.AsInteger() );
+            ManualMetricRun( hfMetricId.Value );
         }
 
         #endregion
@@ -785,7 +819,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             var metricService = new MetricService( rockContext );
             Metric metric = null;
 
-            if ( !metricId.Equals( 0 ) )
+            if ( metricId != 0 )
             {
                 metric = metricService.Get( metricId );
                 pdAuditDetails.SetEntity( metric, ResolveRockUrl( "~" ) );
@@ -800,9 +834,14 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 metric.MetricCategories = new List<MetricCategory>();
                 if ( parentCategoryId.HasValue )
                 {
-                    var metricCategory = new MetricCategory { CategoryId = parentCategoryId.Value };
-                    metricCategory.Category = metricCategory.Category ?? new CategoryService( rockContext ).Get( metricCategory.CategoryId );
-                    metric.MetricCategories.Add( metricCategory );
+                    var parentCategory = CategoryCache.Get( parentCategoryId.Value );
+
+                    if ( parentCategory != null )
+                    {
+                        var metricCategory = new MetricCategory { CategoryId = parentCategory.Id };
+                        metricCategory.Category = metricCategory.Category ?? new CategoryService( rockContext ).Get( metricCategory.CategoryId );
+                        metric.MetricCategories.Add( metricCategory );
+                    }
                 }
 
                 metric.MetricPartitions = new List<MetricPartition>();
@@ -814,7 +853,16 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             }
 
             pnlDetails.Visible = true;
-            hfMetricId.Value = metric.Id.ToString();
+
+            if ( metric.Id == 0 )
+            {
+                hfMetricId.Value = "0";
+            }
+            else
+            {
+                hfMetricId.Value = metric.IdKey;
+            }
+
             avcDisplayAttributeValues.AddDisplayControls( metric, Rock.Security.Authorization.VIEW, CurrentPerson );
 
             // render UI based on Authorized and IsSystem
@@ -1179,9 +1227,16 @@ The Lava can include Lava merge fields:";
             gMetricPartitions.DataSource = partitionList;
             gMetricPartitions.DataBind();
 
-            int metricId = hfMetricId.Value.AsInteger();
-            nbMetricValuesWarning.Visible = new MetricValueService( new RockContext() ).Queryable().Where( a => a.MetricId == metricId ).Any();
-            nbMetricValuesWarning.Text = "This Metric already has some values.  If you are changing Metric Partitions, you might have to manually update the metric values to reflect the new partition arrangement.";
+            var metric = new MetricService( new RockContext() ).Get( hfMetricId.Value, !PageCache.Layout.Site.DisablePredictableIds );
+            if ( metric != null )
+            {
+                nbMetricValuesWarning.Visible = new MetricValueService( new RockContext() ).Queryable().Where( a => a.MetricId == metric.Id ).Any();
+                nbMetricValuesWarning.Text = "This Metric already has some values.  If you are changing Metric Partitions, you might have to manually update the metric values to reflect the new partition arrangement.";
+            }
+            else
+            {
+                nbMetricValuesWarning.Visible = false;
+            }
         }
 
         /// <summary>
@@ -1191,7 +1246,7 @@ The Lava can include Lava merge fields:";
         private void ShowReadonlyDetails( Metric metric )
         {
             SetEditMode( false );
-            hfMetricId.SetValue( metric.Id );
+            hfMetricId.Value = metric.IdKey;
 
             CreateChart( metric );
 
@@ -1454,7 +1509,7 @@ The Lava can include Lava merge fields:";
                     // If the metric has a specified label use it.
                     // Append "Total" if this is a combination of multiple partitions.
                     var name = metric.YAxisLabel;
-                    if ( string.IsNullOrWhiteSpace(name) )
+                    if ( string.IsNullOrWhiteSpace( name ) )
                     {
                         name = hasMultiplePartitions ? "Total" : "Value";
                     }
@@ -1720,11 +1775,12 @@ The Lava can include Lava merge fields:";
 
             using ( var rockContext = new RockContext() )
             {
-                var metricId = hfMetricId.ValueAsInt();
+                var metric = new MetricService( rockContext ).Get( hfMetricId.Value, !PageCache.Layout.Site.DisablePredictableIds );
+                var currentMetricId = metric?.Id ?? 0;
 
                 var existingAnalyticMetricsWithTheSameName = new MetricService( rockContext )
                     .Queryable()
-                    .Where( m => m.Title == tbTitle.Text && m.EnableAnalytics == true && m.Id != metricId )
+                    .Where( m => m.Title == tbTitle.Text && m.EnableAnalytics == true && m.Id != currentMetricId )
                     .ToList();
 
                 if ( existingAnalyticMetricsWithTheSameName.Any() )
@@ -1737,14 +1793,22 @@ The Lava can include Lava merge fields:";
             }
         }
 
-        private void ManualMetricRun( int metricId )
+        private void ManualMetricRun( string metricId )
         {
             MetricService metricService = new MetricService( new RockContext() );
+
+            var metric = metricService.Get( metricId, !PageCache.Layout.Site.DisablePredictableIds );
+            if ( metric == null )
+            {
+                return;
+            }
+
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 300;
+            var resolvedMetricId = metric.Id;
 
             var metricTask = new Task( () =>
             {
-                metricService.CalculateMetric( metricId, commandTimeout, true );
+                metricService.CalculateMetric( resolvedMetricId, commandTimeout, true );
             } );
 
             metricTask.Start();
@@ -1937,8 +2001,10 @@ The Lava can include Lava merge fields:";
             }
             else
             {
+                // New partitions staged for an unsaved metric default to MetricId=0; btnSave_Click rewrites this when the metric is persisted.
+                var metric = new MetricService( rockContext ).Get( hfMetricId.Value, !PageCache.Layout.Site.DisablePredictableIds );
                 metricPartition.Order = MetricPartitionsState.Any() ? MetricPartitionsState.Max( a => a.Order ) + 1 : 0;
-                metricPartition.MetricId = hfMetricId.Value.AsInteger();
+                metricPartition.MetricId = metric?.Id ?? 0;
             }
 
             metricPartition.Label = tbMetricPartitionLabel.Text;

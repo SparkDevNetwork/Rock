@@ -396,22 +396,23 @@ namespace Rock.Blocks.Reporting
 
             if ( entity.Id == 0 )
             {
-                int? metricId = PageParameter( PageParameterKey.MetricId ).AsIntegerOrNull();
-                int? metricCategoryId = PageParameter( PageParameterKey.MetricCategoryId ).AsIntegerOrNull();
+                var allowIntegerIdentifier = !PageCache.Layout.Site.DisablePredictableIds;
+                var metricCategoryKey = PageParameter( PageParameterKey.MetricCategoryId );
+                var metricKey = PageParameter( PageParameterKey.MetricId );
 
-                if ( metricCategoryId > 0 )
+                if ( metricCategoryKey.IsNotNullOrWhiteSpace() )
                 {
                     // editing a metric, but get the metricId from the metricCategory
-                    var metricCategory = new MetricCategoryService( RockContext ).Get( metricCategoryId.Value );
+                    var metricCategory = new MetricCategoryService( RockContext ).Get( metricCategoryKey, allowIntegerIdentifier );
                     if ( metricCategory != null )
                     {
                         entity.MetricId = metricCategory.MetricId;
                         entity.Metric = metricCategory.Metric;
                     }
                 }
-                else if ( metricId > 0 )
+                else if ( metricKey.IsNotNullOrWhiteSpace() )
                 {
-                    var metric = new MetricService( RockContext ).Get( metricId.Value );
+                    var metric = new MetricService( RockContext ).Get( metricKey, allowIntegerIdentifier );
                     if ( metric != null )
                     {
                         entity.MetricId = metric.Id;

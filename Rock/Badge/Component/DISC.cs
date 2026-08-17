@@ -36,7 +36,9 @@ namespace Rock.Badge.Component
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "DISC" )]
 
-    [LinkedPage( "DISC Result Detail", "Page to show the details of the DISC assessment results. If blank no link is created.", false )]
+    [LinkedPage( "DISC Result Detail",
+        Description = "Page to show the details of the DISC assessment results. If blank no link is created.",
+        IsRequired = false )]
     [Rock.SystemGuid.EntityTypeGuid( "6D29DB44-EDC5-42AA-B42C-482BC0920AD0")]
     public class DISC : BadgeComponent
     {

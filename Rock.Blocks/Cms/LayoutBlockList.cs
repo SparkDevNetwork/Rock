@@ -39,15 +39,21 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of blocks." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "9cf1aa10-24e4-4530-a345-57da4cfe9595" )]
-    [Rock.SystemGuid.BlockTypeGuid( "ea8be085-d420-4d1b-a538-2c0d4d116e0a" )]
+    [Rock.SystemGuid.BlockTypeGuid( "CD3C0C1D-2171-4FCC-B840-FC6E6F72EEEF" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "ea8be085-d420-4d1b-a538-2c0d4d116e0a" )]
     [CustomizedGrid]
     public class LayoutBlockList : RockEntityListBlockType<Block>
     {
         #region Keys
+
+        private static class PageParameterKey
+        {
+            public const string LayoutId = "LayoutId";
+        }
 
         #endregion Keys
 
@@ -81,23 +87,17 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override IQueryable<Block> GetListQueryable( RockContext rockContext )
         {
-            int layoutId;
-            if (
-                int.TryParse( RequestContext.PageParameters["layoutId"], out layoutId )
-                || Rock.Utility.IdHasher.Instance.TryGetId( RequestContext.PageParameters["layoutId"], out layoutId )
-            )
-            {
-                return base.GetListQueryable( rockContext )
-                    .Include( a => a.BlockType )
-                    .Include( a => a.Layout )
-                    .Include( a => a.Page )
-                    .Include( a => a.Site )
-                    .Where( a => a.LayoutId == layoutId );
-            }
-            else
+            var layout = new LayoutService( rockContext ).Get( PageParameter( PageParameterKey.LayoutId ), !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( layout == null )
             {
                 return new List<Block>().AsQueryable();
             }
+
+            return base.GetListQueryable( rockContext )
+                .Include( a => a.BlockType )
+                .Include( a => a.Layout.Site )
+                .Where( a => a.LayoutId == layout.Id );
         }
 
         /// <inheritdoc/>
@@ -137,31 +137,28 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new BlockService( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
             {
-                var entityService = new BlockService( rockContext );
-                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-                if ( entity == null )
-                {
-                    return ActionBadRequest( $"{Block.FriendlyTypeName} not found." );
-                }
-
-                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete {Block.FriendlyTypeName}." );
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( $"{Block.FriendlyTypeName} not found." );
             }
+
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete {Block.FriendlyTypeName}." );
+            }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         #endregion

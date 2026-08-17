@@ -51,8 +51,8 @@ namespace Rock.Blocks.Lms
         Key = AttributeKey.PageDescription,
         DefaultValue = AttributeDefault.PageDescription )]
 
-    [ImageField(
-        "Banner Image",
+    [ImageField( "Banner Image",
+        "Image",
         Description = "Add a welcoming banner image to visually enhance the homepage. Ideal size: 1200x400 pixels; use high-quality images.",
         Key = AttributeKey.BannerImage,
         IsRequired = false,
@@ -84,7 +84,7 @@ namespace Rock.Blocks.Lms
         "Show Completion Status",
         Key = AttributeKey.ShowCompletionStatus,
         Description = "Determines if the individual's completion status should be shown.",
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         IsRequired = true,
         DefaultBooleanValue = true,
         Order = 4 )]
@@ -94,7 +94,7 @@ namespace Rock.Blocks.Lms
         Description = "If selected, all non-public programs will be excluded.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.PublicOnly,
         Order = 5 )]
 

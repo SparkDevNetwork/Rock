@@ -19,7 +19,7 @@ using System.Linq;
 using System.Linq.Expressions;
 
 using Rock.Data;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
 
 namespace Rock.Tests.Integration.Reporting.DataFilter
 {

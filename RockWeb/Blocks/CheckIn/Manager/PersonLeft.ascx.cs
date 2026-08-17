@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.Entity;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -273,9 +274,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptrPhones_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            PhoneNumber phoneNumber = e.Item.DataItem as PhoneNumber;
+            var phoneNumber = e.Item.DataItem as PhoneNumberDisplay;
 
-            if ( phoneNumber.Id == SmsPhoneNumberId )
+            if ( phoneNumber != null && phoneNumber.Id == SmsPhoneNumberId )
             {
                 LinkButton btnSms = ( LinkButton ) e.Item.FindControl( "btnSms" );
                 if ( btnSms != null )
@@ -369,7 +370,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             var rockContext = new RockContext();
             var person = new PersonService( rockContext ).Get( GetPersonGuid() );
-            var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.IsMessagingEnabled );
+            var phoneNumber = GetSmsCapableMobilePhoneNumber( person );
             if ( phoneNumber == null )
             {
                 ResetSms();
@@ -377,7 +378,30 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 return;
             }
 
-            // This will queue up the message
+            /*
+                6/16/26 - NA
+
+                Check-in Manager needs volunteers to be able to reach a parent about a child's need with as
+                little friction as possible, and those volunteers typically don't have access to the person
+                profile to fix these fields themselves. Two v18-era safeguards silently prevent the send in
+                cases we do want to override in this specific context:
+
+                  - Rock/Communication/TransportComponent.cs (commit 369bebfb) marks the recipient Failed
+                    when Person.RecordStatusValueId is Inactive.
+                  - Rock/Utility/ExtensionMethods/ICollectionExtensions.cs (commit 126c8097) causes the
+                    SMS transport to skip phones with IsMessagingOptedOut = true.
+
+                Neither safeguard surfaces an error to the volunteer -- they just see "Message queued" while
+                the SMS is quietly dropped. To make the send reliable, we auto-adjust the recipient's
+                properties (enable SMS on the phone number, clear opt-out, reactivate the person record)
+                before queueing the message. A custom person-history entry is written so admins can see the
+                change was made by Check-in Manager and why.
+
+                Reason: Check-in Manager SMS was silently dropped for inactive people or opted-out mobile numbers.
+            */
+            var prepResult = EnsureRecipientCanReceiveSms( rockContext, person, phoneNumber );
+
+            // This will queue up the message.
             Rock.Communication.Medium.Sms.CreateCommunicationMobile(
                 CurrentUser.Person,
                 person.PrimaryAliasId,
@@ -386,6 +410,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 null,
                 GetAttachments(),
                 rockContext );
+
+            WriteHistoryLogForSmsAutoAdjustments( rockContext, person, phoneNumber, prepResult );
 
             DisplaySmsSuccess( "Message queued." );
             ResetSms();
@@ -544,7 +570,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 BindAttribute( person );
 
                 // Text Message
-                var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.IsMessagingEnabled && n.Number.IsNotNullOrWhiteSpace() );
+                var phoneNumber = GetSmsCapableMobilePhoneNumber( person );
                 if ( GetAttributeValue( AttributeKey.SMSFrom ).IsNotNullOrWhiteSpace() && phoneNumber != null )
                 {
                     SmsPhoneNumberId = phoneNumber.Id;
@@ -628,7 +654,26 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     }
                 }
 
-                var phoneNumbers = person.PhoneNumbers.Where( p => !p.IsUnlisted ).ToList();
+                // Exclude phone numbers whose type has been deactivated so they don't
+                // appear alongside active phone numbers on the check-in Person Profile.
+                var activePhoneNumberTypeIds = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) )
+                    .DefinedValues
+                    .Where( dv => dv.IsActive )
+                    .Select( dv => dv.Id )
+                    .ToList();
+
+                var phoneNumbers = person.PhoneNumbers
+                    .Where( p => p.NumberTypeValueId.HasValue
+                                 && activePhoneNumberTypeIds.Contains( p.NumberTypeValueId.Value ) )
+                    .Select( p => new PhoneNumberDisplay
+                    {
+                        Id = p.Id,
+                        Number = p.IsUnlisted ? MaskDigits( p.Number ) : p.Number,
+                        NumberFormatted = p.IsUnlisted ? MaskDigits( p.NumberFormatted ) : p.NumberFormatted,
+                        NumberType = p.NumberTypeValue?.Value,
+                        IsUnlisted = p.IsUnlisted
+                    } )
+                    .ToList();
                 rptrPhones.DataSource = phoneNumbers;
                 rptrPhones.DataBind();
                 pnlContact.Visible = phoneNumbers.Any() || lEmail.Visible;
@@ -689,6 +734,164 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                 pnlChildFields.Visible = avcChildAttributes.GetDisplayedAttributes().Any();
             }
+        }
+
+        /// <summary>
+        /// Returns the phone number Check-in Manager should use when sending an SMS. Prefers a phone that
+        /// is already SMS-enabled and falls back to any Mobile-type number with a non-empty value -- even
+        /// if it is currently opted out of messaging. The fallback allows the SMS icon to surface for
+        /// people whose mobile hasn't been flagged as SMS-enabled and lets <see cref="EnsureRecipientCanReceiveSms"/>
+        /// flip the necessary flags at send time.
+        /// </summary>
+        /// <param name="person">The person whose phone numbers should be evaluated.</param>
+        /// <returns>A <see cref="PhoneNumber"/> that Check-in Manager can send an SMS to, or <c>null</c> if none exists.</returns>
+        private static PhoneNumber GetSmsCapableMobilePhoneNumber( Rock.Model.Person person )
+        {
+            if ( person == null )
+            {
+                return null;
+            }
+
+            var smsEnabledPhone = person.PhoneNumbers.FirstOrDefault( n => n.IsMessagingEnabled && n.Number.IsNotNullOrWhiteSpace() );
+            if ( smsEnabledPhone != null )
+            {
+                return smsEnabledPhone;
+            }
+
+            var mobilePhoneTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+            if ( !mobilePhoneTypeId.HasValue )
+            {
+                return null;
+            }
+
+            return person.PhoneNumbers.FirstOrDefault( n =>
+                n.NumberTypeValueId == mobilePhoneTypeId.Value
+                && n.Number.IsNotNullOrWhiteSpace() );
+        }
+
+        /// <summary>
+        /// Adjusts the supplied phone number and person so a Check-in Manager SMS will actually be sent:
+        /// enables SMS messaging on the phone if disabled, clears an SMS opt-out if present, and activates
+        /// the person if their record status is currently something other than Active. Saves any changes
+        /// and returns a summary describing which adjustments were made so the caller can log an
+        /// explanatory history entry.
+        /// </summary>
+        /// <param name="rockContext">The <see cref="RockContext"/> that owns the entities being modified.</param>
+        /// <param name="person">The person the SMS is being sent to.</param>
+        /// <param name="phoneNumber">The phone number the SMS will be sent to.</param>
+        /// <returns>A <see cref="SmsRecipientPrepResult"/> describing what changed.</returns>
+        private static SmsRecipientPrepResult EnsureRecipientCanReceiveSms( RockContext rockContext, Rock.Model.Person person, PhoneNumber phoneNumber )
+        {
+            var result = new SmsRecipientPrepResult();
+
+            if ( phoneNumber != null && !phoneNumber.IsMessagingEnabled )
+            {
+                phoneNumber.IsMessagingEnabled = true;
+                result.EnabledMessaging = true;
+            }
+
+            if ( phoneNumber != null && phoneNumber.IsMessagingOptedOut )
+            {
+                phoneNumber.IsMessagingOptedOut = false;
+                phoneNumber.MessagingOptedOutDateTime = null;
+                result.ClearedOptOut = true;
+            }
+
+            var activeRecordStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+            var deceasedRecordStatusReasonValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() );
+            var isDeceased = deceasedRecordStatusReasonValueId.HasValue && person != null && person.RecordStatusReasonValueId == deceasedRecordStatusReasonValueId.Value;
+            if ( activeRecordStatusValueId.HasValue && person != null && person.RecordStatusValueId != activeRecordStatusValueId.Value && !isDeceased )
+            {
+                person.RecordStatusValueId = activeRecordStatusValueId.Value;
+                person.RecordStatusReasonValueId = null;
+                result.ReactivatedPerson = true;
+            }
+
+            if ( result.HasAnyChange )
+            {
+                rockContext.SaveChanges();
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Writes a custom person-history entry describing the fields Check-in Manager auto-adjusted so
+        /// the SMS could be sent. Rock's SaveHooks already log the raw property changes for RecordStatus
+        /// and IsMessagingEnabled, so this entry supplies the "why" and covers IsMessagingOptedOut (which
+        /// the SaveHook does not track). Does nothing when no adjustments were made.
+        /// </summary>
+        /// <param name="rockContext">The <see cref="RockContext"/> used to save the history entry.</param>
+        /// <param name="person">The person whose history should be updated.</param>
+        /// <param name="phoneNumber">The phone number the adjustments were made on.</param>
+        /// <param name="prepResult">The set of adjustments that were made.</param>
+        private static void WriteHistoryLogForSmsAutoAdjustments( RockContext rockContext, Rock.Model.Person person, PhoneNumber phoneNumber, SmsRecipientPrepResult prepResult )
+        {
+            if ( person == null || prepResult == null || !prepResult.HasAnyChange )
+            {
+                return;
+            }
+
+            var numberLabel = phoneNumber != null
+                ? $"{phoneNumber.NumberTypeValue?.Value} phone ({phoneNumber.NumberFormatted})".Trim()
+                : "phone number";
+
+            var adjustments = new List<string>();
+            if ( prepResult.EnabledMessaging )
+            {
+                adjustments.Add( $"Enabled SMS on {numberLabel}" );
+            }
+
+            if ( prepResult.ClearedOptOut )
+            {
+                adjustments.Add( $"Cleared SMS opt-out on {numberLabel}" );
+            }
+
+            if ( prepResult.ReactivatedPerson )
+            {
+                adjustments.Add( "Set Record Status to Active" );
+            }
+
+            var caption = adjustments.AsDelimited( "; " );
+
+            var historyChanges = new History.HistoryChangeList();
+            var historyChange = historyChanges.AddCustom( History.HistoryVerb.Sent.ConvertToString().ToUpper(), History.HistoryChangeType.Record.ToString(), "SMS from Check-in Manager" );
+            historyChange.Caption = caption;
+
+            HistoryService.SaveChanges(
+                rockContext,
+                typeof( Rock.Model.Person ),
+                Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                person.Id,
+                historyChanges );
+        }
+
+        /// <summary>
+        /// Summary of the recipient adjustments made by <see cref="EnsureRecipientCanReceiveSms"/> so the
+        /// caller can compose a matching person-history entry.
+        /// </summary>
+        private sealed class SmsRecipientPrepResult
+        {
+            /// <summary>
+            /// <c>true</c> if <see cref="PhoneNumber.IsMessagingEnabled"/> was flipped from <c>false</c> to <c>true</c>.
+            /// </summary>
+            public bool EnabledMessaging { get; set; }
+
+            /// <summary>
+            /// <c>true</c> if <see cref="PhoneNumber.IsMessagingOptedOut"/> was flipped from <c>true</c> to <c>false</c>
+            /// (and <see cref="PhoneNumber.MessagingOptedOutDateTime"/> was cleared).
+            /// </summary>
+            public bool ClearedOptOut { get; set; }
+
+            /// <summary>
+            /// <c>true</c> if the person's <see cref="Rock.Model.Person.RecordStatusValueId"/> was changed to Active.
+            /// </summary>
+            public bool ReactivatedPerson { get; set; }
+
+            /// <summary>
+            /// <c>true</c> when at least one adjustment was made.
+            /// </summary>
+            public bool HasAnyChange => EnabledMessaging || ClearedOptOut || ReactivatedPerson;
         }
 
         /// <summary>
@@ -811,6 +1014,21 @@ namespace RockWeb.Blocks.CheckIn.Manager
             tbSmsMessage.Text = snippet.Content.ResolveMergeFields( mergeFields );
         }
 
+        /// <summary>
+        /// Replaces every digit in <paramref name="value"/> with an asterisk, preserving formatting
+        /// characters such as parentheses, spaces, and dashes. Used to render unlisted phone numbers
+        /// so staff can see the number type and layout without seeing the actual digits.
+        /// </summary>
+        private static string MaskDigits( string value )
+        {
+            if ( value.IsNullOrWhiteSpace() )
+            {
+                return value;
+            }
+
+            return Regex.Replace( value, @"\d", "*" );
+        }
+
         #endregion Methods
 
         #region Helper Class
@@ -839,6 +1057,42 @@ namespace RockWeb.Blocks.CheckIn.Manager
             /// The Relationship Name
             /// </summary>
             public string RelationshipName { get; set; }
+        }
+
+        /// <summary>
+        /// A lightweight projection of <see cref="PhoneNumber"/> used to bind the phones repeater.
+        /// Unlisted numbers are masked at projection time so the actual digits never reach the
+        /// markup or the DOM.
+        /// </summary>
+        private class PhoneNumberDisplay
+        {
+            /// <summary>
+            /// The <see cref="PhoneNumber.Id"/>, used to match the SMS-capable number.
+            /// </summary>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// The raw number, masked with asterisks when <see cref="IsUnlisted"/> is <c>true</c>.
+            /// Used for the <c>tel:</c> link href.
+            /// </summary>
+            public string Number { get; set; }
+
+            /// <summary>
+            /// The formatted number, masked with asterisks when <see cref="IsUnlisted"/> is <c>true</c>.
+            /// Used for display.
+            /// </summary>
+            public string NumberFormatted { get; set; }
+
+            /// <summary>
+            /// The phone number type (e.g. "Mobile", "Home").
+            /// </summary>
+            public string NumberType { get; set; }
+
+            /// <summary>
+            /// Whether the underlying phone number is unlisted. Bound in the markup to disable the
+            /// <c>tel:</c> button so staff can't dial a number they aren't allowed to see.
+            /// </summary>
+            public bool IsUnlisted { get; set; }
         }
 
         #endregion Helper Class

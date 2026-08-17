@@ -34,6 +34,9 @@ export type ConnectionStatusBag = {
     /** Gets or sets the highlight color used to visually distinguish this status in the UI. */
     highlightColor?: string | null;
 
+    /** Gets or sets the IdKey of the Connection Status */
+    idKey?: string | null;
+
     /** Gets or sets a value indicating whether this status is the default status. */
     isDefaultStatus: boolean;
 

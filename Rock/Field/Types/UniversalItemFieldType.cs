@@ -428,8 +428,9 @@ namespace Rock.Field.Types
             // each of the field type attributes defined on this instance.
             foreach ( var fieldTypeAttribute in fieldTypeAttributes )
             {
-                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
-                if ( fieldTypeCache == null || fieldTypeCache.Field == null )
+                var field = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid )?.Field;
+
+                if ( field == null )
                 {
                     continue;
                 }
@@ -442,7 +443,7 @@ namespace Rock.Field.Types
                 var configurationValues = fieldTypeAttribute.FieldConfigurationValues
                     .ToDictionary( k => k.Key, k => k.Value.Value );
 
-                privateConfigurationValues[fieldTypeAttribute.Key] = fieldTypeCache.Field.GetPrivateEditValue( publicValue, configurationValues );
+                privateConfigurationValues[fieldTypeAttribute.Key] = field.GetPrivateEditValue( publicValue, configurationValues );
             }
 
             return privateConfigurationValues;
@@ -460,8 +461,9 @@ namespace Rock.Field.Types
                 // each of the field type attributes defined on this instance.
                 foreach ( var fieldTypeAttribute in fieldTypeAttributes )
                 {
-                    var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
-                    if ( fieldTypeCache == null || fieldTypeCache.Field == null )
+                    var field = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid )?.Field;
+
+                    if ( field == null )
                     {
                         continue;
                     }
@@ -474,7 +476,7 @@ namespace Rock.Field.Types
                     var configurationValues = fieldTypeAttribute.FieldConfigurationValues
                         .ToDictionary( k => k.Key, k => k.Value.Value );
 
-                    publicConfigurationValues[fieldTypeAttribute.Key] = fieldTypeCache.Field.GetPublicEditValue( privateValue, configurationValues );
+                    publicConfigurationValues[fieldTypeAttribute.Key] = field.GetPublicEditValue( privateValue, configurationValues );
                 }
 
                 return publicConfigurationValues;
@@ -495,7 +497,8 @@ namespace Rock.Field.Types
             // the client can present them with standard logic.
             foreach ( var fieldTypeAttribute in fieldTypeAttributes )
             {
-                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
+                var fieldTypeCache = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid );
+
                 if ( fieldTypeCache == null || fieldTypeCache.Field == null )
                 {
                     continue;
@@ -565,7 +568,7 @@ namespace Rock.Field.Types
             for ( int i = 0; i < fieldTypeAttributes.Count; i++ )
             {
                 var fieldTypeAttribute = fieldTypeAttributes[i];
-                var field = Helper.InstantiateFieldType( fieldTypeAttribute.FieldTypeAssembly, fieldTypeAttribute.FieldTypeClass );
+                var field = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid )?.Field;
 
                 if ( field != null )
                 {
@@ -600,7 +603,7 @@ namespace Rock.Field.Types
             for ( int i = 0; i < fieldTypeAttributes.Count; i++ )
             {
                 var fieldTypeAttribute = fieldTypeAttributes[i];
-                var field = Helper.InstantiateFieldType( fieldTypeAttribute.FieldTypeAssembly, fieldTypeAttribute.FieldTypeClass );
+                var field = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid )?.Field;
 
                 if ( field != null && controls.Count > i )
                 {
@@ -620,7 +623,7 @@ namespace Rock.Field.Types
             for ( int i = 0; i < fieldTypeAttributes.Count; i++ )
             {
                 var fieldTypeAttribute = fieldTypeAttributes[i];
-                var field = Helper.InstantiateFieldType( fieldTypeAttribute.FieldTypeAssembly, fieldTypeAttribute.FieldTypeClass );
+                var field = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid )?.Field;
 
                 if ( field != null && controls.Count > i )
                 {

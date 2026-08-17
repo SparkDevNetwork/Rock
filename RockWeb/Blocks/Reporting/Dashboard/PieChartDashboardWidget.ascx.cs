@@ -36,13 +36,10 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [Category( "Reporting > Dashboard" )]
     [Description( "Pie Chart Dashboard Widget" )]
 
-    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES,
-        Name = "Chart Style",
-        Order = 3 )]
     [EntityField( "Series Partition",
-        "Select the series partition entity (Campus, Group, etc) to be used to limit the metric values for the selected metrics.",
-        "Either select a specific {0} or leave {0} blank to get it from the page context.",
-        false,
+        Description = "Select the series partition entity (Campus, Group, etc) to be used to limit the metric values for the selected metrics.",
+        EntityControlHelpTextFormat = "Either select a specific {0} or leave {0} blank to get it from the page context.",
+        IsRequired = false,
         Key = "Entity",
         Order = 4 )]
     [MetricCategoriesField( "Metrics",
@@ -50,15 +47,11 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         IsRequired = false,
         Key = "MetricCategories",
         Order = 5 )]
-    [CustomRadioListField( "Metric Value Type", "Select which metric value type to display in the chart", "Goal,Measure", false, "Measure", Order = 6 )]
-    [SlidingDateRangeField( "Date Range",
-        Key = "SlidingDateRange",
-        DefaultValue = "1||4||",
-        Order = 7 )]
-    [LinkedPage( "Detail Page",
-        Description = "Select the page to navigate to when the chart is clicked",
-        IsRequired = false,
-        Order = 8 )]
+    [CustomRadioListField( "Metric Value Type",
+        Description = "Select which metric value type to display in the chart",
+        ListSource = "Goal,Measure",
+        DefaultValue = "Measure",
+        Order = 6 )]
     [Rock.SystemGuid.BlockTypeGuid( "341AAD88-47E0-4F25-B4F2-0EBCE5A96A1D" )]
     public partial class PieChartDashboardWidget : MetricChartDashboardWidget
     {

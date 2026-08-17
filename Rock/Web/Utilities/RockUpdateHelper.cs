@@ -53,30 +53,6 @@ namespace Rock.Web.Utilities
             }
             catch { }
 
-            try
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var entityType = EntityTypeCache.Get( "Rock.Security.BackgroundCheck.ProtectMyMinistry", false, rockContext );
-                    if ( entityType != null )
-                    {
-                        var pmmUserName = new AttributeValueService( rockContext )
-                            .Queryable().AsNoTracking()
-                            .Where( v =>
-                                v.Attribute.EntityTypeId.HasValue &&
-                                v.Attribute.EntityTypeId.Value == entityType.Id &&
-                                v.Attribute.Key == "UserName" )
-                            .Select( v => v.Value )
-                            .FirstOrDefault();
-                        if ( !string.IsNullOrWhiteSpace( pmmUserName ) )
-                        {
-                            envData.Add( "PMMUserName", pmmUserName );
-                        }
-                    }
-                }
-            }
-            catch { }
-
             return envData.ToJson();
         }
 

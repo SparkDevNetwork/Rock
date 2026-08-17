@@ -41,6 +41,15 @@ export type FinancialPersonSavedAccountBag = {
     /** Gets or sets the is expired status of the financial person saved account. */
     isExpired: boolean;
 
+    /**
+     * Gets or sets a value indicating whether this saved account is eligible
+     * for Text-To-Give. Only accounts whose gateway implements
+     * IAutomatedGatewayComponent can be used, so the client should filter the
+     * Text-To-Give dropdown to accounts where this is true while still
+     * showing every saved account in the main saved-accounts list.
+     */
+    isSupportedForTextToGive: boolean;
+
     /** Gets or sets the last error code of the financial person saved account. */
     lastErrorCode?: string | null;
 

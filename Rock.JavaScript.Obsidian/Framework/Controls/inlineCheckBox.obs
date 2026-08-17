@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <template v-if="isVisible">
-        <div class="checkbox">
+        <div class="checkbox inline-checkbox">
             <label title="">
                 <input type="checkbox" v-model="internalValue" v-bind="$attrs" />
                 <span class="label-text ">{{ label }}</span>

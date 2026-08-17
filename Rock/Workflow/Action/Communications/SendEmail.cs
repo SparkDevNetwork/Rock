@@ -48,13 +48,11 @@ namespace Rock.Workflow.Action
 
     [WorkflowTextOrAttribute( "From Email Address",
         "From Attribute",
-        "The email address or an attribute that contains the person or email address that email should be sent from (will default to organization email). <span class='tip tip-lava'></span>",
-        false,
-        "",
-        "",
-        1,
-        AttributeKey.From,
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType" } )]
+        Description = "The email address or an attribute that contains the person or email address that email should be sent from (will default to organization email). <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 1,
+        Key = AttributeKey.From,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType" } )]
 
     [WorkflowTextOrAttribute( "Reply To Address",
         "Reply To Attribute",
@@ -66,13 +64,11 @@ namespace Rock.Workflow.Action
 
     [WorkflowTextOrAttribute( "Send To Email Addresses",
         "To Attribute",
-        "The email addresses or an attribute that contains the person, email address, group or security role that the email should be sent to. <span class='tip tip-lava'></span>",
-        true,
-        "",
-        "",
-        3,
-        AttributeKey.To,
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
+        Description = "The email addresses or an attribute that contains the person, email address, group or security role that the email should be sent to. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 3,
+        Key = AttributeKey.To,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
 
     [WorkflowAttribute( "Send to Group Role",
         Key = AttributeKey.GroupRole,
@@ -85,6 +81,8 @@ namespace Rock.Workflow.Action
         Key = AttributeKey.Subject,
         Description = "The subject that should be used when sending email. <span class='tip tip-lava'></span>",
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 5 )]
 
     [CodeEditorField( "Body",
@@ -97,23 +95,19 @@ namespace Rock.Workflow.Action
 
     [WorkflowTextOrAttribute( "CC Email Addresses",
         "CC Attribute",
-        "The email addresses or an attribute that contains the person, email address, group or security role that the email should be CC'd (carbon copied) to. Any address in this field will be copied on the email sent to every recipient. <span class='tip tip-lava'></span>",
-        false,
-        "",
-        "",
-        7,
-        AttributeKey.Cc,
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
+        Description = "The email addresses or an attribute that contains the person, email address, group or security role that the email should be CC'd (carbon copied) to. Any address in this field will be copied on the email sent to every recipient. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 7,
+        Key = AttributeKey.Cc,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
 
     [WorkflowTextOrAttribute( "BCC Email Addresses",
         "BCC Attribute",
-        "The email addresses or an attribute that contains the person, email address, group or security role that the email should be BCC'd (blind carbon copied) to. Any address in this field will be copied on the email sent to every recipient. <span class='tip tip-lava'></span>",
-        false,
-        "",
-        "",
-        8,
-        AttributeKey.Bcc,
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
+        Description = "The email addresses or an attribute that contains the person, email address, group or security role that the email should be BCC'd (blind carbon copied) to. Any address in this field will be copied on the email sent to every recipient. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 8,
+        Key = AttributeKey.Bcc,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
 
     [WorkflowAttribute( "Attachment One",
         Key = AttributeKey.AttachmentOne,
@@ -142,6 +136,14 @@ namespace Rock.Workflow.Action
         DefaultBooleanValue = false,
         Order = 12 )]
 
+    [DefinedValueField( "Communication Topic",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.COMMUNICATION_TOPIC,
+        Key = AttributeKey.CommunicationTopic,
+        Description = "The topic to assign to the communication record when 'Save Communication History' is enabled.",
+        IsRequired = false,
+        AllowMultiple = false,
+        Order = 13 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.SEND_EMAIL )]
@@ -164,6 +166,7 @@ namespace Rock.Workflow.Action
             public const string AttachmentThree = "AttachmentThree";
             public const string SaveCommunicationHistory = "SaveCommunicationHistory";
             public const string FromName = "FromName";
+            public const string CommunicationTopic = "CommunicationTopic";
         }
 
         #endregion
@@ -230,6 +233,18 @@ namespace Rock.Workflow.Action
             var attachments = attachmentList.ToArray();
 
             bool createCommunicationRecord = GetAttributeValue( action, AttributeKey.SaveCommunicationHistory ).AsBoolean();
+
+            int? communicationTopicValueId = null;
+            var communicationTopicGuid = GetAttributeValue( action, AttributeKey.CommunicationTopic ).AsGuidOrNull();
+            if ( communicationTopicGuid.HasValue )
+            {
+                communicationTopicValueId = DefinedValueCache.GetId( communicationTopicGuid.Value );
+
+                if ( communicationTopicValueId.HasValue && !createCommunicationRecord )
+                {
+                    action.AddLogEntry( "Communication Topic was set, but 'Save Communication History' is disabled. The topic will only be persisted if history saving is enabled.", true );
+                }
+            }
 
             string fromName = string.Empty;
             string fromEmailAddress = string.Empty;
@@ -366,11 +381,11 @@ namespace Rock.Workflow.Action
 
                 if ( !string.IsNullOrWhiteSpace( toDelimitedEmails ) )
                 {
-                    Send( toDelimitedEmails, fromPersonId, fromEmailAddress, fromName, replyToEmailAddress, subject, body, ccEmails, bccEmails, mergeFields, createCommunicationRecord, attachments, out errorMessages );
+                    Send( toDelimitedEmails, fromPersonId, fromEmailAddress, fromName, replyToEmailAddress, subject, body, ccEmails, bccEmails, mergeFields, createCommunicationRecord, communicationTopicValueId, attachments, out errorMessages );
                 }
                 else if ( toRecipients != null )
                 {
-                    Send( toRecipients, fromPersonId, fromEmailAddress, fromName, replyToEmailAddress, subject, body, ccEmails, bccEmails, createCommunicationRecord, attachments, out errorMessages );
+                    Send( toRecipients, fromPersonId, fromEmailAddress, fromName, replyToEmailAddress, subject, body, ccEmails, bccEmails, createCommunicationRecord, communicationTopicValueId, attachments, out errorMessages );
                 }
             }
 
@@ -607,12 +622,13 @@ namespace Rock.Workflow.Action
         /// <param name="bccEmails">The BCC emails.</param>
         /// <param name="mergeFields">The merge fields.</param>
         /// <param name="createCommunicationRecord">if set to <c>true</c> [create communication record].</param>
+        /// <param name="communicationTopicValueId">The communication topic defined value identifier.</param>
         /// <param name="attachments">The attachments.</param>
         /// <param name="errorMessages">The error messages.</param>
-        private void Send( string recipientEmails, int? fromPersonId, string fromEmail, string fromName, string replyToEmail, string subject, string body, List<string> ccEmails, List<string> bccEmails, Dictionary<string, object> mergeFields, bool createCommunicationRecord, BinaryFile[] attachments, out List<string> errorMessages )
+        private void Send( string recipientEmails, int? fromPersonId, string fromEmail, string fromName, string replyToEmail, string subject, string body, List<string> ccEmails, List<string> bccEmails, Dictionary<string, object> mergeFields, bool createCommunicationRecord, int? communicationTopicValueId, BinaryFile[] attachments, out List<string> errorMessages )
         {
             var recipients = recipientEmails.ResolveMergeFields( mergeFields ).SplitDelimitedValues().Select( e => RockEmailMessageRecipient.CreateAnonymous( e, mergeFields ) ).ToList();
-            Send( recipients, fromPersonId, fromEmail, fromName, replyToEmail, subject, body, ccEmails, bccEmails, createCommunicationRecord, attachments, out errorMessages );
+            Send( recipients, fromPersonId, fromEmail, fromName, replyToEmail, subject, body, ccEmails, bccEmails, createCommunicationRecord, communicationTopicValueId, attachments, out errorMessages );
         }
 
         /// <summary>
@@ -628,9 +644,10 @@ namespace Rock.Workflow.Action
         /// <param name="ccEmails">The CC emails.</param>
         /// <param name="bccEmails">The BCC emails.</param>
         /// <param name="createCommunicationRecord">if set to <c>true</c> [create communication record].</param>
+        /// <param name="communicationTopicValueId">The communication topic defined value identifier.</param>
         /// <param name="attachments">The attachments.</param>
         /// <param name="errorMessages">The error messages.</param>
-        private void Send( List<RockEmailMessageRecipient> recipients, int? fromPersonId, string fromEmail, string fromName, string replyToEmail, string subject, string body, List<string> ccEmails, List<string> bccEmails, bool createCommunicationRecord, BinaryFile[] attachments, out List<string> errorMessages )
+        private void Send( List<RockEmailMessageRecipient> recipients, int? fromPersonId, string fromEmail, string fromName, string replyToEmail, string subject, string body, List<string> ccEmails, List<string> bccEmails, bool createCommunicationRecord, int? communicationTopicValueId, BinaryFile[] attachments, out List<string> errorMessages )
         {
             var emailMessage = new RockEmailMessage();
             emailMessage.SetRecipients( recipients );
@@ -653,6 +670,7 @@ namespace Rock.Workflow.Action
             }
 
             emailMessage.CreateCommunicationRecord = createCommunicationRecord;
+            emailMessage.CommunicationTopicValueId = communicationTopicValueId;
 
             /* 
                 [2024-06-20] - DJL

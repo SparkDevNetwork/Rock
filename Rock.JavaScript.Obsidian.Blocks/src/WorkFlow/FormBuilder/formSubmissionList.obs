@@ -1,0 +1,187 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="!config.options?.canView" alertType="warning">
+        <strong>Note</strong> A form could not be resolved for this page. Verify the WorkflowTypeId page parameter.
+    </NotificationBox>
+
+    <Grid v-else
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          :title="gridTitle"
+          itemTerm="Submission"
+          :entityTypeGuid="EntityType.Workflow"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="isGridSettingsVisible = true"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+        <SelectColumn />
+
+        <DateColumn name="submitted"
+                    title="Submitted"
+                    field="submitted"
+                    width="205px"
+                    :filter="dateValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="campus"
+                    title="Campus"
+                    field="campus"
+                    width="260px"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <PersonColumn name="initiator"
+                      title="Person"
+                      field="initiator"
+                      :hideAvatar="true"
+                      :showAsLink="true"
+                      :filter="pickExistingValueFilter"
+                      visiblePriority="md" />
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []"
+                          visiblePriority="md" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <FiltersModal v-model="gridSettings"
+                  v-model:visible="isGridSettingsVisible" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { AttributeColumns, DateColumn, DeleteColumn, PersonColumn, SelectColumn, TextColumn, dateValueFilter, pickExistingValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { FormSubmissionListOptionsBag } from "@Obsidian/ViewModels/Blocks/WorkFlow/FormBuilder/FormSubmissionList/formSubmissionListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./FormSubmissionList/types.partial";
+    import FiltersModal from "./FormSubmissionList/filtersModal.partial.obs";
+    import { computed, reactive, ref, watch } from "vue";
+
+    const config = useConfigurationValues<ListBlockBox<FormSubmissionListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        person: safeParseListItem(preferences.getValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterPersonAliasGuid))),
+        campus: safeParseListItem(preferences.getValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterCampusGuid)))
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.person?.value
+            || !!gridSettings.value.campus?.value;
+    });
+
+    const gridTitle = computed((): string => {
+        return config.options?.formName ?? "Form";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /** Loads grid data and caches it so per-row mutations can update the view without a reload. */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+
+        throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+    }
+
+    /** Scopes a preference key to the current workflow type so filters do not bleed across forms. */
+    function makeKeyUniqueToWorkflowType(key: string): string {
+        const idKey = config.options?.workflowTypeIdKey;
+        return idKey ? `${idKey}-${key}` : key;
+    }
+
+    /** Parses a JSON ListItemBag preference value; returns null for empty or invalid input. */
+    function safeParseListItem(raw: string): { value?: string | null; text?: string | null } | null {
+        if (!raw) {
+            return null;
+        }
+
+        try {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === "object" && "value" in parsed) {
+                return parsed;
+            }
+        }
+        catch {
+            // Stale or non-JSON value; treat as no preference.
+        }
+
+        return null;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", { key });
+
+        if (result.isSuccess) {
+            if (gridData?.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+                if (index !== -1) {
+                    gridData.rows.splice(index, 1);
+                }
+            }
+            return;
+        }
+
+        await alert(result.errorMessage ?? "Unknown error while trying to delete submission.");
+    }
+
+    function onAddItem(): void {
+        const url = config.navigationUrls?.[NavigationUrlKey.EntryPage];
+        if (!url) {
+            return;
+        }
+
+        window.location.href = url.replace("((WorkflowTypeKey))", config.options?.workflowTypeIdKey ?? "");
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        const personRaw = gridSettings.value.person ? JSON.stringify(gridSettings.value.person) : "";
+        const campusRaw = gridSettings.value.campus ? JSON.stringify(gridSettings.value.campus) : "";
+
+        preferences.setValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterPersonAliasGuid), personRaw);
+        preferences.setValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterCampusGuid), campusRaw);
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    gridDataSource.value = loadGridData();
+</script>

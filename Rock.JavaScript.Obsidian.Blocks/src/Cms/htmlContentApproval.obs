@@ -1,0 +1,272 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
+
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="HTML Content"
+          title="HTML Content Approval List"
+          :entityTypeGuid="EntityType.HtmlContent"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="onGridSettingsClick"
+          @selectItem="onSelectItem">
+
+        <TextColumn name="siteName"
+                    title="Site"
+                    field="siteName"
+                    :filter="pickExistingValueFilter" />
+
+        <TextColumn name="pageName"
+                    title="Page"
+                    field="pageName"
+                    :filter="textValueFilter" />
+
+        <DateTimeColumn name="modifiedDateTime"
+                        title="Modified Date/Time"
+                        field="modifiedDateTime"
+                        :filter="dateValueFilter" />
+
+        <Column v-if="config.options?.isApproveVisible"
+                name="isApproved"
+                title="Approved"
+                field="isApproved"
+                :filter="booleanValueFilter"
+                :exportValue="getIsApprovedExportValue"
+                :quickFilterValue="getIsApprovedDisplayValue"
+                :sortValue="getIsApprovedDisplayValue">
+            <template #format="{ row }">
+                <Toggle v-model="row.isApproved"
+                        btnSize="xs"
+                        onButtonActiveCssClass="btn-success"
+                        falseText="No"
+                        trueText="Yes"
+                        :disabled="approvalStatusSaving[row.idKey]" />
+                <i v-if="approvalStatusSaving[row.idKey]"
+                   class="ti ti-rotate-clockwise-2 ti-spin"></i>
+            </template>
+        </Column>
+
+        <BooleanColumn v-else
+                       name="isApproved"
+                       title="Approved"
+                       field="isApproved"
+                       :filter="booleanValueFilter" />
+
+        <PersonColumn name="approvedByPersonAlias"
+                      title="Approved By"
+                      field="approvedByPersonAlias"
+                      :hideAvatar="true"
+                      :showAsLink="true"
+                      :filter="pickExistingValueFilter"
+                      :detailField="false" />
+
+        <DateColumn name="approvedDateTime"
+                    title="Approval Date"
+                    field="approvedDateTime"
+                    :filter="dateValueFilter" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :sites="config.options?.sites ?? []"
+                       :isApproveVisible="config.options?.isApproveVisible ?? false" />
+
+    <Modal v-model="isPreviewVisible"
+           title="Preview"
+           cancelText="Close"
+           saveText="">
+        <div v-html="previewContent"></div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { BooleanColumn, Column, TextColumn, DateTimeColumn, DateColumn, PersonColumn, textValueFilter, dateValueFilter, booleanValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { HtmlContentApprovalOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/HtmlContentApproval/htmlContentApprovalOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ApprovalStatus, PreferenceKey, GridSettingsOptions } from "./HtmlContentApproval/types.partial";
+    import GridSettingsModal from "./HtmlContentApproval/gridSettingsModal.partial.obs";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { reactive, ref, computed, watch } from "vue";
+
+    const config = useConfigurationValues<ListBlockBox<HtmlContentApprovalOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const errorMessage = ref("");
+    const approvalStatusSaving = reactive<Record<string, boolean>>({});
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+    let gridDataCopy: GridDataBag | undefined;
+    const isGridSettingsVisible = ref(false);
+    const isPreviewVisible = ref(false);
+    const previewContent = ref("");
+
+    const gridSettings = ref<GridSettingsOptions>({
+        site: preferences.getValue(PreferenceKey.FilterSite),
+        approvalStatus: preferences.getValue(PreferenceKey.FilterApprovalStatus) || ApprovalStatus.Unapproved,
+        approvedBy: safeParseJson(preferences.getValue(PreferenceKey.FilterApprovedBy))
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * Returns `true` if any grid settings filters are active; otherwise `false`.
+     */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.site
+            || (!!gridSettings.value.approvalStatus && gridSettings.value.approvalStatus !== ApprovalStatus.All)
+            || !!gridSettings.value.approvedBy?.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            gridDataCopy = JSON.parse(JSON.stringify(result.data));
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Gets the export value for approval status.
+     */
+    function getIsApprovedExportValue(row: Record<string, unknown>): string {
+        return row["isApproved"] ? "True" : "False";
+    }
+
+    /**
+     * Gets the quick filter value for approval status so searching
+     * "Yes" or "No" matches the toggle text.
+     */
+    function getIsApprovedDisplayValue(row: Record<string, unknown>): string {
+        return row["isApproved"] ? "Yes" : "No";
+    }
+
+    /**
+     * Ensures a promise takes at least the specified minimum duration before resolving.
+     */
+    async function withMinDurationPromise<T>(promise: Promise<T>, minDurationMs: number): Promise<T> {
+        const start = Date.now();
+        const result = await promise;
+        const elapsed = Date.now() - start;
+
+        if (elapsed < minDurationMs) {
+            await new Promise(resolve => setTimeout(resolve, minDurationMs - elapsed));
+        }
+
+        return result;
+    }
+
+    /**
+     * Toggles the approval status of an HTML content item.
+     */
+    async function toggleApprovalStatus(idKey: string): Promise<void> {
+        const result = await invokeBlockAction("ToggleApproval", { key: idKey });
+
+        if (!result.isSuccess) {
+            // Revert the change since it didn't save.
+            if (gridData && gridData.rows) {
+                const row = gridData.rows.find(r => r["idKey"] === idKey);
+                if (row) {
+                    row["isApproved"] = !row["isApproved"];
+                }
+            }
+
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to update approval status.";
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when the grid settings icon is clicked.
+     */
+    function onGridSettingsClick(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+    /**
+     * Called when a row has been selected by the individual.
+     */
+    function onSelectItem(key: string): void {
+        if (gridData && gridDataCopy && gridData.rows && gridDataCopy.rows) {
+            const rowToCheck = gridData.rows.find(r => r["idKey"] === key);
+            const oldRowValue = gridDataCopy.rows.find(r => r["idKey"] === key);
+
+            // If the approval status was changed, the user clicked the toggle.
+            if (rowToCheck && oldRowValue && rowToCheck["isApproved"] !== oldRowValue["isApproved"]) {
+                approvalStatusSaving[key] = true;
+                (async () => {
+                    await withMinDurationPromise(
+                        toggleApprovalStatus(key),
+                        1000
+                    );
+                    gridDataCopy = JSON.parse(JSON.stringify(gridData));
+                    approvalStatusSaving[key] = false;
+                })();
+                return;
+            }
+        }
+
+        // Otherwise, show the preview modal.
+        (async () => {
+            const result = await invokeBlockAction<string>("GetContentPreview", { key });
+
+            if (result.isSuccess && result.data !== undefined) {
+                previewContent.value = result.data ?? "";
+                isPreviewVisible.value = true;
+            }
+            else {
+                await alert(result.errorMessage ?? "Unknown error while trying to load content preview.");
+            }
+        })();
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterSite, gridSettings.value.site ?? "");
+        preferences.setValue(PreferenceKey.FilterApprovalStatus, gridSettings.value.approvalStatus ?? "");
+        preferences.setValue(PreferenceKey.FilterApprovedBy, gridSettings.value.approvedBy ? JSON.stringify(gridSettings.value.approvedBy) : "");
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion Watchers
+
+    gridDataSource.value = loadGridData();
+</script>

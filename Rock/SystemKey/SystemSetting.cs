@@ -140,34 +140,6 @@ namespace Rock.SystemKey
         public const string START_DAY_OF_WEEK = "core_StartDayOfWeek";
 
         /// <summary>
-        /// (Obsolete) Enable a redis cache cluster
-        /// </summary>
-        [Obsolete( "No longer needed since we no longer support Redis." )]
-        [RockObsolete( "1.15" )]
-        public const string REDIS_ENABLE_CACHE_CLUSTER = "EnableRedisCacheCluster";
-
-        /// <summary>
-        /// (Obsolete) Comma separated list of Redis endpoints (e.g. server.com:6379)
-        /// </summary>
-        [Obsolete( "No longer needed since we no longer support Redis." )]
-        [RockObsolete( "1.15" )]
-        public const string REDIS_ENDPOINT_LIST = "RedisEndpointList";
-
-        /// <summary>
-        /// (Obsolete) The redis password
-        /// </summary>
-        [Obsolete( "No longer needed since we no longer support Redis." )]
-        [RockObsolete( "1.15" )]
-        public const string REDIS_PASSWORD = "RedisPassword";
-
-        /// <summary>
-        /// (Obsolete) The redis database index number
-        /// </summary>
-        [Obsolete( "No longer needed since we no longer support Redis." )]
-        [RockObsolete( "1.15" )]
-        public const string REDIS_DATABASE_NUMBER = "RedisDatabaseNumber";
-
-        /// <summary>
         /// Settings for Spark Data NCOA
         /// </summary>
         public const string SPARK_DATA_NCOA = "core_SparkDataNcoa";
@@ -281,6 +253,14 @@ namespace Rock.SystemKey
         /// Job Settings for <see cref="Rock.Jobs.PopulateInteractionSessionData"/>
         /// </summary>
         public const string POPULATE_INTERACTION_SESSION_DATA_JOB_SETTINGS = "core_PopulateInteractionSessionDataJobSettings";
+
+        /// <summary>
+        /// The most recent date (a <c>date</c>, not a <c>datetime</c>) for which the Rock Cleanup job's
+        /// Interaction Component Daily Count task has fully written aggregate rows. The next run picks up
+        /// from <c>(value + 1 day)</c> through yesterday. Null/missing means the task has never run and
+        /// the next run performs a full historical backfill.
+        /// </summary>
+        public const string INTERACTION_COMPONENT_DAILY_COUNT_LAST_PROCESSED_DATE = "core_InteractionComponentDailyCount_LastProcessedDate";
 
         /// <summary>
         /// Number of minutes old the ROCK_SEGMENT_FILTERS cookie can be before it is considered stale and will be re-fetched from the database.

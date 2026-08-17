@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rock.AI.Agent\Rock.AI.Agent.csproj" />
+    <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj" />
     <ProjectReference Include="..\Rock.Tests.Shared\Rock.Tests.Shared.csproj" />
   </ItemGroup>
 

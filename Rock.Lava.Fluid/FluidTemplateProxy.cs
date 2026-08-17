@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
+using Fluid;
 using Fluid.Parser;
 
 namespace Rock.Lava.Fluid
@@ -24,12 +24,12 @@ namespace Rock.Lava.Fluid
     /// </summary>
     internal class FluidTemplateProxy : LavaTemplateBase
     {
-        private FluidTemplate _template;
+        private IFluidTemplate _template;
         private string _description = null;
 
         #region Constructors
 
-        public FluidTemplateProxy( FluidTemplate template, string description )
+        public FluidTemplateProxy( IFluidTemplate template, string description )
         {
             _template = template;
             _description = description;
@@ -51,7 +51,7 @@ namespace Rock.Lava.Fluid
         /// <summary>
         /// Get the Fluid template instance.
         /// </summary>
-        public FluidTemplate FluidTemplate
+        public IFluidTemplate FluidTemplate
         {
             get
             {

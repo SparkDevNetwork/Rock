@@ -21,9 +21,13 @@ using System.Linq;
 using System.Net;
 using System.Web;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Web.Cache;
 
 namespace RockWeb
@@ -71,7 +75,7 @@ namespace RockWeb
                     return;
                 }
 
-                calendarProps.ClientDeviceType = InteractionDeviceType.GetClientType( request.UserAgent );
+                calendarProps.ClientDeviceType = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( request.UserAgent ).ClientType;
 
                 // get the lava template
                 int templateDefinedValueId = 0;

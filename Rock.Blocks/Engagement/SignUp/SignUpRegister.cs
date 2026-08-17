@@ -27,10 +27,8 @@ using Rock.Attribute;
 using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Enums.Blocks.Engagement.SignUp;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Tasks;
-using Rock.Utility;
 using Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -62,7 +60,7 @@ namespace Rock.Blocks.Engagement.SignUp
     [BooleanField( "Include Children",
         Key = AttributeKey.IncludeChildren,
         Description = "Determines if children should be displayed as options when in Family and Group modes.",
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
         IsRequired = false,
         Order = 1 )]
@@ -82,14 +80,14 @@ namespace Rock.Blocks.Engagement.SignUp
     [BooleanField( "Require Email",
         Key = AttributeKey.RequireEmail,
         Description = "When enabled, requires that a value be entered for email when registering in Anonymous mode.",
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
         Order = 4 )]
 
     [BooleanField( "Require Mobile Phone",
         Key = AttributeKey.RequireMobilePhone,
         Description = "When enabled, requires that a value be entered for mobile phone when registering in Anonymous mode.",
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
         Order = 5 )]
 

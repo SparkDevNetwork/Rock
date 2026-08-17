@@ -224,9 +224,6 @@ namespace Rock.Model
             target.PushOpenMessageJson = source.PushOpenMessageJson;
             target.PushSound = source.PushSound;
             target.PushTitle = source.PushTitle;
-            #pragma warning disable 612, 618
-            target.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
-            #pragma warning restore 612, 618
             target.SmsFromSystemPhoneNumberId = source.SmsFromSystemPhoneNumberId;
             target.SMSMessage = source.SMSMessage;
             target.Subject = source.Subject;

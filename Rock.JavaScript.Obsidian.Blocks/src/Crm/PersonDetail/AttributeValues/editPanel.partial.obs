@@ -1,0 +1,160 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="attribute-values-edit">
+        <RockForm @submit="onSave">
+            <fieldset class="attribute-values">
+                <template v-for="(group, groupIndex) in groupItems" :key="group.categoryName ?? groupIndex">
+                    <h4 v-if="group.categoryName">{{ group.categoryName }}</h4>
+                    <RockField v-for="item in group.fields"
+                               :key="item.key"
+                               :isEditMode="item.canEdit"
+                               :attribute="item.attribute"
+                               :modelValue="editValues[item.key]"
+                               @update:modelValue="onValueChanged(item.key, $event)" />
+                </template>
+
+                <div class="actions">
+                    <button type="submit" accesskey="s" class="btn btn-primary btn-xs" :disabled="isSaving">Save</button>
+                    <button type="button" accesskey="c" class="btn btn-link btn-xs" @click="onCancel">Cancel</button>
+                </div>
+            </fieldset>
+        </RockForm>
+    </div>
+</template>
+
+<style scoped>
+.attribute-values-edit :deep(.form-control-static img) {
+    max-width: 120px;
+    height: auto;
+}
+
+/*
+    Category-separator headings render as a full-width shaded band, matching the
+    .panel-persondetails theme treatment the legacy person-profile markup received.
+    The negative horizontal margin bleeds the band across the panel body padding.
+*/
+.attribute-values-edit :deep(h4) {
+    padding: var(--spacing-xsmall) var(--spacing-medium);
+    margin: var(--spacing-medium) calc(var(--spacing-medium) * -1) var(--spacing-small);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-strong);
+    background: var(--color-interface-softer);
+}
+
+/* The first band sits flush against the top of the panel body. */
+.attribute-values-edit :deep(h4:first-child) {
+    margin-top: calc(var(--spacing-medium) * -1);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import RockField from "@Obsidian/Controls/rockField.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { getSecurityGrant, provideSecurityGrant, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { AttributeValuesEditBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/AttributeValues/attributeValuesEditBag";
+    import { AttributeValuesViewBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/AttributeValues/attributeValuesViewBag";
+
+    // #region Types
+
+    type FieldItem = {
+        key: string;
+        canEdit: boolean;
+        attribute: PublicAttributeBag;
+    };
+
+    type GroupItem = {
+        categoryName: string | null | undefined;
+        fields: FieldItem[];
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        editBag: {
+            type: Object as PropType<AttributeValuesEditBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "saved", value: AttributeValuesViewBag): void;
+        (e: "cancel"): void;
+    }>();
+
+    // #region Values
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const editValues = ref<Record<string, string>>({ ...(props.editBag.attributeValues ?? {}) });
+    const isSaving = ref(false);
+
+    // Field types that need extra security context read it from the provided grant.
+    provideSecurityGrant(getSecurityGrant(props.editBag.securityGrantToken));
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const groupItems = computed((): GroupItem[] => {
+        const attributes = props.editBag.attributes ?? {};
+
+        return (props.editBag.fieldGroups ?? [])
+            .map(group => ({
+                categoryName: group.categoryName,
+                fields: (group.fields ?? [])
+                    .filter(field => !!field.key && !!attributes[field.key])
+                    .map(field => ({
+                        key: field.key as string,
+                        canEdit: field.canEdit,
+                        attribute: attributes[field.key as string]
+                    }))
+            }))
+            .filter(group => group.fields.length > 0);
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onValueChanged(key: string, value: string): void {
+        editValues.value[key] = value;
+    }
+
+    async function onSave(): Promise<void> {
+        isSaving.value = true;
+
+        try {
+            // Only send values for attributes the person is allowed to edit.
+            const attributeValues: Record<string, string> = {};
+
+            for (const group of props.editBag.fieldGroups ?? []) {
+                for (const field of group.fields ?? []) {
+                    if (field.canEdit && field.key) {
+                        attributeValues[field.key] = editValues.value[field.key] ?? "";
+                    }
+                }
+            }
+
+            const result = await invokeBlockAction<AttributeValuesViewBag>("SaveAttributeValues", { attributeValues });
+
+            if (result.isSuccess && result.data) {
+                emit("saved", result.data);
+            }
+            else {
+                await alert(result.errorMessage || "Unable to save the attribute values.");
+            }
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    function onCancel(): void {
+        emit("cancel");
+    }
+
+    // #endregion Event Handlers
+</script>

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,8 +31,16 @@ namespace Rock.Follow.Event
     [Export( typeof( EventComponent ) )]
     [ExportMetadata( "ComponentName", "PersonAnniversary" )]
 
-    [IntegerField( "Lead Days", "The number of days prior to birthday that notification should be sent.", false, 5, "", 0)]
-    [IntegerField( "Nth Year", "Only be notified for anniversaries that are a multiple of this number (i.e. a value of 5 will notify you on the person's 5th, 10th, 15th, etc. anniversary).", false, 5, "", 1 )]
+    [IntegerField( "Lead Days",
+        Description = "The number of days prior to birthday that notification should be sent.",
+        IsRequired = false,
+        DefaultIntegerValue = 5,
+        Order = 0 )]
+    [IntegerField( "Nth Year",
+        Description = "Only be notified for anniversaries that are a multiple of this number (i.e. a value of 5 will notify you on the person's 5th, 10th, 15th, etc. anniversary).",
+        IsRequired = false,
+        DefaultIntegerValue = 5,
+        Order = 1 )]
     [Rock.SystemGuid.EntityTypeGuid( "17DFDE21-0C1E-426F-8516-4BBA9ED28385")]
     public class PersonAnniversary : EventComponent
     {

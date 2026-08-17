@@ -44,7 +44,10 @@ namespace Rock.Workflow.Action
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Html,
         IsRequired = true,
         Order = 0 )]
-    [BooleanField( "Hide Status Message", "Whether or not to hide the built-in status message.", false, "", 1 )]
+    [BooleanField( "Hide Status Message",
+        Description = "Whether or not to hide the built-in status message.",
+        DefaultBooleanValue = false,
+        Order = 1 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "FDDAE78D-B7B3-4DA2-9A92-CC129AAF15DE")]
     public class ShowHtml : ActionComponent, IInteractiveAction
@@ -78,7 +81,7 @@ namespace Rock.Workflow.Action
                 if ( page != null )
                 {
                     var obsidianWorkflowEntryBlock = page.ControlsOfTypeRecursive<Rock.Web.UI.RockBlockTypeWrapper>()
-                        .Where( bw => bw.BlockCache?.BlockType?.Guid == new Guid( "9116AAD8-CF16-4BCE-B0CF-5B4D565710ED" ) )
+                        .Where( bw => bw.BlockCache?.BlockType?.Guid == Rock.SystemGuid.BlockType.WORKFLOW_ENTRY.AsGuid() )
                         .FirstOrDefault();
 
                     // If we are being processed by the new Obsidian Workflow

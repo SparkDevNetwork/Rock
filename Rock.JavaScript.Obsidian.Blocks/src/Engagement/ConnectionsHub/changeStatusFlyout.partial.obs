@@ -15,31 +15,19 @@
             </div>
 
             <template v-if="isLastStatus">
-                <p class="text-interface-stronger mb-spacing-none">This request has reached its final status. Would you like to mark it as Complete?</p>
+                <p>This request has reached its final status. Would you like to mark it as Complete?</p>
             </template>
             <template v-else>
-                <template v-if="isSequentialMode">
-                    <p class="text-interface-stronger mb-spacing-sm">Are you sure you want to advance to the next status for this request?</p>
-                    <div class="row mb-spacing-sm">
+                <template v-if="connectionTypeOptions?.isSequentialStatusMode">
+                    <p>Are you sure you want to advance to the next status for this request?</p>
+                    <div class="row">
                         <div class="col-md-6">
-                            <RockLabel>
-                                <div class="text-interface-medium font-size-sm font-weight-regular">
-                                    Current Status
-                                </div>
-                            </RockLabel>
-                            <div class="text-interface-stronger">
-                                {{ currentStatus?.text }}
-                            </div>
+                            <StaticFormControl :modelValue="currentStatus?.text ?? ''"
+                                               label="Current Status" />
                         </div>
                         <div class="col-md-6">
-                            <RockLabel>
-                                <div class="text-interface-medium font-size-sm font-weight-regular">
-                                    Next Status
-                                </div>
-                            </RockLabel>
-                            <div class="text-interface-stronger">
-                                {{ nextStatus?.text }}
-                            </div>
+                            <StaticFormControl :modelValue="nextStatus?.text ?? ''"
+                                               label="Next Status" />
                         </div>
                     </div>
                 </template>
@@ -57,7 +45,7 @@
         </template>
         <template #footer>
             <div v-if="isLastStatus"
-                 class="d-flex justify-content-end align-items-center">
+                 class="flyout-footer-actions-laststatus">
                 <RockButton @click="completeRequest"
                             :btnSize="BtnSize.Small"
                             :btnType="BtnType.Primary"
@@ -73,7 +61,7 @@
                 </RockButton>
             </div>
             <div v-else
-                 class="d-flex justify-content-between align-items-center">
+                 class="flyout-footer-actions">
                 <RockButton @click="completeRequest"
                             :btnSize="BtnSize.Small"
                             :disabled="!connectionRequestUpdateBag.canCompleteRequest || isSaving"
@@ -86,7 +74,7 @@
                                 :btnSize="BtnSize.Small"
                                 :btnType="BtnType.Primary"
                                 :disabled="isSaving">
-                        {{ isSequentialMode ? "Confirm" : "Save" }}
+                        {{ connectionTypeOptions?.isSequentialStatusMode ? "Confirm" : "Save" }}
                     </RockButton>
                     <RockButton @click="closeFlyout"
                                 :btnSize="BtnSize.Small"
@@ -99,17 +87,12 @@
     </Flyout>
 </template>
 
-<style scoped>
-.font-weight-regular {
-    font-weight: var(--font-weight-regular);
-}
-</style>
 
 <script setup lang="ts">
     import Flyout from "@Obsidian/Controls/flyout.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { ref, PropType, watch, computed } from "vue";
@@ -120,6 +103,8 @@
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { ConnectionState } from "@Obsidian/Enums/Connection/connectionState";
     import { UpdateConnectionRequestStatesBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/updateConnectionRequestStatesBag";
+    import { ConnectionTypeOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionTypeOptionsBag";
+    import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
 
 
     const props = defineProps({
@@ -143,8 +128,8 @@
             required: true
         },
 
-        isSequentialMode: {
-            type: Boolean as PropType<boolean>,
+        connectionTypeOptions: {
+            type: Object as PropType<ConnectionTypeOptionsBag | null>,
             required: true
         },
 
@@ -155,11 +140,6 @@
 
         anchorEl: {
             type: Object as PropType<HTMLElement | null>,
-            required: true
-        },
-
-        connectionStatusItems: {
-            type: Array as PropType<ListItemBag[]>,
             required: true
         },
 
@@ -184,12 +164,25 @@
     const status = ref("");
     const note = ref("");
 
+    const connectionStatusItems = computed<ListItemBag[]>(() => {
+        let statuses: ConnectionStatusBag[] | null | undefined = props.connectionTypeOptions?.connectionStatuses;
+
+        return (
+            statuses?.slice() // avoid mutating source
+                .sort((a, b) => a.order - b.order)
+                .map(s => ({
+                    value: s.guid,
+                    text: s.name
+                })) ?? []
+        );
+    });
+
     const currentStatusIndex = computed(() => {
-        if (!status.value || !props.isSequentialMode) {
+        if (!status.value || !props.connectionTypeOptions?.isSequentialStatusMode) {
             return -1;
         }
 
-        return props.connectionStatusItems.findIndex(
+        return connectionStatusItems.value.findIndex(
             s => s.value === status.value
         );
     });
@@ -197,7 +190,7 @@
     const isLastStatus = computed(() => {
         return (
             currentStatusIndex.value !== -1 &&
-            currentStatusIndex.value === props.connectionStatusItems.length - 1
+            currentStatusIndex.value === connectionStatusItems.value.length - 1
         );
     });
 
@@ -206,7 +199,7 @@
             return null;
         }
 
-        return props.connectionStatusItems[currentStatusIndex.value];
+        return connectionStatusItems.value[currentStatusIndex.value];
     });
 
     const nextStatus = computed(() => {
@@ -214,7 +207,7 @@
             return null;
         }
 
-        return props.connectionStatusItems[currentStatusIndex.value + 1];
+        return connectionStatusItems.value[currentStatusIndex.value + 1];
     });
 
     const completeButtonTooltip = computed(() => {
@@ -243,10 +236,10 @@
     }
 
     function onFlyoutSubmit(): void {
-        const newStatus = props.isSequentialMode ? nextStatus.value?.value : status.value;
+        const newStatus = props.connectionTypeOptions?.isSequentialStatusMode ? nextStatus.value?.value : status.value;
         const updateBag: ConnectionRequestUpdateBag = {
             ...props.connectionRequestUpdateBag,
-            connectionStatusGuid: newStatus,
+            connectionStatusKey: newStatus,
             note: note.value
         };
 
@@ -265,6 +258,6 @@
     });
 
     watch(() => props.connectionRequestUpdateBag, bag => {
-        status.value = bag.connectionStatusGuid ?? "";
+        status.value = bag.connectionStatusKey ?? "";
     }, { immediate: true });
 </script>

@@ -1,0 +1,234 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="panelElement">
+        <div class="clearfix margin-b-md">
+            <HighlightLabel class="pull-right" labelType="default">{{ currentNumber }} of {{ totalCount }}</HighlightLabel>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading clearfix">
+                <h3 class="panel-title pull-left" v-html="prayerRequest.personHtml"></h3>
+                <div class="panel-labels d-flex gap-2">
+                    <HighlightLabel v-if="prayerRequest.campusName" labelType="campus">{{ prayerRequest.campusName }}</HighlightLabel>
+                    <HighlightLabel labelType="info" iconCssClass="ti ti-users" tooltip="The number of prayers offered by the team for this request.">{{ prayerRequest.prayerCountText }}</HighlightLabel>
+                    <HighlightLabel v-if="prayerRequest.isUrgent" labelType="warning">Urgent</HighlightLabel>
+                    <HighlightLabel v-if="prayerRequest.categoryName" labelType="type">{{ prayerRequest.categoryName }}</HighlightLabel>
+                </div>
+            </div>
+
+            <div class="panel-body">
+                <div class="row margin-b-md">
+                    <div class="col-md-12">
+                        <RockButton v-if="isBackVisible"
+                                    btnType="default"
+                                    :disabled="isBusy"
+                                    shortcutKey="arrowleft"
+                                    @click="$emit('back')"><i class="ti ti-chevron-left"></i> Back</RockButton>
+                        <RockButton btnType="default"
+                                    class="pull-right js-prayer-next"
+                                    :disabled="isBusy"
+                                    shortcutKey="arrowright"
+                                    @click="$emit('next')">Next <i class="ti ti-chevron-right"></i></RockButton>
+                    </div>
+                </div>
+
+                <div v-html="prayerRequest.prayerHtml"></div>
+
+                <div v-if="isFlaggingEnabled || prayerRequest.aiDisclaimer" class="actions margin-t-lg margin-b-md">
+                    <div class="row margin-t-md">
+                        <div v-if="isFlaggingEnabled" class="col-md-12">
+                            <RockButton btnType="warning"
+                                        :disabled="isBusy"
+                                        title="Flag as inappropriate so that an administrator can review the content."
+                                        @click="onFlagClick"><i class="ti ti-flag"></i> Flag</RockButton>
+                        </div>
+                        <div v-if="prayerRequest.aiDisclaimer" class="col-md-12">
+                            <small class="text-muted">{{ prayerRequest.aiDisclaimer }}</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="prayerRequest.allowComments" class="margin-t-lg">
+                    <h4>Comments</h4>
+                    <NotesContainer :key="prayerRequest.idKey ?? ''"
+                                    :notes="prayerRequest.notes ?? []"
+                                    :noteTypes="prayerRequest.noteTypes ?? []"
+                                    :descending="false"
+                                    :showAdd="canAddComments"
+                                    :alwaysShowAdd="true"
+                                    :showAvatar="true"
+                                    :personAvatarUrl="personAvatarUrl"
+                                    @editNote="onEditNote"
+                                    @saveNote="onSaveNote"
+                                    @deleteNote="onDeleteNote"
+                                    @watchNote="onWatchNote" />
+                </div>
+
+                <div class="text-right margin-t-lg">
+                    <RockButton btnType="link" :disabled="isBusy" @click="$emit('stop')">End Session</RockButton>
+                </div>
+            </div>
+        </div>
+
+        <Modal v-model="isFlagModalVisible"
+               title="Flag as Inappropriate?"
+               saveText="Yes, Flag This Request"
+               @save="onFlagConfirm">
+            <p>Once a request is flagged a certain number of times it will be temporarily removed and presented to the prayer administrator for review.</p>
+        </Modal>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotesContainer from "@Obsidian/Controls/Internal/notesContainer.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { PrayerSessionRequestBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerSession/prayerSessionRequestBag";
+    import { NoteEditBag } from "@Obsidian/ViewModels/Controls/noteEditBag";
+    import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Controls/saveNoteRequestBag";
+    import { NoteBag } from "@Obsidian/ViewModels/Controls/noteBag";
+    import { EditNoteRequestBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/editNoteRequestBag";
+    import { WatchNoteRequestBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/watchNoteRequestBag";
+    import { DeleteNoteRequestBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/deleteNoteRequestBag";
+
+    const props = defineProps({
+        prayerRequest: {
+            type: Object as PropType<PrayerSessionRequestBag>,
+            required: true
+        },
+
+        currentNumber: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        totalCount: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        isBackVisible: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        isFlaggingEnabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        canAddComments: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        personAvatarUrl: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        isBusy: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "next"): void;
+        (e: "back"): void;
+        (e: "stop"): void;
+        (e: "flag"): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const panelElement = ref<HTMLElement>();
+    const isFlagModalVisible = ref(false);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Opens the flag confirmation modal.
+     */
+    function onFlagClick(): void {
+        isFlagModalVisible.value = true;
+    }
+
+    /**
+     * Closes the flag confirmation modal and notifies the parent to flag the request.
+     */
+    function onFlagConfirm(): void {
+        isFlagModalVisible.value = false;
+        emit("flag");
+    }
+
+    /**
+     * Begins editing an existing comment.
+     */
+    async function onEditNote(idKey: string): Promise<NoteEditBag> {
+        const request: EditNoteRequestBag = { idKey };
+        const result = await invokeBlockAction<NoteEditBag>("EditNote", { request });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+
+        throw new Error(result.errorMessage ?? "Unable to edit comment.");
+    }
+
+    /**
+     * Saves a new or edited comment against the current request.
+     */
+    async function onSaveNote(note: SaveNoteRequestBag): Promise<NoteBag> {
+        const result = await invokeBlockAction<NoteBag>("SaveNote", { request: note, prayerRequestKey: props.prayerRequest.idKey });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+
+        throw new Error(result.errorMessage ?? "Unable to save the comment.");
+    }
+
+    /**
+     * Deletes an existing comment.
+     */
+    async function onDeleteNote(idKey: string): Promise<void> {
+        const request: DeleteNoteRequestBag = { idKey };
+        const result = await invokeBlockAction("DeleteNote", { request });
+
+        if (!result.isSuccess) {
+            throw new Error(result.errorMessage ?? "Unable to delete comment.");
+        }
+    }
+
+    /**
+     * Updates the watched state of a comment.
+     */
+    async function onWatchNote(idKey: string, isWatching: boolean): Promise<void> {
+        const request: WatchNoteRequestBag = { idKey, isWatching };
+        const result = await invokeBlockAction("WatchNote", { request });
+
+        if (!result.isSuccess) {
+            throw new Error(result.errorMessage ?? "Unable to update comment.");
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // Focus the Next button whenever a request is shown so the session can be
+    // advanced from the keyboard.
+    watch(() => props.prayerRequest.idKey, () => {
+        panelElement.value?.querySelector<HTMLButtonElement>("button.js-prayer-next")?.focus();
+    }, { immediate: true, flush: "post" });
+
+    // #endregion Watchers
+</script>

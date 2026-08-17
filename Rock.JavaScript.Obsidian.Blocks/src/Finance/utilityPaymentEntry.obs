@@ -1,0 +1,1492 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.errorMessage" alertType="danger" v-html="config.errorMessage" />
+
+    <Panel v-else :hasTitle="isPanelTitleShown" :title="panelTitle" type="block">
+        <template #default>
+            <NotificationBox v-if="hasConfigurationWarning"
+                             alertType="warning"
+                             :heading="configurationWarningTitle">
+                {{ configurationWarningMessage }}
+            </NotificationBox>
+
+            <ContentSectionContainer v-else :sidebar="false" class="utility-payment-entry">
+                <ContentSection v-if="isHeaderSectionShown" light disableCollapse>
+                    <div class="utility-payment-entry-header">
+                        <i v-if="headerIcon" :class="headerIcon"></i>
+                        <h3 v-if="headerTitle">{{ headerTitle }}</h3>
+                        <div v-if="headerDescription" class="utility-payment-entry-header-description">{{ headerDescription }}</div>
+                    </div>
+                </ContentSection>
+
+                <div v-if="!isGatewayConfigured" class="utility-payment-entry-gateway-help">
+                    <NotificationBox alertType="warning" heading="Welcome to Rock's Online Giving Experience">
+                        There is currently no gateway configured. Below is a list of supported gateways installed on your server. You can also add additional gateways through the Rock Shop.
+                    </NotificationBox>
+
+                    <DisplayCardContainer>
+                        <DisplayCard v-for="gateway in supportedGateways"
+                                     :key="gateway.name ?? ''"
+                                     :title="gateway.name"
+                                     :description="gateway.description">
+                            <template #actions>
+                                <a v-if="gateway.configureUrl" :href="gateway.configureUrl" class="btn btn-primary btn-sm">Configure</a>
+                                <a v-if="gateway.learnMoreUrl" :href="gateway.learnMoreUrl" class="btn btn-link btn-sm">Learn More</a>
+                            </template>
+                        </DisplayCard>
+                    </DisplayCardContainer>
+                </div>
+
+                <div v-show="isEntryStepVisible" class="utility-payment-entry-step" :class="{ 'is-fluid': isFluidLayout }">
+                    <NotificationBox v-if="isTestGateway" alertType="warning" heading="Testing" class="utility-payment-entry-notification fluid-full">
+                        You are using the Test Financial Gateway. No actual amounts will be charged to your card or bank account.
+                    </NotificationBox>
+
+                    <NotificationBox v-if="urlInvalidAccountMessage" alertType="validation" class="utility-payment-entry-notification fluid-full" v-html="urlInvalidAccountMessage" />
+
+                    <div v-if="transactionHeaderHtml" class="utility-payment-entry-transaction-header fluid-full" v-html="transactionHeaderHtml"></div>
+
+                    <ContentSection v-if="!isFluidLayout"
+                                    v-show="isCampusSectionShown"
+                                    :title="isPanelAndSectionHeadingsShown ? campusSectionTitle : undefined"
+                                    :icon="isPanelAndSectionHeadingsShown ? campusSectionIcon : undefined"
+                                    light
+                                    disableCollapse>
+                        <template v-if="isPanelAndSectionHeadingsShown && campusSectionDescription" #description>
+                            {{ campusSectionDescription }}
+                        </template>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <CampusPicker v-model="selectedCampus"
+                                              label="Campus"
+                                              showBlankItem
+                                              :includeInactive="areInactiveCampusesIncluded"
+                                              :campusTypeFilter="campusTypeFilter.length ? campusTypeFilter : undefined"
+                                              :campusStatusFilter="campusStatusFilter.length ? campusStatusFilter : undefined"
+                                              :disabled="isProcessing"
+                                              @isVisible="onCampusPickerVisible" />
+                            </div>
+                        </div>
+                    </ContentSection>
+
+                    <ContentSection class="fluid-main"
+                                    :title="isPanelAndSectionHeadingsShown ? contributionSectionTitle : undefined"
+                                    :icon="isPanelAndSectionHeadingsShown ? contributionSectionIcon : undefined"
+                                    disableCollapse>
+                        <template v-if="isPanelAndSectionHeadingsShown && contributionSectionDescription" #description>
+                            {{ contributionSectionDescription }}
+                        </template>
+
+                        <ContentStack>
+                            <div v-if="isFluidLayout" v-show="isCampusSectionShown" class="row">
+                                <div :class="wideColumnClass">
+                                    <CampusPicker v-model="selectedCampus"
+                                                  label="Campus"
+                                                  showBlankItem
+                                                  :includeInactive="areInactiveCampusesIncluded"
+                                                  :campusTypeFilter="campusTypeFilter.length ? campusTypeFilter : undefined"
+                                                  :campusStatusFilter="campusStatusFilter.length ? campusStatusFilter : undefined"
+                                                  :disabled="isProcessing"
+                                                  @isVisible="onCampusPickerVisible" />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div :class="narrowColumnClass">
+                                    <CampusAccountAmountPicker v-model="selectedAccountAmounts"
+                                                               :accounts="accounts"
+                                                               :presetAccountAmounts="presetAccountAmounts"
+                                                               :accountAmountEntryMode="accountAmountEntryMode"
+                                                               :disabled="isProcessing"
+                                                               alwaysHideCampus />
+
+                                    <TreeItemPicker v-if="isAddAccountShown"
+                                                    :modelValue="accountToAdd"
+                                                    :items="availableAdditionalAccounts"
+                                                    :blankValue="addAccountButtonText"
+                                                    iconCssClass=""
+                                                    hideMainActionButtons
+                                                    :disabled="isProcessing"
+                                                    @update:modelValue="onAddAccount" />
+                                </div>
+                            </div>
+                        </ContentStack>
+
+                        <ContentStack v-if="isScheduleStackShown">
+                            <template v-if="isSchedulingShown">
+                                <div class="row">
+                                    <div :class="narrowColumnClass">
+                                        <StaticFormControl v-if="isFrequencyLocked" label="Frequency" :modelValue="lockedFrequencyText" />
+                                        <DropDownList v-else
+                                                      v-model="selectedFrequencyGuid"
+                                                      :items="frequencyOptions"
+                                                      label="Frequency"
+                                                      :showBlankItem="false"
+                                                      :disabled="isProcessing" />
+                                    </div>
+                                </div>
+
+                                <div class="utility-payment-entry-schedule-dates">
+                                    <DatePicker v-model="startDate" :label="startDateLabel" disallowPastDateSelection :disabled="isProcessing" />
+                                    <DatePicker v-if="isEndDateShown" v-model="endDate" label="End Date" disallowPastDateSelection :disabled="isProcessing" />
+                                </div>
+                            </template>
+
+                            <TextBox v-if="isCommentShown"
+                                     v-model="comment"
+                                     :label="commentLabel"
+                                     textMode="multiline"
+                                     :rows="3"
+                                     :disabled="isProcessing" />
+                        </ContentStack>
+                    </ContentSection>
+
+                    <ContentSection class="fluid-side"
+                                    :title="isPanelAndSectionHeadingsShown ? contactSectionTitle : undefined"
+                                    :icon="isPanelAndSectionHeadingsShown ? contactSectionIcon : undefined"
+                                    disableCollapse>
+                        <template v-if="isPanelAndSectionHeadingsShown && contactSectionDescription" #description>
+                            {{ contactSectionDescription }}
+                        </template>
+
+                        <template v-if="isBusinessGivingAllowed && hasContactSectionHeader" #headerActions>
+                            <InlineSwitch v-model="isGivingAsBusiness"
+                                          label="Give as Business"
+                                          :disabled="isProcessing" />
+                        </template>
+
+                        <template v-if="isBusinessGivingAllowed && !hasContactSectionHeader" #preBody>
+                            <div class="utility-payment-entry-give-as">
+                                <InlineSwitch v-model="isGivingAsBusiness"
+                                              label="Give as Business"
+                                              :disabled="isProcessing" />
+                            </div>
+                        </template>
+
+                        <ContentStack>
+                            <template v-if="isGivingAsBusiness">
+                                <RadioButtonList v-if="isBusinessDropdownShown"
+                                                 v-model="selectedBusinessGuid"
+                                                 :items="businessOptions"
+                                                 label="Business"
+                                                 horizontal
+                                                 :disabled="isProcessing" />
+
+                                <TextBox v-model="businessName" label="Business Name" rules="required" :disabled="isProcessing" />
+                            </template>
+
+                            <template v-else>
+                                <div v-if="isNameEntryShown" class="row">
+                                    <div class="col-sm-6">
+                                        <FirstNameTextBox v-model="firstName" label="First Name" rules="required" :disabled="isProcessing" />
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <TextBox v-model="lastName" label="Last Name" rules="required" :disabled="isProcessing" />
+                                    </div>
+                                </div>
+
+                                <StaticFormControl v-else label="Name" :modelValue="currentPersonFullName" />
+                            </template>
+
+                            <AddressControl v-model="address" :label="addressLabel" rules="required" :disabled="isProcessing" />
+
+                            <div v-if="isEmailPrompted" class="row">
+                                <div :class="wideColumnClass">
+                                    <EmailBox v-model="email" :label="emailLabel" rules="required" :disabled="isProcessing" />
+                                </div>
+                            </div>
+                            <div v-if="isPhoneFieldShown" class="row">
+                                <div :class="wideColumnClass">
+                                    <PhoneNumberBox v-model="phone" v-model:countryCode="phoneCountryCode" :label="phoneLabel" rules="required" :disabled="isProcessing" />
+                                </div>
+                            </div>
+
+                            <CheckBox v-if="isSmsFieldShown" v-model="isSmsOptIn" label="" :text="smsOptInLabel" :disabled="isProcessing" />
+
+                            <CheckBox v-if="isAnonymousGivingAllowed" v-model="isAnonymous" label="" text="Give Anonymously" :disabled="isProcessing">
+                                <template v-if="anonymousGivingTooltip" #textAppend>
+                                    <HelpBlock :text="anonymousGivingTooltip" />
+                                </template>
+                            </CheckBox>
+                        </ContentStack>
+
+                        <ContentStack v-if="isBusinessContactShown" title="Business Contact" headerLocation="top">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <FirstNameTextBox v-model="businessContactFirstName" label="First Name" rules="required" :disabled="isProcessing" />
+                                </div>
+                                <div class="col-sm-6">
+                                    <TextBox v-model="businessContactLastName" label="Last Name" rules="required" :disabled="isProcessing" />
+                                </div>
+                            </div>
+
+                            <div v-if="isEmailPrompted" class="row">
+                                <div :class="wideColumnClass">
+                                    <EmailBox v-model="businessContactEmail" label="Email" rules="required" :disabled="isProcessing" />
+                                </div>
+                            </div>
+                            <div v-if="isPhoneFieldShown" class="row">
+                                <div :class="wideColumnClass">
+                                    <PhoneNumberBox v-model="businessContactPhone" v-model:countryCode="businessContactPhoneCountryCode" label="Phone" rules="required" :disabled="isProcessing" />
+                                </div>
+                            </div>
+
+                            <CheckBox v-if="isSmsFieldShown" v-model="isBusinessContactSmsOptIn" label="" :text="smsOptInLabel" :disabled="isProcessing" />
+                        </ContentStack>
+                    </ContentSection>
+
+                    <ContentSection class="fluid-main"
+                                    :title="isPanelAndSectionHeadingsShown ? paymentSectionTitle : undefined"
+                                    :icon="isPanelAndSectionHeadingsShown ? paymentSectionIcon : undefined"
+                                    disableCollapse>
+                        <template v-if="isPanelAndSectionHeadingsShown && paymentSectionDescription" #description>
+                            {{ paymentSectionDescription }}
+                        </template>
+
+                        <DisplayCardContainer v-if="savedAccounts.length > 0">
+                            <DisplayCard v-for="savedAccount in savedAccounts"
+                                         :key="savedAccount.value ?? ''"
+                                         :title="savedAccount.text"
+                                         :iconCssClass="getSavedAccountIcon(savedAccount.currencyTypeGuid)"
+                                         iconStyle="tile"
+                                         iconLabelType="default"
+                                         :isSelected="areEqual(selectedSavedAccountValue, savedAccount.value)"
+                                         :onClick="() => onSelectSavedAccount(savedAccount.value ?? '')">
+                                <template #description>
+                                    {{ formatSavedAccountDetail(savedAccount) }}
+                                </template>
+                                <template #actions>
+                                    <input type="radio"
+                                           name="utilityPaymentEntrySavedAccount"
+                                           :value="savedAccount.value ?? ''"
+                                           :disabled="isProcessing"
+                                           v-model="selectedSavedAccountValue"
+                                           @click.stop />
+                                </template>
+                            </DisplayCard>
+
+                            <DisplayCard title="Add Payment Method"
+                                         iconCssClass="ti ti-plus"
+                                         iconStyle="tile"
+                                         iconLabelType="default"
+                                         :isSelected="!isSavedAccountSelected"
+                                         :onClick="() => onSelectSavedAccount('')">
+                                <template #actions>
+                                    <input type="radio"
+                                           name="utilityPaymentEntrySavedAccount"
+                                           value=""
+                                           :disabled="isProcessing"
+                                           v-model="selectedSavedAccountValue"
+                                           @click.stop />
+                                </template>
+                            </DisplayCard>
+                        </DisplayCardContainer>
+                        <GatewayControl v-if="gatewayControl && isEntryStepVisible && !isSavedAccountSelected"
+                                        :key="gatewayControlKey"
+                                        :gatewayControlModel="gatewayControl"
+                                        :amountToPay="totalAmount"
+                                        @success="onGatewayControlSuccess"
+                                        @error="onGatewayControlError"
+                                        @validation="onGatewayControlValidation" />
+                    </ContentSection>
+
+                    <RockValidation class="fluid-validation" :errors="validationErrors" />
+                </div>
+
+                <div v-if="isConfirmationStepVisible" class="utility-payment-confirmation-step">
+                    <h3 v-if="isPanelAndSectionHeadingsShown && confirmationSectionHeading">{{ confirmationSectionHeading }}</h3>
+
+                    <div v-if="confirmationHeaderHtml" class="utility-payment-confirmation-header" v-html="confirmationHeaderHtml"></div>
+                    <div v-if="confirmationBodyHtml" class="utility-payment-confirmation-body" v-html="confirmationBodyHtml"></div>
+                    <div v-if="confirmationFooterHtml" class="utility-payment-confirmation-footer" v-html="confirmationFooterHtml"></div>
+
+                    <NotificationBox v-if="isPossibleDuplicate" alertType="warning" heading="Possible Duplicate Transaction">
+                        You have already submitted a similar transaction that has been processed. Are you sure you want to submit another possible duplicate transaction?
+                    </NotificationBox>
+
+                    <RockValidation :errors="validationErrors" />
+                </div>
+
+                <div v-if="isSuccessStepVisible" class="utility-payment-success-step">
+                    <div class="utility-payment-success-body" v-html="successHtml"></div>
+
+                    <ContentSection v-if="isSaveAccountOffered"
+                                    :title="isPanelAndSectionHeadingsShown ? savePaymentMethodSectionHeading : undefined"
+                                    :icon="isPanelAndSectionHeadingsShown ? savePaymentMethodSectionIcon : undefined"
+                                    disableCollapse>
+                        <template v-if="isPanelAndSectionHeadingsShown && savePaymentMethodSectionDescription" #description>
+                            {{ savePaymentMethodSectionDescription }}
+                        </template>
+
+                        <SaveFinancialAccountForm :gatewayGuid="gatewayGuid"
+                                                  :transactionCode="completedTransactionCode"
+                                                  :gatewayPersonIdentifier="gatewayPersonIdentifier"
+                                                  :scheduledTransactionGuid="completedScheduledTransactionGuid"
+                                                  :confirmationEmailTemplateGuid="accountConfirmationEmailTemplateGuid"
+                                                  saveAccountCheckBoxLabel="Save as New Account">
+                            <template #header><span /></template>
+                        </SaveFinancialAccountForm>
+                    </ContentSection>
+
+                    <div v-if="successFooterHtml" class="utility-payment-success-footer" v-html="successFooterHtml"></div>
+                </div>
+            </ContentSectionContainer>
+        </template>
+
+        <template v-if="hasUsableGateway && (isConfirmationStepVisible || (isEntryStepVisible && !!initialBackButtonUrl))" #footerActions>
+            <RockButton v-if="isConfirmationStepVisible" btnType="link" :disabled="isProcessing" @click="onPreviousClick">Previous</RockButton>
+            <RockButton v-else btnType="link" :disabled="isProcessing" @click="onInitialBackClick">Previous</RockButton>
+        </template>
+
+        <template v-if="hasUsableGateway && !isSuccessStepVisible" #footerSecondaryActions>
+            <div v-if="isCaptchaShown" v-show="isEntryStepVisible && !isCaptchaSolved">
+                <Captcha :key="captchaKey" ref="captchaElement" />
+            </div>
+            <RockButton v-show="isEntryStepVisible && isCaptchaSolved"
+                        btnType="primary"
+                        :isLoading="isProcessing"
+                        @click="onGiveClick">{{ entryActionButtonText }}</RockButton>
+            <RockButton v-show="isConfirmationStepVisible && isPossibleDuplicate"
+                        btnType="danger"
+                        :isLoading="isProcessing"
+                        @click="onConfirmDuplicate">Yes, Submit Anyway</RockButton>
+            <RockButton v-show="isConfirmationStepVisible && !isPossibleDuplicate"
+                        btnType="primary"
+                        :isLoading="isProcessing"
+                        @click="onFinishClick">Finish</RockButton>
+        </template>
+    </Panel>
+</template>
+
+<style>
+/* Mirror the content section container's flex layout and gap. */
+.utility-payment-entry-step {
+    display: flex;
+    flex-direction: column;
+    gap: inherit;
+}
+
+/*
+    The step's gap spaces these notifications,
+    so they drop their own bottom margin.
+*/
+.utility-payment-entry-notification {
+    margin-bottom: 0;
+}
+
+/*
+    Fluid layout: a two-column grid on wide screens. Contribution and Payment
+    fill the left column and Contact the right; the transaction header and
+    testing notice span both.
+*/
+.utility-payment-entry-step.is-fluid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.utility-payment-entry-step.is-fluid > .fluid-full {
+    grid-column: 1 / -1;
+}
+
+.utility-payment-entry-step.is-fluid > .fluid-main {
+    grid-column: 1;
+}
+
+.utility-payment-entry-step.is-fluid > .fluid-side {
+    grid-column: 2;
+}
+
+/*
+    The validation summary hugs its content instead of stretching to fill its
+    grid row.
+*/
+.utility-payment-entry-step.is-fluid > .fluid-validation {
+    width: 100%;
+    align-self: start;
+}
+
+/*
+    Stack to a single column at the medium breakpoint and below,
+    matching the Vertical layout.
+*/
+@media (max-width: 991px) {
+    .utility-payment-entry-step.is-fluid {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+.utility-payment-entry-header {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: var(--spacing-small);
+    text-align: center;
+}
+
+.utility-payment-entry-header i {
+    color: var(--color-primary);
+    background-color: var(--color-primary-soft);
+    padding: var(--spacing-small);
+    font-size: var(--font-size-h5);
+    border-radius: var(--rounded-small);
+    flex-shrink: 0;
+}
+
+.utility-payment-entry-header h3 {
+    margin: 0;
+}
+
+.utility-payment-entry-header-description {
+    color: var(--color-interface-medium);
+}
+
+/*
+    Truncate the section header title and description to a single line with an
+    ellipsis, per the Figma. The min-width overrides let them shrink inside the
+    flex header so the ellipsis engages.
+*/
+.utility-payment-entry .contentsection-header-title-and-description,
+.utility-payment-entry .contentsection-header-title-description-stack {
+    min-width: 0;
+}
+
+.utility-payment-entry .contentsection-header-title,
+.utility-payment-entry .contentsection-header-description {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: var(--line-height-normal);
+}
+
+.utility-payment-entry-schedule-dates {
+    display: flex;
+    gap: var(--spacing-large);
+    flex-wrap: wrap;
+}
+
+.utility-payment-entry-give-as {
+    display: flex;
+    justify-content: flex-end;
+    padding: var(--spacing-large) var(--spacing-large) 0;
+}
+
+table.utility-payment-entry-summary > tbody > tr:not(.utility-payment-entry-summary-total) > td:first-child {
+    color: var(--color-interface-medium);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
+    import { AccountAmount, Step } from "./UtilityPaymentEntry/types.partial";
+    import AddressControl from "@Obsidian/Controls/addressControl.obs";
+    import CampusAccountAmountPicker from "@Obsidian/Controls/campusAccountAmountPicker.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import Captcha from "@Obsidian/Controls/captcha.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import DisplayCardContainer from "@Obsidian/Controls/displayCardContainer.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
+    import GatewayControl from "@Obsidian/Controls/gatewayControl.obs";
+    import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockValidation from "@Obsidian/Controls/rockValidation.obs";
+    import SaveFinancialAccountForm from "@Obsidian/Controls/saveFinancialAccountForm.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import TreeItemPicker from "@Obsidian/Controls/treeItemPicker.obs";
+    import { provideSubmitPayment, usePaymentEvents } from "@Obsidian/Core/Controls/financialGateway";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import { Guid } from "@Obsidian/Types";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { FormError, provideFormState } from "@Obsidian/Utility/form";
+    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { UtilityPaymentEntryBag } from "@Obsidian/ViewModels/Blocks/Finance/UtilityPaymentEntry/utilityPaymentEntryBag";
+    import { UtilityPaymentEntryBusinessBag } from "@Obsidian/ViewModels/Blocks/Finance/UtilityPaymentEntry/utilityPaymentEntryBusinessBag";
+    import { UtilityPaymentEntryConfirmationRequestBag } from "@Obsidian/ViewModels/Blocks/Finance/UtilityPaymentEntry/utilityPaymentEntryConfirmationRequestBag";
+    import { UtilityPaymentEntryConfirmationResponseBag } from "@Obsidian/ViewModels/Blocks/Finance/UtilityPaymentEntry/utilityPaymentEntryConfirmationResponseBag";
+    import { UtilityPaymentEntryOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/UtilityPaymentEntry/utilityPaymentEntryOptionsBag";
+    import { UtilityPaymentEntryProcessRequestBag } from "@Obsidian/ViewModels/Blocks/Finance/UtilityPaymentEntry/utilityPaymentEntryProcessRequestBag";
+    import { UtilityPaymentEntryProcessResponseBag } from "@Obsidian/ViewModels/Blocks/Finance/UtilityPaymentEntry/utilityPaymentEntryProcessResponseBag";
+    import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
+    import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
+    import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
+
+    const config = useConfigurationValues<CustomBlockBox<UtilityPaymentEntryBag, UtilityPaymentEntryOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    // Layout
+    const isFluidLayout = ref(config.options?.isFluidLayout ?? false);
+
+    // Headings and Panel Title
+    const isPanelAndSectionHeadingsShown = ref(config.options?.isPanelAndSectionHeadingsShown ?? true);
+    const configuredPanelTitle = ref(config.options?.panelTitle ?? "");
+
+    // Navigation
+    const initialBackButtonUrl = ref(config.options?.initialBackButtonUrl ?? "");
+
+    // Gateway State
+    const isGatewayConfigured = ref(config.options?.isGatewayConfigured ?? false);
+    const isTestGateway = ref(config.options?.isTestGateway ?? false);
+    const supportedGateways = ref(config.options?.supportedGateways ?? []);
+    const configurationWarningTitle = ref(config.options?.configurationWarningTitle ?? "");
+    const configurationWarningMessage = ref(config.options?.configurationWarningMessage ?? "");
+
+    // Block Header Section
+    const isHeaderSectionShown = ref(config.options?.isHeaderSectionShown ?? false);
+    const headerIcon = ref(config.options?.headerIcon ?? "");
+    const headerTitle = ref(config.options?.headerTitle ?? "");
+    const headerDescription = ref(config.options?.headerDescription ?? "");
+
+    // Transaction Header
+    const transactionHeaderHtml = ref(config.options?.transactionHeaderHtml ?? "");
+
+    // Campus Information Section
+    const isCampusPromptedWhenKnown = ref(config.options?.isCampusPromptedWhenKnown ?? true);
+    const isCampusKnown = !!config.options?.defaultCampusGuid;
+    const isCampusPickerVisible = ref(false);
+    const campusSectionTitle = ref(config.options?.campusSectionTitle ?? "");
+    const campusSectionIcon = ref(config.options?.campusSectionIcon ?? "");
+    const campusSectionDescription = ref(config.options?.campusSectionDescription ?? "");
+    const selectedCampus = ref<ListItemBag | null>(
+        config.options?.defaultCampusGuid
+            ? { value: config.options.defaultCampusGuid }
+            : null
+    );
+    const areInactiveCampusesIncluded = ref(config.options?.areInactiveCampusesIncluded ?? false);
+    const campusTypeFilter = ref(config.options?.campusTypeFilter ?? []);
+    const campusStatusFilter = ref(config.options?.campusStatusFilter ?? []);
+
+    // Contribution Information Section
+    const contributionSectionTitle = ref(config.options?.contributionSectionTitle ?? "");
+    const contributionSectionIcon = ref(config.options?.contributionSectionIcon ?? "");
+    const contributionSectionDescription = ref(config.options?.contributionSectionDescription ?? "");
+    const selectedAccountAmounts = ref<AccountAmount[]>([]);
+    const accounts = ref(config.options?.accounts ?? []);
+    const presetAccountAmounts = ref(config.options?.presetAccountAmounts ?? []);
+    const urlInvalidAccountMessage = ref(config.options?.urlInvalidAccountMessage ?? "");
+    const isMultiAccountEntry = ref(config.options?.isMultiAccountEntry ?? true);
+    const additionalAccounts = ref(config.options?.additionalAccounts ?? []);
+    const addAccountButtonText = ref(config.options?.addAccountButtonText ?? "Add Another Account");
+    const accountToAdd = ref<ListItemBag | null>(null);
+
+    // Scheduling ("how often") and Comment
+    const isSchedulingShown = ref(config.options?.isSchedulingShown ?? false);
+    const frequencyOptions = ref(config.options?.frequencyOptions ?? []);
+    const oneTimeFrequencyGuid = config.options?.oneTimeFrequencyGuid ?? "";
+    const isFrequencyLocked = ref(config.options?.isFrequencyLocked ?? false);
+    const isScheduledEndDateAllowed = ref(config.options?.isScheduledEndDateAllowed ?? false);
+    const selectedFrequencyGuid = ref(config.options?.defaultFrequencyGuid ?? "");
+    const startDate = ref(config.options?.defaultStartDate ?? "");
+    const earliestScheduledStartDate = config.options?.earliestScheduledStartDate ?? "";
+    const isNextGiftLabelShown = ref(config.options?.isNextGiftLabelShown ?? false);
+    const endDate = ref<string | null>(null);
+    const isCommentShown = ref(config.options?.isCommentShown ?? false);
+    const commentLabel = ref(config.options?.commentLabel ?? "Comment");
+    const comment = ref("");
+
+    // Shared Validation State
+    const validationErrors = ref<FormError[]>([]);
+
+    // Drives the required-field red indicators on the entry controls. Bumping
+    // submitCount at submit turns on the red state for any control whose rules
+    // are failing; the messages stay in the single validation summary, so
+    // setError is a no-op.
+    const fieldState = reactive({
+        submitCount: 0,
+        setError: () => { /* per-field messages come from the unified summary */ }
+    });
+
+    provideFormState(fieldState);
+
+    // Contact Information Section
+    const contactSectionTitle = ref(config.options?.contactSectionTitle ?? "");
+    const contactSectionIcon = ref(config.options?.contactSectionIcon ?? "");
+    const contactSectionDescription = ref(config.options?.contactSectionDescription ?? "");
+    const isEmailPrompted = ref(config.options?.isEmailPrompted ?? false);
+    const isPhonePrompted = ref(config.options?.isPhonePrompted ?? false);
+    const isSmsOptInShown = ref(config.options?.isSmsOptInShown ?? false);
+    const smsOptInLabel = ref(config.options?.smsOptInLabel ?? "");
+    const isAnonymousGivingAllowed = ref(config.options?.isAnonymousGivingAllowed ?? false);
+    const anonymousGivingTooltip = ref(config.options?.anonymousGivingTooltip ?? "");
+    const isNameEntryShown = ref(config.options?.isNameEntryShown ?? true);
+    const currentPersonFullName = ref(config.options?.currentPersonFullName ?? "");
+    const firstName = ref(config.options?.firstName ?? "");
+    const lastName = ref(config.options?.lastName ?? "");
+    const email = ref(config.options?.email ?? "");
+    const phone = ref(config.options?.phone ?? "");
+    const phoneCountryCode = ref(config.options?.phoneCountryCode ?? "");
+    const isSmsOptIn = ref(config.options?.isSmsOptInChecked ?? false);
+    const isAnonymous = ref(false);
+    const address = ref<AddressControlBag>(toFullAddress(config.options?.address));
+
+    // Business Giving
+    const isBusinessGivingAllowed = ref(config.options?.isBusinessGivingAllowed ?? false);
+    const isGiverIndividualKnown = ref(config.options?.isGiverIndividualKnown ?? false);
+    const businesses = ref<UtilityPaymentEntryBusinessBag[]>(config.options?.businesses ?? []);
+    const isBusinessPhonePrompted = ref(config.options?.isBusinessPhonePrompted ?? false);
+    const isBusinessSmsOptInShown = ref(config.options?.isBusinessSmsOptInShown ?? false);
+    const isGivingAsBusiness = ref(config.options?.isGivingAsBusinessDefault ?? false);
+    const selectedBusinessGuid = ref(config.options?.defaultBusinessGuid ?? "");
+    const businessName = ref("");
+    const businessContactFirstName = ref("");
+    const businessContactLastName = ref("");
+    const businessContactEmail = ref("");
+    const businessContactPhone = ref("");
+    const businessContactPhoneCountryCode = ref("");
+    const isBusinessContactSmsOptIn = ref(false);
+
+    // Payment Information Section
+    // The hosted gateway control injects a submit callback on mount,
+    // so an ancestor must provide it.
+    const submitPayment = provideSubmitPayment();
+    usePaymentEvents();
+    const paymentSectionTitle = ref(config.options?.paymentSectionTitle ?? "");
+    const paymentSectionIcon = ref(config.options?.paymentSectionIcon ?? "");
+    const paymentSectionDescription = ref(config.options?.paymentSectionDescription ?? "");
+    const isCaptchaShown = ref(config.options?.isCaptchaShown ?? false);
+    const isCaptchaSolved = ref(!isCaptchaShown.value);
+    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
+    const captchaKey = ref(0);
+    const gatewayControl = ref<GatewayControlBag | null>(config.options?.gatewayControl ?? null);
+    const gatewayControlKey = ref(0);
+    const paymentToken = ref<string | null>(null);
+    const savedAccounts = ref<SavedFinancialAccountListItemBag[]>(config.options?.savedAccounts ?? []);
+    const selectedSavedAccountValue = ref(savedAccounts.value.length > 0 ? (savedAccounts.value[0].value ?? "") : "");
+
+    // Confirmation Step
+    const isConfirmationStepShown = ref(config.options?.isConfirmationStepShown ?? false);
+    const confirmationSectionHeading = ref(config.options?.confirmationSectionHeading ?? "");
+    const confirmationHeaderHtml = ref(config.options?.confirmationHeaderHtml ?? "");
+    const confirmationFooterHtml = ref(config.options?.confirmationFooterHtml ?? "");
+    const confirmationBodyHtml = ref("");
+    const isPossibleDuplicate = ref(false);
+
+    // Transaction Processing
+    let transactionGuid = newGuid();
+    const currentStep = ref<Step>(Step.Entry);
+    const successHtml = ref("");
+    const successFooterHtml = ref("");
+    const completedTransactionCode = ref("");
+    const isProcessing = ref(false);
+
+    // Save Payment Method (success step). The offer itself is rendered by the
+    // shared SaveFinancialAccountForm control, which needs the gateway and its
+    // customer reference.
+    const savePaymentMethodSectionHeading = ref(config.options?.savePaymentMethodSectionHeading ?? "");
+    const savePaymentMethodSectionIcon = ref(config.options?.savePaymentMethodSectionIcon ?? "");
+    const savePaymentMethodSectionDescription = ref(config.options?.savePaymentMethodSectionDescription ?? "");
+    const accountConfirmationEmailTemplateGuid = ref<Guid | null>(config.options?.accountConfirmationEmailTemplateGuid ?? null);
+    const isSaveAccountOffered = ref(false);
+    const gatewayGuid = ref("");
+    const gatewayPersonIdentifier = ref("");
+    const completedScheduledTransactionGuid = ref<Guid | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * Title shown in the panel heading. The no-gateway help uses a fixed title.
+     */
+    const panelTitle = computed((): string => {
+        if (!isGatewayConfigured.value) {
+            return "Getting Started With Contributions";
+        }
+
+        return configuredPanelTitle.value;
+    });
+
+    /**
+     * The panel heading shows only when section headings are enabled and the
+     * block header is not.
+     */
+    const isPanelTitleShown = computed((): boolean => {
+        return !!panelTitle.value && isPanelAndSectionHeadingsShown.value && !isHeaderSectionShown.value;
+    });
+
+    /**
+     * Whether the configured gateway cannot be used, so its configuration
+     * warning replaces the entry flow. True when both ACH and Credit Card are
+     * disabled, or the gateway has no hosted payment interface.
+     */
+    const hasConfigurationWarning = computed((): boolean => {
+        return !!configurationWarningMessage.value;
+    });
+
+    /**
+     * Whether the gateway is configured and usable. When true the transaction
+     * wizard (entry / confirmation / success) renders; when false the
+     * no-gateway help or a configuration warning shows instead.
+     */
+    const hasUsableGateway = computed((): boolean => {
+        return isGatewayConfigured.value && !hasConfigurationWarning.value;
+    });
+
+    /**
+     * Whether the entry step is currently visible.
+     */
+    const isEntryStepVisible = computed((): boolean => {
+        return hasUsableGateway.value && currentStep.value === Step.Entry;
+    });
+
+    /**
+     * Whether the confirmation step is currently visible.
+     */
+    const isConfirmationStepVisible = computed((): boolean => {
+        return hasUsableGateway.value && currentStep.value === Step.Confirmation;
+    });
+
+    /**
+     * Whether the success step is currently visible.
+     */
+    const isSuccessStepVisible = computed((): boolean => {
+        return hasUsableGateway.value && currentStep.value === Step.Success;
+    });
+
+    /**
+     * Whether the campus picker is offered. Suppressed when the campus is
+     * already known and the block is configured not to prompt for it.
+     */
+    const shouldPromptForCampus = computed((): boolean => {
+        return isCampusPromptedWhenKnown.value || !isCampusKnown;
+    });
+
+    /**
+     * Whether the Campus Information section is shown. Requires that prompting
+     * is allowed and that the picker has a campus worth choosing.
+     */
+    const isCampusSectionShown = computed((): boolean => {
+        return shouldPromptForCampus.value && isCampusPickerVisible.value;
+    });
+
+    /**
+     * Bootstrap column class for a wider control: half width in Vertical, and
+     * full width in the narrower Fluid column so it is not cramped.
+     */
+    const wideColumnClass = computed((): string => {
+        return isFluidLayout.value ? "col-md-12" : "col-md-6";
+    });
+
+    /**
+     * Bootstrap column class for a narrower control: third width in Vertical,
+     * and half width in the narrower Fluid column.
+     */
+    const narrowColumnClass = computed((): string => {
+        return isFluidLayout.value ? "col-md-6" : "col-md-4";
+    });
+
+    /** The amount-entry mode for the account/amount picker. */
+    const accountAmountEntryMode = computed((): "singleAccount" | "multipleAccounts" => {
+        return isMultiAccountEntry.value ? "multipleAccounts" : "singleAccount";
+    });
+
+    /** The addable-account tree with already-added accounts pruned out. */
+    const availableAdditionalAccounts = computed((): TreeItemBag[] => {
+        return pruneAddedAccounts(additionalAccounts.value);
+    });
+
+    /**
+     * The add-account control shows while accounts remain to add (single- and
+     * multi-entry alike).
+     */
+    const isAddAccountShown = computed((): boolean => {
+        return availableAdditionalAccounts.value.length > 0;
+    });
+
+    /** Whether the selected frequency is the One-Time option. */
+    const isOneTimeFrequency = computed((): boolean => {
+        return areEqual(selectedFrequencyGuid.value, oneTimeFrequencyGuid);
+    });
+
+    /**
+     * The selected frequency's display text, shown as static text when the
+     * frequency is locked.
+     */
+    const lockedFrequencyText = computed((): string => {
+        return frequencyOptions.value.find(option => areEqual(option.value, selectedFrequencyGuid.value))?.text ?? "";
+    });
+
+    /**
+     * The end date shows only for a recurring gift when an end date is allowed.
+     */
+    const isEndDateShown = computed((): boolean => {
+        return isScheduledEndDateAllowed.value && !isOneTimeFrequency.value;
+    });
+
+    /**
+     * The start-date label reflects whether the gift is one-time or recurring.
+     * A transfer of an existing scheduled gift with a next payment date reads
+     * "Next Gift".
+     */
+    const startDateLabel = computed((): string => {
+        if (isNextGiftLabelShown.value) {
+            return "Next Gift";
+        }
+
+        return isOneTimeFrequency.value ? "When" : "First Gift";
+    });
+
+    /**
+     * The "how often" / comment stack shows when scheduling or the comment is
+     * enabled.
+     */
+    const isScheduleStackShown = computed((): boolean => {
+        return isSchedulingShown.value || isCommentShown.value;
+    });
+
+    /**
+     * The total gift amount across all account entries, charged by the gateway.
+     */
+    const totalAmount = computed((): number => {
+        return selectedAccountAmounts.value.reduce((sum, accountAmount) => sum + (accountAmount.amount ?? 0), 0);
+    });
+
+    /**
+     * The entry action button's label: "Next" when a confirmation step follows,
+     * "Give" when the gift is processed straight from entry.
+     */
+    const entryActionButtonText = computed((): string => {
+        return isConfirmationStepShown.value ? "Next" : "Give";
+    });
+
+    /**
+     * Whether the giver chose one of their saved payment methods rather than
+     * entering a new one.
+     */
+    const isSavedAccountSelected = computed((): boolean => {
+        return !!selectedSavedAccountValue.value;
+    });
+
+    /**
+     * Whether the contact section renders a header (a title is shown), which
+     * hosts the Give-As toggle.
+     */
+    const hasContactSectionHeader = computed((): boolean => {
+        return isPanelAndSectionHeadingsShown.value && contactSectionTitle.value.trim().length > 0;
+    });
+
+    /** The address field label; business mode relabels it. */
+    const addressLabel = computed((): string => {
+        return isGivingAsBusiness.value ? "Business Address" : "Address";
+    });
+
+    /** The phone field label; business mode relabels it. */
+    const phoneLabel = computed((): string => {
+        return isGivingAsBusiness.value ? "Business Phone" : "Phone";
+    });
+
+    /** The email field label; business mode relabels it. */
+    const emailLabel = computed((): string => {
+        return isGivingAsBusiness.value ? "Business Email" : "Email";
+    });
+
+    /**
+     * The businesses dropdown shows when the signed-in giver has businesses on
+     * file.
+     */
+    const isBusinessDropdownShown = computed((): boolean => {
+        return businesses.value.length > 0;
+    });
+
+    /** The businesses dropdown options, ending with a "New Business" entry. */
+    const businessOptions = computed((): ListItemBag[] => {
+        return [
+            ...businesses.value.map(business => ({ value: business.guid, text: business.name })),
+            { value: "", text: "Add New Business" }
+        ];
+    });
+
+    /**
+     * The business-contact fields show only when giving as a business and no
+     * giver individual is known (signed in or impersonated).
+     */
+    const isBusinessContactShown = computed((): boolean => {
+        return isGivingAsBusiness.value && !isGiverIndividualKnown.value;
+    });
+
+    /**
+     * Whether the phone field shows, using the raw setting in business mode
+     * (no unlisted flip).
+     */
+    const isPhoneFieldShown = computed((): boolean => {
+        return isGivingAsBusiness.value ? isBusinessPhonePrompted.value : isPhonePrompted.value;
+    });
+
+    /**
+     * Whether the SMS opt-in shows, using the raw setting in business mode.
+     */
+    const isSmsFieldShown = computed((): boolean => {
+        return isGivingAsBusiness.value ? isBusinessSmsOptInShown.value : isSmsOptInShown.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Tracks whether the campus picker rendered itself. The picker hides when
+     * there is one or fewer campuses to choose from.
+     */
+    function onCampusPickerVisible(isVisible: boolean): void {
+        isCampusPickerVisible.value = isVisible;
+    }
+
+    /**
+     * Adds the chosen account to the picker's selectable accounts and clears
+     * the picker so it returns to its prompt.
+     */
+    function onAddAccount(selected: ListItemBag | ListItemBag[] | null): void {
+        const account = Array.isArray(selected) ? selected[0] : selected;
+
+        if (!account?.value) {
+            return;
+        }
+
+        accounts.value = [...accounts.value, account];
+        accountToAdd.value = null;
+    }
+
+    /**
+     * Selects a saved payment method card, or the "Add Payment Method" button
+     * (an empty value), which reveals the hosted card / ACH control.
+     */
+    function onSelectSavedAccount(value: string): void {
+        selectedSavedAccountValue.value = value;
+    }
+
+    /**
+     * Validates the entered gift before the payment method is tokenized, so
+     * every error surfaces together before calling the payment gateway.
+     */
+    async function onGiveClick(): Promise<void> {
+        validationErrors.value = [];
+
+        // Reveal the required-field red indicators for this submit attempt.
+        fieldState.submitCount++;
+
+        isProcessing.value = true;
+
+        const result = await invokeBlockAction<string[]>("Validate", { request: buildConfirmationRequest() });
+        const messages = result.isSuccess
+            ? (result.data ?? [])
+            : [result.errorMessage || "There was a problem validating your gift."];
+
+        if (messages.length > 0) {
+            validationErrors.value = toFormErrors(messages);
+            isProcessing.value = false;
+            return;
+        }
+
+        // A saved payment method needs no tokenization, so submit straight
+        // through. A new payment method tokenizes first, and the gateway's
+        // success callback continues.
+        if (isSavedAccountSelected.value) {
+            if (isConfirmationStepShown.value) {
+                await advanceToConfirmation();
+            }
+            else {
+                await processTransaction();
+            }
+        }
+        else {
+            submitPayment();
+        }
+    }
+
+    /**
+     * Captures the gateway token, then either advances to the confirmation step
+     * for review or processes the gift straight away, depending on whether a
+     * confirmation step is configured.
+     */
+    async function onGatewayControlSuccess(token: string): Promise<void> {
+        paymentToken.value = token;
+
+        if (isConfirmationStepShown.value) {
+            await advanceToConfirmation();
+        }
+        else {
+            await processTransaction();
+        }
+    }
+
+    /**
+     * Charges the reviewed gift when the giver confirms it on the confirmation
+     * step.
+     */
+    function onFinishClick(): void {
+        // Guard a second gift after one already completed this session;
+        // the giver must confirm before charging again.
+        if (completedTransactionCode.value) {
+            isPossibleDuplicate.value = true;
+            return;
+        }
+
+        validationErrors.value = [];
+        isProcessing.value = true;
+        processTransaction();
+    }
+
+    /**
+     * Returns from the confirmation step to the entry step so the giver can
+     * revise the gift.
+     */
+    function onPreviousClick(): void {
+        currentStep.value = Step.Entry;
+        paymentToken.value = null;
+        validationErrors.value = [];
+        isPossibleDuplicate.value = false;
+        // The CAPTCHA token was consumed validating the "Next" submit, so the
+        // giver re-solves before continuing again.
+        resetCaptcha();
+    }
+
+    /**
+     * Navigates back to the page the giver came from, from the entry step.
+     */
+    function onInitialBackClick(): void {
+        if (initialBackButtonUrl.value) {
+            window.location.href = initialBackButtonUrl.value;
+        }
+    }
+
+    /**
+     * Mints a fresh idempotency Guid and charges again after the giver
+     * confirms a possible duplicate.
+     */
+    function onConfirmDuplicate(): void {
+        transactionGuid = newGuid();
+        completedTransactionCode.value = "";
+        isPossibleDuplicate.value = false;
+        validationErrors.value = [];
+        isProcessing.value = true;
+        processTransaction();
+    }
+
+    /**
+     * Surfaces a gateway error and re-shows the CAPTCHA so the giver must solve
+     * it again before retrying.
+     */
+    function onGatewayControlError(message: string): void {
+        // An empty message from a remounting gateway carries nothing to show and
+        // must not clear an error already displayed (such as a server decline).
+        if (!message) {
+            return;
+        }
+
+        isProcessing.value = false;
+        validationErrors.value = toFormErrors([message]);
+        resetCaptcha();
+    }
+
+    /**
+     * Re-enables the form, shows the fields the gateway flagged as invalid
+     * (for example an incomplete card number), and re-shows the CAPTCHA so the
+     * giver re-solves before retrying.
+     */
+    function onGatewayControlValidation(invalidFields: FormError[]): void {
+        // A gateway can emit an empty validation set as it remounts or when its
+        // fields become valid. That has nothing to show and must not clear an
+        // error already displayed (such as a server decline that remounted this
+        // control), so treat it as a no-op.
+        if (invalidFields.length === 0) {
+            return;
+        }
+
+        isProcessing.value = false;
+        validationErrors.value = invalidFields;
+        resetCaptcha();
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Removes accounts already added to the picker from the addable tree,
+     * promoting a removed account's children into its place so they remain
+     * addable.
+     */
+    function pruneAddedAccounts(items: TreeItemBag[]): TreeItemBag[] {
+        const result: TreeItemBag[] = [];
+
+        for (const item of items) {
+            const prunedChildren = pruneAddedAccounts(item.children ?? []);
+            const isAdded = accounts.value.some(account => areEqual(account.value, item.value));
+
+            if (isAdded) {
+                result.push(...prunedChildren);
+            }
+            else {
+                result.push({ ...item, children: prunedChildren, hasChildren: prunedChildren.length > 0 });
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Builds the block-action context carrying the solved CAPTCHA token so the
+     * server can validate it at submit. Empty when no CAPTCHA is present.
+     */
+    async function buildActionContext(): Promise<BlockActionContextBag> {
+        const actionContext: BlockActionContextBag = {};
+
+        if (captchaElement.value) {
+            actionContext.captcha = await captchaElement.value.getToken();
+        }
+
+        return actionContext;
+    }
+
+    /**
+     * Maps plain server / gateway messages to the form-error shape the summary
+     * renders.
+     */
+    function toFormErrors(messages: string[]): FormError[] {
+        return messages.map(text => ({ name: "", text }));
+    }
+
+    /**
+     * The icon shown on a saved account's card, by its currency type.
+     */
+    function getSavedAccountIcon(currencyTypeGuid: Guid | null | undefined): string {
+        if (areEqual(currencyTypeGuid, DefinedValue.CurrencyTypeCreditCard)) {
+            return "ti ti-credit-card";
+        }
+
+        if (areEqual(currencyTypeGuid, DefinedValue.CurrencyTypeAch)) {
+            return "ti ti-building-bank";
+        }
+
+        if (areEqual(currencyTypeGuid, DefinedValue.CurrencyTypeApplePay)) {
+            return "ti ti-brand-apple";
+        }
+
+        if (areEqual(currencyTypeGuid, DefinedValue.CurrencyTypeAndroidPay)) {
+            return "ti ti-brand-google";
+        }
+
+        return "ti ti-cash-banknote";
+    }
+
+    /**
+     * The saved account's detail line: the card brand (when known) followed by the
+     * masked number and expiration, with a mid-dot separator to match the Figma.
+     */
+    function formatSavedAccountDetail(savedAccount: SavedFinancialAccountListItemBag): string {
+        const detail = (savedAccount.description ?? "").replace(" and ", " · ");
+
+        return savedAccount.accountTypeName ? `${savedAccount.accountTypeName} ${detail}` : detail;
+    }
+
+    /**
+     * Builds the entry request shared by the pre-tokenize Validate call and
+     * the confirmation step.
+     */
+    function buildConfirmationRequest(): UtilityPaymentEntryConfirmationRequestBag {
+        return {
+            accountAmounts: selectedAccountAmounts.value
+                .filter(accountAmount => accountAmount.amount)
+                .map(accountAmount => ({
+                    accountGuid: accountAmount.account?.value,
+                    amount: accountAmount.amount ?? 0
+                })),
+            campusGuid: selectedCampus.value?.value ?? null,
+            frequencyGuid: selectedFrequencyGuid.value || null,
+            startDate: startDate.value,
+            endDate: endDate.value,
+            firstName: firstName.value,
+            lastName: lastName.value,
+            email: email.value,
+            phone: phone.value,
+            phoneCountryCode: phoneCountryCode.value,
+            address: address.value,
+            isGivingAsBusiness: isGivingAsBusiness.value,
+            businessName: businessName.value,
+            businessContactFirstName: businessContactFirstName.value,
+            businessContactLastName: businessContactLastName.value,
+            businessContactEmail: businessContactEmail.value,
+            businessContactPhone: businessContactPhone.value,
+            businessContactPhoneCountryCode: businessContactPhoneCountryCode.value
+        };
+    }
+
+    /**
+     * Prefills the business fields from the given business, or clears them for
+     * a new business.
+     */
+    function applyBusinessPrefill(businessGuid: string): void {
+        const business = businesses.value.find(candidate => candidate.guid === businessGuid);
+
+        businessName.value = business?.name ?? "";
+        email.value = business?.email ?? "";
+        phone.value = business?.phone ?? "";
+        // Keep the current country code when the business has none; blanking it stops
+        // PhoneNumberBox from formatting typed numbers (it only defaults an empty code on mount).
+        phoneCountryCode.value = business?.phoneCountryCode || phoneCountryCode.value;
+        isSmsOptIn.value = business?.isSmsOptInChecked ?? false;
+        address.value = toFullAddress(business?.address);
+    }
+
+    /** Restores the person prefill for the shared contact fields. */
+    function applyPersonPrefill(): void {
+        email.value = config.options?.email ?? "";
+        phone.value = config.options?.phone ?? "";
+        phoneCountryCode.value = config.options?.phoneCountryCode || phoneCountryCode.value;
+        isSmsOptIn.value = config.options?.isSmsOptInChecked ?? false;
+        address.value = toFullAddress(config.options?.address);
+    }
+
+    /**
+     * Expands a partial address into a bag with every field present.
+     * AddressControl only syncs the keys present in the incoming model, so a
+     * bare {} leaves the previous address on screen instead of clearing it.
+     */
+    function toFullAddress(partial: AddressControlBag | null | undefined): AddressControlBag {
+        return {
+            street1: partial?.street1 ?? "",
+            street2: partial?.street2 ?? "",
+            city: partial?.city ?? "",
+            state: partial?.state ?? "",
+            postalCode: partial?.postalCode ?? "",
+            country: partial?.country ?? "",
+            locality: partial?.locality ?? ""
+        };
+    }
+
+    /**
+     * Sends the entered gift to the server to build the confirmation-step
+     * summary, then shows the confirmation step. The payment method was
+     * already tokenized on the entry step.
+     */
+    async function advanceToConfirmation(): Promise<void> {
+        const result = await invokeBlockAction<UtilityPaymentEntryConfirmationResponseBag>("GetConfirmation", { request: buildConfirmationRequest() }, await buildActionContext());
+
+        isProcessing.value = false;
+
+        if (!result.isSuccess || !result.data?.isSuccess) {
+            validationErrors.value = toFormErrors(result.data?.errorMessages ?? [result.errorMessage || "There was a problem preparing your confirmation."]);
+            resetEntryAfterFailedSubmit();
+            return;
+        }
+
+        confirmationBodyHtml.value = result.data.bodyHtml ?? "";
+        validationErrors.value = [];
+        isPossibleDuplicate.value = false;
+        currentStep.value = Step.Confirmation;
+    }
+
+    /**
+     * Sends the tokenized gift to the server to charge and record, then shows
+     * the success step.
+     */
+    async function processTransaction(): Promise<void> {
+        const request: UtilityPaymentEntryProcessRequestBag = {
+            transactionGuid,
+            gatewayToken: paymentToken.value ?? "",
+            savedAccountGuid: selectedSavedAccountValue.value || null,
+            accountAmounts: selectedAccountAmounts.value
+                .filter(accountAmount => accountAmount.amount)
+                .map(accountAmount => ({
+                    accountGuid: accountAmount.account?.value,
+                    amount: accountAmount.amount ?? 0
+                })),
+            campusGuid: selectedCampus.value?.value ?? null,
+            frequencyGuid: selectedFrequencyGuid.value || null,
+            startDate: startDate.value,
+            endDate: endDate.value,
+            firstName: firstName.value,
+            lastName: lastName.value,
+            email: email.value,
+            phone: phone.value,
+            phoneCountryCode: phoneCountryCode.value,
+            address: address.value,
+            isSmsOptIn: isSmsOptIn.value,
+            isAnonymous: isAnonymous.value,
+            comment: comment.value,
+            isGivingAsBusiness: isGivingAsBusiness.value,
+            businessGuid: selectedBusinessGuid.value || null,
+            businessName: businessName.value,
+            businessContactFirstName: businessContactFirstName.value,
+            businessContactLastName: businessContactLastName.value,
+            businessContactEmail: businessContactEmail.value,
+            businessContactPhone: businessContactPhone.value,
+            businessContactPhoneCountryCode: businessContactPhoneCountryCode.value,
+            isBusinessContactSmsOptIn: isBusinessContactSmsOptIn.value
+        };
+
+        // With a confirmation step the CAPTCHA was validated at "Next"
+        // (GetConfirmation), and this is the Finish, so no fresh token rides
+        // along. Without one, this is the entry submit, so send the token.
+        const actionContext: BlockActionContextBag = isConfirmationStepShown.value ? {} : await buildActionContext();
+        const result = await invokeBlockAction<UtilityPaymentEntryProcessResponseBag>("ProcessTransaction", { request }, actionContext);
+
+        isProcessing.value = false;
+
+        if (!result.isSuccess || !result.data?.isSuccess) {
+            validationErrors.value = toFormErrors(result.data?.errorMessages ?? [result.errorMessage || "There was a problem processing your gift."]);
+
+            // Without a confirmation step, a hosted-field gateway is still
+            // visible and needs to be remounted after a failed submit, since
+            // it tears down its tokenizer after tokenizing and would otherwise
+            // be left on a stuck spinner. A CAPTCHA is also re-shown so the
+            // giver must solve it again before retrying.
+            if (!isConfirmationStepShown.value) {
+                resetEntryAfterFailedSubmit();
+            }
+
+            return;
+        }
+
+        successHtml.value = result.data.successHtml ?? "";
+        successFooterHtml.value = result.data.successFooterHtml ?? "";
+        completedTransactionCode.value = result.data.transactionCode ?? "";
+        isSaveAccountOffered.value = result.data.isSaveAccountOffered ?? false;
+        gatewayGuid.value = result.data.gatewayGuid ?? "";
+        gatewayPersonIdentifier.value = result.data.gatewayPersonIdentifier ?? "";
+        completedScheduledTransactionGuid.value = result.data.scheduledTransactionGuid ?? null;
+        currentStep.value = Step.Success;
+    }
+
+    /**
+     * Recovers the entry step after a submit that tokenized the payment method
+     * and consumed the one-shot CAPTCHA token but was then rejected (invalid
+     * CAPTCHA, failed validation, or a charge decline). Re-shows the CAPTCHA
+     * for a fresh solve and remounts the gateway control, since hosted-field
+     * gateways tear their tokenizer down after tokenizing and would otherwise
+     * be left on a stuck spinner.
+     */
+    function resetEntryAfterFailedSubmit(): void {
+        resetCaptcha();
+        gatewayControlKey.value++;
+    }
+
+    /**
+     * Resets the CAPTCHA so the giver must solve it again, hiding the action
+     * button until they do. Used when returning to the entry step: the previous
+     * token was already consumed validating the entry submit, so it cannot be
+     * reused and a fresh one must be solved.
+     */
+    async function resetCaptcha(): Promise<void> {
+        if (!isCaptchaShown.value) {
+            return;
+        }
+
+        // Reveal the wrapper and remount in one flush: the key change lets Vue
+        // destroy the old widget and mount exactly one fresh one (refreshing the
+        // existing instance stacked duplicates). The control paints itself
+        // asynchronously (it awaits its config), so it lands in the now-visible
+        // wrapper. The single tick then lets captchaElement resolve to the new
+        // instance before waitForCaptcha reads it.
+        isCaptchaSolved.value = false;
+        captchaKey.value++;
+        await nextTick();
+
+        waitForCaptcha();
+    }
+
+    /**
+     * Reveals the entry action button once the CAPTCHA is solved, without a
+     * server round-trip (the token is validated at submit). Treats a disabled or
+     * unavailable CAPTCHA as already solved so the button shows.
+     */
+    async function waitForCaptcha(): Promise<void> {
+        if (!isCaptchaShown.value || !captchaElement.value) {
+            isCaptchaSolved.value = true;
+            return;
+        }
+
+        const token = await captchaElement.value.getToken();
+        isCaptchaSolved.value = !!token;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    /**
+     * Swaps the shared contact fields between the person prefill and the
+     * selected business's values.
+     */
+    watch(isGivingAsBusiness, (isBusiness) => {
+        if (isBusiness) {
+            if (businesses.value.length > 0 && !selectedBusinessGuid.value) {
+                selectedBusinessGuid.value = businesses.value[0].guid;
+            }
+
+            applyBusinessPrefill(selectedBusinessGuid.value);
+        }
+        else {
+            applyPersonPrefill();
+        }
+    });
+
+    /**
+     * Prefills the business fields when the giver picks a different business
+     * from the dropdown.
+     */
+    watch(selectedBusinessGuid, (businessGuid) => {
+        if (isGivingAsBusiness.value) {
+            applyBusinessPrefill(businessGuid);
+        }
+    });
+
+    /**
+     * A recurring gift can't start before the gateway's earliest date, so hold
+     * the start date forward to it when the frequency changes or the date is
+     * edited to be earlier, then keep the end date on or after that start so the
+     * schedule never ends before it begins. Each correction waits a tick so the
+     * DatePicker has committed the giver's pick first; forcing it back in the
+     * same flush would not re-sync the field.
+     */
+    watch([selectedFrequencyGuid, startDate, endDate], async () => {
+        if (!isOneTimeFrequency.value && earliestScheduledStartDate && startDate.value < earliestScheduledStartDate) {
+            await nextTick();
+            startDate.value = earliestScheduledStartDate;
+        }
+
+        if (isEndDateShown.value && endDate.value && endDate.value < startDate.value) {
+            await nextTick();
+            endDate.value = startDate.value;
+        }
+    }, { immediate: true });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        // A transferred business gift starts in Give As Business mode with its
+        // business preselected, so prefill that business's contact fields on load.
+        if (isGivingAsBusiness.value && selectedBusinessGuid.value) {
+            applyBusinessPrefill(selectedBusinessGuid.value);
+        }
+
+        waitForCaptcha();
+    });
+
+    // #endregion Lifecycle Hooks
+
+</script>

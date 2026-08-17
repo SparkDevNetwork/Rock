@@ -598,6 +598,9 @@ namespace Rock.Financial
 
             _referencePaymentInfo.AmountCurrencyCodeValueId = GetCurrencyCodeDefinedValueCache( _automatedPaymentArgs.AmountCurrencyCode )?.Id;
             _referencePaymentInfo.Amount = _automatedPaymentArgs.AutomatedPaymentDetails.Sum( d => d.Amount );
+            _referencePaymentInfo.AccountAllocations = _automatedPaymentArgs.AutomatedPaymentDetails
+                .Select( d => new FinancialTransactionService.AccountAllocation( d.AccountId, d.Amount ) )
+                .ToList();
             _referencePaymentInfo.Email = _authorizedPerson.Email;
 
             var transactionGuid = _futureTransaction != null ? _futureTransaction.Guid : Guid.NewGuid();

@@ -281,7 +281,8 @@ namespace Rock.Blocks.Group.Scheduling
             List<int> groupIds;
             if ( HasPageParameter( PageParameterKey.GroupId ) || HasPageParameter( PageParameterKey.GroupIds ) )
             {
-                var groupId = this.PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+                var groupId = new GroupService( rockContext )
+                    .GetSelect( this.PageParameter( PageParameterKey.GroupId ), g => ( int? ) g.Id, !PageCache.Layout.Site.DisablePredictableIds );
                 groupIds = ( this.PageParameter( PageParameterKey.GroupIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
 
                 if ( groupId.HasValue && !groupIds.Contains( groupId.Value ) )
@@ -890,7 +891,7 @@ namespace Rock.Blocks.Group.Scheduling
                         GroupOrder = gls.Group.Order,
                         GroupId = gls.Group.Id,
                         GroupName = gls.Group.Name,
-                        ParentGroupId = gls.ParentGroup.Id,
+                        ParentGroupId = gls.ParentGroup?.Id,
                         ParentGroupName = gls.ParentGroup?.Name,
                         GroupLocationOrder = gls.GroupLocation.Order,
                         LocationId = gls.Location.Id,

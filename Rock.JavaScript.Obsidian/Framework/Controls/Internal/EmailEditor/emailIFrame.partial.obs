@@ -1037,10 +1037,12 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
 `;
         iFrameDocument.head.appendChild(style);
 
-        // If the body does not contain a structure-dropzone, then add one automatically.
+        // If the body does not contain a structure-dropzone, then add one automatically inside a row component.
         if (!iFrameDocument.querySelector(".structure-dropzone")) {
             const dropzone = iFrameDocument.createElement("div");
             dropzone.classList.add("structure-dropzone");
+            const baseRow = createComponentElement(iFrameDocument, "row");
+            dropzone.appendChild(baseRow);
             iFrameDocument.body.append(dropzone);
         }
 

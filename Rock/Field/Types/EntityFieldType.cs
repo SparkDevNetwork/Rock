@@ -131,6 +131,11 @@ namespace Rock.Field.Types
                     entityValue.Value = jsonValue.Value;
                 }
 
+                if ( entityValue.EntityType == null && entityValue.Value.IsNullOrWhiteSpace() )
+                {
+                    return string.Empty;
+                }
+
                 // Webforms EntityPicker saves the EntityType Guid along with the Entity Id, so we use the Guid returned from the
                 // client to get the EntityId for backwards compatibility.
                 var privateValue = $"{entityValue.EntityType?.Value}|{entityValue.Value}";

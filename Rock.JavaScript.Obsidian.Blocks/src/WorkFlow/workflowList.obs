@@ -42,8 +42,6 @@
                       :detailField="false"
                       :showAsLink="true"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getInitiatorFilterValue"
-                      :quickFilterValue="getInitiatorFilterValue"
                       visiblePriority="md" />
 
         <Column name="activities"
@@ -166,7 +164,6 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./WorkflowList/types.partial";
     import { computed, reactive, ref, watch } from "vue";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import GridSettingsModal from "./WorkflowList/gridSettingsModal.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
@@ -177,6 +174,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { appendQueryParam } from "@Obsidian/Utility/url";
 
     const config = useConfigurationValues<ListBlockBox<WorkflowListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -270,16 +268,6 @@
     }
 
     /**
-    * Gets the filter value text to use for the initiator column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getInitiatorFilterValue(row: Record<string, unknown>): string {
-        const person = row["initiator"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
-    }
-
-    /**
     * Gets the filter value text to use for the created column.
     *
     * @param row The row to be filtered.
@@ -329,7 +317,7 @@
 
         if (hasActiveEntryForm && config.navigationUrls?.[NavigationUrlKey.EntryPage]) {
             const basePath = config.navigationUrls[NavigationUrlKey.EntryPage].replace("((workflowTypeKey))", (row["workflowTypeIdKey"] as string) ?? "");
-            window.location.href = `${basePath}&WorkflowGuid=${row["guid"] as string}`;
+            window.location.href = appendQueryParam(basePath, "WorkflowGuid", (row["guid"] as string) ?? "");
         }
         else if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);

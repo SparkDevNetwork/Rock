@@ -82,7 +82,7 @@ BEGIN
         ,g.CampusId [CampusId]
         ,(
             SELECT TOP 1 (
-                    CASE 
+                    CASE
                         WHEN dv.Value IS NULL
                             THEN ''
                         ELSE dv.Value
@@ -119,9 +119,9 @@ BEGIN
             ) [ChildCount]
         ,hhpc.Id [HeadOfHouseholdPersonKey]
         ,(
-            SELECT CASE max(convert(INT, CASE 
+            SELECT CASE max(convert(INT, CASE
      WHEN av.ValueAsBoolean IS NULL
-                         THEN 0
+            THEN 0
                                 ELSE av.ValueAsBoolean
                                 END))
                     WHEN 1
@@ -186,7 +186,7 @@ BEGIN
             WHERE CurrentRowIndicator = 0
                 AND [ExpireDate] = @EtlDate
             )
-	
+
 	-- Insert Families that don't have a "CurrentRowIndicator" Row yet (either it was marked as history, or they are a new family)
     INSERT INTO AnalyticsSourceFamilyHistorical (
         [FamilyId]
@@ -227,7 +227,7 @@ BEGIN
     FROM #AnalyticsSourceFamily s
     WHERE s.FamilyId NOT IN (
             SELECT FamilyId
-            FROM AnalyticsSourceFamilyHistorical
+           FROM AnalyticsSourceFamilyHistorical
  WHERE CurrentRowIndicator = 1
             )
 

@@ -57,6 +57,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [TextField( "Title Template",
         Description = "The value to use when rendering the title text. <span class='tip tip-lava'></span>",
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "{{ Group.Name }} Group Roster",
         Key = AttributeKeys.TitleTemplate,
         Order = 1 )]
@@ -316,7 +318,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <value>
         /// The template.
         /// </value>
-        protected string Template => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
+        protected string Template => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
 
         /// <summary>
         /// Gets a value indicating whether [group by person].

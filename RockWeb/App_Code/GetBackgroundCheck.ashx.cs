@@ -31,6 +31,19 @@ namespace RockWeb
     public class GetBackgroundCheck : IHttpHandler
     {
         /// <summary>
+        /// Hard-coded copy of the legacy Protect My Ministry (v1) EntityType Guid. The
+        /// PMM v1 component was removed in Rock v20 (see the SunsetProtectMyMinistry
+        /// plugin migration), so we cannot reach the Rock.SystemGuid.EntityType
+        /// constant of the same name (it is <c>internal</c> to the Rock assembly).
+        /// Historical background-check <c>[AttributeValue]</c> rows stored just a
+        /// BinaryFile Guid under this provider, so when we see this EntityTypeGuid on
+        /// the URL we stream the BinaryFile by Guid instead of trying to instantiate
+        /// the (now-removed) component class.
+        /// </summary>
+        private static readonly Guid ProtectMyMinistryLegacyProviderGuid =
+            new Guid( "C16856F4-3C6B-4AFB-A0B8-88A303508206" );
+
+        /// <summary>
         /// Enables processing of HTTP Web requests by a custom HttpHandler that implements the <see cref="T:System.Web.IHttpHandler" /> interface.
         /// </summary>
         /// <param name="context">An <see cref="T:System.Web.HttpContext" /> object that provides references to the intrinsic server objects (for example, Request, Response, Session, and Server) used to service HTTP requests.</param>
@@ -46,6 +59,57 @@ namespace RockWeb
                 if ( ( entityTypeId == 0 && entityTypeGuid == null ) || recordKey.IsNullOrWhiteSpace() )
                 {
                     throw new Exception( "Missing or invalid EntityTypeId/Guid or RecordKey" );
+                }
+
+                // Legacy Protect My Ministry (v1) documents were stored with just a BinaryFile Guid
+                // and the PMM component was removed in Rock v20, so it is no longer possible to
+                // reflect over the (now-missing) type. Redirect straight to GetFile.ashx to stream
+                // the BinaryFile by Guid.
+                if ( entityTypeGuid.HasValue && entityTypeGuid.Value == ProtectMyMinistryLegacyProviderGuid )
+                {
+                    if ( !Guid.TryParse( recordKey, out Guid binaryFileGuid ) )
+                    {
+                        throw new Exception( "Missing or invalid BinaryFile Guid for a legacy Protect My Ministry background check document." );
+                    }
+
+                    /*
+                        7/13/26 - NA
+
+                        PMM v1's own GetReportUrl gated on this.IsAuthorized( VIEW,
+                        currentPerson ) before returning the URL. That check is gone
+                        with the component. The closest surviving equivalent is to
+                        gate on the CURRENTLY-active background check component's VIEW
+                        auth: if a Rock admin has configured Checkr (or another
+                        provider) with per-person VIEW permissions, we honor those for
+                        legacy PMM documents too. If no provider is currently active,
+                        fall through to GetFile.ashx which still enforces the
+                        BinaryFile / BinaryFileType-level auth as a safety net.
+
+                        Reason: Legacy background check reports security checks should not be
+                                weakened relative to what PMM originally required.
+                    */
+                    var activeComponent = Rock.Security.BackgroundCheckContainer.GetActiveComponent();
+                    if ( activeComponent != null )
+                    {
+                        using ( var rockContext = new Rock.Data.RockContext() )
+                        {
+                            var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
+                            var currentPerson = currentUser?.Person;
+
+                            if ( !activeComponent.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                            {
+                                context.Response.StatusCode = ( int ) HttpStatusCode.Unauthorized;
+                                context.ApplicationInstance.CompleteRequest();
+                                return;
+                            }
+                        }
+                    }
+
+                    var legacyFileUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" )
+                        + "?guid=" + binaryFileGuid.ToString();
+                    context.Response.Redirect( legacyFileUrl, false );
+                    context.ApplicationInstance.CompleteRequest();
+                    return;
                 }
 
                 Type backgroundCheckComponentType;

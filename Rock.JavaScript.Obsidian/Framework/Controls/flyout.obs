@@ -3,7 +3,7 @@
     <teleport :to="teleportTarget" v-if="props.modelValue">
         <div ref="flyoutEl"
              class="flyout"
-             :style="style"
+             :style="[style, widthStyle]"
              @mouseenter="onFlyoutEnter"
              @mouseleave="onFlyoutLeave">
             <div v-if="hasHeader"
@@ -28,8 +28,11 @@
 .flyout {
     border: 1px solid var(--color-interface-soft);
     border-radius: var(--rounded-large);
-    /* TODO - UI Team needs to look at width */
     width: 400px;
+    /* Never wider than the viewport (less an 8px gutter each side, matching the flyoutGap
+       used when positioning). updatePosition() also clamps the flyout horizontally so it
+       stays fully on screen for any anchor position. */
+    max-width: calc(100vw - 16px);
     box-shadow: var(--box-shadow-strong);
     overflow: hidden;
 }
@@ -72,6 +75,15 @@
             type: Function as PropType<(() => void | PromiseLike<void>)>,
             required: false
         },
+
+        /**
+         * Overrides the flyout's default width. Accepts any valid CSS length
+         * (e.g. "600px", "40rem"). When omitted the scoped default applies.
+         */
+        width: {
+            type: String as PropType<string>,
+            required: false
+        },
     });
 
     const emit = defineEmits<{
@@ -89,6 +101,7 @@
     const hasHeader = computed(() => !!slots.header);
     const fullscreenElement = ref<Element | null>(null);
     const teleportTarget = computed(() => fullscreenElement.value ?? document.body);
+    const widthStyle = computed(() => props.width ? { width: props.width } : null);
 
     function updatePosition(): void {
         if (!props.anchorEl || !flyoutEl.value) {
@@ -122,10 +135,18 @@
             );
         }
 
+        // Right-align to the anchor, then clamp so the flyout stays fully on screen. It grows
+        // leftward from the anchor's right edge, so on a narrow viewport - or with a left-of-center
+        // anchor - it would otherwise run off the left edge. The CSS max-width keeps its width
+        // within the viewport so this clamp always has room to place it.
+        const preferredRightOffset = viewportWidth - anchorRect.right;
+        const maxRightOffset = Math.max(flyoutGap, viewportWidth - flyoutRect.width - flyoutGap);
+        const right = Math.min(Math.max(preferredRightOffset, flyoutGap), maxRightOffset);
+
         style.value = {
             position: "fixed",
             top: `${top}px`,
-            right: `${viewportWidth - anchorRect.right}px`,
+            right: `${right}px`,
             zIndex: "1060" // Needs to be above 1050 because the flyout can appear in the docked panel.
         };
     }

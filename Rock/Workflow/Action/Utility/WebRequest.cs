@@ -37,20 +37,57 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Web Request" )]
 
-    [CustomDropdownListField( "Method", "HTTP method to use when making requests.", "GET,POST,PUT,DELETE,PATCH", true, "GET", "", 0 )]
-    [TextField( "URL", "Sets the BaseUrl property for requests made by this client instance  <span class='tip tip-lava'></span>", true, key: "Url", order: 1 )]
-    [KeyValueListField( "Parameters", "The parameters to send with request. <span class='tip tip-lava'></span>", false, "", "Parameters", "", order: 2 )]
-    [KeyValueListField( "Headers", "The key value pairs to add in the http header. <span class='tip tip-lava'></span>", false, "", "Headers", "", order: 3 )]
-    [TextField( "Basic Auth UserName", "The user name for basic http authentication.", false, "", "", 4 )]
-    [TextField( "Basic Auth Password", "The password for basic http authentication.", false, "", "", 5, isPassword: true )]
-    [EnumField( "Request Content Type", "", typeof( RequestContentType ), true, "0", order: 6 )]
-    [EnumField( "Response Content Type", "", typeof( ResponseContentType ), true, "0", order: 7 )]
+    [CustomDropdownListField( "Method",
+        Description = "HTTP method to use when making requests.",
+        ListSource = "GET,POST,PUT,DELETE,PATCH",
+        IsRequired = true,
+        DefaultValue = "GET",
+        Order = 0 )]
+    [TextField( "URL",
+        Description = "Sets the BaseUrl property for requests made by this client instance  <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
+        Key = "Url",
+        Order = 1 )]
+    [KeyValueListField( "Parameters",
+        Description = "The parameters to send with request. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        KeyPrompt = "Parameters",
+        Order = 2 )]
+    [KeyValueListField( "Headers",
+        Description = "The key value pairs to add in the http header. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        KeyPrompt = "Headers",
+        Order = 3 )]
+    [TextField( "Basic Auth UserName",
+        Description = "The user name for basic http authentication.",
+        IsRequired = false,
+        Order = 4 )]
+    [TextField( "Basic Auth Password",
+        Description = "The password for basic http authentication.",
+        IsRequired = false,
+        Order = 5,
+        IsPassword = true )]
+    [EnumField( "Request Content Type",
+        EnumSourceType = typeof( RequestContentType ),
+        IsRequired = true,
+        DefaultEnumValue = 0,
+        Order = 6 )]
+    [EnumField( "Response Content Type",
+        EnumSourceType = typeof( ResponseContentType ),
+        IsRequired = true,
+        DefaultEnumValue = 0,
+        Order = 7 )]
     [CodeEditorField( "Body",
         Description = "The body to send with the request. <span class='tip tip-lava'></span>",
         EditorMode = Web.UI.Controls.CodeEditorMode.Lava,
         IsRequired = false,
         Order = 8 )]
-    [WorkflowAttribute( "Response Attribute", "An attribute to set to the response from web request.", false, "", "", 9 )]
+    [WorkflowAttribute( "Response Attribute",
+        Description = "An attribute to set to the response from web request.",
+        IsRequired = false,
+        Order = 9 )]
     [Rock.SystemGuid.EntityTypeGuid( "419C1C35-1B3E-4D36-A8AB-57EA476D7651")]
     public class WebRequest : ActionComponent
     {
@@ -83,7 +120,7 @@ namespace Rock.Workflow.Action
             string url = GetAttributeValue( action, URL ).ResolveMergeFields( mergeFields );
 
             var parametersValue = GetAttributeValue( action, PARAMETERS );
-            var parameterList = new Field.Types.KeyValueListFieldType().GetValuesFromString( null, parametersValue, null, false );
+            var parameterList = Field.Helper.GetKeyValueListValuesFromString( parametersValue, null, false );
             var parameters = new Dictionary<string, object>();
             foreach ( var p in parameterList )
             {
@@ -93,7 +130,7 @@ namespace Rock.Workflow.Action
             }
 
             var headersValue = GetAttributeValue( action, HEADERS );
-            var headerList = new Field.Types.KeyValueListFieldType().GetValuesFromString( null, headersValue, null, false );
+            var headerList = Field.Helper.GetKeyValueListValuesFromString( headersValue, null, false );
             var headers = new Dictionary<string, object>();
             foreach ( var p in headerList )
             {

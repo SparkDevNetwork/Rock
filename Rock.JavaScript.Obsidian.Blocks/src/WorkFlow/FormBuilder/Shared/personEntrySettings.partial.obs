@@ -1,161 +1,205 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div>
-        <div class="row">
-            <div :class="columnClass">
-                <CheckBox v-model="autofillCurrentPerson"
-                          label="Autofill Current Person" />
-                <CheckBox v-model="hideIfCurrentPersonKnown"
-                          label="Hide if Current Person Known" />
-            </div>
+    <div class="person-entry-accordions">
+        <Panel title="General" :hasCollapse="true" v-model="isGeneralOpen">
+            <div class="row">
+                <div :class="columnClass">
+                    <div class="person-entry-inline-checkboxes">
+                        <CheckBox v-model="autofillCurrentPerson"
+                                  label=""
+                                  text="Autofill Current Person" />
+                        <CheckBox v-model="hideIfCurrentPersonKnown"
+                                  label=""
+                                  text="Hide if Current Person Known" />
+                    </div>
+                </div>
 
-            <div :class="columnClass">
-                <DropDownList v-model="recordStatus"
-                              label="Record Status"
-                              :items="recordStatusOptions"
-                              rules="required" />
-            </div>
+                <div :class="columnClass">
+                    <RadioButtonList v-model="recordStatus"
+                                     label="Record Status"
+                                     :items="recordStatusOptions"
+                                     rules="required" />
+                </div>
 
-            <div :class="columnClass">
-                <DropDownList v-model="recordSource"
-                              label="Record Source"
-                              :items="recordSourceOptions"
-                              rules="required" />
-            </div>
+                <div :class="columnClass">
+                    <DropDownList v-model="recordSource"
+                                  label="Record Source"
+                                  :items="recordSourceOptions"
+                                  rules="required" />
+                </div>
 
-            <div :class="columnClass">
-                <DropDownList v-model="connectionStatus"
-                              label="Connection Status"
-                              :items="connectionStatusOptions"
-                              rules="required" />
+                <div :class="columnClass">
+                    <DropDownList v-model="connectionStatus"
+                                  label="Connection Status"
+                                  :items="connectionStatusOptions"
+                                  rules="required" />
+                </div>
             </div>
-        </div>
+        </Panel>
 
-        <div class="row">
-            <div :class="columnClass">
-                <CheckBox v-model="showCampus"
-                          label="Show Campus" />
-            </div>
+        <Panel title="Campus" :hasCollapse="true" v-model="isCampusOpen">
+            <div class="row">
+                <div :class="columnClass">
+                    <CheckBox v-model="showCampus"
+                              label=""
+                              text="Show Campus" />
+                </div>
 
-            <div :class="columnClass">
-                <CheckBox v-model="includeInactiveCampus"
-                          v-if="showCampus"
-                          label="Include Inactive" />
-            </div>
+                <div :class="columnClass">
+                    <TransitionVerticalCollapse>
+                        <div v-if="showCampus" class="person-entry-conditional-well-wrapper">
+                            <ConditionalWell class="person-entry-conditional-well">
+                                <CheckBox v-model="includeInactiveCampus"
+                                          label=""
+                                          text="Include Inactive" />
+                            </ConditionalWell>
+                        </div>
+                    </TransitionVerticalCollapse>
+                </div>
 
-            <div :class="columnClass">
-                <DropDownList v-model="campusType"
-                              label="Campus Type"
-                              :items="campusTypeOptions" />
-            </div>
+                <div :class="columnClass">
+                    <RadioButtonList v-model="campusType"
+                                     label="Type"
+                                     :items="campusTypeOptions" />
+                </div>
 
-            <div :class="columnClass">
-                <DropDownList v-model="campusStatus"
-                              label="Campus Status"
-                              :items="campusStatusOptions" />
+                <div :class="columnClass">
+                    <RadioButtonList v-model="campusStatus"
+                                     label="Status"
+                                     :items="campusStatusOptions" />
+                </div>
             </div>
-        </div>
+        </Panel>
 
-        <div class="row">
-            <div :class="columnClass">
-                <DropDownList v-model="gender"
-                              label="Gender"
-                              :showBlankItem="false"
-                              :items="formFieldVisibilityOptions" />
-            </div>
+        <Panel title="Personal Information" :hasCollapse="true" v-model="isPersonalOpen">
+            <div class="row">
+                <div :class="columnClass">
+                    <RadioButtonList v-model="gender"
+                                     label="Gender"
+                                     :items="formFieldVisibilityOptions" />
+                </div>
 
-            <div :class="columnClass">
-                <DropDownList v-model="email"
-                              label="Email"
-                              :showBlankItem="false"
-                              :items="formFieldVisibilityOptions" />
-            </div>
+                <div :class="columnClass">
+                    <RadioButtonList v-model="email"
+                                     label="Email"
+                                     :items="formFieldVisibilityOptions" />
+                </div>
 
-            <div :class="columnClass">
-                <DropDownList v-model="mobilePhone"
-                              label="Mobile Phone"
-                              :showBlankItem="false"
-                              :items="formFieldVisibilityOptions" />
-            </div>
+                <div :class="columnClass">
+                    <RadioButtonList v-model="mobilePhone"
+                                     label="Mobile Phone"
+                                     :items="formFieldVisibilityOptions" />
+                </div>
 
-            <div :class="columnClass">
-                <DropDownList v-model="smsOptIn"
-                              label="SMS Opt-In"
-                              :disabled="toNumberOrNull(mobilePhone) === FormFieldVisibility.Hidden"
-                              :showBlankItem="false"
-                              :items="formFieldShowHideOptions" />
-            </div>
+                <div :class="columnClass">
+                    <RadioButtonList v-model="smsOptIn"
+                                     label="SMS Opt-In"
+                                     :disabled="toNumberOrNull(mobilePhone) === FormFieldVisibility.Hidden"
+                                     :items="formFieldShowHideOptions" />
+                </div>
 
-            <div :class="columnClass">
-                <DropDownList v-model="birthdate"
-                              label="Birthdate"
-                              :showBlankItem="false"
-                              :items="formFieldVisibilityOptions" />
+                <div :class="columnClass">
+                    <RadioButtonList v-model="birthdate"
+                                     label="Birthdate"
+                                     :items="formFieldVisibilityOptions" />
+                </div>
             </div>
-        </div>
+        </Panel>
 
-        <div class="row">
-            <div :class="columnClass">
-                <DropDownList v-model="address"
-                              label="Address"
-                              :showBlankItem="false"
-                              :items="formFieldVisibilityOptions" />
-            </div>
+        <Panel title="Address" :hasCollapse="true" v-model="isAddressOpen">
+            <div class="row">
+                <div :class="columnClass">
+                    <RadioButtonList v-model="address"
+                                     label="Address"
+                                     :items="formFieldVisibilityOptions" />
+                </div>
 
-            <div :class="columnClass">
-                <DropDownList v-model="addressType"
-                              label="Address Type"
-                              :items="addressTypeOptions"
-                              rules="required" />
+                <div :class="columnClass">
+                    <DropDownList v-model="addressType"
+                                  label="Type"
+                                  :items="addressTypeOptions"
+                                  rules="required" />
+                </div>
             </div>
+        </Panel>
 
-            <div :class="columnClass">
-                <DropDownList v-model="maritalStatus"
-                              label="Marital Status"
-                              :showBlankItem="false"
-                              :items="formFieldVisibilityOptions" />
-            </div>
-        </div>
+        <Panel title="Family" :hasCollapse="true" v-model="isFamilyOpen">
+            <div class="row">
+                <div :class="columnClass">
+                    <RadioButtonList v-model="maritalStatus"
+                                     label="Marital Status"
+                                     :items="formFieldVisibilityOptions" />
+                </div>
 
-        <div class="row">
-            <div :class="columnClass">
-                <DropDownList v-model="spouseEntry"
-                              label="Spouse Entry"
-                              :showBlankItem="false"
-                              :items="formFieldVisibilityOptions" />
-            </div>
+                <div :class="columnClass">
+                    <RadioButtonList v-model="spouseEntry"
+                                     label="Spouse Entry"
+                                     :items="formFieldVisibilityOptions" />
+                </div>
 
-            <div :class="columnClass">
-                <TextBox v-model="spouseLabel"
-                         label="Spouse Label" />
+                <div :class="columnClass">
+                    <TextBox v-model="spouseLabel"
+                             label="Spouse Label"
+                             :disabled="toNumberOrNull(spouseEntry) === FormFieldVisibility.Hidden" />
+                </div>
             </div>
-        </div>
+        </Panel>
 
-        <div class="row">
-            <div :class="columnClass">
-                <DropDownList v-model="raceEntry"
-                              label="Race Entry"
-                              :showBlankItem="false"
-                              :items="formFieldVisibilityOptions" />
-            </div>
-        </div>
+        <Panel title="Demographics" :hasCollapse="true" v-model="isDemographicsOpen">
+            <div class="row">
+                <div :class="columnClass">
+                    <RadioButtonList v-model="raceEntry"
+                                     label="Race Entry"
+                                     :items="formFieldVisibilityOptions" />
+                </div>
 
-        <div class="row">
-            <div :class="columnClass">
-                <DropDownList v-model="ethnicityEntry"
-                              label="Ethnicity Entry"
-                              :showBlankItem="false"
-                              :items="formFieldVisibilityOptions" />
+                <div :class="columnClass">
+                    <RadioButtonList v-model="ethnicityEntry"
+                                     label="Ethnicity Entry"
+                                     :items="formFieldVisibilityOptions" />
+                </div>
             </div>
-        </div>
+        </Panel>
     </div>
 </template>
+
+<style scoped>
+.person-entry-accordions :deep(.panel) {
+    margin-bottom: 0;
+    border-radius: 0;
+}
+
+.person-entry-accordions :deep(.panel + .panel) {
+    border-top: 0;
+}
+
+.person-entry-conditional-well {
+    padding: var(--spacing-xsmall) var(--spacing-small);
+}
+
+.person-entry-conditional-well :deep(.form-group) {
+    margin-bottom: 0;
+}
+
+
+.person-entry-inline-checkboxes :deep(.form-group) {
+    margin-bottom: var(--spacing-xsmall);
+}
+
+.person-entry-inline-checkboxes :deep(.form-group:last-child) {
+    margin-bottom: 0;
+}
+</style>
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { FormFieldShowHide, FormPersonEntry } from "./types.partial";
@@ -207,6 +251,15 @@
         (e: "update:modelValue", value: FormPersonEntry): void;
         (e: "close"): void;
     }>();
+
+    // Accordion open state. General is expanded by default; the rest are
+    // collapsed.
+    const isGeneralOpen = ref(true);
+    const isCampusOpen = ref(false);
+    const isPersonalOpen = ref(false);
+    const isAddressOpen = ref(false);
+    const isFamilyOpen = ref(false);
+    const isDemographicsOpen = ref(false);
 
     const autofillCurrentPerson = ref(props.modelValue.autofillCurrentPerson ?? false);
     const hideIfCurrentPersonKnown = ref(props.modelValue.hideIfCurrentPersonKnown ?? false);

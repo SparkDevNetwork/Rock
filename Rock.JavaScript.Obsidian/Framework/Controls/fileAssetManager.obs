@@ -360,7 +360,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: ListItemBag): void
+        (e: "update:modelValue", value: FileAsset[] | undefined): void
         (e: "update:openFolders", value: string[]): void
         (e: "update:selectedFolder", value: string | null): void
     }>();
@@ -386,12 +386,12 @@
 
     // #region Folder List
 
+    const selectedFolderArray = ref<string[]>([]);
+    const selectedFolder = computed<string | null>(() => decodeURIComponent(selectedFolderArray.value[0] ?? "") || null);
+
     const itemProvider = ref(initializeTreeProvider());
     const openFolders = computed(() => Array.from(itemProvider.value?.openFolders ?? []));
     const folders = ref<AssetManagerTreeItemBag[]>([]);
-
-    const selectedFolderArray = ref<string[]>([]);
-    const selectedFolder = computed<string | null>(() => decodeURIComponent(selectedFolderArray.value[0] ?? "") || null);
     const selectedFolderBag = computed(() => findFolder(folders.value, selectedFolder.value).folder);
     const selectedFolderSubPath = computed(() => {
         let path = parseFolderName(selectedFolder.value ?? "").subPath;
@@ -571,8 +571,6 @@
         isMoveFolderModalLoading.value = true;
         moveFolderModalError.value = "";
 
-        parseFolderName;
-
         try {
             const options: AssetManagerGetListOfAllFoldersOptionsBag = {
                 encryptedRoot: props.encryptedRootFolder,
@@ -638,7 +636,7 @@
             isMoveFolderModalVisible.value = false;
         }
         catch (e) {
-            moveFolderModalError.value = (e as Error)?.message || "An unknown error occurred while renaming the folder.";
+            moveFolderModalError.value = (e as Error)?.message || "An unknown error occurred while moving the folder.";
         }
         finally {
             isMoveFolderModalLoading.value = false;
@@ -754,10 +752,10 @@
         }
     }
 
-    function initializeTreeProvider(): AssetManagerTreeItemProvider {
+    function initializeTreeProvider(openFolders?: Set<string>): AssetManagerTreeItemProvider {
         const provider = new AssetManagerTreeItemProvider();
-        provider.openFolders = itemProvider?.value?.openFolders ?? new Set(props.openFolders);
-        provider.selectedFolder = selectedFolder?.value ?? props.selectedFolder;
+        provider.openFolders = openFolders ?? new Set(props.openFolders);
+        provider.selectedFolder = selectedFolder.value;
         provider.enableAssetManager = props.enableAssetManager;
         provider.enableFileManager = props.enableFileManager;
         provider.encryptedRootFolder = props.encryptedRootFolder || "";
@@ -812,7 +810,7 @@
     });
 
     watch(() => [props.enableAssetManager, props.enableFileManager, props.encryptedRootFolder, props.userSpecificRoot], () => {
-        itemProvider.value = initializeTreeProvider();
+        itemProvider.value = initializeTreeProvider(itemProvider.value?.openFolders);
     });
 
     // Sync v-model: selectedFolder
@@ -863,7 +861,7 @@
     const zipFileInputElement = ref<HTMLInputElement | null>(null);
 
     const isUploadDisabled = computed(() => !isFolderSelected.value || isUploadingFile.value || isLoadingFiles.value);
-    const isZipUploadDisabled = computed(() => isUploadDisabled.value || isUploadRestricted.value);
+    const isZipUploadDisabled = computed(() => isUploadDisabled.value || isUploadRestricted.value || !isFolderLocal.value);
 
     const isFilePaneActionLoading = ref(false);
 
@@ -1101,7 +1099,7 @@
 
     function getFileDropDownMenuItems(file: FileAsset): MenuAction[] {
         const actions: MenuAction[] = [];
-        if (isFolderLocal.value && !!props.editFilePage && !restrictedFileExtensions.includes(Path.getExtension(file.key))) {
+        if (isFolderLocal.value && !!props.editFilePage && !restrictedFileExtensions.includes(Path.getExtension(file.key).toLowerCase())) {
             actions.push({
                 title: "Edit",
                 type: "default",

@@ -1,0 +1,136 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel v-if="config.options?.isVisible"
+           :title="config.options?.title ?? ''"
+           :titleIconCssClass="config.options?.titleIconCssClass ?? ''">
+        <template #headerActions>
+            <span class="attribute-values-actions">
+                <a v-if="config.options?.isOrderAllowed"
+                   href="#"
+                   class="attribute-values-action"
+                   title="Order Attributes"
+                   @click.prevent="onOrderClick">
+                    <i class="ti ti-menu-2"></i>
+                </a>
+                <a v-if="config.options?.isEditAllowed"
+                   href="#"
+                   class="attribute-values-action"
+                   title="Edit Attributes"
+                   @click.prevent="onEditClick">
+                    <i class="ti ti-pencil"></i>
+                </a>
+            </span>
+        </template>
+
+        <ViewPanel v-if="isViewMode"
+                   :attributes="view.attributes ?? {}"
+                   :attributeValues="view.attributeValues ?? {}"
+                   :isGroupedByCategory="config.options?.isGroupedByCategory ?? false" />
+
+        <EditPanel v-else-if="mode === ViewMode.Edit && editData"
+                   :editBag="editData"
+                   @saved="onSaved"
+                   @cancel="onCancel" />
+
+        <OrderPanel v-else-if="mode === ViewMode.Order"
+                    :attributes="view.attributes ?? {}"
+                    @saved="onSaved"
+                    @cancel="onCancel" />
+    </Panel>
+</template>
+
+<style scoped>
+.attribute-values-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    opacity: 0;
+    transition: opacity 0.2s ease-out;
+}
+
+.panel-header:hover .attribute-values-actions {
+    opacity: 1;
+}
+
+/* Devices that cannot hover (e.g. touch) should keep the actions visible. */
+@media (hover: none) {
+    .attribute-values-actions {
+        opacity: 1;
+    }
+}
+
+.attribute-values-action {
+    color: var(--color-interface-strong);
+    font-size: var(--font-size-regular);
+    line-height: 1;
+}
+
+.attribute-values-action:hover {
+    color: var(--color-interface-stronger);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import ViewPanel from "./AttributeValues/viewPanel.partial.obs";
+    import EditPanel from "./AttributeValues/editPanel.partial.obs";
+    import OrderPanel from "./AttributeValues/orderPanel.partial.obs";
+    import { ViewMode } from "./AttributeValues/types.partial";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { AttributeValuesOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/AttributeValues/attributeValuesOptionsBag";
+    import { AttributeValuesViewBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/AttributeValues/attributeValuesViewBag";
+    import { AttributeValuesEditBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/AttributeValues/attributeValuesEditBag";
+
+    const config = useConfigurationValues<CustomBlockBox<AttributeValuesViewBag, AttributeValuesOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const mode = ref<ViewMode>(ViewMode.View);
+    const view = ref<AttributeValuesViewBag>(config.bag ?? { attributes: {}, attributeValues: {} });
+    const editData = ref<AttributeValuesEditBag | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isViewMode = computed((): boolean => mode.value === ViewMode.View);
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    async function onEditClick(): Promise<void> {
+        const result = await invokeBlockAction<AttributeValuesEditBag>("GetEditAttributes");
+
+        if (result.isSuccess && result.data) {
+            editData.value = result.data;
+            mode.value = ViewMode.Edit;
+        }
+        else {
+            await alert(result.errorMessage || "Unable to load the attributes for editing.");
+        }
+    }
+
+    function onOrderClick(): void {
+        mode.value = ViewMode.Order;
+    }
+
+    function onSaved(updatedView: AttributeValuesViewBag): void {
+        view.value = updatedView;
+        editData.value = null;
+        mode.value = ViewMode.View;
+    }
+
+    function onCancel(): void {
+        editData.value = null;
+        mode.value = ViewMode.View;
+    }
+
+    // #endregion Event Handlers
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

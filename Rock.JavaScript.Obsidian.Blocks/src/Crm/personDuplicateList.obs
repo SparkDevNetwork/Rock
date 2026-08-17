@@ -80,8 +80,6 @@
                       :showAsLink="true"
                       :detailField="false"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getPersonFilterValue"
-                      :quickFilterValue="getPersonFilterValue"
                       width="15%" />
     </Grid>
 </template>
@@ -92,7 +90,6 @@
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PersonDuplicateListOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDuplicateList/personDuplicateListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { NavigationUrlKey } from "./PersonDuplicateList/types.partial";
     import { reactive, ref } from "vue";
 
@@ -166,16 +163,6 @@
             case 0: return "label label-success";   // Low
             default: return "label label-default";
         }
-    }
-
-    /**
-     * Gets the filter value for the person column.
-     *
-     * @param row The row containing the person field data.
-     */
-    function getPersonFilterValue(row: Record<string, unknown>): string {
-        const person = row.createdByPerson as PersonFieldBag;
-        return person ? `${person.nickName} ${person.lastName}` : "";
     }
 
     // #endregion

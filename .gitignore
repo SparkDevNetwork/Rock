@@ -25,6 +25,7 @@ StyleCop.Cache
 **/[Oo]bj/[Rr]elease
 **/[Oo]bj/*.nuget.*
 **/[Oo]bj/project.assets.json
+/artifacts
 
 #specific folders
 RockWeb/Cache/*

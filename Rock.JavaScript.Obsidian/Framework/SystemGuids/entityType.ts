@@ -721,7 +721,7 @@ export const EntityType = {
     PluginMigration: "F239557E-C7A8-4D1F-82CC-55CDD0ACA3C8",
     /** The EntityType Guid for Rock.Model.PrayerRequest  */
     PrayerRequest: "F13C8FD2-7702-4C79-A6A9-86440DD5DE13",
-    /** The protect my ministry provider */
+    /** The protect my ministry provider. */
     ProtectMyMinistryProvider: "C16856F4-3C6B-4AFB-A0B8-88A303508206",
     /** The guid for the Rock.Model.Registration entity */
     Registration: "D2F294C6-E161-4A56-85C7-CD74D535F61A",
@@ -801,6 +801,8 @@ export const EntityType = {
     SmsAction: "1F5E26BE-0ED4-4250-8FFC-1DED5E9EACF0",
     /** The SMS Conversation Action */
     SmsActionConversation: "E808A9FD-06A7-4FB2-AD01-C826A53B0ABB",
+    /** The SMS Create Connection Request Action */
+    SmsActionCreateConnectionRequest: "4E8B12C7-A93F-4D85-B621-6A7F398C2E1D",
     /** The EntityType Guid for Rock.Model.SmsPipeline  */
     SmsPipeline: "64DA3A06-FD39-4E5B-8126-38404FB0092A",
     /** The EntityType Guid for Rock.Model.Snippet */

@@ -24,7 +24,6 @@ namespace Rock.Attribute
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class EventItemFieldAttribute : FieldAttribute
     {
-
         /// <summary>
         /// Initializes a new instance of the <see cref="EventItemFieldAttribute"/> class.
         /// </summary>
@@ -35,8 +34,19 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public EventItemFieldAttribute( string name = "EventItem", string description = "", bool required = true, string defaultEventItemId = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultEventItemId, category, order, key, typeof( Rock.Field.Types.EventItemFieldType ).FullName )
+            : base( SystemGuid.FieldType.EVENT_ITEM.AsGuid(), name, description, required, defaultEventItemId, category, order, key )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EventItemFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public EventItemFieldAttribute( string name )
+            : base( SystemGuid.FieldType.EVENT_ITEM.AsGuid(), name )
         {
         }
     }

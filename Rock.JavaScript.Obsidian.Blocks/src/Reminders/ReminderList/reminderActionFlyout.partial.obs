@@ -1,0 +1,266 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="visible"
+         ref="flyoutEl"
+         class="reminder-action-flyout position-fixed"
+         :style="positionStyle">
+        <RockForm v-model:submit="formSubmit" :onSubmit="onFormValid" hideErrors>
+            <div class="reminder-action-flyout-body">
+                <div class="reminder-action-flyout-header d-flex align-items-center gap-spacing-tiny">
+                    <i :class="iconCssClass" class="reminder-action-flyout-header-icon"></i>
+                    <h6 class="reminder-action-flyout-header-title m-0">{{ title }}</h6>
+                </div>
+                <slot />
+            </div>
+            <div class="reminder-action-flyout-footer d-flex justify-content-end align-items-center gap-spacing-tiny">
+                <RockButton btnType="primary"
+                            btnSize="sm"
+                            type="submit"
+                            :isLoading="formSubmit"
+                            :disabled="formSubmit">
+                    {{ saveText }}
+                </RockButton>
+                <RockButton btnType="link"
+                            btnSize="sm"
+                            @click="onCancelClick">
+                    Cancel
+                </RockButton>
+            </div>
+        </RockForm>
+    </div>
+</template>
+
+<style scoped>
+.reminder-action-flyout {
+    z-index: 1050;
+    width: 380px;
+    background: var(--color-interface-softest, #fdfdfd);
+    border-radius: 12px;
+    box-shadow:
+        0 0 2px 0 rgba(145, 158, 171, 0.2),
+        0 12px 24px 0 rgba(145, 158, 171, 0.1),
+        0 12px 12px -4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.reminder-action-flyout-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-medium);
+    padding: var(--spacing-large);
+}
+
+.reminder-action-flyout-header-icon {
+    font-size: 20px;
+    color: var(--color-primary);
+}
+
+.reminder-action-flyout-header-title {
+    font-size: var(--font-size-h6);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-stronger);
+    line-height: 1.055;
+}
+
+.reminder-action-flyout-footer {
+    padding: var(--spacing-xsmall) var(--spacing-large);
+    background: var(--color-interface-softer, #f8f8fc);
+    border-top: 1px solid var(--color-interface-soft, #d9d9e3);
+}
+
+/* Compact form-group margins inside the flyout body since the body's flex
+   gap already supplies spacing. */
+.reminder-action-flyout-body :deep(.form-group) {
+    margin-bottom: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+
+    const props = defineProps({
+        visible: {
+            type: Boolean,
+            required: true
+        },
+
+        /** The element the flyout anchors below. Re-measured every open + on resize. */
+        anchorEl: {
+            type: Object as PropType<HTMLElement | null>,
+            default: null
+        },
+
+        title: {
+            type: String,
+            required: true
+        },
+
+        /** Tabler icon class for the header (e.g. "ti ti-calendar-clock"). */
+        iconCssClass: {
+            type: String,
+            required: true
+        },
+
+        saveText: {
+            type: String,
+            default: "Save"
+        }
+    });
+
+    const flyoutWidth = 380;
+
+    const emit = defineEmits<{
+        (e: "update:visible", value: boolean): void;
+        (e: "save"): void;
+        (e: "cancel"): void;
+    }>();
+
+    const flyoutEl = ref<HTMLDivElement | null>(null);
+    const formSubmit = ref(false);
+    const flyoutTop = ref(0);
+    const flyoutLeft = ref(0);
+
+    const positionStyle = computed((): Record<string, string> => {
+        return {
+            top: `${flyoutTop.value}px`,
+            left: `${flyoutLeft.value}px`
+        };
+    });
+
+    /**
+     * Anchors the flyout's top-right corner to the bottom-right of the trigger
+     * button so the flyout drops down and to the left. Clamped at an 8px left
+     * margin so it never bleeds off-screen on narrow viewports. Vertical
+     * placement does not flip — the trigger is the icon button on a card,
+     * which is reliably above the bottom of the viewport.
+     */
+    function positionFlyout(): void {
+        if (!props.anchorEl) {
+            return;
+        }
+
+        const rect = props.anchorEl.getBoundingClientRect();
+        const margin = 8;
+        const gap = 4;
+
+        const desiredLeft = rect.right - flyoutWidth;
+        flyoutLeft.value = Math.max(margin, desiredLeft);
+        flyoutTop.value = rect.bottom + gap;
+    }
+
+    /**
+     * Two-pass positioning: the first pass mounts the element so its measured
+     * size is real; the second pass re-runs the calc with the live geometry.
+     * Mirrors the personalLinks.obs pattern.
+     */
+    async function repositionTwice(): Promise<void> {
+        positionFlyout();
+        await nextTick();
+        positionFlyout();
+    }
+
+    /** Closes the flyout via the v-model. */
+    function close(): void {
+        emit("update:visible", false);
+    }
+
+    /**
+     * Dismisses the flyout when a mouseup occurs outside its DOM. The anchor
+     * button gets a free pass: clicking the same button that opened the flyout
+     * should close it via the card's normal handler, not this listener.
+     *
+     * The bootstrap-datepicker popup is also exempt. It attaches its calendar
+     * to document.body, so a date click registers as outside the flyout. mouseup
+     * fires before the picker's click handler can apply the value, so dismissing
+     * here would tear the flyout down before the new date is committed.
+     */
+    function onDocumentMouseUp(e: MouseEvent): void {
+        if (!props.visible) {
+            return;
+        }
+        const target = e.target as Node;
+        if (flyoutEl.value?.contains(target)) {
+            return;
+        }
+        if (props.anchorEl?.contains(target)) {
+            return;
+        }
+        if (target instanceof Element && target.closest(".datepicker")) {
+            return;
+        }
+        close();
+    }
+
+    /** Dismisses on Escape. */
+    function onDocumentKeyDown(e: KeyboardEvent): void {
+        if (e.key === "Escape" && props.visible) {
+            close();
+        }
+    }
+
+    /** Repositions on viewport resize so the flyout stays anchored. */
+    function onWindowResize(): void {
+        if (props.visible) {
+            positionFlyout();
+        }
+    }
+
+    /**
+     * Repositions on scroll so the flyout tracks its anchor button as the
+     * page scrolls. Listener uses capture-phase to catch scroll on any
+     * ancestor scroll container, not just the window.
+     */
+    function onWindowScroll(): void {
+        if (props.visible) {
+            positionFlyout();
+        }
+    }
+
+    /** Cancel button — emits cancel and closes. */
+    function onCancelClick(): void {
+        emit("cancel");
+        close();
+    }
+
+    /**
+     * Called by RockForm when validation passes. Emits save up so the consuming
+     * partial can dispatch its full payload, then closes the flyout. Matches the
+     * fire-and-close pattern of the original modals — the parent block handles
+     * the async block action and refresh after we're gone.
+     */
+    function onFormValid(): void {
+        emit("save");
+        close();
+    }
+
+    /**
+     * Attach listeners only when visible — the card mounts a flyout instance per
+     * card per action; without this we'd pile up document listeners across every
+     * row in the list.
+     */
+    watch(() => props.visible, async (next) => {
+        if (next) {
+            document.addEventListener("mouseup", onDocumentMouseUp);
+            document.addEventListener("keydown", onDocumentKeyDown);
+            window.addEventListener("resize", onWindowResize);
+            window.addEventListener("scroll", onWindowScroll, true);
+            await repositionTwice();
+        }
+        else {
+            document.removeEventListener("mouseup", onDocumentMouseUp);
+            document.removeEventListener("keydown", onDocumentKeyDown);
+            window.removeEventListener("resize", onWindowResize);
+            window.removeEventListener("scroll", onWindowScroll, true);
+            formSubmit.value = false;
+        }
+    });
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("mouseup", onDocumentMouseUp);
+        document.removeEventListener("keydown", onDocumentKeyDown);
+        window.removeEventListener("resize", onWindowResize);
+        window.removeEventListener("scroll", onWindowScroll, true);
+    });
+</script>

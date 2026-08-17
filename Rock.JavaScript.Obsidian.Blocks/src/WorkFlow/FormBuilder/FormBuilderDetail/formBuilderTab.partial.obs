@@ -34,15 +34,50 @@
                               @close="onAsideClose"
                               @validationChanged="onPersonEntryValidationChanged" />
 
+        <HeaderFooterEditAside v-else-if="isFormHeaderActive"
+                               v-model="formHeaderContent"
+                               ref="headerFooterEditAsideComponentInstance"
+                               contentHelpText="Displayed at the top of this form. Supports HTML."
+                               title="Form Header"
+                               iconCssClass="ti ti-layout-navbar"
+                               @close="onAsideClose"
+                               @validationChanged="onHeaderFooterValidationChanged" />
+
+        <HeaderFooterEditAside v-else-if="isFormFooterActive"
+                               v-model="formFooterContent"
+                               ref="headerFooterEditAsideComponentInstance"
+                               contentHelpText="Displayed at the bottom of this form. Supports HTML."
+                               title="Form Footer"
+                               iconCssClass="ti ti-layout-bottombar"
+                               @close="onAsideClose"
+                               @validationChanged="onHeaderFooterValidationChanged" />
+
 
         <div class="form-layout">
             <FormContentZone v-if="templateFormHeaderContent" :modelValue="templateFormHeaderContent" placeholder="" iconCssClass="" />
 
-            <FormContentZone :modelValue="formHeaderContent" :isActive="isFormHeaderActive" @configure="onConfigureFormHeader" placeholder="Form Header" />
+            <FormContentZone class="zone-form-header" :modelValue="formHeaderContent" :isActive="isFormHeaderActive" @configure="onConfigureFormHeader" placeholder="Header" iconCssClass="ti ti-settings" />
 
-            <ConfigurableZone v-if="hasPersonEntry" :modelValue="isPersonEntryActive" :iconCssClass="personEntryZoneIconClass" @configure="onConfigurePersonEntry">
+            <ConfigurableZone v-if="hasPersonEntry"
+                              class="zone-person-entry"
+                              :modelValue="isPersonEntryActive"
+                              :iconCssClass="personEntryZoneIconClass"
+                              @configure="onConfigurePersonEntry">
                 <div class="zone-body">
-                    <div class="text-center text-muted">Person Entry Form</div>
+                    <div class="person-entry-card">
+                        <div class="person-entry-card-header text-muted">
+                            <i class="ti ti-user person-entry-card-icon"></i>
+                            <span class="person-entry-card-title">Person Entry Form</span>
+                        </div>
+                        <div class="person-entry-card-skeleton">
+                            <div class="person-entry-card-skeleton-bar" style="width: 105px;"></div>
+                            <div class="person-entry-card-skeleton-bar" style="width: 167px;"></div>
+                            <div class="person-entry-card-skeleton-bar" style="width: 130px;"></div>
+                            <div class="person-entry-card-skeleton-bar" style="width: 70px;"></div>
+                            <div class="person-entry-card-skeleton-bar" style="width: 130px;"></div>
+                            <div class="person-entry-card-skeleton-bar" style="width: 43px;"></div>
+                        </div>
+                    </div>
                 </div>
             </ConfigurableZone>
 
@@ -61,25 +96,351 @@
                 </SectionZone>
             </div>
 
-            <FormContentZone :modelValue="formFooterContent" :isActive="isFormFooterActive" @configure="onConfigureFormFooter" placeholder="Form Footer" />
+            <FormContentZone class="zone-form-footer" :modelValue="formFooterContent" :isActive="isFormFooterActive" @configure="onConfigureFormFooter" placeholder="Footer" iconCssClass="ti ti-settings" />
 
             <FormContentZone v-if="templateFormFooterContent" :modelValue="templateFormFooterContent" placeholder="" iconCssClass="" />
         </div>
     </div>
-
-    <FormContentModal v-model="formHeaderEditContent" v-model:isVisible="isFormHeaderActive" title="Form Header" @save="onFormHeaderSave" />
-
-    <FormContentModal v-model="formFooterEditContent" v-model:isVisible="isFormFooterActive" title="Form Footer" @save="onFormFooterSave" />
 </template>
+
+<style>
+.form-template-item:active {
+    cursor: grabbing;
+}
+
+.gu-mirror.form-template-item-field {
+    font-size: var(--font-size-xsmall);
+    font-weight: var(--font-weight-regular);
+    padding: var(--spacing-tiny);
+}
+
+.gu-mirror.form-template-item-field > .form-template-icon {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 0 var(--spacing-xsmall);
+}
+
+.gu-mirror.form-template-item-field > .form-template-icon:has(.form-template-range-indicator) {
+    margin-bottom: var(--spacing-tiny);
+}
+
+.gu-mirror.form-template-item-field .icon {
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    font-size: 24px;
+    line-height: 1;
+}
+
+.gu-mirror.form-template-item-field .form-template-range-indicator {
+    margin-top: -4px;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.gu-mirror.form-template-item-field .icon.ti-decimal + .form-template-range-indicator {
+    margin-top: -9px;
+}
+
+.gu-mirror.form-template-item-field .icon.ti-hash + .form-template-range-indicator {
+    margin-top: -6px;
+}
+
+.gu-mirror.form-template-item-field > .text {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    margin: 0;
+    line-height: 1.15;
+}
+
+.gu-mirror.form-template-item-section {
+    gap: var(--spacing-xsmall);
+    padding: var(--spacing-medium);
+    font-size: var(--font-size-xsmall);
+    font-weight: var(--font-weight-regular);
+    color: var(--color-interface-strong);
+}
+</style>
+
+<style scoped>
+.form-builder-grow :deep(.form-sidebar) {
+    order: 2;
+    border-right: 0;
+    border-left: 1px solid var(--color-interface-soft);
+}
+
+.form-builder-grow :deep(.configurable-zone) > .zone-content-container {
+    background: var(--color-interface-softer);
+    border: 1px solid var(--color-interface-soft);
+    border-right: 0;
+}
+
+.form-builder-grow :deep(.configurable-zone) > .zone-actions {
+    background-color: var(--color-interface-softer);
+    border: 1px solid var(--color-interface-soft);
+}
+
+.form-builder-grow :deep(.configurable-zone.zone-form-header > .zone-content-container),
+.form-builder-grow :deep(.configurable-zone.zone-person-entry > .zone-content-container),
+.form-builder-grow :deep(.configurable-zone.zone-form-footer > .zone-content-container),
+.form-builder-grow :deep(.configurable-zone.zone-section.zone-section-empty > .zone-content-container) {
+    border-style: dashed;
+}
+
+.form-builder-grow :deep(.configurable-zone.active > .zone-content-container) {
+    border-style: solid;
+}
+
+.form-builder-grow :deep(.form-section .configurable-zone) > .zone-content-container {
+    background: var(--color-interface-softest);
+    border: 1px dashed var(--color-interface-soft);
+    border-radius: var(--rounded-small);
+}
+
+.form-builder-grow :deep(.form-section .configurable-zone) > .zone-actions {
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-left: 0;
+}
+
+.form-builder-grow :deep(.form-section .configurable-zone) > .zone-actions .zone-action {
+    color: var(--color-info-strong);
+}
+
+.form-builder-grow :deep(.form-section .configurable-zone) > .zone-actions .zone-action.zone-action-delete:hover {
+    color: var(--color-danger);
+}
+
+.form-builder-grow :deep(.form-section .configurable-zone:hover) > .zone-content-container {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: 1px solid transparent;
+}
+
+.form-builder-grow :deep(.zone-person-entry) > .zone-content-container > .zone-content > .zone-body {
+    min-height: 140px;
+    padding: var(--spacing-large);
+}
+
+.person-entry-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-small);
+    padding: var(--spacing-medium) 0;
+}
+
+.person-entry-card-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-tiny);
+}
+
+.person-entry-card-icon {
+    font-size: 1rem;
+}
+
+.person-entry-card-title {
+    font-size: var(--font-size-regular);
+}
+
+.person-entry-card-skeleton {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-tiny);
+}
+
+.person-entry-card-skeleton-bar {
+    height: 8px;
+    background-color: var(--color-interface-soft);
+}
+
+.form-builder-grow :deep(.configurable-zone.zone-section.zone-section-empty) {
+    display: flex;
+    min-height: 140px;
+}
+
+.form-builder-grow :deep(.zone-section-empty > .zone-content-container),
+.form-builder-grow :deep(.zone-section-empty > .zone-content-container > .zone-content),
+.form-builder-grow :deep(.zone-section-empty .zone-body) {
+    display: flex;
+    flex: 1 1 auto;
+}
+
+.form-builder-grow :deep(.zone-section-empty .form-section) {
+    align-content: center;
+    align-items: center;
+}
+
+.form-builder-grow.gu-unselectable :deep(.form-section .configurable-zone) {
+    pointer-events: none;
+}
+
+.form-builder-grow :deep(.zone-section-empty.highlight .form-section-empty-placeholder) {
+    display: none;
+}
+
+.form-builder-grow :deep(.zone-section-empty.highlight .form-section) {
+    align-content: flex-start;
+    align-items: flex-start;
+}
+
+.form-builder-grow :deep(.configurable-zone.zone-section.highlight) > .zone-content-container {
+    border-color: var(--color-info-strong);
+    border-style: dashed;
+}
+
+.form-builder-grow :deep(.form-section .form-template-item) {
+    flex-direction: column;
+    justify-content: center;
+    min-height: 88px;
+    color: var(--color-info-strong);
+    background-color: var(--color-info-soft);
+    border: 0;
+    box-shadow: none;
+    cursor: grabbing;
+    font-size: var(--font-size-xsmall);
+}
+
+.form-builder-grow :deep(.form-section .form-template-item.form-template-item-field) {
+    margin-bottom: var(--spacing-medium);
+}
+
+.form-builder-grow :deep(.form-layout-body > .form-template-item.form-template-item-section) {
+    margin-bottom: var(--spacing-large);
+}
+
+.form-builder-grow :deep(.form-section .form-template-item) > .form-template-icon {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 0 var(--spacing-xsmall);
+}
+
+.form-builder-grow :deep(.form-section .form-template-item) > .form-template-icon:has(.form-template-range-indicator) {
+    margin-bottom: var(--spacing-tiny);
+}
+
+.form-builder-grow :deep(.form-section .form-template-item) .icon {
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    font-size: 24px;
+    line-height: 1;
+}
+
+.form-builder-grow :deep(.form-section .form-template-item) .form-template-range-indicator {
+    margin-top: -4px;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.form-builder-grow :deep(.form-section .form-template-item) .icon.ti-decimal + .form-template-range-indicator {
+    margin-top: -9px;
+}
+
+.form-builder-grow :deep(.form-section .form-template-item) .icon.ti-hash + .form-template-range-indicator {
+    margin-top: -6px;
+}
+
+.form-builder-grow :deep(.form-section .form-template-item) > .text {
+    margin: 0;
+    line-height: 1.15;
+}
+
+.form-builder-grow :deep(.form-section .form-template-item:hover),
+.form-builder-grow :deep(.form-layout-body > .form-template-item-section:hover) {
+    transform: none;
+}
+
+.form-builder-grow :deep(.form-layout-body > .form-template-item.form-template-item-section) {
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    gap: var(--spacing-tiny);
+    min-height: 88px;
+    padding: var(--spacing-medium);
+    color: var(--color-info-strong);
+    background-color: var(--color-info-soft);
+    border: 0;
+    box-shadow: none;
+    text-align: center;
+    font-size: var(--font-size-xsmall);
+}
+
+.form-builder-grow :deep(.form-layout-body > .form-template-item-section) > .form-template-section-preview {
+    background-color: var(--color-info-strong);
+}
+
+.form-builder-grow :deep(.configurable-zone.zone-section:not(.active):hover) > .zone-actions .zone-action:not(:hover),
+.form-builder-grow :deep(.configurable-zone.zone-form-header:not(.active):hover) > .zone-actions .zone-action:not(:hover),
+.form-builder-grow :deep(.configurable-zone.zone-person-entry:not(.active):hover) > .zone-actions .zone-action:not(:hover),
+.form-builder-grow :deep(.configurable-zone.zone-form-footer:not(.active):hover) > .zone-actions .zone-action:not(:hover) {
+    color: var(--color-interface-strong);
+}
+
+.form-builder-grow :deep(.zone-action) {
+    --color-danger: var(--color-danger-strong);
+}
+
+.form-builder-grow :deep(.configurable-zone.zone-section.active) > .zone-content-container {
+    border-color: var(--color-info-strong);
+    border-style: solid;
+}
+
+.form-builder-grow :deep(.configurable-zone.zone-section.active) > .zone-actions {
+    background-color: var(--color-info-soft);
+    border-color: var(--color-info-strong);
+}
+
+.form-builder-grow :deep(.configurable-zone.zone-section.active) > .zone-actions .zone-action {
+    color: var(--color-info-strong);
+}
+
+.form-builder-grow :deep(.form-section .configurable-zone:hover) > .zone-actions {
+    background-color: var(--color-info-soft);
+    border: 1px solid transparent;
+    border-left: 0;
+}
+
+.form-builder-grow :deep(.form-section .configurable-zone:not(.active):hover) > .zone-actions .zone-action:not(.zone-action-delete) {
+    color: var(--color-info-strong);
+}
+
+.form-builder-grow :deep(.form-section .configurable-zone:not(.active)) > .zone-actions:hover .zone-action:not(.zone-action-delete) {
+    color: var(--color-info-shade);
+}
+
+.form-builder-grow :deep(.form-section .configurable-zone.active) > .zone-content-container {
+    border: 1px solid var(--color-info-strong);
+    border-radius: var(--rounded-small) 0 0 var(--rounded-small);
+}
+
+.form-builder-grow :deep(.form-section .configurable-zone.active) > .zone-actions {
+    background-color: var(--color-info-soft);
+    border: 1px solid var(--color-info-strong);
+    border-left: 0;
+    opacity: 1;
+    transform: scaleX(1);
+}
+
+.form-builder-grow :deep(.form-section .configurable-zone.active) > .zone-actions .zone-action:not(.zone-action-delete) {
+    color: var(--color-info-strong);
+}
+</style>
 
 <script setup lang="ts">
     import { Guid } from "@Obsidian/Types";
     import { computed, reactive, Ref, ref, shallowRef, watch } from "vue";
     import ConfigurableZone from "./configurableZone.partial.obs";
     import FieldEditAside from "./fieldEditAside.partial.obs";
-    import FormContentModal from "./formContentModal.partial.obs";
     import FormContentZone from "./formContentZone.partial.obs";
     import GeneralAside from "./generalAside.partial.obs";
+    import HeaderFooterEditAside from "./headerFooterEditAside.partial.obs";
     import PersonEntryEditAside from "./personEntryEditAside.partial.obs";
     import SectionEditAside from "./sectionEditAside.partial.obs";
     import SectionZone from "./sectionZone.partial.obs";
@@ -260,7 +621,7 @@
         return {
             id: newGuid(),
             copyElement: false,
-            handleSelector: ".zone-section > .zone-actions > .zone-action-move > .fa",
+            handleSelector: ".zone-section > .zone-actions > .zone-action-move",
             dragDrop(operation) {
                 if (operation.targetIndex !== undefined) {
                     const section = sections[operation.sourceIndex];
@@ -317,12 +678,6 @@
     /** The footer HTML content that will appear below the form. */
     const formFooterContent = ref(props.modelValue.footerContent ?? "");
 
-    /** The header HTML content while it is being edited in the modal. */
-    const formHeaderEditContent = ref("");
-
-    /** The footer HTML content while it is being edited in the modal. */
-    const formFooterEditContent = ref("");
-
     /** All the field types that are available for use when designing a form. */
     const availableFieldTypes = ref(sources.fieldTypes ?? []);
 
@@ -362,6 +717,9 @@
     /** The component instance that is displaying the person entry editor. */
     const personEntryEditAsideComponentInstance = ref<IAsideProvider | null>(null);
 
+    /** The component instance that is displaying the form header / footer editor. */
+    const headerFooterEditAsideComponentInstance = ref<IAsideProvider | null>(null);
+
     /** The identifier of the zone currently being edited. */
     const activeZone = ref("");
 
@@ -374,7 +732,10 @@
 
     /** The current aside being displayed. */
     const activeAside = computed((): IAsideProvider | null => {
-        if (showGeneralAside.value) {
+        if (isFormHeaderActive.value || isFormFooterActive.value) {
+            return headerFooterEditAsideComponentInstance.value;
+        }
+        else if (showGeneralAside.value) {
             return generalAsideComponentInstance.value;
         }
         else if (personEntryAsideComponentInstance.value) {
@@ -396,7 +757,8 @@
 
     /** True if the general aside should be currently displayed. */
     const showGeneralAside = computed((): boolean => {
-        return !showFieldAside.value && !showSectionAside.value && !showPersonEntryAside.value;
+        return !showFieldAside.value && !showSectionAside.value && !showPersonEntryAside.value
+            && !isFormHeaderActive.value && !isFormFooterActive.value;
     });
 
     /** True if the field editor aside should be currently displayed. */
@@ -421,29 +783,11 @@
         return generalAsideSettings.value.hasPersonEntry ?? false;
     });
 
-    /** True if the form header model should be open. */
-    const isFormHeaderActive = computed({
-        get: (): boolean => {
-            return activeZone.value === formHeaderZoneGuid;
-        },
-        set(value: boolean) {
-            if (!value && activeZone.value === formHeaderZoneGuid) {
-                closeAside();
-            }
-        }
-    });
+    /** True if the form header content editor sidebar is open. */
+    const isFormHeaderActive = computed((): boolean => activeZone.value === formHeaderZoneGuid);
 
-    /** True if the form header model should be open. */
-    const isFormFooterActive = computed({
-        get: (): boolean => {
-            return activeZone.value === formFooterZoneGuid;
-        },
-        set(value: boolean) {
-            if (!value && activeZone.value === formFooterZoneGuid) {
-                closeAside();
-            }
-        }
-    });
+    /** True if the form footer content editor sidebar is open. */
+    const isFormFooterActive = computed((): boolean => activeZone.value === formFooterZoneGuid);
 
     /** True if the person entry zone is currently active. */
     const isPersonEntryActive = computed((): boolean => activeZone.value === personEntryZoneGuid);
@@ -522,6 +866,7 @@
 
     /**
      * Event handler for when the form header section wants to configure itself.
+     * Opens the Header/Footer editor in the sidebar (modal pathway retired).
      */
     function onConfigureFormHeader(): void {
         if (!canCloseAside()) {
@@ -530,12 +875,12 @@
 
         closeAside();
 
-        formHeaderEditContent.value = formHeaderContent.value;
         activeZone.value = formHeaderZoneGuid;
     }
 
     /**
      * Event handler for when the form footer section wants to configure itself.
+     * Opens the Header/Footer editor in the sidebar (modal pathway retired).
      */
     function onConfigureFormFooter(): void {
         if (!canCloseAside()) {
@@ -544,7 +889,6 @@
 
         closeAside();
 
-        formFooterEditContent.value = formFooterContent.value;
         activeZone.value = formFooterZoneGuid;
     }
 
@@ -622,8 +966,7 @@
     }
 
     /**
-     * Event handler for when the field edit aside has updated the field
-     * values or configuration.
+     * Event handler for when the field edit aside has updated the field values or configuration.
      *
      * @param value The new form field details.
      */
@@ -692,8 +1035,7 @@
     }
 
     /**
-     * Event handler for when a section's settings have been updated in the
-     * aside.
+     * Event handler for when a section's settings have been updated in the aside.
      *
      * @param value The new section settings.
      */
@@ -745,8 +1087,7 @@
     }
 
     /**
-     * Event handler for when the person entry settings have been updated
-     * in the aside.
+     * Event handler for when the person entry settings have been updated in the aside.
      *
      * @param value The new person entry settings.
      */
@@ -755,21 +1096,14 @@
     }
 
     /**
-     * Event handler for when the form header content is saved.
+     * Event handler for when the validation state of the header/footer aside has changed.
+     *
+     * @param errors Any errors that were detected on the form.
      */
-    function onFormHeaderSave(): void {
-        formHeaderContent.value = formHeaderEditContent.value;
-
-        closeAside();
-    }
-
-    /**
-     * Event handler for when the form footer content is saved.
-     */
-    function onFormFooterSave(): void {
-        formFooterContent.value = formFooterEditContent.value;
-
-        closeAside();
+    function onHeaderFooterValidationChanged(errors: FormError[]): void {
+        if (isFormHeaderActive.value || isFormFooterActive.value) {
+            emit("validationChanged", errors);
+        }
     }
 
     /**
@@ -808,11 +1142,89 @@
     // #endregion
 
     // Wait for the body element to load and then update the drag options.
+    let mirrorObserver: MutationObserver | undefined;
     watch(bodyElement, () => {
         sectionDragSourceOptions.mirrorContainer = bodyElement.value ?? undefined;
         sectionReorderDragSourceOptions.mirrorContainer = bodyElement.value ?? undefined;
         fieldDragSourceOptions.mirrorContainer = bodyElement.value ?? undefined;
         fieldReorderDragSourceOptions.mirrorContainer = bodyElement.value ?? undefined;
+
+        // Observe the mirror container so we can apply the in-flight tile
+        // styling (tilt, shadow, grab cursor) directly as inline styles
+        // when the drag library appends its clone. Inline styles beat the
+        // base `.form-template-item:hover { transform: scale(1.02); }`
+        // rule which would otherwise cancel the rotation while the cursor
+        // hovers the mirror during drag. The two-step transform assignment
+        // (translate first, rotate on the next tick) triggers the CSS
+        // transition so the pickup feels smooth instead of snapping. The
+        // grabbing cursor is set on the document body for the duration of
+        // the drag (the mirror itself uses `pointer-events: none`, so
+        // setting cursor on it has no effect — the browser uses the
+        // element underneath the pointer instead).
+        mirrorObserver?.disconnect();
+        if (bodyElement.value) {
+            let previousBodyCursor: string | undefined;
+            mirrorObserver = new MutationObserver((mutations) => {
+                for (const mutation of mutations) {
+                    for (const node of Array.from(mutation.addedNodes)) {
+                        if (!(node instanceof HTMLElement)) {
+                            continue;
+                        }
+                        if (!node.classList.contains("gu-mirror")) {
+                            continue;
+                        }
+                        if (!node.classList.contains("form-template-item")) {
+                            continue;
+                        }
+
+                        node.style.setProperty("opacity", "1", "important");
+                        node.style.setProperty("border", "0", "important");
+                        node.style.setProperty("box-shadow", "0 8px 16px rgba(0, 0, 0, 0.18)", "important");
+                        node.style.setProperty("pointer-events", "none");
+                        node.style.setProperty("transition", "transform 120ms ease-out", "important");
+                        node.style.setProperty("transform", "rotate(0deg)", "important");
+
+                        // Match the sidebar tile's vertical layout (icon
+                        // above label, centered) — the mirror's default
+                        // `.form-template-item` rule lays the content out
+                        // horizontally because the column-direction grid
+                        // styling lives in the sidebar's scoped CSS, which
+                        // doesn't reach the mirror once it's reparented.
+                        node.style.setProperty("flex-direction", "column", "important");
+                        node.style.setProperty("justify-content", "center", "important");
+                        node.style.setProperty("text-align", "center", "important");
+
+                        // Defer the rotated transform so the transition has
+                        // a "from" value to interpolate from.
+                        setTimeout(() => {
+                            node.style.setProperty("transform", "rotate(-8.8deg)", "important");
+                        }, 0);
+
+                        // Switch the body cursor to grabbing for the
+                        // duration of the drag.
+                        previousBodyCursor = document.body.style.cursor;
+                        document.body.style.cursor = "grabbing";
+                    }
+
+                    for (const node of Array.from(mutation.removedNodes)) {
+                        if (!(node instanceof HTMLElement)) {
+                            continue;
+                        }
+                        if (!node.classList.contains("gu-mirror")) {
+                            continue;
+                        }
+
+                        // Restore the original body cursor when the mirror
+                        // is torn down at the end of the drag.
+                        if (previousBodyCursor !== undefined) {
+                            document.body.style.cursor = previousBodyCursor;
+                            previousBodyCursor = undefined;
+                        }
+                    }
+                }
+            });
+            mirrorObserver.observe(bodyElement.value, { childList: true });
+        }
     });
 
     // Watch for changes in the template override person entry setting. If

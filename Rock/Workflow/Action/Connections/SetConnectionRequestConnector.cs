@@ -35,11 +35,21 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Connection Request Set Connector" )]
 
-    [WorkflowAttribute( "Connection Request Attribute", "The attribute that contains the connection request needing a connector.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.ConnectionRequestFieldType" } )]
-    [WorkflowAttribute( "Person Attribute", "The Person attribute that contains the person who is will be the connector.", true, "", "", 1, null,
-        new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [BooleanField( "Ignore If Connector Exists", "If the connection request already has a connector set, this action will not change the connector.", true, "", 2, "Ignore" )]
+    [WorkflowAttribute( "Connection Request Attribute",
+        Description = "The attribute that contains the connection request needing a connector.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.ConnectionRequestFieldType" } )]
+    [WorkflowAttribute( "Person Attribute",
+        Description = "The Person attribute that contains the person who is will be the connector.",
+        IsRequired = true,
+        Order = 1,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [BooleanField( "Ignore If Connector Exists",
+        Description = "If the connection request already has a connector set, this action will not change the connector.",
+        DefaultBooleanValue = true,
+        Order = 2,
+        Key = "Ignore" )]
 
     [Rock.SystemGuid.EntityTypeGuid( "47A50700-93CC-4B30-9A44-B16C2D31762F")]
     public class SetConnectionRequestConnector : ActionComponent

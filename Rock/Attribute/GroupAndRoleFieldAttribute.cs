@@ -36,10 +36,41 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public GroupAndRoleFieldAttribute( string name = "", string description = "", string groupAndRolePickerLabel = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.GroupAndRoleFieldType ).FullName )
+            : base( SystemGuid.FieldType.GROUP_AND_ROLE.AsGuid(), name )
         {
-            FieldConfigurationValues.Add( Rock.Field.Types.GroupAndRoleFieldType.CONFIG_GROUP_AND_ROLE_PICKER_LABEL, new Field.ConfigurationValue( groupAndRolePickerLabel ) );
+            Category = category;
+            DefaultValue = defaultValue;
+            Description = description;
+            GroupAndRolePickerLabel = groupAndRolePickerLabel;
+            IsRequired = required;
+            Order = order;
+
+            if ( key.IsNotNullOrWhiteSpace() )
+            {
+                Key = key;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupAndRoleFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public GroupAndRoleFieldAttribute( string name )
+            : base( SystemGuid.FieldType.GROUP_AND_ROLE.AsGuid(), name )
+        {
+            GroupAndRolePickerLabel = string.Empty;
+        }
+
+        /// <summary>
+        /// The label for the group/role picker label.
+        /// </summary>
+        public string GroupAndRolePickerLabel
+        {
+            get => FieldConfigurationValues.GetValueOrNull( "groupAndRolePickerLabel" );
+            set => FieldConfigurationValues.AddOrReplace( "groupAndRolePickerLabel", new Field.ConfigurationValue( value ) );
         }
     }
 }

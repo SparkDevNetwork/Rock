@@ -50,151 +50,151 @@ namespace RockWeb.Blocks.CheckIn
     [Description( "Shows a graph of attendance statistics which can be configured for specific groups, date range, etc." )]
 
     [GroupTypesField(
-        name: "Group Types",
-        description: "Optional List of specific group types that should be included. If none are selected, an option to select an attendance type will be displayed and all of that attendance area's areas will be available.",
-        required: false,
-        defaultGroupTypeGuids: "",
-        category: "",
-        order: 0,
-        key: AttributeKeys.GroupTypes )]
+        "Group Types",
+        Description = "Optional List of specific group types that should be included. If none are selected, an option to select an attendance type will be displayed and all of that attendance area's areas will be available.",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "",
+        Order = 0,
+        Key = AttributeKeys.GroupTypes )]
 
     [BooleanField(
-        name: "Include Inactive Campuses",
-        description: "Should campus filter include inactive campuses?",
-        defaultValue: false,
-        category: "",
-        order: 1,
-        key: AttributeKeys.IncludeInactiveCampuses )]
+        "Include Inactive Campuses",
+        Description = "Should campus filter include inactive campuses?",
+        DefaultBooleanValue = false,
+        Category = "",
+        Order = 1,
+        Key = AttributeKeys.IncludeInactiveCampuses )]
 
     [BooleanField(
-        name: "Show All Groups",
-        description: "Should all of the available groups be listed individually with checkboxes? If not, a group dropdown will be used instead for selecting the desired groups",
-        defaultValue: true,
-        category: "",
-        order: 2,
-        key: AttributeKeys.ShowAllGroups )]
+        "Show All Groups",
+        Description = "Should all of the available groups be listed individually with checkboxes? If not, a group dropdown will be used instead for selecting the desired groups",
+        DefaultBooleanValue = true,
+        Category = "",
+        Order = 2,
+        Key = AttributeKeys.ShowAllGroups )]
 
     [BooleanField(
-        name: "Show Group Ancestry",
-        description: "By default the group ancestry path is shown.  Unselect this to show only the group name.",
-        defaultValue: true,
-        category: "",
-        order: 3,
-        key: AttributeKeys.ShowGroupAncestry )]
+        "Show Group Ancestry",
+        Description = "By default the group ancestry path is shown.  Unselect this to show only the group name.",
+        DefaultBooleanValue = true,
+        Category = "",
+        Order = 3,
+        Key = AttributeKeys.ShowGroupAncestry )]
 
     [LinkedPage(
-        name: "Detail Page",
-        description: "Select the page to navigate to when the chart is clicked",
-        required: false,
-        defaultValue: "",
-        category: "",
-        order: 4,
-        key: AttributeKeys.DetailPage )]
+        "Detail Page",
+        Description = "Select the page to navigate to when the chart is clicked",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "",
+        Order = 4,
+        Key = AttributeKeys.DetailPage )]
 
     [LinkedPage(
-        name: "Check-in Detail Page",
-        description: "Page that shows the user details for the check-in data.",
-        required: false,
-        defaultValue: "",
-        category: "",
-        order: 5,
-        key: AttributeKeys.CheckinDetailPage )]
+        "Check-in Detail Page",
+        Description = "Page that shows the user details for the check-in data.",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "",
+        Order = 5,
+        Key = AttributeKeys.CheckinDetailPage )]
 
     [DefinedValueField(
-        definedTypeGuid: Rock.SystemGuid.DefinedType.CHART_STYLES,
-        name: "Chart Style",
-        description: "",
-        required: true,
-        allowMultiple: false,
-        defaultValue: Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK,
-        category: "",
-        order: 6,
-        key: AttributeKeys.ChartStyle )]
+        "Chart Style",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CHART_STYLES,
+        Description = "",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK,
+        Category = "",
+        Order = 6,
+        Key = AttributeKeys.ChartStyle )]
 
     [CategoryField(
-        name: "Data View Category(s)",
-        description: "The optional data view categories that should be included as an option to filter attendance for. If a category is not selected, all data views will be included.",
-        allowMultiple: true,
-        entityTypeName: "Rock.Model.DataView",
-        entityTypeQualifierColumn: "",
-        entityTypeQualifierValue: "",
-        required: false,
-        defaultValue: "",
-        category: "",
-        order: 7,
-        key: AttributeKeys.DataViewCategories )]
+        "Data View Category(s)",
+        Description = "The optional data view categories that should be included as an option to filter attendance for. If a category is not selected, all data views will be included.",
+        AllowMultiple = true,
+        EntityTypeName = "Rock.Model.DataView",
+        EntityTypeQualifierColumn = "",
+        EntityTypeQualifierValue = "",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "",
+        Order = 7,
+        Key = AttributeKeys.DataViewCategories )]
 
     [BooleanField(
-        name: "Group Specific",
-        description: "Should this block display attendance only for the selected group?",
-        defaultValue: false,
-        category: "",
-        order: 8,
-        key: AttributeKeys.GroupSpecific )]
+        "Group Specific",
+        Description = "Should this block display attendance only for the selected group?",
+        DefaultBooleanValue = false,
+        Category = "",
+        Order = 8,
+        Key = AttributeKeys.GroupSpecific )]
 
     [BooleanField(
-        name: "Show Schedule Filter",
-        description: "Should the Schedules filter be displayed",
-        defaultValue: true,
-        category: "",
-        order: 9,
-        key: AttributeKeys.ShowScheduleFilter )]
+        "Show Schedule Filter",
+        Description = "Should the Schedules filter be displayed",
+        DefaultBooleanValue = true,
+        Category = "",
+        Order = 9,
+        Key = AttributeKeys.ShowScheduleFilter )]
 
-    [BooleanField( name: "Show Campus Filter",
-        description: "Should the Campus filter be displayed?",
-        defaultValue: true,
-        category: "",
-        order: 10,
-        key: AttributeKeys.ShowCampusFilter )]
+    [BooleanField( "Show Campus Filter",
+        Description = "Should the Campus filter be displayed?",
+        DefaultBooleanValue = true,
+        Category = "",
+        Order = 10,
+        Key = AttributeKeys.ShowCampusFilter )]
 
-    [DefinedValueField( name: "Campus Types",
-        description: "This setting filters the list of campuses by type that are displayed in the campus drop-down.",
-        definedTypeGuid: Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
-        required: false,
-        allowMultiple: true,
-        order: 11,
-        key: AttributeKeys.CampusTypes )]
+    [DefinedValueField( "Campus Types",
+        Description = "This setting filters the list of campuses by type that are displayed in the campus drop-down.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        IsRequired = false,
+        AllowMultiple = true,
+        Order = 11,
+        Key = AttributeKeys.CampusTypes )]
 
     [DefinedValueField(
-        name: "Campus Statuses",
-        description: "This setting filters the list of campuses by statuses that are displayed in the campus drop-down.",
-        definedTypeGuid: Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
-        required: false,
-        allowMultiple: true,
-        order: 12,
-        key: AttributeKeys.CampusStatuses )]
+        "Campus Statuses",
+        Description = "This setting filters the list of campuses by statuses that are displayed in the campus drop-down.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
+        IsRequired = false,
+        AllowMultiple = true,
+        Order = 12,
+        Key = AttributeKeys.CampusStatuses )]
 
-    [BooleanField( name: "Show View By Option",
-        description: "Should the option to view 'Attendees' vs 'Parents of Attendees' vs 'Children of Attendees' be displayed when viewing the grid? If not displayed, the grid will always show attendees.",
-        defaultValue: true,
-        category: "",
-        order: 13,
-        key: AttributeKeys.ShowViewByOption )]
+    [BooleanField( "Show View By Option",
+        Description = "Should the option to view 'Attendees' vs 'Parents of Attendees' vs 'Children of Attendees' be displayed when viewing the grid? If not displayed, the grid will always show attendees.",
+        DefaultBooleanValue = true,
+        Category = "",
+        Order = 13,
+        Key = AttributeKeys.ShowViewByOption )]
 
     [BooleanField(
-        name: "Show Bulk Update Option",
-        description: "Should the Bulk Update option be allowed from the attendance grid?",
-        defaultValue: true,
-        category: "",
-        order: 14,
-        key: AttributeKeys.ShowBulkUpdateOption )]
+        "Show Bulk Update Option",
+        Description = "Should the Bulk Update option be allowed from the attendance grid?",
+        DefaultBooleanValue = true,
+        Category = "",
+        Order = 14,
+        Key = AttributeKeys.ShowBulkUpdateOption )]
 
     [CustomDropdownListField(
-        name: "Filter Column Direction",
-        description: "Choose the direction for the checkboxes for filter selections.",
-        listSource: "vertical^Vertical,horizontal^Horizontal",
-        required: true,
-        defaultValue: "vertical",
-        order: 15,
-        key: AttributeKeys.FilterColumnDirection )]
+        "Filter Column Direction",
+        Description = "Choose the direction for the checkboxes for filter selections.",
+        ListSource = "vertical^Vertical,horizontal^Horizontal",
+        IsRequired = true,
+        DefaultValue = "vertical",
+        Order = 15,
+        Key = AttributeKeys.FilterColumnDirection )]
 
     [IntegerField(
-        name: "Filter Column Count",
-        description: "The number of check boxes for each row.",
-        required: false,
-        defaultValue: 1,
-        order: 16,
-        key: AttributeKeys.FilterColumnCount )]
+        "Filter Column Count",
+        Description = "The number of check boxes for each row.",
+        IsRequired = false,
+        DefaultIntegerValue = 1,
+        Order = 16,
+        Key = AttributeKeys.FilterColumnCount )]
 
     [IntegerField(
         "Database Timeout",
@@ -268,7 +268,7 @@ namespace RockWeb.Blocks.CheckIn
             _isGroupSpecific = GetAttributeValue( AttributeKeys.GroupSpecific ).AsBoolean();
             if ( _isGroupSpecific )
             {
-                int? groupId = PageParameter( "GroupId" ).AsIntegerOrNull();
+                int? groupId = PageParameter( "GroupId" ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( "GroupId" ) );
                 if ( groupId.HasValue )
                 {
                     _specificGroup = new GroupService( rockContextAnalytics ).Get( groupId.Value );

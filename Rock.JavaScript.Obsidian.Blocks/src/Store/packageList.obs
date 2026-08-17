@@ -1,0 +1,90 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="storeErrorMessage" class="alert alert-warning">
+        <h4>Store Currently Not Available</h4>
+        <p>We're sorry, the Rock Store is currently not available. Check back soon!</p>
+        <small><em>{{ storeErrorMessage }}</em></small>
+    </div>
+
+    <div v-else class="panel panel-block">
+        <div class="panel-body">
+            <div class="row d-flex flex-wrap">
+                <div v-for="storePackage in packages"
+                     :key="storePackage.packageId"
+                     class="col-lg-3 col-sm-4 col-xs-6 mb-4">
+                    <div class="packagesummary">
+                        <div class="packagesummary-image">
+                            <img class="img-responsive"
+                                 :src="storePackage.iconUrl ?? ''"
+                                 width="280"
+                                 height="140" />
+                        </div>
+
+                        <div class="packagesummary-body">
+                            <a :href="storePackage.detailPageUrl ?? ''" class="stretched-link">
+                                <h2>{{ storePackage.name }}</h2>
+                            </a>
+                            <p class="vendor text-sm text-muted">{{ storePackage.vendor }}</p>
+                        </div>
+
+                        <div class="packagesummary-footer">
+                            <div class="rating text-warning">
+                                <i v-for="(cssClass, i) in getRatingStars(storePackage.rating)"
+                                   :key="i"
+                                   :class="cssClass"></i>
+                            </div>
+                            <div class="cost text-color text-sm">
+                                <template v-if="storePackage.isFree">Free</template>
+                                <template v-else-if="storePackage.price != null">${{ storePackage.price }}</template>
+                                <template v-else>Paid</template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { PackageListInitializationBox } from "@Obsidian/ViewModels/Blocks/Store/PackageList/packageListInitializationBox";
+    import { PackageListItemBag } from "@Obsidian/ViewModels/Blocks/Store/PackageList/packageListItemBag";
+
+    // #region Values
+
+    const config = useConfigurationValues<PackageListInitializationBox>();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const storeErrorMessage = computed((): string => config.storeErrorMessage ?? "");
+
+    const packages = computed((): PackageListItemBag[] => config.packages ?? []);
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Returns an array of Tabler icon CSS classes for a 5-star rating display.
+     * Matches the behavior of the RatingMarkup Lava filter (integer truncation,
+     * filled vs empty only — no half stars).
+     */
+    function getRatingStars(rating: number | null | undefined): string[] {
+        const filled = Math.floor(rating ?? 0);
+        const stars: string[] = [];
+
+        for (let i = 0; i < 5; i++) {
+            stars.push(i < filled ? "ti ti-star-filled" : "ti ti-star");
+        }
+
+        return stars;
+    }
+
+    // #endregion Functions
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

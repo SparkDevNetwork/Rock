@@ -173,6 +173,18 @@ namespace Rock
                 var attr = (LavaTypeAttribute)entityType.GetCustomAttributes( typeof( LavaTypeAttribute ), false ).First();
                 foreach ( string propName in attr.AllowedMembers )
                 {
+                    // See the matching skip in the ILavaDataDictionary branch below and issue #6947.
+                    // Person does not currently use [LavaType], but keep this branch consistent so a
+                    // future change to Person (or a subclass) can't reintroduce silent token creation.
+                    if ( myObject is Person
+                         && ( propName == nameof( Person.ImpersonationParameter )
+                              || propName == nameof( Person.EncryptedKey )
+                              || propName == nameof( Person.UrlEncodedKey ) ) )
+                    {
+                        result.TryAdd( propName, "(value hidden in debug output)" );
+                        continue;
+                    }
+
                     var propInfo = entityType.GetProperty( propName );
                     {
                         if ( propInfo != null )
@@ -205,6 +217,31 @@ namespace Rock
                     if ( key == "Person" && parentElement.Contains( ".PrimaryAlias" ) )
                     {
                         result.TryAdd( key, string.Empty );
+                    }
+                    /*
+                        8/4/2026 - NA
+
+                        We are hard-coding these three property names below rather than
+                        introducing a general marker (for example, a new [LavaHasSideEffect]
+                        attribute in Rock.Lava that the debug walker might honor generically).
+                        If additional side-effect-having [LavaVisible] properties appear over
+                        time, revisit this and consider promoting the check to an attribute-based
+                        mechanism so the walker does not need to know about specific model types.
+                    */
+
+                    // Skip Person properties whose getters have database side effects.
+                    // ImpersonationParameter, EncryptedKey, and UrlEncodedKey each mint a new
+                    // PersonToken (a 30-day, unlimited-use impersonation credential) when read.
+                    // The debug walker recurses through navigation properties, so evaluating
+                    // these getters would silently create tokens for unrelated people the
+                    // walker happens to reach (for example, Campus.LeaderPersonAlias.Person).
+                    // See issue #6947.
+                    else if ( myObject is Person
+                              && ( key == nameof( Person.ImpersonationParameter )
+                                   || key == nameof( Person.EncryptedKey )
+                                   || key == nameof( Person.UrlEncodedKey ) ) )
+                    {
+                        result.TryAdd( key, "(value hidden in debug output)" );
                     }
                     else
                     {
@@ -642,9 +679,8 @@ namespace Rock
                 enabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" );
             }
 
-            var context = LavaService.NewRenderContext( mergeObjects );
-
-            context.SetEnabledCommands( enabledLavaCommands, "," );
+            var enabledCommands = enabledLavaCommands.SplitDelimitedValues( "," );
+            var context = LavaService.NewRenderContext( mergeObjects, enabledCommands );
 
             if ( currentPersonOverride != null )
             {
@@ -718,30 +754,6 @@ namespace Rock
         /// Compiled RegEx for finding Lava tokens that produce unique output or side effects.
         /// </summary>
         private static Regex _nonIdempotentLavaTokens = new Regex( @"{%[^\S\r\n]*((webrequest|workflowactivate)[^\S\r\n]+|(.+\|[^\S\r\n]*PersonTokenCreate)).*%}", RegexOptions.Compiled );
-
-        /// <summary>
-        /// Determines whether the string potentially has lava merge fields in it.
-        /// NOTE: Might return true even though it doesn't really have merge fields, but something like looks like it. For example '{56408602-5E41-4D66-98C7-BD361CD93AED}'
-        /// </summary>
-        /// <param name="content">The content.</param>
-        /// <returns></returns>
-        [Obsolete("Use the LavaHelper.IsLavaTemplate method instead.")]
-        [RockObsolete("1.13.3")]
-        public static bool HasMergeFields( this string content )
-        {
-            if ( content == null )
-            {
-                return false;
-            }
-
-            // If there are no lava codes, return false
-            if ( !hasLavaMergeFields.IsMatch( content ) )
-            {
-                return false;
-            }
-
-            return true;
-        }
 
         /// <summary>
         /// Determines whether the string potentially has lava command {% %} fields in it.

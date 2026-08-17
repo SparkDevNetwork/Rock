@@ -4,16 +4,16 @@
         <template #title>
             <i :class="panelIconCssClass"></i>
             <span>{{ panelTitle }}</span>
-            <HighlightLabel labelType="info" v-model="assessmentDate" />
+            <HighlightLabel v-if="assessmentDate" labelType="info">Assessment Date: {{ assessmentDate }}</HighlightLabel>
         </template>
 
         <template #footerActions>
-            <a v-if="hasPreviousQuestions && isQuestionsSectionVisible" @click.prevent="onPreviousClick" class="btn btn-default">Previous</a>
+            <RockButton v-if="hasPreviousQuestions && isQuestionsSectionVisible" btnType="default" shortcutKey="arrowleft" title="Alt+←" @click="onPreviousClick">Previous</RockButton>
         </template>
         <template #footerSecondaryActions v-if="!blockErrorMessage">
-            <a @click.prevent="onStartClick" v-if="isInstructionSectionVisible" class="btn btn-primary">Start <i class="ti ti-chevron-right"></i></a>
-            <a @click.prevent="onNextClick" v-if="isQuestionsSectionVisible && !isLastPage" type="submit" class="btn btn-primary">Next</a>
-            <a @click.prevent="onFinishClick" v-if="isQuestionsSectionVisible && isLastPage" type="submit" class="btn btn-primary">Finish</a>
+            <RockButton v-if="isInstructionSectionVisible" btnType="primary" @click="onStartClick">Start <i class="ti ti-chevron-right"></i></RockButton>
+            <RockButton v-if="isQuestionsSectionVisible && !isLastPage" btnType="primary" shortcutKey="arrowright" title="Alt+→" @click="onNextClick">Next</RockButton>
+            <RockButton v-if="isQuestionsSectionVisible && isLastPage" btnType="primary" shortcutKey="arrowright" title="Alt+→" autoLoading autoDisable @click="onFinishClick">Finish</RockButton>
         </template>
 
         <template #default>
@@ -41,12 +41,12 @@
                                     <td class="disc-question">{{ question }}</td>
                                     <td class="disc-answer grid-select-field disc-more">
                                         <div class="radio">
-                                            <RadioButton v-if="response.mostScore !== null" v-model="response.mostScore" v-on:update:modelValue="onMostSelectionChange(response)" :value="key.toString()" :name="'most-' + response.questionNumber" />
+                                            <RadioButton v-model="response.mostScore" @update:modelValue="onMostSelectionChange(response)" :value="key.toString()" :name="'most-' + response.questionNumber" />
                                         </div>
                                     </td>
                                     <td class="disc-answer grid-select-field disc-less">
                                         <div class="radio">
-                                            <RadioButton v-if="response.leastScore !== null" v-model="response.leastScore" v-on:update:modelValue="onLeastSelectionChange(response)" :value="key.toString()" :name="'least-' + response.questionNumber" />
+                                            <RadioButton v-model="response.leastScore" @update:modelValue="onLeastSelectionChange(response)" :value="key.toString()" :name="'least-' + response.questionNumber" />
                                         </div>
                                     </td>
                                 </tr>
@@ -80,33 +80,33 @@
                     </ul>
 
                     <h3>Description</h3>
-                    {{ personalityDescription }}
+                    <div v-html="personalityDescription"></div>
 
                     <h3>Strengths</h3>
-                    {{ strengths }}
+                    <div v-html="strengths"></div>
 
                     <h3>Challenges</h3>
-                    {{ challenges }}
+                    <div v-html="challenges"></div>
 
                     <div>
                         <h3>Under Pressure</h3>
-                        {{ underPressure }}
+                        <div v-html="underPressure"></div>
 
                         <h3>Motivation</h3>
-                        {{ motivation }}
+                        <div v-html="motivation"></div>
 
                         <h3>Team Contribution</h3>
-                        {{ teamContribution }}
+                        <div v-html="teamContribution"></div>
 
                         <h3>Leadership Style</h3>
-                        {{ leadershipStyle }}
+                        <div v-html="leadershipStyle"></div>
 
                         <h3>Follower Style</h3>
-                        {{ followerStyle }}
+                        <div v-html="followerStyle"></div>
                     </div>
 
                     <div class="actions margin-t-lg margin-b-lg">
-                        <RockButton v-if="canRetakeTest" class="btn btn-default">Retake Test</RockButton>
+                        <RockButton v-if="canRetakeTest" btnType="default" @click="onRetakeClick">Retake Test</RockButton>
                     </div>
 
                 </div>
@@ -118,6 +118,81 @@
         </template>
     </Panel>
 </template>
+
+<style scoped>
+/*
+    These rules render the DISC results bar chart. They are ported from the legacy
+    ~/Styles/Blocks/Crm/Disc.css, which the WebForms block loaded via AddCSSLink but
+    which is not bundled for Obsidian. Keeping them scoped to this block.
+*/
+.discchart {
+    position: relative;
+    width: 80%;
+    max-width: 650px;
+    height: 425px;
+    padding: 0;
+    margin: 36px auto;
+    clear: both;
+    font-size: 0;
+    background-image: linear-gradient(to bottom, #f5f5f5 0%, transparent 2%, transparent 100%);
+    background-size: 100% 42.5px;
+}
+
+.discchart li {
+    position: relative;
+    display: inline-block;
+    width: 22.5%;
+    height: 425px;
+    padding: 0;
+    margin: 0 2% 0 0;
+    color: #fff;
+    text-align: center;
+    vertical-align: bottom;
+    background-color: var(--color-primary);
+    opacity: 0.7;
+}
+
+.discchart li.discchart-midpoint {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 70%;
+    margin: 0;
+    background-color: transparent;
+    border-top: 2px solid var(--color-danger-strong);
+    border-radius: 0;
+}
+
+.discchart .discbar-label {
+    position: absolute;
+    bottom: 10px;
+    width: 100%;
+    overflow: hidden;
+    font-size: 28px;
+    font-weight: 700;
+    text-shadow: 0 0 3px var(--color-primary);
+}
+
+.discchart .discbar::before {
+    position: absolute;
+    top: -25px;
+    right: 0;
+    left: 0;
+    z-index: 1;
+    display: block;
+    font-size: 20px;
+    line-height: 1em;
+    color: var(--color-interface-stronger);
+    text-align: center;
+    word-wrap: break-word;
+    content: attr(title);
+}
+
+.discchart .discbar.discbar-primary {
+    opacity: 1;
+}
+</style>
+
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -129,6 +204,12 @@
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { DiscInitializationBox } from "@Obsidian/ViewModels/Blocks/Crm/Disc/discInitializationBox";
     import { AssessmentResponseBag } from "@Obsidian/ViewModels/Blocks/Crm/Disc/assessmentResponseBag";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    type DiscAssessmentResponse = Omit<AssessmentResponseBag, "mostScore" | "leastScore"> & {
+        mostScore?: string;
+        leastScore?: string;
+    };
 
     const initialBox = useConfigurationValues<DiscInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -151,9 +232,12 @@
             r.mostScore = undefined;
         }
     });
-    const responses = ref(box.value?.responses ?? []);
+    const responses = ref<DiscAssessmentResponse[]>(initialResponses as DiscAssessmentResponse[]);
 
     const currentPage = ref(1);
+
+    /** True when the individual is retaking a previously completed assessment. */
+    const isRetake = ref(false);
 
     const hasAssessmentResults = computed(() => (box.value?.personalityType ?? "").length > 0);
     const isInstructionSectionVisible = ref(hasAssessmentResults.value === false && !errorMessage.value);
@@ -218,8 +302,12 @@
     /** True if individual is allowed to retake a completed test. */
     const canRetakeTest = computed(() => box.value?.canRetakeTest ?? false);
 
-    /** The date the assessment was last updated by the individual. */
-    const assessmentDate = computed(() => box.value?.lastSavedDate ?? "");
+    /** The date the assessment was last updated by the individual, formatted as a short date. */
+    const assessmentDate = computed(() => {
+        const lastSavedDate = box.value?.lastSavedDate;
+
+        return lastSavedDate ? RockDateTime.parseISO(lastSavedDate)?.toASPString("d") ?? "" : "";
+    });
 
     /** The responses that have both a most and least score. */
     const answeredQuestions = computed(() => responses.value.filter(r => r.mostScore && r.leastScore));
@@ -275,17 +363,37 @@
             .reduce((prev, cur) => cur > prev ? cur : prev)
     );
 
-    /** Determines if the 'D' score is the highest. */
-    const dIsPrimary = computed(() => dScore.value === highestScore.value);
+    /**
+     * The single trait that owns the highest score. On a tie the first trait in
+     * D, I, S, C order wins, matching the legacy DiscService.PlotOneGraph behavior.
+     */
+    const primaryTrait = computed(() => {
+        if (dScore.value === highestScore.value) {
+            return "D";
+        }
 
-    /** Determines if the 'I' score is the highest. */
-    const iIsPrimary = computed(() => iScore.value === highestScore.value);
+        if (iScore.value === highestScore.value) {
+            return "I";
+        }
 
-    /** Determines if the 'S' score is the highest. */
-    const sIsPrimary = computed(() => sScore.value === highestScore.value);
+        if (sScore.value === highestScore.value) {
+            return "S";
+        }
 
-    /** Determines if the 'C' score is the highest. */
-    const cIsPrimary = computed(() => cScore.value === highestScore.value);
+        return "C";
+    });
+
+    /** Determines if the 'D' score is the (single) highest. */
+    const dIsPrimary = computed(() => primaryTrait.value === "D");
+
+    /** Determines if the 'I' score is the (single) highest. */
+    const iIsPrimary = computed(() => primaryTrait.value === "I");
+
+    /** Determines if the 'S' score is the (single) highest. */
+    const sIsPrimary = computed(() => primaryTrait.value === "S");
+
+    /** Determines if the 'C' score is the (single) highest. */
+    const cIsPrimary = computed(() => primaryTrait.value === "C");
 
     //#endregion
 
@@ -326,6 +434,7 @@
             };
 
             boxToSend.responses = responses.value;
+            boxToSend.isRetake = isRetake.value;
 
             const result = await invokeBlockAction<DiscInitializationBox>("Save", {
                 box: boxToSend
@@ -383,8 +492,39 @@
 
     /** Event handler for the Start button click. */
     function onStartClick(): void {
+        // Capture the start time now (when the test actually begins) so the recorded
+        // TimeToTake excludes the time spent reading the instructions.
+        if (box.value) {
+            box.value.startDateTime = RockDateTime.now().toISOString();
+        }
+
         isQuestionsSectionVisible.value = true;
         isInstructionSectionVisible.value = false;
+    }
+
+    /** Event handler for the Retake Test button click. */
+    function onRetakeClick(): void {
+        // Flag the next save as a retake so a new assessment is created rather than
+        // overwriting the previously completed one.
+        isRetake.value = true;
+
+        // Clear the previous results so the results section hides and the instructions show.
+        if (box.value) {
+            box.value.personalityType = "";
+            box.value.results = null;
+        }
+
+        // Reset the answers and pagination for a fresh attempt.
+        responses.value.forEach(r => {
+            r.mostScore = undefined;
+            r.leastScore = undefined;
+        });
+        currentPage.value = 1;
+        errorMessage.value = "";
+
+        // Show the instructions to begin the retake (mirrors the legacy btnRetakeTest_Click -> ShowInstructions).
+        isInstructionSectionVisible.value = true;
+        isQuestionsSectionVisible.value = false;
     }
 
     //#endregion

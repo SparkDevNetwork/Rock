@@ -93,5 +93,13 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder
         /// Gets or sets the list of pages that are available to pick from.
         /// </summary>
         public List<FormBuilderDetailLinkToFormBag> LinkToFormOptions { get; set; }
+
+        /// <summary>
+        /// The list of all Connection Types available to seed the Connection
+        /// Requests automation section. Opportunities, statuses, and sources
+        /// are loaded on-demand via block actions because they are scoped to
+        /// the selected type.
+        /// </summary>
+        public List<ListItemBag> ConnectionTypeOptions { get; set; }
     }
 }

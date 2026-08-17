@@ -28,12 +28,28 @@ namespace Rock.Communication.Transport
     [Export( typeof( TransportComponent ) )]
     [ExportMetadata( "ComponentName", "SMTP" )]
 
-    [TextField( "Server", "", true, "", "", 0 )]
-    [IntegerField( "Port", "", false, 25, "", 1 )]
-    [TextField( "User Name", "", false, "", "", 2 )]
-    [TextField( "Password", "", false, "", "", 3, null, true )]
-    [BooleanField( "Use SSL", "", false, "", 4 )]
-    [IntegerField( "Concurrent Send Workers", "", false, 1, "", 5, key: "MaxParallelization" )]
+    [TextField( "Server",
+        IsRequired = true,
+        Order = 0 )]
+    [IntegerField( "Port",
+        IsRequired = false,
+        DefaultIntegerValue = 25,
+        Order = 1 )]
+    [TextField( "User Name",
+        IsRequired = false,
+        Order = 2 )]
+    [TextField( "Password",
+        IsRequired = false,
+        Order = 3,
+        IsPassword = true )]
+    [BooleanField( "Use SSL",
+        DefaultBooleanValue = false,
+        Order = 4 )]
+    [IntegerField( "Concurrent Send Workers",
+        IsRequired = false,
+        DefaultIntegerValue = 1,
+        Order = 5,
+        Key = "MaxParallelization" )]
     [Rock.SystemGuid.EntityTypeGuid( "1FEF44B2-8685-4001-BE5B-8A059BC65430")]
     public class SMTP : SMTPComponent
     {

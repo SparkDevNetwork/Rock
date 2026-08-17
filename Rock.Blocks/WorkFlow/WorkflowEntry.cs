@@ -49,7 +49,7 @@ namespace Rock.Blocks.Workflow
     /// </summary>
 
     [DisplayName( "Workflow Entry" )]
-    [Category( "Worfklow" )]
+    [Category( "Workflow" )]
     [Description( "Used to enter information for a workflow that has interactive elements." )]
     [IconCssClass( "ti ti-settings-cog" )]
     [ConfigurationChangedReload( BlockReloadMode.Block )]
@@ -128,8 +128,8 @@ namespace Rock.Blocks.Workflow
         Order = 8 )]
 
     [CustomDropdownListField( "Completion Action",
-        description: "What action to perform when there is nothing left for the user to do.",
-        listSource: "0^Show Message from Workflow,1^Show Completion Xaml,2^Redirect to Page",
+        Description = "What action to perform when there is nothing left for the user to do.",
+        ListSource = "0^Show Message from Workflow,1^Show Completion Xaml,2^Redirect to Page",
         IsRequired = true,
         DefaultValue = "0",
         SiteTypes = SiteTypeFlags.Mobile,
@@ -160,8 +160,8 @@ namespace Rock.Blocks.Workflow
         Order = 12 )]
 
     [CustomDropdownListField( "Scan Mode",
-        description: "",
-        listSource: "0^Off,1^Automatic",
+        Description = "",
+        ListSource = "0^Off,1^Automatic",
         IsRequired = false,
         DefaultValue = "0",
         SiteTypes = SiteTypeFlags.Mobile,
@@ -194,9 +194,16 @@ namespace Rock.Blocks.Workflow
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "02D2DBA8-5300-4367-B15B-E37DFB3F7D1E" )]
-    [Rock.SystemGuid.BlockTypeGuid( SystemGuid.BlockType.OBSIDIAN_WORKFLOW_ENTRY )]
+    [Rock.SystemGuid.BlockTypeGuid( "A8BD05C8-6F89-4628-845B-059E686F089A" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( SystemGuid.BlockType.OBSIDIAN_WORKFLOW_ENTRY )]
     public class WorkflowEntry : RockBlockType, IBreadCrumbBlock
     {
+        #region Properties
+
+        private bool IsAllowingPredictableIds => !PageCache.Layout.Site.DisablePredictableIds;
+
+        #endregion Properties
+
         #region Keys
 
         /// <summary>
@@ -265,7 +272,6 @@ namespace Rock.Blocks.Workflow
 
             public const string GroupId = "GroupId";
             public const string PersonId = "PersonId";
-            public const string InteractionStartDateTime = "InteractionStartDateTime";
 
             // NOTE that the actual parameter for CampusId and CampusGuid is just 'Campus', but making them different internally to make it clearer
             public const string CampusId = "Campus";
@@ -308,9 +314,10 @@ namespace Rock.Blocks.Workflow
 
         private string WorkflowTypePageParameter => PageParameter( PageParameterKey.WorkflowType );
 
-        private int? WorkflowTypeIdPageParameter =>
-            PageParameter( PageParameterKey.WorkflowType ).AsIntegerOrNull()
-            ?? PageParameter( PageParameterKey.WorkflowTypeId ).AsIntegerOrNull();
+        private string WorkflowTypeIdPageParameter =>
+            !string.IsNullOrEmpty( PageParameter( PageParameterKey.WorkflowType ) ) ?
+                PageParameter( PageParameterKey.WorkflowType ) :
+                PageParameter( PageParameterKey.WorkflowTypeId );
 
         private Guid? WorkflowTypeGuidPageParameter =>
             PageParameter( PageParameterKey.WorkflowType ).AsGuidOrNull()
@@ -346,7 +353,15 @@ namespace Rock.Blocks.Workflow
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var workflowId = PageParameter( PageParameterKey.WorkflowId ).AsIntegerOrNull();
+            string workflowIdParam = PageParameter( PageParameterKey.WorkflowId );
+
+            var workflowId = workflowIdParam != "0" ?
+                new WorkflowService( RockContext ).GetSelect(
+                    workflowIdParam,
+                    w => ( int? ) w.Id,
+                    IsAllowingPredictableIds ) :
+                0;
+
             var workflowGuid = PageParameter( PageParameterKey.WorkflowGuid ).AsGuidOrNull();
             var workflow = LoadWorkflow( workflowId, workflowGuid, out var errorMessage );
 
@@ -377,7 +392,11 @@ namespace Rock.Blocks.Workflow
                 this.RequestContext.Response.SetPageTitle( workflow.WorkflowTypeCache.Name );
             }
 
-            var actionId = RequestContext.GetPageParameter( PageParameterKey.ActionId ).AsIntegerOrNull();
+            var actionId = new WorkflowActionService( RockContext ).GetSelect(
+                RequestContext.GetPageParameter( PageParameterKey.ActionId ),
+                wa => ( int? ) wa.Id,
+                IsAllowingPredictableIds );
+
             var initialAction = ProcessWorkflow( workflow, actionId, null, null, null );
 
             return new WorkflowEntryOptionsBag
@@ -404,9 +423,10 @@ namespace Rock.Blocks.Workflow
             {
                 return WorkflowTypeCache.Get( workflowTypeGuidPageParam.Value, this.RockContext );
             }
-            else if ( workflowTypeIdPageParam.HasValue && allowPassingWorkflowTypeId )
+            else if ( !string.IsNullOrEmpty( workflowTypeIdPageParam ) && allowPassingWorkflowTypeId )
             {
-                return WorkflowTypeCache.Get( workflowTypeIdPageParam.Value, this.RockContext );
+                var cacheByKey = WorkflowTypeCache.Get( workflowTypeIdPageParam, IsAllowingPredictableIds );
+                return cacheByKey != null ? WorkflowTypeCache.Get( cacheByKey.Id, this.RockContext ) : null;
             }
             else if ( workflowTypeSlugPageParam.IsNotNullOrWhiteSpace() )
             {
@@ -660,16 +680,22 @@ namespace Rock.Blocks.Workflow
         /// <returns>An instance of <see cref="IEntity"/> if one is available; otherwise <c>null</c>.</returns>
         private IEntity GetInitialWorkflowEntity()
         {
-            var personId = RequestContext.GetPageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
-            var groupId = RequestContext.GetPageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+            var person = new PersonService( RockContext ).Get(
+                RequestContext.GetPageParameter( PageParameterKey.PersonId ),
+                IsAllowingPredictableIds );
 
-            if ( personId.HasValue )
+            if ( person != null )
             {
-                return new PersonService( RockContext ).Get( personId.Value );
+                return person;
             }
-            else if ( groupId.HasValue )
+
+            var group = new GroupService( RockContext ).Get(
+                RequestContext.GetPageParameter( PageParameterKey.GroupId ),
+                IsAllowingPredictableIds );
+
+            if ( group != null )
             {
-                return new GroupService( RockContext ).Get( groupId.Value );
+                return group;
             }
 
             return null;
@@ -690,6 +716,13 @@ namespace Rock.Blocks.Workflow
             IEntity entity = null;
             var processedMultipleInteractiveActions = false;
 
+            // Skip re-processing a completed workflow; doing so would overwrite
+            // CompletedDateTime on the workflow and its activities (Issue #6897).
+            if ( workflow.CompletedDateTime.HasValue )
+            {
+                return GetEndOfWorkflowBag( workflow, null, null, null, true );
+            }
+
             if ( workflow.Id == 0 )
             {
                 entity = GetInitialWorkflowEntity();
@@ -707,14 +740,27 @@ namespace Rock.Blocks.Workflow
                         WriteInteraction( false, workflow, null, RockDateTime.Now );
                     }
 
-                    return GetEndOfWorkflowBag( workflow, actionTypeGuid, actionResult, errorMessage );
+                    return GetEndOfWorkflowBag( workflow, actionTypeGuid, actionResult, errorMessage, true );
                 }
 
-                // If this action is the same as the last, that likely means the
-                // component is broken. For example if said "Continue" with a
-                // unsuccessful result.
+                /*
+                    5/6/26 - MSE
+
+                    Same action returned twice. If the previous result was
+                    successful, treat it as end-of-workflow and show the
+                    response. Otherwise it's a broken component looping,
+                    so surface the error.
+
+                    Reason: Allow form "Update" buttons with no target
+                    activity to display their response instead of erroring.
+                */
                 if ( action.Guid == lastAction?.Guid )
                 {
+                    if ( actionResult != null && actionResult.IsSuccess )
+                    {
+                        return GetEndOfWorkflowBag( workflow, lastActionTypeGuid, actionResult, null, false );
+                    }
+
                     return CreateErrorMessage( workflow, workflow.WorkflowTypeCache, "Invalid action", "We detected an invalid action state that prevents further processing." );
                 }
 
@@ -871,8 +917,9 @@ namespace Rock.Blocks.Workflow
         /// <param name="lastActionTypeGuid">The unique identifier of the last interactive action type that was executed.</param>
         /// <param name="lastActionResult">The result object of the last interactive action that was executed.</param>
         /// <param name="errorMessage">The error message that might have been generated during processing.</param>
+        /// <param name="hasNoRemainingActions">Determines if there is truly nothing left for the individual to do. This is <c>false</c> when a result is being displayed but the workflow still has an interactive action waiting, such as a form "Update" button that has no target activity.</param>
         /// <returns>The data that describes the workflow UI to display.</returns>
-        private InteractiveActionBag GetEndOfWorkflowBag( Model.Workflow workflow, Guid? lastActionTypeGuid, InteractiveActionResult lastActionResult, InteractiveMessageBag errorMessage )
+        private InteractiveActionBag GetEndOfWorkflowBag( Model.Workflow workflow, Guid? lastActionTypeGuid, InteractiveActionResult lastActionResult, InteractiveMessageBag errorMessage, bool hasNoRemainingActions )
         {
             // If the block is specifically configured to show the summary
             // view after the workflow has finished processing then ignore
@@ -902,6 +949,26 @@ namespace Rock.Blocks.Workflow
             // to display its data on the page.
             if ( lastActionResult != null )
             {
+                /*
+                    8/13/26 - PS
+
+                    The mobile-only Completion Action setting is only applied by
+                    GetCompletionMessage(), which this early return skips. An
+                    interactive entry form almost always supplies its own response
+                    message, so "Show Completion Xaml" and "Redirect to Page" were
+                    silently ignored once the unified Web + Mobile block replaced
+                    the dedicated mobile block. The legacy GetNextForm() path
+                    already routes the form's message through GetCompletionMessage(),
+                    so match it here.
+
+                    Reason: Completion Action was ignored on the mobile Workflow
+                    Entry block.
+                */
+                if ( hasNoRemainingActions && errorMessage == null && IsMobileCompletionMessageUsed( lastActionResult.ActionData ) )
+                {
+                    lastActionResult.ActionData.Message = GetCompletionMessage( workflow, lastActionResult.ActionData.Message?.Content );
+                }
+
                 return CreateInteractiveActionBag( workflow, lastActionTypeGuid, lastActionResult );
             }
 
@@ -951,6 +1018,38 @@ namespace Rock.Blocks.Workflow
             }
 
             return workflow.GetNextInteractiveAction( RequestContext.CurrentPerson, actionId, BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) );
+        }
+
+        /// <summary>
+        /// Determines if the mobile only Completion Action block setting should
+        /// replace the message that was supplied by the last interactive action.
+        /// </summary>
+        /// <param name="actionData">The data returned by the last interactive action.</param>
+        /// <returns><c>true</c> if the block's completion message should be used instead; otherwise <c>false</c>.</returns>
+        private bool IsMobileCompletionMessageUsed( InteractiveActionDataBag actionData )
+        {
+            // Completion Action is a mobile only setting and will always
+            // evaluate to 0 on web, but guard on the site type anyway so the
+            // intent is explicit.
+            if ( PageCache?.Layout?.Site?.SiteType != SiteType.Mobile )
+            {
+                return false;
+            }
+
+            var completionAction = GetAttributeValue( AttributeKey.CompletionAction ).AsInteger();
+
+            // 1 is Show Completion Xaml and 2 is Redirect to Page. Any other
+            // value means the message from the workflow should be displayed.
+            if ( completionAction != 1 && completionAction != 2 )
+            {
+                return false;
+            }
+
+            // Only a plain displayable message may be replaced. Component
+            // payloads and exceptions must be passed through untouched.
+            return actionData != null
+                && actionData.ComponentUrl.IsNullOrWhiteSpace()
+                && actionData.Exception == null;
         }
 
         /// <summary>
@@ -1035,7 +1134,7 @@ namespace Rock.Blocks.Workflow
 
                 if ( !GetAttributeValue( AttributeKey.DisablePassingWorkflowId ).AsBoolean() )
                 {
-                    pageParams.TryAdd( PageParameterKey.WorkflowId, workflow.Id.ToString() );
+                    pageParams.TryAdd( PageParameterKey.WorkflowId, workflow.IdKey );
                 }
 
                 pageParams.TryAdd( PageParameterKey.WorkflowGuid, workflow.Guid.ToString() );
@@ -1501,7 +1600,7 @@ namespace Rock.Blocks.Workflow
                         string formattedValue = null;
 
                         // get formatted value 
-                        if ( attribute.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
+                        if ( attribute.FieldType.Guid == SystemGuid.FieldType.IMAGE.AsGuid() )
                         {
                             formattedValue = field.FormatValueAsHtml( null, attribute.EntityTypeId, activity.Id, value, attribute.QualifierValues, true );
                         }

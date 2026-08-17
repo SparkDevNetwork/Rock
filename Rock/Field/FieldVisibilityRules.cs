@@ -92,9 +92,11 @@ namespace Rock.Field
                 if ( comparedToFieldAttributeId != null )
                 {
                     var comparedToAttribute = AttributeCache.Get( comparedToFieldAttributeId.Value );
+                    var isTextFieldType = comparedToAttribute.FieldType.Guid == SystemGuid.FieldType.TEXT.AsGuid()
+                        || comparedToAttribute.FieldType.Guid == SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid();
 
                     // if this is a TextFieldType, In-Memory LINQ is case-sensitive but LinqToSQL is not, so lets compare values using ToLower()
-                    if ( comparedToAttribute.FieldType.Field is Rock.Field.Types.TextFieldType )
+                    if ( isTextFieldType )
                     {
                         fieldVisibilityRule.ComparedToValue = fieldVisibilityRule.ComparedToValue?.ToLower();
                     }
@@ -122,7 +124,7 @@ namespace Rock.Field
                     var comparedToAttributeValue = attributeValues.GetValueOrNull( comparedToAttribute.Id )?.Value;
 
                     // if this is a TextFieldType, In-Memory LINQ is case-sensitive but LinqToSQL is not, so lets compare values using ToLower()
-                    if ( comparedToAttribute.FieldType.Field is Rock.Field.Types.TextFieldType )
+                    if ( isTextFieldType )
                     {
                         comparedToAttributeValue = comparedToAttributeValue?.ToLower();
                     }

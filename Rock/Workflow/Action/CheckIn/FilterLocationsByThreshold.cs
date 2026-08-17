@@ -34,7 +34,9 @@ namespace Rock.Workflow.Action.CheckIn
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Locations by Threshold" )]
 
-    [BooleanField( "Remove", "Select 'Yes' if locations should be removed.  Select 'No' if they should just be marked as excluded.", true )]
+    [BooleanField( "Remove",
+        Description = "Select 'Yes' if locations should be removed.  Select 'No' if they should just be marked as excluded.",
+        DefaultBooleanValue = true )]
     [Rock.SystemGuid.EntityTypeGuid( "EB9E5114-D86D-49CF-89A1-6EF52428AD2E")]
     public class FilterLocationsByThreshold : CheckInActionComponent
     {

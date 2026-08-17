@@ -73,7 +73,7 @@ namespace Rock.Blocks.Communication
         Order = 2 )]
 
     [ComponentsField( "Rock.Communication.MediumContainer, Rock",
-        Name = "Mediums",
+        "Mediums",
         Key = AttributeKey.Mediums,
         Description = "The Mediums that should be available to user to send through (If none are selected, all active mediums will be available).",
         IsRequired = false,
@@ -162,6 +162,12 @@ namespace Rock.Blocks.Communication
         DefaultBooleanValue = false,
         Order = 16 )]
 
+    [BooleanField( "Enable Communication List Selection",
+        Key = AttributeKey.EnableCommunicationListSelection,
+        Description = "Set this to true to let the sender choose a Communication List as the recipient source instead of adding recipients individually.",
+        DefaultBooleanValue = false,
+        Order = 17 )]
+
     [TextField( "Document Root Folder",
         Key = AttributeKey.DocumentRootFolder,
         Description = "The folder to use as the root when browsing or uploading documents.",
@@ -235,6 +241,7 @@ namespace Rock.Blocks.Communication
             public const string ShowAdditionalEmailRecipients = "ShowAdditionalEmailRecipients";
             public const string ShowDuplicatePreventionOption = "ShowDuplicatePreventionOption";
             public const string EnableAssetManager = "EnableAssetManager";
+            public const string EnableCommunicationListSelection = "EnableCommunicationListSelection";
         }
 
         /// <summary>
@@ -513,6 +520,11 @@ namespace Rock.Blocks.Communication
         private bool IsDuplicatePreventionOptionShown => GetAttributeValue( AttributeKey.ShowDuplicatePreventionOption ).AsBoolean();
 
         /// <summary>
+        /// Gets a value indicating whether the communication list selector is enabled by block configuration.
+        /// </summary>
+        private bool IsCommunicationListSelectionEnabled => GetAttributeValue( AttributeKey.EnableCommunicationListSelection ).AsBoolean();
+
+        /// <summary>
         /// Determines if the asset manager will be enabled when using the HTML editor.
         /// </summary>
         private bool EnableAssetManager => GetAttributeValue( AttributeKey.EnableAssetManager ).AsBoolean();
@@ -554,6 +566,16 @@ namespace Rock.Blocks.Communication
                     var communicationData = GetInitialCommunicationData( rockContext, communication, currentPerson, box.Mediums.Select( m => m.Value.AsGuid() ) );
                     box.Communication = communicationData.Communication;
                     box.MediumOptions = communicationData.MediumOptions;
+                    box.IsCommunicationListSelectionEnabled = this.IsCommunicationListSelectionEnabled;
+
+                    // The Full-mode selector defaults to the communication's current list, so the
+                    // groups are always sent when the feature is on (even for a communication that
+                    // already carries a list). Without them the dropdown has no option matching the
+                    // loaded list and collapses its selection to the "Manual Recipient List" sentinel.
+                    if ( box.IsCommunicationListSelectionEnabled )
+                    {
+                        box.CommunicationListGroups = GetCommunicationListGroupBags( rockContext, currentPerson );
+                    }
                 }
                 else
                 {
@@ -598,24 +620,21 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
 
-            using ( var rockContext = new RockContext() )
-            {
-                var recipient = GetRecipientBags(
-                    rockContext,
-                    new RecipientQueryOptions
-                    {
-                        PersonAliasGuids = new[] { personAliasGuid },
-                        Limit = 1
-                    } ).FirstOrDefault();
+            var recipient = GetRecipientBags(
+                RockContext,
+                new RecipientQueryOptions
+                {
+                    PersonAliasGuids = new[] { personAliasGuid },
+                    Limit = 1
+                } ).FirstOrDefault();
 
-                if ( recipient != null )
-                {
-                    return ActionOk( recipient );
-                }
-                else
-                {
-                    return ActionNotFound();
-                }
+            if ( recipient != null )
+            {
+                return ActionOk( recipient );
+            }
+            else
+            {
+                return ActionNotFound();
             }
         }
 
@@ -632,17 +651,14 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
 
-            using ( var rockContext = new RockContext() )
-            {
-                var recipients = GetRecipientBags(
-                    rockContext,
-                    new RecipientQueryOptions
-                    {
-                        PersonAliasGuids = bag.PersonAliasGuids
-                    } );
+            var recipients = GetRecipientBags(
+                RockContext,
+                new RecipientQueryOptions
+                {
+                    PersonAliasGuids = bag.PersonAliasGuids
+                } );
 
-                return ActionOk( recipients );
-            }
+            return ActionOk( recipients );
         }
 
         /// <summary>
@@ -657,16 +673,46 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
 
-            using ( var rockContext = new RockContext() )
+            var template = new CommunicationTemplateService( RockContext ).Get( templateGuid );
+
+            // Copy the template to the bag.
+            var bag = new CommunicationEntryCommunicationBag();
+            CopyTemplateToCommunicationBag( RockContext, template, bag );
+
+            return ActionOk( bag );
+        }
+
+        /// <summary>
+        /// Gets the resolved members of a communication list for preview.
+        /// </summary>
+        /// <param name="communicationListGroupGuid">The communication list group unique identifier.</param>
+        [BlockAction( "GetCommunicationListRecipients" )]
+        public BlockActionResult GetCommunicationListRecipients( Guid communicationListGroupGuid )
+        {
+            if ( !communicationListGroupGuid.Validate( "Communication List" ).IsNotEmpty( out var validationResult ) )
             {
-                var template = new CommunicationTemplateService( rockContext ).Get( templateGuid );
-
-                // Copy the template to the bag.
-                var bag = new CommunicationEntryCommunicationBag();
-                CopyTemplateToCommunicationBag( rockContext, template, bag );
-
-                return ActionOk( bag );
+                return ActionBadRequest( validationResult.ErrorMessage );
             }
+
+            var listGroupId = new GroupService( RockContext ).GetId( communicationListGroupGuid );
+
+            if ( !listGroupId.HasValue )
+            {
+                return ActionOk( new List<CommunicationEntryRecipientBag>() );
+            }
+
+            var recipients = GetRecipientBags(
+                RockContext,
+                new RecipientQueryOptions
+                {
+                    CommunicationListRecipientQueryOptions = new CommunicationListRecipientQueryOptions
+                    {
+                        CommunicationListGroupId = listGroupId.Value,
+                            SegmentDataViewIds = new List<int>()
+                    }
+                } );
+
+            return ActionOk( recipients );
         }
 
         /// <summary>
@@ -699,6 +745,21 @@ namespace Rock.Blocks.Communication
 
                     communication.Status = CommunicationStatus.Draft;
                     rockContext.SaveChanges();
+
+                    /*
+                        6/18/26 - JMH
+
+                        Materialize the communication list's current members as recipient rows when saving
+                        a draft, so the saved communication appears in recipient-based UI such as the
+                        Communication List grid (which is built from CommunicationRecipient rows). The
+                        ListGroupId remains set, so membership still re-resolves at send time.
+
+                        Reason: A list-based draft otherwise has zero recipient rows and is never listed.
+                    */
+                    if ( communication.ListGroupId.HasValue )
+                    {
+                        communication.RefreshCommunicationRecipientList( rockContext );
+                    }
 
                     var responseBag = new CommunicationEntrySendResponseBag
                     {
@@ -773,11 +834,19 @@ namespace Rock.Blocks.Communication
                 }
 
                 var testRecipient = new CommunicationRecipient();
-                if ( communication.Recipients.Any() )
+
+                // List recipients are owned by the sync proc and are not held in the navigation
+                // collection, so only sample merge values from manually managed recipients. This
+                // avoids loading a potentially large list just to seed the test.
+                if ( !communication.ListGroupId.HasValue && communication.Recipients.Any() )
                 {
-                    var recipient = communication.Recipients.FirstOrDefault();
-                    testRecipient.AdditionalMergeValuesJson = recipient.AdditionalMergeValuesJson;
+                    testRecipient.AdditionalMergeValuesJson = communication.Recipients.First().AdditionalMergeValuesJson;
                 }
+
+                // A test is delivered to the current person rather than the list, so detach the list
+                // to bypass the transport's list-membership check.
+                testCommunication.ListGroup = null;
+                testCommunication.ListGroupId = null;
 
                 testRecipient.Status = CommunicationRecipientStatus.Pending;
                 testRecipient.PersonAliasId = primaryAliasId.Value;
@@ -876,7 +945,20 @@ namespace Rock.Blocks.Communication
                 communication.Status = CommunicationStatus.Draft;
                 rockContext.SaveChanges();
 
-                if ( communication.Recipients.Count() > this.MaximumRecipients && !authorization.IsBlockApproveActionAuthorized )
+                // Materialize list members up front so the count is accurate and the communication is
+                // listed before it sends. ListGroupId stays set, so membership re-resolves at send.
+                if ( communication.ListGroupId.HasValue )
+                {
+                    communication.RefreshCommunicationRecipientList( rockContext );
+                }
+
+                // Count via query, not the navigation collection, to avoid loading large lists.
+                var recipientCount = new CommunicationRecipientService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Count( r => r.CommunicationId == communication.Id );
+
+                if ( recipientCount > this.MaximumRecipients && !authorization.IsBlockApproveActionAuthorized )
                 {
                     // Change the status to pending approval as the current person is not authorized to approve the communication.
                     communication.Status = CommunicationStatus.PendingApproval;
@@ -1606,6 +1688,34 @@ namespace Rock.Blocks.Communication
         }
 
         /// <summary>
+        /// Gets the communication list groups the current person is authorized to view.
+        /// </summary>
+        /// <param name="rockContext">The Rock context.</param>
+        /// <param name="currentPerson">The current person used for authorization checks.</param>
+        /// <returns>The authorized communication list groups as list items, labeled by public name when set.</returns>
+        private List<ListItemBag> GetCommunicationListGroupBags( RockContext rockContext, Person currentPerson )
+        {
+            var communicationListGroupTypeId = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ).Id;
+            var groupService = new GroupService( rockContext );
+
+            var authorizedGroups = groupService
+                .Queryable()
+                .AsNoTracking()
+                .Where( g => g.GroupTypeId == communicationListGroupTypeId && g.IsActive )
+                .OrderBy( g => g.Order )
+                .ThenBy( g => g.Name )
+                .ToList()
+                .Where( g => g.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                .ToList();
+
+            return authorizedGroups.ToListItemBagList( group =>
+            {
+                var publicName = group.GetAttributeValue( "PublicName" );
+                return publicName.IsNotNullOrWhiteSpace() ? publicName : group.Name;
+            } );
+        }
+
+        /// <summary>
         /// Sets the initial recipient values in the communication bag.
         /// </summary>
         /// <param name="rockContext">The Rock context.</param>
@@ -1828,6 +1938,14 @@ namespace Rock.Blocks.Communication
                         .ToList();
                 } );
 
+            // With a communication list selected, recipients are managed by the sync proc; avoid
+            // touching communication.Recipients here so large lists are never loaded into memory.
+            var isUsingCommunicationList = bag.CommunicationListGroupGuid.HasValue && !bag.CommunicationListGroupGuid.Value.IsEmpty();
+
+            // Switching off a list back to manual leaves a discarded list snapshot. It is cleared by
+            // key below instead of loading those recipients into memory.
+            var isDowngradingFromCommunicationList = communication?.ListGroupId.HasValue == true && !isUsingCommunicationList;
+
             if ( communication == null )
             {
                 communication = new Rock.Model.Communication
@@ -1837,7 +1955,7 @@ namespace Rock.Blocks.Communication
                 };
                 communicationService.Add( communication );
             }
-            else
+            else if ( !isUsingCommunicationList && !isDowngradingFromCommunicationList )
             {
                 // Remove any deleted recipients.
                 var newRecipientPersonAliasGuids = newRecipients.Select( r => r.PersonAliasGuid ).Distinct().ToList();
@@ -1851,7 +1969,7 @@ namespace Rock.Blocks.Communication
                 }
             }
 
-            if ( !bag.CommunicationListGroupGuid.HasValue || bag.CommunicationListGroupGuid.Value.IsEmpty() )
+            if ( !isUsingCommunicationList )
             {
                 // Remove the communication list from the communication.
                 // The communication will no longer be linked to the
@@ -1859,11 +1977,35 @@ namespace Rock.Blocks.Communication
                 // a list and remove certain recipients.
                 communication.ListGroupId = null;
             }
+            else
+            {
+                // Link the communication to the selected communication list so its
+                // membership is resolved when the communication is sent, rather than
+                // frozen as a recipient snapshot at authoring time.
+                communication.ListGroupId = new GroupService( rockContext )
+                    .GetId( bag.CommunicationListGroupGuid.Value );
+            }
+
+            if ( isDowngradingFromCommunicationList )
+            {
+                // Mark the discarded list snapshot deleted by key without loading the entities, so a
+                // previously large list is never materialized into memory.
+                var staleRecipientIds = communicationRecipientService.Queryable()
+                    .Where( r => r.CommunicationId == communication.Id )
+                    .Select( r => r.Id )
+                    .ToList();
+
+                foreach ( var staleRecipientId in staleRecipientIds )
+                {
+                    var stub = new CommunicationRecipient { Id = staleRecipientId };
+                    rockContext.Entry( stub ).State = System.Data.Entity.EntityState.Deleted;
+                }
+            }
 
             // Add any new recipients.
             foreach ( var newRecipient in newRecipients )
             {
-                if ( !currentRecipients.Value.Any( currentRecipient => currentRecipient.PersonAliasGuid == newRecipient.PersonAliasGuid ) )
+                if ( isDowngradingFromCommunicationList || !currentRecipients.Value.Any( currentRecipient => currentRecipient.PersonAliasGuid == newRecipient.PersonAliasGuid ) )
                 {
                     var primaryPersonAlias = primaryPersonAliasQuery.FirstOrDefault( p => p.Guid == newRecipient.PersonAliasGuid );
                     if ( primaryPersonAlias != null )
@@ -1891,10 +2033,14 @@ namespace Rock.Blocks.Communication
                 communication.CommunicationTemplateId = communicationTemplateService.GetId( bag.CommunicationTemplateGuid.Value );
             }
 
-            // Ensure the medium is correct for all communication recipients.
-            foreach ( var recipient in communication.Recipients )
+            // Manual mode only; the sync proc sets the medium for communication list recipients, and
+            // a list switched off is cleared above without loading the navigation collection.
+            if ( !isUsingCommunicationList && !isDowngradingFromCommunicationList )
             {
-                recipient.MediumEntityTypeId = medium?.EntityType?.Id;
+                foreach ( var recipient in communication.Recipients )
+                {
+                    recipient.MediumEntityTypeId = medium?.EntityType?.Id;
+                }
             }
 
             new StructuredContentHelper( bag.PushOpenMessageJson )
@@ -2572,9 +2718,6 @@ namespace Rock.Blocks.Communication
                     _bag.SmsAttachmentBinaryFiles = AttachmentHelper.ToListItemBags( value );
                 }
             }
-
-            /// <inheritdoc/>
-            public int? SMSFromDefinedValueId { get; set; }
 
             /// <inheritdoc/>
             public void SetEmailAttachments( IEnumerable<int> binaryFileIds )

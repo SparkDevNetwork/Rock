@@ -16,12 +16,15 @@
 //
 using System;
 using System.Linq;
+
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock.Cms.Utm;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Web.Cache;
-
-using UAParser;
 
 namespace Rock.Tasks
 {
@@ -50,7 +53,8 @@ namespace Rock.Tasks
             }
 
             // get user agent info
-            var clientType = InteractionDeviceType.GetClientType( userAgent );
+            var browserInfo = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( userAgent );
+            var clientType = browserInfo.ClientType;
 
             // don't log visits from crawlers
             if ( clientType != "Crawler" )
@@ -105,10 +109,8 @@ namespace Rock.Tasks
                         personAliasId = new PersonAliasService( rockContext ).GetSelect( message.VisitorPersonAliasIdKey, s => s.Id );
                     }
 
-                    Parser uaParser = Parser.GetDefault();
-                    ClientInfo client = uaParser.Parse( userAgent );
-                    var clientOs = client.OS.ToString();
-                    var clientBrowser = client.UA.ToString();
+                    var clientOs = browserInfo.GetOSFamilyVersion();
+                    var clientBrowser = browserInfo.GetBrowserFamilyVersion();
 
                     var interaction = new InteractionService( rockContext ).AddInteraction( interactionComponent.Id, null, "View", message.Url, personAliasId, message.DateViewed, clientBrowser, clientOs, clientType, userAgent, message.IPAddress, message.SessionId?.AsGuidOrNull() );
 

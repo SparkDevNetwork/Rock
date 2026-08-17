@@ -118,19 +118,6 @@ namespace Rock.Model
         /// Gets the generic context about the registration.
         /// </summary>
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
-        /// <param name="errorMessage">The error result.</param>
-        /// <returns></returns>
-        [RockObsolete("1.14.1")]
-        [Obsolete( "Use GetRegistrationContext( int registrationInstanceId, int? registrationId, out string errorMessage )" )]
-        public RegistrationContext GetRegistrationContext( int registrationInstanceId, out string errorMessage )
-        {
-            return GetRegistrationContext( registrationInstanceId, null, out errorMessage );
-        }
-
-        /// <summary>
-        /// Gets the generic context about the registration.
-        /// </summary>
-        /// <param name="registrationInstanceId">The registration instance identifier.</param>
         /// <param name="registrationId">The registration identifier.</param>
         /// <param name="errorMessage">The error result.</param>
         /// <returns></returns>
@@ -565,6 +552,8 @@ namespace Rock.Model
 
             // Payment plan
             IsPaymentPlanAllowed = template.IsPaymentPlanAllowed;
+            IsFullPaymentOrPaymentPlanRequired = template.IsFullPaymentOrPaymentPlanRequired;
+            FullPaymentOrPaymentPlanRequiredMessage = template.FullPaymentOrPaymentPlanRequiredMessage;
             PaymentDeadlineDate = instance.PaymentDeadlineDate;
             PaymentPlanFrequencyValueIds = template.PaymentPlanFrequencyValueIdsCollection.ToList();
             if ( PaymentPlanFrequencyValueIds?.Any() != true )
@@ -873,7 +862,25 @@ namespace Rock.Model
         ///   <c>true</c> if registrants should be able to pay their registration costs in multiple, scheduled installments; otherwise, <c>false</c>.
         /// </value>
         public bool IsPaymentPlanAllowed { get; private set; }
-        
+
+        /// <summary>
+        /// Gets a value indicating whether the registrant must either pay the registration in full or
+        /// establish a valid payment plan that covers the remaining balance before saving the registration.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if full payment or a valid payment plan is required to save the registration; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsFullPaymentOrPaymentPlanRequired { get; private set; }
+
+        /// <summary>
+        /// Gets the Lava-enabled message to display to a registrant when validation fails for the
+        /// <see cref="IsFullPaymentOrPaymentPlanRequired"/> rule on the Registration Entry block.
+        /// </summary>
+        /// <value>
+        /// The message, or <see langword="null"/> if no configured message is set on the template.
+        /// </value>
+        public string FullPaymentOrPaymentPlanRequiredMessage { get; private set; }
+
         /// <summary>
         /// Gets the payment deadline date.
         /// </summary>

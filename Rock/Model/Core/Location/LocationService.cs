@@ -20,6 +20,7 @@ using System.Data.Entity.Spatial;
 using System.Linq;
 using Rock.Address;
 using Rock.Data;
+using Rock.Enums.Controls;
 using Rock.Field.Types;
 using Rock.Web.Cache;
 
@@ -373,7 +374,6 @@ namespace Rock.Model
 
         /// <summary>
         /// Validate the required parts of the Location Address according to the address requirement rules defined in the Defined Type "Countries".
-        /// Replaces the obsolete method <see cref="Rock.Model.LocationService.ValidateAddressRequirements(Location, out string)" /> 
         /// </summary>
         /// <param name="location"></param> 
         /// <param name="errorMessage"></param> Currently it is of type object, can be converted to string once the instance method is replaced.
@@ -397,39 +397,39 @@ namespace Rock.Model
 
             if ( countryValue != null )
             {
-                var addressLine1Requirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine1Requirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
-                var addressLine2Requirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine2Requirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
-                var cityRequirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressCityRequirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
-                var localityRequirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLocalityRequirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
-                var stateRequirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressStateRequirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
-                var postalCodeRequirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressPostalCodeRequirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
+                var addressLine1Requirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine1Requirement ).ConvertToEnum<RequirementLevel>( RequirementLevel.Optional );
+                var addressLine2Requirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine2Requirement ).ConvertToEnum<RequirementLevel>( RequirementLevel.Optional );
+                var cityRequirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressCityRequirement ).ConvertToEnum<RequirementLevel>( RequirementLevel.Optional );
+                var localityRequirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLocalityRequirement ).ConvertToEnum<RequirementLevel>( RequirementLevel.Optional );
+                var stateRequirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressStateRequirement ).ConvertToEnum<RequirementLevel>( RequirementLevel.Optional );
+                var postalCodeRequirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressPostalCodeRequirement ).ConvertToEnum<RequirementLevel>( RequirementLevel.Optional );
 
-                if ( addressLine1Requirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.Street1 ) )
+                if ( addressLine1Requirement == RequirementLevel.Required && string.IsNullOrWhiteSpace( location.Street1 ) )
                 {
                     invalidFields.Add( "Address Line 1" );
                 }
 
-                if ( addressLine2Requirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.Street2 ) )
+                if ( addressLine2Requirement == RequirementLevel.Required && string.IsNullOrWhiteSpace( location.Street2 ) )
                 {
                     invalidFields.Add( "Address Line 2" );
                 }
 
-                if ( cityRequirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.City ) )
+                if ( cityRequirement == RequirementLevel.Required && string.IsNullOrWhiteSpace( location.City ) )
                 {
                     invalidFields.Add( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressCityLabel ).IfEmpty( "City" ) );
                 }
 
-                if ( localityRequirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.County ) )
+                if ( localityRequirement == RequirementLevel.Required && string.IsNullOrWhiteSpace( location.County ) )
                 {
                     invalidFields.Add( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLocalityLabel ).IfEmpty( "Locality" ) );
                 }
 
-                if ( stateRequirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.State ) )
+                if ( stateRequirement == RequirementLevel.Required && string.IsNullOrWhiteSpace( location.State ) )
                 {
                     invalidFields.Add( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressStateLabel ).IfEmpty( "State" ) );
                 }
 
-                if ( postalCodeRequirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.PostalCode ) )
+                if ( postalCodeRequirement == RequirementLevel.Required && string.IsNullOrWhiteSpace( location.PostalCode ) )
                 {
                     invalidFields.Add( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressPostalCodeLabel ).IfEmpty( "Postal Code" ) );
                 }
@@ -465,19 +465,6 @@ namespace Rock.Model
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// Validate the required parts of the Location Address according to the address requirement rules defined in the Defined Type "Countries".
-        /// </summary>
-        /// <param name="location"></param>
-        /// <param name="errorMessage">An empty string if the validation is successful, or a message describing the validation failure.</param>
-        [Obsolete( "Please use the static method ValidateLocationAddressRequirements( Location location, out string errorMessage )" )]
-        [RockObsolete( "1.14" )]
-        public bool ValidateAddressRequirements( Location location, out string errorMessage )
-        {
-            bool isAddressValid = ValidateLocationAddressRequirements( location, out errorMessage );
-            return isAddressValid;
         }
 
         /// <summary>

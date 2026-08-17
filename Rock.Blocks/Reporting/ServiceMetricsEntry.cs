@@ -80,7 +80,11 @@ namespace Rock.Blocks.Reporting
         IsRequired = true,
         Order = 4 )]
 
-    [CampusesField( "Campuses", "Select the campuses you want to limit this block to.", false, "", "", 5, AttributeKey.Campuses )]
+    [CampusesField( "Campuses",
+        Description = "Select the campuses you want to limit this block to.",
+        IsRequired = false,
+        Order = 5,
+        Key = AttributeKey.Campuses )]
 
     [BooleanField(
         "Insert 0 for Blank Items",
@@ -102,6 +106,7 @@ namespace Rock.Blocks.Reporting
         Description = "This setting determines what date to use when entering the metric. 'Sunday Date' would use the selected Sunday date. 'Day from Schedule' will use the first day configured from the selected schedule.",
         DefaultValue = "0",
         ListSource = "0^Sunday Date,1^Day from Schedule",
+        IsRequired = false,
         Order = 8 )]
 
     [BooleanField(

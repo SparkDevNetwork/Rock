@@ -137,7 +137,7 @@ namespace Rock.SystemGuid
         public const string CAMPUSES = "69254F91-C97F-4C2D-9ACB-1683B088097B";
 
         /// <summary>
-        /// <see cref="Rock.Field.Types.CaptchaFieldType">Captcha</see> field type.
+        /// Captcha field type.
         /// </summary>
         public const string CAPTCHA = "22F43337-7177-4064-9D4B-841EAD671678";
 
@@ -245,6 +245,11 @@ namespace Rock.SystemGuid
         /// Connection Type field type
         /// </summary>
         public const string CONNECTION_TYPE = "50DA6F25-E81E-46E8-A773-4B479B4FB9E6";
+
+        /// <summary>
+        /// Connection Type Settings field type
+        /// </summary>
+        public const string CONNECTION_TYPE_SETTINGS = "7D2A3C9F-4E15-4B71-A8CE-9F1B4D2E7C03";
 
         /// <summary>
         /// Connection Types field type
@@ -557,12 +562,12 @@ namespace Rock.SystemGuid
         public const string MATRIX = "F16FC460-DC1E-4821-9012-5F21F974C677";
 
         /// <summary>
-        /// <see cref="Rock.Field.Types.MediaElementFieldType">Media Element</see> field type
+        /// Media Element field type
         /// </summary>
         public const string MEDIA_ELEMENT = "A17D5AAC-B7AE-4587-B703-A0FC3625F0F8";
 
         /// <summary>
-        /// <see cref="Rock.Field.Types.MediaWatchFieldType">Media Watch</see> field type
+        /// Media Watch field type
         /// </summary>
         public const string MEDIA_WATCH = "98180C6F-5167-45E1-8ADE-E1A31EC4930D";
 

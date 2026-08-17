@@ -39,7 +39,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Streaks" )]
     [Description( "Lists all the people enrolled in a streak type." )]
     [IconCssClass( "ti ti-list" )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the streak details.",
@@ -54,7 +54,8 @@ namespace Rock.Blocks.Engagement
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "b7894ceb-837a-468e-92b1-53a1631c828e" )]
-    [Rock.SystemGuid.BlockTypeGuid( "73efc838-d5e3-4dbd-b5af-c3c81d3e7daf" )]
+    [Rock.SystemGuid.BlockTypeGuid( "46A5143E-8DE7-4E3D-96B3-674E8FD12949" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "73efc838-d5e3-4dbd-b5af-c3c81d3e7daf" )]
     [CustomizedGrid]
     public class StreakList : RockEntityListBlockType<Streak>
     {
@@ -79,15 +80,16 @@ namespace Rock.Blocks.Engagement
             public const string PersonId = "PersonId";
         }
 
-        private static class PreferenceKey
-        {
-            public const string FilterFirstName = "filter-first-name";
-            public const string FilterLastName = "filter-last-name";
-            public const string FilterEnrollmentDateUpperValue = "filter-enrollment-date-upper-value";
-            public const string FilterEnrollmentDateLowerValue = "filter-enrollment-date-lower-value";
-        }
-
         #endregion Keys
+
+        #region Constants
+
+        /// <summary>
+        /// The number of recent engagement bits to render in the summary graph for each streak row.
+        /// </summary>
+        private const int EngagementBitsToShow = 24;
+
+        #endregion Constants
 
         #region Methods
 
@@ -97,8 +99,9 @@ namespace Rock.Blocks.Engagement
             var box = new ListBlockBox<StreakListOptionsBag>();
             var builder = GetGridBuilder();
 
-            box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var isAddOrDeleteEnabled = GetIsAddOrDeleteEnabled();
+            box.IsAddEnabled = isAddOrDeleteEnabled;
+            box.IsDeleteEnabled = isAddOrDeleteEnabled;
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -118,22 +121,35 @@ namespace Rock.Blocks.Engagement
             var options = new StreakListOptionsBag()
             {
                 StreakTypeName = streakType?.Name,
-                StreakTypeIdKey = streakType?.IdKey
+                StreakTypeIdKey = streakType?.IdKey,
+                IsBlockVisible = GetCanView()
             };
 
             return options;
         }
 
         /// <summary>
-        /// Determines if the add button should be enabled in the grid.
+        /// Determines if the add and delete actions should be enabled in the grid.
         /// <summary>
-        /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
-        private bool GetIsAddEnabled()
+        /// <returns>A boolean value that indicates if the add and delete actions should be enabled.</returns>
+        private bool GetIsAddOrDeleteEnabled()
         {
             var streakType = GetStreakType();
 
-            return streakType?.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) == true
+            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                || streakType?.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) == true
                 || streakType?.IsAuthorized( Authorization.MANAGE_MEMBERS, GetCurrentPerson() ) == true;
+        }
+
+        /// <summary>
+        /// Determines if the current person can view the streak type's enrollments.
+        /// </summary>
+        /// <returns>A boolean value that indicates if the block should be visible.</returns>
+        private bool GetCanView()
+        {
+            var streakType = GetStreakType();
+
+            return streakType?.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) == true;
         }
 
         /// <summary>
@@ -190,7 +206,7 @@ namespace Rock.Blocks.Engagement
             return new GridBuilder<Streak>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
-                .AddField( "personId", a => a.PersonAlias.PersonId )
+                .AddTextField( "personIdKey", a => a.PersonAlias.Person.IdKey )
                 .AddTextField( "lastName", a => a.PersonAlias.Person.LastName )
                 .AddTextField( "nickName", a => a.PersonAlias.Person.NickName )
                 .AddTextField( "fullName", a => a.PersonAlias.Person.FullName )
@@ -216,7 +232,7 @@ namespace Rock.Blocks.Engagement
 
             if ( streakType != null )
             {
-                var occurrenceEngagements = new StreakTypeService( RockContext ).GetEngagmentBitsForStreak( streakType, streak, 24 ) ?? new OccurrenceEngagement[0];
+                var occurrenceEngagements = new StreakTypeService( RockContext ).GetEngagmentBitsForStreak( streakType, streak, EngagementBitsToShow ) ?? new OccurrenceEngagement[0];
                 var stringBuilder = new StringBuilder();
                 foreach ( var occurrence in occurrenceEngagements )
                 {
@@ -245,9 +261,9 @@ namespace Rock.Blocks.Engagement
         /// <returns></returns>
         private StreakTypeCache GetStreakType()
         {
-            var streakTypeIdParam = PageParameter( PageParameterKey.StreakTypeId );
-            var streakTypeId = Rock.Utility.IdHasher.Instance.GetId( streakTypeIdParam ) ?? streakTypeIdParam.AsIntegerOrNull();
-            return streakTypeId.HasValue ? StreakTypeCache.Get( streakTypeId.Value ) : null;
+            return StreakTypeCache.Get(
+                PageParameter( PageParameterKey.StreakTypeId ),
+                !PageCache.Layout.Site.DisablePredictableIds );
         }
 
         #endregion
@@ -270,7 +286,7 @@ namespace Rock.Blocks.Engagement
                 return ActionBadRequest( $"{Streak.FriendlyTypeName} not found." );
             }
 
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !GetIsAddOrDeleteEnabled() )
             {
                 return ActionBadRequest( $"Not authorized to delete {Streak.FriendlyTypeName}." );
             }

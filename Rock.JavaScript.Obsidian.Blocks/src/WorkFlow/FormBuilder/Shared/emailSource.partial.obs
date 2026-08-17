@@ -1,37 +1,26 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div>
-        <SegmentedPicker v-model="type"
+        <RadioButtonList v-model="type"
+                         label="Email to Send"
                          :items="emailSourceOptions" />
 
-        <div v-if="isTemplateType">
-            <div class="row">
-                <div class="col-md-4">
-                    <DropDownList v-model="template"
-                                  enhanceForLongLists
-                                  label="Email Template"
-                                  rules="required"
-                                  :items="templateOptions" />
-                </div>
-            </div>
-        </div>
+        <ConditionalWell v-if="isTemplateType">
+            <DropDownList v-model="template"
+                          enhanceForLongLists
+                          label="Template"
+                          rules="required"
+                          :items="templateOptions" />
+        </ConditionalWell>
 
-        <div v-else-if="isCustomType">
-            <div class="row">
-                <div class="col-md-4">
-                    <TextBox v-model="subject"
-                             label="Subject"
-                             rules="required" />
-                </div>
-            </div>
+        <ConditionalWell v-else-if="isCustomType">
+            <TextBox v-model="subject"
+                     label="Subject"
+                     rules="required" />
 
-            <div class="row">
-                <div class="col-md-4">
-                    <TextBox v-model="replyTo"
-                             label="Reply To"
-                             rules="email" />
-                </div>
-            </div>
+            <TextBox v-model="replyTo"
+                     label="Reply To"
+                     rules="email" />
 
             <TextBox v-model="body"
                      label="Email Body"
@@ -41,18 +30,19 @@
 
             <InlineCheckbox v-model="appendOrgHeaderAndFooter"
                             label="Append Organization Header and Footer" />
-        </div>
+        </ConditionalWell>
     </div>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import InlineCheckbox from "@Obsidian/Controls/inlineCheckBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import SegmentedPicker from "./segmentedPicker.partial.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import { FormEmailSource, FormEmailSourceType } from "./types.partial";
 
     const props = defineProps({

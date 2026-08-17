@@ -30,14 +30,14 @@ export const EditComponent = defineComponent({
     props: getFieldEditorProps(),
 
     setup(props, { emit }) {
-        const internalValue = ref({} as ListItemBag);
+        const internalValue = ref<ListItemBag | null>(null);
 
         watch(() => props.modelValue, () => {
-            internalValue.value = JSON.parse(props.modelValue || "{}");
+            internalValue.value = props.modelValue ? JSON.parse(props.modelValue) : null;
         }, { immediate: true });
 
         watch(() => internalValue.value, () => {
-            emit("update:modelValue", JSON.stringify(internalValue.value));
+            emit("update:modelValue", internalValue.value?.value ? JSON.stringify(internalValue.value) : "");
         });
 
         return {

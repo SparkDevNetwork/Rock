@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -124,6 +124,9 @@ registerFieldType(FieldTypeGuids.ConnectionOpportunity, new ConnectionOpportunit
 
 import { ConnectionTypeField } from "./connectionTypeField.partial";
 registerFieldType(FieldTypeGuids.ConnectionType, new ConnectionTypeField());
+
+import { ConnectionTypeSettingsFieldType } from "./connectionTypeSettingsField.partial";
+registerFieldType(FieldTypeGuids.ConnectionTypeSettings, new ConnectionTypeSettingsFieldType());
 
 import { ConnectionTypesField } from "./connectionTypesField.partial";
 registerFieldType(FieldTypeGuids.ConnectionTypes, new ConnectionTypesField());

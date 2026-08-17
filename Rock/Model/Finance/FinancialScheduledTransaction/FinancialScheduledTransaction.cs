@@ -389,17 +389,6 @@ namespace Rock.Model
         private ICollection<FinancialTransaction> _transactions;
 
         /// <summary>
-        /// Gets or sets the history change list.
-        /// </summary>
-        /// <value>
-        /// The history change list.
-        /// </value>
-        [NotMapped]
-        [RockObsolete( "1.14" )]
-        [Obsolete( "Does nothing. No longer needed. We replaced this with a private property under the SaveHook class for this entity.", true )]
-        public virtual History.HistoryChangeList HistoryChangeList { get; set; }
-
-        /// <summary>
         /// This will be any previous <see cref="GatewayScheduleId"/> that this <see cref="FinancialScheduledTransaction"/> has had.
         /// This might be used in a case where a <see cref="Rock.Financial.GatewayComponent" /> may have changed what schedule id it used.
         /// </summary>

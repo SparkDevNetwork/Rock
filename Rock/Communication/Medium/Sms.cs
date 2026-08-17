@@ -39,7 +39,10 @@ namespace Rock.Communication.Medium
     [Description( "An SMS communication" )]
     [Export( typeof( MediumComponent ) )]
     [ExportMetadata( "ComponentName", "SMS" )]
-    [IntegerField( "Character Limit", "Set this to show a character limit countdown for SMS communications. Set to 0 to disable", false, 160 )]
+    [IntegerField( "Character Limit",
+        Description = "Set this to show a character limit countdown for SMS communications. Set to 0 to disable",
+        IsRequired = false,
+        DefaultIntegerValue = 160 )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS )]
     public class Sms : MediumComponent
     {
@@ -289,21 +292,18 @@ namespace Rock.Communication.Medium
                 communicationId = GetCommunicationId( rockSmsFromPhoneNumber, fromPerson.PrimaryAliasId.Value, 2 );
             }
 
-#pragma warning disable CS0618 // Type or member is obsolete
             var communicationResponse = new CommunicationResponse
             {
                 MessageKey = messageKey,
                 FromPersonAliasId = fromPerson?.PrimaryAliasId,
                 ToPersonAliasId = toPersonAliasId,
                 IsRead = false,
-                RelatedSmsFromDefinedValueId = DefinedValueCache.Get( rockSmsFromPhoneNumber.Guid )?.Id,
                 RelatedSmsFromSystemPhoneNumberId = rockSmsFromPhoneNumber.Id,
                 RelatedCommunicationId = communicationId,
                 RelatedTransportEntityTypeId = smsTransport,
                 RelatedMediumEntityTypeId = smsMedium.Id,
                 Response = message
             };
-#pragma warning restore CS0618 // Type or member is obsolete
 
             var communicationResposeService = new CommunicationResponseService( rockContext );
             communicationResposeService.Add( communicationResponse );
@@ -374,43 +374,6 @@ namespace Rock.Communication.Medium
 
                 return null;
             }
-        }
-
-        /// <summary>
-        /// Creates the communication mobile without attachments
-        /// </summary>
-        /// <param name="fromPerson">From person.</param>
-        /// <param name="toPersonAliasId">To person alias identifier.</param>
-        /// <param name="message">The message.</param>
-        /// <param name="fromPhone">From phone.</param>
-        /// <param name="responseCode">The response code.</param>
-        /// <param name="rockContext">The rock context.</param>
-        [Obsolete( "Use the CreateCommunicationMobile() method that takes a SystemPhoneNumberCache parameter." )]
-        [RockObsolete( "1.15" )]
-        public static void CreateCommunicationMobile( Person fromPerson, int? toPersonAliasId, string message, DefinedValueCache fromPhone, string responseCode, Rock.Data.RockContext rockContext )
-        {
-            var fromSystemPhone = SystemPhoneNumberCache.Get( fromPhone.Guid );
-
-            CreateCommunicationMobile( fromPerson, toPersonAliasId, message, fromSystemPhone, responseCode, null, rockContext );
-        }
-
-        /// <summary>
-        /// Creates the communication to the recipient's mobile device with attachments.
-        /// </summary>
-        /// <param name="fromPerson">From person.</param>
-        /// <param name="toPersonAliasId">To person alias identifier.</param>
-        /// <param name="message">The message.</param>
-        /// <param name="fromPhone">From phone.</param>
-        /// <param name="responseCode">The response code.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="attachments">The attachments.</param>
-        [Obsolete( "Use the CreateCommunicationMobile() method that takes a SystemPhoneNumberCache parameter." )]
-        [RockObsolete( "1.15" )]
-        public static void CreateCommunicationMobile( Person fromPerson, int? toPersonAliasId, string message, DefinedValueCache fromPhone, string responseCode, Rock.Data.RockContext rockContext, List<BinaryFile> attachments )
-        {
-            var fromSystemPhone = SystemPhoneNumberCache.Get( fromPhone.Guid );
-
-            CreateCommunicationMobile( fromPerson, toPersonAliasId, message, fromSystemPhone, responseCode, null, rockContext );
         }
 
         /// <summary>

@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using Rock.Field.Types;
 
 namespace Rock.Attribute
 {
@@ -27,7 +26,6 @@ namespace Rock.Attribute
         private const string ENTITY_TYPE_NAME_KEY = "entityTypeName";
         private const string QUALIFIER_COLUMN_KEY = "qualifierColumn";
         private const string QUALIFIER_VALUE_KEY = "qualifierValue";
-        private const string ALLOW_MULTIPLE_KEY = "allowMultiple";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CategoryFieldAttribute" /> class.
@@ -43,15 +41,29 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public CategoryFieldAttribute( string name, string description = "", bool allowMultiple = false,
              string entityTypeName = "", string entityTypeQualifierColumn = "", string entityTypeQualifierValue = "",
              bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null ) :
-            base( name, description, required, defaultValue, category, order, key,
-                ( allowMultiple ? typeof( CategoriesFieldType ).FullName : typeof( CategoryFieldType ).FullName ) )
+            base( allowMultiple ? SystemGuid.FieldType.CATEGORIES.AsGuid() : SystemGuid.FieldType.CATEGORY.AsGuid(),
+                name, description, required, defaultValue, category, order, key )
         {
             EntityTypeName = entityTypeName;
             EntityTypeQualifierColumn = entityTypeQualifierColumn;
             EntityTypeQualifierValue = entityTypeQualifierValue;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CategoryFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public CategoryFieldAttribute( string name )
+            : base( SystemGuid.FieldType.CATEGORY.AsGuid(), name )
+        {
+            EntityTypeName = string.Empty;
+            EntityTypeQualifierColumn = string.Empty;
+            EntityTypeQualifierValue = string.Empty;
         }
 
         /// <summary>
@@ -64,14 +76,14 @@ namespace Rock.Attribute
         {
             get
             {
-                return FieldConfigurationValues.GetValueOrNull( ALLOW_MULTIPLE_KEY ).AsBoolean();
+                return FieldTypeGuid == SystemGuid.FieldType.CATEGORIES.AsGuid();
             }
 
             set
             {
-                FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new Field.ConfigurationValue( value.ToString() ) );
-
-                FieldTypeClass = value ? typeof( CategoriesFieldType ).FullName : typeof( CategoryFieldType ).FullName;
+                FieldTypeGuid = value
+                    ? SystemGuid.FieldType.CATEGORIES.AsGuid()
+                    : SystemGuid.FieldType.CATEGORY.AsGuid();
             }
         }
 

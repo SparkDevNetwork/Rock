@@ -6,12 +6,13 @@
 // =============================================================
 // Table of Content
 //  + Group Viewer - styles for the group viewer block.
+//  + Group Viewer v2 - styles for the new group viewer block.
 //  + Group Scheduler v2 - styles for the Obsidian group scheduler block.
 //  + Group Schedule Status Board v2
 // =============================================================
 
 
-// ======================== GROUP VIEWER ========================
+// ======================== GROUP VIEWER / DETAIL ========================
 .group-location-map {
   margin-bottom:          var(--spacing-large);
 
@@ -38,7 +39,173 @@
     max-height:          calc(100vh - 112px);
   }
 }
+
+
 // ====================== END GROUP VIEWER ======================
+
+// ======================== GROUP VIEWER V2 ========================
+
+.group-detail {
+
+  // View Panel
+
+  /* The block surfaces requirement status in its own UI; the global
+     "Group has requirements" badge is redundant chrome. */
+  .rockbadge[data-original-title="Group has requirements."] {
+    display: none;
+  }
+
+  .alert {
+    margin-bottom: 0;
+  }
+
+  /* Hide the default ("Attributes") category heading. AttributeValuesContainer
+     always renders the empty-Guid default category first, so :first-child is a
+     stable target. Named categories keep their headings. */
+  .attributevaluescontainer > .attributevaluescontainer-category:first-child > h4 {
+    display: none;
+  }
+
+  .attributevaluescontainer > .attributevaluescontainer-category > h4 {
+    color: var(--color-interface-strong);
+  }
+
+  .linkages-list {
+    list-style: none;
+    padding-left: var(--spacing-medium);
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xsmall);
+
+      &::before {
+        content: "•";
+        color: var(--color-link);
+        font-size: var(--font-size-xsmall);
+        line-height: 1;
+      }
+    }
+  }
+
+  /* Drop the trailing form-group margin on whichever linkage section is the
+     last visible one. Registrations / event occurrences / content items each
+     render conditionally, so :last-child handles the dynamic case. */
+  .overview-linkages > .form-group:last-child {
+    margin-bottom: 0;
+  }
+
+
+  // Edit Panel
+
+  .static-compact {
+    .form-group.static-control .form-control-static {
+      padding: 0;
+      min-height: 0;
+    }
+  }
+
+  .relationship-matrix > :nth-child(n+7) {
+    margin-top: 0.75rem;
+  }
+
+
+  // Location Card
+
+  .location-card {
+    display: block;
+    color: inherit;
+    border: 1px solid var(--color-interface-soft);
+    overflow: hidden;
+
+    & + & {
+      margin-top: var(--spacing-small);
+    }
+
+    /* Hover overlay is desktop-only. Touch devices rely on the entire card
+       being a navigable anchor (tap anywhere navigates). */
+    @media (hover: hover) {
+      &:hover .location-card-expand {
+        opacity: 1;
+      }
+    }
+  }
+
+  .location-card-map-wrap {
+    position: relative;
+  }
+
+  /* pointer-events:none ensures clicks bubble up to the wrapping anchor
+     instead of being intercepted by Google Maps internal handlers.
+     gestureHandling:"none" disables user gestures but does not stop event
+     bubbling. */
+  .location-card-map {
+    background: var(--color-interface-softer);
+    pointer-events: none;
+  }
+
+  .location-card-expand {
+    position: absolute;
+    bottom: var(--spacing-xsmall);
+    right: var(--spacing-xsmall);
+    background: var(--color-interface-softest);
+    padding: var(--spacing-xsmall);
+    border-radius: var(--rounded-small);
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+    pointer-events: none;
+    line-height: 1;
+    box-shadow: rgba(0, 0, 0, 0.2) 0 1px 4px -1px;
+  }
+
+  .location-card-body {
+    padding: var(--spacing-small) var(--spacing-medium);
+  }
+
+  .location-card-address {
+    white-space: pre-line;
+    color: var(--color-interface-strong);
+    font-size: var(--font-size-small);
+  }
+
+  .location-card-schedule {
+    white-space: pre-line;
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-small);
+    margin-top: var(--spacing-xsmall);
+  }
+
+
+  // Location Modal
+
+  .group-location-tabs {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .capacity-matrix {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+      border: 0;
+      padding: var(--spacing-xsmall) var(--spacing-small);
+      vertical-align: middle;
+    }
+
+    th {
+      font-weight: var(--font-weight-regular);
+      color: var(--color-interface-strong);
+    }
+  }
+
+  .capacity-matrix__name {
+    white-space: nowrap;
+  }
+
+}
+
 
 // ====================== GROUP MAP ======================
 
@@ -250,6 +417,7 @@
         bottom:          -1px;
       }
     }
+
   }
 
   .progress-bar {
@@ -356,6 +524,32 @@
     margin-top:          var(--spacing-xsmall);
   }
 }
+
+// Styles for the tooltip content of the progress bar indicator in the group scheduler v2 block, cannot be scoped.
+.group-scheduler-progress-bar-tooltip {
+      min-width: 130px;
+    }
+
+    .group-scheduler-progress-bar-tooltip-label {
+      font-weight: var(--font-weight-bold);
+    }
+
+    .group-scheduler-progress-bar-tooltip-responses {
+      margin-top: var(--spacing-small);
+    }
+
+    .group-scheduler-progress-bar-tooltip-counts {
+      margin-top: var(--spacing-tiny);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    .group-scheduler-progress-bar-tooltip-counts > span {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xsmall);
+    }
 
 .featured-content {
   .group-scheduler-v2 {

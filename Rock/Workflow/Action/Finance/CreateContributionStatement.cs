@@ -89,11 +89,13 @@ namespace Rock.Workflow.Action
         "Document Purpose Key",
         Description = "The purpose key you provide will be what is shown to individuals to describe what period the statement is for. In most cases this should be the year. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 6,
         Key = AttributeKey.DocumentPurposeKey )]
     [BooleanField(
         "Overwrite Documents with Same Purpose Key",
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Description = "Determines if statements with the purpose keys should be overwritten.",
         DefaultBooleanValue = true,
         Order = 7,
@@ -169,7 +171,7 @@ namespace Rock.Workflow.Action
                     var attributePersonValue = action.GetWorkflowAttributeValue( giverGuid.Value );
                     if ( !string.IsNullOrWhiteSpace( attributePersonValue ) )
                     {
-                        if ( attributePerson.FieldType.Class == typeof( Rock.Field.Types.PersonFieldType ).FullName )
+                        if ( attributePerson.FieldType.Guid == SystemGuid.FieldType.PERSON.AsGuid() )
                         {
                             var personAliasGuid = attributePersonValue.AsGuid();
                             if ( !personAliasGuid.IsEmpty() )

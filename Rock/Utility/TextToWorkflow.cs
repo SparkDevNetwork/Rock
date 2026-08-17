@@ -14,15 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Text.RegularExpressions;
 
 using Rock;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -95,11 +92,11 @@ namespace Rock.Utility
                 var workflowAttributes = dvWorkflow.Attributes["WorkflowAttributes"];
                 if ( workflowAttributes != null )
                 {
-                    var keyValueField = workflowAttributes.FieldType.Field as KeyValueListFieldType;
-                    if ( keyValueField != null )
+                    if ( workflowAttributes.FieldType.Guid == SystemGuid.FieldType.KEY_VALUE_LIST.AsGuid() )
                     {
-                        workflowAttributesSettings = keyValueField.GetValuesFromString( null,
-                            dvWorkflow.GetAttributeValue( "WorkflowAttributes" ), workflowAttributes.QualifierValues,
+                        workflowAttributesSettings = Field.Helper.GetKeyValueListValuesFromString(
+                            dvWorkflow.GetAttributeValue( "WorkflowAttributes" ),
+                            workflowAttributes.ConfigurationValues,
                             false );
                     }
                 }

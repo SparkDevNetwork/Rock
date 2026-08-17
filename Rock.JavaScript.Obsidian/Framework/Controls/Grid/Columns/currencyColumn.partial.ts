@@ -21,6 +21,7 @@ import CurrencyCell from "../Cells/currencyCell.partial.obs";
 import CurrencySkeletonCell from "../Cells/currencySkeletonCell.partial.obs";
 import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
 import { ColumnDefinition, QuickFilterValueFunction, ExportValueFunction } from "@Obsidian/Types/Controls/grid";
+import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
 
 /**
  * Gets the value to use when displaying a cell of this column.
@@ -41,7 +42,9 @@ function getDisplayedValue(row: Record<string, unknown>, column: ColumnDefinitio
         return undefined;
     }
 
-    return toCurrencyOrNull(value) ?? "";
+    const currencyInfo = (column.props.currencyInfo as CurrencyInfoBag | null) ?? null;
+
+    return toCurrencyOrNull(value, currencyInfo) ?? "";
 }
 
 /**
@@ -72,6 +75,15 @@ function getExportValue(row: Record<string, unknown>, column: ColumnDefinition):
 export default defineComponent({
     props: {
         ...standardColumnProps,
+
+        /**
+         * The organization currency formatting details used to render the amount. When omitted, the
+         * default currency symbol and decimal places are used.
+         */
+        currencyInfo: {
+            type: Object as PropType<CurrencyInfoBag | null>,
+            default: null
+        },
 
         formatComponent: {
             type: Object as PropType<Component>,

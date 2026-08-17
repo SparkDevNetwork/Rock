@@ -36,25 +36,73 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Email Send with Events" )]
 
-    [WorkflowTextOrAttribute( "From Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent from (will default to organization email). <span class='tip tip-lava'></span>", false, "", "", 0, "From",
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType" } )]
-    [WorkflowTextOrAttribute( "Send To Email Addresses", "Attribute Value", "The email addresses or an attribute that contains the person or email address that email should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "To",
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType" } )]
-    [TextField( "Subject", "The subject that should be used when sending email. <span class='tip tip-lava'></span>", false, "", "", 2 )]
+    [WorkflowTextOrAttribute( "From Email Address",
+        "Attribute Value",
+        Description = "The email address or an attribute that contains the person or email address that email should be sent from (will default to organization email). <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType" },
+        Order = 0,
+        Key = "From" )]
+    [WorkflowTextOrAttribute( "Send To Email Addresses",
+        "Attribute Value",
+        Description = "The email addresses or an attribute that contains the person or email address that email should be sent to. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType" },
+        Order = 1,
+        Key = "To" )]
+    [TextField( "Subject",
+        Description = "The subject that should be used when sending email. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
+        Order = 2 )]
     [CodeEditorField( "Body",
         Description = "The body of the email that should be sent. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
         EditorMode = Web.UI.Controls.CodeEditorMode.Html,
         IsRequired = false,
         Order = 3 )]
-    [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 4 )]
+    [BooleanField( "Save Communication History",
+        Description = "Should a record of this communication be saved to the recipient's profile",
+        DefaultBooleanValue = false,
+        Order = 4 )]
 
-    [WorkflowActivityType("On Open Activity", "The activity to launch when the email is opened.", false, "", "", 5)]
-    [WorkflowActivityType( "On Failed Activity", "The activity to launch when the email fails aka bounces.", false, "", "", 6 )]
-    [WorkflowActivityType( "On Clicked Activity", "The activity to launch when a link in the email is clicked.", false, "", "", 7 )]
-    [WorkflowActivityType( "Unopened Timeout Activity", "The activity to launch when the email is not opened in a specified amount of time.", false, "", "", 8 )]
-    [IntegerField( "Unopened Timeout Length", "The amount of time in hours for the timeout.", false, order: 9 )]
-    [WorkflowActivityType( "No Action Timeout Activity", "The activity to launch when no action is taken (e.g. no links are clicked)", false, "", "", 10 )]
-    [IntegerField( "No Action Timeout Length", "The amount of time in hours for the timeout", false, order: 11 )]
+    [WorkflowActivityType("On Open Activity",
+        Description = "The activity to launch when the email is opened.",
+        IsRequired = false,
+        Order = 5)]
+    [WorkflowActivityType( "On Failed Activity",
+        Description = "The activity to launch when the email fails aka bounces.",
+        IsRequired = false,
+        Order = 6 )]
+    [WorkflowActivityType( "On Clicked Activity",
+        Description = "The activity to launch when a link in the email is clicked.",
+        IsRequired = false,
+        Order = 7 )]
+    [WorkflowActivityType( "Unopened Timeout Activity",
+        Description = "The activity to launch when the email is not opened in a specified amount of time.",
+        IsRequired = false,
+        Order = 8 )]
+    [IntegerField( "Unopened Timeout Length",
+        Description = "The amount of time in hours for the timeout.",
+        IsRequired = false,
+        Order = 9 )]
+    [WorkflowActivityType( "No Action Timeout Activity",
+        Description = "The activity to launch when no action is taken (e.g. no links are clicked)",
+        IsRequired = false,
+        Order = 10 )]
+    [IntegerField( "No Action Timeout Length",
+        Description = "The amount of time in hours for the timeout",
+        IsRequired = false,
+        Order = 11 )]
+
+    [DefinedValueField( "Communication Topic",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.COMMUNICATION_TOPIC,
+        Key = "CommunicationTopic",
+        Description = "The topic to assign to the communication record when 'Save Communication History' is enabled.",
+        IsRequired = false,
+        AllowMultiple = false,
+        Order = 12 )]
+
     [Rock.SystemGuid.EntityTypeGuid( "E5DDF7AA-CA76-4236-A8D5-88F66F864FE8")]
     public class SendEmailWithEvents : ActionComponent
     {
@@ -255,6 +303,18 @@ namespace Rock.Workflow.Action
             string body = GetAttributeValue( action, "Body" );
             bool createCommunicationRecord = GetAttributeValue( action, "SaveCommunicationHistory" ).AsBoolean();
 
+            int? communicationTopicValueId = null;
+            var communicationTopicGuid = GetAttributeValue( action, "CommunicationTopic" ).AsGuidOrNull();
+            if ( communicationTopicGuid.HasValue )
+            {
+                communicationTopicValueId = DefinedValueCache.GetId( communicationTopicGuid.Value );
+
+                if ( communicationTopicValueId.HasValue && !createCommunicationRecord )
+                {
+                    action.AddLogEntry( "Communication Topic was set, but 'Save Communication History' is disabled. The topic will only be persisted if history saving is enabled.", true );
+                }
+            }
+
             string fromEmailAddress = string.Empty;
             string fromName = string.Empty;
             Guid? fromGuid = fromValue.AsGuidOrNull();
@@ -311,7 +371,7 @@ namespace Rock.Workflow.Action
                             case "Rock.Field.Types.TextFieldType":
                                 {
                                     var recipientEmails = toValue.ResolveMergeFields( mergeFields );
-                                    Send( recipientEmails, fromEmailAddress, fromName, subject, body, mergeFields, createCommunicationRecord, metaData );
+                                    Send( recipientEmails, fromEmailAddress, fromName, subject, body, mergeFields, createCommunicationRecord, communicationTopicValueId, metaData );
                                     break;
                                 }
                             case "Rock.Field.Types.PersonFieldType":
@@ -344,7 +404,7 @@ namespace Rock.Workflow.Action
                                             var personDict = new Dictionary<string, object>( mergeFields );
                                             personDict.Add( "Person", person );
                                             var recipients = new RockEmailMessageRecipient[1] { new RockEmailMessageRecipient( person, personDict ) }.ToList();
-                                            Send( recipients, fromEmailAddress, fromName, subject, body, createCommunicationRecord, metaData );
+                                            Send( recipients, fromEmailAddress, fromName, subject, body, createCommunicationRecord, communicationTopicValueId, metaData );
                                         }
                                     }
                                     break;
@@ -356,7 +416,7 @@ namespace Rock.Workflow.Action
             else
             {
                 var recipientEmails = to.ResolveMergeFields( mergeFields );
-                Send( recipientEmails, fromEmailAddress, fromName, subject, body, mergeFields, createCommunicationRecord, metaData );
+                Send( recipientEmails, fromEmailAddress, fromName, subject, body, mergeFields, createCommunicationRecord, communicationTopicValueId, metaData );
             }
         }
 
@@ -370,11 +430,12 @@ namespace Rock.Workflow.Action
         /// <param name="body">The body.</param>
         /// <param name="mergeFields">The merge fields.</param>
         /// <param name="createCommunicationRecord">if set to <c>true</c> [create communication record].</param>
+        /// <param name="communicationTopicValueId">The communication topic defined value identifier.</param>
         /// <param name="metaData">The meta data.</param>
-        private void Send( string recipientEmails, string fromEmail, string fromName, string subject, string body, Dictionary<string, object> mergeFields, bool createCommunicationRecord, Dictionary<string, string> metaData )
+        private void Send( string recipientEmails, string fromEmail, string fromName, string subject, string body, Dictionary<string, object> mergeFields, bool createCommunicationRecord, int? communicationTopicValueId, Dictionary<string, string> metaData )
         {
             var recipients = recipientEmails.ResolveMergeFields( mergeFields ).SplitDelimitedValues().Select( e => RockEmailMessageRecipient.CreateAnonymous( e, mergeFields ) ).ToList();
-            Send( recipients, fromEmail, fromName, subject, body, createCommunicationRecord, metaData );
+            Send( recipients, fromEmail, fromName, subject, body, createCommunicationRecord, communicationTopicValueId, metaData );
         }
 
         /// <summary>
@@ -386,8 +447,9 @@ namespace Rock.Workflow.Action
         /// <param name="subject">The subject.</param>
         /// <param name="body">The body.</param>
         /// <param name="createCommunicationRecord">if set to <c>true</c> [create communication record].</param>
+        /// <param name="communicationTopicValueId">The communication topic defined value identifier.</param>
         /// <param name="metaData">The meta data.</param>
-        private void Send( List<RockEmailMessageRecipient> recipients, string fromEmail, string fromName, string subject, string body, bool createCommunicationRecord, Dictionary<string, string> metaData )
+        private void Send( List<RockEmailMessageRecipient> recipients, string fromEmail, string fromName, string subject, string body, bool createCommunicationRecord, int? communicationTopicValueId, Dictionary<string, string> metaData )
         {
             var emailMessage = new RockEmailMessage();
             emailMessage.SetRecipients( recipients );
@@ -396,6 +458,7 @@ namespace Rock.Workflow.Action
             emailMessage.Subject = subject;
             emailMessage.Message = body;
             emailMessage.CreateCommunicationRecord = createCommunicationRecord;
+            emailMessage.CommunicationTopicValueId = communicationTopicValueId;
             emailMessage.MessageMetaData = metaData;
             emailMessage.Send();
         }

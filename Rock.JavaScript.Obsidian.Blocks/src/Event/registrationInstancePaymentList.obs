@@ -5,7 +5,7 @@
           keyField="idKey"
           title="Payments"
           itemTerm="Payment"
-          :exportTitle="config.options?.exportFileName ?? 'Payments'"
+          :exportTitle="config.options?.exportTitle ?? 'Payments'"
           :entityTypeGuid="EntityType.FinancialTransaction"
           stickyHeader
           liveUpdates
@@ -15,16 +15,14 @@
         <TextColumn name="person"
                     title="Person"
                     field="person"
-                    :filter="pickExistingValueFilter"
-                    visiblePriority="xs" />
+                    :filter="pickExistingValueFilter" />
 
         <DateTimeColumn name="transactionDateTime"
                         title="Date / Time"
                         field="transactionDateTime"
                         :filter="dateValueFilter"
                         headerClass="text-left"
-                        itemClass="justify-content-start text-left"
-                        visiblePriority="md" />
+                        itemClass="justify-content-start text-left" />
 
         <CurrencyColumn name="totalAmount"
                         title="Amount"
@@ -32,37 +30,33 @@
                         headerClass="title-right"
                         itemClass="justify-content-end text-right"
                         :quickFilterValue="getTotalAmountQuickFilterValue"
-                        :filter="numberValueFilter"
-                        visiblePriority="xs" />
+                        :filter="numberValueFilter" />
 
         <TextColumn name="paymentMethod"
                     title="Payment Method"
                     field="paymentMethod"
-                    :filter="pickExistingValueFilter"
-                    visiblePriority="md" />
+                    :filter="pickExistingValueFilter" />
 
         <TextColumn name="account"
                     title="Account"
                     field="account"
-                    :filter="textValueFilter"
-                    visiblePriority="md" />
+                    :filter="textValueFilter" />
 
         <TextColumn name="transactionCode"
                     title="Transaction Code"
                     field="transactionCode"
-                    :filter="textValueFilter"
-                    visiblePriority="md" />
+                    :filter="textValueFilter" />
 
         <Column name="registrars"
                 title="Registrar"
                 field="registrars"
                 :filter="pickExistingValueFilter"
-                :quickFilterValue="getRegistrantsFilterValue"
+                :quickFilterValue="getRegistrarsFilterValue"
                 :filterValue="getRegistrarsFilterValue"
-                visiblePriority="md">
+                :excludeFromExport="true">
 
             <template #format="{ row }">
-                <div v-for="registrar in row.registrarsHtml">
+                <div v-for="(registrar, index) in row.registrarsHtml" :key="index">
                     <span v-html="registrar"></span><br />
                 </div>
             </template>
@@ -77,12 +71,13 @@
                 field="registrants"
                 :filter="pickExistingValueFilter"
                 :quickFilterValue="getRegistrantsFilterValue"
-                :filterValue="getRegistrantsFilterValue"
-                visiblePriority="xs">
+                :filterValue="getRegistrantsFilterValue">
 
             <template #format="{ row }">
-                <div v-for="registrant in row.registrants">
-                    <span>{{ registrant }}</span><br />
+                <div>
+                    <div v-for="(registrant, index) in row.registrants" :key="index">
+                        <span>{{ registrant }}</span>
+                    </div>
                 </div>
             </template>
 

@@ -16,15 +16,17 @@
 //
 using System.ComponentModel.DataAnnotations.Schema;
 
+using Microsoft.Extensions.DependencyInjection;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
+using Rock.Net;
 
 namespace Rock.Model
 {
     public partial class SignatureDocument
     {
-        private static UAParser.Parser uaParser = UAParser.Parser.GetDefault();
-
         /// <summary>
         /// Gets the formatted user agent.
         /// </summary>
@@ -32,9 +34,10 @@ namespace Rock.Model
         public string GetFormattedUserAgent()
         {
             var userAgent = this.SignedClientUserAgent ?? string.Empty;
-            var deviceOs = uaParser.ParseOS( userAgent ).ToString();
-            var deviceApplication = uaParser.ParseUserAgent( userAgent ).ToString();
-            var deviceClientType = InteractionDeviceType.GetClientType( userAgent );
+            var browserInfo = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( userAgent );
+            var deviceOs = browserInfo.GetOSFamilyVersion();
+            var deviceApplication = browserInfo.GetBrowserFamilyVersion();
+            var deviceClientType = browserInfo.ClientType;
 
             return $@"{deviceApplication}
 {deviceOs}

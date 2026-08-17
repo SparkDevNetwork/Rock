@@ -91,7 +91,7 @@ namespace Rock.Workflow.Action
 
     [StructureContentEditorField( "Payment Information Instructions",
         Description = "Instructions for the payment entry step. This will be displayed to the individual to ensure they understand why they're being asked to enter payment information. A \"PaymentConfiguration\" merge field will have these properties: Amount, Entity, AmountEntryLabel, TransactionType, and TransactionSummary. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
-        DefaultValue = "{\"time\":1743551229152,\"blocks\":[{\"id\":\"sr-B__Yw8P\",\"type\":\"paragraph\",\"data\":{\"text\":\"To continue, please complete the payment below.\"}},{\"id\":\"1UQagMqGLW\",\"type\":\"paragraph\",\"data\":{\"text\":\"<b>Amount</b>: {{ PaymentConfiguration.Amount | FormatAsCurrency }}\"}}],\"version\":\"2.28.0\"}",
+        DefaultValue = "{\"time\":1743551229152,\"blocks\":[{\"id\":\"sr-B__Yw8P\",\"type\":\"paragraph\",\"data\":{\"text\":\"To continue, please complete the payment below.\"}},{\"id\":\"1UQagMqGLW\",\"type\":\"paragraph\",\"data\":{\"text\":\"{% if PaymentConfiguration.Amount %}<b>Amount</b>: {{ PaymentConfiguration.Amount | FormatAsCurrency }}{% endif %}\"}}],\"version\":\"2.28.0\"}",
         IsRequired = false,
         Key = AttributeKey.PaymentInformationInstructions,
         Order = 6 )]
@@ -209,6 +209,8 @@ namespace Rock.Workflow.Action
     [TextField( "Batch Prefix",
         Description = "The batch prefix name to use when creating a new batch. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "Workflow Payment Entry",
         Key = AttributeKey.BatchPrefix,
         Category = "Payment / Transaction",
@@ -698,6 +700,10 @@ namespace Rock.Workflow.Action
 
             // Update payment info with details about this payment.
             paymentInfo.Amount = paymentData.Amount;
+            paymentInfo.AccountAllocations = new List<FinancialTransactionService.AccountAllocation>
+            {
+                new FinancialTransactionService.AccountAllocation( paymentData.Account.Id, paymentData.Amount )
+            };
             paymentInfo.Email = configuration.AuthorizedPersonAlias.Person.Email;
             paymentInfo.FirstName = configuration.AuthorizedPersonAlias.Person.NickName;
             paymentInfo.LastName = configuration.AuthorizedPersonAlias.Person.LastName;
@@ -736,6 +742,10 @@ namespace Rock.Workflow.Action
                 // Download the existing payment from the gateway.
                 transaction = configuration.ObsidianComponent.FetchPaymentTokenTransaction( rockContext, configuration.FinancialGateway, null, paymentData.Token );
                 paymentInfo.Amount = transaction.TotalAmount;
+                paymentInfo.AccountAllocations = new List<FinancialTransactionService.AccountAllocation>
+                {
+                    new FinancialTransactionService.AccountAllocation( paymentData.Account.Id, transaction.TotalAmount )
+                };
             }
             else
             {

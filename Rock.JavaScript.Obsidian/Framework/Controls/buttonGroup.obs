@@ -3,10 +3,13 @@
     <RockFormField v-bind="standardFieldProps" name="maxAge" :modelValue="internalValue">
         <div class="btn-group">
             <RockButton v-for="(item, index) in items"
-                        @click="internalValue = item.value"
+                        @click.stop="internalValue = item.value"
                         :btnSize="btnSize"
                         :btnType="itemButtonType(item)"
-                        :disabled="disabled">{{ item.text }}</RockButton>
+                        :disabled="disabled">
+                <i v-if="!isNullOrWhiteSpace(item.iconCssClass)" :class="item.iconCssClass"></i>
+                {{ item.text }}
+            </RockButton>
         </div>
     </RockFormField>
 </template>
@@ -20,11 +23,14 @@
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import { LiteralUnion } from "@Obsidian/Types/Utility/support";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
 
-    // Use ListItemBag, but don't worry about the "category" property and make the other properties not null/undefined
+    // Use ListItemBag, but don't worry about the "category" property, make the other
+    // properties not null/undefined, optionally allow an icon CSS class, and
+    // optionally allow a per-item selected color.
     type StandardListItemBag = {
         [P in keyof Pick<ListItemBag, "text" | "value">]-?: NonNullable<ListItemBag[P]>;
-    };
+    } & { iconCssClass?: string; selectedBtnType?: LiteralUnion<BtnType> };
 
     const props = defineProps({
         modelValue: {
@@ -74,7 +80,11 @@
     });
 
     function itemButtonType(item: StandardListItemBag): LiteralUnion<BtnType> {
-        return item.value === internalValue.value ? props.selectedBtnType : props.unselectedBtnType;
+        if (item.value === internalValue.value) {
+            return item.selectedBtnType ?? props.selectedBtnType;
+        }
+
+        return props.unselectedBtnType;
     }
 
     const standardFieldProps = useStandardRockFormFieldProps(props);

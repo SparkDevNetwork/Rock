@@ -2177,7 +2177,10 @@ namespace Rock.Communication.Chat
             // --------------------------------------------------------
             // 4) Update member push preferences. Always do this no matter what.
             // We are not tracking the result of this operation, just the exceptions.
-            var pushPreferenceResult = await UpdateChatChannelMemberPushPreferencesAsync( chatChannelMembers.Select( kvp => kvp.Value ).ToList() );
+            // Note that each dictionary key holds the latest (Rock-side) member instance; the value holds the previous
+            // (external chat system) instance, whose push notification mode is never populated and would incorrectly
+            // reset every member to the default mode if sent here.
+            var pushPreferenceResult = await UpdateChatChannelMemberPushPreferencesAsync( chatChannelMembers.Select( kvp => kvp.Key ).ToList() );
             if ( pushPreferenceResult?.HasException == true )
             {
                 exceptions.Add( pushPreferenceResult.Exception );
@@ -3862,7 +3865,9 @@ namespace Rock.Communication.Chat
                 request.MentionedUsers = rockChatMessage.MentionedChatUserKeys.ToList();
             }
 
-            if ( rockChatMessage.Attachments.Any() )
+            // Attachments are optional, so the list might be null (e.g. when sent from a workflow action
+            // without an attachment configured).
+            if ( rockChatMessage.Attachments?.Any() == true )
             {
                 request.Attachments = rockChatMessage.Attachments
                     .Select( a => TryConvertToStreamAttachment( a ) )

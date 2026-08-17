@@ -34,12 +34,28 @@ namespace Rock.Workflow.Action.CheckIn
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By Grade and Age" )]
 
-    [BooleanField( "Remove", "Select 'Yes' if groups should be removed.  Select 'No' if they should just be marked as excluded.", true , "", 0)]
-    [BooleanField( "Prioritize Grade", "Exclude groups that do not match by grade if one (or more) groups are found that do match by grade.", false, "", 1 )]
-    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Age Range Attribute", "Select the attribute used to define the age range of the group", true, false,
-        Rock.SystemGuid.Attribute.GROUP_AGE_RANGE, order: 2 )]
-    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Birthdate Range Attribute", "Select the attribute used to define the birthdate range of the group", true, false,
-        Rock.SystemGuid.Attribute.GROUP_BIRTHDATE_RANGE, order: 3 )]
+    [BooleanField( "Remove",
+        Description = "Select 'Yes' if groups should be removed.  Select 'No' if they should just be marked as excluded.",
+        DefaultBooleanValue = true,
+        Order = 0)]
+    [BooleanField( "Prioritize Grade",
+        Description = "Exclude groups that do not match by grade if one (or more) groups are found that do match by grade.",
+        DefaultBooleanValue = false,
+        Order = 1 )]
+    [AttributeField( "Group Age Range Attribute",
+        Description = "Select the attribute used to define the age range of the group",
+        IsRequired = true,
+        AllowMultiple = false,
+        EntityTypeGuid = Rock.SystemGuid.EntityType.GROUP,
+        DefaultValue = Rock.SystemGuid.Attribute.GROUP_AGE_RANGE,
+        Order = 2 )]
+    [AttributeField( "Group Birthdate Range Attribute",
+        Description = "Select the attribute used to define the birthdate range of the group",
+        IsRequired = true,
+        AllowMultiple = false,
+        EntityTypeGuid = Rock.SystemGuid.EntityType.GROUP,
+        DefaultValue = Rock.SystemGuid.Attribute.GROUP_BIRTHDATE_RANGE,
+        Order = 3 )]
     [Rock.SystemGuid.EntityTypeGuid( "8FCB06EF-2782-4FF3-91DE-24C1122DE2E5")]
     public class FilterGroupsByGradeAndAge : CheckInActionComponent
     {

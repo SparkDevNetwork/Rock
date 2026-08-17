@@ -1284,6 +1284,90 @@ namespace Rock
         }
 
         /// <summary>
+        /// Creates a deterministic RFC 4122 version 5 (name-based, SHA-1) Guid from this string and the
+        /// specified namespace. The same namespace and string always produce the same Guid, which makes
+        /// this useful for deriving a stable identifier from a known value.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The name is lower cased before hashing, so values differing only by letter casing (for example
+        /// "A1B2..." versus "a1b2...") produce the same Guid. This matters because the primary use is hashing
+        /// Guid strings, which reach this method in mixed casing depending on their source.
+        /// </para>
+        /// <para>
+        /// That lower casing is a deliberate deviation from canonical RFC 4122, which hashes the name bytes
+        /// exactly as supplied. Results therefore match other RFC 4122 version 5 implementations (Python's
+        /// uuid5, for example) only when the name is already lower case. Do not use this method to interoperate
+        /// with version 5 Guids generated outside of Rock from mixed-case names.
+        /// </para>
+        /// <para>
+        /// Other formatting differences are NOT normalized. A Guid string wrapped in braces or missing its
+        /// hyphens is still a different name and produces a different Guid.
+        /// </para>
+        /// </remarks>
+        /// <param name="str">The name to hash. Does not have to be a Guid.</param>
+        /// <param name="namespaceGuid">The namespace that scopes the generated Guid.</param>
+        /// <returns>A version 5 Guid derived from the namespace and this string.</returns>
+        public static Guid ToGuidV5( this string str, Guid namespaceGuid )
+        {
+            // RFC 4122 hashes the namespace in big-endian (network) byte order, but Guid.ToByteArray()
+            // returns the first three fields in little-endian order, so convert them before hashing.
+            var networkEndianNamespaceBytes = namespaceGuid.ToByteArray();
+
+            var time_low = IPAddress.HostToNetworkOrder( BitConverter.ToInt32( networkEndianNamespaceBytes, 0 ) );
+            var time_mid = IPAddress.HostToNetworkOrder( BitConverter.ToInt16( networkEndianNamespaceBytes, 4 ) );
+            var time_hi_and_version = IPAddress.HostToNetworkOrder( BitConverter.ToInt16( networkEndianNamespaceBytes, 6 ) );
+
+            Buffer.BlockCopy( BitConverter.GetBytes( time_low ), 0, networkEndianNamespaceBytes, 0, 4 );
+            Buffer.BlockCopy( BitConverter.GetBytes( time_mid ), 0, networkEndianNamespaceBytes, 4, 2 );
+            Buffer.BlockCopy( BitConverter.GetBytes( time_hi_and_version ), 0, networkEndianNamespaceBytes, 6, 2 );
+
+            // Lower case the name so Guid strings that differ only by casing hash to the same value. This is
+            // an intentional deviation from canonical RFC 4122 behavior; see the remarks on this method.
+            var nameBytes = Encoding.ASCII.GetBytes( str.ToLowerInvariant() );
+
+            var namespaceAndNameBytes = new byte[networkEndianNamespaceBytes.Length + nameBytes.Length];
+            Buffer.BlockCopy( networkEndianNamespaceBytes, 0, namespaceAndNameBytes, 0, networkEndianNamespaceBytes.Length );
+            Buffer.BlockCopy( nameBytes, 0, namespaceAndNameBytes, networkEndianNamespaceBytes.Length, nameBytes.Length );
+
+            byte[] hash;
+#if NET9_0_OR_GREATER
+            using ( var crypt = SHA1.Create() )
+#else
+            using ( var crypt = new SHA1Managed() )
+#endif
+            {
+                hash = crypt.ComputeHash( namespaceAndNameBytes );
+            }
+
+            // Use the first 16 bytes of the 20-byte SHA-1 hash as the Guid.
+            var result = new byte[16];
+            Buffer.BlockCopy( hash, 0, result, 0, 16 );
+
+            // Convert the first three fields back to the byte order the Guid constructor expects.
+            time_low = IPAddress.NetworkToHostOrder( BitConverter.ToInt32( result, 0 ) );
+            time_mid = IPAddress.NetworkToHostOrder( BitConverter.ToInt16( result, 4 ) );
+            time_hi_and_version = IPAddress.NetworkToHostOrder( BitConverter.ToInt16( result, 6 ) );
+
+            // Stamp the version as 5 in the time_hi_and_version field.
+            // https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.3
+            time_hi_and_version &= 0x0FFF;
+#pragma warning disable CS0675 // Bitwise-or operator used on a sign-extended operand
+            time_hi_and_version = ( short ) ( time_hi_and_version | ( 5 << 12 ) );
+#pragma warning restore CS0675 // Bitwise-or operator used on a sign-extended operand
+
+            Buffer.BlockCopy( BitConverter.GetBytes( time_low ), 0, result, 0, 4 );
+            Buffer.BlockCopy( BitConverter.GetBytes( time_mid ), 0, result, 4, 2 );
+            Buffer.BlockCopy( BitConverter.GetBytes( time_hi_and_version ), 0, result, 6, 2 );
+
+            // Set the two most significant bits of clock_seq_hi_and_reserved to "10".
+            result[8] &= 0x3F;
+            result[8] |= 0x80;
+
+            return new Guid( result );
+        }
+
+        /// <summary>
         /// Determines whether the specified unique identifier is Guid.Empty.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>

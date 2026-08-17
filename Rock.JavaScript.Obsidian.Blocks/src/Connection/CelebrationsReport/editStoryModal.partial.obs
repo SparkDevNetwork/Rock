@@ -1,0 +1,92 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Edit Celebration Story"
+           saveText="Save"
+           @save="onSave">
+
+        <NotificationBox v-if="displayError"
+                         alertType="danger">{{ displayError }}</NotificationBox>
+
+        <div class="row">
+            <div class="col-md-6">
+                <PersonPicker v-model="selectedAuthor"
+                              help="Sets who should be listed as the person who recorded this story."
+                              label="Author"
+                              rules="required" />
+            </div>
+        </div>
+
+        <TextBox v-model="storyText"
+                 label="Story Details"
+                 textMode="multiline"
+                 :rows="6" />
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, watch } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        noteIdKey: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        initialText: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The current author represented as a ListItemBag (value = PersonAlias Guid, text = full name). */
+        initialAuthor: {
+            type: Object as PropType<ListItemBag | undefined>,
+            default: undefined
+        },
+
+        errorMessage: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:visible", value: boolean): void;
+        (e: "save", noteIdKey: string, text: string, authorPersonAliasGuid: string | undefined): void;
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+    const storyText = ref(props.initialText);
+    const selectedAuthor = ref<ListItemBag | undefined>(props.initialAuthor);
+
+    const displayError = computed(() => props.errorMessage);
+
+    /** Emit save event. Parent closes the modal on success or sets errorMessage on failure. */
+    function onSave(): void {
+        if (!selectedAuthor.value?.value) {
+            return;
+        }
+        emit("save", props.noteIdKey, storyText.value, selectedAuthor.value.value);
+    }
+
+    // Resync local state when the modal is opened with a new row.
+    watch(() => props.initialText, (val) => {
+        storyText.value = val;
+    });
+
+    watch(() => props.initialAuthor, (val) => {
+        selectedAuthor.value = val;
+    });
+</script>

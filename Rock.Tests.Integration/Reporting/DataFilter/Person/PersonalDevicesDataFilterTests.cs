@@ -25,7 +25,7 @@ using Rock.Model;
 using Rock.Reporting;
 using Rock.Reporting.DataFilter.Person;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Reporting.DataFilter.Person

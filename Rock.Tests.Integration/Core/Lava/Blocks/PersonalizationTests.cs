@@ -28,8 +28,9 @@ using Rock.Lava;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
 using Rock.Tests.Integration.TestData.Crm;
-using Rock.Tests.Shared;
-using Rock.Tests.Shared.Lava;
+using Rock.Tests.Integration.TestFramework;
+using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Integration.Core.Lava.Blocks
 {

@@ -28,8 +28,8 @@ using Rock.Enums.Lms;
 using Rock.Lms;
 using Rock.Model;
 using Rock.Utility;
-using Rock.ViewModels.Blocks.Lms.LearningClassActivityCompletionDetail;
 using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;
+using Rock.ViewModels.Blocks.Lms.LearningClassActivityCompletionDetail;
 using Rock.ViewModels.Blocks.Lms.LearningClassActivityDetail;
 using Rock.ViewModels.Blocks.Lms.LearningClassAnnouncementDetail;
 using Rock.ViewModels.Blocks.Lms.LearningClassContentPageDetail;
@@ -76,7 +76,7 @@ namespace Rock.Blocks.Lms
         "Show Grades",
         Key = AttributeKey.ShowGrades,
         Description = "Determines if grades will be shown on the class overview page.",
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         IsRequired = true,
         DefaultBooleanValue = true,
         Order = 4 )]
@@ -85,7 +85,7 @@ namespace Rock.Blocks.Lms
         "Enable Smart Scroll",
         Key = AttributeKey.EnableSmartScroll,
         Description = "Determines if the block should automatically scroll the main content section to the top whenever an activity is selected.",
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         IsRequired = false,
         DefaultBooleanValue = true,
         Order = 5 )]
@@ -743,6 +743,59 @@ namespace Rock.Blocks.Lms
             // Let the Activity component decide if it needs to be graded.
             completion.RequiresGrading = activityComponent.RequiresGrading( completion, completionData, componentData, RockContext, RequestContext );
             activityCompletionBag.RequiresScoring = completion.RequiresGrading;
+
+            // Auto path: a fully auto-graded submission that scores below the threshold is reset to a
+            // fresh attempt now, while the student is present. Activities that defer to a facilitator
+            // take the manual path on the grading block instead.
+            //
+            // The GradedByPersonAliasId guard is essential: once a facilitator grades, RequiresGrading
+            // also reads false, so without it a re-submission of a facilitator-graded completion would
+            // auto-retake and discard the facilitator's decision. A graded completion's retake is the
+            // facilitator's call alone.
+            var isAutoRetakeRequired = !completion.RequiresGrading
+                && !completion.GradedByPersonAliasId.HasValue
+                && completion.IsScoreBelowRetakeThreshold;
+
+            if ( isAutoRetakeRequired )
+            {
+                var activityName = completion.LearningClassActivity.Name;
+
+                // An already-persisted completion must be torn down (delete + grade recompute).
+                // A brand-new one is simply never saved, which leaves the activity in its
+                // not-yet-completed state without persisting an attempt only to delete it.
+                if ( completion.Id != 0 )
+                {
+                    activityCompletionService.AssignRetake( completion );
+                    RockContext.SaveChanges();
+                }
+
+                // Return the activity to a fresh attempt and explain the reset rather than letting it silently blank out.
+                // The returned message mirrors the "Retake Required" system communication.
+                activityCompletionBag.IdKey = null;
+                activityCompletionBag.IsStudentCompleted = false;
+                activityCompletionBag.IsCompleted = false;
+                activityCompletionBag.CompletedDate = null;
+                activityCompletionBag.PointsEarned = null;
+                activityCompletionBag.RequiresScoring = false;
+                activityCompletionBag.GradeName = null;
+                activityCompletionBag.GradeColor = null;
+                activityCompletionBag.CompletionValues = activityComponent.GetCompletionValues( completion,
+                    new Dictionary<string, string>(),
+                    componentData,
+                    PresentedFor.Student,
+                    RockContext,
+                    RequestContext );
+                activityCompletionBag.IsRetakeAssigned = true;
+                activityCompletionBag.RetakeMessage = $"You did not receive a passing grade on {activityName}. A retake has been assigned. Please complete the activity again to receive credit.";
+
+                return ActionOk( activityCompletionBag );
+            }
+            else
+            {
+                // Reset these values in case the student is re-submitting a completion.
+                activityCompletionBag.IsRetakeAssigned = false;
+                activityCompletionBag.RetakeMessage = null;
+            }
 
             if ( completion.Id == 0 )
             {

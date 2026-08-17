@@ -3,37 +3,24 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net472</TargetFramework>
+    <IsPackable>False</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Rock.Tests" />
+    <InternalsVisibleTo Include="Rock.Tests.Integration" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Moq" Version="4.20.72" />
-    <PackageReference Include="MSTest" Version="4.0.2" />
-    <PackageReference Include="Testcontainers.MsSql" Version="4.9.0" />
+    <PackageReference Include="MSTest.TestFramework" Version="4.0.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj" />
     <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj" />
-    <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj" />
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj" />
-    <ProjectReference Include="..\Rock.Lava\Rock.Lava.csproj" />
-    <ProjectReference Include="..\Rock.Mailgun\Rock.Mailgun.csproj" />
-    <ProjectReference Include="..\Rock.Migrations\Rock.Migrations.csproj" />
-    <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj" />
     <ProjectReference Include="..\Rock\Rock.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Quartz">
-      <HintPath>..\libs\Quartz\Quartz.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="..\Documentation\sampledata_1_14_1.xml">
-      <Link>TestFramework\sampledata_1_14_1.xml</Link>
-    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

@@ -39,7 +39,9 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Creates Check-in Labels" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Create Labels" )]
-    [BooleanField( "Enable Saving Label Data", "Select 'Yes' if the label data should be temporarily saved on the attendance record. Select 'No' to disable saving label data.", true )]
+    [BooleanField( "Enable Saving Label Data",
+        Description = "Select 'Yes' if the label data should be temporarily saved on the attendance record. Select 'No' to disable saving label data.",
+        DefaultBooleanValue = true )]
 
     [Rock.SystemGuid.EntityTypeGuid( "8F348E7B-F9FD-4600-852D-477B13B0B4EE")]
     public class CreateLabels : CheckInActionComponent
@@ -312,7 +314,7 @@ namespace Rock.Workflow.Action.CheckIn
 
             foreach ( var attribute in item.Attributes.OrderBy( a => a.Value.Order ) )
             {
-                if ( attribute.Value.FieldType.Class == typeof( Rock.Field.Types.LabelFieldType ).FullName )
+                if ( attribute.Value.FieldType.Guid == SystemGuid.FieldType.LABEL.AsGuid() )
                 {
                     Guid? binaryFileGuid = item.GetAttributeValue( attribute.Key ).AsGuidOrNull();
                     if ( binaryFileGuid != null )

@@ -1,0 +1,196 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DisplayCard :title="opportunity.name"
+                 :description="plainDescription"
+                 :iconCssClass="opportunity.iconCssClass"
+                 iconLabelType="info"
+                 iconStyle="tile"
+                 :isSelected="isSelected"
+                 :isExpanded="isSelected && hasAttributes"
+                 :disabled="disabled"
+                 :onClick="toggleSelected">
+        <template #aside>
+            <div class="connection-opportunity-aside">
+                <HighlightLabel v-if="opportunity.connectionTypeName"
+                                labelType="default"
+                                :iconCssClass="opportunity.connectionTypeIconCssClass ?? undefined">
+                    {{ opportunity.connectionTypeName }}
+                </HighlightLabel>
+                <div @click.stop>
+                    <CheckBox v-model="isSelected" label="" :disabled="disabled" />
+                </div>
+            </div>
+        </template>
+
+        <template v-if="hasAttributes" #expanded>
+            <ContentSection :disableCollapse="true" @click.stop>
+                <ContentStack v-for="category in attributeCategories"
+                              :key="category.guid"
+                              headerLocation="top"
+                              :title="category.name"
+                              :description="category.description">
+                    <AttributeValuesContainer v-model="attributeValues"
+                                              :attributes="category.attributes"
+                                              :showCategoryLabel="false"
+                                              :disabled="disabled"
+                                              isEditMode />
+                </ContentStack>
+            </ContentSection>
+        </template>
+    </DisplayCard>
+</template>
+
+<style scoped>
+.connection-opportunity-aside {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-large);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { ConnectionRequestEntryOpportunityBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestEntry/connectionRequestEntryOpportunityBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
+
+    // #region Types
+
+    /** A group of opportunity attributes sharing a category, rendered as one stacked section. */
+    type AttributeCategoryGroup = {
+        guid: string;
+        name: string;
+        description: string;
+        order: number;
+        attributes: Record<string, PublicAttributeBag>;
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        opportunity: {
+            type: Object as PropType<ConnectionRequestEntryOpportunityBag>,
+            required: true
+        },
+
+        selected: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        modelValue: {
+            type: Object as PropType<Record<string, string>>,
+            default: () => ({})
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:selected", value: boolean): void;
+        (e: "update:modelValue", value: Record<string, string>): void;
+    }>();
+
+    // #region Computed Values
+
+    const isSelected = computed<boolean>({
+        get(): boolean {
+            return props.selected;
+        },
+        set(value: boolean): void {
+            emit("update:selected", value);
+        }
+    });
+
+    const attributeValues = computed<Record<string, string>>({
+        get(): Record<string, string> {
+            return props.modelValue;
+        },
+        set(value: Record<string, string>): void {
+            emit("update:modelValue", value);
+        }
+    });
+
+    const hasAttributes = computed<boolean>(() => {
+        return !!props.opportunity.attributes && Object.keys(props.opportunity.attributes).length > 0;
+    });
+
+    /**
+     * The opportunity attributes grouped into category sections. Each attribute
+     * is placed in its first (lowest-order) category; uncategorized attributes
+     * fall into a single leading group with no heading.
+     */
+    const attributeCategories = computed<AttributeCategoryGroup[]>(() => {
+        const source = props.opportunity.attributes ?? {};
+        const groups = new Map<string, AttributeCategoryGroup>();
+
+        for (const key of Object.keys(source)) {
+            const attribute = source[key];
+            const category = (attribute.categories ?? []).slice().sort((a, b) => a.order - b.order)[0];
+
+            const guid = category?.guid ?? emptyGuid;
+
+            if (!groups.has(guid)) {
+                groups.set(guid, {
+                    guid,
+                    name: category?.name ?? "",
+                    description: category?.description ?? "",
+                    order: category?.order ?? -1,
+                    attributes: {}
+                });
+            }
+
+            groups.get(guid)!.attributes[key] = attribute;
+        }
+
+        // The uncategorized group leads, then categories follow in their configured order.
+        return [...groups.values()].sort((a, b) => {
+            if (a.guid === emptyGuid) {
+                return -1;
+            }
+            if (b.guid === emptyGuid) {
+                return 1;
+            }
+            return a.order - b.order;
+        });
+    });
+
+    /**
+     * The opportunity description as plain text. The stored value is HTML, so the
+     * card summary strips the markup rather than rendering raw tags.
+     */
+    const plainDescription = computed<string>(() => {
+        const html = props.opportunity.description ?? "";
+        if (!html) {
+            return "";
+        }
+        const el = document.createElement("div");
+        el.innerHTML = html;
+        return (el.textContent ?? "").trim();
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** Toggles whether this opportunity is selected. */
+    function toggleSelected(): void {
+        if (props.disabled) {
+            return;
+        }
+
+        isSelected.value = !isSelected.value;
+    }
+
+    // #endregion Functions
+</script>

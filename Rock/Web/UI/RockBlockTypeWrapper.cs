@@ -18,6 +18,7 @@ using System;
 using System.IO;
 using System.Web.UI;
 using Rock.Blocks;
+using Rock.Model;
 
 namespace Rock.Web.UI
 {
@@ -94,9 +95,35 @@ namespace Rock.Web.UI
                 {
                     using ( var sw = new StringWriter() )
                     {
-                        sw.Write( await webBlock.GetControlMarkupAsync() );
+                        try
+                        {
+                            sw.Write( await webBlock.GetControlMarkupAsync() );
 
-                        _cachedRenderContent = sw.ToString();
+                            _cachedRenderContent = sw.ToString();
+                        }
+                        catch ( Exception ex )
+                        {
+                            _cachedRenderContent = $"<div class=\"alert alert-warning\">An error occurred while rendering the block: {ex.Message}</div>";
+
+                            ExceptionLogService.LogException( ex, Context );
+                        }
+                    }
+
+                    /*
+                        7/23/26 - MSE
+
+                        A block that returned no markup has chosen to render nothing at
+                        all, so mark the control as not visible. This lets the
+                        RockBlockWrapper suppress the block's Pre-HTML and Post-HTML the
+                        same way it does for a WebForms block that sets Visible = false
+                        (e.g. the Defined Type Check List block when it is empty and
+                        configured with "Hide Block When Empty").
+
+                        Reason: Hide Pre/Post-HTML when an Obsidian block renders no content.
+                    */
+                    if ( _cachedRenderContent.IsNullOrWhiteSpace() )
+                    {
+                        Visible = false;
                     }
                 } );
 

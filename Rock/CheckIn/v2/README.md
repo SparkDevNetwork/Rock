@@ -257,12 +257,11 @@ Developer Note: Orginally called "Enable Override".
 #### Enable Checkout in Manager
 
 Type: Checkbox
-Depends On: Enable Supervisor Mode == True
 Mode: Essentials
 
 Help: Allows checkout to be enabled in the Check-in Manager.
 
-Developer Note: Originally called "Enable Check-out in Manager".
+Developer Note: This setting controls the Check Out button in the Check-in Manager web application (/checkinmanager); it does not affect the kiosk's Supervisor Mode. Originally called "Enable Check-out in Manager".
 
 
 ## Search & Security Codes

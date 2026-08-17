@@ -44,7 +44,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Engagement" )]
     [Description( "Displays the details of a particular streak." )]
     [IconCssClass( "ti ti-question-mark" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -52,7 +52,8 @@ namespace Rock.Blocks.Engagement
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "867abce8-47a9-46fa-8a35-47ebbc60c4fe" )]
-    [Rock.SystemGuid.BlockTypeGuid( "1c98107f-dfbf-44bd-a860-0c9df2e6c495" )]
+    [Rock.SystemGuid.BlockTypeGuid( "EA9857FF-6703-4E4E-A6FF-65C23EBD2216" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "1c98107f-dfbf-44bd-a860-0c9df2e6c495" )]
     public class StreakDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         private readonly int ChartBitsToShow = 350;
@@ -88,7 +89,7 @@ namespace Rock.Blocks.Engagement
                     return box;
                 }
 
-                box.NavigationUrls = GetBoxNavigationUrls( StreakTypeCache.GetId( box.Entity.StreakType.Value.AsGuid() ).ToString() );
+                box.NavigationUrls = GetBoxNavigationUrls( StreakTypeCache.Get( box.Entity.StreakType.Value.AsGuid() )?.IdKey ?? string.Empty );
                 box.Options = GetBoxOptions( box.IsEditable, box.Entity, rockContext );
                 box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Streak>();
 
@@ -110,7 +111,7 @@ namespace Rock.Blocks.Engagement
                 CurrentStreak = GetStreakStateString( entity.CurrentStreakCount, entity.CurrentStreakStartDate ),
                 LongestStreak = GetStreakStateString( entity.LongestStreakCount, entity.LongestStreakStartDate, entity.LongestStreakEndDate ),
                 ChartHTML = StreakChartHTML( rockContext, entity ),
-                personHTML = GetPersonHtml( rockContext, entity )
+                PersonHtml = GetPersonHtml( rockContext, entity )
             };
 
             return options;
@@ -540,13 +541,13 @@ namespace Rock.Blocks.Engagement
                     return ActionBadRequest( errorMessage );
                 }
 
-                var streakTypeId = entity.StreakType?.Id ?? entity.StreakTypeId;
+                var streakTypeId = entity.StreakType.IdKey;
 
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
 
                 return ActionOk( this.GetParentPageUrl( new Dictionary<string, string> {
-                    { PageParameterKey.StreakTypeId, streakTypeId.ToString() }
+                    { PageParameterKey.StreakTypeId, streakTypeId }
                 } ) );
             }
         }

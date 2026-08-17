@@ -22,29 +22,6 @@ using Rock.Attribute;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Specifies a level of necessity and/or availability of a data entry element.
-    /// </summary>
-    public enum DataEntryRequirementLevelSpecifier
-    {
-        /// <summary>
-        /// No requirement level has been specified for this data element.
-        /// </summary>
-        Unspecified = 0,
-        /// <summary>
-        /// The data element is available but not required.
-        /// </summary>
-        Optional = 1,
-        /// <summary>
-        /// The data element is available and required.
-        /// </summary>
-        Required = 2,
-        /// <summary>
-        /// The data element is not available.
-        /// </summary>
-        Unavailable = 3
-    }
-
-    /// <summary>
     /// A field that stores the level of necessity and availability associated with a data entry item.
     /// </summary>
     /// <summary>
@@ -54,6 +31,9 @@ namespace Rock.Field.Types
     [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DATA_ENTRY_REQUIREMENT_LEVEL )]
+    // The base class will be replaced with the RequirementLevel enum after
+    // the DataEntryRequirementLevelSpecifier enum is removed in a future release.
+#pragma warning disable CS0618 // Type or member is obsolete
     public class DataEntryRequirementLevelFieldType : EnumFieldType<DataEntryRequirementLevelSpecifier>
     {
         /// <summary>
@@ -70,4 +50,5 @@ namespace Rock.Field.Types
             base.SetAvailableValues( values );
         }
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 }

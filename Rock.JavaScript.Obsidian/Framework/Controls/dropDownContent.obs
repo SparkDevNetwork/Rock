@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <span ref="anchorElement" @click.prevent="onAnchorClick">
+    <span ref="anchorElement" @click.prevent="(e) => onAnchorClick(e)">
         <slot name="anchor">
             <i class="ti ti-dots-vertical cursor-pointer"></i>
         </slot>
@@ -10,7 +10,7 @@
         <svg v-if="showArrow" ref="arrowElement" class="arrow">
             <path d="M0,7L5,0L10,7"></path>
         </svg>
-        <div class="body">
+        <div class="body" :class="{ 'is-rounded': rounded, 'is-raised': raised }">
             <slot />
         </div>
     </div>
@@ -26,6 +26,7 @@
 
 .dropdown-content-item {
     cursor: pointer;
+    border-radius: var(--rounded-small);
 }
 
 .dropdown-content-item:hover {
@@ -48,6 +49,14 @@
     box-shadow: var(--box-shadow);
 }
 
+.floating-dropdown > .body.is-rounded {
+    border-radius: var(--rounded-large);
+}
+
+.floating-dropdown > .body.is-raised {
+    box-shadow: var(--box-shadow-strong);
+}
+
 .floating-dropdown:not(.allow-overflow) > .body {
     overflow: clip;
 }
@@ -62,6 +71,7 @@
 
 <script setup lang="ts">
     import { arrow, autoUpdate, flip, shift, useFloating } from "@Obsidian/Libs/floating-ui";
+    import type { Placement } from "@Obsidian/Libs/floating-ui";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { PropType, ref, watch } from "vue";
 
@@ -91,6 +101,30 @@
         enableFlip: {
             type: Boolean,
             default: false
+        },
+
+        /** The preferred placement of the floating dropdown relative to the anchor. Accepts any floating-ui Placement value (e.g. "bottom", "bottom-end"). */
+        placement: {
+            type: String as PropType<Placement>,
+            default: "bottom" as Placement
+        },
+
+        /** If true, clicks on the anchor element will not bubble up to parent elements. Useful when the dropdown is inside a clickable container. */
+        preventAnchorClickPropagation: {
+            type: Boolean,
+            default: false
+        },
+
+        /** If true, the dropdown body uses the large corner radius rather than the default small one. */
+        rounded: {
+            type: Boolean,
+            default: false
+        },
+
+        /** If true, the dropdown body uses the stronger elevation shadow rather than the default one. */
+        raised: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -106,6 +140,7 @@
     const isDropDownOpen = useVModelPassthrough(props, "modelValue", emit);
 
     const { floatingStyles, middlewareData } = useFloating(anchorElement, dropdownElement, {
+        placement: props.placement,
         middleware: [
             shift({
                 // Add 1 pixel padding to handle partial DPI zoom jitter.
@@ -151,7 +186,11 @@
     /**
      * Event handler for when the drop down anchor element has been clicked.
      */
-    function onAnchorClick(): void {
+    function onAnchorClick(event: MouseEvent): void {
+        if (props.preventAnchorClickPropagation) {
+            event.stopPropagation();
+        }
+
         isDropDownOpen.value = !isDropDownOpen.value;
     }
 

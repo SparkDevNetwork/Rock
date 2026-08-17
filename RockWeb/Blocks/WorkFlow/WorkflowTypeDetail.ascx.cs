@@ -44,8 +44,14 @@ namespace RockWeb.Blocks.WorkFlow
     [Category( "WorkFlow" )]
     [Description( "Displays the details of the given workflow type." )]
 
-    [LinkedPage( "Workflow Launch Page", "Page used to launch a workflow.", true, "", "", 0 )]
-    [LinkedPage( "Manage Workflows Page", "Page used to manage workflows.", true, "", "", 1 )]
+    [LinkedPage( "Workflow Launch Page",
+        Description = "Page used to launch a workflow.",
+        IsRequired = true,
+        Order = 0 )]
+    [LinkedPage( "Manage Workflows Page",
+        Description = "Page used to manage workflows.",
+        IsRequired = true,
+        Order = 1 )]
 
     [CodeEditorField( "Default No Action Message",
         Description = "The default No Action Message.",
@@ -93,7 +99,10 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 {% endif %}",
         Order = 3 )]
 
-    [LinkedPage( "Export Workflows Page", "Page used to export workflows.", false, "", "", 4 )]
+    [LinkedPage( "Export Workflows Page",
+        Description = "Page used to export workflows.",
+        IsRequired = false,
+        Order = 4 )]
     [Rock.SystemGuid.BlockTypeGuid( "E1FF677D-5E52-4259-90C7-5560ECBBD82B" )]
     public partial class WorkflowTypeDetail : RockBlock
     {
@@ -105,6 +114,16 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         private List<Guid> ExpandedActivities { get; set; }
         private List<Guid> ExpandedActivityAttributes { get; set; }
         private List<Guid> ExpandedActions { get; set; }
+
+        #endregion
+
+        #region PageParameter Keys
+
+        private static class PageParameterKey
+        {
+            public const string WorkflowTypeId = "WorkflowTypeId";
+            public const string ParentCategoryId = "ParentCategoryId";
+        }
 
         #endregion
 
@@ -568,8 +587,12 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnLaunch_Click( object sender, EventArgs e )
         {
+            var workflowType = new WorkflowTypeService( new RockContext() ).GetNoTracking( hfWorkflowTypeId.Value.AsInteger() );
             var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "WorkflowTypeId", hfWorkflowTypeId.Value );
+            if ( workflowType != null )
+            {
+                qryParams.Add( PageParameterKey.WorkflowTypeId, workflowType.IdKey );
+            }
             NavigateToLinkedPage( "WorkflowLaunchPage", qryParams );
         }
 
@@ -580,8 +603,12 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnManage_Click( object sender, EventArgs e )
         {
+            var workflowType = new WorkflowTypeService( new RockContext() ).GetNoTracking( hfWorkflowTypeId.Value.AsInteger() );
             var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "WorkflowTypeId", hfWorkflowTypeId.Value );
+            if ( workflowType != null )
+            {
+                qryParams.Add( PageParameterKey.WorkflowTypeId, workflowType.IdKey );
+            }
             NavigateToLinkedPage( "ManageWorkflowsPage", qryParams );
         }
 
@@ -592,8 +619,12 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnExport_Click( object sender, EventArgs e )
         {
+            var workflowType = new WorkflowTypeService( new RockContext() ).GetNoTracking( hfWorkflowTypeId.Value.AsInteger() );
             var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "WorkflowTypeId", hfWorkflowTypeId.Value );
+            if ( workflowType != null )
+            {
+                qryParams.Add( PageParameterKey.WorkflowTypeId, workflowType.IdKey );
+            }
             NavigateToLinkedPage( "ExportWorkflowsPage", qryParams );
         }
 
@@ -920,7 +951,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             } );
 
             var qryParams = new Dictionary<string, string>();
-            qryParams["WorkflowTypeId"] = workflowType.Id.ToString();
+            qryParams[PageParameterKey.WorkflowTypeId] = workflowType.IdKey;
             NavigateToPage( RockPage.Guid, qryParams );
         }
 
@@ -933,12 +964,12 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         {
             if ( hfWorkflowTypeId.Value.Equals( "0" ) )
             {
-                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
-                if ( parentCategoryId.HasValue )
+                var parentCategory = CategoryCache.Get( PageParameter( PageParameterKey.ParentCategoryId ), !PageCache.Layout.Site.DisablePredictableIds );
+                if ( parentCategory != null )
                 {
                     // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
                     var qryParams = new Dictionary<string, string>();
-                    qryParams["CategoryId"] = parentCategoryId.ToString();
+                    qryParams["CategoryId"] = parentCategory.IdKey;
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
@@ -1363,27 +1394,35 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         /// </summary>
         private void ShowDetail()
         {
-            int? workflowTypeId = PageParameter( "WorkflowTypeId" ).AsIntegerOrNull();
-            int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
+            var rockContext = new RockContext();
+            var disablePredictableIds = PageCache.Layout.Site.DisablePredictableIds;
 
-            if ( !workflowTypeId.HasValue )
+            var workflowTypeId = PageParameter( PageParameterKey.WorkflowTypeId );
+            var workflowType = new WorkflowTypeService( rockContext ).Get( workflowTypeId, !disablePredictableIds );
+            var parentCategory = CategoryCache.Get( PageParameter( PageParameterKey.ParentCategoryId ), !disablePredictableIds );
+
+            if ( workflowType == null && string.IsNullOrEmpty( workflowTypeId ) )
             {
                 pnlDetails.Visible = false;
                 return;
             }
 
-            var rockContext = new RockContext();
-
-            WorkflowType workflowType = null;
-
-            if ( workflowTypeId.Value.Equals( 0 ) )
+            if ( workflowType == null && workflowTypeId != "0" )
             {
+                // Non-empty identifier that doesn't resolve to an existing WorkflowType (stale link, bad IdKey, deleted row).
+                pnlDetails.Visible = false;
+                return;
+            }
+
+            if ( workflowType == null )
+            {
+                // Adding a new WorkflowType (WorkflowTypeId == "0").
                 workflowType = new WorkflowType();
                 workflowType.Id = 0;
                 workflowType.IsActive = true;
                 workflowType.IsPersisted = true;
                 workflowType.IsSystem = false;
-                workflowType.CategoryId = parentCategoryId;
+                workflowType.CategoryId = parentCategory?.Id;
                 workflowType.IconCssClass = "ti ti-list-numbers";
                 workflowType.ActivityTypes.Add( new WorkflowActivityType { Name = "Start", Guid = Guid.NewGuid(), IsActive = true, IsActivatedWithWorkflow = true } );
                 workflowType.WorkTerm = "Work";
@@ -1395,13 +1434,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             }
             else
             {
-                workflowType = new WorkflowTypeService( rockContext ).Get( workflowTypeId.Value );
                 pdAuditDetails.SetEntity( workflowType, ResolveRockUrl( "~" ) );
-            }
-
-            if ( workflowType == null )
-            {
-                return;
             }
 
             pnlDetails.Visible = true;

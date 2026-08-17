@@ -19,6 +19,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web;
 
+using Microsoft.Extensions.DependencyInjection;
+
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Net;
 
@@ -52,7 +55,7 @@ namespace Rock.Personalization
                 return true;
             }
 
-            var clientType = InteractionDeviceType.GetClientType( httpRequest.UserAgent );
+            var clientType = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( httpRequest.UserAgent ).ClientType;
 
             return DeviceTypeStrings.Contains( clientType, StringComparer.OrdinalIgnoreCase );
         }
@@ -66,7 +69,7 @@ namespace Rock.Personalization
                 return true;
             }
 
-            var clientType = InteractionDeviceType.GetClientType( request.ClientInformation.UserAgent );
+            var clientType = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( request.ClientInformation.UserAgent ).ClientType;
 
             return DeviceTypeStrings.Contains( clientType, StringComparer.OrdinalIgnoreCase );
         }

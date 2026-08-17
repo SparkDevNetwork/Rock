@@ -245,13 +245,13 @@ namespace Rock.Constants
         }
 
         /// <summary>
-        /// Returns a message in the format: ""
+        /// Returns a message in the format: "&lt;strong&gt;Note&lt;/strong&gt; You are not authorized to edit this {0}."
         /// </summary>
         /// <param name="itemFriendlyName">Name of the item field.</param>
         /// <returns></returns>
         public static string ReadOnlyEditActionNotAllowed( string itemFriendlyName )
         {
-            return string.Empty;
+            return string.Format( "<strong>Note</strong> You are not authorized to edit this {0}.", itemFriendlyName.ToLower() );
         }
     }
 }

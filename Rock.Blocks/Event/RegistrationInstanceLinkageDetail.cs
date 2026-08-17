@@ -142,7 +142,7 @@ namespace Rock.Blocks.Event
 
             if ( instance != null )
             {
-                qryParams.Add( "RegistrationInstanceId", instance.Id.ToString() );
+                qryParams.Add( "RegistrationInstanceId", instance.IdKey );
             }
 
             return new Dictionary<string, string>

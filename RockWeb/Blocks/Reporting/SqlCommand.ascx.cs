@@ -35,7 +35,11 @@ namespace RockWeb.Blocks.Reporting
     [DisplayName( "SQL Command" )]
     [Category( "Reporting" )]
     [Description( "Block to execute a SQL command and display the result (if any)." )]
-    [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180, order: 1 )]
+    [IntegerField( "Database Timeout",
+        Description = "The number of seconds to wait before reporting a database timeout.",
+        IsRequired = false,
+        DefaultIntegerValue = 180,
+        Order = 1 )]
     [Rock.SystemGuid.BlockTypeGuid( "89EAFE90-7082-4FF2-BC87-F50BFDB53298" )]
     public partial class SqlCommand : RockBlock
     {

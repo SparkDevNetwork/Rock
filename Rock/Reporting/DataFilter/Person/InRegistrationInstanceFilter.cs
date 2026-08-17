@@ -104,6 +104,11 @@ namespace Rock.Reporting.DataSelect.Person
 
             SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
 
+            if ( selectionConfig == null )
+            {
+                return data;
+            }
+
             var registrationTemplate = new RegistrationTemplateService( rockContext ).Get( selectionConfig.RegistrationTemplateId );
             data.Add( "template", registrationTemplate?.ToListItemBag().ToCamelCaseJson( false, true ) );
 
@@ -197,6 +202,11 @@ function() {
         public override string FormatSelection( Type entityType, string selection )
         {
             SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
+
+            if ( selectionConfig == null )
+            {
+                return string.Empty;
+            }
 
             string filterOptions = selectionConfig.RegistrationType == RegistrationTypeSpecifier.Registrar ? "Registrar" : "Registrant";
 

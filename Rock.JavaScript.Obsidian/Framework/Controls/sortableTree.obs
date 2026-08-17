@@ -1,0 +1,550 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="wrapperEl" class="sortable-tree-wrapper">
+        <template v-for="group in topLevelGroupsOrder" :key="group.key ?? '__null'">
+            <div v-drag-reorder="getDragOptions(group.key)" class="sortable-tree-list">
+                <SortableTreeNode v-for="node in group.items"
+                                  :key="node.idKey ?? ''"
+                                  :node="node"
+                                  :selectedNodeKey="selectedKey"
+                                  :groupBy="groupBy"
+                                  :actions="actions"
+                                  :dragIconCssClass="dragIconCssClass"
+                                  :iconCssClass="iconCssClass"
+                                  :handleCssClass="handleCssClass"
+                                  :isNodeExpanded="isNodeExpanded"
+                                  :isDraggable="group.items.length > 1 && (isNodeDraggable?.(node) ?? true)"
+                                  :isNodeDraggable="isNodeDraggable"
+                                  @select="onChildSelect"
+                                  @toggle="onToggle"
+                                  @reorder="$emit('reorder', $event)">
+                    <template v-for="(_, slotName) in $slots" #[slotName]="slotProps">
+                        <slot :name="slotName" v-bind="slotProps ?? {}" />
+                    </template>
+                </SortableTreeNode>
+            </div>
+        </template>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import SortableTreeNode from "./Internal/SortableTree/sortableTreeNode.obs";
+    import { useDragAutoScroll } from "./Internal/SortableTree/utils.partial";
+    import { ISortableTreeAction, ISortableTreeNode, ISortableTreeReorderEvent } from "./Internal/SortableTree/types.partial";
+    import { DragReorder as vDragReorder, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    const props = defineProps({
+        /** The top-level array of nodes to render. */
+        nodes: {
+            type: Array as PropType<ISortableTreeNode[]>,
+            required: true
+        },
+
+        /**
+         * The currently-selected node's key. Drives the .selected modifier on
+         * the matching row.
+         */
+        selectedNodeKey: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /**
+         * The URL query-string parameter that mirrors `selectedNodeKey`.
+         * On mount the control seeds itself from this param if present, and
+         * keeps the param in sync with the selection so URLs remain
+         * shareable. Pass an empty string to disable URL syncing entirely.
+         */
+        selectedNodeQueryParameterKey: {
+            type: String,
+            default: "SelectedNode"
+        },
+
+        /**
+         * Returns a group key for the node. Children with different keys
+         * reorder independently. Only same-key siblings can be
+         * drag-reordered against each other.
+         */
+        groupBy: {
+            type: Function as PropType<(node: ISortableTreeNode) => string | null>,
+            default: undefined
+        },
+
+        /** Buttons rendered in each row's trailing actions area. */
+        actions: {
+            type: Array as PropType<ISortableTreeAction[]>,
+            default: () => []
+        },
+
+        /** Icon class swapped into the handle while hovering it. */
+        dragIconCssClass: {
+            type: String as PropType<string>,
+            default: "ti-grip-vertical"
+        },
+
+        /**
+         * Icon shown in each row's handle. Accepts a static class for a
+         * uniform tree, or a resolver `(node) => class` for per-node icons.
+         */
+        iconCssClass: {
+            type: [String, Function] as PropType<string | ((node: ISortableTreeNode) => string)>,
+            default: "ti-circle-dot"
+        },
+
+        /**
+         * Extra class applied to each row's handle. Accepts a static class for
+         * a uniform tree, or a resolver `(node) => class` for per-node classes.
+         * Pair with `.sortable-tree-row-handle.<class>` selectors so the
+         * consumer's styling outranks the control's default.
+         */
+        handleCssClass: {
+            type: [String, Function] as PropType<string | ((node: ISortableTreeNode) => string)>,
+            default: ""
+        },
+
+        /**
+         * When true, selecting a node collapses every node not on its
+         * ancestor chain. When false, selection only adds expansions and
+         * leaves any manually-expanded branches alone.
+         */
+        autoCollapse: {
+            type: Boolean,
+            default: true
+        },
+
+        /**
+         * Async guard called before a row-click selection is committed. When
+         * supplied, the row's click waits on the returned Promise; a `false`
+         * result cancels the selection (no v-model update, no `select` event,
+         * no visual highlight change). Useful for prompting the user about
+         * unsaved edits before they navigate away. Programmatic v-model
+         * changes and URL seeding bypass the guard.
+         */
+        beforeSelect: {
+            type: Function as PropType<(node: ISortableTreeNode) => boolean | Promise<boolean>>,
+            default: undefined
+        },
+
+        /**
+         * Optional predicate that vetoes drag-reorder on a per-node basis.
+         * Returns false to make a node undraggable regardless of its sibling
+         * count. The drag handle renders in a disabled state and dragula
+         * refuses to initiate the drag. When omitted, every node remains
+         * draggable as long as it has at least one same-type sibling.
+         */
+        isNodeDraggable: {
+            type: Function as PropType<(node: ISortableTreeNode) => boolean>,
+            default: undefined
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "select", node: ISortableTreeNode): void;
+        (e: "update:selectedNodeKey", key: string): void;
+        (e: "reorder", payload: ISortableTreeReorderEvent): void;
+    }>();
+
+    /** Provides auto-scrolling behavior during drag operations. */
+    const dragAutoScroll = useDragAutoScroll();
+
+    // #region Values
+
+    /**
+     * Per-bucket drag options at the top level, keyed by groupBy result.
+     * Lazily populated and cached so each bucket's drag source keeps a stable
+     * id across re-renders.
+     */
+    const dragOptionsByKey = new Map<string | null, IDragSourceOptions>();
+
+    /** The wrapper element for the tree. */
+    const wrapperEl = ref<HTMLElement | null>(null);
+
+    /**
+     * Two-way binding for the selected node's key. `useVModelPassthrough`
+     * keeps this ref in sync with the `selectedNodeKey` prop and emits
+     * `update:selectedNodeKey` whenever the selection changes (from row
+     * clicks, ancestor-collapse clears, or URL seeding).
+     */
+    const selectedKey = useVModelPassthrough(props, "selectedNodeKey", emit);
+
+    // Seed the selection from the URL synchronously, before any watchers
+    // fire. This way the initial expansion pass and the URL-write watcher
+    // both see the deep-link value, instead of clobbering it with the
+    // empty default.
+    if (props.selectedNodeQueryParameterKey) {
+        const seed = new URLSearchParams(window.location.search).get(props.selectedNodeQueryParameterKey);
+        if (seed && seed !== selectedKey.value) {
+            selectedKey.value = seed;
+        }
+    }
+
+    /**
+     * The idKeys of nodes that are currently expanded. Always reassign to a
+     * new Set when changing this; in-place mutations won't trigger a
+     * re-render.
+     */
+    const expandedKeys = ref<Set<string>>(new Set());
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * Top-level nodes grouped by `groupBy` key, preserving the order each key
+     * first appears in. Drives the per-key drag-region rendering at the root
+     * so groups and areas can't be dragged across each other when groupBy is
+     * supplied.
+     */
+    const topLevelGroupsOrder = computed((): { key: string | null; items: ISortableTreeNode[] }[] => {
+        const result: { key: string | null; items: ISortableTreeNode[] }[] = [];
+        const indexByKey = new Map<string | null, number>();
+        for (const node of props.nodes) {
+            const key = props.groupBy?.(node) ?? null;
+            let idx = indexByKey.get(key);
+            if (idx === undefined) {
+                idx = result.length;
+                indexByKey.set(key, idx);
+                result.push({ key, items: [] });
+            }
+            result[idx].items.push(node);
+        }
+        return result;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** Returns whether the given node is currently expanded. */
+    function isNodeExpanded(node: ISortableTreeNode): boolean {
+        return !!node.idKey && expandedKeys.value.has(node.idKey);
+    }
+
+    /**
+     * Searches the tree for a node whose idKey matches `targetKey`. Returns
+     * the list of idKeys from the top of the tree down to the target
+     * (including the target itself), or null if it isn't found.
+     */
+    function findPathToNode(nodes: ISortableTreeNode[], targetKey: string): string[] | null {
+        for (const node of nodes) {
+            if (node.idKey === targetKey) {
+                return [targetKey];
+            }
+            if (node.children?.length) {
+                const sub = findPathToNode(node.children, targetKey);
+                if (sub !== null) {
+                    return [node.idKey ?? "", ...sub];
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Returns true when `descendantKey` sits underneath `ancestorKey` in the tree. */
+    function isDescendantOf(ancestorKey: string, descendantKey: string): boolean {
+        if (ancestorKey === descendantKey) {
+            return false;
+        }
+        const path = findPathToNode(props.nodes, descendantKey);
+        return !!path && path.includes(ancestorKey);
+    }
+
+    /** Invokes `fn` for the idKey of every descendant of `node` (depth-first, target excluded). */
+    function forEachDescendantKey(node: ISortableTreeNode, fn: (key: string) => void): void {
+        for (const child of node.children ?? []) {
+            if (child.idKey) {
+                fn(child.idKey);
+            }
+            forEachDescendantKey(child, fn);
+        }
+    }
+
+    /** Collects every idKey in the tree into `into`. */
+    function collectAllKeys(nodes: ISortableTreeNode[], into: Set<string>): void {
+        for (const node of nodes) {
+            if (node.idKey) {
+                into.add(node.idKey);
+            }
+            if (node.children?.length) {
+                collectAllKeys(node.children, into);
+            }
+        }
+    }
+
+    /**
+     * Drops any idKeys from `expandedKeys` that aren't present in the
+     * current tree. Prevents the set from growing unboundedly when a
+     * consumer rebuilds `nodes` (e.g., after a server refresh).
+     */
+    function pruneStaleExpansionKeys(): void {
+        if (expandedKeys.value.size === 0) {
+            return;
+        }
+        const liveKeys = new Set<string>();
+        collectAllKeys(props.nodes, liveKeys);
+        const next = new Set<string>();
+        for (const key of expandedKeys.value) {
+            if (liveKeys.has(key)) {
+                next.add(key);
+            }
+        }
+        if (next.size !== expandedKeys.value.size) {
+            expandedKeys.value = next;
+        }
+    }
+
+    /**
+     * Opens the chain of parent nodes leading to the selected node so the
+     * selection is visible, and ensures the target itself is open. With
+     * `autoCollapse` on, drops every other expanded branch, but preserves
+     * any currently-expanded descendants of the new target so navigating
+     * up the tree doesn't blow away the trail underneath. With it off,
+     * never drops anything; just adds. Also scrolls the selected row into
+     * view.
+     */
+    function applyExpansionForSelection(): void {
+        if (!selectedKey.value) {
+            return;
+        }
+        const path = findPathToNode(props.nodes, selectedKey.value);
+        if (path === null) {
+            return;
+        }
+
+        const target = selectedKey.value;
+        const newPathKeys = path.filter(k => !!k);
+
+        if (props.autoCollapse) {
+            const next = new Set(newPathKeys);
+            for (const key of expandedKeys.value) {
+                if (isDescendantOf(target, key)) {
+                    next.add(key);
+                }
+            }
+            expandedKeys.value = next;
+        }
+        else {
+            expandedKeys.value = new Set([...expandedKeys.value, ...newPathKeys]);
+        }
+
+        nextTick(() => {
+            const el = wrapperEl.value?.querySelector(`[data-id-key="${target}"]`);
+            el?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        });
+    }
+
+    /**
+     * Mirrors the current selection into the configured URL query parameter.
+     * Uses `replaceState` so selection changes don't clutter the back/forward
+     * history with one entry per click.
+     */
+    function updateUrlWithSelectedKey(): void {
+        if (!props.selectedNodeQueryParameterKey) {
+            return;
+        }
+        const url = new URL(window.location.href);
+        const current = url.searchParams.get(props.selectedNodeQueryParameterKey) ?? "";
+        const next = selectedKey.value ?? "";
+        if (current === next) {
+            return;
+        }
+        if (next) {
+            url.searchParams.set(props.selectedNodeQueryParameterKey, next);
+        }
+        else {
+            url.searchParams.delete(props.selectedNodeQueryParameterKey);
+        }
+        history.replaceState(null, "", url.toString());
+    }
+
+    /** Returns the cached drag options for a top-level bucket, building them on first use. */
+    function getDragOptions(key: string | null): IDragSourceOptions {
+        let opts = dragOptionsByKey.get(key);
+        if (!opts) {
+            opts = makeDragOptions(key);
+            dragOptionsByKey.set(key, opts);
+        }
+        return opts;
+    }
+
+    /**
+     * Builds drag options for a single top-level bucket. Source/target indices
+     * arrive relative to the bucket and are mapped to real positions in the
+     * full `nodes` array, so interleaved sibling buckets reorder correctly.
+     */
+    function makeDragOptions(key: string | null): IDragSourceOptions {
+        return {
+            id: newGuid(),
+            copyElement: false,
+            handleSelector: ".reorder-handle",
+            startDrag: (op, handle): boolean => {
+                const reorderHandle = handle.closest(".reorder-handle");
+                if (!reorderHandle || reorderHandle.classList.contains("disabled")) {
+                    return false;
+                }
+                return handle.closest(".sortable-tree-list") === op.sourceContainer;
+            },
+            dragBegin: (op): void => {
+                (op.sourceContainer as HTMLElement).classList.add("moving");
+                dragAutoScroll.start(op.element as HTMLElement);
+            },
+            dragEnd: (op): void => {
+                (op.sourceContainer as HTMLElement).classList.remove("moving");
+                dragAutoScroll.stop();
+            },
+            dragDrop: (op): void => {
+                if (op.targetIndex === undefined || op.sourceIndex === op.targetIndex) {
+                    return;
+                }
+                // A bucket's members can be non-contiguous in `nodes` when
+                // siblings of a different group key interleave. Reorder only
+                // within the slots this bucket occupies and leave foreign-key
+                // nodes pinned, so the buckets' own display order never shifts.
+                const positions: number[] = [];
+                for (let i = 0; i < props.nodes.length; i++) {
+                    if ((props.groupBy?.(props.nodes[i]) ?? null) === key) {
+                        positions.push(i);
+                    }
+                }
+                if (op.sourceIndex < 0 || op.sourceIndex >= positions.length
+                    || op.targetIndex < 0 || op.targetIndex >= positions.length) {
+                    return;
+                }
+                const items = positions.map(p => props.nodes[p]);
+                const [moved] = items.splice(op.sourceIndex, 1);
+                items.splice(op.targetIndex, 0, moved);
+                positions.forEach((p, j) => {
+                    props.nodes[p] = items[j];
+                });
+                emit("reorder", {
+                    node: moved,
+                    parent: null,
+                    oldIndex: positions[op.sourceIndex],
+                    newIndex: positions[op.targetIndex]
+                });
+            }
+        };
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Toggles the given node's expansion state. Collapsing also drops every
+     * descendant from the expansion set so re-opening the node later starts
+     * fresh. If the collapse hides the currently-selected row (this node is
+     * a proper ancestor of the selection), the selection is cleared so we
+     * never end up with a ghost selection driving the detail pane.
+     */
+    function onToggle(node: ISortableTreeNode): void {
+        if (!node.idKey) {
+            return;
+        }
+        const wasExpanded = expandedKeys.value.has(node.idKey);
+        const next = new Set(expandedKeys.value);
+        if (wasExpanded) {
+            next.delete(node.idKey);
+            forEachDescendantKey(node, (key) => next.delete(key));
+        }
+        else {
+            next.add(node.idKey);
+        }
+        expandedKeys.value = next;
+
+        if (wasExpanded && selectedKey.value && node.idKey !== selectedKey.value) {
+            const path = findPathToNode(props.nodes, selectedKey.value);
+            if (path && path.slice(0, -1).includes(node.idKey)) {
+                selectedKey.value = "";
+            }
+        }
+    }
+
+    /**
+     * Wraps the child node's `select` event so the internal selectedKey
+     * (and v-model) updates before the consumer sees the bubbled-up event.
+     * Awaits the optional `beforeSelect` guard first; if the guard resolves
+     * to false, the selection is abandoned (no state change, no event, no
+     * auto-expand). Row-click auto-expand of a collapsed parent happens
+     * here, after the guard, so a rejected guard doesn't leak a visible
+     * expansion change.
+     */
+    async function onChildSelect(node: ISortableTreeNode): Promise<void> {
+        // Clicking the already-selected row is a no-op.
+        if (node.idKey && node.idKey === selectedKey.value) {
+            return;
+        }
+
+        if (props.beforeSelect) {
+            const allowed = await props.beforeSelect(node);
+            if (!allowed) {
+                return;
+            }
+        }
+
+        // Auto-expand the row when it has children and is currently
+        // collapsed. The chevron remains the only way to collapse.
+        if (node.idKey && node.children?.length && !expandedKeys.value.has(node.idKey)) {
+            onToggle(node);
+        }
+
+        selectedKey.value = node.idKey ?? "";
+        emit("select", node);
+    }
+
+    /**
+     * Re-seeds the selection from the URL when the user navigates back or
+     * forward through the browser history.
+     */
+    function onPopState(): void {
+        if (!props.selectedNodeQueryParameterKey) {
+            return;
+        }
+        const urlValue = new URLSearchParams(window.location.search).get(props.selectedNodeQueryParameterKey) ?? "";
+        if (urlValue !== selectedKey.value) {
+            selectedKey.value = urlValue;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // `immediate: true` runs this once during setup so deep-link URLs render
+    // correctly on the first paint instead of flashing collapsed first.
+    watch(selectedKey, () => {
+        applyExpansionForSelection();
+    }, { immediate: true });
+
+    // URL sync runs only on subsequent changes (no `immediate`) so the
+    // initial setup-time seed read isn't echoed back as a write.
+    watch(selectedKey, () => {
+        updateUrlWithSelectedKey();
+    });
+
+    // Drops orphaned idKeys from the expansion set whenever the consumer
+    // swaps `nodes` (e.g., after a server refresh). In-place mutations like
+    // reorder splices don't change the array reference, so this stays cheap.
+    watch(() => props.nodes, () => {
+        pruneStaleExpansionKeys();
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        if (props.selectedNodeQueryParameterKey) {
+            window.addEventListener("popstate", onPopState);
+        }
+    });
+
+    onBeforeUnmount(() => {
+        window.removeEventListener("popstate", onPopState);
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

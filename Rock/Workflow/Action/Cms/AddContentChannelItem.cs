@@ -35,12 +35,31 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Content Channel Item Add" )]
 
-    [ContentChannelField( "Content Channel", "The content channel where items will be added.", true, null, "", 1, "ContentChannel" ) ]
-    [TextField("Title", "The title of the content channel item. <span class='tip tip-lava'></span>", true, "", "", 2 )]
-    [WorkflowTextOrAttribute( "Start Date Time", "Attribute Value", "Text (date time format) or datetime workflow attribute that contains the text to set the start date time. <span class='tip tip-lava'></span>", true, "", "", 3, "StartDateTime",
-        new string[] { "Rock.Field.Types.DateTimeFieldType", "Rock.Field.Types.TextFieldType" } )]
-    [WorkflowTextOrAttribute( "Expire Date Time", "Attribute Value", "An optional text (date time format) or datetime workflow attribute that contains the text to set the expiration date time. <span class='tip tip-lava'></span>", false, "", "", 4, "ExpireDateTime",
-        new string[] { "Rock.Field.Types.DateTimeFieldType", "Rock.Field.Types.TextFieldType" } )]
+    [ContentChannelField( "Content Channel",
+        Description = "The content channel where items will be added.",
+        IsRequired = true,
+        Order = 1,
+        Key = "ContentChannel" ) ]
+    [TextField("Title",
+        Description = "The title of the content channel item. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
+        Order = 2 )]
+    [WorkflowTextOrAttribute( "Start Date Time",
+        "Attribute Value",
+        Description = "Text (date time format) or datetime workflow attribute that contains the text to set the start date time. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.DateTimeFieldType", "Rock.Field.Types.TextFieldType" },
+        Order = 3,
+        Key = "StartDateTime" )]
+    [WorkflowTextOrAttribute( "Expire Date Time",
+        "Attribute Value",
+        Description = "An optional text (date time format) or datetime workflow attribute that contains the text to set the expiration date time. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.DateTimeFieldType", "Rock.Field.Types.TextFieldType" },
+        Order = 4,
+        Key = "ExpireDateTime" )]
 
     [WorkflowTextOrAttribute(
         "Content",
@@ -53,10 +72,23 @@ namespace Rock.Workflow.Action
         Key = "Content",
         FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType", "Rock.Field.Types.StructureContentEditorFieldType" } )]
 
-    [EnumField( "Status", "The  status for the new content channel item.", typeof( ContentChannelItemStatus ), true, "1", "", 6 )]
-    [KeyValueListField( "Item Attribute Key", "Used to match the current workflow's attribute keys to the keys of the content channel item. The new content channel item will receive the values from this workflow's attributes.", false, keyPrompt: "Source Attribute", valuePrompt: "Target Attribute", order: 7 )]
-    [WorkflowAttribute( "Content Channel Item Attribute", "An optional content channel item attribute to store the item that is created.", false, "", "", 6, null,
-        new string[] { "Rock.Field.Types.ContentChannelItemFieldType" } )]
+    [EnumField( "Status",
+        Description = "The  status for the new content channel item.",
+        EnumSourceType = typeof( ContentChannelItemStatus ),
+        IsRequired = true,
+        DefaultEnumValue = 1,
+        Order = 6 )]
+    [KeyValueListField( "Item Attribute Key",
+        Description = "Used to match the current workflow's attribute keys to the keys of the content channel item. The new content channel item will receive the values from this workflow's attributes.",
+        IsRequired = false,
+        KeyPrompt = "Source Attribute",
+        ValuePrompt = "Target Attribute",
+        Order = 7 )]
+    [WorkflowAttribute( "Content Channel Item Attribute",
+        Description = "An optional content channel item attribute to store the item that is created.",
+        IsRequired = false,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.ContentChannelItemFieldType" },
+        Order = 6 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "B61F6FF1-7376-4150-B8A1-8DB246613834")]
     public class AddContentChannelItem : ActionComponent

@@ -33,8 +33,15 @@ namespace Rock.Jobs
     [DisplayName( "Universal Search Re-Index" )]
     [Description( "Re-indexes the selected entity types in Universal Search." )]
 
-    [BooleanField("Index All Entities", "Indexes all entities, the entity filter will be ignored.", true, order: 0)]
-    [CustomCheckboxListField("Entity Filter", "Entities to re-index. Not selecting a value will re-index all index enabled entities.", "SELECT CAST([Id] AS VARCHAR) [Value], [FriendlyName] [Text] FROM [EntityType] WHERE [IsIndexingEnabled] = 1 AND [FriendlyName] != 'Site'", false, order: 1 )]
+    [BooleanField( "Index All Entities",
+        Description = "Indexes all entities, the entity filter will be ignored.",
+        DefaultBooleanValue = true,
+        Order = 0)]
+    [CustomCheckboxListField( "Entity Filter",
+        Description = "Entities to re-index. Not selecting a value will re-index all index enabled entities.",
+        ListSource = "SELECT CAST([Id] AS VARCHAR) [Value], [FriendlyName] [Text] FROM [EntityType] WHERE [IsIndexingEnabled] = 1 AND [FriendlyName] != 'Site'",
+        IsRequired = false,
+        Order = 1 )]
     public class IndexEntities : RockJob
     {
         /// <summary> 

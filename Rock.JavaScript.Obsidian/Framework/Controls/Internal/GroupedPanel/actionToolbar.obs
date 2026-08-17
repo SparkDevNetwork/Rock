@@ -1,0 +1,37 @@
+<template>
+    <div class="action-toolbar"
+         :class="{ selected: isSelectedView }">
+        <template v-if="!isSelectedView">
+            <slot />
+        </template>
+        <template v-else>
+            <slot name="selectedActionToolbar" />
+        </template>
+    </div>
+</template>
+
+<style scoped>
+.action-toolbar {
+    padding: var(--spacing-xsmall) var(--spacing-large);
+    border-bottom: 1px solid var(--color-interface-soft);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    justify-content: space-between;
+}
+
+.action-toolbar.selected {
+    background-color: var(--color-info-soft);
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+
+    defineProps({
+        isSelectedView: {
+            type: Boolean as PropType<boolean>,
+            required: false
+        },
+    });
+</script>

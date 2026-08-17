@@ -1,0 +1,38 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-content="staticContent"></div>
+</template>
+
+<script setup lang="ts">
+    import { onMounted } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction, useStaticContent } from "@Obsidian/Utility/block";
+    import Cache from "@Obsidian/Utility/cache";
+    import { ContentChannelItemViewOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemView/contentChannelItemViewOptionsBag";
+
+    const staticContent = useStaticContent();
+    const config = useConfigurationValues<ContentChannelItemViewOptionsBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onMounted(async () => {
+        const interactionToken = config.interactionToken;
+        if (!interactionToken) {
+            return;
+        }
+
+        // Dedupe across browser-back navigation: the server reissues the same token while the
+        // cached page response is still being served, so this entry catches re-mounts. The TTL
+        // comes from the server so it stays in lockstep with the token's actual lifetime.
+        const cacheKey = `ContentChannelItemInteraction:${interactionToken}`;
+        try {
+            if (Cache.get<boolean>(cacheKey)) {
+                return;
+            }
+            Cache.set(cacheKey, true, config.interactionTokenLifetimeSeconds);
+        }
+        catch {
+            // sessionStorage can be unavailable (private mode, etc.) - register anyway.
+        }
+
+        await invokeBlockAction("RegisterInteraction", { interactionToken });
+    });
+</script>

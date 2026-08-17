@@ -16,7 +16,10 @@
 //
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
+using System.Linq;
+
 using Rock.Cms;
+using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -41,6 +44,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
+            ContentChannelItemCache.FlushCachedItems( this.Id, dbContext );
             ContentChannelCache.UpdateCachedEntity( this.Id, entityState );
         }
 

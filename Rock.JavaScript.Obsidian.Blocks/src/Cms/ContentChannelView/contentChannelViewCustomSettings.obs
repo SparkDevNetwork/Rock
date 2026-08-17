@@ -1,0 +1,474 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isModalOpen" title="Channel Configuration" :saveText="saveButtonText" @save="onSave">
+
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <LoadingIndicator v-else-if="isLoading" :delay="500" />
+
+        <ContentSectionContainer v-else :sidebar="false">
+            <ContentSection light>
+                <ContentStack>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <DropDownList v-model="contentChannelGuidOrEmptyString"
+                                          :items="options?.contentChannels ?? []"
+                                          label="Content Channel"
+                                          help="The content channel whose items will be displayed."
+                                          rules="required" />
+                        </div>
+                    </div>
+
+                    <CheckBoxList v-if="options?.contentChannelItemStatuses?.length"
+                                  v-model="contentChannelItemStatusesAsStrings"
+                                  :items="options?.contentChannelItemStatuses ?? []"
+                                  label="Item Statuses"
+                                  help="Items with the following statuses will be displayed." />
+
+                    <CodeEditor v-model="lavaTemplate"
+                                label="Lava Template"
+                                help="The Lava template used to render the list of items."
+                                mode="lava" />
+                </ContentStack>
+            </ContentSection>
+
+            <ContentSection title="General" icon="ti ti-settings">
+                <ContentStack title="Display Options"
+                              description="Controls how content is presented and what supporting content is available to the template."
+                              headerLocation="top">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <NumberBox v-model="itemsPerPage"
+                                       label="Items Per Page"
+                                       help="The maximum number of items to display per page. Use 0 for no limit." />
+                        </div>
+                    </div>
+
+                    <InlineCheckBox v-model="isPageTitleUpdateEnabled"
+                                    label="Set Page Title"
+                                    help="Updates the page title to the channel name or, when viewing a specific item, the item title." />
+
+                    <InlineCheckBox v-model="isItemMergeFieldEnabled"
+                                    label="Merge Content"
+                                    help="Merges content data and attribute values into the Lava template." />
+
+                    <InlineCheckBox v-model="isItemTagListMergeFieldEnabled"
+                                    label="Enable Tag List"
+                                    :help="enableTagListHelp" />
+
+                    <InlineCheckBox v-model="isArchiveSummaryMergeFieldEnabled"
+                                    label="Enable Archive Summary"
+                                    help="Makes the ArchiveSummary Lava collection available for month and year-based content summaries. This collection uses the same cache duration as the item cache and will hold the following properties: Month (int), MonthName, Year, Count." />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <PagePicker v-model="detailPage"
+                                        label="Detail Page"
+                                        promptForPageRoute
+                                        showSelectCurrentPage />
+                        </div>
+                    </div>
+                </ContentStack>
+
+                <ContentStack title="Caching"
+                              description="Controls how content and rendered output are cached to improve performance and manage cache expiration."
+                              headerLocation="top">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <NumberBox v-model="itemCacheDuration"
+                                       label="Item Cache Duration"
+                                       help="The number of seconds to cache the content items returned by the selected filter. Use 0 to disable caching.">
+                                <template #inputGroupAppend>
+                                    <span class="input-group-addon">seconds</span>
+                                </template>
+                            </NumberBox>
+                        </div>
+
+                        <div class="col-md-3">
+                            <NumberBox v-model="outputCacheDuration"
+                                       label="Output Cache Duration"
+                                       help="The number of seconds to cache the rendered output. Use caching only when the output does not vary by person, page, or other merge field values. Use 0 to disable caching.">
+                                <template #inputGroupAppend>
+                                    <span class="input-group-addon">seconds</span>
+                                </template>
+                            </NumberBox>
+                        </div>
+                    </div>
+
+                    <CheckBoxList v-model="cacheTags"
+                                  :items="options?.cacheTags ?? []"
+                                  emptyListMessage="<div class='text-muted small'>No cache tags defined.</div>"
+                                  horizontal
+                                  label="Cache Tags" help="Tags used to group cached content so it can be expired together." />
+                </ContentStack>
+            </ContentSection>
+
+            <ContentSection title="Filters & Sorting" icon="ti ti-adjustments">
+                <ContentStack headerLocation="top"
+                              title="Filtering Logic"
+                              description="Defines the rule groups used to determine which content items are shown.">
+                    <DataViewFilterEditor v-model="dataViewFilter"
+                                          :entityTypeGuid="EntityType.ContentChannelItem" />
+                </ContentStack>
+
+                <ContentStack headerLocation="top"
+                              title="Filter & Sorting Settings"
+                              description="Defines the rules that determine which content items appear and how they are ordered.">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <DropDownList v-model="contextFilterAttributeKeyOrEmptyString"
+                                          :items="options?.contextFilterAttributes ?? []"
+                                          label="Context Filter Attribute"
+                                          help="The item attribute used to filter results from the block context. Ignored when no context is available." />
+                        </div>
+                    </div>
+
+                    <RadioButtonList v-if="options?.isPersonalizationVisible"
+                                     v-model="personalizationFilterTypeAsString"
+                                     :items="options?.personalizationFilterTypes ?? []"
+                                     label="Personalization"
+                                     help="Determines how personalization affects the results. Ignore does not consider segments or request filters. Prioritize moves matching items to the top of the list, ordered by sort order. Filter shows only items that match the current individual's segments and request filters." />
+
+                    <InlineCheckBox v-model="isPageParameterFilteringEnabled"
+                                    label="Enable Query and Route Parameter Filtering"
+                                    help="Allows query string and route parameters to further filter results by item properties or attributes. Disables cache tags." />
+
+                    <KeyValueList v-model="orderItemsByKeyValueItems"
+                                  :keyOptions="options?.orderItemsByKeyOptions ?? []"
+                                  :valueOptions="options?.orderItemsByValueOptions ?? []"
+                                  label="Order Items By"
+                                  help="The fields and sort directions used to order items." />
+                </ContentStack>
+            </ContentSection>
+
+            <ContentSection title="Social Sharing"
+                            icon="ti ti-social">
+                <ContentStack headerLocation="top"
+                              title="Sharing Settings"
+                              description="Controls the social sharing metadata and related sharing behavior for this content.">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <DropDownList v-model="metaDescriptionAttributeKeyOrEmptyString"
+                                          :items="options?.metaDescriptionAttributes ?? []"
+                                          label="Meta Description Attribute"
+                                          help="The attribute used for the page meta description." />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <DropDownList v-model="metaImageAttributeKeyOrEmptyString"
+                                          :items="options?.metaImageAttributes ?? []"
+                                          label="Meta Image Attribute"
+                                          help="The attribute used for the page og:image and image_src meta tags." />
+                        </div>
+                    </div>
+
+                    <InlineCheckBox v-if="options?.isSetRssAutodiscoverLinkVisible"
+                                    v-model="isSetRssAutodiscoverLinkEnabled"
+                                    label="Set RSS Autodiscover Link"
+                                    help="Adds an RSS autodiscover link to the page header." />
+                </ContentStack>
+            </ContentSection>
+        </ContentSectionContainer>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DataViewFilterEditor from "@Obsidian/Controls/dataViewFilterEditor.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { PersonalizationFilterType } from "@Obsidian/Enums/Cms/personalizationFilterType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { getSecurityGrant, provideSecurityGrant, setCustomSettingsBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomSettingsBox } from "@Obsidian/ViewModels/Blocks/customSettingsBox";
+    import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+    import { ContentChannelViewCustomSettingsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelView/contentChannelViewCustomSettingsBag";
+    import { ContentChannelViewCustomSettingsOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelView/contentChannelViewCustomSettingsOptionsBag";
+    import { Guid } from "@Obsidian/Types";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { DataViewFilterBag } from "@Obsidian/ViewModels/Reporting/dataViewFilterBag";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+    import { ContentChannelItemStatus } from "@Obsidian/Enums/Cms/contentChannelItemStatus";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(null);
+    const reloadBlock = useReloadBlock();
+
+    const emit = defineEmits<{
+        (e: "close"): void
+    }>();
+
+    const enableTagListHelp = "Makes the ItemTagList Lava merge field available to the template, including each tag's Id, Guid, Name, and Count. Example: {% for tag in ItemTagList %}{{ tag.Name }} ({{ tag.Count }}){% endfor %}<span class='tip tip-lava'></span>";
+
+    // #region Values
+
+    // Tracks whether the initial load has completed. Used to prevent the channel watcher
+    // from triggering a redundant server call while startLoading() is still populating
+    // reactive state for the first time.
+    let isInitialized = false;
+
+    // UI state
+    const errorMessage = ref<string>("");
+    const isLoading = ref<boolean>(true);
+    const isModalOpen = ref<boolean>(true);
+    const options = ref<ContentChannelViewCustomSettingsOptionsBag | null>(null);
+
+    // Settings state
+    const contentChannelGuidOrEmptyString = ref<string>("");
+    const contentChannelItemStatusesAsStrings = ref<string[]>([]);
+    const lavaTemplate = ref<string>("");
+    const itemsPerPage = ref<number>(5);
+    const isPageTitleUpdateEnabled = ref<boolean>(false);
+    const isItemMergeFieldEnabled = ref<boolean>(false);
+    const isItemTagListMergeFieldEnabled = ref<boolean>(false);
+    const isArchiveSummaryMergeFieldEnabled = ref<boolean>(false);
+    const detailPage = ref<PageRouteValueBag | null>(null);
+    const itemCacheDuration = ref<number>(3600);
+    const outputCacheDuration = ref<number>(0);
+    const cacheTags = ref<string[] | undefined>();
+    const dataViewFilter = ref<DataViewFilterBag | null>(null);
+    const contextFilterAttributeKeyOrEmptyString = ref<string>("");
+    const personalizationFilterTypeAsString = ref<string>(`${PersonalizationFilterType.Ignore}`);
+    const isPageParameterFilteringEnabled = ref<boolean>(false);
+    const orderItemsByKeyValueItems = ref<KeyValueItem[]>([]);
+    const metaDescriptionAttributeKeyOrEmptyString = ref<string>("");
+    const metaImageAttributeKeyOrEmptyString = ref<string>("");
+    const isSetRssAutodiscoverLinkEnabled = ref<boolean>(false);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const orderItemsBy = computed<ListItemBag[]>({
+        get(): ListItemBag[] {
+            return Enumerable
+                .from(orderItemsByKeyValueItems.value)
+                .select<ListItemBag>(kv => {
+                    return {
+                        value: kv.key,
+                        text: kv.value
+                    };
+                })
+                .toArray();
+        },
+        set(value: ListItemBag[]): void {
+            orderItemsByKeyValueItems.value = Enumerable
+                .from(value)
+                .select<KeyValueItem>(item => {
+                    return {
+                        key: item.value,
+                        value: item.text
+                    };
+                })
+                .toArray();
+        }
+    });
+
+    const saveButtonText = computed((): string => {
+        return errorMessage.value || !isLoading.value ? "Save" : "";
+    });
+
+    const securityGrantToken = computed((): string | null => {
+        return securityGrant.token.value;
+    });
+
+    const contentChannelItemStatuses = computed<ContentChannelItemStatus[]>(() => {
+        function isContentChannelItemStatus(value: number | null): value is ContentChannelItemStatus {
+            return !isNullish(value) && Object.values(ContentChannelItemStatus).includes(value as ContentChannelItemStatus);
+        }
+
+        return Enumerable
+            .from(contentChannelItemStatusesAsStrings.value)
+            .select(s => toNumberOrNull(s))
+            .ofType<ContentChannelItemStatus>(isContentChannelItemStatus)
+            .toArray();
+    });
+
+    const personalizationFilterType = computed<PersonalizationFilterType>(() => {
+        function isPersonalizationFilterType(value: number | null): value is PersonalizationFilterType {
+            return !isNullish(value) && Object.values(PersonalizationFilterType).includes(value as PersonalizationFilterType);
+        }
+
+        const value = toNumberOrNull(personalizationFilterTypeAsString.value);
+
+        if (isPersonalizationFilterType(value)) {
+            return value;
+        }
+        else {
+            return PersonalizationFilterType.Ignore;
+        }
+    });
+
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Begins loading the current settings in the background so that the UI can be displayed.
+     */
+    async function startLoading(): Promise<void> {
+        isLoading.value = true;
+        try {
+            const result = await invokeBlockAction<CustomSettingsBox<ContentChannelViewCustomSettingsBag, ContentChannelViewCustomSettingsOptionsBag>>("GetCustomSettings");
+
+            if (result.isSuccess && result.data && result.data.settings && result.data.options) {
+                /* Load the custom settings and options into the respective reactive variables. */
+                options.value = result.data.options;
+
+                contentChannelGuidOrEmptyString.value = result.data.settings.contentChannelGuid ?? "";
+                contentChannelItemStatusesAsStrings.value = result.data.settings.contentChannelItemStatuses?.map(s => `${s}`) ?? [];
+                lavaTemplate.value = result.data.settings.lavaTemplate ?? "";
+                itemsPerPage.value = result.data.settings.itemsPerPage;
+                isPageTitleUpdateEnabled.value = result.data.settings.isPageTitleUpdateEnabled;
+                isItemMergeFieldEnabled.value = result.data.settings.isItemMergeFieldEnabled;
+                isItemTagListMergeFieldEnabled.value = result.data.settings.isItemTagListMergeFieldEnabled;
+                isArchiveSummaryMergeFieldEnabled.value = result.data.settings.isArchiveSummaryMergeFieldEnabled;
+                detailPage.value = result.data.settings.detailPage ?? null;
+                itemCacheDuration.value = result.data.settings.itemCacheDuration;
+                outputCacheDuration.value = result.data.settings.outputCacheDuration;
+                cacheTags.value = result.data.settings.cacheTags ?? undefined;
+                dataViewFilter.value = result.data.settings.dataViewFilter ?? null;
+                contextFilterAttributeKeyOrEmptyString.value = result.data.settings.contextFilterAttributeKey ?? "";
+                personalizationFilterTypeAsString.value = `${result.data.settings.personalizationFilterType}`;
+                isPageParameterFilteringEnabled.value = result.data.settings.isPageParameterFilteringEnabled;
+                orderItemsBy.value = result.data.settings.orderItemsBy ?? [];
+                metaDescriptionAttributeKeyOrEmptyString.value = result.data.settings.metaDescriptionAttributeValueKey ?? "";
+                metaImageAttributeKeyOrEmptyString.value = result.data.settings.metaImageAttributeValueKey ?? "";
+                isSetRssAutodiscoverLinkEnabled.value = result.data.settings.isSetRssAutodiscoverLinkEnabled;
+
+                securityGrant.updateToken(result.data.securityGrantToken);
+            }
+            else {
+                options.value = null;
+                errorMessage.value = result.errorMessage || "Unknown error while loading custom settings.";
+            }
+        }
+        finally {
+            isLoading.value = false;
+            isInitialized = true;
+        }
+    }
+
+    async function loadCustomSettingsForContentChannel(contentChannelGuid: Guid): Promise<void> {
+        try {
+            const result = await invokeBlockAction<CustomSettingsBox<ContentChannelViewCustomSettingsBag, ContentChannelViewCustomSettingsOptionsBag>>(
+                "GetCustomSettingsForContentChannel",
+                { contentChannelGuid },
+            );
+
+            if (result.isSuccess && result.data && result.data.options) {
+                options.value = result.data.options;
+
+                if (contentChannelItemStatusesAsStrings.value.length) {
+                    // Only keep selected item statuses that are available in the new channel's options.
+                    contentChannelItemStatusesAsStrings.value = contentChannelItemStatusesAsStrings.value.filter(s => options.value!.contentChannelItemStatuses?.some(o => o.value === s));
+                }
+            }
+            else {
+                options.value = null;
+                errorMessage.value = result.errorMessage || "Unknown error while loading custom settings options.";
+            }
+        }
+        catch {
+            options.value = null;
+            errorMessage.value = "Unknown error while loading custom settings options.";
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Saves the block settings.
+     */
+    async function onSave(): Promise<void> {
+        const box: CustomSettingsBox<ContentChannelViewCustomSettingsBag, ContentChannelViewCustomSettingsOptionsBag> = {};
+
+        setCustomSettingsBoxValue(box, "contentChannelGuid", toGuidOrNull(contentChannelGuidOrEmptyString.value));
+        setCustomSettingsBoxValue(box, "contentChannelItemStatuses", contentChannelItemStatuses.value);
+        setCustomSettingsBoxValue(box, "lavaTemplate", lavaTemplate.value);
+
+        // General
+        setCustomSettingsBoxValue(box, "itemsPerPage", itemsPerPage.value);
+        setCustomSettingsBoxValue(box, "isPageTitleUpdateEnabled", isPageTitleUpdateEnabled.value);
+        setCustomSettingsBoxValue(box, "isItemMergeFieldEnabled", isItemMergeFieldEnabled.value);
+        setCustomSettingsBoxValue(box, "isItemTagListMergeFieldEnabled", isItemTagListMergeFieldEnabled.value);
+        setCustomSettingsBoxValue(box, "isArchiveSummaryMergeFieldEnabled", isArchiveSummaryMergeFieldEnabled.value);
+        setCustomSettingsBoxValue(box, "detailPage", detailPage.value);
+        setCustomSettingsBoxValue(box, "itemCacheDuration", itemCacheDuration.value);
+        setCustomSettingsBoxValue(box, "outputCacheDuration", outputCacheDuration.value);
+        setCustomSettingsBoxValue(box, "cacheTags", cacheTags.value);
+
+        // Filters & Sorting
+        setCustomSettingsBoxValue(box, "dataViewFilter", dataViewFilter.value);
+        setCustomSettingsBoxValue(box, "contextFilterAttributeKey", contextFilterAttributeKeyOrEmptyString.value || null);
+        setCustomSettingsBoxValue(box, "personalizationFilterType", personalizationFilterType.value);
+        setCustomSettingsBoxValue(box, "isPageParameterFilteringEnabled", isPageParameterFilteringEnabled.value);
+        setCustomSettingsBoxValue(box, "orderItemsBy", orderItemsBy.value);
+
+        // Social Sharing
+        setCustomSettingsBoxValue(box, "metaDescriptionAttributeValueKey", metaDescriptionAttributeKeyOrEmptyString.value || null);
+        setCustomSettingsBoxValue(box, "metaImageAttributeValueKey", metaImageAttributeKeyOrEmptyString.value || null);
+        setCustomSettingsBoxValue(box, "isSetRssAutodiscoverLinkEnabled", isSetRssAutodiscoverLinkEnabled.value);
+
+        const result = await invokeBlockAction("SaveCustomSettings", { box });
+
+        if (result.isSuccess) {
+            isModalOpen.value = false;
+            reloadBlock();
+        }
+        else {
+            alert(result.errorMessage || "Unable to save block settings.");
+        }
+    }
+
+    // #endregion Event Handlers
+
+    provideSecurityGrant(securityGrant);
+
+    // #region Watchers
+
+    watch(isModalOpen, () => {
+        if (!isModalOpen.value) {
+            emit("close");
+        }
+    });
+
+    watch(contentChannelGuidOrEmptyString, async (newValue) => {
+        if (!isInitialized) {
+            return;
+        }
+
+        const contentChannelGuid = toGuidOrNull(newValue);
+        if (contentChannelGuid) {
+            await loadCustomSettingsForContentChannel(contentChannelGuid);
+        }
+    });
+
+    // #endregion Watchers
+
+    startLoading();
+</script>

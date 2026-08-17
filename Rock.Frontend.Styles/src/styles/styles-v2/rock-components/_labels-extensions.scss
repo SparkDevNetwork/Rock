@@ -11,12 +11,24 @@
 // ======================== ALTERNATIVE STYLE ========================
 
 .label {
-  height: 26px; // Hardcode to match the height of the .btn-xs for better alignment when placed beside each other, such as in panel headers
+  --label-height: 26px; // Hardcode to match the height of the .btn-xs for better alignment when placed beside each other, such as in panel headers
+  --label-padding-vertical: var(--spacing-tiny); // Hardcode to match the padding of the .btn-xs for better alignment when placed beside each other, such as in panel headers
+  display: inline-flex; // Use inline-flex to allow for proper alignment and wrapping of label content
+  height: var(--label-height);
   align-items: center; // Vertically center the content if it wraps to multiple lines
-  padding: var(--spacing-tiny) var(--spacing-xsmall);
+  padding: var(--label-padding-vertical) var(--spacing-xsmall);
+  gap: var(--spacing-tiny); // Add a gap between the label content and any nested elements (like icons)
+  line-height: calc(var(--label-height) - var(--label-padding-vertical) * 2); // Adjust line-height to vertically center the text within the label
 
   a {
     color: inherit; // allow for links in labels
+  }
+
+  &-form-control {
+    --label-height: 20px; // Override default label height
+    position: absolute;
+    margin-left: var(--spacing-tiny);
+    align-self: end;
   }
 
 }

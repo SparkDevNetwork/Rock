@@ -121,6 +121,15 @@ namespace Rock.Web.Cache
         public bool AllowMultipleLocations { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether the Meeting Style field is available on <see cref="Rock.Model.Group">Groups</see> of this GroupType.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if Groups of this GroupType expose a Meeting Style; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsMeetingStyleEnabled { get; private set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [show in group list].
         /// </summary>
         /// <value>
@@ -523,6 +532,24 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public int? RSVPReminderOffsetDays { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the inactive reason field is shown when inactivating a group of this type.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the inactive reason field is shown; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableInactiveReason { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the inactive reason field is required when inactivating a group of this type.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the inactive reason field is required; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RequiresInactiveReason { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether scheduling is enabled for groups of this type
@@ -1208,6 +1235,7 @@ namespace Rock.Web.Cache
             GroupMemberTerm = groupType.GroupMemberTerm;
             DefaultGroupRoleId = groupType.DefaultGroupRoleId;
             AllowMultipleLocations = groupType.AllowMultipleLocations;
+            IsMeetingStyleEnabled = groupType.IsMeetingStyleEnabled;
             ShowInGroupList = groupType.ShowInGroupList;
             ShowInNavigation = groupType.ShowInNavigation;
             IconCssClass = groupType.IconCssClass;
@@ -1243,6 +1271,8 @@ namespace Rock.Web.Cache
             EnableRSVP = groupType.EnableRSVP;
             RSVPReminderSystemCommunicationId = groupType.RSVPReminderSystemCommunicationId;
             RSVPReminderOffsetDays = groupType.RSVPReminderOffsetDays;
+            EnableInactiveReason = groupType.EnableInactiveReason;
+            RequiresInactiveReason = groupType.RequiresInactiveReason;
             IsSchedulingEnabled = groupType.IsSchedulingEnabled;
             ScheduleConfirmationSystemCommunicationId = groupType.ScheduleConfirmationSystemCommunicationId;
             ScheduleReminderSystemCommunicationId = groupType.ScheduleReminderSystemCommunicationId;

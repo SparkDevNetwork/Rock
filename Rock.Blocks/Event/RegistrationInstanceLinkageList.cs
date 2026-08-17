@@ -38,7 +38,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the linkages associated with an event registration instance." )]
     [IconCssClass( "ti ti-list" )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the event item occurrence group map details.",
@@ -48,21 +48,21 @@ namespace Rock.Blocks.Event
         Order = 1 )]
 
     [LinkedPage( "Group Detail Page",
-        "The page for viewing details about a group",
+        Description = "The page for viewing details about a group",
         Key = AttributeKey.GroupDetailPage,
         DefaultValue = Rock.SystemGuid.Page.GROUP_VIEWER,
         IsRequired = false,
         Order = 2 )]
 
     [LinkedPage( "Calendar Item Page",
-        "The page to view calendar item details",
+        Description = "The page to view calendar item details",
         Key = AttributeKey.CalendarItemDetailPage,
         DefaultValue = Rock.SystemGuid.Page.EVENT_DETAIL,
         IsRequired = false,
         Order = 3 )]
 
     [LinkedPage( "Content Item Page",
-        "The page for viewing details about a content channel item",
+        Description = "The page for viewing details about a content channel item",
         Key = AttributeKey.ContentItemDetailPage,
         DefaultValue = Rock.SystemGuid.Page.CONTENT_DETAIL,
         IsRequired = false,
@@ -70,7 +70,8 @@ namespace Rock.Blocks.Event
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "7c5b1e75-0571-4d62-90a5-0b2431ebb9e8" )]
-    [Rock.SystemGuid.BlockTypeGuid( "aaa65861-b711-4659-8e80-975c72a2aa52" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "aaa65861-b711-4659-8e80-975c72a2aa52" )]
+    [Rock.SystemGuid.BlockTypeGuid( "E877FDE1-DEE6-48F8-8150-4E28D5ABB694" )]
     [CustomizedGrid]
     public class RegistrationInstanceLinkageList : RockEntityListBlockType<EventItemOccurrenceGroupMap>
     {
@@ -160,9 +161,9 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
-        /// Determines if the add button should be enabled in the grid.
-        /// <summary>
-        /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
+        /// Determines if the add and delete buttons should be enabled in the grid.
+        /// </summary>
+        /// <returns>A boolean value that indicates if the add and delete buttons should be enabled.</returns>
         private bool GetIsAddDeleteEnabled()
         {
             /*
@@ -201,22 +202,37 @@ namespace Rock.Blocks.Event
         protected override IQueryable<EventItemOccurrenceGroupMap> GetListQueryable( RockContext rockContext )
         {
             var registrationInstance = GetRegistrationInstance();
-            IEnumerable<EventItemOccurrenceGroupMap> linkages = new List<EventItemOccurrenceGroupMap>();
 
-            if ( registrationInstance != null )
+            if ( registrationInstance == null )
             {
-                linkages = new EventItemOccurrenceGroupMapService( rockContext )
-                    .Queryable( "EventItemOccurrence.EventItem.EventCalendarItems.EventCalendar,EventItemOccurrence.ContentChannelItems.ContentChannelItem,Group" )
-                    .AsNoTracking()
-                    .Where( r => r.RegistrationInstanceId == registrationInstance.Id );
+                return Enumerable.Empty<EventItemOccurrenceGroupMap>().AsQueryable();
+            }
 
-                if ( FilterCampuses.Any() )
+            var linkages = new EventItemOccurrenceGroupMapService( rockContext )
+                .Queryable()
+                .Include( a => a.Campus )
+                .Include( a => a.Group )
+                .Include( a => a.EventItemOccurrence.Campus )
+                .Include( a => a.EventItemOccurrence.EventItem.EventCalendarItems.Select( eci => eci.EventCalendar ) )
+                .Include( a => a.EventItemOccurrence.ContentChannelItems.Select( cci => cci.ContentChannelItem ) )
+                .AsNoTracking()
+                .Where( r => r.RegistrationInstanceId == registrationInstance.Id );
+
+            if ( FilterCampuses.Any() )
+            {
+                var campusIds = FilterCampuses
+                    .Select( guid => CampusCache.Get( guid )?.Id )
+                    .Where( id => id.HasValue )
+                    .Select( id => id.Value )
+                    .ToList();
+
+                if ( campusIds.Any() )
                 {
-                    linkages = linkages.Where( l => l.CampusId.HasValue && FilterCampuses.Contains( l.Campus.Guid ) );
+                    linkages = linkages.Where( l => l.CampusId.HasValue && campusIds.Contains( l.CampusId.Value ) );
                 }
             }
 
-            return linkages.AsQueryable();
+            return linkages;
         }
 
         /// <inheritdoc/>
@@ -257,7 +273,10 @@ namespace Rock.Blocks.Event
                 {
                     var qryParams = new Dictionary<string, string>
                     {
-                        { PageParameterKey.ContentItemId, contentItem.Id.ToString() }
+                        { PageParameterKey.ContentItemId, contentItem.IdKey },
+                        // Open the content item in edit mode, matching the WebForms
+                        // behavior for items selected from an event linkage.
+                        { "autoEdit", "true" }
                     };
 
                     var contentItemUrl = this.GetLinkedPageUrl( AttributeKey.ContentItemDetailPage, qryParams );
@@ -285,7 +304,7 @@ namespace Rock.Blocks.Event
         {
             var calendarItems = new List<string>();
 
-            if ( eventItemOccurrenceGroupMap?.EventItemOccurrence != null )
+            if ( eventItemOccurrenceGroupMap?.EventItemOccurrence?.EventItem != null )
             {
                 foreach ( var calendarItem in eventItemOccurrenceGroupMap.EventItemOccurrence.EventItem.EventCalendarItems )
                 {
@@ -293,8 +312,8 @@ namespace Rock.Blocks.Event
                     {
                         var qryParams = new Dictionary<string, string>
                         {
-                            { PageParameterKey.EventCalendarId, calendarItem.EventCalendarId.ToString() },
-                            { PageParameterKey.EventItemId, calendarItem.EventItem.Id.ToString() }
+                            { PageParameterKey.EventCalendarId, calendarItem.EventCalendar.IdKey },
+                            { PageParameterKey.EventItemId, calendarItem.EventItem.IdKey }
                         };
 
                         var calendarEventUrl = this.GetLinkedPageUrl( AttributeKey.CalendarItemDetailPage, qryParams );
@@ -337,33 +356,23 @@ namespace Rock.Blocks.Event
         /// <returns></returns>
         private RegistrationInstance GetRegistrationInstance()
         {
-            if ( _registrationInstance == null )
+            if ( _registrationInstance != null )
             {
-                var registrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
-
-                if ( registrationInstanceId.HasValue )
-                {
-                    _registrationInstance = new RegistrationInstanceService( RockContext )
-                        .Queryable()
-                        .Include( a => a.RegistrationTemplate )
-                        .Include( a => a.Account )
-                        .Include( a => a.RegistrationTemplate.Forms )
-                        .Include( a => a.RegistrationTemplate.Forms.Select( s => s.Fields ) )
-                        .Where( a => a.Id == registrationInstanceId.Value )
-                        .AsNoTracking().FirstOrDefault();
-
-                    if ( _registrationInstance == null )
-                    {
-                        return null;
-                    }
-
-                    // Load the Registration Template.
-                    if ( _registrationInstance.RegistrationTemplate == null && _registrationInstance.RegistrationTemplateId > 0 )
-                    {
-                        _registrationInstance.RegistrationTemplate = new RegistrationTemplateService( RockContext ).Get( _registrationInstance.RegistrationTemplateId );
-                    }
-                }
+                return _registrationInstance;
             }
+
+            var registrationInstanceKey = PageParameter( PageParameterKey.RegistrationInstanceId );
+
+            if ( registrationInstanceKey.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            _registrationInstance = new RegistrationInstanceService( RockContext )
+                .GetQueryableByKey( registrationInstanceKey, !PageCache.Layout.Site.DisablePredictableIds )
+                .Include( a => a.RegistrationTemplate )
+                .AsNoTracking()
+                .FirstOrDefault();
 
             return _registrationInstance;
         }

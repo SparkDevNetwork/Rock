@@ -1,0 +1,400 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Registration"
+          :entityTypeGuid="EntityType.Registration"
+          personKeyField="personIdKey"
+          :exportTitle="config.options?.exportTitle ?? 'Registrations'"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          :showLaunchWorkflow="false"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem"
+          @gridSettingsClick="isGridSettingsVisible = true">
+
+        <TextColumn name="registeredBy"
+                    title="Registered By"
+                    field="registeredBy"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn v-if="hasCampusInCurrentGrid"
+                    name="campus"
+                    title="Campus"
+                    field="campus"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="md" />
+
+        <TextColumn name="confirmationEmail"
+                    title="Confirmation Email"
+                    field="confirmationEmail"
+                    :filter="textValueFilter"
+                    :hideOnScreen="true"
+                    visiblePriority="md" />
+
+        <Column name="registrants"
+                title="Registrants"
+                field="registrants"
+                itemClass="grid-cell-stack"
+                :filter="textValueFilter"
+                :filterValue="getRegistrantsFilterValue"
+                :quickFilterValue="getRegistrantsFilterValue"
+                :exportValue="getRegistrantsExportValue"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <div v-for="(registrant, index) in (row.registrants as RegistrantInfoBag[] | null) ?? []"
+                     :key="index"
+                     class="cell-row-inline">
+                    <span>{{ registrant.displayName }}</span>
+                    <span v-if="registrant.isOnWaitList" class="label label-warning label-xs ml-1">WL</span>
+                </div>
+            </template>
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+
+        <DateTimeColumn name="createdDateTime"
+                        title="When"
+                        field="createdDateTime"
+                        :filter="dateValueFilter"
+                        visiblePriority="md" />
+
+        <Column v-if="config.options?.displayDiscountCodes"
+                name="discountCode"
+                title="Discount Code"
+                field="discountCode"
+                :filter="pickExistingValueFilter"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <span v-if="shouldShowDiscountCode(row)" class="label label-default">{{ row.discountCode }}</span>
+            </template>
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <Column name="totalCost"
+                title="Total Cost"
+                field="totalCost"
+                headerClass="text-right"
+                itemClass="justify-content-end text-right"
+                :filter="numberValueFilter"
+                :filterValue="getTotalCostFilterValue"
+                :quickFilterValue="getTotalCostFilterValue"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <span v-if="shouldShowCostBadges(row)" class="label label-info">{{ formatTotalCost(row) }}</span>
+            </template>
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <Column name="balanceDue"
+                title="Balance Due"
+                field="balanceDue"
+                headerClass="text-right"
+                itemClass="justify-content-end text-right"
+                :filter="numberValueFilter"
+                :filterValue="getBalanceDueFilterValue"
+                :quickFilterValue="getBalanceDueFilterValue"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <span v-if="shouldShowCostBadges(row)" :class="['label', getBalanceDueCssClass(row)]">
+                    {{ formatBalanceDue(row) }}<i v-if="row.hasActivePaymentPlan" class="ti ti-calendar-event ml-1"></i>
+                </span>
+            </template>
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <DeleteColumn v-if="config.isDeleteEnabled"
+                      disableConfirmation
+                      @click="onDeleteClick" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :campusItems="config.options?.campusItems ?? []"
+                       @close="isGridSettingsVisible = false" />
+</template>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { AttributeColumns, Column, TextColumn, DateTimeColumn, DeleteColumn, textValueFilter, numberValueFilter, dateValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { RegistrationInstanceRegistrationListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceRegistrationList/registrationInstanceRegistrationListOptionsBag";
+    import { RegistrantInfoBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceRegistrationList/registrantInfoBag";
+    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./RegistrationInstanceRegistrationList/types.partial";
+    import GridSettingsModal from "./RegistrationInstanceRegistrationList/gridSettingsModal.partial.obs";
+    import { computed, reactive, ref, watch } from "vue";
+    import { toCurrencyOrNull, asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const config = useConfigurationValues<ListBlockBox<RegistrationInstanceRegistrationListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const hasCampusInCurrentGrid = ref(false);
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        dateRange: parseSlidingDateRangeString(preferences.getValue(scopedKey(PreferenceKey.FilterDateRange))),
+        paymentStatus: preferences.getValue(scopedKey(PreferenceKey.FilterPaymentStatus)) ?? "",
+        registeredBy: safeParseJson<ListItemBag>(preferences.getValue(scopedKey(PreferenceKey.FilterRegisteredBy))) ?? undefined,
+        campuses: safeParseJson<string[]>(preferences.getValue(scopedKey(PreferenceKey.FilterCampuses))) ?? []
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.dateRange
+            || !!gridSettings.value.paymentStatus
+            || !!gridSettings.value.registeredBy?.value
+            || gridSettings.value.campuses.length > 0;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Builds a preference key scoped to the current registration template's
+     * Guid so that switching templates does not leak filter state.
+     */
+    function scopedKey(key: string): string {
+        if (config.options?.registrationTemplateGuid) {
+            return `${config.options.registrationTemplateGuid}-${key}`;
+        }
+
+        return key;
+    }
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            hasCampusInCurrentGrid.value = gridData.rows?.some(r => !!r.campus) ?? false;
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Gets the text used to filter the Registrants column (search + column filter).
+     */
+    function getRegistrantsFilterValue(row: Record<string, unknown>): string {
+        const registrants = (row.registrants as RegistrantInfoBag[] | null) ?? [];
+        return registrants.map(r => r.displayName ?? "").join(" ");
+    }
+
+    /**
+     * Gets the comma-delimited list of registrant names used when exporting
+     * the grid. Keeps each registrant readable in a single cell rather than
+     * concatenating the names without separators.
+     */
+    function getRegistrantsExportValue(row: Record<string, unknown>): string {
+        const registrants = (row.registrants as RegistrantInfoBag[] | null) ?? [];
+        return registrants.map(r => r.displayName ?? "").filter(name => name !== "").join(", ");
+    }
+
+    /**
+     * Gets the numeric text used to filter the Total Cost column.
+     */
+    function getTotalCostFilterValue(row: Record<string, unknown>): string {
+        const cost = row.totalCost as number | null;
+        const decimalPlaces = config.options?.currencyInfo?.decimalPlaces ?? 2;
+        return cost !== null && cost !== undefined ? asFormattedString(cost, decimalPlaces) : "";
+    }
+
+    /**
+     * Gets the numeric text used to filter the Balance Due column.
+     */
+    function getBalanceDueFilterValue(row: Record<string, unknown>): string {
+        const balance = row.balanceDue as number | null;
+        const decimalPlaces = config.options?.currencyInfo?.decimalPlaces ?? 2;
+        return balance !== null && balance !== undefined ? asFormattedString(balance, decimalPlaces) : "";
+    }
+
+    /**
+     * Formats the total cost as a currency string for display.
+     */
+    function formatTotalCost(row: Record<string, unknown>): string {
+        const cost = row.totalCost as number | null | undefined;
+        return toCurrencyOrNull(cost ?? 0, config.options?.currencyInfo ?? null) ?? "";
+    }
+
+    /**
+     * Formats the balance due as a currency string for display.
+     */
+    function formatBalanceDue(row: Record<string, unknown>): string {
+        const balance = row.balanceDue as number | null | undefined;
+        return toCurrencyOrNull(balance ?? 0, config.options?.currencyInfo ?? null) ?? "";
+    }
+
+    /**
+     * Controls per-row visibility of the Total Cost and Balance Due badges.
+     * Shows when the instance has a cost OR this specific row has a non-zero
+     * DiscountedCost (e.g., registrants with fees under a zero-cost template).
+     */
+    function shouldShowCostBadges(row: Record<string, unknown>): boolean {
+        if (config.options?.instanceHasCost) {
+            return true;
+        }
+
+        const cost = (row.totalCost as number | null | undefined) ?? 0;
+        return cost > 0;
+    }
+
+    /**
+     * Controls per-row visibility of the Discount Code badge: show whenever
+     * the row has a non-empty code.
+     */
+    function shouldShowDiscountCode(row: Record<string, unknown>): boolean {
+        /*
+            5/12/2026 - MSE
+
+            Don't gate on instanceHasCost. A template with Cost = 0 can still have
+            fees and an applied discount code, so the code should show whenever it
+            exists on the registration row.
+
+            Reason: https://github.com/SparkDevNetwork/Rock/issues/6826
+        */
+        const code = row.discountCode as string | null | undefined;
+        return !!code;
+    }
+
+    /**
+     * Resolves the Bootstrap label class for the Balance Due badge: green when
+     * paid, red when owed, warning yellow when overpaid or when there's an
+     * active payment plan.
+     */
+    function getBalanceDueCssClass(row: Record<string, unknown>): string {
+        const balance = (row.balanceDue as number | null | undefined) ?? 0;
+        const hasActivePaymentPlan = row.hasActivePaymentPlan === true;
+
+        if (balance > 0) {
+            return hasActivePaymentPlan ? "label-warning" : "label-danger";
+        }
+
+        if (balance < 0) {
+            return "label-warning";
+        }
+
+        return "label-success";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when the add button has been clicked by the individual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked. Mirrors the WebForms
+     * two-step confirmation: first prompt to confirm the registrant deletion,
+     * then — only when a payment plan is active — a second prompt warning that
+     * the plan will be deactivated.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const row = gridData?.rows?.find(r => r["idKey"] === key);
+
+        const confirmedDelete = await confirm("Are you sure you want to delete this registration? All of the registrants will also be deleted.");
+
+        if (!confirmedDelete) {
+            return;
+        }
+
+        if (row?.hasActivePaymentPlan) {
+            const confirmedPaymentPlan = await confirm("This registration also has payments. Are you really sure that you want to delete the registration? The payment plan will be deactivated and will no longer be associated with a registration.");
+
+            if (!confirmedPaymentPlan) {
+                return;
+            }
+        }
+
+        const result = await invokeBlockAction<string>("Delete", { key });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows.splice(index, 1);
+                    hasCampusInCurrentGrid.value = gridData.rows.some(r => !!r.campus);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete registration.");
+        }
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        preferences.setValue(
+            scopedKey(PreferenceKey.FilterDateRange),
+            gridSettings.value.dateRange ? slidingDateRangeToString(gridSettings.value.dateRange) : "");
+        preferences.setValue(
+            scopedKey(PreferenceKey.FilterPaymentStatus),
+            gridSettings.value.paymentStatus ?? "");
+        preferences.setValue(
+            scopedKey(PreferenceKey.FilterRegisteredBy),
+            gridSettings.value.registeredBy ? JSON.stringify(gridSettings.value.registeredBy) : "");
+        preferences.setValue(
+            scopedKey(PreferenceKey.FilterCampuses),
+            gridSettings.value.campuses.length > 0 ? JSON.stringify(gridSettings.value.campuses) : "");
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    gridDataSource.value = loadGridData();
+</script>

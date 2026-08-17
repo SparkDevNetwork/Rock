@@ -7,11 +7,11 @@
             <div @click.stop="onScrollableClick" class="modal-scrollable" :style="`z-index: ${zIndex};`">
                 <div @click.stop
                      class="modal modal-content rock-modal rock-modal-frame modal-overflow"
-                     :class="{ 'animated shake': isShaking, 'container': !isNarrow, [modalContentClasses]: true }"
+                     :class="{ 'animated shake': isShaking, 'container': !isNarrow, 'rock-modal-fullscreen': isFullScreen, [modalContentClasses]: true }"
                      aria-hidden="false"
                      tabindex="-1"
                      role="dialog"
-                     style="display: block; margin-top: 0;">
+                     :style="isFullScreen ? { display: 'flex', flexDirection: 'column', width: '100vw', maxWidth: '100vw', minHeight: '100dvh', maxHeight: '100dvh', top: '0px', left: '0px', margin: 0, borderRadius: 0 } : { display: 'block', marginTop: 0 }">
                     <div class="modal-header">
                         <button v-if="!isCloseButtonHidden" @click="onClose" class="close" type="button" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         <template v-if="title">
@@ -21,7 +21,7 @@
                         <slot v-else name="header" />
                     </div>
 
-                    <RockForm v-model:submit="internalSubmit" @submit="onSubmit" hideErrors @visibleValidationChanged="onVisibleValidationChanged">
+                    <RockForm v-model:submit="internalSubmit" @submit="onSubmit" hideErrors class="rock-modal-form" @visibleValidationChanged="onVisibleValidationChanged">
                         <div class="modal-body">
                             <RockValidation :errors="validationErrors" />
 
@@ -44,6 +44,49 @@
         </div>
     </teleport>
 </template>
+
+<style scoped>
+/* Opt-in full-screen modal (isFullScreen). The box sizing (full viewport) is applied inline in the
+   template so it beats the theme's .modal-content rules; the theme sets a rounded frame with !important,
+   so squaring the corners needs !important too. These rules stretch the modal's own content form
+   (.rock-modal-form) so the header and footer stay fixed and only the body scrolls. Targeting the
+   modal's own form by class rather than a bare "form" selector keeps the layout off any form the
+   consumer nests inside the body. */
+/* The theme's rounded frame is set with !important (.rock-modal-frame), which specificity cannot beat, so
+   squaring the modal box itself is the one place !important is unavoidable. */
+.rock-modal-fullscreen {
+    border-radius: 0 !important;
+}
+
+.rock-modal-fullscreen :deep(.rock-modal-form) {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+/* Pin the header so it keeps its height as body content grows; without this its default flex-shrink lets
+   the flex column shave height off it when an expanded section makes the body tall. */
+.rock-modal-fullscreen :deep(.modal-header) {
+    flex: 0 0 auto;
+}
+
+.rock-modal-fullscreen :deep(.modal-body) {
+    flex: 1 1 auto;
+    min-height: 0;
+    /* The theme pins .modal-body to overflow: visible with !important, so this override needs !important
+       too - let the body scroll under the pinned footer instead of pushing it down when content is tall. */
+    overflow-y: auto !important;
+}
+
+/* The theme's footer rounding is NOT !important (.modal-content.rock-modal .modal-footer), so pairing
+   .rock-modal-fullscreen with the .rock-modal-frame class the modal also carries out-specifies it and
+   squares the footer's bottom corners without !important. */
+.rock-modal-fullscreen.rock-modal-frame :deep(.modal-footer) {
+    flex: 0 0 auto;
+    border-radius: 0;
+}
+</style>
 
 <script setup lang="ts">
     import { computed, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
@@ -118,6 +161,16 @@
         },
 
         isNarrow: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * When true the modal fills the viewport (full height and width) with no rounded frame, and its
+         * body scrolls while the header and footer stay fixed. Off by default so existing modals are
+         * unchanged.
+         */
+        isFullScreen: {
             type: Boolean as PropType<boolean>,
             default: false
         },

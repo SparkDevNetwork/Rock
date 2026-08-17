@@ -1,0 +1,169 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="View Options"
+           saveText="Save"
+           cancelText="Cancel"
+           @save="onSave">
+        <DropDownList v-model="sort"
+                      label="Sort By"
+                      :items="sortOptions"
+                      :showBlankItem="false" />
+
+        <DropDownList v-model="entityType"
+                      label="Show Reminders For"
+                      help="Only reminders connected to the selected entity type will appear in the list."
+                      :items="entityTypeOptions"
+                      :showBlankItem="false" />
+
+        <ConditionalWell v-if="entityType === peopleValue">
+            <div class="row">
+                <div class="col-md-6">
+                    <PersonPicker v-model="personSelection"
+                                  label="Person"
+                                  :enableSelfSelection="true" />
+                </div>
+            </div>
+        </ConditionalWell>
+
+        <ConditionalWell v-if="entityType === groupsValue">
+            <div class="row">
+                <div class="col-md-6">
+                    <GroupPicker v-model="groupSelection"
+                                 label="Group" />
+                </div>
+            </div>
+        </ConditionalWell>
+
+        <DropDownList v-model="reminderTypeIdKey"
+                      label="Reminder Type"
+                      :items="reminderTypeOptions"
+                      :showBlankItem="true" />
+
+        <DropDownList v-model="due"
+                      label="Reminder Date"
+                      :items="dueOptions"
+                      :showBlankItem="false" />
+
+        <ConditionalWell v-if="due === customRangeValue">
+            <SlidingDateRangePicker v-model="customDateRange"
+                                    label="Date Range" />
+        </ConditionalWell>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { parseSlidingDateRangeString, slidingDateRangeToString, SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ReminderListOptionsBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderList/reminderListOptionsBag";
+    import { DueFilter, EntityTypeFilter, ReminderFilter } from "./types.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ReminderFilter>,
+            required: true
+        },
+        options: {
+            type: Object as PropType<ReminderListOptionsBag>,
+            required: true
+        },
+        /**
+         * Server-resolved entity selection used to seed the picker text. Comes
+         * in via a separate prop (not the filter bag) because the filter is
+         * client-owned and only carries IdKey, while the picker needs full
+         * Text + Value.
+         */
+        selectedEntity: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
+        },
+        visible: {
+            type: Boolean,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ReminderFilter): void;
+        (e: "update:visible", value: boolean): void;
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const sort = ref<string>(props.modelValue.sort ?? "");
+    const entityType = ref<string>(props.modelValue.entityType ?? EntityTypeFilter.All);
+    const reminderTypeIdKey = ref<string>(props.modelValue.reminderTypeIdKey ?? "");
+    const due = ref<string>(props.modelValue.due ?? DueFilter.All);
+    const customDateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dueDateRange ?? ""));
+    const personSelection = ref<ListItemBag | undefined>(props.modelValue.entityType === EntityTypeFilter.People ? (props.selectedEntity ?? undefined) : undefined);
+    const groupSelection = ref<ListItemBag | undefined>(props.modelValue.entityType === EntityTypeFilter.Groups ? (props.selectedEntity ?? undefined) : undefined);
+
+    const peopleValue = EntityTypeFilter.People;
+    const groupsValue = EntityTypeFilter.Groups;
+    const customRangeValue = DueFilter.CustomDateRange;
+
+    const sortOptions = computed<ListItemBag[]>(() => props.options.sortOptions ?? []);
+    const entityTypeOptions = computed<ListItemBag[]>(() => props.options.entityTypeFilters ?? []);
+    const reminderTypeOptions = computed<ListItemBag[]>(() => props.options.reminderTypes ?? []);
+    const dueOptions = computed<ListItemBag[]>(() => props.options.dueFilterOptions ?? []);
+
+    /** Re-seed the form whenever the parent passes in a new filter snapshot. */
+    watch(() => props.modelValue, (next) => {
+        sort.value = next.sort ?? "";
+        entityType.value = next.entityType ?? EntityTypeFilter.All;
+        reminderTypeIdKey.value = next.reminderTypeIdKey ?? "";
+        due.value = next.due ?? DueFilter.All;
+        customDateRange.value = parseSlidingDateRangeString(next.dueDateRange ?? "");
+        personSelection.value = next.entityType === EntityTypeFilter.People ? (props.selectedEntity ?? undefined) : undefined;
+        groupSelection.value = next.entityType === EntityTypeFilter.Groups ? (props.selectedEntity ?? undefined) : undefined;
+    });
+
+    /** Re-seed the picker selection whenever the server resolves a new entity. */
+    watch(() => props.selectedEntity, (next) => {
+        if (entityType.value === EntityTypeFilter.People) {
+            personSelection.value = next ?? undefined;
+        }
+        else if (entityType.value === EntityTypeFilter.Groups) {
+            groupSelection.value = next ?? undefined;
+        }
+    });
+
+    /** Build the new filter bag and emit it if it differs from the current one. */
+    function onSave(): void {
+        let entityGuid = "";
+
+        if (entityType.value === EntityTypeFilter.People && personSelection.value?.value) {
+            entityGuid = personSelection.value.value;
+        }
+        else if (entityType.value === EntityTypeFilter.Groups && groupSelection.value?.value) {
+            entityGuid = groupSelection.value.value;
+        }
+
+        const next: ReminderFilter = {
+            ...props.modelValue,
+            sort: sort.value,
+            entityType: entityType.value,
+            entityGuid,
+            reminderTypeIdKey: reminderTypeIdKey.value ?? "",
+            due: due.value,
+            dueDateRange: due.value === DueFilter.CustomDateRange && customDateRange.value
+                ? slidingDateRangeToString(customDateRange.value)
+                : ""
+        };
+
+        if (!deepEqual(next, props.modelValue, true)) {
+            emit("update:modelValue", next);
+        }
+
+        isVisible.value = false;
+    }
+</script>

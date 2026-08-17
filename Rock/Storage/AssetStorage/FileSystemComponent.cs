@@ -35,7 +35,11 @@ namespace Rock.Storage.AssetStorage
     [Export( typeof( AssetStorageComponent ) )]
     [ExportMetadata( "ComponentName", "ServerFileSystem" )]
 
-    [TextField( name: "Root Folder", description: "", required: true, defaultValue: "~/", category: "", order: 0, key: "RootFolder" )]
+    [TextField( "Root Folder",
+        IsRequired = true,
+        DefaultValue = "~/",
+        Order = 0,
+        Key = "RootFolder" )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.STORAGE_ASSETSTORAGE_FILESYSTEM )]
     public class FileSystemComponent : AssetStorageComponent
     {

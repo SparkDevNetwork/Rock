@@ -14,9 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -64,7 +67,7 @@ namespace Rock.Model
             int? contentChannelId = null;
             if ( contentChannelItemId != null )
             {
-                var contentChannelItem = new ContentChannelItemService( ( RockContext ) this.Context ).Get( contentChannelItemId.Value );
+                var contentChannelItem = ContentChannelItemCache.Get( contentChannelItemId.Value );
                 contentChannelId = contentChannelItem?.ContentChannelId;
             }
 
@@ -80,8 +83,6 @@ namespace Rock.Model
         /// <returns></returns>
         private string GetUniqueSlug( string slug, int? contentChannelItemSlugId, int? contentChannelId )
         {
-            bool isValid = false;
-
             slug = MakeSlugValid( slug );
 
             // If MakeSlugValid removes all the characters then just return null.
@@ -91,13 +92,35 @@ namespace Rock.Model
             }
 
             int intialSlugLength = slug.Length;
-            int paddedNumber = 0;
-            do
+
+            // Fetch every existing slug that could collide (the base slug itself, or any
+            // "{base}-{n}" numbered variant) in a single query, then walk the number
+            // in memory. The previous implementation issued a separate SELECT per
+            // candidate slug inside the loop, so a content channel with several
+            // thousand items sharing the same base slug would issue several thousand
+            // round trips and take 30+ seconds to save a single new item.
+            var takenSlugsQuery = this
+                .Queryable()
+                .Where( b => !contentChannelItemSlugId.HasValue || b.Id != contentChannelItemSlugId.Value )
+                .Where( b => b.Slug == slug || b.Slug.StartsWith( slug + "-" ) );
+
+            if ( contentChannelId != null )
             {
-                string customSlug = slug;
+                takenSlugsQuery = takenSlugsQuery.Where( b => b.ContentChannelItem.ContentChannelId == contentChannelId );
+            }
+
+            // Slugs are stored lowercase (see MakeSlugValid), but use an
+            // ordinal-ignore-case set so the in-memory comparison matches SQL
+            // Server's default case-insensitive collation.
+            var takenSlugs = new HashSet<string>( takenSlugsQuery.Select( b => b.Slug ), StringComparer.OrdinalIgnoreCase );
+
+            int paddedNumber = 0;
+            while ( true )
+            {
+                var customSlug = slug;
                 if ( paddedNumber > 0 )
                 {
-                    string paddedString = string.Format( "-{0}", paddedNumber );
+                    var paddedString = string.Format( "-{0}", paddedNumber );
                     if ( intialSlugLength + paddedString.Length > 200 )
                     {
                         customSlug = slug.Left( intialSlugLength + paddedString.Length - 200 ) + paddedString;
@@ -108,28 +131,13 @@ namespace Rock.Model
                     }
                 }
 
-                var qry = this
-                    .Queryable()
-                    .Where( b => ( ( contentChannelItemSlugId.HasValue && b.Id != contentChannelItemSlugId.Value ) || !contentChannelItemSlugId.HasValue ) )
-                    .Where( b => b.Slug == customSlug );
-
-                if ( contentChannelId != null )
+                if ( !takenSlugs.Contains( customSlug ) )
                 {
-                    qry = qry.Where( b => b.ContentChannelItem.ContentChannelId == contentChannelId );
+                    return customSlug;
                 }
 
-                isValid = !qry.Any();
-                if ( !isValid )
-                {
-                    paddedNumber += 1;
-                }
-                else
-                {
-                    slug = customSlug;
-                }
-            } while ( !isValid );
-
-            return slug;
+                paddedNumber += 1;
+            }
         }
 
         /// <summary>
@@ -146,7 +154,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Saves the slug using the given contentChannelId if the contentChannelItemId is 0 (not saved) in order to guarantee the slug is unique for that channel.
+        /// Saves the slug using the given contentChannelId to guarantee the slug is unique for that channel,
+        /// which also works when the item is unsaved (contentChannelItemId of 0) or not yet committed.
         /// </summary>
         /// <param name="contentChannelItemId">The content channel item identifier.</param>
         /// <param name="contentChannelId">The content channel identifier.</param>
@@ -155,16 +164,21 @@ namespace Rock.Model
         /// <returns></returns>
         public ContentChannelItemSlug SaveSlug( int contentChannelItemId, int contentChannelId, string slug, int? contentChannelItemSlugId )
         {
-            string uniqueSlug;
+            /*
+                6/10/26 - MSE
 
-            if ( contentChannelItemId == 0 )
-            {
-                uniqueSlug = this.GetUniqueSlugForContentChannel( slug, contentChannelId, contentChannelItemSlugId );
-            }
-            else
-            {
-                uniqueSlug = this.GetUniqueContentSlug( slug, contentChannelItemSlugId, contentChannelItemId );
-            }
+                The caller-supplied content channel id now scopes the uniqueness
+                check for saved items too, not only unsaved ones. The previous
+                else branch derived the channel through ContentChannelItemCache,
+                which loads on its own context: inside a wrapped transaction a
+                just-inserted item is not yet visible there, the lookup returned
+                null, and the check silently degraded to global scope, renaming
+                slugs that only collided across channels.
+
+                Reason: The cache cannot see an uncommitted item; the caller
+                already knows the channel.
+            */
+            var uniqueSlug = this.GetUniqueSlugForContentChannel( slug, contentChannelId, contentChannelItemSlugId );
 
             return SaveSlug( contentChannelItemId, contentChannelItemSlugId, uniqueSlug );
         }

@@ -399,7 +399,7 @@ internal class ChatAgentFactory
         var agent = AIAgentCache.Get( agentId, rockContext );
         var requestContext = _requestContextAccessor.RockRequestContext;
 
-        return agent.GetSkillConfigurations( requestContext.CurrentPerson, _options.IsSecurityEnabled, rockContext );
+        return agent.GetSkillConfigurations( requestContext.CurrentPerson, !_options.IsSecurityDisabled, rockContext );
     }
 
     #endregion

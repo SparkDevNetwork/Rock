@@ -136,11 +136,13 @@ namespace Rock.Model
                             // default Order of 0 is already before all siblings and no change is needed.
                             if ( connectionRequest.Order == 0 )
                             {
+                                // Order is scoped to ConnectionStatusId only (not
+                                // OpportunityId) so it works correctly when the board
+                                // displays requests across multiple opportunities.
                                 var minExistingOrder = new ConnectionRequestService( rockContext )
                                     .Queryable()
                                     .Where( r =>
-                                        r.ConnectionStatusId == connectionRequest.ConnectionStatusId &&
-                                        r.ConnectionOpportunityId == connectionRequest.ConnectionOpportunityId )
+                                        r.ConnectionStatusId == connectionRequest.ConnectionStatusId )
                                     .Select( r => ( int? ) r.Order )
                                     .Min();
 
@@ -292,13 +294,15 @@ namespace Rock.Model
                             // so shift sibling records at or above that position to make room.
                             // When Order <= 0 the correct Order was already calculated in PreSave by
                             // decrementing the existing minimum, so no sibling rows need to be updated.
+                            // Order is scoped to ConnectionStatusId only (not
+                            // OpportunityId) so it works correctly when the board
+                            // displays requests across multiple opportunities.
                             if ( connectionRequest.Order > 0 )
                             {
                                 var connectionRequestService = new ConnectionRequestService( rockContext );
                                 var requestsOfStatus = connectionRequestService.Queryable()
                                     .Where( r =>
                                         r.ConnectionStatusId == connectionRequest.ConnectionStatusId &&
-                                        r.ConnectionOpportunityId == connectionRequest.ConnectionOpportunityId &&
                                         r.Id != connectionRequest.Id &&
                                         r.Order >= connectionRequest.Order );
 
@@ -313,7 +317,6 @@ namespace Rock.Model
                             var requestsOfStatus = connectionRequestService.Queryable()
                             .Where( r =>
                                 r.ConnectionStatusId == connectionRequest.ConnectionStatusId &&
-                                r.ConnectionOpportunityId == connectionRequest.ConnectionOpportunityId &&
                                 r.Order > connectionRequest.Order &&
                                 r.Id != connectionRequest.Id );
                             rockContext.BulkUpdate( requestsOfStatus, r => new ConnectionRequest { Order = r.Order - 1, ModifiedDateTime = r.ModifiedDateTime } );

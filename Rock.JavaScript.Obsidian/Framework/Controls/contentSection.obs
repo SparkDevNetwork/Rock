@@ -6,17 +6,19 @@
              class="contentsection-header"
              @click="onSectionHeaderClick">
             <div class="contentsection-header-title-and-description">
-                <h5 class="contentsection-header-title">
-                    <template v-if="title">
-                        <i v-if="icon" :class="icon"></i>
-                        {{ title }}
-                    </template>
-                    <template v-else>
-                        <slot name="title" />
-                    </template>
-                </h5>
-                <div v-if="$slots.description" class="contentsection-header-description">
-                    <slot name="description" />
+                <i v-if="icon" :class="icon" class="contentsection-header-icon"></i>
+                <div class="contentsection-header-title-description-stack">
+                    <h6 class="contentsection-header-title">
+                        <template v-if="title">
+                            {{ title }}
+                        </template>
+                        <template v-else>
+                            <slot name="title" />
+                        </template>
+                    </h6>
+                    <div v-if="$slots.description" class="contentsection-header-description">
+                        <slot name="description" />
+                    </div>
                 </div>
             </div>
 
@@ -29,10 +31,10 @@
 
                 <slot name="headerActions" />
 
-                <button v-if="!disableCollapse"
+                <button v-if="!disableCollapse && !hideToggleButton"
                         type="button"
                         class="btn btn-action"
-                        @click="section.isCollapsed.value = !section.isCollapsed.value">
+                        @click="onChevronClick">
                     <i class="ti ti-chevron-up"></i>
                 </button>
             </div>
@@ -196,12 +198,26 @@
         unmountOnCollapse: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /**
+         * When true the section is collapsed/expanded exclusively by the
+         * parent via the `isCollapsed` prop. The built-in chevron toggle
+         * button is hidden and clicking the header does not toggle the
+         * collapsed state. Use this when an external control (e.g. an
+         * Enable switch in `headerActions`) owns the open/close lifecycle
+         * but the consumer still wants the section's animated collapse.
+         */
+        hideToggleButton: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
     const emit = defineEmits<{
         (e: "onSectionTransition", v: boolean): void;
         (e: "onSectionHeaderClick", v: IContentSectionHolder);
+        (e: "update:isCollapsed", v: boolean): void;
     }>();
 
     // #region Values
@@ -286,8 +302,7 @@
     }
 
     /**
-     * Handles the click event on the section header to toggle the collapse state
-     * of the section.
+     * Handles the click event on the section header to toggle the collapse state of the section.
      *
      * @param ev The mouse event that triggered the click.
      */
@@ -297,10 +312,43 @@
             return;
         }
 
+        if (props.disableCollapse) {
+            // Section is configured to always be expanded — header click is
+            // a no-op regardless of toggle button visibility.
+            return;
+        }
+
+        if (props.hideToggleButton) {
+            /*
+                5/19/26 - JMH
+
+                hideToggleButton means the parent owns the open/close state
+                (typically via an Enable switch in headerActions backed by
+                the same ref that drives :isCollapsed). Don't mutate our
+                internal isCollapsed; emit update:isCollapsed so the parent
+                can decide whether to honor the click (e.g. ignore when the
+                Enable switch is currently disabled).
+
+                Reason: header clicks were silent before, making the section
+                feel inert when only the small switch was clickable.
+            */
+            emit("update:isCollapsed", !section.isCollapsed.value);
+            return;
+        }
+
         section.isCollapsed.value = !section.isCollapsed.value;
 
         emit("onSectionTransition", section.isCollapsed.value);
         emit("onSectionHeaderClick", section);
+        emit("update:isCollapsed", section.isCollapsed.value);
+    }
+
+    /**
+     * Handles the click event on the chevron toggle button.
+     */
+    function onChevronClick(): void {
+        section.isCollapsed.value = !section.isCollapsed.value;
+        emit("update:isCollapsed", section.isCollapsed.value);
     }
 
     // #endregion
@@ -313,6 +361,28 @@
         }
         else {
             isVisible.value = false;
+        }
+    });
+
+    /*
+        5/8/26 - JMH
+
+        Mirror parent-driven changes to props.isCollapsed into the local ref so
+        callers can drive collapse state from outside the header chevron (e.g.
+        an Enable switch placed in headerActions). The local ref initializes
+        from the prop on mount and was previously frozen after that, which
+        meant subsequent prop changes were silently ignored.
+
+        Reason: Form Builder's Automations tab needs the section to expand
+        when its Enable switch is turned on and collapse when it's turned off.
+    */
+    watch(() => props.isCollapsed, (newValue) => {
+        if (props.disableCollapse) {
+            return;
+        }
+
+        if (isCollapsed.value !== newValue) {
+            isCollapsed.value = newValue;
         }
     });
 

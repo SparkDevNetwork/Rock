@@ -33,7 +33,4 @@ export type RegistrationInstancePaymentListOptionsBag = {
 
     /** Gets or sets the title for the exported excel or csv file. */
     exportTitle?: string | null;
-
-    /** Gets or sets the registration template identifier key. */
-    registrationTemplateIdKey?: string | null;
 };

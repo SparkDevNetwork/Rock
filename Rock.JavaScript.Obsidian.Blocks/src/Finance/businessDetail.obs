@@ -158,14 +158,14 @@
 
         if (businessDetailViewBag.value?.recordStatus?.value?.toUpperCase() === DefinedValue.PersonRecordStatusPending) {
             labels.push({
-                iconCssClass: "ti ti-bulb-filled",
+                iconCssClass: "ti ti-clock",
                 title: "Pending",
                 type: "warning"
             });
         }
         else if (businessDetailViewBag.value?.recordStatus?.value?.toUpperCase() === DefinedValue.PersonRecordStatusInactive) {
             labels.push({
-                iconCssClass: "ti ti-bulb-filled",
+                iconCssClass: "ti ti-bulb",
                 title: "Inactive",
                 type: "danger"
             });

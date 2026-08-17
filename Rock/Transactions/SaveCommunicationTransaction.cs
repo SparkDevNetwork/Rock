@@ -132,6 +132,14 @@ namespace Rock.Transactions
         public int? SystemCommunicationId { get; set; }
 
         /// <summary>
+        /// Gets or sets the communication topic <see cref="DefinedValue"/> identifier.
+        /// </summary>
+        /// <value>
+        /// The communication topic defined value identifier.
+        /// </value>
+        public int? CommunicationTopicValueId { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SaveCommunicationTransaction"/> class.
         /// </summary>
         public SaveCommunicationTransaction()
@@ -251,7 +259,8 @@ namespace Rock.Transactions
                     SendDateTime = this.SendDateTime,
                     RecipientStatus = this.RecipientStatus,
                     SenderPersonAliasId = senderPersonAliasId,
-                    SystemCommunicationId = this.SystemCommunicationId
+                    SystemCommunicationId = this.SystemCommunicationId,
+                    CommunicationTopicValueId = this.CommunicationTopicValueId
                 };
 
                 var communication = new CommunicationService( rockContext ).CreateEmailCommunication( createEmailCommunicationArgs );

@@ -38,9 +38,19 @@ namespace Rock.Workflow.Action
         EditorHeight = 400,
         IsRequired = true,
         Order = 0 )]
-    [KeyValueListField( "Parameters", "The parameters to supply to the SQL query. <span class='tip tip-lava'></span>", false, "", "Parameter", "", order: 1 )]
-    [WorkflowAttribute( "Result Attribute", "An optional attribute to set to the scalar result of SQL query.", false, "", "", 2 )]
-    [BooleanField( "Continue On Error", "Should processing continue even if SQL Error occurs?", false, "", 3 )]
+    [KeyValueListField( "Parameters",
+        Description = "The parameters to supply to the SQL query. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        KeyPrompt = "Parameter",
+        Order = 1 )]
+    [WorkflowAttribute( "Result Attribute",
+        Description = "An optional attribute to set to the scalar result of SQL query.",
+        IsRequired = false,
+        Order = 2 )]
+    [BooleanField( "Continue On Error",
+        Description = "Should processing continue even if SQL Error occurs?",
+        DefaultBooleanValue = false,
+        Order = 3 )]
     [Rock.SystemGuid.EntityTypeGuid( "A41216D6-6FB0-4019-B222-2C29B4519CF4")]
     public class RunSQL : ActionComponent
     {
@@ -58,7 +68,7 @@ namespace Rock.Workflow.Action
 
             var query = GetAttributeValue( action, "SQLQuery" );
             var parametersValue = GetAttributeValue( action, "Parameters" );
-            var parameterList = new Field.Types.KeyValueListFieldType().GetValuesFromString( null, parametersValue, null, false );
+            var parameterList = Field.Helper.GetKeyValueListValuesFromString( parametersValue, null, false );
 
             var mergeFields = GetMergeFields( action );
             query = query.ResolveMergeFields( mergeFields );

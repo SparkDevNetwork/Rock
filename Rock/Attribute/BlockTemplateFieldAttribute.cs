@@ -36,10 +36,31 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public BlockTemplateFieldAttribute( string name, string description = "", string templateBlockValueGuid = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.BlockTemplateFieldType ).FullName )
+            : base( SystemGuid.FieldType.BLOCK_TEMPLATE.AsGuid(), name )
         {
+            Category = category;
+            DefaultValue = defaultValue;
+            Description = description;
+            IsRequired = required;
+            Order = order;
             TemplateBlockValueGuid = templateBlockValueGuid;
+
+            if ( key.IsNotNullOrWhiteSpace() )
+            {
+                Key = key;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlockTemplateFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public BlockTemplateFieldAttribute( string name )
+            : base( SystemGuid.FieldType.BLOCK_TEMPLATE.AsGuid(), name )
+        {
         }
 
         /// <summary>
@@ -52,7 +73,7 @@ namespace Rock.Attribute
         {
             get
             {
-                var definedTypeGuid = FieldConfigurationValues.GetValueOrNull( Rock.Field.Types.BlockTemplateFieldType.TEMPLATE_BLOCK_KEY ).AsGuidOrNull();
+                var definedTypeGuid = FieldConfigurationValues.GetValueOrNull( "templateblock" ).AsGuidOrNull();
                 if ( definedTypeGuid.HasValue )
                 {
                     return definedTypeGuid.Value.ToString();
@@ -70,7 +91,7 @@ namespace Rock.Attribute
                     definedTypeGuid = Guid.Empty;
                 }
 
-                FieldConfigurationValues.AddOrReplace( Rock.Field.Types.BlockTemplateFieldType.TEMPLATE_BLOCK_KEY, new Field.ConfigurationValue( definedTypeGuid.Value.ToString() ) );
+                FieldConfigurationValues.AddOrReplace( "templateblock", new Field.ConfigurationValue( definedTypeGuid.Value.ToString() ) );
             }
         }
     }

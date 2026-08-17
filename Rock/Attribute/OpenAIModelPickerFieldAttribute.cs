@@ -43,8 +43,19 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public OpenAIModelPickerFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.OpenAIModelPickerFieldType ).FullName )
+            : base( "216F0510-90ED-4CCB-BC8B-2F5F1470DC2C".AsGuid(), name, description, required, defaultValue, category, order, key )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SelectFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public OpenAIModelPickerFieldAttribute( string name )
+            : base( "216F0510-90ED-4CCB-BC8B-2F5F1470DC2C".AsGuid(), name )
         {
         }
 

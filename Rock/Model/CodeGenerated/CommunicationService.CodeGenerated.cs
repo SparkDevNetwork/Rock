@@ -185,9 +185,6 @@ namespace Rock.Model
             target.Segments = source.Segments;
             target.SendDateTime = source.SendDateTime;
             target.SenderPersonAliasId = source.SenderPersonAliasId;
-            #pragma warning disable 612, 618
-            target.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
-            #pragma warning restore 612, 618
             target.SmsFromSystemPhoneNumberId = source.SmsFromSystemPhoneNumberId;
             target.SMSMessage = source.SMSMessage;
             target.Status = source.Status;

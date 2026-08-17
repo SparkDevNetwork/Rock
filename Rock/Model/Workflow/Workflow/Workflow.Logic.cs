@@ -184,6 +184,27 @@ namespace Rock.Model
 
         #region Public Methods
 
+        /*
+            7/24/2026 - JPH
+
+            Max processing iterations is deliberately high. Reaching it requires a single workflow instance to
+            re-activate activities thousands of times in one synchronous pass, which is already quadratic today
+            (ActiveActivities re-lists and re-sorts the instance's whole activity collection every iteration), so a
+            run that reaches this cap is already exhibiting the runaway, not succeeding. Legitimate loops of a few
+            hundred - or even a couple thousand - iterations stay well clear. If real usage ever proves this too low,
+            it is safe to change the value here.
+
+            Reason: Prevent runaway workflows while still allowing legitimate loops.
+        */
+
+        /// <summary>
+        /// The maximum number of activities a single processing pass may process before it is aborted,
+        /// reset on every pass. Guards against a workflow that continually re-activates an activity (for
+        /// example a loop built from Activate Activity actions), which would otherwise spin until the
+        /// thread is starved and, on the in-memory bus, let every other queued task expire behind it.
+        /// </summary>
+        private const int MaxProcessingIterations = 10000;
+
         /// <summary>
         /// Processes the activities.
         /// </summary>
@@ -211,9 +232,39 @@ namespace Rock.Model
 
                 SetInitiator();
 
-                while ( ProcessActivity( rockContext, processStartTime, entity, out errorMessages )
+                // Guard against a workflow that keeps re-activating an activity and might otherwise
+                // spin forever, pinning the thread and (on the in-memory bus) letting every queued task
+                // behind it expire. The count resets each pass, so normal looping stays well under it.
+                var iterationCount = 0;
+
+                // Count processings per activity type so a trip can name the type that activated most often.
+                var iterationsByActivityType = new Dictionary<int, int>();
+
+                while ( ProcessActivity( rockContext, processStartTime, entity, out errorMessages, out var processedActivityTypeId )
                     && errorMessages.Count == 0 )
-                { }
+                {
+                    iterationCount++;
+                    iterationsByActivityType.TryGetValue( processedActivityTypeId, out var typeIterations );
+                    iterationsByActivityType[processedActivityTypeId] = typeIterations + 1;
+
+                    if ( iterationCount > MaxProcessingIterations )
+                    {
+                        var highestCountActivityType = iterationsByActivityType.OrderByDescending( a => a.Value ).First();
+                        var activityTypeName = WorkflowActivityTypeCache.Get( highestCountActivityType.Key )?.Name ?? "unknown";
+                        var abortMessage = $"Workflow processing was aborted after {iterationCount:N0} activity activations in a single pass, which indicates an activity is re-activating without ever completing. The most frequently processed activity was '{activityTypeName}' ({highestCountActivityType.Value:N0} times).";
+
+                        errorMessages.Add( abortMessage );
+                        AddLogEntry( abortMessage, true );
+
+                        var workflowTypeName = WorkflowTypeCache.Get( WorkflowTypeId )?.Name;
+                        ExceptionLogService.LogException( new Exception( $"{(workflowTypeName.IsNullOrWhiteSpace() ? string.Empty : $"'{workflowTypeName}' ")}{abortMessage}"  ) );
+
+                        // Leave the workflow in an errored (not completed) state so the failure stays
+                        // visible instead of being silently marked complete.
+                        Status = "Error";
+                        break;
+                    }
+                }
 
                 this.LastProcessedDateTime = RockDateTime.Now;
 
@@ -430,7 +481,7 @@ namespace Rock.Model
             }
         }
 
-#endregion Public Methods
+        #endregion Public Methods
 
         #region Private Methods
 
@@ -443,11 +494,15 @@ namespace Rock.Model
         /// <param name="errorMessages">A 
         /// <see cref="System.Collections.Generic.List{String}" /> containing error messages for any
         /// errors that occurred while the activity was being processed..</param>
+        /// <param name="processedActivityTypeId">The Id of the activity type that was processed this
+        /// call, or <c>0</c> if none was processed. Used to name the culprit when the runaway guard trips.</param>
         /// <returns>
         /// A <see cref="System.Boolean" /> value that is <c>true</c> if the activity processed successfully; otherwise <c>false</c>.
         /// </returns>
-        private bool ProcessActivity( RockContext rockContext, DateTime processStartTime, Object entity, out List<string> errorMessages )
+        private bool ProcessActivity( RockContext rockContext, DateTime processStartTime, Object entity, out List<string> errorMessages, out int processedActivityTypeId )
         {
+            processedActivityTypeId = 0;
+
             if ( this.IsActive )
             {
                 foreach ( var activity in this.ActiveActivities )
@@ -460,6 +515,7 @@ namespace Rock.Model
                             activity.LoadAttributes( rockContext );
                         }
 
+                        processedActivityTypeId = activity.ActivityTypeId;
                         return activity.Process( rockContext, entity, out errorMessages );
                     }
                 }

@@ -21,39 +21,39 @@
 // </copyright>
 //
 
+import { EnabledViewFlags } from "@Obsidian/Enums/Connection/enabledViewFlags";
 import { Guid } from "@Obsidian/Types";
-import { ConnectionActivityTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionActivityTypeBag";
+import { CampusLabelBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/campusLabelBag";
 import { ConnectionOpportunityDetailBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionOpportunityDetailBag";
-import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
-import { ConnectionWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionWorkflowBag";
+import { ConnectionRequestAttributeFilterBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestAttributeFilterBag";
+import { ConnectionTypeOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionTypeOptionsBag";
 import { GridDataToShowItemBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/gridDataToShowItemBag";
+import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The additional configuration options for the Connections Hub block. */
 export type ConnectionsHubOptionsBag = {
-    /** Gets or sets the complete list of connectors that can be assigned to connection requests. */
-    allPossibleConnectors?: ListItemBag[] | null;
+    /**
+     * Gets or sets the list of attributes available for filtering the connection request grid.
+     * Each entry pairs the public attribute (used to render the RockAttributeFilter
+     * control in the View Options modal) with the Connection Opportunity Guids that scope it,
+     * so the client can hide filters for attributes that do not apply to the active opportunity.
+     */
+    attributeFilters?: ConnectionRequestAttributeFilterBag[] | null;
 
-    /** Gets or sets a value indicating whether celebrations (milestone notifications) are enabled for connection requests. */
-    areCelebrationsEnabled: boolean;
-
-    /** Gets or sets a value indicating whether group placements are enabled for this Connection Type. */
-    areGroupPlacementsEnabled: boolean;
-
-    /** Gets or sets a value indicating whether reminders are enabled for connection requests. */
-    areRemindersEnabled: boolean;
+    /**
+     * Gets or sets the available groupings for each grouping dimension. The dictionary is keyed
+     * by grouping field name (e.g., "statusGroupingKey") and contains the complete list of
+     * possible Rock.ViewModels.Core.Grid.GroupingFieldBag values for that dimension, including groups that
+     * may not have any data rows.
+     */
+    availableGroupings?: Record<string, GroupingFieldBag[]> | null;
 
     /** Gets or sets the GUIDs of the person profile badges to display on connection requests. */
     badgeGuids?: Guid[] | null;
 
-    /** Gets or sets the boolean value indicating whether the current user can edit Connection Requests. */
-    canEditConnectionRequests: boolean;
-
-    /** Gets or sets the list of activity types available to log against connection requests. */
-    connectionActivities?: ConnectionActivityTypeBag[] | null;
-
-    /** Gets or sets the list of connection opportunities available within the current Connection Type. */
-    connectionOpportunities?: ListItemBag[] | null;
+    /** Gets or sets a list of Campus Labels */
+    campusLabels?: CampusLabelBag[] | null;
 
     /** Gets or sets the Connection Opportunity details resolved from the current filter state, used to populate the detail panel. */
     connectionOpportunityDetailsFromFilter?: ConnectionOpportunityDetailBag | null;
@@ -64,14 +64,22 @@ export type ConnectionsHubOptionsBag = {
     /** Gets or sets the encrypted identifier key of the Connection Request being viewed or edited. */
     connectionRequestIdKey?: string | null;
 
-    /** Gets or sets the list of connection states (e.g., Active, Inactive, Future Follow-up) available for filtering. */
-    connectionStates?: ListItemBag[] | null;
+    /** Gets or sets the list of connection types for the context slicer filter in the "My Connections" view. */
+    connectionTypeItems?: ListItemBag[] | null;
 
-    /** Gets or sets the list of connection statuses available for this Connection Type. */
-    connectionStatuses?: ConnectionStatusBag[] | null;
+    /**
+     * Gets or sets the options for each Connection Type, keyed by the Connection Type's encrypted identifier key.
+     * Populated with a single entry in standard mode and with one entry per active Connection Type in My Connections mode.
+     * This allows the client to adjust its behavior and available UI actions based on the Connection Type that owns
+     * the currently selected request or opportunity.
+     */
+    connectionTypeOptionsByIdKey?: Record<string, ConnectionTypeOptionsBag> | null;
 
-    /** Gets or sets the encrypted identifier key of the Connection Type being viewed. */
-    connectionTypeIdKey?: string | null;
+    /** Gets or sets the enabled views for this connection type. */
+    enabledViews: EnabledViewFlags;
+
+    /** Gets or sets the error message if one were to occur when populating Connections Hub options. */
+    errorMessage?: string | null;
 
     /** Gets or sets the list of column options that control which data fields are displayed in the request grid. */
     gridDataToShowItems?: GridDataToShowItemBag[] | null;
@@ -79,27 +87,18 @@ export type ConnectionsHubOptionsBag = {
     /** Gets or sets the CSS class for the icon to display alongside the block title. */
     iconCssClass?: string | null;
 
-    /** Gets or sets a value indicating whether the future follow-up feature is enabled for this Connection Type. */
-    isFutureFollowUpEnabled: boolean;
+    /** Gets whether board view is enabled for this connection type. */
+    isBoardViewEnabled: boolean;
 
-    /** Gets or sets a value indicating whether per-request security is enabled, allowing individual requests to have their own security settings. */
-    isRequestSecurityEnabled: boolean;
+    /** Gets whether grid view is enabled for this connection type. */
+    isGridViewEnabled: boolean;
 
-    /** Gets or sets a value indicating whether connection statuses must be progressed sequentially rather than freely. */
-    isSequentialStatusMode: boolean;
+    /** Gets whether list view is enabled for this connection type. */
+    isListViewEnabled: boolean;
 
-    /** Gets or sets the list of request source items available for filtering connection requests by their originating source. */
-    requestSourceItems?: ListItemBag[] | null;
-
-    /** Gets or sets a value indicating whether a placement group must be assigned before a connection request can be completed. */
-    requiresPlacementGroupToComplete: boolean;
-
-    /** Gets or sets the currently selected connector used to filter the request list. */
-    selectedConnector?: ListItemBag | null;
+    /** Gets or sets a value indicating whether the current view is the "My Connections" view. */
+    isMyConnectionsView: boolean;
 
     /** Gets or sets the title to display for the Connections Hub block. */
     title?: string | null;
-
-    /** Gets or sets the list of workflows that can be launched from connection requests. */
-    workflowItems?: ConnectionWorkflowBag[] | null;
 };

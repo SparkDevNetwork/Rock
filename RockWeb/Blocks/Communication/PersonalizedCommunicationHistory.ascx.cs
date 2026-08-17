@@ -46,19 +46,19 @@ namespace RockWeb.Blocks.Communication
         IsConfigurable = false )]
     [LinkedPage(
         "Communication Detail Page",
-        required: false,
+        IsRequired = false,
         Key = AttributeKey.CommunicationDetailPage )]
     [LinkedPage(
         "Communication List Detail Page",
-        required: false,
+        IsRequired = false,
         Key = AttributeKey.CommunicationListDetailPage )]
     [LinkedPage(
         "Communication Segment Detail Page",
-        required: false,
+        IsRequired = false,
         Key = AttributeKey.CommunicationSegmentDetailPage )]
     [LinkedPage(
         "Communication Template Detail Page",
-        required: false,
+        IsRequired = false,
         Key = AttributeKey.CommunicationTemplateDetailPage )]
 
     #endregion Block Attributes

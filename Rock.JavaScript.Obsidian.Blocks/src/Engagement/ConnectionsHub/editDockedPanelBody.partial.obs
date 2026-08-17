@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="px-spacing-md pb-spacing-lg">
+    <div class="connections-hub-docked-panel-body-edit">
         <RockForm @submit="onSave"
                   :id="editConnectionRequestFormId">
 
@@ -156,79 +156,6 @@
         </RockForm>
     </div>
 </template>
-
-<style scoped>
-.person-details {
-    white-space: nowrap;
-}
-
-.header-icon {
-    width: 20px;
-    height: 20px;
-}
-
-.additional-request {
-    display: flex;
-    flex-direction: column;
-}
-
-.person-dropdown {
-    min-width: 200px;
-    max-height: 40vh;
-    overflow-y: auto;
-}
-
-.dropdown-content-item.selected {
-    color: var(--color-interface-strong);
-    font-weight: var(--font-weight-semibold);
-    background-color: var(--color-info-soft);
-}
-
-.text-regular {
-    font-weight: var(--font-weight-regular);
-}
-
-/* text-sm is incorrectly returning xsmall at the moment in develop */
-.text-small {
-    font-size: var(--font-size-small);
-}
-
-.text-slate {
-    color: #64748B;
-}
-
-.text-emerald {
-    color: #10B981;
-}
-
-.gap-tiny {
-    gap: var(--spacing-tiny);
-}
-
-.gap-xs {
-    gap: var(--spacing-xsmall);
-}
-
-.gap-sm {
-    gap: var(--spacing-small);
-}
-
-.gap-md {
-    gap: var(--spacing-medium);
-}
-
-.gap-lg {
-    gap: var(--spacing-large);
-}
-
-.w-fit {
-    width: fit-content;
-}
-
-.h-fit {
-    height: fit-content;
-}
-</style>
 
 <script setup lang="ts">
     import { ref, PropType, watch, computed } from "vue";
@@ -389,12 +316,13 @@
      * Filters group member status items by the selected group member role.
      */
     const groupMemberStatusItems = computed((): ListItemBag[] => {
-        const roleGuid = groupMemberRoleGuid.value;
         const statuses = selectedPlacementGroupDetails.value?.groupMemberStatuses;
 
-        if (isNullOrWhiteSpace(roleGuid) || !statuses || Object.keys(statuses).length === 0) {
+        if (!statuses || Object.keys(statuses).length === 0) {
             return [];
         }
+
+        const roleGuid = isNullOrWhiteSpace(groupMemberRoleGuid.value) ? Object.keys(statuses)[0] : groupMemberRoleGuid.value;
 
         return statuses[roleGuid] ?? [];
     });

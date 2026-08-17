@@ -30,5 +30,11 @@ namespace Rock.ViewModels.Blocks.Cms.ContentChannelTypeDetail
         /// 
         /// </summary>
         public List<ListItemBag> DateRangeTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Content Channel Item attribute keys already defined
+        /// on any Content Channel of this type. Type-level item attributes must not reuse these keys.
+        /// </summary>
+        public List<string> ContentChannelItemAttributeKeys { get; set; }
     }
 }

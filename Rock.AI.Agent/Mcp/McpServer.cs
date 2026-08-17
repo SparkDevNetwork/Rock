@@ -233,7 +233,21 @@ internal class McpServer : IMcpServer
             return rpcRequest.CreateErrorResult( JsonRpcErrorCode.InvalidParams, "Invalid tool call arguments." );
         }
 
-        var result = await kernel.InvokeAsync<object>( pluginName, functionName, args, cancellationToken );
+        object result;
+
+        try
+        {
+            result = await kernel.InvokeAsync<object>( pluginName, functionName, args, cancellationToken );
+        }
+        catch ( Exception ex ) when ( ex is ArgumentOutOfRangeException or FormatException )
+        {
+            return rpcRequest.CreateErrorResult( JsonRpcErrorCode.InvalidParams, ex.Message );
+        }
+        catch ( KernelException ex ) when ( ex.InnerException is ArgumentException )
+        {
+            return rpcRequest.CreateErrorResult( JsonRpcErrorCode.InvalidParams, ex.InnerException.Message );
+        }
+
         var response = new CallToolResult();
 
         if ( result is string )

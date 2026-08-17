@@ -1,0 +1,98 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="popover-panel">
+        <h3 class="popover-title">Personal Links
+            <div class="ml-auto">
+                <div class="dropdown pull-right">
+                    <a class="btn btn-xs py-0 px-1 text-muted" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="button"><i class="ti ti-dots-vertical"></i></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" @click.prevent="onManageLinksClick">Manage Links</a></li>
+                    </ul>
+                </div>
+                <div class="dropdown pull-right">
+                    <a class="btn btn-xs py-0 px-1 text-muted" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="button"><i class="ti ti-plus"></i></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" @click.prevent="onAddLinkClick">Add Link</a></li>
+                        <li><a href="#" @click.prevent="onAddSectionClick">Add Section</a></li>
+                    </ul>
+                </div>
+            </div>
+        </h3>
+        <div class="popover-content">
+            <ul v-for="(section, sectionIndex) in nonEmptySections"
+                :key="section.idKey ?? sectionIndex"
+                class="list-unstyled">
+                <li><strong>{{ section.name }}</strong></li>
+                <li v-for="(link, linkIndex) in section.personalLinks ?? []"
+                    :key="link.idKey ?? linkIndex">
+                    <a :href="link.url ?? '#'">{{ link.name }}</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="popover-panel">
+        <h3 class="popover-title">Quick Returns</h3>
+        <div class="popover-content">
+            <ul v-for="(group, groupIndex) in quickReturnGroups"
+                :key="group.type || groupIndex"
+                class="list-unstyled">
+                <li><strong>{{ group.type }}</strong></li>
+                <li v-for="(item, itemIndex) in group.items"
+                    :key="item.url || itemIndex">
+                    <a :href="item.url">{{ item.itemName }}</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { PersonalLinksSectionBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalLinks/personalLinksSectionBag";
+    import { QuickReturnGroup } from "./types.partial";
+
+    const props = defineProps({
+        personalLinksSections: {
+            type: Array as PropType<PersonalLinksSectionBag[]>,
+            default: () => []
+        },
+        quickReturnGroups: {
+            type: Array as PropType<QuickReturnGroup[]>,
+            default: () => []
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "addLink"): void;
+        (e: "addSection"): void;
+        (e: "manageLinks"): void;
+    }>();
+
+    // Match the original personalLinks.js buildPersonalLinks() behavior, which
+    // skipped any section that had no links rather than rendering a bare header.
+    const nonEmptySections = computed((): PersonalLinksSectionBag[] => {
+        return props.personalLinksSections.filter(s => (s.personalLinks ?? []).length > 0);
+    });
+
+    /**
+     * Tells the parent to swap to the Add Link form.
+     */
+    function onAddLinkClick(): void {
+        emit("addLink");
+    }
+
+    /**
+     * Tells the parent to swap to the Add Section form.
+     */
+    function onAddSectionClick(): void {
+        emit("addSection");
+    }
+
+    /**
+     * Tells the parent to navigate to the Manage Links page.
+     */
+    function onManageLinksClick(): void {
+        emit("manageLinks");
+    }
+</script>

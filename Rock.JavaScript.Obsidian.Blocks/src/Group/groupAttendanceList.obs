@@ -1,0 +1,415 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+
+<template>
+    <NotificationBox v-if="!config.options?.isAuthorized && config.options?.groupIdKey" alertType="warning">
+        <strong>Note</strong> You are not authorized to view this group's attendance.
+    </NotificationBox>
+
+    <template v-else-if="config.options?.isAuthorized">
+        <Grid :definition="config.gridDefinition ?? undefined"
+              :data="gridDataSource"
+              keyField="idKey"
+              itemTerm="Occurrence"
+              :title="config.options?.groupName ?? 'Group Attendance'"
+              :exportTitle="`${config.options?.groupName ?? 'Group'} Attendance`"
+              stickyHeader
+              liveUpdates
+              gridSettings
+              :showLaunchWorkflow="false"
+              :gridSettingsActive="hasSettingsFilters"
+              @gridSettingsClick="onClickGridSetting"
+              :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+              @selectItem="onSelectItem">
+
+            <DateColumn name="occurrenceDate"
+                        title="Date"
+                        field="occurrenceDate"
+                        :filter="dateValueFilter" />
+
+            <Column v-if="config.options?.isLocationColumnVisible"
+                    name="location"
+                    title="Location"
+                    field="locationName"
+                    sortField="locationSort"
+                    width="250px"
+                    :filter="pickExistingValueFilter"
+                    :filterValue="getLocationFilterValue"
+                    :quickFilterValue="getLocationQuickFilterValue">
+                <template #format="{ row }">
+                    <div>
+                        <span>{{ row.locationName }}</span>
+                        <small v-if="row.parentLocationPath" class="d-block text-muted mt-1">{{ row.parentLocationPath }}</small>
+                    </div>
+                </template>
+            </Column>
+
+            <TextColumn v-if="config.options?.isScheduleColumnVisible"
+                        name="scheduleName"
+                        title="Schedule"
+                        field="scheduleName"
+                        width="250px"
+                        :filter="pickExistingValueFilter" />
+
+            <BooleanColumn name="attendanceEntered"
+                           title="Attendance Entered"
+                           field="attendanceEntered"
+                           width="180px"
+                           headerClass="break-word"
+                           :filter="booleanValueFilter" />
+
+            <BooleanColumn name="didNotOccur"
+                           title="Didn't Meet"
+                           field="didNotOccur"
+                           width="160px"
+                           headerClass="break-word"
+                           :filter="booleanValueFilter" />
+
+            <NumberColumn name="didAttendCount"
+                          title="Attendance Count"
+                          field="didAttendCount"
+                          width="180px"
+                          headerClass="break-word"
+                          :filter="numberValueFilter" />
+
+            <Column name="attendanceRate"
+                    title="Attendance Rate"
+                    field="attendanceRate"
+                    width="180px"
+                    :headerClass="'grid-column-header-number break-word'"
+                    :itemClass="'justify-content-end text-right'"
+                    :filter="numberValueFilter"
+                    :filterValue="getAttendanceRateFilterValue"
+                    :quickFilterValue="getAttendanceRateQuickFilterValue">
+                <template #format="{ row }">
+                    <template v-if="row.attendanceRate != null">
+                        {{ (row.attendanceRate as number).toLocaleString(undefined, { style: "percent", maximumFractionDigits: 0 }) }}
+                    </template>
+                </template>
+            </Column>
+
+            <Column v-if="config.options?.isNotesColumnVisible"
+                    name="notes"
+                    title="Notes"
+                    field="notes"
+                    sortField="notesPlain"
+                    :filter="textValueFilter"
+                    :filterValue="getNotesFilterValue"
+                    :quickFilterValue="getNotesFilterValue">
+                <template #format="{ row }">
+                    <span v-html="(row.notes as string | null) ?? ''"></span>
+                </template>
+            </Column>
+
+            <TextColumn v-if="config.options?.isAttendanceTypeColumnVisible"
+                        name="attendanceType"
+                        title="Attendance Type"
+                        field="attendanceType"
+                        width="180px"
+                        headerClass="break-word"
+                        :filter="textValueFilter" />
+
+            <DeleteColumn v-if="config.isDeleteEnabled"
+                          :rowDisabled="isDeleteDisabled"
+                          @click="onDeleteClick" />
+        </Grid>
+
+        <GridSettingsModal v-model="gridSettings"
+                           v-model:visible="isGridSettingsVisible"
+                           :locationItems="config.options?.locationItems ?? []"
+                           :scheduleItems="config.options?.scheduleItems ?? []"
+                           :campusItems="config.options?.campusItems ?? []"
+                           :isCampusFilterEnabled="config.options?.isCampusFilterEnabled ?? false"
+                           :defaultSlidingDateRange="defaultSlidingDateRange"
+                           @close="onCloseGridSettings" />
+    </template>
+</template>
+
+<style>
+/* Override the grid's default word-break: break-word on column headers so multi-word
+   titles like "Attendance Entered" wrap at the space rather than mid-word when the
+   column is squeezed on narrow viewports (e.g., the external Group Toolbox). */
+.break-word {
+    word-break: normal;
+}
+</style>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
+    import Grid, { DateColumn, TextColumn, BooleanColumn, Column, NumberColumn, DeleteColumn, textValueFilter, booleanValueFilter, numberValueFilter, dateValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { GroupAttendanceListOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceList/groupAttendanceListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
+    import { NavigationUrlKey, PageParameterKey, GridSettingsOptions, PreferenceKey } from "./GroupAttendanceList/types.partial";
+    import GridSettingsModal from "./GroupAttendanceList/gridSettingsModal.partial.obs";
+    import { computed, reactive, ref, watch } from "vue";
+
+    const config = useConfigurationValues<ListBlockBox<GroupAttendanceListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const defaultSlidingDateRange: SlidingDateRange = {
+        rangeType: RangeType.Last,
+        timeUnit: TimeUnit.Month,
+        timeValue: 3
+    };
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        slidingDateRange: parseSlidingDateRangeString(preferences.getValue(makeKeyUniqueToGroup(PreferenceKey.FilterDateRange))) ?? defaultSlidingDateRange,
+        location: preferences.getValue(makeKeyUniqueToGroup(PreferenceKey.FilterLocation)),
+        schedule: preferences.getValue(makeKeyUniqueToGroup(PreferenceKey.FilterSchedule)),
+        // Campus is intentionally NOT group-scoped so the user's campus selection
+        // persists across groups (matches WebForms behavior).
+        campus: preferences.getValue(PreferenceKey.FilterCampus)
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** Whether any grid settings filters are active. */
+    const hasSettingsFilters = computed((): boolean => {
+        // The date range is always populated (defaulting to "Last 3 Months"), so treat it
+        // as "active" only when it differs from the default — otherwise the settings icon
+        // would always show as active.
+        const hasCustomDateRange = !!gridSettings.value.slidingDateRange
+            && !deepEqual(gridSettings.value.slidingDateRange, defaultSlidingDateRange, true);
+        return hasCustomDateRange
+            || !!gridSettings.value.location
+            || !!gridSettings.value.schedule
+            || !!gridSettings.value.campus;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Makes the preference key unique to the current group.
+     */
+    function makeKeyUniqueToGroup(key: string): string {
+        if (config.options?.groupIdKey) {
+            return `${config.options.groupIdKey}-${key}`;
+        }
+
+        return key;
+    }
+
+    /**
+     * Gets the filter value for the Location column. Returns just the location name so
+     * the Pick Existing Value dropdown lists clean, distinct location names rather than
+     * long "name + path" strings.
+     */
+    function getLocationFilterValue(row: Record<string, unknown>): string {
+        return (row["locationName"] as string) ?? "";
+    }
+
+    /**
+     * Gets the quick-filter (free-text search) value for the Location column. Combines
+     * the location name with its parent path so searches against the grid's text box
+     * also match against parent location names shown beneath the location.
+     */
+    function getLocationQuickFilterValue(row: Record<string, unknown>): string {
+        const name = row["locationName"] as string ?? "";
+        const path = row["parentLocationPath"] as string ?? "";
+        return `${name} ${path}`.trim();
+    }
+
+    /**
+     * Gets the filter value for the Attendance Rate column. Returns a number so the
+     * numeric column filter (greater-than, less-than, etc.) can compare against it —
+     * returning a string causes numberFilterMatches to reject every row.
+     *
+     * The stored value is a 0-1 decimal (e.g., 0.42); surface it as the 0-100 percent
+     * shown in the cell so the user's filter input ("> 50") matches what they see.
+     */
+    function getAttendanceRateFilterValue(row: Record<string, unknown>): number | undefined {
+        const value = row["attendanceRate"] as number | null;
+        return value != null ? Math.round(value * 100) : undefined;
+    }
+
+    /**
+     * Gets the quick filter value for the attendance rate column (includes % for text search).
+     */
+    function getAttendanceRateQuickFilterValue(row: Record<string, unknown>): string {
+        const value = row["attendanceRate"] as number | null;
+        return value != null ? `${Math.round(value * 100)}%` : "";
+    }
+
+    /**
+     * Determines if the delete button should be disabled for a given row.
+     */
+    function isDeleteDisabled(row: Record<string, unknown>): boolean {
+        return row["isDeleteDisabled"] as boolean ?? false;
+    }
+
+    /**
+     * Gets the filter value for the Notes column. Uses the server-provided plain-text
+     * field so text searches match the visible content rather than HTML markup.
+     * (Notes render via v-html to preserve the WebForms block's HtmlEncode="false" behavior.)
+     */
+    function getNotesFilterValue(row: Record<string, unknown>): string {
+        return (row["notesPlain"] as string) ?? "";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     * Navigates to the detail page with appropriate parameters.
+     */
+    function onSelectItem(key: string): void {
+        const baseUrl = config.navigationUrls?.[NavigationUrlKey.DetailPage];
+        if (!baseUrl) {
+            return;
+        }
+
+        // Find the row data to build navigation parameters.
+        const row = gridData?.rows?.find(r => r["idKey"] === key);
+        if (!row) {
+            return;
+        }
+
+        const params = new URLSearchParams();
+
+        // Virtual occurrences use a composite key starting with "0|".
+        const isVirtual = key.startsWith("0|");
+
+        if (!isVirtual) {
+            params.set(PageParameterKey.OccurrenceId, key);
+        }
+        else {
+            const occurrenceDate = row["occurrenceDate"] as string;
+            if (occurrenceDate) {
+                params.set(PageParameterKey.Date, occurrenceDate);
+            }
+
+            const locationId = row["locationId"] as number | null;
+            if (locationId) {
+                params.set(PageParameterKey.LocationId, locationId.toString());
+            }
+
+            const scheduleId = row["scheduleId"] as number | null;
+            if (scheduleId) {
+                params.set(PageParameterKey.ScheduleId, scheduleId.toString());
+            }
+        }
+
+        const separator = baseUrl.includes("?") ? "&" : "?";
+        window.location.href = `${baseUrl}${separator}${params.toString()}`;
+    }
+
+    /**
+     * Called when the Add button has been clicked by the individual.
+     */
+    function onAddItem(): void {
+        const baseUrl = config.navigationUrls?.[NavigationUrlKey.DetailPage];
+        if (!baseUrl) {
+            return;
+        }
+
+        const params = new URLSearchParams();
+
+        // Pass current filter selections for schedule and location if set.
+        if (gridSettings.value.schedule) {
+            params.set(PageParameterKey.ScheduleId, gridSettings.value.schedule);
+        }
+
+        if (gridSettings.value.location) {
+            const loc = gridSettings.value.location;
+            // Only pass non-parent location IDs.
+            if (!loc.startsWith("P")) {
+                params.set(PageParameterKey.LocationId, loc);
+            }
+        }
+
+        const separator = baseUrl.includes("?") ? "&" : "?";
+        window.location.href = `${baseUrl}${separator}${params.toString()}`;
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete attendance occurrence.");
+        }
+    }
+
+    /**
+     * Called when the grid setting icon is clicked.
+     */
+    function onClickGridSetting(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+    /**
+     * Called when the grid settings modal is closed.
+     */
+    function onCloseGridSettings(): void {
+        isGridSettingsVisible.value = false;
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        const slidingDateRangeString = gridSettings.value.slidingDateRange
+            ? slidingDateRangeToString(gridSettings.value.slidingDateRange)
+            : slidingDateRangeToString(defaultSlidingDateRange);
+
+        preferences.setValue(makeKeyUniqueToGroup(PreferenceKey.FilterDateRange), slidingDateRangeString);
+        preferences.setValue(makeKeyUniqueToGroup(PreferenceKey.FilterLocation), gridSettings.value.location ?? "");
+        preferences.setValue(makeKeyUniqueToGroup(PreferenceKey.FilterSchedule), gridSettings.value.schedule ?? "");
+        // Campus is stored globally (not group-scoped) to match WebForms behavior.
+        preferences.setValue(PreferenceKey.FilterCampus, gridSettings.value.campus ?? "");
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    if (config.options?.isAuthorized) {
+        gridDataSource.value = loadGridData();
+    }
+</script>

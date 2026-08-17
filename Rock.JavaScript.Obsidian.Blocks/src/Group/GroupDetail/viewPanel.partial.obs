@@ -1,0 +1,377 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="d-flex flex-column gap-spacing-lg" style="padding: var(--spacing-xsmall);">
+        <NotificationBox v-if="modelValue?.isSystem"
+                         alertType="info"
+                         v-html="systemGroupMessage" />
+
+        <NotificationBox v-if="modelValue?.roleLimitWarning"
+                         alertType="warning"
+                         v-html="roleLimitWarningMessage" />
+
+        <div class="row">
+            <div :class="isRightRailVisible ? 'col-md-8' : 'col-md-12'">
+                <ContentSection title="Overview" icon="ti ti-list-details" :disableCollapse="true">
+                    <img v-if="modelValue?.photoUrl"
+                         class="img-fluid rounded mb-3"
+                         :src="`${modelValue.photoUrl}&maxwidth=300&maxheight=300`"
+                         :alt="modelValue.name ?? ''" />
+
+                    <div>
+                        <div v-if="modelValue?.description" class="form-group static-control">
+                            <label class="control-label">Description</label>
+                            <div class="control-wrapper">
+                                <div class="form-control-static">{{ modelValue.description }}</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div v-if="modelValue?.administrator" class="col-md-6">
+                                <div class="form-group static-control">
+                                    <label class="control-label">{{ modelValue.administratorLabel || "Group Administrator" }}</label>
+                                    <div class="control-wrapper">
+                                        <div class="form-control-static">
+                                            <a v-if="modelValue.administrator.url" :href="modelValue.administrator.url" target="_blank" rel="noopener">{{ modelValue.administrator.text }}</a>
+                                            <span v-else>{{ modelValue.administrator.text }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-if="modelValue?.parentGroup" class="col-md-6">
+                                <div class="form-group static-control">
+                                    <label class="control-label">Parent Group</label>
+                                    <div class="control-wrapper">
+                                        <div class="form-control-static">
+                                            <a v-if="modelValue.parentGroup.url" :href="modelValue.parentGroup.url">{{ modelValue.parentGroup.text }}</a>
+                                            <span v-else>{{ modelValue.parentGroup.text }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-if="modelValue?.scheduleFriendlyText" class="col-md-6">
+                                <div class="form-group static-control">
+                                    <label class="control-label">Schedule</label>
+                                    <div class="control-wrapper">
+                                        <div class="form-control-static">{{ modelValue.scheduleFriendlyText }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-if="modelValue?.groupCapacity != null" class="col-md-6">
+                                <div class="form-group static-control">
+                                    <label class="control-label">Group Capacity</label>
+                                    <div class="control-wrapper">
+                                        <div class="form-control-static">{{ modelValue.groupCapacity }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-if="meetingStyleText" class="col-md-6">
+                                <div class="form-group static-control">
+                                    <label class="control-label">Meeting Style</label>
+                                    <div class="control-wrapper">
+                                        <div class="form-control-static">{{ meetingStyleText }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <AttributeValuesContainer v-if="hasAttributes"
+                                                  :modelValue="attributeValues"
+                                                  :attributes="attributes"
+                                                  :numberOfColumns="2"
+                                                  :showCategoryLabel="true" />
+
+                        <div v-if="hasLinkages" class="overview-linkages border-top pt-3">
+                            <div v-if="registrations.length" class="form-group static-control">
+                                <label class="control-label">Registrations</label>
+                                <div class="control-wrapper">
+                                    <div class="form-control-static">
+                                        <ul class="linkages-list mb-0">
+                                            <li v-for="(item, index) in registrations" :key="`reg-${index}`">
+                                                <a :href="item.url ?? '#'">{{ item.name }}</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-if="eventItemOccurrences.length" class="form-group static-control">
+                                <label class="control-label">Event Item Occurrences</label>
+                                <div class="control-wrapper">
+                                    <div class="form-control-static">
+                                        <ul class="linkages-list mb-0">
+                                            <li v-for="(item, index) in eventItemOccurrences" :key="`evt-${index}`">
+                                                <a :href="item.url ?? '#'">{{ item.name }}</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-if="contentItems.length" class="form-group static-control">
+                                <label class="control-label">Content Items</label>
+                                <div class="control-wrapper">
+                                    <div class="form-control-static">
+                                        <ul class="linkages-list mb-0">
+                                            <li v-for="(item, index) in contentItems" :key="`ci-${index}`">
+                                                <a :href="item.url ?? '#'" target="_blank" rel="noopener">{{ item.name }}</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </ContentSection>
+            </div>
+
+            <div v-if="isRightRailVisible" class="col-md-4">
+                <div class="d-flex flex-column" style="gap: 30px;">
+                    <ContentSection v-if="hasGroupTools"
+                                    title="Group Tools"
+                                    icon="ti ti-tool"
+                                    :disableCollapse="true">
+                        <div>
+                            <div v-if="hasParticipationTools" class="form-group static-control">
+                                <label class="control-label">Participation</label>
+                                <ul class="list-unstyled mb-0">
+                                    <li v-if="options.isAttendanceVisible">
+                                        <a :href="resolveUrl(navigationUrls?.[NavigationUrlKey.AttendancePage])" class="list-group-item nav-link">
+                                            <i class="ti ti-checkbox"></i>
+                                            <span>Attendance</span>
+                                        </a>
+                                    </li>
+                                    <li v-if="options.isSchedulerVisible">
+                                        <a :href="resolveUrl(navigationUrls?.[NavigationUrlKey.GroupSchedulerPage])" class="list-group-item nav-link">
+                                            <i class="ti ti-calendar-month"></i>
+                                            <span>Scheduler</span>
+                                        </a>
+                                    </li>
+                                    <li v-if="options.isRsvpVisible">
+                                        <a :href="resolveUrl(navigationUrls?.[NavigationUrlKey.GroupRSVPPage])" class="list-group-item nav-link">
+                                            <i class="ti ti-user-check"></i>
+                                            <span>RSVP</span>
+                                        </a>
+                                    </li>
+                                    <li v-if="options.isPlacementVisible">
+                                        <a :href="resolveUrl(navigationUrls?.[NavigationUrlKey.GroupPlacementPage])" class="list-group-item nav-link">
+                                            <i class="ti ti-chart-dots-3"></i>
+                                            <span>Placement</span>
+                                        </a>
+                                    </li>
+                                    <li v-if="options.isFundraisingVisible">
+                                        <a :href="resolveUrl(navigationUrls?.[NavigationUrlKey.FundraisingProgressPage])" class="list-group-item nav-link">
+                                            <i class="ti ti-cash"></i>
+                                            <span>Fundraising</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div v-if="hasViewTools" class="form-group static-control mb-0">
+                                <label class="control-label">Views</label>
+                                <ul class="list-unstyled mb-0">
+                                    <li v-if="options.isMapVisible">
+                                        <a :href="resolveUrl(navigationUrls?.[NavigationUrlKey.GroupMapPage])" class="list-group-item nav-link">
+                                            <i class="ti ti-map-pin"></i>
+                                            <span>Interactive Map</span>
+                                        </a>
+                                    </li>
+                                    <li v-if="options.isHistoryVisible">
+                                        <a :href="resolveUrl(navigationUrls?.[NavigationUrlKey.GroupHistoryPage])" class="list-group-item nav-link">
+                                            <i class="ti ti-history"></i>
+                                            <span>History</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </ContentSection>
+
+                    <ContentSection v-if="hasMeetingLocations"
+                                    title="Meeting Locations"
+                                    icon="ti ti-map-pin"
+                                    :disableCollapse="true">
+                        <LocationCard v-for="location in meetingLocations"
+                                      :key="location.guid"
+                                      :modelValue="location"
+                                      :mapStyleValueGuid="options.mapStyleValueGuid" />
+                    </ContentSection>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+/* Long, unbreakable values (URL/link attributes such as an Asana board link)
+   have no break opportunities, so with the default overflow-wrap they spill out
+   of their column in the two-column Overview layout and render on top of the
+   adjacent column's values. Force them to wrap within their column. The
+   attribute values are rendered by the AttributeValuesContainer child
+   component, so :deep is required to pierce the scoped boundary. */
+:deep(.form-control-static) {
+    overflow-wrap: break-word;
+}
+</style>
+
+<script setup lang="ts">
+    import { GroupMeetingLocationBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupMeetingLocationBag";
+    import { GroupDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupDetailOptionsBag";
+    import { GroupLinkageBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupLinkageBag";
+    import { GroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupBag";
+    import { MeetingStyleDescription } from "@Obsidian/Enums/Group/meetingStyle";
+    import { NavigationUrlKey } from "./types.partial";
+    import { computed, PropType } from "vue";
+    import LocationCard from "./locationCard.partial.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GroupBag | null>,
+            required: false
+        },
+
+        /**
+         * Per-block options driving Group Tools / action-button visibility.
+         */
+        options: {
+            type: Object as PropType<GroupDetailOptionsBag>,
+            required: true
+        },
+
+        /**
+         * Navigation URLs from the block, keyed by NavigationUrlKey.
+         */
+        navigationUrls: {
+            type: Object as PropType<Record<string, string> | null>,
+            required: false
+        }
+    });
+
+    // #region Constants
+
+    /**
+     * Banner shown in the panel when the group is a system group and editing
+     * is restricted.
+     */
+    const systemGroupMessage = "<strong>Note</strong> Because this group is used by Rock, editing is restricted.";
+
+    /**
+     * Banner shown when the group's role minimums aren't met.
+     */
+    const roleLimitWarningMessage = computed((): string =>
+        `<strong>Role Limit Warning</strong> ${props.modelValue?.roleLimitWarning ?? ""}`
+    );
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The group's public attribute schema, with an empty-object fallback.
+     */
+    const attributes = computed(() => props.modelValue?.attributes ?? {});
+
+    /**
+     * The group's public attribute values, with an empty-object fallback.
+     */
+    const attributeValues = computed(() => props.modelValue?.attributeValues ?? {});
+
+    /**
+     * Whether the group has any public attributes to render.
+     */
+    const hasAttributes = computed((): boolean => Object.keys(attributes.value).length > 0);
+
+    /**
+     * Friendly Meeting Style label, or empty when the group has no meeting style set.
+     */
+    const meetingStyleText = computed((): string => {
+        const value = props.modelValue?.meetingStyle;
+        return value != null ? (MeetingStyleDescription[value] ?? "") : "";
+    });
+
+    /**
+     * Registration linkages for the group (Registration Instances pointing at this group).
+     */
+    const registrations = computed((): GroupLinkageBag[] => props.modelValue?.linkages?.registrations ?? []);
+
+    /**
+     * Event item occurrence linkages for the group.
+     */
+    const eventItemOccurrences = computed((): GroupLinkageBag[] => props.modelValue?.linkages?.eventItemOccurrences ?? []);
+
+    /**
+     * Content channel item linkages for the group.
+     */
+    const contentItems = computed((): GroupLinkageBag[] => props.modelValue?.linkages?.contentItems ?? []);
+
+    /**
+     * Whether any linkages of any kind exist for the group.
+     */
+    const hasLinkages = computed((): boolean => registrations.value.length > 0
+        || eventItemOccurrences.value.length > 0
+        || contentItems.value.length > 0);
+
+    /**
+     * Whether any of the participation tools (Attendance, Scheduler, RSVP,
+     * Placement, Fundraising) are visible.
+     */
+    const hasParticipationTools = computed((): boolean => {
+        const o = props.options;
+        return Boolean(o.isAttendanceVisible || o.isSchedulerVisible || o.isRsvpVisible || o.isPlacementVisible || o.isFundraisingVisible);
+    });
+
+    /**
+     * Whether any of the view tools (Interactive Map, History) are visible.
+     */
+    const hasViewTools = computed((): boolean => {
+        const o = props.options;
+        return Boolean(o.isMapVisible || o.isHistoryVisible);
+    });
+
+    /**
+     * Whether the Group Tools card should render at all (any participation
+     * or view tool is visible).
+     */
+    const hasGroupTools = computed((): boolean => hasParticipationTools.value || hasViewTools.value);
+
+    /**
+     * The meeting-location cards to render on the right rail.
+     */
+    const meetingLocations = computed((): GroupMeetingLocationBag[] => props.modelValue?.meetingLocations ?? []);
+
+    /**
+     * Whether the Meeting Locations card should render.
+     */
+    const hasMeetingLocations = computed((): boolean => meetingLocations.value.length > 0);
+
+    /**
+     * Whether the right rail (Group Tools + Meeting Locations) renders at all.
+     * When both are empty, the Overview section expands to fill the panel width.
+     */
+    const isRightRailVisible = computed((): boolean => hasGroupTools.value || hasMeetingLocations.value);
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Substitutes the active group's IdKey into a server-supplied URL.
+     * Each outbound URL is emitted with a literal `((Key))` placeholder
+     * which the Vue layer replaces with the current group's IdKey.
+     */
+    function resolveUrl(url: string | null | undefined): string {
+        if (!url || !props.modelValue?.idKey) {
+            return "";
+        }
+        return url.replace("((Key))", props.modelValue.idKey);
+    }
+
+    // #endregion
+</script>

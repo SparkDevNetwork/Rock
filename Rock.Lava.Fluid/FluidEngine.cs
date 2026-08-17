@@ -20,13 +20,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading.Tasks;
+
 using Fluid;
-using Fluid.Ast;
-using Fluid.Parser;
 using Fluid.Values;
 
 namespace Rock.Lava.Fluid
@@ -37,6 +36,7 @@ namespace Rock.Lava.Fluid
     public class FluidEngine : LavaEngineBase
     {
         private TemplateOptions _templateOptions = null;
+        private readonly object _templateOptionsLock = new object();
         private readonly LavaFluidParser _parser = new LavaFluidParser();
 
         private static readonly Guid _engineIdentifier = new Guid( "605445FE-6ECC-4E67-9A95-98F7173F7389" );
@@ -91,9 +91,13 @@ namespace Rock.Lava.Fluid
         /// <summary>
         /// Register value converters for Types that are not natively handled by Fluid.
         /// </summary>
-        private void RegisterValueConverters()
+        /// <param name="templateOptions">
+        /// The <see cref="TemplateOptions"/> to register the converters against. Passed in explicitly
+        /// rather than resolved via <see cref="GetTemplateOptions"/> so this method can run while
+        /// <c>GetTemplateOptions</c> is still constructing the singleton instance, without recursing.
+        /// </param>
+        private void RegisterValueConverters( TemplateOptions templateOptions )
         {
-            var templateOptions = GetTemplateOptions();
 
             /* [2021-06-24] DL
              * Value Converters can have a significant impact on rendering performance.
@@ -234,31 +238,64 @@ namespace Rock.Lava.Fluid
 
         private TemplateOptions GetTemplateOptions()
         {
-            if ( _templateOptions == null )
+            /*
+                5/6/26 - CLAUDE
+
+                Initialization is guarded by a double-checked lock and the field is published only
+                after the new TemplateOptions has been fully built. Without this, two threads could
+                each construct a TemplateOptions, register filters twice, and lose one. The helpers
+                that contribute to the new instance accept it as a parameter so that they do not
+                recurse back through GetTemplateOptions while initialization is still in flight.
+
+                Reason: F9 from spec 260501-lava-fluid-bridge-perf-improvements - thread-safety fix.
+            */
+            var options = _templateOptions;
+            if ( options != null )
             {
+                return options;
+            }
+
+            lock ( _templateOptionsLock )
+            {
+                if ( _templateOptions != null )
+                {
+                    return _templateOptions;
+                }
+
                 // ModelNamesComparer with StringComparer.Ordinal should allow the
                 // "LavaDataDictionary_WithKeysDifferingOnlyByCase_ReturnsMatchingValueForKey" test to pass again
                 // but it does not seem to have this effect.  I've posted my question about this feature
                 // in https://github.com/sebastienros/fluid/pull/681#issuecomment-2891948387
-                _templateOptions = new TemplateOptions { ModelNamesComparer = StringComparer.Ordinal };
+                var newOptions = new TemplateOptions { ModelNamesComparer = StringComparer.Ordinal };
 
                 // Re-register the basic Liquid filters implemented by Fluid using CamelCase rather than the default snakecase.
-                HideSnakeCaseFilters( _templateOptions );
-                RegisterBaseFilters( _templateOptions );
+                HideSnakeCaseFilters( newOptions );
+                RegisterBaseFilters( newOptions );
 
                 // Set the default strategy for locating object properties to our custom implementation that adds
                 // the ability to resolve properties of nested anonymous Types using Reflection.
-                _templateOptions.MemberAccessStrategy = new LavaObjectMemberAccessStrategy();
+                newOptions.MemberAccessStrategy = new LavaObjectMemberAccessStrategy();
 
                 // Register value converters for Types that are not natively handled by Fluid.
-                RegisterValueConverters();
+                RegisterValueConverters( newOptions );
 
                 // Register all Types that implement LavaDataDictionary interfaces as safe to render.
-                RegisterSafeType( typeof( Rock.Lava.ILavaDataDictionary ) );
-                RegisterSafeType( typeof( Rock.Lava.ILavaDataDictionarySource ) );
-            }
+                // Call MemberAccessStrategy.Register directly rather than RegisterSafeType to avoid
+                // recursing back into GetTemplateOptions while we are still constructing the instance.
+                newOptions.MemberAccessStrategy.Register( typeof( Rock.Lava.ILavaDataDictionary ) );
+                newOptions.MemberAccessStrategy.Register( typeof( Rock.Lava.ILavaDataDictionarySource ) );
 
-            return _templateOptions;
+                newOptions.Scope.SetValue( "Blank", BlankValue.Instance );
+                newOptions.Scope.SetValue( "blank", BlankValue.Instance );
+                newOptions.Scope.SetValue( "Empty", EmptyValue.Instance );
+                newOptions.Scope.SetValue( "empty", EmptyValue.Instance );
+
+                // Publish the fully-initialized instance to the field. Other threads waiting on the
+                // lock observe the completed instance; threads that read without the lock see either
+                // null (and will then take the lock) or the fully-built reference.
+                _templateOptions = newOptions;
+                return _templateOptions;
+            }
         }
 
         /// <summary>
@@ -391,25 +428,29 @@ namespace Rock.Lava.Fluid
             // Fluid only allows one registered method for each filter name, so use the overload with the most parameters.
             // This addresses the vast majority of use cases, but we could modify our Fluid filter function wrapper to
             // distinguish different method signatures if necessary.
-            var lavaFilterMethods = implementingType.GetMethods( System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public )
-                .ToList()
-                .OrderBy( x => x.Name )
-                .ThenByDescending( x => x.GetParameters().Count() );
+            var lavaFilterMethods = implementingType.GetMethods( BindingFlags.Static | BindingFlags.Public )
+                .Select( m => new
+                {
+                    Method = m,
+                    ParameterCount = m.GetParameters().Length,
+                } )
+                .OrderBy( x => x.Method.Name )
+                .ThenByDescending( x => x.ParameterCount );
 
             string lastFilterName = null;
 
             var templateOptions = GetTemplateOptions();
 
-            foreach ( var lavaFilterMethod in lavaFilterMethods )
+            foreach ( var entry in lavaFilterMethods )
             {
-                if ( lavaFilterMethod.Name == lastFilterName )
+                if ( entry.Method.Name == lastFilterName )
                 {
                     continue;
                 }
 
-                lastFilterName = lavaFilterMethod.Name;
+                lastFilterName = entry.Method.Name;
 
-                this.OnRegisterFilter( lavaFilterMethod, null );
+                this.OnRegisterFilter( entry.Method, null );
             }
         }
 
@@ -436,6 +477,8 @@ namespace Rock.Lava.Fluid
             var hasContextParameter = lavaFilterMethodParameters[0].ParameterType == typeof( ILavaRenderContext );
 
             var firstParameterIndex = 1 + ( hasContextParameter ? 1 : 0 );
+
+            var compiledFilter = BuildCompiledFilterDelegate( lavaFilterMethod, lavaFilterMethodParameters );
 
             // Define the Fluid-compatible filter function that will wrap the Lava filter method.
             ValueTask<FluidValue> fluidFilterFunction( FluidValue input, FilterArguments arguments, TemplateContext context )
@@ -481,26 +524,51 @@ namespace Rock.Lava.Fluid
                     }
                 }
 
-                try
-                {
-                    var result = lavaFilterMethod.Invoke( null, lavaFilterMethodArguments );
+                // The compiled delegate emits a direct call to the target, so any exception thrown
+                // by the filter propagates as itself rather than being wrapped in a
+                // TargetInvocationException. No unwrapping needed here.
+                var result = compiledFilter( lavaFilterMethodArguments );
 
-                    return FluidValue.Create( result, templateOptions );
-                }
-                catch ( TargetInvocationException ex )
-                {
-                    // Any exceptions thrown from the filter method are wrapped in a TargetInvocationException by the .NET framework.
-                    // Rethrow the actual exception thrown by the filter, where possible.
-                    if ( ex.InnerException != null )
-                    {
-                        ExceptionDispatchInfo.Capture( ex.InnerException ).Throw();
-                    }
-
-                    throw;
-                }
+                return FluidValue.Create( result, templateOptions );
             }
 
             templateOptions.Filters.AddFilter( filterName, fluidFilterFunction );
+        }
+
+        /// <summary>
+        /// Compiles a Lava filter method into a delegate that takes a positional <c>object[]</c>
+        /// argument array and returns the result as an <c>object</c>. Used by <see cref="OnRegisterFilter"/>
+        /// to avoid the per-call cost of <see cref="MethodInfo.Invoke(object, object[])"/>.
+        /// </summary>
+        private static Func<object[], object> BuildCompiledFilterDelegate( MethodInfo method, ParameterInfo[] parameters )
+        {
+            var argsParam = Expression.Parameter( typeof( object[] ), "args" );
+            var convertedArgs = new Expression[parameters.Length];
+
+            for ( int i = 0; i < parameters.Length; i++ )
+            {
+                var indexed = Expression.ArrayIndex( argsParam, Expression.Constant( i ) );
+                convertedArgs[i] = Expression.Convert( indexed, parameters[i].ParameterType );
+            }
+
+            var call = Expression.Call( method, convertedArgs );
+
+            Expression body;
+            if ( method.ReturnType == typeof( void ) )
+            {
+                // Void-returning filter methods exist for side-effect-only filters. Emit a Block
+                // that invokes the call and yields null, matching the behavior of MethodInfo.Invoke
+                // (which also returns null for void targets).
+                body = Expression.Block(
+                    call,
+                    Expression.Constant( null, typeof( object ) ) );
+            }
+            else
+            {
+                body = Expression.Convert( call, typeof( object ) );
+            }
+
+            return Expression.Lambda<Func<object[], object>>( body, argsParam ).Compile();
         }
 
         private static object GetLavaParameterArgumentFromFluidValue( FluidValue fluidFilterArgument, Type argumentType )
@@ -599,12 +667,8 @@ namespace Rock.Lava.Fluid
         /// <param name="lavaTemplate"></param>
         /// <param name=""></param>
         /// <returns></returns>
-        private FluidTemplate CreateNewFluidTemplate( string lavaTemplate )
+        private IFluidTemplate CreateNewFluidTemplate( string lavaTemplate )
         {
-            FluidTemplate template;
-            string error;
-            IFluidTemplate fluidTemplate;
-
             /*
                 10/27/2025 - N.A.
 
@@ -624,20 +688,16 @@ namespace Rock.Lava.Fluid
                 Changed from calling ConvertToLiquidElsif(...) to use the unused ConvertToLiquid(...) method since
                 it handles both the "elseif" conversion and uses our RemoveLavaComments() method.
             */
-            var success = _parser.TryParse( ConvertToLiquid( lavaTemplate ), out fluidTemplate, out error );
-
-            var fluidTemplateObject = ( FluidTemplate ) fluidTemplate;
+            var success = _parser.TryParse( ConvertToLiquid( lavaTemplate ), out var fluidTemplate, out var error );
 
             if ( success )
             {
-                template = new FluidTemplate( new List<Statement>( fluidTemplateObject.Statements ) );
+                return fluidTemplate;
             }
             else
             {
                 throw new LavaParseException( this.EngineName, lavaTemplate, error );
             }
-
-            return template;
         }
 
         protected override LavaRenderResult OnRenderTemplate( ILavaTemplate inputTemplate, LavaRenderParameters parameters )
@@ -654,14 +714,13 @@ namespace Rock.Lava.Fluid
             var result = new LavaRenderResult();
             var sb = new StringBuilder();
 
-            // Set the render options for culture and timezone if they are specified.
             if ( parameters.Culture != null )
             {
-                templateContext.FluidContext.Options.CultureInfo = parameters.Culture;
+                templateContext.FluidContext.CultureInfo = parameters.Culture;
             }
             if ( parameters.TimeZone != null )
             {
-                templateContext.FluidContext.Options.TimeZone = parameters.TimeZone;
+                templateContext.FluidContext.TimeZone = parameters.TimeZone;
             }
 
             // Set the render options for encoding.
@@ -701,7 +760,7 @@ namespace Rock.Lava.Fluid
                     var task = template.RenderAsync( writer, encoder, templateContext.FluidContext );
                     if ( !task.IsCompletedSuccessfully )
                     {
-                        task.AsTask().GetAwaiter().GetResult();
+                        task.GetAwaiter().GetResult();
                     }
 
                     writer.Flush();

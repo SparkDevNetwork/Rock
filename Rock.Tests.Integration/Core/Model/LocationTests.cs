@@ -21,9 +21,10 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Data;
+using Rock.Enums.Controls;
 using Rock.Field.Types;
 using Rock.Model;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Core.Model
@@ -61,34 +62,34 @@ namespace Rock.Tests.Integration.Core.Model
 
             var attributes1 = new Dictionary<string, object>();
 
-            attributes1.Add( "core_CountryAddressLine1Requirement", DataEntryRequirementLevelSpecifier.Required );
-            attributes1.Add( "core_CountryAddressLine2Requirement", DataEntryRequirementLevelSpecifier.Required );
-            attributes1.Add( "core_CountryAddressCityRequirement", DataEntryRequirementLevelSpecifier.Required );
-            attributes1.Add( "core_CountryAddressStateRequirement", DataEntryRequirementLevelSpecifier.Required );
-            attributes1.Add( "core_CountryAddressLocalityRequirement", DataEntryRequirementLevelSpecifier.Required );
-            attributes1.Add( "core_CountryAddressPostalCodeRequirement", DataEntryRequirementLevelSpecifier.Required );
+            attributes1.Add( "core_CountryAddressLine1Requirement", RequirementLevel.Required );
+            attributes1.Add( "core_CountryAddressLine2Requirement", RequirementLevel.Required );
+            attributes1.Add( "core_CountryAddressCityRequirement", RequirementLevel.Required );
+            attributes1.Add( "core_CountryAddressStateRequirement", RequirementLevel.Required );
+            attributes1.Add( "core_CountryAddressLocalityRequirement", RequirementLevel.Required );
+            attributes1.Add( "core_CountryAddressPostalCodeRequirement", RequirementLevel.Required );
 
             definedTypeService.AddOrUpdateValue( SystemGuid.DefinedType.LOCATION_COUNTRIES, CountryCodeWithMandatoryAddressRequirements, "Test-1", attributes1 );
 
             var attributes2 = new Dictionary<string, object>();
 
-            attributes2.Add( "core_CountryAddressLine1Requirement", DataEntryRequirementLevelSpecifier.Optional );
-            attributes2.Add( "core_CountryAddressLine2Requirement", DataEntryRequirementLevelSpecifier.Optional );
-            attributes2.Add( "core_CountryAddressCityRequirement", DataEntryRequirementLevelSpecifier.Optional );
-            attributes2.Add( "core_CountryAddressStateRequirement", DataEntryRequirementLevelSpecifier.Optional );
-            attributes2.Add( "core_CountryAddressLocalityRequirement", DataEntryRequirementLevelSpecifier.Optional );
-            attributes2.Add( "core_CountryAddressPostalCodeRequirement", DataEntryRequirementLevelSpecifier.Optional );
+            attributes2.Add( "core_CountryAddressLine1Requirement", RequirementLevel.Optional );
+            attributes2.Add( "core_CountryAddressLine2Requirement", RequirementLevel.Optional );
+            attributes2.Add( "core_CountryAddressCityRequirement", RequirementLevel.Optional );
+            attributes2.Add( "core_CountryAddressStateRequirement", RequirementLevel.Optional );
+            attributes2.Add( "core_CountryAddressLocalityRequirement", RequirementLevel.Optional );
+            attributes2.Add( "core_CountryAddressPostalCodeRequirement", RequirementLevel.Optional );
 
             definedTypeService.AddOrUpdateValue( SystemGuid.DefinedType.LOCATION_COUNTRIES, CountryCodeWithOptionalAddressRequirements, "Test-2", attributes2 );
 
             var attributes3 = new Dictionary<string, object>();
 
-            attributes3.Add( "core_CountryAddressLine1Requirement", DataEntryRequirementLevelSpecifier.Optional );
-            attributes3.Add( "core_CountryAddressLine2Requirement", DataEntryRequirementLevelSpecifier.Optional );
-            attributes3.Add( "core_CountryAddressCityRequirement", DataEntryRequirementLevelSpecifier.Required );
-            attributes3.Add( "core_CountryAddressStateRequirement", DataEntryRequirementLevelSpecifier.Required );
-            attributes3.Add( "core_CountryAddressLocalityRequirement", DataEntryRequirementLevelSpecifier.Optional );
-            attributes3.Add( "core_CountryAddressPostalCodeRequirement", DataEntryRequirementLevelSpecifier.Optional );
+            attributes3.Add( "core_CountryAddressLine1Requirement", RequirementLevel.Optional );
+            attributes3.Add( "core_CountryAddressLine2Requirement", RequirementLevel.Optional );
+            attributes3.Add( "core_CountryAddressCityRequirement", RequirementLevel.Required );
+            attributes3.Add( "core_CountryAddressStateRequirement", RequirementLevel.Required );
+            attributes3.Add( "core_CountryAddressLocalityRequirement", RequirementLevel.Optional );
+            attributes3.Add( "core_CountryAddressPostalCodeRequirement", RequirementLevel.Optional );
 
             definedTypeService.AddOrUpdateValue( SystemGuid.DefinedType.LOCATION_COUNTRIES, CountryCodeWithMixedAddressRequirements, "Test-3", attributes3 );
 

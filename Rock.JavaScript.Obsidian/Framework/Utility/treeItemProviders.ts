@@ -21,6 +21,7 @@ import { useHttp } from "./http";
 import { SiteType } from "@Obsidian/Enums/Cms/siteType";
 import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
 import { CategoryPickerChildTreeItemsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/categoryPickerChildTreeItemsOptionsBag";
+import { AccountPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/accountPickerGetChildrenOptionsBag";
 import { LocationItemPickerGetActiveChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/locationItemPickerGetActiveChildrenOptionsBag";
 import { DataViewPickerGetDataViewsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/dataViewPickerGetDataViewsOptionsBag";
 import { WorkflowTypePickerGetWorkflowTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/workflowTypePickerGetWorkflowTypesOptionsBag";
@@ -91,6 +92,35 @@ export class CategoryTreeItemProvider implements ITreeItemProvider {
     private readonly http = useHttp();
 
     /**
+     * Whether to include the categorized entity items beneath each category.
+     * Set to undefined or false to show categories only.
+     */
+    public getCategorizedItems?: boolean;
+
+    /**
+     * Whether to include inactive items. Set to undefined or false to hide them.
+     */
+    public includeInactiveItems?: boolean;
+
+    /**
+     * Whether to include entity items that have a blank name. Set to undefined
+     * or false to hide them.
+     */
+    public includeUnnamedEntityItems?: boolean;
+
+    /**
+     * The categories to exclude from the tree, by Guid. Set to undefined or
+     * empty to exclude nothing.
+     */
+    public excludedCategoryGuids?: Guid[];
+
+    /**
+     * The icon CSS class applied to any item that has no icon of its own. Set
+     * to undefined to leave items without an icon.
+     */
+    public defaultIconCssClass?: string;
+
+    /**
      * The root category to start pulling categories from. Set to undefined to
      * begin with any category that does not have a parent.
      */
@@ -136,21 +166,49 @@ export class CategoryTreeItemProvider implements ITreeItemProvider {
             lazyLoad: false,
             securityGrantToken: this.securityGrantToken,
 
-            getCategorizedItems: false,
+            getCategorizedItems: this.getCategorizedItems ?? false,
             includeCategoriesWithoutChildren: true,
-            includeInactiveItems: false,
-            includeUnnamedEntityItems: false,
+            includeInactiveItems: this.includeInactiveItems ?? false,
+            includeUnnamedEntityItems: this.includeUnnamedEntityItems ?? false,
         };
 
         const response = await this.http.post<TreeItemBag[]>("/api/v2/Controls/CategoryPickerChildTreeItems", {}, options);
 
         if (response.isSuccess && response.data) {
-            return response.data;
+            return this.applyClientOptions(response.data);
         }
         else {
             console.log("Error", response.errorMessage);
             return [];
         }
+    }
+
+    /**
+     * Applies the exclude-categories and default-icon options the server endpoint
+     * does not handle: drops excluded category nodes and fills in a fallback icon.
+     *
+     * @param items The items returned from the server.
+     *
+     * @returns The filtered and decorated items.
+     */
+    private applyClientOptions(items: TreeItemBag[]): TreeItemBag[] {
+        const excludedSet = new Set((this.excludedCategoryGuids ?? []).map(guid => guid.toLowerCase()));
+
+        const filtered = excludedSet.size > 0
+            ? items.filter(item => !item.value || !excludedSet.has(item.value.toLowerCase()))
+            : items;
+
+        for (const item of filtered) {
+            if (this.defaultIconCssClass && !item.iconCssClass) {
+                item.iconCssClass = this.defaultIconCssClass;
+            }
+
+            if (item.children && item.children.length > 0) {
+                item.children = this.applyClientOptions(item.children);
+            }
+        }
+
+        return filtered;
     }
 
     /**
@@ -570,6 +628,66 @@ export class ConnectionRequestTreeItemProvider implements ITreeItemProvider {
 
 
 /**
+ * Tree Item Provider for retrieving financial accounts from the server and
+ * displaying them inside a tree list.
+ */
+export class FinancialAccountTreeItemProvider implements ITreeItemProvider {
+    /** The HTTP client for making API requests. */
+    private readonly http = useHttp();
+
+    /** The security grant token that will be used to request additional access to the account list. */
+    public securityGrantToken: string | null = null;
+
+    /** Whether to include inactive accounts. */
+    public includeInactive: boolean = false;
+
+    /** Whether to display each account's public name instead of its internal name. */
+    public displayPublicName: boolean = false;
+
+    /**
+     * Gets the child items from the server.
+     *
+     * @param parentGuid The parent account whose children are retrieved, or null for the root accounts.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentGuid: Guid | null = null): Promise<TreeItemBag[]> {
+        const options: AccountPickerGetChildrenOptionsBag = {
+            parentGuid: toGuidOrNull(parentGuid) ?? emptyGuid,
+            includeInactive: this.includeInactive,
+            displayPublicName: this.displayPublicName,
+            loadFullTree: false,
+            securityGrantToken: this.securityGrantToken
+        };
+        const url = "/api/v2/Controls/AccountPickerGetChildren";
+        const response = await this.http.post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.error("Error fetching accounts from server", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems(null);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(toGuidOrNull(item.value));
+    }
+}
+
+
+/**
  * Tree Item Provider for retrieving groups from the server and displaying
  * them inside a tree list.
  */
@@ -586,6 +704,9 @@ export class GroupTreeItemProvider implements ITreeItemProvider {
     /** List of group types GUIDs to limit to groups of those types. */
     public includedGroupTypeGuids: Guid[] = [];
 
+    /** List of group type GUIDs to exclude when no include list is set. */
+    public excludedGroupTypeGuids: Guid[] = [];
+
     /** When true, show no groups by default. */
     public excludeAllByDefault: boolean = false;
 
@@ -597,6 +718,24 @@ export class GroupTreeItemProvider implements ITreeItemProvider {
 
     /** Whether to limit to only groups that have RSVPs enabled. */
     public limitToRSVPEnabled: boolean = false;
+
+    /** Whether to limit results to security-role groups only. */
+    public limitToSecurityRoleGroups: boolean = false;
+
+    /** Optional campus Guid used to filter groups by campus. */
+    public campusGuid: Guid | null = null;
+
+    /** When a campus filter is set, whether to also include groups that have no campus. */
+    public includeNoCampus: boolean = false;
+
+    /** Whether to limit results to public groups only. */
+    public limitToPublic: boolean = false;
+
+    /**
+     * The count mode to attach to each node: 0 = None, 1 = Child Groups,
+     * 2 = Group Members. Counts are written to TreeItemBag.childCount.
+     */
+    public countsType: number = 0;
 
     /**
      * Gets the child items from the server.
@@ -611,10 +750,16 @@ export class GroupTreeItemProvider implements ITreeItemProvider {
             guid: parentGuid,
             rootGroupGuid: this.rootGroupGuid,
             includedGroupTypeGuids: this.includedGroupTypeGuids,
+            excludedGroupTypeGuids: this.excludedGroupTypeGuids,
             excludeAllByDefault: this.excludeAllByDefault,
             includeInactiveGroups: this.includeInactiveGroups,
             limitToSchedulingEnabled: this.limitToSchedulingEnabled,
             limitToRSVPEnabled: this.limitToRSVPEnabled,
+            limitToSecurityRoleGroups: this.limitToSecurityRoleGroups,
+            campusGuid: this.campusGuid,
+            includeNoCampus: this.includeNoCampus,
+            limitToPublic: this.limitToPublic,
+            countsType: this.countsType,
             securityGrantToken: this.securityGrantToken,
             expandToValues
         };

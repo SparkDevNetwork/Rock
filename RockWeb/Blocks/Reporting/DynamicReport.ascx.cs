@@ -36,24 +36,63 @@ namespace RockWeb.Blocks.Reporting
     [DisplayName( "Dynamic Report" )]
     [Category( "Reporting" )]
     [Description( "Block to display a report with options to edit the filter" )]
-    [BooleanField( "Show 'Merge Template' action on grid", "", defaultValue: true, key: "ShowGridMergeTemplateAction" )]
-    [BooleanField( "Show 'Communications' action on grid", "", defaultValue: true, key: "ShowGridCommunicationsAction" )]
+    [BooleanField( "Show 'Merge Template' action on grid",
+        DefaultBooleanValue = true,
+        Key = "ShowGridMergeTemplateAction" )]
+    [BooleanField( "Show 'Communications' action on grid",
+        DefaultBooleanValue = true,
+        Key = "ShowGridCommunicationsAction" )]
 
     // CustomSetting Dialog
-    [TextField( "ResultsIconCssClass", "Title for the results list.", false, "ti ti-list", "CustomSetting" )]
-    [TextField( "ResultsTitle", "Title for the results list.", false, "Results", "CustomSetting" )]
-    [TextField( "FilterTitle", "Title for the results list.", false, "Filters", "CustomSetting" )]
-    [TextField( "FilterIconCssClass", "Title for the results list.", false, "ti ti-filter", "CustomSetting" )]
-    [TextField( "Report", "The report to use for this block", false, "", "CustomSetting" )]
+    [TextField( "ResultsIconCssClass",
+        Description = "Title for the results list.",
+        IsRequired = false,
+        DefaultValue = "ti ti-list",
+        Category = "CustomSetting" )]
+    [TextField( "ResultsTitle",
+        Description = "Title for the results list.",
+        IsRequired = false,
+        DefaultValue = "Results",
+        Category = "CustomSetting" )]
+    [TextField( "FilterTitle",
+        Description = "Title for the results list.",
+        IsRequired = false,
+        DefaultValue = "Filters",
+        Category = "CustomSetting" )]
+    [TextField( "FilterIconCssClass",
+        Description = "Title for the results list.",
+        IsRequired = false,
+        DefaultValue = "ti ti-filter",
+        Category = "CustomSetting" )]
+    [TextField( "Report",
+        Description = "The report to use for this block",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "CustomSetting" )]
 
     // NOTE: attribute names should have been called *DataFilter* not *DataField*, but probably can't change to keep backward compat :(
-    [TextField( "SelectedDataFieldGuids", "The DataFilters to present to the user", false, "", "CustomSetting" )]
-    [TextField( "ConfigurableDataFieldGuids", "Of the DataFilters that are presented to the user, which are configurable vs just a checkbox", false, "", "CustomSetting" )]
-    [TextField( "TogglableDataFieldGuids", "The configurable DataFilters that include a checkbox that can disable/enable the filter", false, "", "CustomSetting" )]
+    [TextField( "SelectedDataFieldGuids",
+        Description = "The DataFilters to present to the user",
+        IsRequired = false,
+        Category = "CustomSetting" )]
+    [TextField( "ConfigurableDataFieldGuids",
+        Description = "Of the DataFilters that are presented to the user, which are configurable vs just a checkbox",
+        IsRequired = false,
+        Category = "CustomSetting" )]
+    [TextField( "TogglableDataFieldGuids",
+        Description = "The configurable DataFilters that include a checkbox that can disable/enable the filter",
+        IsRequired = false,
+        Category = "CustomSetting" )]
 
-    [TextField( "PersonIdField", "If this isn't a Person report, but there is a person id field, specify the name of the field", false, "", "CustomSetting" )]
+    [TextField( "PersonIdField",
+        Description = "If this isn't a Person report, but there is a person id field, specify the name of the field",
+        IsRequired = false,
+        Category = "CustomSetting" )]
 
-    [TextField( "DataFiltersPrePostHtmlConfig", "JSON for the Dictionary<Guid,DataFilterPrePostHtmlConfig>", false, "", "CustomSetting" )]
+    [TextField( "DataFiltersPrePostHtmlConfig",
+        Description = "JSON for the Dictionary<Guid,DataFilterPrePostHtmlConfig>",
+        IsRequired = false,
+        Category = "CustomSetting" )]
 
     [BooleanField(
         "Use Obsidian Components",

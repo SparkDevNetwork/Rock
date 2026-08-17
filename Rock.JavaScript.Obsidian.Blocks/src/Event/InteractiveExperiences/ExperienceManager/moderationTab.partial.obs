@@ -47,7 +47,7 @@
                         <td style="width: 1px;">
                             <span class="badge badge-default">{{ row.actionIndex }}</span>
                         </td>
-                        <td>{{ row.response }}</td>
+                        <td class="question-response-text">{{ row.response }}</td>
                         <td>{{ row.campusName }}</td>
                         <td v-html="getStatusLabelHtml(row.status)"></td>
                         <td class="grid-columncommand" align="center">
@@ -158,7 +158,7 @@
     const filterActionItems = computed((): ListItemBag[] => {
         return (props.configuration.actions ?? []).map((a, idx) => ({
             value: a.value,
-            text: `${idx+1}. ${a.text}`
+            text: `${idx + 1}. ${a.text}`
         }));
     });
 

@@ -194,6 +194,14 @@ namespace Rock.Model
             /// Gets or sets the communication template identifier.
             /// </summary>
             public int? CommunicationTemplateId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the communication topic <see cref="DefinedValue"/> identifier.
+            /// </summary>
+            /// <value>
+            /// The communication topic defined value identifier.
+            /// </value>
+            public int? CommunicationTopicValueId { get; set; }
         }
 
         /// <summary>
@@ -294,6 +302,7 @@ namespace Rock.Model
             communication.FutureSendDateTime = futureSendDateTime;
             communication.SendDateTime = sendDateTime;
             communication.SystemCommunicationId = systemCommunicationId;
+            communication.CommunicationTopicValueId = createEmailCommunicationArgs.CommunicationTopicValueId;
             Add( communication );
 
             // Add each person as a recipient to the communication.
@@ -313,34 +322,6 @@ namespace Rock.Model
 
             return communication;
 
-        }
-
-        /// <summary>
-        /// Creates an SMS communication with a CommunicationRecipient and adds it to the context.
-        /// </summary>
-        /// <param name="fromPerson">the Sender for the communication (For the communication.SenderPersonAlias). If null the name for the communication will be From: unknown person.</param>
-        /// <param name="toPersonAliasId">To person alias identifier. If null the CommunicationRecipient is not created</param>
-        /// <param name="message">The message.</param>
-        /// <param name="fromPhone">From phone.</param>
-        /// <param name="responseCode">The response code. If null/empty/whitespace then one is generated</param>
-        /// <param name="communicationName">Name of the communication.</param>
-        /// <returns></returns>
-        [Obsolete( "Use the CreateSMSCommunication() method that takes a SystemPhoneNumberCache parameter." )]
-        [RockObsolete( "1.15" )]
-        public Communication CreateSMSCommunication( Person fromPerson, int? toPersonAliasId, string message, DefinedValueCache fromPhone, string responseCode, string communicationName )
-        {
-            var args = new CreateSMSCommunicationArgs
-            {
-                FromPerson = fromPerson,
-                ToPersonAliasId = toPersonAliasId,
-                CommunicationName = communicationName,
-                FromPhone = fromPhone,
-                Message = message,
-                ResponseCode = responseCode,
-                SystemCommunicationId = null
-            };
-
-            return CreateSMSCommunication( args );
         }
 
         /// <summary>
@@ -409,21 +390,6 @@ namespace Rock.Model
             /// The message.
             /// </value>
             public string Message { get; set; }
-
-            /// <summary>
-            /// Gets or sets from phone.
-            /// </summary>
-            /// <value>
-            /// From phone.
-            /// </value>
-            [Obsolete( "Use FromSystemPhoneNumber instead." )]
-            [RockObsolete( "1.15" )]
-            public DefinedValueCache FromPhone
-            {
-                // The old SMS values are synced and use the same Guids as the new model.
-                get => FromSystemPhoneNumber != null ? DefinedValueCache.Get( FromSystemPhoneNumber.Guid ) : null;
-                set => FromSystemPhoneNumber = SystemPhoneNumberCache.Get( value.Guid );
-            }
 
             /// <summary>
             /// Gets or sets the system phone number the message will be sent from.

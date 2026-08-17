@@ -35,7 +35,7 @@
   box-shadow:         var(--box-shadow);
 
   .panel-title {
-    i {
+    & > i {
       margin-right: var(--spacing-tiny);
       color: var(--color-interface-medium);
     }

@@ -12,6 +12,14 @@
             <DropDownList v-model="opportunityVisibility"
                           :items="config.opportunityVisibilityItems ?? []"
                           :showBlankItem="false" />
+            <template #rightContent>
+                <RockButton isSquare
+                            title="My Connections"
+                            :btnSize="BtnSize.Small"
+                            @click="onMyConnectionsClick">
+                    <i class="ti ti-user-circle"></i>
+                </RockButton>
+            </template>
         </ContextSlicer>
 
         <Panel :title="connectionTypeName"
@@ -28,6 +36,12 @@
                             :title="operationalSnapshotBtnTooltip"
                             @click="onOperationalSnapshotClick">
                     <i class="ti ti-chart-bar"></i> <span v-if="breakpointHelper?.isSmOrLarger">{{ operationalSnapshotBtnText }}</span>
+                </RockButton>
+
+                <RockButton v-if="isCelebrationReportEnabled"
+                            :title="celebrationsBtnTooltip"
+                            @click="onCelebrationReportClick">
+                    <i class="ti ti-confetti"></i> <span v-if="breakpointHelper?.isSmOrLarger">Celebrations</span>
                 </RockButton>
             </template>
 
@@ -240,6 +254,7 @@
     import { BarSeries, LinearGaugeSeries, TooltipContext } from "@Obsidian/Core/Controls/chart";
     import { useContextEntities } from "@Obsidian/Core/Utilities/contextEntity";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
@@ -264,7 +279,6 @@
 
     const config = useConfigurationValues<ConnectionOpportunityNavigationInitializationBox>();
     const preferences = usePersonPreferences().blockPreferences;
-    const breakpointHelper = ref<BreakpointHelper>();
     const contextEntities = useContextEntities();
     const browserBus = useBlockBrowserBus();
     const invokeBlockAction = useInvokeBlockAction();
@@ -283,6 +297,8 @@
 
     // #region Values
 
+    const breakpointHelper = ref<BreakpointHelper>();
+
     const selectedCampus = ref<ListItemBag | null>(null);
     const connectionTypeIdKey = ref("");
     const opportunityVisibility = ref(preferences.getValue(PreferenceKey.OpportunityVisibility) || "my-opportunities");
@@ -295,12 +311,17 @@
     const operationalSnapshotBtnText = ref("Operational Snapshot");
 
     // Connection Type-level URLs.
-    const typeConnectionsListPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.TypeConnectionsListPage]);
+    const typeConnectionsHubListViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.TypeConnectionsHubListViewPage]);
     const typeOperationalSnapshotPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.TypeOperationalSnapshotPage]);
+    const typeCelebrationsReportPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.TypeCelebrationsReportPage]);
 
     // Connection Opportunity-level URLs.
-    const opportunityConnectionsListPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsListPage]);
-    const opportunityConnectionBoardPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionBoardPage]);
+    const opportunityConnectionsHubListViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubListViewPage]);
+    const opportunityConnectionsHubBoardViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubBoardViewPage]);
+    const opportunityConnectionsHubGridViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubGridViewPage]);
+
+    // My Connections-level URLs.
+    const myConnectionsPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.MyConnectionsPage]);
 
     syncRefsWithQueryParams([
         { param: "ConnectionType", ref: connectionTypeIdKey, type: "string" }
@@ -346,8 +367,12 @@
         return connectionTypeSummary.value?.isSnapshotViewEnabled ?? false;
     });
 
+    const isCelebrationReportEnabled = computed((): boolean => {
+        return !!typeCelebrationsReportPageUrl.value && (connectionTypeSummary.value?.isCelebrationEnabled ?? false);
+    });
+
     const showPanelHeaderActions = computed((): boolean => {
-        return isListViewEnabled.value || isSnapshotViewEnabled.value;
+        return isListViewEnabled.value || isSnapshotViewEnabled.value || isCelebrationReportEnabled.value;
     });
 
     const viewRequestsBtnTooltip = computed((): string | undefined => {
@@ -364,6 +389,14 @@
         }
 
         return operationalSnapshotBtnText.value;
+    });
+
+    const celebrationsBtnTooltip = computed((): string | undefined => {
+        if (breakpointHelper.value?.isSmOrLarger) {
+            return undefined;
+        }
+
+        return "Celebrations";
     });
 
     const linearGaugeChartData = computed<LinearGaugeSeries[]>(() => {
@@ -503,39 +536,37 @@
     function getPrimaryActions(summary: ConnectionOpportunitySummaryBag): MenuAction[] {
         const actions: MenuAction[] = [];
 
-        if (opportunityConnectionsListPageUrl.value && isListViewEnabled.value) {
+        if (opportunityConnectionsHubListViewPageUrl.value && isListViewEnabled.value) {
             actions.push({
                 iconCssClass: "ti ti-layout-list",
                 title: "Connections List",
                 type: "default",
                 handler: () => {
-                    window.location.href = opportunityConnectionsListPageUrl.value!.replace("((Key))", summary.idKey!);
+                    window.location.href = opportunityConnectionsHubListViewPageUrl.value!.replace("((Key))", summary.idKey!);
                 }
             });
         }
 
-        if (opportunityConnectionBoardPageUrl.value) {
-            if (isBoardViewEnabled.value) {
-                actions.push({
-                    iconCssClass: "ti ti-layout-cards",
-                    title: "Connection Board",
-                    type: "default",
-                    handler: () => {
-                        window.location.href = `${opportunityConnectionBoardPageUrl.value!.replace("((Key))", summary.idKey!)}&IsCardViewMode=True${campusPageParam.value}`;
-                    }
-                });
-            }
+        if (opportunityConnectionsHubBoardViewPageUrl.value && isBoardViewEnabled.value) {
+            actions.push({
+                iconCssClass: "ti ti-layout-cards",
+                title: "Connection Board",
+                type: "default",
+                handler: () => {
+                    window.location.href = `${opportunityConnectionsHubBoardViewPageUrl.value!.replace("((Key))", summary.idKey!)}${campusPageParam.value}`;
+                }
+            });
+        }
 
-            if (isGridViewEnabled.value) {
-                actions.push({
-                    iconCssClass: "ti ti-table",
-                    title: "Connection Board (Grid View)",
-                    type: "default",
-                    handler: () => {
-                        window.location.href = `${opportunityConnectionBoardPageUrl.value!.replace("((Key))", summary.idKey!)}&IsCardViewMode=False${campusPageParam.value}`;
-                    }
-                });
-            }
+        if (opportunityConnectionsHubGridViewPageUrl.value && isGridViewEnabled.value) {
+            actions.push({
+                iconCssClass: "ti ti-table",
+                title: "Connection Grid",
+                type: "default",
+                handler: () => {
+                    window.location.href = `${opportunityConnectionsHubGridViewPageUrl.value!.replace("((Key))", summary.idKey!)}${campusPageParam.value}`;
+                }
+            });
         }
 
         return actions;
@@ -611,8 +642,8 @@
      * Navigates the individual to the connections list page for the connection type.
      */
     function onViewRequestsClick(): void {
-        if (typeConnectionsListPageUrl.value) {
-            window.location.href = typeConnectionsListPageUrl.value;
+        if (typeConnectionsHubListViewPageUrl.value) {
+            window.location.href = typeConnectionsHubListViewPageUrl.value;
         }
     }
 
@@ -626,25 +657,55 @@
         }
     }
 
+    /** Navigates to the My Connections page for the current person, pre-filtered to the current connection type. */
+    function onMyConnectionsClick(): void {
+        if (!myConnectionsPageUrl.value) {
+            return;
+        }
+
+        // The server-built URL encodes the connection type the page loaded with. Changing the type
+        // dropdown only updates the query string (not the server URLs), so override the ConnectionType
+        // with the live selection before navigating.
+        const url = new URL(myConnectionsPageUrl.value, window.location.origin);
+
+        if (connectionTypeIdKey.value) {
+            url.searchParams.set("ConnectionType", connectionTypeIdKey.value);
+        }
+        else {
+            url.searchParams.delete("ConnectionType");
+        }
+
+        window.location.href = url.toString();
+    }
+
+    /**
+     * Handles the click event for the "Celebrations" button in the panel header.
+     * Navigates the individual to the celebrations report page for the connection type.
+     */
+    function onCelebrationReportClick(): void {
+        if (typeCelebrationsReportPageUrl.value) {
+            window.location.href = typeCelebrationsReportPageUrl.value;
+        }
+    }
+
     /**
      * Navigates to the default view mode for the Connection Opportunity
      * (prioritizing the List View)
      */
     function onConnectionOpportunityClick(idKey: string): void {
-        if (opportunityConnectionsListPageUrl.value && isListViewEnabled.value) {
-            window.location.href = opportunityConnectionsListPageUrl.value!.replace("((Key))", idKey);
+        // Prefer List > Board > Grid when multiple views are enabled, falling
+        // back to the list URL as a last resort so the user always lands somewhere.
+        if (opportunityConnectionsHubListViewPageUrl.value && isListViewEnabled.value) {
+            window.location.href = opportunityConnectionsHubListViewPageUrl.value!.replace("((Key))", idKey);
         }
-        else if (opportunityConnectionBoardPageUrl.value && (isBoardViewEnabled.value || isGridViewEnabled.value)) {
-            if (isBoardViewEnabled.value) {
-                window.location.href = `${opportunityConnectionBoardPageUrl.value!.replace("((Key))", idKey)}&IsCardViewMode=True${campusPageParam.value}`;
-            }
-            else {
-                window.location.href = `${opportunityConnectionBoardPageUrl.value!.replace("((Key))", idKey)}&IsCardViewMode=False${campusPageParam.value}`;
-            }
+        else if (opportunityConnectionsHubBoardViewPageUrl.value && isBoardViewEnabled.value) {
+            window.location.href = `${opportunityConnectionsHubBoardViewPageUrl.value!.replace("((Key))", idKey)}${campusPageParam.value}`;
         }
-        // Navigate to Connections List if there are no enabled views and the page url is setup.
-        else if (opportunityConnectionsListPageUrl.value) {
-            window.location.href = opportunityConnectionsListPageUrl.value!.replace("((Key))", idKey);
+        else if (opportunityConnectionsHubGridViewPageUrl.value && isGridViewEnabled.value) {
+            window.location.href = `${opportunityConnectionsHubGridViewPageUrl.value!.replace("((Key))", idKey)}${campusPageParam.value}`;
+        }
+        else if (opportunityConnectionsHubListViewPageUrl.value) {
+            window.location.href = opportunityConnectionsHubListViewPageUrl.value!.replace("((Key))", idKey);
         }
     }
 

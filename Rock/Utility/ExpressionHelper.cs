@@ -439,7 +439,9 @@ namespace Rock.Utility
 
             // If this is a TextFieldType, In-Memory LINQ is case-sensitive
             // but LinqToSQL is not, so lets compare values using ToLower().
-            if ( comparedToAttribute.FieldType.Field is Rock.Field.Types.TextFieldType )
+            var isTextField = comparedToAttribute.FieldType.Guid == SystemGuid.FieldType.TEXT.AsGuid()
+                || comparedToAttribute.FieldType.Guid == SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid();
+            if ( isTextField )
             {
                 if ( filterValues.Count >= 2 )
                 {
@@ -490,7 +492,9 @@ namespace Rock.Utility
             var comparedToAttributeValue = entity?.GetAttributeValue( comparedToAttribute.Key );
 
             // if this is a TextFieldType, In-Memory LINQ is case-sensitive but LinqToSQL is not, so lets compare values using ToLower()
-            if ( comparedToAttribute.FieldType.Field is Rock.Field.Types.TextFieldType )
+            var isTextField = comparedToAttribute.FieldType.Guid == SystemGuid.FieldType.TEXT.AsGuid()
+                || comparedToAttribute.FieldType.Guid == SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid();
+            if ( isTextField )
             {
                 comparedToAttributeValue = comparedToAttributeValue?.ToLower();
             }

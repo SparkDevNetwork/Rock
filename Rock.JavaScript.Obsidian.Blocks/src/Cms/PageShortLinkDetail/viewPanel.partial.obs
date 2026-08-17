@@ -3,48 +3,145 @@
     <fieldset>
         <ValueDetailList :modelValue="topValues" />
 
-        <div class="row">
-            <div class="col-md-6">
-                <ValueDetailList :modelValue="leftSideValues" />
-            </div>
+        <ContentSectionContainer :sidebar="false">
+            <ContentSection :light="true" :disableCollapse="true">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl v-if="props.modelValue?.copyLink || leftSideValues.length > 0">
+                            <template v-if="props.modelValue?.copyLink">
+                                <dt>Short Link</dt>
+                                <dd class="d-flex align-items-center gap-3">
+                                    <span>{{ props.modelValue.copyLink }}</span>
+                                    <CopyButton :value="props.modelValue.copyLink" btnSize="xs" />
+                                </dd>
+                            </template>
+                            <template v-for="value in leftSideValues" :key="value.title">
+                                <dt>{{ value.title }}</dt>
+                                <dd v-if="value.htmlValue" v-html="value.htmlValue"></dd>
+                                <dd v-else>{{ value.textValue }}</dd>
+                            </template>
+                        </dl>
 
-            <div class="col-md-6">
-                <ValueDetailList :modelValue="rightSideValues" />
-            </div>
-        </div>
+                        <div v-if="scheduledRedirects.length > 0">
+                            <label class="muted-label">Scheduled Redirects</label>
+                            <div class="scheduled-redirects">
+                                <div v-for="(sr, idx) in scheduledRedirects" :key="idx" class="scheduled-redirect">
+                                    <div class="scheduled-redirect-url">{{ sr.url }}</div>
+                                    <div class="scheduled-redirect-meta text-muted">
+                                        <span><i class="ti ti-calendar-event mr-1"></i>{{ sr.scheduleText }}</span>
+                                        <span><i class="ti ti-clock mr-1"></i>{{ sr.scheduleRangeText }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+                    <div class="col-md-6" v-if="props.modelValue?.qrCodeSVG">
+                        <div class="qr-code-container">
+                            <label class="muted-label">QR Code</label>
+                            <div v-html="props.modelValue.qrCodeSVG" class="qr-code"></div>
+                            <div class="qr-code-actions">
+                                <RockButton btnType="default" btnSize="sm" @click="$emit('downloadPNG')">
+                                    <i class="ti ti-download mr-1"></i>PNG
+                                </RockButton>
+                                <RockButton btnType="default" btnSize="sm" @click="$emit('downloadSVG')">
+                                    <i class="ti ti-download mr-1"></i>SVG
+                                </RockButton>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-        <SectionHeader title="Usage Analytics"
-                       description="Monitor your Rock shortlinks with usage analytics to see clicks, traffic sources and user interactions." />
+                <AttributeValuesContainer v-if="hasAttributes" :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+            </ContentSection>
 
-        <ViewAnalytics v-if="modelValue?.idKey"
-                       :shortLinkId="modelValue.idKey" />
+            <ContentSection :disableCollapse="true" title="Usage Analytics" icon="ti ti-settings">
+                <ContentStack>
+
+                    <ViewAnalytics
+                                   v-if="modelValue?.idKey"
+                                   :shortLinkId="modelValue.idKey" />
+                </ContentStack>
+            </ContentSection>
+        </ContentSectionContainer>
     </fieldset>
 </template>
 
 <style scoped>
-:deep(.scheduled-redirect-list) {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(min-content, max-content));
-    column-gap: 16px;
-    text-wrap: nowrap;
+.muted-label {
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-regular);
+    color: var(--color-interface-medium)
+}
+
+.scheduled-redirects {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-medium);
+}
+
+.scheduled-redirect-url {
+    overflow-wrap: anywhere;
+    font-weight: var(--font-weight-semibold);
+}
+
+.scheduled-redirect-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-medium);
+    font-size: var(--font-size-small);
+    margin-top: var(--spacing-tiny);
+}
+
+/* Needed this to fire off chart js resize on ViewAnalytics */
+:deep(.contentsection-list) {
+    width: 100%;
+    min-width: 0;
+}
+
+.analytics-wrapper {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.qr-code-container {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-small);
+}
+
+.qr-code :deep(svg) {
+    width: 264px;
+    height: 264px;
+}
+
+.qr-code-actions {
+    display: flex;
+    justify-content: center;
+    align-self: stretch;
+    gap: var(--spacing-small);
 }
 </style>
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
-    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import CopyButton from "@Obsidian/Controls/copyButton.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import ViewAnalytics from "./viewAnalytics.partial.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
     import { isNullish } from "@Obsidian/Utility/util";
     import { PageShortLinkBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkBag";
+    import { ScheduledRedirectBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/scheduledRedirectBag";
     import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
 
     const props = defineProps({
         modelValue: {
@@ -58,6 +155,11 @@
         }
     });
 
+    defineEmits<{
+        (e: "downloadPNG"): void;
+        (e: "downloadSVG"): void;
+    }>();
+
     // #region Values
 
     const attributes = ref(props.modelValue?.attributes ?? {});
@@ -66,6 +168,11 @@
     // #endregion
 
     // #region Computed Values
+
+    /** Whether the entity has any attributes to display. */
+    const hasAttributes = computed((): boolean => {
+        return Object.keys(attributes.value).length > 0;
+    });
 
     /** The values to display full-width at the top of the block. */
     const topValues = computed((): ValueDetailListItem[] => {
@@ -91,15 +198,6 @@
             valueBuilder.addTextValue("Site", siteType);
         }
 
-        if (props.modelValue.url) {
-            if ((props.modelValue.scheduledRedirects ?? []).length > 0) {
-                valueBuilder.addTextValue("Default URL", props.modelValue.url);
-            }
-            else {
-                valueBuilder.addTextValue("URL", props.modelValue.url);
-            }
-        }
-
         if (!isNullish(props.modelValue.expireInDays)) {
             const expireRockDateTime = RockDateTime.now().addDays(props.modelValue.expireInDays);
             const expiresInText = expireRockDateTime.toLocaleString({ day: "numeric", month: "numeric", year: "numeric" });
@@ -114,43 +212,22 @@
             valueBuilder.addTextValue("Category", props.modelValue.category.text);
         }
 
-        if (props.modelValue.scheduledRedirects && props.modelValue.scheduledRedirects.length > 0) {
-            let html = `<div class="scheduled-redirect-list">`;
-
-            for (const sr of props.modelValue.scheduledRedirects) {
-                html += `<span>${escapeHtml(sr.url ?? "")}</span>`;
-                html += `<span class="text-muted">${escapeHtml(sr.scheduleText ?? "")}</span>`;
-                html += `<span class="text-muted">${escapeHtml(sr.scheduleRangeText ?? "")}</span>`;
-            }
-
-            html += "</div>";
-
-            valueBuilder.addHtmlValue("Scheduled Redirects", html);
+        if (props.modelValue.isPinned) {
+            valueBuilder.addTextValue("Pinned", "Yes");
+        }
+        else {
+            valueBuilder.addTextValue("Pinned", "No");
         }
 
         return valueBuilder.build();
     });
 
-    /** The values to display at half-width on the left side of the block. */
-    const rightSideValues = computed((): ValueDetailListItem[] => {
-        const valueBuilder = new ValueDetailListItemBuilder();
-
-        if (!props.modelValue) {
-            return valueBuilder.build();
-        }
-
-        if (props.modelValue.token) {
-            valueBuilder.addTextValue("Token", props.modelValue.token);
-        }
-
-        if (props.modelValue.isPinned) {
-            valueBuilder.addTextValue("Is Pinned", "Yes");
-        }
-        else {
-            valueBuilder.addTextValue("Is Pinned", "No");
-        }
-
-        return valueBuilder.build();
+    /** The scheduled redirects to display full-width below the main details row. */
+    const scheduledRedirects = computed((): ScheduledRedirectBag[] => {
+        return (props.modelValue?.scheduledRedirects ?? []).map(sr => ({
+            ...sr,
+            scheduleText: sr.scheduleText?.replace(/,(?! )/g, ", ") ?? null
+        }));
     });
 
     // #endregion

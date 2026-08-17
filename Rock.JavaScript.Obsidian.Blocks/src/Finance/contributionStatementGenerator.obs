@@ -1,0 +1,89 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.errorMessage" alertType="danger">
+        {{ config.errorMessage }}
+    </NotificationBox>
+
+    <NotificationBox v-else-if="!statementHtml" alertType="info">
+        No contribution statement is available for the selected period.
+    </NotificationBox>
+
+    <iframe v-else
+            ref="statementIframe"
+            class="contribution-statement-iframe"
+            :srcdoc="statementHtml"
+            sandbox="allow-scripts allow-same-origin"
+            @load="onIframeLoad"></iframe>
+</template>
+
+<style scoped>
+.contribution-statement-iframe {
+    display: block;
+    width: 100%;
+    min-height: 100vh;
+    border: none;
+}
+</style>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { ContributionStatementGeneratorBag } from "@Obsidian/ViewModels/Blocks/Finance/ContributionStatementGenerator/contributionStatementGeneratorBag";
+    import { ContributionStatementGeneratorOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/ContributionStatementGenerator/contributionStatementGeneratorOptionsBag";
+
+    const config = useConfigurationValues<CustomBlockBox<ContributionStatementGeneratorBag, ContributionStatementGeneratorOptionsBag>>();
+
+    // #region Values
+
+    const statementHtml = ref(config.bag?.statementHtml ?? "");
+    const statementIframe = ref<HTMLIFrameElement>();
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Resizes the iframe to the full height of the rendered statement so the entire
+     * (potentially multi-page) document is visible flush, without inner scrolling.
+     */
+    function onIframeLoad(): void {
+        const iframe = statementIframe.value;
+        const doc = iframe?.contentDocument ?? iframe?.contentWindow?.document;
+
+        if (!iframe || !doc?.documentElement) {
+            return;
+        }
+
+        /*
+            6/26/26 - MSE
+
+            Statement templates render Bootstrap ".row" elements without a ".container-fluid"
+            wrapper, so the rows' negative side margins overflow the body and add a slight
+            horizontal scrollbar. We neutralize those margins here, on screen only, instead of
+            editing the templates because the template HTML lives in the database and varies per
+            install. This does not affect the server-side PDF/print output.
+
+            Reason: Remove the templates' horizontal-scroll overflow without clipping content or touching template data.
+        */
+        if (doc.body && !doc.getElementById("rock-statement-fit")) {
+            const fitStyle = doc.createElement("style");
+            fitStyle.id = "rock-statement-fit";
+            fitStyle.textContent = ".row { margin-right: 0; margin-left: 0; }";
+            doc.body.appendChild(fitStyle);
+        }
+
+        // documentElement.scrollHeight includes the body margins, avoiding the few-pixel vertical
+        // scrollbar that body.scrollHeight alone leaves behind. Clearing the placeholder min-height
+        // lets a short statement fit its content exactly.
+        const contentHeight = Math.max(doc.documentElement.scrollHeight, doc.body?.scrollHeight ?? 0);
+
+        iframe.style.minHeight = "0";
+        iframe.style.height = `${contentHeight}px`;
+    }
+
+    // #endregion Event Handlers
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

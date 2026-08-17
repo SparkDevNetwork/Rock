@@ -26,7 +26,8 @@ namespace Rock.Lava
     /// </remarks>
     public class LavaServiceProvider
     {
-        private readonly Dictionary<Type, Func<Type, object, ILavaService>> _services = new Dictionary<Type, Func<Type, object, ILavaService>>();
+        private Dictionary<Type, Func<Type, object, ILavaService>> _services = new Dictionary<Type, Func<Type, object, ILavaService>>();
+        private readonly object _servicesWriteLock = new object();
 
         /// <summary>
         /// Register a Lava service component with the specified factory method.
@@ -36,7 +37,7 @@ namespace Rock.Lava
         public void RegisterService<TService>( Func<Type, object, TService> factoryMethod )
             where TService : class, ILavaService
         {
-            _services.AddOrReplace( typeof( TService ), factoryMethod );
+            RegisterServiceInternal( typeof( TService ), factoryMethod );
         }
 
         /// <summary>
@@ -47,7 +48,23 @@ namespace Rock.Lava
         /// <returns></returns>
         public void RegisterService( Type serviceType, Func<Type, object, ILavaService> factoryMethod )
         {
-            _services.AddOrReplace( serviceType, factoryMethod );
+            RegisterServiceInternal( serviceType, factoryMethod );
+        }
+
+        /// <summary>
+        /// Adds or replaces a service registration using a copy-on-write strategy
+        /// so that concurrent readers always observe a fully populated dictionary.
+        /// </summary>
+        /// <param name="serviceType"></param>
+        /// <param name="factoryMethod"></param>
+        private void RegisterServiceInternal( Type serviceType, Func<Type, object, ILavaService> factoryMethod )
+        {
+            lock ( _servicesWriteLock )
+            {
+                var newServices = new Dictionary<Type, Func<Type, object, ILavaService>>( _services );
+                newServices[serviceType] = factoryMethod;
+                _services = newServices;
+            }
         }
 
         /// <summary>
@@ -71,10 +88,9 @@ namespace Rock.Lava
         /// <returns></returns>
         public ILavaService GetService( Type serviceType, object configuration = null )
         {
-            // Get a registered factory function to create an instance of the specified service type.
-            var factoryFunc = _services.GetValueOrNull( serviceType );
+            var services = _services;
 
-            if ( factoryFunc == null )
+            if ( !services.TryGetValue( serviceType, out var factoryFunc ) || factoryFunc == null )
             {
                 throw new LavaException( $"GetService failed. The service type \"{ serviceType.FullName }\" is not registered." );
             }

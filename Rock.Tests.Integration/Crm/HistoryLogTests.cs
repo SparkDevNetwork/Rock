@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;

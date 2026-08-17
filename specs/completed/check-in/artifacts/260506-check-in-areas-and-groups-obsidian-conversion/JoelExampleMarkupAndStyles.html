@@ -1,0 +1,937 @@
+<style>
+    
+    /* ===== Container wrapping the entire group/area list ===== */
+    .ag-wrapper {
+       background-color: var(--color-interface-softer); 
+       border-right: 1px var(--color-interface-soft) solid; /* Subtle right border */
+       padding-right: var(--spacing-large); /* Spacing on the right */
+    }
+    
+    /* ===== List container for items ===== */
+    .ag-list {
+        display: flex;                  
+        flex-direction: column;         
+        gap: var(--spacing-small);      /* Space between items */
+        height: auto;
+        overflow-y: visible;            /* Allow srolling */
+        padding: var(--spacing-large) 0; /* Vertical padding */
+    }
+    
+    /* ===== Individual item style ===== */
+    .ag-item {
+        display: flex;                  
+        width: 100%;                    /* Full container width */
+        gap: var(--spacing-xsmall);     /* Gap between inner elements */
+        height: 56px;                   /* Fixed item height */
+        cursor: pointer;                /* Pointer cursor for interaction */
+    }
+    
+    /* ===== Inactive item style ===== */
+    .ag-item.inactive {
+        opacity: 50%;                   /* Visually dim inactive items */
+    }
+    
+    /* ===== Nested list styles (for child groups/areas) ===== */
+    .ag-list .nested {
+        overflow-y: unset;
+        padding: 0 0;
+        margin-left: 46px;              /* Indent nested lists */
+    }
+    
+    /* ===== Expand/collapse toggle style ===== */
+    .ag-item-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: auto;
+        width: auto;
+        visibility: visible;
+    }
+    
+    /* ===== Hide the toggle when there are no children ===== */
+    .ag-item-toggle.no-nest {
+        visibility: hidden;
+    }
+    
+    /* ===== Styles for list when an item is moving (drag/drop feedback) ===== */
+    .ag-list.moving {
+        border: 2px var(--color-interface-soft) dashed; /* Dashed border for drop area */
+        padding-top: var(--spacing-small);
+        padding-bottom: var(--spacing-small);
+        padding-right: var(--spacing-small);
+        border-radius: var(--rounded-medium);
+    }
+    
+    /* ===== Styles for an item is moving (drag/drop feedback) ===== */
+    
+    .ag-item.moving {
+        opacity: 70%;
+        rotate: -3deg;
+    }
+    
+    /* ===== Icon container inside each item ===== */
+    .ag-item-icon {
+        padding: var(--spacing-small);
+        display: flex;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        border-top-left-radius: var(--rounded-xsmall);
+        border-bottom-left-radius: var(--rounded-xsmall);
+    }
+    
+    /* ===== Area icon ===== */
+    .ag-item.area .ag-item-icon::before {
+        content: "\eef7";
+        font-family: 'tabler-icons-outline';
+        font-size: var(--font-size-h4);
+    }
+    
+    /* ===== Group icon ===== */
+    .ag-item.group .ag-item-icon::before {
+        content: "\fa21";
+        font-family: 'tabler-icons-outline';
+        font-size: var(--font-size-h4);
+    }
+    
+    /* ===== Area icon coloring ===== */
+    .ag-item.area .ag-item-icon {
+        background-color: var(--color-info-strong);
+        color: var(--color-interface-softest);
+    }
+    
+    /* ===== Group icon coloring ===== */
+    .ag-item.group .ag-item-icon {
+        background-color: var(--color-info-soft);
+        color: var(--color-info-strong);
+    }
+    
+    /* ===== Change icon to grabber ===== */
+    .ag-item:hover .ag-item-icon::before {
+        content: "\ec01";                        /* Swap to a grabber icon */
+        font-family: 'tabler-icons-outline';
+        font-size: var(--font-size-h4);
+        cursor: grab;                            /* Show grab cursor */
+    }
+    
+    /* ===== Main clickable body of each item ===== */
+    .ag-item-body {
+        background-color: var(--color-interface-softest);
+        display: flex;
+        align-items: center;
+        justify-content: start;
+        width: 100%;
+        border: 1px var(--color-interface-soft) solid;
+        border-radius: var(--rounded-xsmall);
+        overflow: hidden;
+    }
+    
+    /* ===== Focus state for item body ===== */
+    .ag-item-body:focus {
+        border: 1px var(--color-info-strong) solid;    /* Highlight border */
+        background-color: var(--color-info-soft);      /* Soft highlight background */
+    }
+    
+    /* ===== Focus state for title paragraph ===== */
+    .ag-item-body:focus .ag-item-title p {
+        font-weight: var(--font-weight-semibold);      /* Emphasize text on focus */
+    }
+    
+    /* ===== Title container (text + actions) ===== */
+    .ag-item-title {
+        display: flex;
+        height: 100%;
+        width: 100%;
+        align-items: center;
+        gap: var(--spacing-large);                     /* Space between title and actions */
+        padding: var(--spacing-medium);                /* Internal spacing */
+        justify-content: space-between;
+    }
+    
+    /* ===== Main title paragraph styling ===== */
+    .ag-item-title p {
+        width: auto;
+        margin-bottom: 0;
+        display: -webkit-box;                          /* Clamp lines for ellipsis */
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 1;                         /* Only one line shown */
+        overflow: hidden;                              /* Ellipsis if text is too long */
+    }
+    
+    /* ===== Action buttons/controls in item title (hidden by default) ===== */
+    .ag-item-title-actions {
+        display: none;                                 /* Hide actions unless hovered */
+        gap: var(--spacing-tiny);
+        align-items: center;
+    }
+    
+    /* ===== Arrow icon spacing in actions ===== */
+    .ag-item-title-actions .arrow {
+        margin-left: var(--spacing-xsmall);
+    }
+    
+    /* ===== Show actions on hover ===== */
+    .ag-item:hover .ag-item-title-actions {
+        display: flex;                                 /* Show when item hovered */
+        gap: var(--spacing-tiny);
+        align-items: center;
+    }
+    
+    /* ===== Hide "add area" button on moving, or group hover ===== */
+    .ag-item.group:hover .add-area,
+    .ag-item.moving:hover .ag-item-title-actions {
+        display: none;
+    }
+    
+    .add-area,
+    .add-group {
+        display: flex;
+        align-items: center;
+        height: auto;
+        justify-content: center;
+    }
+
+    
+</style>
+
+{[ panel title:'Group / Area List &amp; Items' style:'background-color:var(--color-interface-softer)' icon:'ti ti-list' ]}
+  
+    <div class="row">
+        
+        <!--GROUP / AREAS LIST-->
+        <div class="col-sm-6">
+            
+            <div class="ag-wrapper">
+            
+                <div class="ag-list">
+                
+                    <!--AREA ITEM-->
+                    <div class="ag-item area">
+                        
+                        <div class="ag-item-toggle">
+                            <i class="ti ti-caret-right"></i>
+                        </div>
+                        
+                        
+                        <div class="ag-item-body" tabindex="0" role="button">
+                            
+                            <div class="ag-item-icon">
+                                
+                            </div>
+                            
+                            <div class="ag-item-title">
+                                <p>This is an Area.</p>
+                                <div class="ag-item-title-actions">
+                                    <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                    <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                    <i class="arrow ti ti-chevron-right"></i>
+                                </div>
+                                
+                                
+                            </div>
+                        
+                        </div>
+                        
+                        
+                    </div>
+                    
+                    <!--GROUP ITEM-->
+                    <div class="ag-item group">
+                        
+                        <div class="ag-item-toggle">
+                            <i class="ti ti-caret-right"></i>
+                        </div>
+                        
+                        
+                        <div class="ag-item-body" tabindex="0" role="button">
+                            
+                            <div class="ag-item-icon">
+                                
+                            </div>
+                            
+                            <div class="ag-item-title">
+                                <p>This is a Group.</p>
+                                <div class="ag-item-title-actions">
+                                    <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                    <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                    <i class="arrow ti ti-chevron-right"></i>
+                                </div>
+                            </div>
+                        
+                        </div>
+                        
+                    </div>
+                    
+                    <!--GROUP ITEM-->
+                    <div class="ag-item group inactive">
+                        
+                        <div class="ag-item-toggle no-nest">
+                            <i class="ti ti-caret-right"></i>
+                        </div>
+                        
+                        
+                        <div class="ag-item-body" tabindex="0" role="button">
+                            
+                            <div class="ag-item-icon">
+                                
+                            </div>
+                            
+                            <div class="ag-item-title">
+                                <p>Inactive Group.</p>
+                                <div class="ag-item-title-actions">
+                                    <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                    <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                    <i class="arrow ti ti-chevron-right"></i>
+                                </div>
+                            </div>
+                        
+                        </div>
+                        
+                    </div>
+                    
+                    <!--MOVING GROUP ITEM-->
+                    <div class="ag-item group inactive moving">
+                        
+                        <div class="ag-item-toggle no-nest">
+                            <i class="ti ti-caret-right"></i>
+                        </div>
+                        
+                        
+                        <div class="ag-item-body" tabindex="0" role="button">
+                            
+                            <div class="ag-item-icon">
+                                
+                            </div>
+                            
+                            <div class="ag-item-title">
+                                <p>Item Being Moved.</p>
+                                <div class="ag-item-title-actions">
+                                    <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                    <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                    <i class="arrow ti ti-chevron-right"></i>
+                                </div>
+                            </div>
+                        
+                        </div>
+                        
+                    </div>
+                
+                </div>
+            
+            </div>
+            
+        </div>
+        
+        <!--DETAILS-->
+        <div class="col-sm-6">
+            
+            Hover and click to see the different stylings.
+            
+        </div>
+    
+    </div>
+
+{[ endpanel ]}
+
+{[ panel title:'Indenting Styles' style:'background-color:var(--color-interface-softer)' icon:'ti ti-list-tree' ]}
+  
+    <div class="row">
+        
+        <!--GROUP / AREAS LIST-->
+        <div class="col-sm-6">
+            
+            <div class="ag-wrapper">
+            
+                <div class="ag-list">
+                
+                    <!--AREA ITEM-->
+                    <div class="ag-item area">
+                        
+                        <div class="ag-item-toggle">
+                            <i class="ti ti-caret-down"></i>
+                        </div>
+                        
+                        
+                        <div class="ag-item-body" tabindex="0" role="button">
+                            
+                            <div class="ag-item-icon">
+                                
+                            </div>
+                            
+                            <div class="ag-item-title">
+                                <p>This is an Area.</p>
+                                <div class="ag-item-title-actions">
+                                    <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                    <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                    <i class="arrow ti ti-chevron-right"></i>
+                                </div>
+                                
+                                
+                            </div>
+                        
+                        </div>
+                        
+                        
+                    </div>
+                    
+                    <!--AREA ITEM-->
+                    <div class="ag-list nested">
+                        <div class="ag-item area">
+                            
+                            <div class="ag-item-toggle">
+                                <i class="ti ti-caret-right"></i>
+                            </div>
+                            
+                            
+                            <div class="ag-item-body" tabindex="0" role="button">
+                                
+                                <div class="ag-item-icon">
+                                    
+                                </div>
+                                
+                                <div class="ag-item-title">
+                                    <p>This is an Area.</p>
+                                    <div class="ag-item-title-actions">
+                                        <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                        <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                        <i class="arrow ti ti-chevron-right"></i>
+                                    </div>
+                                </div>
+                            
+                            </div>
+                            
+                        </div>
+                        <div class="ag-item group">
+                            
+                            <div class="ag-item-toggle">
+                                <i class="ti ti-caret-down"></i>
+                            </div>
+                            
+                            
+                            <div class="ag-item-body" tabindex="0" role="button">
+                                
+                                <div class="ag-item-icon">
+                                    
+                                </div>
+                                
+                                <div class="ag-item-title">
+                                    <p>This is a Group.</p>
+                                    <div class="ag-item-title-actions">
+                                        <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                        <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                        <i class="arrow ti ti-chevron-right"></i>
+                                    </div>
+                                </div>
+                            
+                            </div>
+                            
+                        </div>
+                        <div class="ag-list nested">
+                            <div class="ag-item group">
+                                
+                                <div class="ag-item-toggle no-nest">
+                                    <i class="ti ti-caret-right"></i>
+                                </div>
+                                
+                                
+                                <div class="ag-item-body" tabindex="0" role="button">
+                                    
+                                    <div class="ag-item-icon">
+                                        
+                                    </div>
+                                    
+                                    <div class="ag-item-title">
+                                        <p>This is a Group.</p>
+                                        <div class="ag-item-title-actions">
+                                            <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                            <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                            <i class="arrow ti ti-chevron-right"></i>
+                                        </div>
+                                    </div>
+                                
+                                </div>
+                                
+                            </div>
+                            <div class="ag-item group">
+                                
+                                <div class="ag-item-toggle no-nest">
+                                    <i class="ti ti-caret-right"></i>
+                                </div>
+                                
+                                
+                                <div class="ag-item-body" tabindex="0" role="button">
+                                    
+                                    <div class="ag-item-icon">
+                                        
+                                    </div>
+                                    
+                                    <div class="ag-item-title">
+                                        <p>This is a Group.</p>
+                                        <div class="ag-item-title-actions">
+                                            <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                            <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                            <i class="arrow ti ti-chevron-right"></i>
+                                        </div>
+                                    </div>
+                                
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                
+                </div>
+            
+            </div>
+            
+        </div>
+        
+        <!--DETAILS-->
+        <div class="col-sm-6">
+            
+            When items nest, the icon boxes should line up. Fixed padding for nested lists to make sure it always lines up.
+            
+        </div>
+    
+    </div>
+
+{[ endpanel ]}
+
+{[ panel title:'Container Styles When Moving Items' style:'background-color:var(--color-interface-softer)' icon:'ti ti-hand-grab' ]}
+  
+    <div class="row">
+        
+        <!--GROUP / AREAS LIST-->
+        <div class="col-sm-6">
+            
+            <div class="ag-wrapper">
+            
+                <div class="ag-list">
+                
+                    <!--AREA ITEM-->
+                    <div class="ag-item area">
+                        
+                        <div class="ag-item-toggle">
+                            <i class="ti ti-caret-down"></i>
+                        </div>
+                        
+                        
+                        <div class="ag-item-body" tabindex="0" role="button">
+                            
+                            <div class="ag-item-icon">
+                                
+                            </div>
+                            
+                            <div class="ag-item-title">
+                                <p>This is an Area.</p>
+                                <div class="ag-item-title-actions">
+                                    <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                    <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                    <i class="arrow ti ti-chevron-right"></i>
+                                </div>
+                                
+                                
+                            </div>
+                        
+                        </div>
+                        
+                        
+                    </div>
+                    
+                    <!--GROUP ITEM-->
+                    <div class="ag-list nested">
+                        <div class="ag-item group">
+                            
+                            <div class="ag-item-toggle">
+                                <i class="ti ti-caret-right"></i>
+                            </div>
+                            
+                            
+                            <div class="ag-item-body" tabindex="0" role="button">
+                                
+                                <div class="ag-item-icon">
+                                    
+                                </div>
+                                
+                                <div class="ag-item-title">
+                                    <p>This is a Group.</p>
+                                    <div class="ag-item-title-actions">
+                                        <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                        <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                        <i class="arrow ti ti-chevron-right"></i>
+                                    </div>
+                                </div>
+                            
+                            </div>
+                            
+                        </div>
+                        <div class="ag-item group">
+                            
+                            <div class="ag-item-toggle">
+                                <i class="ti ti-caret-down"></i>
+                            </div>
+                            
+                            
+                            <div class="ag-item-body" tabindex="0" role="button">
+                                
+                                <div class="ag-item-icon">
+                                    
+                                </div>
+                                
+                                <div class="ag-item-title">
+                                    <p>This is a Group.</p>
+                                    <div class="ag-item-title-actions">
+                                        <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                        <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                        <i class="arrow ti ti-chevron-right"></i>
+                                    </div>
+                                </div>
+                            
+                            </div>
+                            
+                        </div>
+                        <div class="ag-list nested moving">
+                            <div class="ag-item group">
+                                
+                                <div class="ag-item-toggle no-nest">
+                                    <i class="ti ti-caret-right"></i>
+                                </div>
+                                
+                                
+                                <div class="ag-item-body" tabindex="0" role="button">
+                                    
+                                    <div class="ag-item-icon">
+                                        
+                                    </div>
+                                    
+                                    <div class="ag-item-title">
+                                        <p>This is a Group.</p>
+                                        <div class="ag-item-title-actions">
+                                            <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                            <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                            <i class="arrow ti ti-chevron-right"></i>
+                                        </div>
+                                    </div>
+                                
+                                </div>
+                                
+                            </div>
+                            <div class="ag-item group">
+                                
+                                <div class="ag-item-toggle no-nest">
+                                    <i class="ti ti-caret-right"></i>
+                                </div>
+                                
+                                
+                                <div class="ag-item-body" tabindex="0" role="button">
+                                    
+                                    <div class="ag-item-icon">
+                                        
+                                    </div>
+                                    
+                                    <div class="ag-item-title">
+                                        <p>This is a Group.</p>
+                                        <div class="ag-item-title-actions">
+                                            <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                            <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                            <i class="arrow ti ti-chevron-right"></i>
+                                        </div>
+                                    </div>
+                                
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                
+                </div>
+            
+            </div>
+            
+        </div>
+        
+        <!--DETAILS-->
+        <div class="col-sm-6">
+            
+            Items should only be able to be reordered with it's siblings. When doing so, render this dashed box to indicate this.
+            
+        </div>
+    
+    </div>
+
+{[ endpanel ]}
+
+{[ panel title:'5 Levels!' style:'background-color:var(--color-interface-softer)' icon:'ti ti-list-tree' ]}
+  
+    <div class="row">
+        
+        <!--GROUP / AREAS LIST-->
+        <div class="col-sm-6">
+            
+            <div class="ag-wrapper">
+            
+                <div class="ag-list">
+                
+                    <!--AREA ITEM / Level 1-->
+                    <div class="ag-item area">
+                        
+                        <div class="ag-item-toggle">
+                            <i class="ti ti-caret-down"></i>
+                        </div>
+                        
+                        
+                        <div class="ag-item-body" tabindex="0" role="button">
+                            
+                            <div class="ag-item-icon">
+                                
+                            </div>
+                            
+                            <div class="ag-item-title">
+                                <p>This is an Area.</p>
+                                <div class="ag-item-title-actions">
+                                    <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                    <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                    <i class="arrow ti ti-chevron-right"></i>
+                                </div>
+                                
+                                
+                            </div>
+                        
+                        </div>
+                        
+                        
+                    </div>
+                    
+                    <!--AREA ITEM / Level 2-->
+                    <div class="ag-list nested">
+                        <div class="ag-item area">
+                            
+                            <div class="ag-item-toggle">
+                                <i class="ti ti-caret-right"></i>
+                            </div>
+                            
+                            
+                            <div class="ag-item-body" tabindex="0" role="button">
+                                
+                                <div class="ag-item-icon">
+                                    
+                                </div>
+                                
+                                <div class="ag-item-title">
+                                    <p>This is an Area.</p>
+                                    <div class="ag-item-title-actions">
+                                        <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                        <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                        <i class="arrow ti ti-chevron-right"></i>
+                                    </div>
+                                </div>
+                            
+                            </div>
+                            
+                        </div>
+                        <div class="ag-item group">
+                            
+                            <div class="ag-item-toggle">
+                                <i class="ti ti-caret-down"></i>
+                            </div>
+                            
+                            
+                            <div class="ag-item-body" tabindex="0" role="button">
+                                
+                                <div class="ag-item-icon">
+                                    
+                                </div>
+                                
+                                <div class="ag-item-title">
+                                    <p>This is a Group.</p>
+                                    <div class="ag-item-title-actions">
+                                        <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                        <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                        <i class="arrow ti ti-chevron-right"></i>
+                                    </div>
+                                </div>
+                            
+                            </div>
+                            
+                        </div>
+                        <!--AREA ITEM / Level 3-->
+                        <div class="ag-list nested">
+                            <div class="ag-item group">
+                                
+                                <div class="ag-item-toggle no-nest">
+                                    <i class="ti ti-caret-right"></i>
+                                </div>
+                                
+                                
+                                <div class="ag-item-body" tabindex="0" role="button">
+                                    
+                                    <div class="ag-item-icon">
+                                        
+                                    </div>
+                                    
+                                    <div class="ag-item-title">
+                                        <p>This is a Group.</p>
+                                        <div class="ag-item-title-actions">
+                                            <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                            <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                            <i class="arrow ti ti-chevron-right"></i>
+                                        </div>
+                                    </div>
+                                
+                                </div>
+                                
+                            </div>
+                            <div class="ag-item group">
+                                
+                                <div class="ag-item-toggle no-nest">
+                                    <i class="ti ti-caret-right"></i>
+                                </div>
+                                
+                                
+                                <div class="ag-item-body" tabindex="0" role="button">
+                                    
+                                    <div class="ag-item-icon">
+                                        
+                                    </div>
+                                    
+                                    <div class="ag-item-title">
+                                        <p>This is a Group.</p>
+                                        <div class="ag-item-title-actions">
+                                            <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                            <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                            <i class="arrow ti ti-chevron-right"></i>
+                                        </div>
+                                    </div>
+                                
+                                </div>
+                                
+                            </div>
+                            
+                            <!--AREA ITEM / Level 4-->
+                            <div class="ag-list nested">
+                                <div class="ag-item group">
+                                    
+                                    <div class="ag-item-toggle no-nest">
+                                        <i class="ti ti-caret-right"></i>
+                                    </div>
+                                    
+                                    
+                                    <div class="ag-item-body" tabindex="0" role="button">
+                                        
+                                        <div class="ag-item-icon">
+                                            
+                                        </div>
+                                        
+                                        <div class="ag-item-title">
+                                            <p>This is a Group.</p>
+                                            <div class="ag-item-title-actions">
+                                                <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                                <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                                <i class="arrow ti ti-chevron-right"></i>
+                                            </div>
+                                        </div>
+                                    
+                                    </div>
+                                    
+                                </div>
+                                <div class="ag-item group">
+                                    
+                                    <div class="ag-item-toggle no-nest">
+                                        <i class="ti ti-caret-right"></i>
+                                    </div>
+                                    
+                                    
+                                    <div class="ag-item-body" tabindex="0" role="button">
+                                        
+                                        <div class="ag-item-icon">
+                                            
+                                        </div>
+                                        
+                                        <div class="ag-item-title">
+                                            <p>This is a Group.</p>
+                                            <div class="ag-item-title-actions">
+                                                <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                                <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                                <i class="arrow ti ti-chevron-right"></i>
+                                            </div>
+                                        </div>
+                                    
+                                    </div>
+                                    
+                                </div>
+                                
+                                <!--AREA ITEM / Level 5-->
+                                <div class="ag-list nested">
+                                    <div class="ag-item group">
+                                        
+                                        <div class="ag-item-toggle no-nest">
+                                            <i class="ti ti-caret-right"></i>
+                                        </div>
+                                        
+                                        
+                                        <div class="ag-item-body" tabindex="0" role="button">
+                                            
+                                            <div class="ag-item-icon">
+                                                
+                                            </div>
+                                            
+                                            <div class="ag-item-title">
+                                                <p>This is a Group.</p>
+                                                <div class="ag-item-title-actions">
+                                                    <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                                    <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                                    <i class="arrow ti ti-chevron-right"></i>
+                                                </div>
+                                            </div>
+                                        
+                                        </div>
+                                        
+                                    </div>
+                                    <div class="ag-item group">
+                                        
+                                        <div class="ag-item-toggle no-nest">
+                                            <i class="ti ti-caret-right"></i>
+                                        </div>
+                                        
+                                        
+                                        <div class="ag-item-body" tabindex="0" role="button">
+                                            
+                                            <div class="ag-item-icon">
+                                                
+                                            </div>
+                                            
+                                            <div class="ag-item-title">
+                                                <p>This is a Group.</p>
+                                                <div class="ag-item-title-actions">
+                                                    <button class="add-area btn btn-default btn-xs">+<i class="ti ti-stack-2"></i></button>
+                                                    <button class="add-group btn btn-default btn-xs">+<i class="ti ti-users-group"></i></button>
+                                                    <i class="arrow ti ti-chevron-right"></i>
+                                                </div>
+                                            </div>
+                                        
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            
+                        </div>
+                    </div>
+                
+                </div>
+            
+            </div>
+            
+        </div>
+        
+        <!--DETAILS-->
+        <div class="col-sm-6">
+            
+            When items nest, the icon boxes should line up. Fixed padding for nested lists to make sure it always lines up.
+            
+        </div>
+    
+    </div>
+
+{[ endpanel ]}

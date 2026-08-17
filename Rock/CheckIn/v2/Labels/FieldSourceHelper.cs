@@ -25,7 +25,6 @@ using Rock.Data;
 using Rock.Enums.CheckIn.Labels;
 using Rock.Enums.Reporting;
 using Rock.Field;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.ViewModels.Reporting;
@@ -1344,7 +1343,7 @@ namespace Rock.CheckIn.v2.Labels
 
                     var attributeCache = AttributeCache.Get( entityField.AttributeGuid.Value );
 
-                    if ( entityField.FieldType.Field is DateFieldType || entityField.FieldType.Field is DateTimeFieldType )
+                    if ( entityField.FieldType.Guid == SystemGuid.FieldType.DATE.AsGuid() || entityField.FieldType.Guid == SystemGuid.FieldType.DATE_TIME.AsGuid() )
                     {
                         dataSource = new DateAttributeFieldDataSource<ILabelDataHasPerson>( attributeCache, "person", data => data.Person );
                     }

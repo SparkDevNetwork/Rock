@@ -31,6 +31,8 @@ namespace Rock.Blocks.Cms
     [TextField(
         "Url",
         Description = "The path to redirect to <span class='tip tip-lava'></span>.",
+        AllowHtml = true,
+        AllowLava = true,
         Order = 0,
         Key = AttributeKey.Url )]
 
@@ -56,7 +58,7 @@ namespace Rock.Blocks.Cms
         IsRequired = false,
         Order = 3,
         DefaultBooleanValue = false,
-        ControlType = Rock.Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKey.PermanentRedirect )]
 
     #endregion

@@ -183,6 +183,7 @@ namespace Rock.Model
             target.OutreachTouchpointSchedule = source.OutreachTouchpointSchedule;
             target.PhotoId = source.PhotoId;
             target.PreferredLanguageValueId = source.PreferredLanguageValueId;
+            target.PreferredServiceTimeScheduleId = source.PreferredServiceTimeScheduleId;
             target.PrimaryAliasGuid = source.PrimaryAliasGuid;
             target.PrimaryAliasId = source.PrimaryAliasId;
             target.PrimaryCampusId = source.PrimaryCampusId;

@@ -85,6 +85,12 @@ export const Attribute = {
     CountryAddressPostcodeRequirement: "0037453D-0D26-4F02-8AB3-6AD675D85AAE",
     /** Country Address Requirement Level for State. */
     CountryAddressStateRequirement: "E488AE1D-FC76-44FE-A48D-271E6DF44C24",
+    /**
+     * Country - ISO 3166-1 Alpha-3 Code. Stored on each Country DefinedValue so
+     * responses from the Smarty International Street Address API (which return alpha-3)
+     * can be mapped back to Rock's alpha-2 country values.
+     */
+    CountryIso3166Alpha3: "65776D88-0C89-4B9C-B705-683F028948E3",
     /** Country - Locality Label */
     CountryLocalityLabel: "1C234A6D-007F-4410-814E-13E9AE8654B4",
     /** The currency code decimal places */
@@ -99,6 +105,12 @@ export const Attribute = {
     DefinedTypeCurrencyTypeIconcssclass: "CB1E9401-E1FD-4DBB-B15F-4E6994602723",
     /** The Financial Frequency DefinedType &gt; Interval Days DefinedValue Attribute Guid */
     DefinedTypeFinancialFrequencyIntervalDays: "E18CB1D2-08A9-4D12-BCEA-33369193C869",
+    /**
+     * The "Default Component Daily Counts" attribute on the "Interaction Mediums" defined type.
+     * Controls whether newly created Rock.Model.InteractionChannel records of a
+     * given medium default to having EnableComponentDailyCounts = true.
+     */
+    DefinedTypeInteractionMediumDefaultComponentDailyCount: "813B4E21-D77F-45E8-B702-120EE7C90451",
     /** The Template DefinedType &gt; Icon DefinedValue Attribute Guid */
     DefinedTypeTemplateIcon: "831403EB-262E-4BC5-8B5E-F16153493BF5",
     /** The Template DefinedType &gt; TemplateBlock DefinedValue Attribute Guid */

@@ -448,4 +448,22 @@
   <data name="_202604272241483_AnotherPersonMergeFix_spCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Version 19.0\Version 19.0\202604272241483_AnotherPersonMergeFix_spCrm_PersonMerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
+  <data name="_202607081740281_Rollup_20260708_295_FixGoupPlacementPersonFilter_spGetGroupPlacementPeople" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202607081740281_Rollup_20260708_295_FixGoupPlacementPersonFilter_spGetGroupPlacementPeople.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_202607081740281_Rollup_20260708_298_FixGroupPlacementWaitList_spGetGroupPlacementPeople" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202607081740281_Rollup_20260708_298_FixGroupPlacementWaitList_spGetGroupPlacementPeople.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_202607081740281_Rollup_20260708_299_FixAnalyticsETLFamilyOperatorPrecedence_spAnalytics_ETL_Family" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202607081740281_Rollup_20260708_299_FixAnalyticsETLFamilyOperatorPrecedence_spAnalytics_ETL_Family.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_202607301833333_Rollup_20260730_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsEraDataset" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202607301833333_Rollup_20260730_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsEraDataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_202607301833333_Rollup_20260730_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsGiving" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202607301833333_Rollup_20260730_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsGiving.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_202607301833333_Rollup_20260730_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202607301833333_Rollup_20260730_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsAttendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>

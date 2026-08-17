@@ -1,0 +1,239 @@
+<template>
+    <ContentSectionContainer ref="sectionContainer" :sidebar="false">
+        <template v-for="(group, index) in groups" :key="`${groupingKey}-${group.key}`">
+            <ContentSection :isCollapsed="getInitialIsCollapsed(group.key, index)"
+                            :unmountOnCollapse="true"
+                            @onSectionTransition="(isCollapsed) => onGroupTransition(`${groupingKey}-${group.key}`, isCollapsed)"
+                            @onSectionHeaderClick="onSectionHeaderClick">
+                <template #title>
+                    <div class="d-flex align-items-center" :class="group.textColorCssClass">
+                        <template v-if="group.type === 'person'">
+                            <PersonAvatar :photoUrl="group.photoUrl ?? ''"
+                                          :photoSize="24" />
+                        </template>
+                        <template v-else>
+                            <i v-if="group.iconCssClass"
+                               :class="group.iconCssClass"
+                               :style="group.iconStyle"
+                               class="mr-3"></i>
+                        </template>
+                        <span>{{ group.label }}</span>
+                    </div>
+                </template>
+                <template #headerActions>
+                    <div class="contentsection-header-actions-content">
+                        <slot name="headerActions" v-bind="{ groupRows: group.gridData.rows }" />
+                        <HighlightLabel v-if="getIsCountMessageVisible(group)">
+                            {{ getCountMessage(group.key, group.gridData.rows) }}
+                        </HighlightLabel>
+                    </div>
+                </template>
+                <ContentStack>
+                    <slot name="grid" v-bind="{ group, setGridRef }" />
+                </ContentStack>
+            </ContentSection>
+        </template>
+    </ContentSectionContainer>
+</template>
+
+<style scoped>
+/* Let a group's header actions wrap onto a new line when they no longer fit, so a
+   long slotted action set plus the count label does not overflow on narrow screens. */
+.contentsection-header-actions-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xsmall);
+}
+</style>
+
+<script setup lang="ts">
+    import { ref, watch, PropType, ComponentPublicInstance, Ref } from "vue";
+    import { IContentSectionHolder } from "@Obsidian/Core/Controls/contentSection";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { GroupedGrid } from "./types.partial";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+
+    const props = defineProps({
+        /** The pre-computed groups to render as collapsible sections. */
+        groups: {
+            type: Array as PropType<GroupedGrid[]>,
+            required: true
+        },
+
+        /**
+         * The total (unfiltered) row count per group key. Used to display
+         * "X of Y Items" when a filter is active.
+         */
+        totalGroupCounts: {
+            type: Object as PropType<Map<string, number>>,
+            required: true
+        },
+
+        /** The active grouping key, used to namespace collapse state entries. */
+        groupingKey: {
+            type: String,
+            default: ""
+        },
+
+        /**
+         * When true, expanding one section automatically collapses all others.
+         */
+        isAutoCollapseEnabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Singular term for the items being displayed (e.g., "Request"). */
+        itemTerm: {
+            type: String,
+            default: "Item"
+        },
+
+        /**
+         * Controls visibility of the per-group count label in each section header.
+         * Accepts a boolean for uniform behavior across all groups, or a predicate
+         * that receives the group so individual sections can show/hide the label
+         * independently.
+         */
+        isCountMessageVisible: {
+            type: [Boolean, Function] as PropType<boolean | ((group: GroupedGrid) => boolean)>,
+            default: true
+        }
+    });
+
+    const sectionContainer = ref<{
+        getSections: () => IContentSectionHolder[];
+        getRootElRef: () => Ref<HTMLElement | null>;
+    } | null>(null);
+
+    // Tracks expanded/collapsed state per section key across grouping changes.
+    let collapsedGroupDictionary: Record<string, boolean> = {};
+
+    type ClearableGridInstance = ComponentPublicInstance<{ clearSelectedKeys: () => void }>;
+
+    // Tracks mounted grid instances so their selections can be cleared in bulk.
+    const registeredGrids = new Set<ClearableGridInstance>();
+
+    /**
+     * Registers a grid instance when it mounts. Passed to the #grid slot so the
+     * grid can call :ref="setGridRef" and be tracked for bulk selection clearing.
+     */
+    function setGridRef(el: Element | ComponentPublicInstance | null): void {
+        if (el && typeof el === "object" && "clearSelectedKeys" in el) {
+            registeredGrids.add(el as ClearableGridInstance);
+        }
+    }
+
+    /** Clears selected keys on all registered grid instances. */
+    function clearSelectedKeys(): void {
+        registeredGrids.forEach(grid => {
+            grid.clearSelectedKeys();
+        });
+    }
+
+    /** Expands all sections. */
+    function expandAll(): void {
+        sectionContainer.value
+            ?.getSections()
+            .forEach(s => {
+                s.isCollapsed.value = false;
+            });
+    }
+
+    /**
+     * Collapses all sections except the provided one. When called without an
+     * argument (e.g., from a toolbar action), all sections are collapsed.
+     */
+    function collapseAll(section?: IContentSectionHolder): void {
+        sectionContainer.value
+            ?.getSections()
+            .forEach(s => {
+                if (s !== section) {
+                    s.isCollapsed.value = true;
+                }
+            });
+    }
+
+    defineExpose({ clearSelectedKeys, expandAll, collapseAll });
+
+    /** Resolves the `isCountMessageVisible` prop for a specific group. */
+    function getIsCountMessageVisible(group: GroupedGrid): boolean {
+        if (typeof props.isCountMessageVisible === "function") {
+            return props.isCountMessageVisible(group);
+        }
+        return props.isCountMessageVisible;
+    }
+
+    /**
+     * Returns the count label for a group header. Shows "X of Y Items" when
+     * the filtered count differs from the total, otherwise just "X Items".
+     */
+    function getCountMessage(key: string | null | undefined, filteredRows: Record<string, unknown>[]): string {
+        if (!key) {
+            return "";
+        }
+
+        const totalGroupCount = props.totalGroupCounts.get(key) ?? 0;
+
+        if (filteredRows.length === totalGroupCount) {
+            return `${asFormattedString(filteredRows.length)} ${pluralize(props.itemTerm, filteredRows.length)}`;
+        }
+        else {
+            return `${asFormattedString(filteredRows.length)} of ${asFormattedString(totalGroupCount)} ${pluralize(props.itemTerm, totalGroupCount)}`;
+        }
+    }
+
+    /** Handles section expand/collapse transitions and maintains collapse state. */
+    function onGroupTransition(key: string, isCollapsed: boolean): void {
+        // When a section opens and auto-collapse is enabled, reset the dictionary
+        // so sibling sections that haven't been interacted with yet collapse correctly.
+        if (props.isAutoCollapseEnabled && !isCollapsed) {
+            collapsedGroupDictionary = {};
+        }
+
+        collapsedGroupDictionary[key] = isCollapsed;
+    }
+
+    /** Triggers auto-collapse of other sections when a header is clicked. */
+    function onSectionHeaderClick(section: IContentSectionHolder): void {
+        if (props.isAutoCollapseEnabled) {
+            collapseAll(section);
+        }
+    }
+
+    /**
+     * Determines the initial collapsed state for a section on first mount.
+     * Honors any previously recorded transition. Defaults to expanding the
+     * first non-unassigned group.
+     */
+    function getInitialIsCollapsed(groupKey: string | null | undefined, index: number): boolean {
+        const key = `${props.groupingKey}-${groupKey ?? ""}`;
+
+        // If we've already seen a transition for this section, honor it.
+        if (key in collapsedGroupDictionary) {
+            return collapsedGroupDictionary[key];
+        }
+
+        // Expand the first group by default, unless it's "unassigned", in which
+        // case expand the second group so the most actionable content is visible.
+        const firstExpandedIndex = props.groups[0]?.key === "unassigned" ? 1 : 0;
+
+        // If auto-collapse is enabled and another section is already expanded,
+        // start this section collapsed to maintain the single-open invariant.
+        if (props.isAutoCollapseEnabled && Object.values(collapsedGroupDictionary).some(v => !v)) {
+            return true;
+        }
+
+        return index !== firstExpandedIndex;
+    }
+
+    // Reset collapse state whenever the grouping changes so sections start fresh.
+    watch(() => props.groupingKey, () => {
+        collapsedGroupDictionary = {};
+    });
+</script>

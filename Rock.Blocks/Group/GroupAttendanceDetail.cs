@@ -30,6 +30,7 @@ using Rock.Model;
 using Rock.RealTime;
 using Rock.RealTime.Topics;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks.Group.GroupAttendanceDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -222,7 +223,8 @@ namespace Rock.Blocks.Group
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "64ECB2E0-218F-4EB4-8691-7DC94A767037" )]
-    [Rock.SystemGuid.BlockTypeGuid( "308DBA32-F656-418E-A019-9D18235027C1" )]
+    // Original Obsidian was [Rock.SystemGuid.BlockTypeGuid( "308DBA32-F656-418E-A019-9D18235027C1" )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.GROUP_ATTENDANCE_DETAIL )]
     public class GroupAttendanceDetail : RockBlockType
     {
         #region Attribute Values
@@ -333,14 +335,6 @@ namespace Rock.Blocks.Group
             public const string Attended = "Attended";
 
             public const string Group = "Group";
-
-            [Obsolete( "Use 'GroupMembers' merge field instead.", false )]
-            [RockObsolete( "1.15.2" )]
-            public const string GroupMember = "GroupMember";
-
-            [Obsolete( "Use 'Roles' merge field instead.", false )]
-            [RockObsolete( "1.15.2" )]
-            public const string GroupRoleName = "GroupRoleName";
 
             public const string Person = "Person";
 
@@ -498,8 +492,27 @@ namespace Rock.Blocks.Group
 
         /// <summary>
         /// Gets the Occurrence ID page parameter or null if missing.
+        /// Supports both raw integer IDs and IdKey format.
         /// </summary>
-        private int? OccurrenceIdPageParameter => PageParameter( PageParameterKey.OccurrenceId ).AsIntegerOrNull();
+        private int? OccurrenceIdPageParameter
+        {
+            get
+            {
+                var value = PageParameter( PageParameterKey.OccurrenceId );
+                if ( value.IsNullOrWhiteSpace() )
+                {
+                    return null;
+                }
+
+                var intValue = value.AsIntegerOrNull();
+                if ( intValue.HasValue )
+                {
+                    return intValue;
+                }
+
+                return IdHasher.Instance.GetId( value );
+            }
+        }
 
         /// <summary>
         /// Gets the Date page parameter or null if missing.
@@ -519,7 +532,7 @@ namespace Rock.Blocks.Group
         /// <summary>
         /// Gets the Schedule ID page parameter.
         /// </summary>
-        private int? ScheduleIdPageParameter => PageParameter( PageParameterKey.ScheduleId ).AsIntegerOrNull();
+        private int? ScheduleIdPageParameter => Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.ScheduleId ) ) ?? ( !PageCache.Layout.Site.DisablePredictableIds ? PageParameter( PageParameterKey.ScheduleId ).AsIntegerOrNull() : null );
 
         /// <summary>
         /// Gets the entity set identifier page parameter.
@@ -1263,6 +1276,7 @@ namespace Rock.Blocks.Group
                 .Where( gl => gl.Location.Guid == bag.LocationGuid.Value )
                 .Where( gl => gl.Schedules.Any() )
                 .SelectMany( gl => gl.Schedules )
+                .Where( s => s.IsActive )
                 .OrderBy( s => s.Name )
                 .Distinct()
                 .ToList();
@@ -1516,7 +1530,7 @@ namespace Rock.Blocks.Group
                         {
                             // If there are no locations to choose from, then display the date picker.
                             box.AttendanceOccurrenceDateSelectionMode = GroupAttendanceDetailDateSelectionMode.DatePicker;
-                        } 
+                        }
                         break;
                 }
 
@@ -1843,10 +1857,6 @@ namespace Rock.Blocks.Group
             var mergeFields = this.RequestContext.GetCommonMergeFields();
             mergeFields.Add( MergeFieldKeys.Person, attendanceData.Person );
             mergeFields.Add( MergeFieldKeys.Attended, attendanceData.DidAttend );
-#pragma warning disable CS0618 // Type or member is obsolete
-            mergeFields.Add( MergeFieldKeys.GroupMember, attendanceData.GroupMembers?.FirstOrDefault() );
-            mergeFields.Add( MergeFieldKeys.GroupRoleName, string.Join( ", ", attendanceData.Roles?.Distinct() ?? Enumerable.Empty<string>() ) );
-#pragma warning restore CS0618 // Type or member is obsolete
             mergeFields.Add( MergeFieldKeys.GroupMembers, attendanceData.GroupMembers );
             mergeFields.Add( MergeFieldKeys.Roles, string.Join( ", ", attendanceData.Roles?.Distinct() ?? Enumerable.Empty<string>() ) );
 
@@ -2493,7 +2503,7 @@ namespace Rock.Blocks.Group
             public AttendanceOccurrence AttendanceOccurrence { get; internal set; }
 
             public CampusCache Campus { get; internal set; }
-            
+
             public string ErrorMessage { get; set; }
 
             public Model.Group Group { get; internal set; }

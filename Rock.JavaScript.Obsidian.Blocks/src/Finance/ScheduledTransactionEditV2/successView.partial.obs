@@ -1,0 +1,15 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="scheduled-transaction-summary" v-html="successHtml"></div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+
+    defineProps({
+        successHtml: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+</script>

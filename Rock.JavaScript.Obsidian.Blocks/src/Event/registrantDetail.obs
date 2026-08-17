@@ -1,0 +1,275 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <Wizard v-if="!blockError && wizardItems.length > 0" :items="wizardItems" />
+
+    <DetailBlock v-if="!blockError"
+                 ref="detailBlock"
+                 :title="panelName"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :entityKey="entityKey"
+                 :isAuditHidden="true"
+                 :isBadgesVisible="false"
+                 :isDeleteVisible="false"
+                 :isEditVisible="false"
+                 :isFollowVisible="false"
+                 :editFooterActions="editFooterActions"
+                 :isSecurityHidden="true"
+                 @cancelEdit="onCancelEdit"
+                 @save="onSave">
+        <template #edit>
+            <EditPanel v-model="registrantEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
+        </template>
+    </DetailBlock>
+
+    <Dialog v-model="isGroupMemberWarningVisible" :dismissible="false">
+
+        This registration is linked to a group. <strong>{{ groupMemberWarningOldName }}</strong> will be removed from the group and <strong>{{ groupMemberWarningNewName }}</strong> will be added to the group.
+
+        <template #footer>
+            <RockButton btnType="primary" @click="onGroupMemberWarningConfirmed">OK</RockButton>
+            <RockButton btnType="link" @click="onGroupMemberWarningCancelled">Cancel</RockButton>
+        </template>
+    </Dialog>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, ref } from "vue";
+    import Dialog from "@Obsidian/Controls/dialog.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import EditPanel from "./RegistrantDetail/editPanel.partial.obs";
+    import Wizard from "./RegistrantDetail/wizard.partial.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { NavigationUrlKey, RegistrantWizardItem } from "./RegistrantDetail/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrantDetail/registrantBag";
+    import { RegistrantDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrantDetail/registrantDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+
+    const config = useConfigurationValues<DetailBlockBox<RegistrantBag, RegistrantDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const reloadBlock = useReloadBlock();
+
+    onConfigurationValuesChanged(reloadBlock);
+
+    // #region Values
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const isGroupMemberWarningVisible = ref(false);
+    const isGroupMemberWarningConfirmed = ref(false);
+    const groupMemberWarningOldName = ref("");
+    const groupMemberWarningNewName = ref("");
+
+    const detailBlock = ref();
+    const isSaveThenAdd = ref(false);
+
+    const registrantEditBag = ref<ValidPropertiesBox<RegistrantBag>>({
+        bag: config.entity ?? {} as RegistrantBag,
+        validProperties: ["PersonAlias", "Cost", "DiscountApplies", "IsOnWaitList",
+            "Fees", "SignatureDocumentBinaryFileId", "AttributeValues"]
+    });
+
+    const panelMode = ref<DetailPanelMode>(registrantEditBag.value.bag?.idKey ? DetailPanelMode.Edit : DetailPanelMode.Add);
+
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: registrantEditBag
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    const editFooterActions = computed((): PanelAction[] => {
+        if (panelMode.value !== DetailPanelMode.Add) {
+            return [];
+        }
+
+        return [
+            {
+                title: "Save Then Add",
+                type: BtnType.Link,
+                disabled: isSaveThenAdd.value,
+                handler: saveThenAdd
+            }
+        ];
+    });
+
+
+    const panelName = computed((): string => {
+        return registrantEditBag.value.bag?.idKey ? (config.entity?.personAlias?.text ?? "Edit Registrant") : "Add Registrant";
+    });
+
+    const entityKey = computed((): string => {
+        return registrantEditBag.value.bag?.idKey ?? "";
+    });
+
+    const options = computed((): RegistrantDetailOptionsBag => {
+        return config.options ?? {};
+    });
+
+    /**
+     * Builds the ordered list of wizard breadcrumb items. Each ancestor step
+     * carries a navigation URL; the active (current) registrant step does not.
+     * Items whose label is empty are omitted so the wizard only renders when
+     * the bag has the expected name data.
+     */
+    const wizardItems = computed((): RegistrantWizardItem[] => {
+        const bag = registrantEditBag.value.bag;
+        const nav = config.navigationUrls ?? {};
+        const items: RegistrantWizardItem[] = [];
+
+        if (bag?.registrationTemplateName) {
+            items.push({
+                iconCssClass: "ti ti-fw ti-clipboard",
+                label: bag.registrationTemplateName,
+                url: nav[NavigationUrlKey.RegistrationTemplatePage] ?? null
+            });
+        }
+
+        if (bag?.registrationInstanceName) {
+            items.push({
+                iconCssClass: "ti ti-fw ti-file",
+                label: bag.registrationInstanceName,
+                url: nav[NavigationUrlKey.RegistrationInstancePage] ?? null
+            });
+        }
+
+        if (bag?.registrationName) {
+            items.push({
+                iconCssClass: "ti ti-fw ti-users",
+                label: bag.registrationName,
+                url: nav[NavigationUrlKey.ParentPage] ?? null
+            });
+        }
+
+        // Active step — no URL. Label is the person's name for existing registrants
+        // or "New Registrant" when adding, matching the WebForms lWizardRegistrantName.
+        const registrantLabel = bag?.personAlias?.text || "New Registrant";
+        items.push({
+            iconCssClass: "ti ti-fw ti-user",
+            label: registrantLabel
+        });
+
+        return items;
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the Cancel button being clicked.
+     * Always redirects to the parent page since there is no view mode.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            return config.navigationUrls[NavigationUrlKey.ParentPage];
+        }
+
+        return false;
+    }
+
+    /**
+     * Event handler for the panel's Save event. If the registrant is already
+     * linked to a group member and the person has changed, shows a warning modal
+     * before proceeding. Otherwise saves immediately.
+     */
+    async function onSave(): Promise<boolean | string> {
+        const hasGroupMember = registrantEditBag.value.bag?.hasGroupMember ?? false;
+        const originalPersonId = config.entity?.personAlias?.value;
+        const newPersonId = registrantEditBag.value.bag?.personAlias?.value;
+
+        if (!isGroupMemberWarningConfirmed.value && hasGroupMember && originalPersonId && newPersonId && originalPersonId !== newPersonId) {
+            groupMemberWarningOldName.value = config.entity?.personAlias?.text ?? "";
+            groupMemberWarningNewName.value = registrantEditBag.value.bag?.personAlias?.text ?? "";
+            isGroupMemberWarningVisible.value = true;
+            return false;
+        }
+
+        isGroupMemberWarningConfirmed.value = false;
+        return await performSave();
+    }
+
+    async function saveThenAdd(): Promise<void> {
+        isSaveThenAdd.value = true;
+
+        try {
+            await detailBlock.value?.onSaveClick();
+        }
+        finally {
+            isSaveThenAdd.value = false;
+        }
+    }
+
+    /**
+     * Called when the user confirms the group member change warning. Sets the
+     * bypass flag so onSave skips the warning check on its next invocation, then
+     * closes the dialog and re-triggers the DetailBlock save — identical to the
+     * user clicking Save directly.
+     */
+    async function onGroupMemberWarningConfirmed(): Promise<void> {
+        isGroupMemberWarningConfirmed.value = true;
+        isGroupMemberWarningVisible.value = false;
+        await detailBlock.value?.onSaveClick();
+    }
+
+    /**
+     * Called when the user cancels the group member change warning.
+     * Closes the dialog and does not save.
+     */
+    function onGroupMemberWarningCancelled(): void {
+        isGroupMemberWarningVisible.value = false;
+    }
+
+    /**
+     * Sends the registrant data to the server and returns the redirect URL on
+     * success, or false on failure.
+     */
+    async function performSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<string>("Save", {
+            box: registrantEditBag.value
+        });
+
+        if (result.isSuccess && result.data) {
+
+            // if save then add chosen, reload block after save for next entry
+            if (isSaveThenAdd.value) {
+                registrantEditBag.value.bag = {} as RegistrantBag;
+
+                await nextTick();
+                reloadBlock();
+
+                return false;
+            }
+
+            return result.data;
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save registrant.";
+
+        return false;
+    }
+
+    // #endregion
+
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified registrant could not be found.";
+    }
+</script>

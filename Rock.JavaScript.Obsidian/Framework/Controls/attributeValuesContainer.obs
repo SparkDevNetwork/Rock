@@ -28,7 +28,8 @@
                 <div class="d-flex justify-content-between pb-spacing-xs">
                     <div class="font-size-h6 text-interface-stronger text-semibold">Attributes</div>
                     <DropDownContent v-model="isCategoryDropdownOpen"
-                                     enableFlip>
+                                     enableFlip
+                                     placement="bottom-end">
                         <template #anchor>
                             <div class="d-flex align-items-center gap-tiny text-primary cursor-pointer">
                                 <i class="ti ti-eye"></i>

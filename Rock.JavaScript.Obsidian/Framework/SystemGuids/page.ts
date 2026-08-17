@@ -230,6 +230,11 @@ export const Page = {
      */
     ChangePasswordMySettings: "4508223C-2989-4592-B764-B3F372B6051B",
     /**
+     * Gets the Check-in Areas and Groups page guid
+     * ParentPage: Check-in
+     */
+    CheckInAreasAndGroups: "BAF3E806-8555-41D4-825B-838673DAFEB5",
+    /**
      * Gets the Check-in Configuration page guid
      * ParentPage: Check-in
      */
@@ -280,7 +285,7 @@ export const Page = {
     CheckInRockSettings: "66C5DD58-094C-4FF9-9AFB-44801FCFCC2D",
     /**
      * Gets the Check-in page guid
-     * ParentPage: 
+     * ParentPage:
      */
     CheckInRoot: "CDF2C599-D341-42FD-B7DC-CD402EA96050",
     /**
@@ -470,6 +475,11 @@ export const Page = {
      * ParentPage: Connections opportunity select
      */
     ConnectionsBoard: "4FBCEB52-8892-4035-BDEA-112A494BE81F",
+    /**
+     * Gets the Connections Hub page guid.
+     * ParentPage: Connections
+     */
+    ConnectionsHub: "8B5F2875-0D36-4625-8EE4-B738AE8E12F5",
     /**
      * Gets the Connections List page guid.
      * ParentPage: Connections
@@ -703,7 +713,7 @@ export const Page = {
     ExternalApplications: "5A676DCC-37F0-4624-8CCD-408A5A471D8A",
     /**
      * Gets the External Homepage page guid
-     * ParentPage: 
+     * ParentPage:
      */
     ExternalHomepage: "85F25819-E948-4960-9DDF-00F54D32444E",
     /**
@@ -922,7 +932,7 @@ export const Page = {
     HtmleditorRockmergefieldPluginFrame: "1FC09F0D-72F2-44E6-9D16-2884F9AF33DD",
     /**
      * Gets the Internal Homepage page guid
-     * ParentPage: 
+     * ParentPage:
      */
     InternalHomepage: "20F97A93-7949-4C2A-8A5E-C756FE8585CA",
     /**
@@ -1037,6 +1047,8 @@ export const Page = {
      * ParentPage: Reporting
      */
     Metrics: "78D84825-EB1A-43C6-9AD5-5F0F84CC9A53",
+    /** The Mobile Page Layout Detail Page */
+    MobileLayout: "5583A55D-7398-48E9-971F-6A1EF8158943",
     /** The mobile site pages */
     MobileSitePages: "37E21200-DF91-4426-89CC-7D067237A037",
     /**
@@ -1044,6 +1056,11 @@ export const Page = {
      * ParentPage: Security
      */
     MyAccountSecurity: "290C53DC-0960-484C-B314-8301882A454C",
+    /**
+     * Gets the My Connections page guid.
+     * ParentPage: Connections
+     */
+    MyConnections: "3E55BE64-C8E8-487B-9BD4-E94C7F99BE1B",
     /**
      * Gets the My Dashboard page guid
      * ParentPage: Internal Homepage
@@ -1069,6 +1086,8 @@ export const Page = {
      * ParentPage: General Settings
      */
     NamedLocationsGeneralSettings: "2BECFB85-D566-464F-B6AC-0BE90189A418",
+    /** The Ncoa Process Page */
+    NcoaProcess: "56EDE500-CEE6-41F4-B724-E44E66A4432F",
     /**
      * Gets the New Account page guid
      * ParentPage: Security

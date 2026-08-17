@@ -135,7 +135,8 @@ namespace Rock.Blocks.Core
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "33566B2B-D74F-4148-B962-1897D418C6DF" )]
-    [Rock.SystemGuid.BlockTypeGuid( "D87B84DC-7AD9-42A2-B18D-88B7E71DADA8" )]
+    // Original Obsidian was: [Rock.SystemGuid.BlockTypeGuid( "D87B84DC-7AD9-42A2-B18D-88B7E71DADA8" )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.NOTES )]
     public class Notes : RockBlockType
     {
         #region Keys

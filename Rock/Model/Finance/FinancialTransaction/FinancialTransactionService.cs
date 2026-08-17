@@ -250,15 +250,9 @@ namespace Rock.Model
             refundTransaction.RefundDetails.RefundReasonSummary = summary;
             refundTransaction.RefundDetails.OriginalTransactionId = transaction.Id;
 
-            string batchName = transaction.Batch.Name;
-            if ( batchNameSuffix.IsNotNullOrWhiteSpace() && !batchName.EndsWith( batchNameSuffix ) )
-            {
-                batchName += batchNameSuffix;
-            }
-
             // Get the batch
             var batchService = new FinancialBatchService( rockContext );
-            var batch = batchService.GetForNewTransaction( refundTransaction );
+            var batch = batchService.GetForNewTransaction( refundTransaction, nameSuffix: batchNameSuffix );
 
             // If this is a new Batch, SaveChanges so that we can get the Batch.Id
             if ( batch.Id == 0 )
@@ -662,19 +656,6 @@ namespace Rock.Model
             .ToList();
 
             return monthlyAccountGivingHistoryList;
-        }
-
-        /// <summary>
-        /// Gets the giving automation monthly account giving history that was stored as JSON in an attribute. This is used for the
-        /// Giving Overview block's monthly bar chart and also yearly summary.
-        /// </summary>
-        /// <returns></returns>
-        [RockObsolete( "1.13" )]
-        [Obsolete( "Use GetGivingAutomationMonthlyAccountGivingHistory instead" )]
-        public static List<MonthlyAccountGivingHistory> GetGivingAutomationMonthlyAccountGivingHistoryFromJson( string json )
-        {
-            var monthlyAccountGivingHistoryList = json.FromJsonOrNull<List<MonthlyAccountGivingHistory>>();
-            return monthlyAccountGivingHistoryList ?? new List<MonthlyAccountGivingHistory>();
         }
 
         /// <summary>

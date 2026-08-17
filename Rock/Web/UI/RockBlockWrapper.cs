@@ -115,6 +115,23 @@ namespace Rock.Web.UI
             string appRoot = _rockBlock.ResolveRockUrl( "~/" );
             string themeRoot = _rockBlock.ResolveRockUrl( "~~/" );
 
+            /*
+                7/23/26 - MSE
+
+                The Pre-HTML and Post-HTML content is resolved in OnPreRender, but a
+                block can still become not visible after that point. In particular, an
+                Obsidian block only produces its markup at the page's async point,
+                which runs after PreRender, so a block that decides to render nothing
+                (e.g. Defined Type Check List with "Hide Block When Empty") is only
+                marked not visible after the content was already resolved. Re-check
+                visibility here so the Pre/Post-HTML is not rendered around a hidden
+                block.
+
+                Reason: Hide Pre/Post-HTML for blocks hidden after PreRender.
+            */
+            var preHtmlContent = _rockBlock.Visible ? _preHtmlContent : string.Empty;
+            var postHtmlContent = _rockBlock.Visible ? _postHtmlContent : string.Empty;
+
             StringBuilder sbOutput = null;
             StringWriter swOutput = null;
             HtmlTextWriter twOutput = null;
@@ -140,7 +157,7 @@ namespace Rock.Web.UI
                 ( string.IsNullOrWhiteSpace( blockCache.CssClass ) ? string.Empty : " " + blockCache.CssClass.Trim() ) +
                 ( _rockBlock.UserCanEdit || _rockBlock.UserCanAdministrate ? " can-configure " : string.Empty );
 
-            writer.Write( _preHtmlContent );
+            writer.Write( preHtmlContent );
             writer.AddAttribute( HtmlTextWriterAttribute.Id, string.Format( "bid_{0}", blockCache.Id ) );
             writer.AddAttribute( "data-zone-location", blockCache.BlockLocation.ToString() );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, blockInstanceCss );
@@ -151,7 +168,7 @@ namespace Rock.Web.UI
 
             if ( blockCache.OutputCacheDuration > 0 )
             {
-                twOutput.Write( _preHtmlContent );
+                twOutput.Write( preHtmlContent );
                 twOutput.AddAttribute( HtmlTextWriterAttribute.Id, string.Format( "bid_{0}", blockCache.Id ) );
                 twOutput.AddAttribute( "data-zone-location", blockCache.BlockLocation.ToString() );
                 twOutput.AddAttribute( HtmlTextWriterAttribute.Class, blockInstanceCss );
@@ -194,7 +211,7 @@ namespace Rock.Web.UI
 
             writer.RenderEndTag();  // block-content
             writer.RenderEndTag();  // block-instance
-            writer.Write( _postHtmlContent );
+            writer.Write( postHtmlContent );
 
             if ( blockCache.OutputCacheDuration > 0 )
             {
@@ -202,7 +219,7 @@ namespace Rock.Web.UI
 
                 twOutput.RenderEndTag();  // block-content
                 twOutput.RenderEndTag();  // block-instance
-                twOutput.Write( _postHtmlContent );
+                twOutput.Write( postHtmlContent );
 
                 var expiration  = RockDateTime.Now.AddSeconds( blockCache.OutputCacheDuration );
                 string blockCacheKey = string.Format( "Rock:BlockOutput:{0}", blockCache.Id );

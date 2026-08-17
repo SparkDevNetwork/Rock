@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.FinancialScheduledTransactionList;
 using Rock.ViewModels.Utility;
@@ -43,7 +44,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays a list of financial scheduled transactions." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "View Page",
         DefaultValue = "",
@@ -84,7 +85,8 @@ namespace Rock.Blocks.Finance
 
 
     [Rock.SystemGuid.EntityTypeGuid( "946127ec-adec-46c9-8181-a405c137a8a3" )]
-    [Rock.SystemGuid.BlockTypeGuid( "2db92ea3-f3b3-496e-a1f0-8eebd8dc928a" )]
+    [Rock.SystemGuid.BlockTypeGuid( "694FF260-8C6F-4A59-93C9-CF3793FE30E6" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "2db92ea3-f3b3-496e-a1f0-8eebd8dc928a" )]
     [CustomizedGrid]
     [Rock.Web.UI.ContextAware]
     public class FinancialScheduledTransactionList : RockListBlockType<FinancialScheduledTransactionData>
@@ -126,6 +128,11 @@ namespace Rock.Blocks.Finance
         {
             public const string ViewPage = "ViewPage";
             public const string AddPage = "AddPage";
+        }
+
+        private static class PageParameterKey
+        {
+            public const string Person = "Person";
         }
 
         private static class PreferenceKey
@@ -229,7 +236,19 @@ namespace Rock.Blocks.Finance
         /// <returns>The options that provide additional details to the block.</returns>
         private FinancialScheduledTransactionListOptionsBag GetBoxOptions()
         {
-            var options = new FinancialScheduledTransactionListOptionsBag();
+            // Provide the organization's default currency so the client formats amounts
+            // with the correct symbol and decimal places instead of a hard-coded "$".
+            var currencyInfo = new RockCurrencyCodeInfo();
+
+            var options = new FinancialScheduledTransactionListOptionsBag
+            {
+                CurrencyInfo = new CurrencyInfoBag
+                {
+                    Symbol = currencyInfo.Symbol,
+                    DecimalPlaces = currencyInfo.DecimalPlaces,
+                    SymbolLocation = currencyInfo.SymbolLocation
+                }
+            };
 
             return options;
         }
@@ -263,7 +282,7 @@ namespace Rock.Blocks.Finance
 
                     if ( personKey.IsNotNullOrWhiteSpace() )
                     {
-                        addScheduledTransactionPage.QueryString["Person"] = personKey;
+                        addScheduledTransactionPage.QueryString[PageParameterKey.Person] = personKey;
                         addPageLinkedUrl = addScheduledTransactionPage.BuildUrl();
                     }
                 }
@@ -271,7 +290,7 @@ namespace Rock.Blocks.Finance
 
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ViewPage] = this.GetLinkedPageUrl( AttributeKey.ViewPage, "FinancialScheduledTransactionId", "((Key))" ),
+                [NavigationUrlKey.ViewPage] = this.GetLinkedPageUrl( AttributeKey.ViewPage, "ScheduledTransactionId", "((Key))" ),
                 [NavigationUrlKey.AddPage] = addPageLinkedUrl
             };
         }
@@ -292,7 +311,7 @@ namespace Rock.Blocks.Finance
                 givingGroupId = _person.GivingGroupId;
             }
 
-            IQueryable<FinancialScheduledTransaction> qry = new FinancialScheduledTransactionService( rockContext )
+            IQueryable<FinancialScheduledTransaction> qry = new FinancialScheduledTransactionService( RockContext )
                 .Queryable()
                 .Include( t => t.ScheduledTransactionDetails )
                 .Include( t => t.FinancialPaymentDetail.CurrencyTypeValue )
@@ -348,9 +367,9 @@ namespace Rock.Blocks.Finance
                 qry = qry.Where( t => t.ScheduledTransactionDetails.Any( d => d.Account.Guid == FilterAccount.Value ) );
             }
 
-            // Active only (no filter)
+            // filter down to active only based on person preference
             bool includeInctiveSchedules = FilterIncludeInctiveSchedules.AsBoolean();
-            if ( includeInctiveSchedules )
+            if ( !includeInctiveSchedules )
             {
                 qry = qry.Where( t => t.IsActive );
             }
@@ -383,10 +402,20 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         protected override IQueryable<FinancialScheduledTransactionData> GetListQueryable( RockContext rockContext )
         {
-            return GetScheduledTransactionQueryable( rockContext )
+            return GetScheduledTransactionQueryable( RockContext )
                 .Select( a => new FinancialScheduledTransactionData
                 {
-                    FinancialScheduledTransaction = a
+                    FinancialScheduledTransaction = a,
+                    AuthorizedPerson = a.AuthorizedPersonAlias.Person,
+                    CurrencyTypeValueId = a.FinancialPaymentDetail.CurrencyTypeValueId,
+                    AccountLines = a.ScheduledTransactionDetails.Select( d => new AccountLine
+                    {
+                        AccountId = d.AccountId,
+                        AccountGuid = d.Account.Guid,
+                        Order = d.Account.Order,
+                        Name = d.Account.Name,
+                        Amount = d.Amount
+                    } )
                 } );
         }
 
@@ -406,14 +435,14 @@ namespace Rock.Blocks.Finance
             // sent to the client.
             foreach ( var item in items )
             {
-                var accounts = item.FinancialScheduledTransaction.ScheduledTransactionDetails
+                var accounts = item.AccountLines
                     .Select( d => new
                     {
-                        Id = accountGuids.Any() && !accountGuids.Contains( d.Account.Guid ) ? 0 : d.AccountId,
-                        Order = d.Account.Order,
-                        Name = d.Account.Name,
+                        Id = accountGuids.Any() && !accountGuids.Contains( d.AccountGuid ) ? 0 : d.AccountId,
+                        Order = d.Order,
+                        Name = d.Name,
                         Amount = d.Amount,
-                        IsOther = accountGuids.Any() && !accountGuids.Contains( d.Account.Guid )
+                        IsOther = accountGuids.Any() && !accountGuids.Contains( d.AccountGuid )
                     } )
                     .OrderBy( d => d.IsOther )
                     .ThenBy( d => d.Order )
@@ -439,7 +468,7 @@ namespace Rock.Blocks.Finance
                 }
             }
 
-            GridAttributeLoader.LoadFor( items, i => i.FinancialScheduledTransaction, _gridAttributes.Value, rockContext );
+            GridAttributeLoader.LoadFor( items, i => i.FinancialScheduledTransaction, _gridAttributes.Value, RockContext );
 
             return items;
         }
@@ -457,16 +486,16 @@ namespace Rock.Blocks.Finance
                 .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.FinancialScheduledTransaction.IdKey )
                 .AddTextField( "id", a => a.FinancialScheduledTransaction.Id.ToString() )
-                .AddPersonField( "authorized", a => a.FinancialScheduledTransaction.AuthorizedPersonAlias?.Person )
-                .AddTextField( "transactionFrequency", a => a.FinancialScheduledTransaction.TransactionFrequencyValue?.Value )
-                .AddTextField( "transactionType", a => a.FinancialScheduledTransaction.TransactionTypeValue?.Value )
+                .AddPersonField( "authorized", a => a.AuthorizedPerson )
+                .AddTextField( "transactionFrequency", a => DefinedValueCache.GetValue( a.FinancialScheduledTransaction.TransactionFrequencyValueId ) )
+                .AddTextField( "transactionType", a => DefinedValueCache.GetValue( a.FinancialScheduledTransaction.TransactionTypeValueId ) )
                 .AddTextField( "gatewayScheduleId", a => a.FinancialScheduledTransaction.GatewayScheduleId )
-                .AddField( "amount", a => a.FinancialScheduledTransaction.TotalAmount )
+                .AddField( "amount", a => a.AccountLines.Sum( l => l.Amount ) )
                 .AddDateTimeField( "createdDateTime", a => a.FinancialScheduledTransaction.CreatedDateTime )
                 .AddDateTimeField( "startDate", a => a.FinancialScheduledTransaction.StartDate )
                 .AddDateTimeField( "endDate", a => a.FinancialScheduledTransaction.EndDate )
                 .AddDateTimeField( "nextPayment", a => a.FinancialScheduledTransaction.NextPaymentDate )
-                .AddTextField( "currencyType", a => a.FinancialScheduledTransaction.FinancialPaymentDetail.CurrencyTypeValue?.Value )
+                .AddTextField( "currencyType", a => DefinedValueCache.GetValue( a.CurrencyTypeValueId ) )
                 .AddField( "accounts", a => a.Accounts )
                 .AddField( "isActive", a => a.FinancialScheduledTransaction.IsActive )
                 .AddAttributeFieldsFrom( a => a.FinancialScheduledTransaction, _gridAttributes.Value );
@@ -542,7 +571,7 @@ namespace Rock.Blocks.Finance
         #region Supported Classes
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class FinancialScheduledTransactionData
         {
@@ -569,6 +598,61 @@ namespace Rock.Blocks.Finance
             /// The account data for this batch.
             /// </value>
             public IEnumerable<AccountData> Accounts { get; set; }
+
+            /// <summary>
+            /// Gets or sets the raw per-account detail lines for this scheduled
+            /// transaction. Projected directly in the list query so the fund data
+            /// rides along in a single joined query instead of lazy-loading the
+            /// detail and account navigations per row.
+            /// </summary>
+            public IEnumerable<AccountLine> AccountLines { get; set; }
+
+            /// <summary>
+            /// Gets or sets the authorized person, projected in the list query so the
+            /// grid's person column does not lazy-load the alias and person per row.
+            /// </summary>
+            public Person AuthorizedPerson { get; set; }
+
+            /// <summary>
+            /// Gets or sets the currency type defined value identifier from the payment
+            /// detail, projected in the list query so the grid can resolve the currency
+            /// type from cache without lazy-loading the payment detail per row.
+            /// </summary>
+            public int? CurrencyTypeValueId { get; set; }
+        }
+
+        /// <summary>
+        /// A single scheduled-transaction detail line, flattened with its account's
+        /// display fields so the grid can build the account summary without touching
+        /// the entity navigations.
+        /// </summary>
+        public class AccountLine
+        {
+            /// <summary>
+            /// Gets or sets the account identifier for this line.
+            /// </summary>
+            public int AccountId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the account unique identifier, used to test membership
+            /// against the block's configured accounts.
+            /// </summary>
+            public Guid AccountGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the account's display order.
+            /// </summary>
+            public int Order { get; set; }
+
+            /// <summary>
+            /// Gets or sets the account name.
+            /// </summary>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the amount for this line.
+            /// </summary>
+            public decimal Amount { get; set; }
         }
 
         /// <summary>

@@ -15,16 +15,16 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
 using System.ComponentModel;
 
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Enums.Blocks.Security.ConfirmAccount;
 using Rock.Model;
 using Rock.Security;
 using Rock.Tasks;
 using Rock.ViewModels.Blocks.Security.ConfirmAccount;
+using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Blocks.Security
 {
@@ -69,6 +69,7 @@ namespace Rock.Blocks.Security
 
     [CodeEditorField( "Delete Caption",
         Key = AttributeKey.DeleteCaption,
+        Description = "The caption to display when deleting an account. When deleting passwordless accounts, 'Are you sure you want to delete the account?' will be displayed instead.",
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Html,
         EditorHeight = 200,
         IsRequired = false,
@@ -111,8 +112,9 @@ namespace Rock.Blocks.Security
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "49098480-A041-4404-964C-10EFF41B7DCA" )]
-    [Rock.SystemGuid.BlockTypeGuid( "F9FD6BE8-8073-40E9-83D9-CA3F947D2E2A" )]
-    public class ConfirmAccount : RockBlockType
+    // was [Rock.SystemGuid.BlockTypeGuid( "F9FD6BE8-8073-40E9-83D9-CA3F947D2E2A" )]
+    [Rock.SystemGuid.BlockTypeGuid( "734DFF21-7465-4E02-BFC3-D40F7A65FB60" )]
+    public class ConfirmAccount : RockBlockType, IDisallowReturnUrlBlock
     {
         #region Keys
 
@@ -126,11 +128,6 @@ namespace Rock.Blocks.Security
             public const string InvalidCaption = "InvalidCaption";
             public const string PasswordResetUnavailableCaption = "PasswordResetUnavailableCaption";
             public const string NewAccountPage = "NewAccountPage";
-        }
-
-        private static class NavigationUrlKey
-        {
-            public const string ParentPage = "ParentPage";
         }
 
         private static class PageParameterKey
@@ -174,6 +171,9 @@ namespace Rock.Blocks.Security
         /// </summary>
         private string DeleteConfirmationCaptionTemplate => GetAttributeValue( AttributeKey.DeleteCaption );
 
+        /// <summary>
+        /// Gets the account deleted caption.
+        /// </summary>
         private string AccountDeletedCaption => GetAttributeValue( AttributeKey.DeletedCaption );
 
         /// <summary>
@@ -181,6 +181,9 @@ namespace Rock.Blocks.Security
         /// </summary>
         private string InvalidConfirmationCodeCaptionTemplate => GetAttributeValue( AttributeKey.InvalidCaption );
 
+        /// <summary>
+        /// Gets the caption displayed when password change is not supported for the account type.
+        /// </summary>
         private string ChangePasswordUnavailableCaption => GetAttributeValue( AttributeKey.PasswordResetUnavailableCaption );
 
         private string NewAccountPageUrl => this.GetLinkedPageUrl( AttributeKey.NewAccountPage );
@@ -196,7 +199,6 @@ namespace Rock.Blocks.Security
             {
                 ActionNames = GetActionNames(),
                 ErrorMessage = null,
-                NavigationUrls = GetBoxNavigationUrls(),
                 SecurityGrantToken = null,
                 View = ProcessActionView()
             };
@@ -266,25 +268,22 @@ namespace Rock.Blocks.Security
         /// <param name="code">The confirmation code.</param>
         private ConfirmAccountViewBox ShowChangePasswordView( string code )
         {
-            using ( var rockContext = new RockContext() )
+            var userLoginService = new UserLoginService( RockContext );
+
+            if ( !IsCodeValid( userLoginService, code, out var user ) )
             {
-                var userLoginService = new UserLoginService( rockContext );
-
-                if ( !IsCodeValid( userLoginService, code, out var user ) )
-                {
-                    return ShowAccountConfirmationView( code );
-                }
-
-                var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
-
-                if ( !component.SupportsChangePassword )
-                {
-                    // Intentionally show the error message-only view when change password is not supported.
-                    return ShowAlertView( this.ChangePasswordUnavailableCaption, ConfirmAccountAlertType.Danger );
-                }
-
-                return ShowChangePasswordView( code, user );
+                return ShowAccountConfirmationView( code );
             }
+
+            var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
+
+            if ( !component.SupportsChangePassword )
+            {
+                // Intentionally show the error message-only view when change password is not supported.
+                return ShowAlertView( this.ChangePasswordUnavailableCaption, ConfirmAccountAlertType.Danger );
+            }
+
+            return ShowChangePasswordView( code, user );
         }
 
         /// <summary>
@@ -293,17 +292,14 @@ namespace Rock.Blocks.Security
         /// <param name="code">The confirmation code.</param>
         private ConfirmAccountViewBox ShowDeleteConfirmationView( string code )
         {
-            using ( var rockContext = new RockContext() )
+            var userLoginService = new UserLoginService( RockContext );
+
+            if ( !IsCodeValid( userLoginService, code, out var user ) )
             {
-                var userLoginService = new UserLoginService( rockContext );
-
-                if ( !IsCodeValid( userLoginService, code, out var user ) )
-                {
-                    return ShowAccountConfirmationView( code );
-                }
-
-                return ShowDeleteConfirmationView( code, user );
+                return ShowAccountConfirmationView( code );
             }
+
+            return ShowDeleteConfirmationView( code, user );
         }
 
         /// <summary>
@@ -314,36 +310,33 @@ namespace Rock.Blocks.Security
         /// <returns>The next view to show after attempting to reset the account password.</returns>
         private ConfirmAccountViewBox ChangePassword( string code, string password )
         {
-            using ( var rockContext = new RockContext() )
+            var userLoginService = new UserLoginService( RockContext );
+
+            if ( !IsCodeValid( userLoginService, code, out var user ) )
             {
-                var userLoginService = new UserLoginService( rockContext );
+                return ShowAccountConfirmationView( code );
+            }
 
-                if ( !IsCodeValid( userLoginService, code, out var user ) )
-                {
-                    return ShowAccountConfirmationView( code );
-                }
+            var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
 
-                var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
+            if ( !component.SupportsChangePassword )
+            {
+                // Intentionally show the error message-only view when change password is not supported.
+                return ShowAlertView( this.ChangePasswordUnavailableCaption, ConfirmAccountAlertType.Danger );
+            }
 
-                if ( !component.SupportsChangePassword )
-                {
-                    // Intentionally show the error message-only view when change password is not supported.
-                    return ShowAlertView( this.ChangePasswordUnavailableCaption, ConfirmAccountAlertType.Danger );
-                }
+            if ( UserLoginService.IsPasswordValid( password ) )
+            {
+                userLoginService.SetPassword( user, password );
+                user.IsConfirmed = true;
+                user.IsLockedOut = false; // unlock the user account if they reset their password.
+                RockContext.SaveChanges();
 
-                if ( UserLoginService.IsPasswordValid( password ) )
-                {
-                    userLoginService.SetPassword( user, password );
-                    user.IsConfirmed = true;
-                    user.IsLockedOut = false; // unlock the user account if they reset their password.
-                    rockContext.SaveChanges();
-
-                    return ShowAlertView( GetPasswordChangedCaption( user ), ConfirmAccountAlertType.Success );
-                }
-                else
-                {
-                    return ShowChangePasswordView( code, user, UserLoginService.FriendlyPasswordRules() );
-                }
+                return ShowAlertView( GetPasswordChangedCaption( user ), ConfirmAccountAlertType.Success );
+            }
+            else
+            {
+                return ShowChangePasswordView( code, user, UserLoginService.FriendlyPasswordRules() );
             }
         }
 
@@ -354,31 +347,28 @@ namespace Rock.Blocks.Security
         /// <returns>The next view to show after attempting to confirm the account.</returns>
         private ConfirmAccountViewBox Confirm( string code )
         {
-            using ( var rockContext = new RockContext() )
+            var userLoginService = new UserLoginService( RockContext );
+
+            if ( !IsCodeValid( userLoginService, code, out var user ) )
             {
-                var userLoginService = new UserLoginService( rockContext );
-
-                if ( !IsCodeValid( userLoginService, code, out var user ) )
-                {
-                    return ShowAccountConfirmationView( code );
-                }
-
-                user.IsConfirmed = true;
-                rockContext.SaveChanges();
-                
-                /*
-                    10/20/2023 - JMH
-
-                    Do not automatically authenticate the individual after confirming their account.
-                    Instead, they should have to authenticate using the Login (or other authentication) block,
-                    where 2FA and other authentication logic is handled.
-
-                    Reason: Two-Factor Authentication
-                 */
-                // Authorization.SetAuthCookie( user.UserName, isPersisted: false, isImpersonated: false );
-
-                return ShowAlertView( GetAccountConfirmedCaption( user ), ConfirmAccountAlertType.Success );
+                return ShowAccountConfirmationView( code );
             }
+
+            user.IsConfirmed = true;
+            RockContext.SaveChanges();
+
+            /*
+                10/20/2023 - JMH
+
+                Do not automatically authenticate the individual after confirming their account.
+                Instead, they should have to authenticate using the Login (or other authentication) block,
+                where 2FA and other authentication logic is handled.
+
+                Reason: Two-Factor Authentication
+             */
+            // Authorization.SetAuthCookie( user.UserName, isPersisted: false, isImpersonated: false );
+
+            return ShowAlertView( GetAccountConfirmedCaption( user ), ConfirmAccountAlertType.Success );
         }
 
         /// <summary>
@@ -388,35 +378,32 @@ namespace Rock.Blocks.Security
         /// <returns>The next view to show after attempting to delete the account.</returns>
         private ConfirmAccountViewBox DeleteAccount( string code )
         {
-            using ( var rockContext = new RockContext() )
+            var userLoginService = new UserLoginService( RockContext );
+
+            if ( !IsCodeValid( userLoginService, code, out var user ) )
             {
-                var userLoginService = new UserLoginService( rockContext );
-
-                if ( !IsCodeValid( userLoginService, code, out var user ) )
-                {
-                    return ShowAccountConfirmationView( code );
-                }
-
-                if ( this.RequestContext.CurrentUser != null && this.RequestContext.CurrentUser.UserName == user.UserName )
-                {
-                    // It seems silly to update user activity when deleting and this may be removed in the future, but this is for compatibility with WebForms.
-                    var updateUserLastActivityMsg = new UpdateUserLastActivity.Message
-                    {
-                        UserId = this.RequestContext.CurrentUser.Id,
-                        LastActivityDate = RockDateTime.Now,
-                        IsOnline = false
-                    };
-
-                    updateUserLastActivityMsg.Send();
-
-                    Authorization.SignOut();
-                }
-
-                userLoginService.Delete( user );
-                rockContext.SaveChanges();
-
-                return ShowContentView( this.AccountDeletedCaption );
+                return ShowAccountConfirmationView( code );
             }
+
+            if ( this.RequestContext.CurrentUser != null && this.RequestContext.CurrentUser.UserName == user.UserName )
+            {
+                // It seems silly to update user activity when deleting and this may be removed in the future, but this is for compatibility with WebForms.
+                var updateUserLastActivityMsg = new UpdateUserLastActivity.Message
+                {
+                    UserId = this.RequestContext.CurrentUser.Id,
+                    LastActivityDate = RockDateTime.Now,
+                    IsOnline = false
+                };
+
+                updateUserLastActivityMsg.Send();
+
+                Authorization.SignOut();
+            }
+
+            userLoginService.Delete( user );
+            RockContext.SaveChanges();
+
+            return ShowContentView( this.AccountDeletedCaption );
         }
 
         /// <summary>
@@ -458,64 +445,49 @@ namespace Rock.Blocks.Security
         /// <returns>The action-based view.</returns>
         private ConfirmAccountViewBox ProcessActionView()
         {
-            using ( var rockContext = new RockContext() )
+            var userLoginService = new UserLoginService( RockContext );
+
+            var action = this.ActionPageParameter;
+            var code = this.CodeConfirmationPageParameter;
+            UserLogin user;
+
+            switch ( action?.ToLowerInvariant() )
             {
-                var userLoginService = new UserLoginService( rockContext );
+                // Don't actually delete the account, but instead show a delete confirmation view to the individual.
+                case ConfirmAccountAction.Delete:
+                    if ( !IsCodeValid( userLoginService, code, out user ) )
+                    {
+                        return ShowAccountConfirmationView( code );
+                    }
 
-                var action = this.ActionPageParameter;
-                var code = this.CodeConfirmationPageParameter;
-                UserLogin user;
+                    return ShowDeleteConfirmationView( code, user );
 
-                switch ( action?.ToLowerInvariant() )
-                {
-                    // Don't actually delete the account, but instead show a delete confirmation view to the individual.
-                    case ConfirmAccountAction.Delete:
-                        if ( !IsCodeValid( userLoginService, code, out user ) )
-                        {
-                            return ShowAccountConfirmationView( code );
-                        }
+                // Don't actually change the password, but instead show a change password view to the individual.
+                case ConfirmAccountAction.ChangePassword:
+                    if ( !IsCodeValid( userLoginService, code, out user ) )
+                    {
+                        return ShowAccountConfirmationView( code );
+                    }
 
-                        return ShowDeleteConfirmationView( code, user );
+                    var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
 
-                    // Don't actually change the password, but instead show a change password view to the individual.
-                    case ConfirmAccountAction.ChangePassword:
-                        if ( !IsCodeValid( userLoginService, code, out user ) )
-                        {
-                            return ShowAccountConfirmationView( code );
-                        }
+                    if ( !component.SupportsChangePassword )
+                    {
+                        return ShowAlertView( this.ChangePasswordUnavailableCaption, ConfirmAccountAlertType.Danger );
+                    }
 
-                        var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
+                    return ShowChangePasswordView( code, user );
 
-                        if ( !component.SupportsChangePassword )
-                        {
-                            return ShowAlertView( this.ChangePasswordUnavailableCaption, ConfirmAccountAlertType.Danger );
-                        }
-
-                        return ShowChangePasswordView( code, user );
-
-                    // By default, we will try to automatically confirm the account.
-                    default:
-                        return Confirm( code );
-                }
+                // By default, we will try to automatically confirm the account.
+                default:
+                    return Confirm( code );
             }
-        }
-
-        /// <summary>
-        /// Gets the box navigation URLs required for the page to operate.
-        /// </summary>
-        /// <returns>A dictionary of key names and URL values.</returns>
-        private Dictionary<string, string> GetBoxNavigationUrls()
-        {
-            return new Dictionary<string, string>
-            {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
-            };
         }
 
         /// <summary>
         /// Gets the change password caption for the <paramref name="user"/>, using the <see cref="ChangePasswordCaptionTemplate"/>.
         /// </summary>
-        /// <param name="user">The user for whom to generating the caption.</param>
+        /// <param name="user">The user for whom to generate the caption.</param>
         /// <returns>The change password caption for the user.</returns>
         private string GetChangePasswordCaption( UserLogin user )
         {
@@ -528,6 +500,7 @@ namespace Rock.Blocks.Security
             {
                 caption = string.Format( caption, user.Person.FirstName );
             }
+
             return caption;
         }
 
@@ -542,7 +515,16 @@ namespace Rock.Blocks.Security
 
             if ( caption.Contains( "{0}" ) )
             {
-                caption = string.Format( caption, user.UserName );
+                var passwordlessEntityTypeId = EntityTypeCache.GetId( SystemGuid.EntityType.AUTHENTICATION_PASSWORDLESS.AsGuid() );
+
+                if ( user.EntityTypeId.HasValue && user.EntityTypeId == passwordlessEntityTypeId )
+                {
+                    caption = "Are you sure you want to delete the account?";
+                }
+                else
+                {
+                    caption = string.Format( caption, user.UserName );
+                }
             }
 
             return caption;
@@ -561,7 +543,7 @@ namespace Rock.Blocks.Security
                 var url = this.NewAccountPageUrl;
                 if ( string.IsNullOrWhiteSpace( url ) )
                 {
-                    url = "/NewAccount";
+                    url = RequestContext.ResolveRockUrl( "~/NewAccount" );
                 }
 
                 invalidCaption = string.Format( invalidCaption, url );
@@ -573,7 +555,7 @@ namespace Rock.Blocks.Security
         /// <summary>
         /// Gets the password changed caption for the <paramref name="user"/>, using the <see cref="PasswordChangedCaptionTemplate"/>.
         /// </summary>
-        /// <param name="user">The user for whom to generating the caption.</param>
+        /// <param name="user">The user for whom to generate the caption.</param>
         /// <returns>The password changed caption for the user.</returns>
         private string GetPasswordChangedCaption( UserLogin user )
         {
@@ -646,6 +628,13 @@ namespace Rock.Blocks.Security
             };
         }
 
+        /// <summary>
+        /// Gets the required information to show the change password view.
+        /// </summary>
+        /// <param name="code">The confirmation code.</param>
+        /// <param name="user">The user whose password is being changed.</param>
+        /// <param name="errorCaption">An optional error caption to display.</param>
+        /// <returns>The required information to show the change password view.</returns>
         private ConfirmAccountViewBox ShowChangePasswordView( string code, UserLogin user, string errorCaption = null )
         {
             return new ConfirmAccountViewBox
@@ -660,6 +649,11 @@ namespace Rock.Blocks.Security
             };
         }
 
+        /// <summary>
+        /// Gets the required information to show the content view.
+        /// </summary>
+        /// <param name="content">The content to display.</param>
+        /// <returns>The required information to show the content view.</returns>
         private ConfirmAccountViewBox ShowContentView( string content )
         {
             return new ConfirmAccountViewBox
@@ -672,6 +666,12 @@ namespace Rock.Blocks.Security
             };
         }
 
+        /// <summary>
+        /// Gets the required information to show the delete confirmation view.
+        /// </summary>
+        /// <param name="code">The confirmation code.</param>
+        /// <param name="user">The user whose account may be deleted.</param>
+        /// <returns>The required information to show the delete confirmation view.</returns>
         private ConfirmAccountViewBox ShowDeleteConfirmationView( string code, UserLogin user )
         {
             return new ConfirmAccountViewBox
@@ -691,13 +691,13 @@ namespace Rock.Blocks.Security
 
         private static class ConfirmAccountAlertType
         {
-            public static readonly string Default = "default";
-            public static readonly string Success = "success";
-            public static readonly string Info = "info";
-            public static readonly string Danger = "danger";
-            public static readonly string Warning = "warning";
-            public static readonly string Primary = "primary";
-            public static readonly string Validation = "validation";
+            public const string Default = "default";
+            public const string Success = "success";
+            public const string Info = "info";
+            public const string Danger = "danger";
+            public const string Warning = "warning";
+            public const string Primary = "primary";
+            public const string Validation = "validation";
         }
 
         #endregion

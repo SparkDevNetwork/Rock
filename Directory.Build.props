@@ -7,21 +7,40 @@
     <RockBuildTasksAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)\libs\build-tasks\net6.0\Rock.Build.Tasks.dll</RockBuildTasksAssemblyFile>
   </PropertyGroup>
 
-  <!-- Versioning information -->
+  <!-- Versioning and packaging information -->
   <PropertyGroup>
-    <Version>19.4.1</Version>
-    <InformationalVersion>Rock McKinley 19.4</InformationalVersion>
+    <Version>20.0.6</Version>
+    <InformationalVersion>Rock McKinley 20.0</InformationalVersion>
 
     <FileVersion>$(Version)</FileVersion>
     <Description>Rock RMS Core Assembly. Rock RMS is a community supported open-source Church Management System that provides innovative features to churches of all sizes.</Description>
+    <Authors>Spark Development Network</Authors>
     <Company>Spark Development Network</Company>
     <Product>Rock</Product>
     <Copyright>Copyright © Spark Development Network 2011-2026</Copyright>
+    <PackageId Condition="'$(MSBuildProjectName)' == 'Rock' or $(MSBuildProjectName.StartsWith('Rock'))">RockRMS.$(MSBuildProjectName)</PackageId>
+    <PackageIcon>Icon.png</PackageIcon>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/SparkDevNetwork/Rock</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Explicitly include and pack the package icon and license files. -->
+    <None Include="..\Dev Tools\Packaging\Icon.png" Pack="true" PackagePath="\" Visible="False" />
+    <None Include="..\Dev Tools\Packaging\LICENSE.md" Pack="true" PackagePath="\" Visible="False" />
+  </ItemGroup>
+    
   <PropertyGroup>
     <DefineConstants Condition="'$(TargetFramework)' == '' or '$(TargetFramework)' == 'net472'">$(DefineConstants);WEBFORMS</DefineConstants>
     <DefineConstants Condition="'$(TargetFramework)' == '' or '$(TargetFramework)' == 'net472'">$(DefineConstants);REVIEW_WEBFORMS</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Package output settings. -->
+  <PropertyGroup>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts\</PackageOutputPath>
+    <!-- Prevent the grpc native libraries from being included in the NuGet package. -->
+    <Grpc_SkipNativeLibsCopy>true</Grpc_SkipNativeLibsCopy>
   </PropertyGroup>
 
   <!-- CopyToRockWeb task and defaults -->
@@ -49,6 +68,9 @@
 
     <!-- RestSharp 105.2.3. This package can't be updated without it being a breaking change to plugins. -->
     <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-9pq7-rcxv-47vq" />
+
+    <!-- Newer versions of the exporter dropped support for gRPC, so we can't upgrade. -->
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-4625-4j76-fww9" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" Label="Normalise stack trace file locations">

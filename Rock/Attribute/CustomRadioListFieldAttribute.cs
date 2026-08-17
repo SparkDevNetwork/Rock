@@ -33,8 +33,9 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         public CustomRadioListFieldAttribute( string name )
-            : this( name, string.Empty, string.Empty )
+            : base( SystemGuid.FieldType.SINGLE_SELECT.AsGuid(), name )
         {
+            FieldConfigurationValues.AddOrReplace( FIELDTYPE, new Field.ConfigurationValue( "rb" ) );
         }
 
         /// <summary>
@@ -48,11 +49,24 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public CustomRadioListFieldAttribute( string name, string description, string listSource, bool required = false, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SelectSingleFieldType ).FullName )
+            : base( SystemGuid.FieldType.SINGLE_SELECT.AsGuid(), name )
         {
-            FieldConfigurationValues.Add( VALUES, new Field.ConfigurationValue( listSource ) );
-            FieldConfigurationValues.Add( FIELDTYPE, new Field.ConfigurationValue( "rb" ) );
+            Category = category;
+            DefaultValue = defaultValue;
+            Description = description;
+            IsRequired = required;
+            Order = order;
+
+            if ( key.IsNotNullOrWhiteSpace() )
+            {
+                Key = key;
+            }
+
+            FieldConfigurationValues.AddOrReplace( VALUES, new Field.ConfigurationValue( listSource ) );
+            FieldConfigurationValues.AddOrReplace( FIELDTYPE, new Field.ConfigurationValue( "rb" ) );
         }
 
         /// <summary>

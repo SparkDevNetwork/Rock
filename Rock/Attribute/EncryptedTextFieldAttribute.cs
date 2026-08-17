@@ -39,10 +39,32 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         /// <param name="isPassword">if set to <c>true</c> [is password].</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public EncryptedTextFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, bool isPassword = false )
-            : base( name, description, required, defaultValue, category, order, key, isPassword, typeof(Rock.Field.Types.EncryptedTextFieldType).FullName )
+            : base( name )
         {
+            Category = category;
+            DefaultValue = defaultValue;
+            Description = description;
+            FieldTypeGuid = SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid();
+            IsRequired = required;
+            Order = order;
+
+            if ( key.IsNotNullOrWhiteSpace() )
+            {
+                Key = key;
+            }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EncryptedTextFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public EncryptedTextFieldAttribute( string name )
+            : base( name )
+        {
+            FieldTypeGuid = SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid();
+        }
     }
 }

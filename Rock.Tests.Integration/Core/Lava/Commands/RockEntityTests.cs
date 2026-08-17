@@ -26,8 +26,9 @@ using Rock.Lava.Blocks;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
 using Rock.Tests.Integration.TestData.Core;
+using Rock.Tests.Integration.TestFramework.Lava;
 using Rock.Tests.Shared;
-using Rock.Tests.Shared.Lava;
+using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Core.Lava.Commands
@@ -164,6 +165,22 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
                 Assert.Contains( "Of Faith and Firsts (Pete Foster)", output );
                 Assert.Contains( "1x8 (Pete Foster)", output );
             } );
+        }
+
+        [TestMethod]
+        public void EntityCommandBlock_WrappedInLavaTag_RendersInnerRockEntityBlockContent()
+        {
+            var template = @"
+{% lava
+    contentchannelitem where:'Id == 34' limit:'1' securityenabled:'false'
+        assign item = contentchannelitem
+        echo item.Title
+    endcontentchannelitem
+%}
+";
+
+            TestHelper.AssertTemplateOutput( typeof( Rock.Lava.Fluid.FluidEngine ), "Of Myths and Money", template,
+                new LavaTestRenderOptions { EnabledCommands = "rockentity", IgnoreWhiteSpace = true } );
         }
 
         private const string _Count1AttributeGuid = "38850248-49DE-44B0-A150-1BA447AE35D0";
@@ -355,6 +372,66 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
             } );
         }
 
+        [TestMethod]
+        public void EntityCommandBlock_WrappedInLavaTag_WithInnerForLoop_RendersCorrectly()
+        {
+            var template = @"
+{% lava
+    person where:'LastName == ""Decker""'
+        for person in personItems
+            echo person.FullName
+        endfor
+    endperson
+%}
+";
+            var expectedOutput = @"Ted Decker"; // Should contain Ted
+
+            TestHelper.AssertTemplateOutput( typeof( Rock.Lava.Fluid.FluidEngine ), expectedOutput, template,
+                new LavaTestRenderOptions { EnabledCommands = "rockentity", IgnoreWhiteSpace = true, OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+        }
+
+        [TestMethod]
+        public void EntityCommandBlock_WrappedInLavaTag_WithInnerForLoopWithIf_RendersCorrectly()
+        {
+            var template = @"
+{% lava
+    person where:'LastName == ""Decker""'
+        for person in personItems
+            if person.FullName == 'Ted Decker'
+                echo ""I found Ted!""
+            endif
+        endfor
+    endperson
+%}
+";
+            var expectedOutput = @"I found Ted!";
+
+            TestHelper.AssertTemplateOutput( typeof( Rock.Lava.Fluid.FluidEngine ), expectedOutput, template,
+                new LavaTestRenderOptions { EnabledCommands = "rockentity", IgnoreWhiteSpace = true, OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+        }
+
+        [TestMethod]
+        public void EntityCommandBlock_WrappedInLavaTag_WithInnerForLoopWithIfElse_RendersCorrectly()
+        {
+            var template = @"
+{% lava
+    person where:'LastName == ""Decker""'
+        for person in personItems
+            if person.FullName == 'Ted Decker'
+                echo ""I found Ted!""
+            else
+                echo person.FullName
+            endif
+        endfor
+    endperson
+%}
+";
+            var expectedOutput = @"I found Ted!";
+
+            TestHelper.AssertTemplateOutput( typeof( Rock.Lava.Fluid.FluidEngine ), expectedOutput, template,
+                new LavaTestRenderOptions { EnabledCommands = "rockentity", IgnoreWhiteSpace = true, OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+        }
+
         /// <summary>
         /// If a custom Lava component encounters an error and the exception handling strategy is set to "render",
         /// the Exception thrown by the component should be visible in the render output because it may contain important configuration information.
@@ -454,3 +531,6 @@ TedDecker<br/>
         }
     }
 }
+
+
+

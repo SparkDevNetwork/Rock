@@ -22,8 +22,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Rest.Controllers;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Shared;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Rest.ControllersTests

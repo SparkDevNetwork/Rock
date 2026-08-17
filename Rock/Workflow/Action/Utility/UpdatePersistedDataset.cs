@@ -39,11 +39,13 @@ namespace Rock.Workflow.Action
         Description = "The access key to the persisted dataset that should be updated <span class='tip tip-lava'></span>",
         Key = AttributeKey.PersistedDataAccessKey,
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 0 )]
 
     [BooleanField( "Delay Processing Until Complete",
         Key = AttributeKey.DelayProcessingUntilComplete,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Description = "When checked the action will wait until the persisted dataset is done being updated. Otherwise it will trigger the update to begin then continue before it's complete",
         Order = 1 )]
 

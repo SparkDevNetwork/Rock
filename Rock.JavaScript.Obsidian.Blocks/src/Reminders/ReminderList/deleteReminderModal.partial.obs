@@ -1,0 +1,53 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Delete Reminder"
+           saveText="Delete"
+           cancelText="Cancel"
+           saveAutoDisable
+           saveAutoLoading
+           @save="onConfirm">
+        <NotificationBox alertType="danger">
+            Are you sure you want to delete the following reminder? This action can't be undone.
+        </NotificationBox>
+
+        <h5 class="mt-spacing-md mb-spacing-xs">Reminder</h5>
+
+        <ReminderCard v-if="reminder" :reminder="reminder" readonly />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ReminderListBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderList/reminderListBag";
+    import ReminderCard from "./reminderCard.partial.obs";
+
+    const props = defineProps({
+        visible: {
+            type: Boolean,
+            required: true
+        },
+        reminder: {
+            type: Object as PropType<ReminderListBag | null>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:visible", value: boolean): void;
+        (e: "confirm", idKey: string): void;
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    /** Emit confirm with the reminder's idKey then close. */
+    function onConfirm(): void {
+        if (props.reminder?.idKey) {
+            emit("confirm", props.reminder.idKey);
+        }
+        isVisible.value = false;
+    }
+</script>

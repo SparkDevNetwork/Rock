@@ -49,11 +49,11 @@ namespace Rock.Web.UI
 
             if ( Person == null )
             {
-                var personId = PageParameter( "PersonId" ).AsIntegerOrNull();
+                var personKey = PageParameter( "PersonId" );
 
-                if ( personId.HasValue )
+                if ( personKey.IsNotNullOrWhiteSpace() )
                 {
-                    Person = new PersonService( new RockContext() ).Get( personId.Value );
+                    Person = new PersonService( new RockContext() ).Get( personKey, !RockPage.Site.DisablePredictableIds );
                     Person?.LoadAttributes();
                 }
 

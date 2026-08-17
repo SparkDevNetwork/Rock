@@ -4,6 +4,10 @@
     <CopyToRockWeb Condition="'$(CopyToRockWeb)' == ''">False</CopyToRockWeb>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and '$(UsingMicrosoftNETSdk)' == 'true'">
+    <LangVersion>12</LangVersion>
+  </PropertyGroup>
+
   <Target Name="_AddRockWebArtifactsToCustomOutput" BeforeTargets="CoreCompile" Condition="'$(CopyToRockWeb)' == 'True' and '$(RockWebPath)' != '' and '$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <ItemGroup>
       <!--

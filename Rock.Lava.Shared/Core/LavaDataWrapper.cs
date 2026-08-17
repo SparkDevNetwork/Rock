@@ -15,7 +15,9 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Rock.Lava
 {
@@ -24,6 +26,8 @@ namespace Rock.Lava
     /// </summary>
     internal class LavaDataWrapper : ILavaDataDictionary
     {
+        private static readonly ConcurrentDictionary<Type, Dictionary<string, PropertyInfo>> _propertyInfoCache = new();
+
         #region Constructors
 
         /// <summary>
@@ -102,8 +106,13 @@ namespace Rock.Lava
         /// <inheritdoc />
         public object GetValue( string key )
         {
-            var property = _baseObject.GetType().GetProperty( key );
-            if ( property == null )
+            if ( _baseObject == null )
+            {
+                return null;
+            }
+
+            var propertyMap = GetPropertyInfoMap( _baseObject.GetType() );
+            if ( !propertyMap.TryGetValue( key, out var property ) )
             {
                 return null;
             }
@@ -117,6 +126,28 @@ namespace Rock.Lava
         #region Methods
 
         /// <summary>
+        /// Gets the PropertyInfo map for the specified type, using a cache to
+        /// avoid repeated reflection costs for the same type.
+        /// </summary>
+        /// <param name="type">The type to be resolved.</param>
+        /// <returns>A dictionary mapping property names to PropertyInfo objects.</returns>
+        private static Dictionary<string, PropertyInfo> GetPropertyInfoMap( Type type )
+        {
+            return _propertyInfoCache.GetOrAdd( type, t =>
+            {
+                var properties = t.GetProperties();
+                var map = new Dictionary<string, PropertyInfo>( properties.Length );
+
+                foreach ( var property in properties )
+                {
+                    map[property.Name] = property;
+                }
+
+                return map;
+            } );
+        }
+
+        /// <summary>
         /// Gets the available keys for the base object.
         /// </summary>
         /// <returns>A list of strings used for the keys.</returns>
@@ -127,17 +158,9 @@ namespace Rock.Lava
                 return new List<string>();
             }
 
-            // Use reflection to get the properties of the object,
-            // and add them as available keys.
-            var properties = _baseObject.GetType().GetProperties();
-            var availableKeys = new List<string>();
+            var propertyMap = GetPropertyInfoMap( _baseObject.GetType() );
 
-            foreach ( var property in properties )
-            {
-                availableKeys.Add( property.Name );
-            }
-
-            return availableKeys;
+            return [.. propertyMap.Keys];
         }
 
         #endregion

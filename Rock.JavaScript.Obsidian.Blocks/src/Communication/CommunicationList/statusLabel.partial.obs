@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div :class="`label label-${statusClassSource[row.inferredStatus]} text-truncate communication-list-grid-cell-label`"
+    <div :class="`label label-${statusClassSource[row.inferredStatus]}`"
          :data-original-title="approvedByTooltip"
          :ref="applyTooltip">
         {{ InferredCommunicationStatusDescription[row.inferredStatus] }}

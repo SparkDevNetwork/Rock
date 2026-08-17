@@ -30,7 +30,7 @@
                     <tr v-for="row in filteredAnswers">
                         <td>{{ row.submitterName }}</td>
                         <td>{{ row.campusName }}</td>
-                        <td>{{ row.response }}</td>
+                        <td class="question-response-text">{{ row.response }}</td>
                     </tr>
 
                     <tr v-if="!filteredAnswers.length">

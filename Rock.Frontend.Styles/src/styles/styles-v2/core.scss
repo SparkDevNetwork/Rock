@@ -69,6 +69,8 @@
 @import 'components/navbar';                // Fully Format. There are Some hard coded value.
 @import 'components/colorpicker';
 @import 'components/responsive-utilities';
+@import 'components/responsive-embed';
+
 
 
 /* ======================= ROCK COMPONENTS ======================*/
@@ -142,6 +144,7 @@
 @import 'rock-components/drag-pallet';
 @import 'rock-components/_monaco-editor';
 @import 'rock-components/sankey';
+@import 'rock-components/sortable-tree';
 @import 'rock-components/quick-filter.scss';
 @import 'rock-components/button-groups-extensions.scss';
 @import 'rock-components/badges-extensions.scss';
@@ -163,12 +166,14 @@
 @import 'blocks/blocks-reporting';                  // Fully Format. There are Some hard coded value.
 @import 'blocks/blocks-finance';                    // Fully Format. There are Some hard coded value.
 @import 'blocks/blocks-communication';              // Fully Format. There are Some hard coded value.
+@import 'blocks/blocks-connections';
 @import 'blocks/blocks-security';                   // Fully Format.
 @import 'blocks/blocks-workflow';                   // Fully Format.
 @import 'blocks/blocks-cms';                        // Fully Format. There are Some hard coded value.
 @import 'blocks/blocks-events';                     // Fully Format. There are Some hard coded value.
 @import 'blocks/blocks-crm';                        // Fully Format. There are Some hard coded value.
 @import 'blocks/kiosk-core';                        // Fully Format. There are Some hard coded value.
+@import 'blocks/blocks-checkin';                    // Fully Format. There are Some hard coded value.
 @import 'blocks/checkin-mobile';                    // Fully Format. There are Some hard coded value.
 // @import 'blocks/checkin-core';                      // Fully Format. MIGHT HAVE TO DELETE BECAUSE WE MIGHT BE ONLY USING THE NEXT GEN CHECKIN
 @import 'blocks/skeleton';                          // Fully Format. There are Some hard coded value.

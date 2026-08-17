@@ -38,42 +38,35 @@ namespace Rock.Workflow.Action
 
     [WorkflowTextOrAttribute( "Recipient",
         "Attribute Value",
-        "An attribute that contains the person should be sent to. <span class='tip tip-lava'></span>",
-        true,
-        "",
-        "",
-        1,
-        AttributeKey.To,
-        new string[] { "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
+        Description = "An attribute that contains the person should be sent to. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 1,
+        Key = AttributeKey.To,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
 
     [WorkflowTextOrAttribute( "Title",
         "Attribute Value",
-        "The title or an attribute that contains the title that should be sent.",
-        false,
-        "",
-        "",
-        2,
-        AttributeKey.Title,
-        new string[] { "Rock.Field.Types.TextFieldType" } )]
+        Description = "The title or an attribute that contains the title that should be sent.",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKey.Title,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType" } )]
 
     [WorkflowAttribute( "Sound",
-        "The choice of sound or an attribute that contains the choice of sound that should be sent.",
-        false,
-        "True",
-        "",
-        2,
-        AttributeKey.Sound,
-        new string[] { "Rock.Field.Types.BooleanFieldType" } )]
+        Description = "The choice of sound or an attribute that contains the choice of sound that should be sent.",
+        IsRequired = false,
+        DefaultValue = "True",
+        Order = 2,
+        Key = AttributeKey.Sound,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.BooleanFieldType" } )]
 
     [WorkflowTextOrAttribute( "Message",
         "Attribute Value",
-        "The message or an attribute that contains the message that should be sent. <span class='tip tip-lava'></span>",
-        true,
-        "",
-        "",
-        3,
-        AttributeKey.Message,
-        new string[] { "Rock.Field.Types.TextFieldType" } )]
+        Description = "The message or an attribute that contains the message that should be sent. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 3,
+        Key = AttributeKey.Message,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType" } )]
 
     [SiteField( "Application",
         Key = AttributeKey.MobileApplication,
@@ -90,13 +83,11 @@ namespace Rock.Workflow.Action
 
     [WorkflowTextOrAttribute( "URL",
         "Attribute Value",
-        "Enter a URL (or select an attribute containing a URL) to open when the notification is tapped. Leave blank when using Application or Mobile Page. <span class='tip tip-lava'></span>",
-        false,
-        "",
-        "",
-        6,
-        AttributeKey.Url,
-        new string[] { "Rock.Field.Types.TextFieldType" } )]
+        Description = "Enter a URL (or select an attribute containing a URL) to open when the notification is tapped. Leave blank when using Application or Mobile Page. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 6,
+        Key = AttributeKey.Url,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType" } )]
 
     [Rock.SystemGuid.EntityTypeGuid( "22CAA82F-7AE2-430C-AE88-FA7401981F60")]
     public class SendPushNotification : ActionComponent

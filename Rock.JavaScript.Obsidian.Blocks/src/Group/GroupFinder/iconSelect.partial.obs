@@ -1,0 +1,180 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DropDownContent v-model="isOpen" placement="bottom-start" preventOverflowClipping enableFlip>
+        <template #anchor>
+            <button type="button"
+                    class="icon-select-trigger"
+                    :class="{ 'is-open': isOpen }"
+                    aria-haspopup="listbox"
+                    :aria-expanded="isOpen">
+                <span class="icon-select-value" :class="{ 'is-placeholder': !selectedItem }">
+                    <i v-if="triggerIconCssClass" :class="triggerIconCssClass" class="icon-select-icon"></i>
+                    <span class="icon-select-text">{{ selectedItem ? selectedItem.text : placeholder }}</span>
+                </span>
+                <i class="ti ti-chevron-down icon-select-caret"></i>
+            </button>
+        </template>
+        <ul class="icon-select-menu" role="listbox">
+            <li v-for="item in items" :key="item.value">
+                <button type="button"
+                        role="option"
+                        class="icon-select-option"
+                        :class="{ 'is-selected': item.value === modelValue }"
+                        :aria-selected="item.value === modelValue"
+                        @click="onSelect(item.value)">
+                    <i v-if="item.iconCssClass" :class="item.iconCssClass" class="icon-select-icon"></i>
+                    <span>{{ item.text }}</span>
+                </button>
+            </li>
+        </ul>
+    </DropDownContent>
+</template>
+
+<style scoped>
+.icon-select-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-xsmall);
+    width: 100%;
+    padding: var(--spacing-xsmall) var(--spacing-small);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-small, 6px);
+    background: var(--color-interface-softest, #fff);
+    font-size: var(--font-size-regular, 16px);
+    color: var(--color-interface-strong);
+    cursor: pointer;
+}
+
+.icon-select-trigger.is-open {
+    border-color: var(--color-primary);
+}
+
+.icon-select-value {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    overflow: hidden;
+}
+
+.icon-select-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.icon-select-value.is-placeholder {
+    color: var(--color-interface-medium, #8b8ba7);
+}
+
+.icon-select-caret {
+    flex: 0 0 auto;
+    font-size: 1rem;
+    color: var(--color-interface-medium, #8b8ba7);
+}
+
+.icon-select-menu {
+    min-width: 180px;
+    margin: 0;
+    padding: var(--spacing-tiny);
+    list-style: none;
+}
+
+.icon-select-option {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    width: 100%;
+    padding: var(--spacing-xsmall) var(--spacing-small);
+    border: 0;
+    border-radius: var(--rounded-small, 6px);
+    background: transparent;
+    color: var(--color-interface-strong);
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.icon-select-option:hover {
+    background: var(--color-interface-soft);
+}
+
+.icon-select-option.is-selected {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+
+.icon-select-icon {
+    width: 1.25em;
+    text-align: center;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";
+
+    // #region Types
+
+    type IconSelectItem = { value: string; text: string; iconCssClass?: string };
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** The selected value. Empty string means nothing is selected. */
+        modelValue: {
+            type: String,
+            default: ""
+        },
+
+        /** The options, each with a value, display text, and optional leading icon. */
+        items: {
+            type: Array as PropType<IconSelectItem[]>,
+            default: () => []
+        },
+
+        /** Text shown in the trigger when nothing is selected. */
+        placeholder: {
+            type: String,
+            default: "Select"
+        },
+
+        /** Optional leading icon shown in the trigger when nothing is selected. */
+        placeholderIconCssClass: {
+            type: String,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    // #region Values
+
+    const isOpen = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const selectedItem = computed((): IconSelectItem | null => {
+        return props.items.find(item => item.value === props.modelValue) ?? null;
+    });
+
+    const triggerIconCssClass = computed((): string => {
+        return selectedItem.value?.iconCssClass ?? props.placeholderIconCssClass;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    // Choosing the current value again clears it, so the filter can be reset from the list.
+    function onSelect(value: string): void {
+        emit("update:modelValue", props.modelValue === value ? "" : value);
+        isOpen.value = false;
+    }
+
+    // #endregion Event Handlers
+</script>

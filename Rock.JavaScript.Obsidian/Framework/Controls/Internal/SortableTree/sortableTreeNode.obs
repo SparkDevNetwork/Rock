@@ -1,0 +1,375 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="sortable-tree-node">
+        <div :class="rowClass" :data-id-key="node.idKey ?? null" @click.stop="onSelect">
+            <div :class="['sortable-tree-row-toggle', { 'no-nest': !hasChildren }]"
+                 @click="onToggleClick">
+                <i :class="['ti', isExpanded ? 'ti-caret-down' : 'ti-caret-right']"></i>
+            </div>
+
+            <div class="sortable-tree-row-body" role="button" tabindex="0">
+                <div class="sortable-tree-row-handle reorder-handle" :class="[resolvedHandleCssClass, { disabled: !isDraggable }]" @click.stop>
+                    <i :class="['ti', 'ti-lg', resolvedIconCssClass, 'sortable-tree-row-handle-default']"></i>
+                    <i :class="['ti', 'ti-lg', dragIconCssClass, 'sortable-tree-row-handle-hover']"></i>
+                </div>
+
+                <div class="sortable-tree-row-title">
+                    <slot name="title" :node="node">
+                        <div class="sortable-tree-row-title-text">{{ node.name }}</div>
+                    </slot>
+
+                    <div class="sortable-tree-row-title-end">
+                        <div v-if="visibleActions.length" class="sortable-tree-row-actions">
+                            <button v-for="(action, idx) in visibleActions"
+                                    :key="idx"
+                                    type="button"
+                                    class="sortable-tree-row-action btn btn-default btn-xs"
+                                    :title="action.label"
+                                    :aria-label="action.label"
+                                    @click.stop="action.handler(node)">
+                                <i :class="['ti', action.iconCssClass]"></i>
+                            </button>
+                        </div>
+                        <slot name="trailing">
+                            <i class="arrow ti ti-chevron-right"></i>
+                        </slot>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <template v-for="group in childGroupsOrder" :key="group.key ?? '__null'">
+            <div v-if="isExpanded && group.items.length"
+                 v-drag-reorder="getDragOptions(group.key)"
+                 class="sortable-tree-list nested">
+                <SortableTreeNode v-for="child in group.items"
+                                  :key="child.idKey ?? ''"
+                                  :node="child"
+                                  :selectedNodeKey="selectedNodeKey"
+                                  :groupBy="groupBy"
+                                  :actions="actions"
+                                  :dragIconCssClass="dragIconCssClass"
+                                  :iconCssClass="iconCssClass"
+                                  :handleCssClass="handleCssClass"
+                                  :isNodeExpanded="isNodeExpanded"
+                                  :isDraggable="group.items.length > 1 && (isNodeDraggable?.(child) ?? true)"
+                                  :isNodeDraggable="isNodeDraggable"
+                                  @select="$emit('select', $event)"
+                                  @toggle="$emit('toggle', $event)"
+                                  @reorder="$emit('reorder', $event)">
+                    <template v-for="(_, slotName) in $slots" #[slotName]="slotProps">
+                        <slot :name="slotName" v-bind="slotProps ?? {}" />
+                    </template>
+                </SortableTreeNode>
+            </div>
+        </template>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { ISortableTreeAction, ISortableTreeNode, ISortableTreeReorderEvent } from "./types.partial";
+    import { useDragAutoScroll } from "./utils.partial";
+    import { DragReorder as vDragReorder, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    defineOptions({
+        name: "SortableTreeNode"
+    });
+
+    const props = defineProps({
+        /** The node this row represents. Children are rendered recursively. */
+        node: {
+            type: Object as PropType<ISortableTreeNode>,
+            required: true
+        },
+
+        /**
+         * The currently-selected node key. Drives the .selected modifier on
+         * the matching row.
+         */
+        selectedNodeKey: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /**
+         * Returns a group key for the node. Children with different keys
+         * reorder independently. Only same-key siblings can be
+         * drag-reordered against each other.
+         */
+        groupBy: {
+            type: Function as PropType<(node: ISortableTreeNode) => string | null>,
+            default: undefined
+        },
+
+        /** Buttons rendered in each row's trailing actions area. */
+        actions: {
+            type: Array as PropType<ISortableTreeAction[]>,
+            default: () => []
+        },
+
+        /** Icon class swapped into the handle while hovering it. */
+        dragIconCssClass: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /**
+         * Icon shown in this row's handle. Accepts a static class for a
+         * uniform tree, or a resolver `(node) => class` for per-node icons.
+         */
+        iconCssClass: {
+            type: [String, Function] as PropType<string | ((node: ISortableTreeNode) => string)>,
+            required: true
+        },
+
+        /**
+         * Extra class applied to each row's handle. Accepts a static class for
+         * a uniform tree, or a resolver `(node) => class` for per-node classes.
+         * Pair with `.sortable-tree-row-handle.<class>` selectors so the
+         * consumer's styling outranks the control's default.
+         */
+        handleCssClass: {
+            type: [String, Function] as PropType<string | ((node: ISortableTreeNode) => string)>,
+            required: true
+        },
+
+        /**
+         * Function that returns whether a given node is expanded. Provided
+         * by the parent SortableTree.
+         */
+        isNodeExpanded: {
+            type: Function as PropType<(node: ISortableTreeNode) => boolean>,
+            required: true
+        },
+
+        /**
+         * Whether this row can be drag-reordered. Set by the parent based
+         * on whether the row has any siblings in its sort group; rows that
+         * are alone at their level have nothing to swap with.
+         */
+        isDraggable: {
+            type: Boolean,
+            required: true
+        },
+
+        /**
+         * Optional per-node draggability predicate, forwarded recursively to
+         * child rows. The parent ANDs the predicate result with the local
+         * sibling check before assigning each child's `isDraggable`.
+         */
+        isNodeDraggable: {
+            type: Function as PropType<(node: ISortableTreeNode) => boolean>,
+            default: undefined
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "select", node: ISortableTreeNode): void;
+        (e: "toggle", node: ISortableTreeNode): void;
+        (e: "reorder", payload: ISortableTreeReorderEvent): void;
+    }>();
+
+    /** Provides auto-scrolling behavior during drag operations. */
+    const dragAutoScroll = useDragAutoScroll();
+
+    // #region Values
+
+    const dragOptionsByKey = new Map<string | null, IDragSourceOptions>();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * Group key of THIS node within its own siblings. Available to the row
+     * class so callers can target `.group-{key}` for per-bucket styling.
+     */
+    const ownGroupKey = computed((): string | null =>
+        props.groupBy?.(props.node) ?? null
+    );
+
+    /** Determines whether the node has any child nodes. */
+    const hasChildren = computed((): boolean =>
+        ((props.node.children?.length ?? 0)) > 0
+    );
+
+    /**
+     * Children grouped by `groupBy` key, preserving the order each key first
+     * appears in. Drives the per-key sub-list rendering and the per-key
+     * drag-options mapping.
+     */
+    const childGroupsOrder = computed((): { key: string | null; items: ISortableTreeNode[] }[] => {
+        const result: { key: string | null; items: ISortableTreeNode[] }[] = [];
+        const indexByKey = new Map<string | null, number>();
+        const children = props.node.children ?? [];
+        for (const child of children) {
+            const key = props.groupBy?.(child) ?? null;
+            let idx = indexByKey.get(key);
+            if (idx === undefined) {
+                idx = result.length;
+                indexByKey.set(key, idx);
+                result.push({ key, items: [] });
+            }
+            result[idx].items.push(child);
+        }
+        return result;
+    });
+
+    /**
+     * Whether this row is currently expanded. Leaves never count as
+     * expanded; the chevron stays in the collapsed state for rows with no
+     * children.
+     */
+    const isExpanded = computed((): boolean =>
+        hasChildren.value && props.isNodeExpanded(props.node)
+    );
+
+    /** Determines whether the node is currently selected. */
+    const isSelected = computed((): boolean =>
+        !!props.node.idKey && props.node.idKey === props.selectedNodeKey
+    );
+
+    /**
+     * Icon class for this row's handle. When `iconCssClass` is a resolver,
+     * it's called with this row's node; otherwise the static class is used.
+     */
+    const resolvedIconCssClass = computed((): string =>
+        typeof props.iconCssClass === "function"
+            ? props.iconCssClass(props.node)
+            : props.iconCssClass
+    );
+
+    /**
+     * Extra class applied to this row's handle for style overrides. When
+     * `handleCssClass` is a resolver, it's called with this row's node;
+     * otherwise the static class is used. Pair with `.sortable-tree-row-handle.<class>`
+     * selectors so the consumer's styling outranks the control's default.
+     */
+    const resolvedHandleCssClass = computed((): string =>
+        typeof props.handleCssClass === "function"
+            ? props.handleCssClass(props.node)
+            : props.handleCssClass
+    );
+
+    /** The subset of `actions` that should render on this node. */
+    const visibleActions = computed((): ISortableTreeAction[] =>
+        props.actions.filter(a => !a.isVisible || a.isVisible(props.node))
+    );
+
+    /** Determines the CSS classes to apply to the row element. */
+    const rowClass = computed((): string[] => {
+        const classes: string[] = ["sortable-tree-row"];
+        if (ownGroupKey.value !== null) {
+            classes.push(`group-${ownGroupKey.value}`);
+        }
+        if (props.node.isActive === false) {
+            classes.push("inactive");
+        }
+        if (isSelected.value) {
+            classes.push("selected");
+        }
+        return classes;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function getDragOptions(key: string | null): IDragSourceOptions {
+        let opts = dragOptionsByKey.get(key);
+        if (!opts) {
+            opts = makeDragOptions(key);
+            dragOptionsByKey.set(key, opts);
+        }
+        return opts;
+    }
+
+    function makeDragOptions(key: string | null): IDragSourceOptions {
+        return {
+            id: newGuid(),
+            copyElement: false,
+            handleSelector: ".reorder-handle",
+            startDrag: (op, handle): boolean => {
+                const reorderHandle = handle.closest(".reorder-handle");
+                if (!reorderHandle || reorderHandle.classList.contains("disabled")) {
+                    return false;
+                }
+                return handle.closest(".sortable-tree-list") === op.sourceContainer;
+            },
+            dragBegin: (op): void => {
+                (op.sourceContainer as HTMLElement).classList.add("moving");
+                dragAutoScroll.start(op.element as HTMLElement);
+            },
+            dragEnd: (op): void => {
+                (op.sourceContainer as HTMLElement).classList.remove("moving");
+                dragAutoScroll.stop();
+            },
+            dragDrop: (op): void => {
+                if (op.targetIndex === undefined || op.sourceIndex === op.targetIndex) {
+                    return;
+                }
+                const children = props.node.children;
+                if (!children) {
+                    return;
+                }
+                // A bucket's members can be non-contiguous in `children` when
+                // siblings of a different group key interleave. Reorder only
+                // within the slots this bucket occupies and leave foreign-key
+                // nodes pinned, so the buckets' own display order never shifts.
+                const positions: number[] = [];
+                for (let i = 0; i < children.length; i++) {
+                    if ((props.groupBy?.(children[i]) ?? null) === key) {
+                        positions.push(i);
+                    }
+                }
+                if (op.sourceIndex < 0 || op.sourceIndex >= positions.length
+                    || op.targetIndex < 0 || op.targetIndex >= positions.length) {
+                    return;
+                }
+                const items = positions.map(p => children[p]);
+                const [moved] = items.splice(op.sourceIndex, 1);
+                items.splice(op.targetIndex, 0, moved);
+                positions.forEach((p, j) => {
+                    children[p] = items[j];
+                });
+                emit("reorder", {
+                    node: moved,
+                    parent: props.node,
+                    oldIndex: positions[op.sourceIndex],
+                    newIndex: positions[op.targetIndex]
+                });
+            }
+        };
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Handles a click on the row body. Emits a select request that the
+     * containing SortableTree validates (via its `beforeSelect` guard) before
+     * committing. SortableTree also handles the auto-expand-on-row-click so
+     * the expansion can't run ahead of a rejected guard.
+     */
+    function onSelect(): void {
+        emit("select", props.node);
+    }
+
+    /**
+     * Handles a click on the chevron. For leaves (no children), does nothing
+     * and lets the click bubble up to the row's select. Otherwise toggles
+     * this node's expansion without changing the selection.
+     */
+    function onToggleClick(event: MouseEvent): void {
+        if (!hasChildren.value) {
+            return;
+        }
+        event.stopPropagation();
+        emit("toggle", props.node);
+    }
+
+    // #endregion Event Handlers
+</script>

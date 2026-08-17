@@ -23,8 +23,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Shared;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Crm.Prayer
@@ -472,7 +472,7 @@ namespace Rock.Tests.Integration.Crm.Prayer
 
             job.SystemEmailTemplateGuid = TestGuids.SystemEmailGuid.PrayerCommentsNotification.AsGuid();
             job.CategoryGuidList = null;
-            job.SystemSettingsId = Rock.Tests.Shared.RecordTag.PrayerRequestFeature;
+            job.SystemSettingsId = RecordTag.PrayerRequestFeature;
             job.CreateCommunicationRecord = true;
 
             // Disable sending the actual email because we may not have a transport mechanism set up in the test environment.

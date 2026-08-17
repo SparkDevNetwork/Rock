@@ -20,7 +20,7 @@ using System.Linq;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
 
 using static Rock.Tests.Integration.TestData.LocationDataManager;
 

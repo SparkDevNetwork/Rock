@@ -11,21 +11,26 @@
             <div class="control-wrapper">
                 <slot name="prepend" :isInputGroupSupported="false" />
                 <div class="controls rockcheckboxlist" :class="containerClasses">
-                    <template v-if="horizontal">
-                        <label v-for="item in items" class="checkbox-inline" :for="uniqueIdForItem(uniqueId, item)">
-                            <input v-bind="field" :disabled="((disabled || item.disabled) as boolean)" :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
-                            <span class="label-text">{{ textForItem(item) }}</span>
-                            <HelpBlock v-if="helpTextForItem(item)" :text="helpTextForItem(item)" />
-                        </label>
-                    </template>
-                    <template v-else>
-                        <div v-for="item in items" class="checkbox">
-                            <label :for="uniqueIdForItem(uniqueId, item)" :class="labelClasses(item)">
+                    <template v-if="items.length">
+                        <template v-if="horizontal">
+                            <label v-for="item in items" class="checkbox-inline" :for="uniqueIdForItem(uniqueId, item)">
                                 <input v-bind="field" :disabled="((disabled || item.disabled) as boolean)" :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
                                 <span class="label-text">{{ textForItem(item) }}</span>
                                 <HelpBlock v-if="helpTextForItem(item)" :text="helpTextForItem(item)" />
                             </label>
-                        </div>
+                        </template>
+                        <template v-else>
+                            <div v-for="item in items" class="checkbox">
+                                <label :for="uniqueIdForItem(uniqueId, item)" :class="labelClasses(item)">
+                                    <input v-bind="field" :disabled="((disabled || item.disabled) as boolean)" :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
+                                    <span class="label-text">{{ textForItem(item) }}</span>
+                                    <HelpBlock v-if="helpTextForItem(item)" :text="helpTextForItem(item)" />
+                                </label>
+                            </div>
+                        </template>
+                    </template>
+                    <template v-else-if="emptyListMessage">
+                        <div v-html="emptyListMessage"></div>
                     </template>
                 </div>
                 <slot name="append" :isInputGroupSupported="false" />
@@ -83,6 +88,11 @@
         compareValue: {
             type: Function as PropType<((value: string, itemValue: string) => boolean)>,
             default: defaultControlCompareValue
+        },
+
+        emptyListMessage: {
+            type: String as PropType<string>,
+            default: ""
         },
 
         ...standardRockFormFieldProps

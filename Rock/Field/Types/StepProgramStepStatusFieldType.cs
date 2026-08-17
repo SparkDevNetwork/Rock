@@ -129,20 +129,11 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         /// <param name="stepProgramGuid">The step program unique identifier.</param>
         /// <param name="stepStatusGuid">The step status unique identifier.</param>
+        [Obsolete( "Use the ParseStepProgramStatusDelimitedGuids method on Rock.Field.Helper instead." )]
+        [RockObsolete( "20.0" )]
         public static void ParseDelimitedGuids( string value, out Guid? stepProgramGuid, out Guid? stepStatusGuid )
         {
-            var parts = ( value ?? string.Empty ).Split( '|' );
-
-            if ( parts.Length == 1 )
-            {
-                // If there is only one guid, assume it is the status
-                stepProgramGuid = null;
-                stepStatusGuid = parts[0].AsGuidOrNull();
-                return;
-            }
-
-            stepProgramGuid = parts.Length > 0 ? parts[0].AsGuidOrNull() : null;
-            stepStatusGuid = parts.Length > 1 ? parts[1].AsGuidOrNull() : null;
+            Helper.ParseStepProgramStatusDelimitedGuids( value, out stepProgramGuid, out stepStatusGuid );
         }
 
         /// <summary>
@@ -156,7 +147,7 @@ namespace Rock.Field.Types
             stepProgram = null;
             stepStatus = null;
 
-            ParseDelimitedGuids( value, out var stepProgramGuid, out var stepStatusGuid );
+            Helper.ParseStepProgramStatusDelimitedGuids( value, out var stepProgramGuid, out var stepStatusGuid );
 
             if ( stepProgramGuid.HasValue || stepStatusGuid.HasValue )
             {
@@ -183,7 +174,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            ParseDelimitedGuids( privateValue, out var stepProgramGuid, out var stepStatusGuid );
+            Helper.ParseStepProgramStatusDelimitedGuids( privateValue, out var stepProgramGuid, out var stepStatusGuid );
 
             if ( !stepProgramGuid.HasValue && !stepStatusGuid.HasValue )
             {

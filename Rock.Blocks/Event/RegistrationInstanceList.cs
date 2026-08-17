@@ -15,18 +15,17 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
-using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Event.RegistrationInstanceList;
 using Rock.Web.Cache;
@@ -40,7 +39,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays a list of registration instances." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the registration instance details.",
@@ -48,7 +47,8 @@ namespace Rock.Blocks.Event
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "5cc98267-2b3c-45ef-9055-31db629d579b" )]
-    [Rock.SystemGuid.BlockTypeGuid( "051f65ad-9301-4d41-bd5e-d4e93f4dc438" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "051f65ad-9301-4d41-bd5e-d4e93f4dc438" )]
+    [Rock.SystemGuid.BlockTypeGuid( "632F63A9-5629-4731-BE6A-AB534EDD9BC9" )]
     [CustomizedGrid]
     public class RegistrationInstanceList : RockEntityListBlockType<RegistrationInstance>
     {
@@ -64,7 +64,34 @@ namespace Rock.Blocks.Event
             public const string DetailPage = "DetailPage";
         }
 
+        private static class PageParameterKey
+        {
+            public const string RegistrationTemplateId = "RegistrationTemplateId";
+            public const string RegistrationInstanceId = "RegistrationInstanceId";
+        }
+
         #endregion Keys
+
+        #region Fields
+
+        private RegistrationTemplate _registrationTemplate;
+
+        /// <summary>
+        /// Non-wait-list registrant counts keyed by registration instance Id, populated once per grid load in <see cref="GetListItems"/>.
+        /// </summary>
+        private Dictionary<int, int> _registrantCounts = new Dictionary<int, int>();
+
+        /// <summary>
+        /// Wait-list registrant counts keyed by registration instance Id, populated once per grid load in <see cref="GetListItems"/>.
+        /// </summary>
+        private Dictionary<int, int> _waitListCounts = new Dictionary<int, int>();
+
+        /// <summary>
+        /// The set of registration instance Ids that have at least one active payment plan, populated once per grid load in <see cref="GetListItems"/>.
+        /// </summary>
+        private HashSet<int> _instancesWithActivePaymentPlan = new HashSet<int>();
+
+        #endregion
 
         #region Methods
 
@@ -72,10 +99,19 @@ namespace Rock.Blocks.Event
         public override object GetObsidianBlockInitialization()
         {
             var box = new ListBlockBox<RegistrationInstanceListOptionsBag>();
+
+            var template = GetRegistrationTemplate();
+            if ( template != null && !template.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                box.ErrorMessage = EditModeMessage.NotAuthorizedToView( RegistrationInstance.FriendlyTypeName );
+                return box;
+            }
+
             var builder = GetGridBuilder();
 
-            box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = true;
+            var isAddDeleteEnabled = GetIsAddDeleteEnabled();
+            box.IsAddEnabled = isAddDeleteEnabled;
+            box.IsDeleteEnabled = isAddDeleteEnabled;
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -90,42 +126,39 @@ namespace Rock.Blocks.Event
         /// <returns>The options that provide additional details to the block.</returns>
         private RegistrationInstanceListOptionsBag GetBoxOptions()
         {
-            var options = new RegistrationInstanceListOptionsBag();
+            var options = new RegistrationInstanceListOptionsBag
+            {
+                TitleIconCssClass = "ti ti-file"
+            };
 
-            var templateId = PageParameter( "RegistrationTemplateId" ).AsInteger();
-            if ( templateId != 0 )
+            var template = GetRegistrationTemplate();
+            if ( template == null )
             {
-                var template = new RegistrationTemplateService( RockContext ).Get( templateId );
-                if ( template != null )
-                {
-                    options.RegistrationInstanceName = template.Name;
-                    options.ShowWaitList = template.WaitListEnabled;
-                    options.ShowDetailsColumn = false;
-                }
+                return options;
             }
-            else
-            {
-                options.RegistrationInstanceName = "Active Registration";
-                options.ShowDetailsColumn = true;
-            }
+
+            options.IsVisible = true;
+            options.RegistrationInstanceName = template.Name;
+            options.ShowWaitList = template.WaitListEnabled;
+            options.ExportTitle = template.Name;
 
             return options;
         }
 
         /// <summary>
         /// Determines if the add button should be enabled in the grid.
-        /// <summary>
+        /// </summary>
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
-        private bool GetIsAddEnabled()
+        private bool GetIsAddDeleteEnabled()
         {
-            var templateId = PageParameter( "RegistrationTemplateId" ).AsInteger();
-            if ( templateId == 0 )
+            var template = GetRegistrationTemplate();
+            if ( template == null )
             {
                 return false;
             }
 
-            var entity = new RegistrationInstance();
-            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                || template.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -134,34 +167,51 @@ namespace Rock.Blocks.Event
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
-            var templateId = PageParameter( "RegistrationTemplateId" ).AsInteger();
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string>
                 {
-                    ["RegistrationInstanceId"] = "((Key))",
-                    ["RegistrationTemplateId"] = templateId.ToString()
-                })
+                    [PageParameterKey.RegistrationInstanceId] = "((Key))",
+                    [PageParameterKey.RegistrationTemplateId] = PageParameter( PageParameterKey.RegistrationTemplateId ) ?? string.Empty
+                } )
             };
+        }
+
+        /// <summary>
+        /// Gets the registration template from the RegistrationTemplateId page
+        /// parameter, accepting an Id, IdKey, or Guid. The result is cached so
+        /// repeat calls within a single block request only hit the database once.
+        /// </summary>
+        /// <returns>The registration template, or null if the parameter was missing or did not resolve.</returns>
+        private RegistrationTemplate GetRegistrationTemplate()
+        {
+            if ( _registrationTemplate != null )
+            {
+                return _registrationTemplate;
+            }
+
+            var templateKey = PageParameter( PageParameterKey.RegistrationTemplateId );
+            if ( string.IsNullOrWhiteSpace( templateKey ) )
+            {
+                return null;
+            }
+
+            _registrationTemplate = new RegistrationTemplateService( RockContext )
+                .Get( templateKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+            return _registrationTemplate;
         }
 
         /// <inheritdoc/>
         protected override IQueryable<RegistrationInstance> GetListQueryable( RockContext rockContext )
         {
-            var qry = base.GetListQueryable( rockContext );
-            qry = qry.Include( i => i.Registrations.Select( r => r.Registrants ) );
-
-            var templateId = PageParameter( "RegistrationTemplateId" ).AsInteger();
-            if ( templateId != 0 )
+            var template = GetRegistrationTemplate();
+            if ( template == null )
             {
-                qry = qry.Where( i => i.RegistrationTemplateId == templateId );
-            }
-            else
-            {
-                qry = qry.Where( i => i.IsActive );
+                return Enumerable.Empty<RegistrationInstance>().AsQueryable();
             }
 
-            return qry;
+            return base.GetListQueryable( rockContext ).Where( i => i.RegistrationTemplateId == template.Id );
         }
 
         /// <inheritdoc/>
@@ -171,32 +221,52 @@ namespace Rock.Blocks.Event
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<RegistrationInstance> GetGridBuilder()
+        protected override List<RegistrationInstance> GetListItems( IQueryable<RegistrationInstance> queryable, RockContext rockContext )
         {
-            var templateId = PageParameter( "RegistrationTemplateId" ).AsInteger();
-            bool showWaitList = false;
+            var items = base.GetListItems( queryable, RockContext );
 
-            if ( templateId != 0 )
+            if ( items.Count == 0 )
             {
-                var template = new RegistrationTemplateService( RockContext ).Get( templateId );
-                showWaitList = template != null && template.WaitListEnabled;
+                return items;
             }
 
-            var builder = new GridBuilder<RegistrationInstance>()
+            var instanceIds = items.ConvertAll( i => i.Id );
+
+            // Registrant and wait-list counts, grouped in SQL so each is one query, not one per row.
+            var counts = new RegistrationRegistrantService( RockContext ).Queryable().AsNoTracking()
+                .Where( rr => !rr.Registration.IsTemporary && instanceIds.Contains( rr.Registration.RegistrationInstanceId ) )
+                .GroupBy( rr => new { rr.Registration.RegistrationInstanceId, rr.OnWaitList } )
+                .Select( g => new { g.Key.RegistrationInstanceId, g.Key.OnWaitList, Count = g.Count() } )
+                .ToList();
+
+            _registrantCounts = counts.Where( c => !c.OnWaitList ).ToDictionary( c => c.RegistrationInstanceId, c => c.Count );
+            _waitListCounts = counts.Where( c => c.OnWaitList ).ToDictionary( c => c.RegistrationInstanceId, c => c.Count );
+
+            _instancesWithActivePaymentPlan = new HashSet<int>( new RegistrationService( RockContext ).Queryable().AsNoTracking()
+                .Where( r => instanceIds.Contains( r.RegistrationInstanceId )
+                    && r.PaymentPlanFinancialScheduledTransaction != null
+                    && r.PaymentPlanFinancialScheduledTransaction.IsActive )
+                .Select( r => r.RegistrationInstanceId )
+                .Distinct()
+                .ToList() );
+
+            return items;
+        }
+
+        /// <inheritdoc/>
+        protected override GridBuilder<RegistrationInstance> GetGridBuilder()
+        {
+            return new GridBuilder<RegistrationInstance>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
                 .AddDateTimeField( "startDate", a => a.StartDateTime )
                 .AddDateTimeField( "endDate", a => a.EndDateTime )
-                .AddField( "details", a => a.Details )
                 .AddField( "isActive", a => a.IsActive )
-                .AddField( "registrants", a => a.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Count( r => !r.OnWaitList ) )
-                .AddField( "waitList", a => a.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Count( r => r.OnWaitList ) )
-                .AddField( "hasPaymentPlans", a => a.Registrations.Any( r => r.PaymentPlanFinancialScheduledTransaction != null && r.PaymentPlanFinancialScheduledTransaction.IsActive ) )
-                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddField( "registrants", a => _registrantCounts.GetValueOrDefault( a.Id, 0 ) )
+                .AddField( "waitList", a => _waitListCounts.GetValueOrDefault( a.Id, 0 ) )
+                .AddField( "hasPaymentPlans", a => _instancesWithActivePaymentPlan.Contains( a.Id ) )
                 .AddAttributeFields( GetGridAttributes() );
-
-            return builder;
         }
 
         #endregion
@@ -219,16 +289,11 @@ namespace Rock.Blocks.Event
                 return ActionBadRequest( $"{RegistrationInstance.FriendlyTypeName} not found." );
             }
 
-            if ( !registrationInstance.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-            {
-                return ActionBadRequest( $"Not authorized to delete {RegistrationInstance.FriendlyTypeName}." );
-            }
-
             if ( !entityService.CanDelete( registrationInstance, out var errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );
             }
-            
+
             var registrationService = new RegistrationService( RockContext );
             var financialScheduledTransactionService = new FinancialScheduledTransactionService( RockContext );
             var errors = new List<string>();

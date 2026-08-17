@@ -493,7 +493,16 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         ///   <c>true</c> if registrants should be able to pay their registration costs in multiple, scheduled installments; otherwise, <c>false</c>.
         /// </value>
         public bool IsPaymentPlanAllowed { get; set; }
-        
+
+        /// <summary>
+        /// Gets a value indicating whether the registrant must either pay the registration in full or
+        /// establish a valid payment plan that covers the remaining balance before saving the registration.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if full payment or a valid payment plan is required to save the registration; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsFullPaymentOrPaymentPlanRequired { get; set; }
+
         /// <summary>
         /// Gets the payment deadline date.
         /// </summary>

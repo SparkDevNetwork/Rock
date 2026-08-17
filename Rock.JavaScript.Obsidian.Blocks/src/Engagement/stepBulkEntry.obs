@@ -1,0 +1,301 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.errorMessage" alertType="warning">
+        {{ config.errorMessage }}
+    </NotificationBox>
+
+    <Block v-else title="Step Bulk Entry" iconCssClass="ti ti-truck">
+        <template #default>
+            <NotificationBox v-if="blockErrorMessage" alertType="danger">
+                {{ blockErrorMessage }}
+            </NotificationBox>
+
+            <template v-if="!isComplete">
+                <RockForm @submit="onSave">
+                    <PersonSelection v-model="selectedPeople"
+                                     :validationResults="validationResults"
+                                     @personAdded="onPersonAdded"
+                                     @error="onPersonError" />
+                    <StepConfiguration :stepTypeConfiguration="stepTypeConfiguration"
+                                       :isProgramPickerVisible="config.options?.isProgramPickerVisible ?? true"
+                                       :isTypePickerDisabled="config.options?.isTypePickerDisabled ?? false"
+                                       :initialProgram="config.options?.stepProgram ?? null"
+                                       :initialType="config.options?.stepType ?? null"
+                                       v-model:startDate="startDate"
+                                       v-model:endDate="endDate"
+                                       v-model:campus="campus"
+                                       v-model:stepStatus="stepStatus"
+                                       v-model:attributeValues="attributeValues"
+                                       @stepTypeChanged="onStepTypeChanged"
+                                       @programChanged="onProgramChanged" />
+
+                    <div class="actions">
+                        <RockButton :btnType="BtnType.Primary"
+                                    :disabled="!isSaveEnabled"
+                                    :isLoading="isSaving"
+                                    type="submit">
+                            Save
+                        </RockButton>
+                    </div>
+                </RockForm>
+            </template>
+
+            <template v-if="isComplete">
+                <NotificationBox v-if="saveResult" :alertType="saveResult.errors && saveResult.errors.length > 0 ? 'warning' : 'success'">
+                    <template v-if="(saveResult.successCount ?? 0) > 0">
+                        Successfully created {{ saveResult.successCount }} step{{ saveResult.successCount !== 1 ? "s" : "" }}.
+                    </template>
+                    <template v-if="saveResult.errors && saveResult.errors.length > 0">
+                        <div class="mt-2">
+                            <strong>The following errors occurred:</strong>
+                            <ul class="mb-0 mt-1">
+                                <li v-for="(error, idx) in saveResult.errors" :key="idx">{{ error }}</li>
+                            </ul>
+                        </div>
+                    </template>
+                </NotificationBox>
+
+                <div class="actions">
+                    <RockButton :btnType="BtnType.Primary"
+                                @click="onDone">
+                        Done
+                    </RockButton>
+                </div>
+            </template>
+        </template>
+    </Block>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import Block from "@Obsidian/Templates/block";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import PersonSelection from "./StepBulkEntry/personSelection.partial.obs";
+    import StepConfiguration from "./StepBulkEntry/stepConfiguration.partial.obs";
+    import { StepBulkEntryPersonItemBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepBulkEntry/stepBulkEntryPersonItemBag";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { Guid } from "@Obsidian/Types";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { StepBulkEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Engagement/StepBulkEntry/stepBulkEntryInitializationBox";
+    import { StepBulkEntryStepTypeConfigurationBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepBulkEntry/stepBulkEntryStepTypeConfigurationBag";
+    import { StepBulkEntrySaveRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepBulkEntry/stepBulkEntrySaveRequestBag";
+    import { StepBulkEntrySaveResultBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepBulkEntry/stepBulkEntrySaveResultBag";
+    import { StepBulkEntryValidatePersonResultBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepBulkEntry/stepBulkEntryValidatePersonResultBag";
+    import { StepBulkEntryValidateRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepBulkEntry/stepBulkEntryValidateRequestBag";
+
+    const config = useConfigurationValues<StepBulkEntryInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const blockErrorMessage = ref("");
+    const isSaving = ref(false);
+    const isComplete = ref(false);
+
+    // People selection.
+    const selectedPeople = ref<StepBulkEntryPersonItemBag[]>([]);
+
+    // Per-person validation results keyed by person alias Guid.
+    const validationResults = ref<Record<string, StepBulkEntryValidatePersonResultBag>>({});
+
+    // Generation counter for discarding stale validation responses.
+    let validationGeneration = 0;
+
+    // Step configuration values.
+    const stepTypeConfiguration = ref<StepBulkEntryStepTypeConfigurationBag | null>(
+        config.options?.stepTypeConfiguration ?? null
+    );
+    const currentStepTypeGuid = ref<Guid | null>(config.options?.stepType?.value ?? null);
+    const startDate = ref("");
+    const endDate = ref("");
+    const campus = ref<ListItemBag | null>(null);
+    const stepStatus = ref<ListItemBag | null>(config.options?.stepStatus ?? null);
+    const attributeValues = ref<Record<string, string>>({});
+
+    // Save results.
+    const saveResult = ref<StepBulkEntrySaveResultBag | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The Guids of people who passed validation and can have steps created. */
+    const validPeopleGuids = computed<Guid[]>(() => {
+        if (!currentStepTypeGuid.value) {
+            return selectedPeople.value.map(p => p.personAliasGuid);
+        }
+
+        return selectedPeople.value
+            .filter(p => validationResults.value[p.personAliasGuid]?.isValid === true)
+            .map(p => p.personAliasGuid);
+    });
+
+    /** Whether the Save button should be enabled. Requires at least one valid person. */
+    const isSaveEnabled = computed(() => {
+        return validPeopleGuids.value.length > 0;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Validates the specified people against the current step type.
+     * Results are merged into the existing map so that concurrent calls
+     * (e.g. a batch for step-type change + an individual for a newly added person)
+     * do not overwrite each other.
+     */
+    async function validatePeople(personAliasGuids: Guid[]): Promise<void> {
+        const stepTypeGuid = currentStepTypeGuid.value;
+
+        if (!stepTypeGuid || personAliasGuids.length === 0) {
+            return;
+        }
+
+        const generation = validationGeneration;
+
+        const result = await invokeBlockAction<StepBulkEntryValidatePersonResultBag[]>("ValidatePeople", {
+            request: {
+                personAliasGuids,
+                stepTypeGuid
+            } as StepBulkEntryValidateRequestBag
+        });
+
+        // Discard if the step type changed while the request was in flight.
+        if (generation !== validationGeneration) {
+            return;
+        }
+
+        if (result?.isSuccess && result.data) {
+            const newEntries: Record<string, StepBulkEntryValidatePersonResultBag> = {};
+
+            for (const personResult of result.data) {
+                newEntries[personResult.personAliasGuid] = personResult;
+            }
+
+            validationResults.value = { ...validationResults.value, ...newEntries };
+        }
+        else {
+            blockErrorMessage.value = result?.errorMessage ?? "Failed to validate people.";
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /** Handles step type picker changes by loading the new configuration. */
+    async function onStepTypeChanged(stepTypeGuid: Guid | null): Promise<void> {
+        blockErrorMessage.value = "";
+        currentStepTypeGuid.value = stepTypeGuid;
+        attributeValues.value = {};
+
+        if (!stepTypeGuid) {
+            stepTypeConfiguration.value = null;
+            return;
+        }
+
+        const result = await invokeBlockAction<StepBulkEntryStepTypeConfigurationBag>("GetStepTypeConfiguration", {
+            stepTypeGuid
+        });
+
+        if (currentStepTypeGuid.value !== stepTypeGuid) {
+            return;
+        }
+
+        if (result?.isSuccess && result.data) {
+            stepTypeConfiguration.value = result.data;
+        }
+        else {
+            stepTypeConfiguration.value = null;
+            blockErrorMessage.value = result?.errorMessage ?? "Failed to load step type configuration.";
+        }
+    }
+
+    /** Handles program picker changes by clearing program-dependent state. */
+    function onProgramChanged(_programGuid: Guid | null): void {
+        blockErrorMessage.value = "";
+        currentStepTypeGuid.value = null;
+        stepTypeConfiguration.value = null;
+        stepStatus.value = null;
+    }
+
+    /** Saves steps for all valid people. */
+    async function onSave(): Promise<void> {
+        if (!currentStepTypeGuid.value || !stepStatus.value?.value) {
+            return;
+        }
+
+        blockErrorMessage.value = "";
+        isSaving.value = true;
+
+        const result = await invokeBlockAction<StepBulkEntrySaveResultBag>("SaveSteps", {
+            request: {
+                personAliasGuids: validPeopleGuids.value,
+                stepTypeGuid: currentStepTypeGuid.value,
+                stepStatusGuid: stepStatus.value.value,
+                startDate: startDate.value || null,
+                endDate: endDate.value || null,
+                campusGuid: campus.value?.value ?? null,
+                attributeValues: attributeValues.value
+            } as StepBulkEntrySaveRequestBag
+        });
+
+        isSaving.value = false;
+
+        if (result?.isSuccess && result.data) {
+            saveResult.value = result.data;
+            isComplete.value = true;
+        }
+        else {
+            blockErrorMessage.value = result?.errorMessage ?? "Failed to save steps.";
+        }
+    }
+
+    /** Validates a newly added person against the current step type. */
+    function onPersonAdded(personAliasGuid: Guid): void {
+        if (currentStepTypeGuid.value) {
+            validatePeople([personAliasGuid]);
+        }
+    }
+
+    /** Handles an error from the person selection component. */
+    function onPersonError(message: string): void {
+        blockErrorMessage.value = message;
+    }
+
+    /** Navigates to the parent page or resets the block for a new entry. */
+    function onDone(): void {
+        if (saveResult.value?.navigationUrl) {
+            window.location.href = saveResult.value.navigationUrl;
+        }
+        else {
+            isComplete.value = false;
+            selectedPeople.value = [];
+            validationResults.value = {};
+            saveResult.value = null;
+            blockErrorMessage.value = "";
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    /** Re-validate all people when the step type changes. */
+    watch(currentStepTypeGuid, () => {
+        validationResults.value = {};
+        validationGeneration++;
+
+        if (currentStepTypeGuid.value && selectedPeople.value.length > 0) {
+            validatePeople(selectedPeople.value.map(p => p.personAliasGuid));
+        }
+    });
+
+    // #endregion
+</script>

@@ -31,6 +31,12 @@ export type SavedFinancialAccountListItemBag = {
     /** Gets or sets the masked account number. */
     accountNumberMasked?: string | null;
 
+    /**
+     * Gets or sets a display label for the payment method's account type,
+     * such as the credit card brand (e.g., "Visa").
+     */
+    accountTypeName?: string | null;
+
     /** Gets or sets the category for this item. */
     category?: string | null;
 

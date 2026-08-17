@@ -14,8 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 using Rock.Configuration;
-using Rock.Field.Types;
 using Rock.Web.Cache;
 
 namespace Rock.Attribute
@@ -48,15 +49,28 @@ namespace Rock.Attribute
         /// or
         /// A valid groupTypeGuid must be specified
         /// </exception>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public GroupCategoryFieldAttribute( string name, string description = "", bool allowMultiple = false, string groupTypeGuid = null,
              bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null ) :
-            base( name, description, required, defaultValue, category, order, key,
-                ( allowMultiple ? typeof( CategoriesFieldType ).FullName : typeof( CategoryFieldType ).FullName ) )
+            base( allowMultiple ? SystemGuid.FieldType.CATEGORIES.AsGuid() : SystemGuid.FieldType.CATEGORY.AsGuid(),
+                name, description, required, defaultValue, category, order, key )
         {
-            FieldConfigurationValues.Add( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( "Rock.Model.Group" ) );
-            FieldConfigurationValues.Add( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( "GroupTypeId" ) );
+            FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( "Rock.Model.Group" ) );
+            FieldConfigurationValues.AddOrReplace( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( "GroupTypeId" ) );
 
             GroupTypeGuid = groupTypeGuid;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupCategoryFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public GroupCategoryFieldAttribute( string name )
+            : base( SystemGuid.FieldType.CATEGORY.AsGuid(), name )
+        {
+            FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( "Rock.Model.Group" ) );
+            FieldConfigurationValues.AddOrReplace( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( "GroupTypeId" ) );
         }
 
         /// <summary>
@@ -69,14 +83,14 @@ namespace Rock.Attribute
         {
             get
             {
-                return FieldConfigurationValues.GetValueOrNull( ALLOW_MULTIPLE_KEY ).AsBoolean();
+                return FieldTypeGuid == SystemGuid.FieldType.CATEGORIES.AsGuid();
             }
 
             set
             {
-                FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new Field.ConfigurationValue( value.ToString() ) );
-
-                FieldTypeClass = value ? typeof( CategoriesFieldType ).FullName : typeof( CategoryFieldType ).FullName;
+                FieldTypeGuid = value
+                    ? SystemGuid.FieldType.CATEGORIES.AsGuid()
+                    : SystemGuid.FieldType.CATEGORY.AsGuid();
             }
         }
 

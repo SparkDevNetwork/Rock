@@ -266,6 +266,15 @@
                              textMode="multiline"
                              :help="`Enter the domains allowed to embed this site in an iframe (comma-separated or one per line). Be sure to include your own domain(s) to avoid blocking modal use. These values are applied to the <a href='${frameAncestorsDirectiveLink}'>Content-Security-Policy frame-ancestors directive</a>. If left blank, Rock sets the header to frame-ancestors 'self', which prevents embedding on other domains.`" />
 
+                    <InlineCheckBox v-model="allowIndexing"
+                                    label="Allow Indexing"
+                                    help="Controls whether search engines (like Google or Bing) can index this site's pages." />
+
+                    <InlineCheckBox v-if="props.options.isIndexingEnabled"
+                                    v-model="isIndexEnabled"
+                                    label="Enable Indexing"
+                                    help="Enable Rock's internal indexer for this site." />
+
                     <div class="row">
                         <div class="col-md-6">
                             <TextBox v-model="indexStartingLocation"
@@ -273,10 +282,6 @@
                                      help="Start page or path for the Rock site indexer." />
                         </div>
                     </div>
-
-                    <InlineCheckBox v-model="allowIndexing"
-                                    label="Allow Indexing"
-                                    help="Controls whether search engines (like Google or Bing) can index this site's pages." />
 
                     <InlineCheckBox v-model="enableExclusiveRoutes"
                                     label="Restrict Routes to This Site"
@@ -289,7 +294,7 @@
 
                 <ContentStack title="Page Header Content"
                               description="Inject custom HTML, CSS, or scripts into the page header. This will be added to each page's head section.">
-                    <CodeEditor v-model="pageHeaderContent" mode="text" :editorHeight="200" />
+                    <CodeEditor v-model="pageHeaderContent" mode="lava" :editorHeight="200" />
                 </ContentStack>
             </ContentSection>
         </ContentSectionContainer>
@@ -375,6 +380,7 @@
     const retentionDuration = ref(props.modelValue?.bag?.retentionDuration);
     const allowedFrameDomains = propertyRef(props.modelValue?.bag?.allowedFrameDomains ?? "", "AllowedFrameDomains");
     const allowIndexing = propertyRef(props.modelValue?.bag?.allowIndexing ?? false, "AllowIndexing");
+    const isIndexEnabled = propertyRef(props.modelValue?.bag?.isIndexEnabled ?? false, "IsIndexEnabled");
     const indexStartingLocation = propertyRef(props.modelValue?.bag?.indexStartingLocation ?? "", "IndexStartingLocation");
     const enableExclusiveRoutes = propertyRef(props.modelValue?.bag?.enableExclusiveRoutes ?? false, "EnableExclusiveRoutes");
     const disablePredictableIds = propertyRef(props.modelValue?.bag?.disablePredictableIds ?? false, "DisablePredictableIds");
@@ -423,7 +429,7 @@
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [description, isActive, name, theme, googleAnalyticsCode, requiresEncryption, enabledForShortening, enableVisitorTracking, enablePersonalization, favIconBinaryFile, enablePageViews,
-        siteLogoBinaryFile, enableMobileRedirect, redirectTablets, externalUrl, allowedFrameDomains, allowIndexing, indexStartingLocation, enableExclusiveRoutes, disablePredictableIds, pageHeaderContent, errorPage];
+        siteLogoBinaryFile, enableMobileRedirect, redirectTablets, externalUrl, allowedFrameDomains, allowIndexing, isIndexEnabled, indexStartingLocation, enableExclusiveRoutes, disablePredictableIds, pageHeaderContent, errorPage];
 
     // #endregion
 
@@ -590,7 +596,7 @@
         updateRefValue(description, props.modelValue?.bag?.description ?? "");
         updateRefValue(isActive, props.modelValue?.bag?.isActive ?? false);
         updateRefValue(name, props.modelValue?.bag?.name ?? "");
-        updateRefValue(theme, props.modelValue?.bag?.theme ?? "Rock");
+        updateRefValue(theme, props.modelValue?.bag?.theme ?? "RockNextGen");
         updateRefValue(siteDomains, props.modelValue?.bag?.siteDomains ?? "");
         updateRefValue(errorPage, props.modelValue?.bag?.errorPage ?? "");
         updateRefValue(googleAnalyticsCode, props.modelValue?.bag?.googleAnalyticsCode ?? "");
@@ -607,6 +613,7 @@
         updateRefValue(retentionDuration, props.modelValue?.bag?.retentionDuration);
         updateRefValue(allowedFrameDomains, props.modelValue?.bag?.allowedFrameDomains ?? "");
         updateRefValue(allowIndexing, props.modelValue?.bag?.allowIndexing ?? false);
+        updateRefValue(isIndexEnabled, props.modelValue?.bag?.isIndexEnabled ?? false);
         updateRefValue(indexStartingLocation, props.modelValue?.bag?.indexStartingLocation ?? "");
         updateRefValue(enableExclusiveRoutes, props.modelValue?.bag?.enableExclusiveRoutes ?? false);
         updateRefValue(disablePredictableIds, props.modelValue?.bag?.disablePredictableIds ?? false);
@@ -684,6 +691,7 @@
         setPropertiesBoxValue(newValue, "retentionDuration", retentionDuration.value);
         setPropertiesBoxValue(newValue, "allowedFrameDomains", allowedFrameDomains.value);
         setPropertiesBoxValue(newValue, "allowIndexing", allowIndexing.value);
+        setPropertiesBoxValue(newValue, "isIndexEnabled", isIndexEnabled.value);
         setPropertiesBoxValue(newValue, "indexStartingLocation", indexStartingLocation.value);
         setPropertiesBoxValue(newValue, "enableExclusiveRoutes", enableExclusiveRoutes.value);
         setPropertiesBoxValue(newValue, "disablePredictableIds", disablePredictableIds.value);

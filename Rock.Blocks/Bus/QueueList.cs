@@ -35,15 +35,19 @@ namespace Rock.Blocks.Bus
 
     [DisplayName( "Queue List" )]
     [Category( "Bus" )]
-    [Description( "Displays the details of bus queues." )]
+    [Description( "Shows a list of all message bus queues." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
-    [LinkedPage( "Detail Page",
-        Description = "The page that will show the page short link details.",
-        Key = AttributeKey.DetailPage )]
+    [LinkedPage(
+        "Queue Detail Page",
+        Key = AttributeKey.QueueDetailPage,
+        Description = "The page where the queue can be configured",
+        DefaultValue = Rock.SystemGuid.Page.BUS_QUEUE,
+        Order = 1 )]
 
-    [Rock.SystemGuid.BlockTypeGuid( "8a5785fc-3094-4c2c-929a-3fd6d21da7f8" )]
+    [Rock.SystemGuid.BlockTypeGuid( "F9872CD9-EF32-4791-B0A9-1D104250AB18" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "8a5785fc-3094-4c2c-929a-3fd6d21da7f8" )]
 
     [Rock.SystemGuid.EntityTypeGuid( "BE20153D-8462-403D-B18D-8E8AFC274EE5")]
     public class QueueList : RockListBlockType<QueueListBag>
@@ -52,12 +56,12 @@ namespace Rock.Blocks.Bus
 
         private static class AttributeKey
         {
-            public const string DetailPage = "DetailPage";
+            public const string QueueDetailPage = "QueueDetailPage";
         }
 
         private static class NavigationUrlKey
         {
-            public const string DetailPage = "DetailPage";
+            public const string QueueDetailPage = "QueueDetailPage";
         }
 
         /// <summary>
@@ -107,7 +111,7 @@ namespace Rock.Blocks.Bus
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "QueueKey", "((Key))" )
+                [NavigationUrlKey.QueueDetailPage] = this.GetLinkedPageUrl( AttributeKey.QueueDetailPage, "QueueKey", "((Key))" )
             };
         }
 
@@ -116,28 +120,38 @@ namespace Rock.Blocks.Bus
         {
             var queueTypes = RockQueue.GetQueueTypes();
 
-            var queues = queueTypes.Select( queueType =>
-            {
-                var queueInstance = RockQueue.Get( queueType ) as IRockQueue;
-                var queueTypeString =
-                   queueInstance is ISendCommandQueue ? "Command" :
-                   queueInstance is IPublishEventQueue ? "Event" :
-                   "Unknown";
-
-                return new QueueListBag
+            var queues = queueTypes
+                .Select( queueType => RockQueue.Get( queueType ) as IRockQueue )
+                .Where( queueInstance => queueInstance != null )
+                .Select( queueInstance =>
                 {
-                    IdKey = queueType.FullName,
-                    QueueName = queueInstance.Name,
-                    QueueType = queueTypeString,
-                    TimeToLiveSeconds = queueInstance.TimeToLiveSeconds,
-                    RatePerMinute = queueInstance.StatLog?.MessagesConsumedLastMinute,
-                    RatePerHour = queueInstance.StatLog?.MessagesConsumedLastHour,
-                    RatePerDay = queueInstance.StatLog?.MessagesConsumedLastDay,
-                    QueueTypeName = queueType.Name
-                };
-            } );
+                    var queueTypeString =
+                       queueInstance is ISendCommandQueue ? "Command" :
+                       queueInstance is IPublishEventQueue ? "Event" :
+                       "Unknown";
+
+                    var queueType = queueInstance.GetType();
+
+                    return new QueueListBag
+                    {
+                        IdKey = queueType.FullName,
+                        QueueName = queueInstance.Name,
+                        QueueType = queueTypeString,
+                        TimeToLiveSeconds = queueInstance.TimeToLiveSeconds,
+                        RatePerMinute = queueInstance.StatLog?.MessagesConsumedLastMinute,
+                        RatePerHour = queueInstance.StatLog?.MessagesConsumedLastHour,
+                        RatePerDay = queueInstance.StatLog?.MessagesConsumedLastDay,
+                        QueueTypeName = queueType.Name
+                    };
+                } );
 
             return queues.AsQueryable();
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<QueueListBag> GetOrderedListQueryable( IQueryable<QueueListBag> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( q => q.QueueName );
         }
 
         /// <inheritdoc/>

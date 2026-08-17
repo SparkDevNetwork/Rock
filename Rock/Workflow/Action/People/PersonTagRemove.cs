@@ -36,9 +36,15 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Person Tag Remove" )]
 
-    [WorkflowAttribute("Person", "Workflow attribute that contains the person to remove from the tag.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [TextField( "Organization Tag", "The organization tag to remove the person from. <span class='tip tip-lava'></span>" )]
+    [WorkflowAttribute("Person",
+        Description = "Workflow attribute that contains the person to remove from the tag.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [TextField( "Organization Tag",
+        Description = "The organization tag to remove the person from. <span class='tip tip-lava'></span>",
+        AllowHtml = true,
+        AllowLava = true )]
     [Rock.SystemGuid.EntityTypeGuid( "BD876B64-8A93-4E31-B562-B8519FC622C6")]
     public class PersonTagRemove : ActionComponent
     {

@@ -20,7 +20,6 @@ using System.Web;
 using System.Web.UI.WebControls;
 
 using Rock.Attribute;
-using Rock.Field.Types;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -139,7 +138,7 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( formatAsHtml )
                     {
-                        if ( attrib?.FieldType?.Field is BooleanFieldType )
+                        if ( attrib?.FieldType?.Guid == SystemGuid.FieldType.BOOLEAN.AsGuid() )
                         {
                             if ( this.ItemStyle.HorizontalAlign != HorizontalAlign.Center )
                             {

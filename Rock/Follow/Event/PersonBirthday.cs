@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,7 +31,11 @@ namespace Rock.Follow.Event
     [Export( typeof( EventComponent ) )]
     [ExportMetadata( "ComponentName", "PersonBirthday" )]
 
-    [IntegerField( "Lead Days", "The number of days prior to birthday that notification should be sent.", false, 5, "", 0)]
+    [IntegerField( "Lead Days",
+        Description = "The number of days prior to birthday that notification should be sent.",
+        IsRequired = false,
+        DefaultIntegerValue = 5,
+        Order = 0 )]
     [Rock.SystemGuid.EntityTypeGuid( "532A7405-A3FB-4147-BE67-3B75A230AADE")]
     public class PersonBirthday : EventComponent
     {

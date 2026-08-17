@@ -91,6 +91,25 @@ namespace Rock.Lava
 
         public bool IncludeClosingTokenInParseResult { get; set; } = true;
 
+        /// <summary>
+        /// Indicates whether the content of this block should be parsed as Lava code
+        /// when the block is nested inside a {% lava %} / {% liquid %} tag body.
+        /// </summary>
+        /// <remarks>
+        /// When true (the default), the block's inner content is parsed using {% liquid %}
+        /// body semantics where each line is treated as an implicit Lava tag. This is the
+        /// correct behavior for blocks whose content is Lava code (for example, entity
+        /// commands that contain <c>assign</c> or control-flow tags).
+        /// <para>
+        /// Override this to return false for blocks whose content is opaque data that
+        /// must not be interpreted as Lava (for example, SQL, JavaScript, CSS, or the
+        /// body of an HTTP response). Without this override, content like a
+        /// <c>SELECT</c> statement is misread as an unknown Lava tag when the block
+        /// appears inside a {% lava %} tag.
+        /// </para>
+        /// </remarks>
+        public virtual bool IsContentLavaCode => true;
+
         #region IRockLavaElement Implementation
 
         /// <summary>

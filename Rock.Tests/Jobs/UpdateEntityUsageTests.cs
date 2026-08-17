@@ -10,7 +10,6 @@ using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
 using Rock.SystemKey;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 

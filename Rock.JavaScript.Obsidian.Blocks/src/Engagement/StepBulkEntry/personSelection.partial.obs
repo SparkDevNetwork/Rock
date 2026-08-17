@@ -1,0 +1,161 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <PillList :modelValue="modelValue"
+              label="People"
+              canAdd
+              canRemove
+              canExpand
+              rules="required"
+              @add="onAdd"
+              @remove="onRemove">
+        <template #item="{ item, disabled, canRemove, remove }">
+            <Pill :disabled="disabled"
+                  :canRemove="canRemove"
+                  :tokenType="getPersonTokenType(item)"
+                  :tooltip="getPersonTooltip(item)"
+                  @remove="remove()">
+                <img :src="item.photoUrl ?? undefined"
+                     style="border-radius: var(--rounded-huge); width: 24px; height: 24px" />
+                <span>{{ item.name }}</span>
+            </Pill>
+        </template>
+    </PillList>
+
+    <NotificationBox v-if="invalidResults.length > 0" alertType="warning">
+        <strong>{{ invalidResults.length }} {{ invalidResults.length !== 1 ? "people" : "person" }} cannot have a step created:</strong>
+
+        <div v-for="result in invalidResults"
+             :key="result.personAliasGuid"
+             class="mt-2">
+            <span class="text-semibold">{{ result.personName }}</span>
+            <ul v-if="result.errors && result.errors.length > 0" class="mb-0 mt-1">
+                <li v-for="(error, idx) in result.errors" :key="idx">{{ error }}</li>
+            </ul>
+        </div>
+    </NotificationBox>
+
+    <PersonPicker v-if="isPersonPickerShown"
+                  v-model:isSearchModeOpen="isPersonPickerShown"
+                  @update:modelValue="onPersonSelected" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Pill from "@Obsidian/Controls/pill.obs";
+    import PillList from "@Obsidian/Controls/pillList.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { Guid } from "@Obsidian/Types";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { StepBulkEntryPersonItemBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepBulkEntry/stepBulkEntryPersonItemBag";
+    import { StepBulkEntryValidatePersonResultBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepBulkEntry/stepBulkEntryValidatePersonResultBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Array as PropType<StepBulkEntryPersonItemBag[]>,
+            required: true
+        },
+
+        /** Per-person validation results keyed by person alias Guid. Provided by parent. */
+        validationResults: {
+            type: Object as PropType<Record<string, StepBulkEntryValidatePersonResultBag>>,
+            default: () => ({})
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: StepBulkEntryPersonItemBag[]): void;
+        (e: "personAdded", personAliasGuid: Guid): void;
+        (e: "error", message: string): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const isPersonPickerShown = ref(false);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The validation results for people currently in the list who failed validation. */
+    const invalidResults = computed<StepBulkEntryValidatePersonResultBag[]>(() => {
+        const currentGuids = new Set(props.modelValue.map(p => p.personAliasGuid));
+
+        return Object.values(props.validationResults)
+            .filter(r => !r.isValid && currentGuids.has(r.personAliasGuid));
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /** Returns the pill token type based on validation state. */
+    function getPersonTokenType(item: StepBulkEntryPersonItemBag): "default" | "danger" {
+        const result = props.validationResults[item.personAliasGuid];
+
+        if (!result || result.isValid) {
+            return "default";
+        }
+
+        return "danger";
+    }
+
+    /** Returns the pill tooltip based on validation errors. */
+    function getPersonTooltip(item: StepBulkEntryPersonItemBag): string {
+        const result = props.validationResults[item.personAliasGuid];
+
+        if (!result || result.isValid) {
+            return "";
+        }
+
+        return result.errors?.join(" ") ?? "";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /** Opens the person picker when the add button is clicked. */
+    function onAdd(): void {
+        isPersonPickerShown.value = true;
+    }
+
+    /** Handles a person being selected from the picker. */
+    async function onPersonSelected(value: ListItemBag | undefined): Promise<void> {
+        if (!value?.value) {
+            return;
+        }
+
+        // Check for duplicates.
+        if (props.modelValue.some(p => p.personAliasGuid === value.value)) {
+            isPersonPickerShown.value = false;
+            return;
+        }
+
+        // Resolve person details including photo URL.
+        const result = await invokeBlockAction<StepBulkEntryPersonItemBag>("GetPersonItem", {
+            personAliasGuid: value.value
+        });
+
+        if (result?.isSuccess && result.data) {
+            emit("update:modelValue", [...props.modelValue, result.data]);
+            emit("personAdded", result.data.personAliasGuid);
+        }
+        else {
+            emit("error", result?.errorMessage ?? "Failed to load person details.");
+        }
+
+        isPersonPickerShown.value = false;
+    }
+
+    /** Removes a person from the selection. */
+    function onRemove(item: StepBulkEntryPersonItemBag, index: number): void {
+        const updated = [...props.modelValue.slice(0, index), ...props.modelValue.slice(index + 1)];
+        emit("update:modelValue", updated);
+    }
+
+    // #endregion
+</script>

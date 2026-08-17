@@ -23,12 +23,15 @@ using System.Web;
 using System.Web.Compilation;
 using System.Web.Routing;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Rock.Bus.Message;
 using Rock.Cms.Utm;
+using Rock.Configuration;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Net;
 using Rock.Tasks;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -268,7 +271,7 @@ namespace Rock.Web
                             // get the device type
                             string u = routeHttpRequest.UserAgent;
 
-                            var clientType = InteractionDeviceType.GetClientType( u );
+                            var clientType = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( u ).ClientType;
 
                             bool redirect = false;
 

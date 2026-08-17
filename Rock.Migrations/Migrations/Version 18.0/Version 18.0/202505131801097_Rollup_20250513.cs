@@ -425,7 +425,7 @@ WHERE [Guid] = '9CF1AA10-24E4-4530-A345-57DA4CFE9595';
 { "7A8599B0-6B69-4E1F-9D12-CA9874E8E5D8", "2663e57e-ed73-49fe-ba16-69b4b829c488" }, // Asset Storage Provider List ( Core )
                     // blocks chopped in v17.1 (Pre-Alpha: 18.0.5)
 { "6D3F924E-BDD0-4C78-981E-B698351E75AD", "9b90f2d1-0c7b-4f08-a808-8ba4c9a70a20" }, // Scheduled Job List ( Core )
-{ "7BD1B79C-BF27-42C6-8359-F80EC7FEE397", "a759218b-1c72-446c-8994-8559ba72941e" }, // Apple TV Page List ( TV > TV Apps )
+//{ "7BD1B79C-BF27-42C6-8359-F80EC7FEE397", "a759218b-1c72-446c-8994-8559ba72941e" }, // Apple TV Page List ( TV > TV Apps )
 { "881DC0D1-FF98-4A5E-827F-49DD5CD0BD32", "d481ae29-a6aa-49f4-9dbb-d3fdf0995ca3" }, // Media Element Detail ( CMS )
 { "BD548744-DC6D-4870-9FED-BB9EA24E709B", "18fa879f-1466-413b-8623-834d728f677b" }, // Person Following List ( Follow )
 { "BFDCA2E2-DAA1-4FA6-B33C-C53C7CF23C5D", "FBAB4EB2-B180-4A76-9B5B-C75E2255F691" }, // Communication Template Detail ( Communication )

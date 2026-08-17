@@ -39,14 +39,15 @@ namespace Rock.Blocks.Engagement
     [Category( "Streaks" )]
     [Description( "Shows a list of all streak types." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the streak type details.",
         Key = AttributeKey.DetailPage )]
 
     [Rock.SystemGuid.EntityTypeGuid( "fb234106-94fd-4206-aa85-4377f1d2c512" )]
-    [Rock.SystemGuid.BlockTypeGuid( "6f0f3ad2-4989-4f50-b394-0de3c7af35ad" )]
+    [Rock.SystemGuid.BlockTypeGuid( "DDE31844-B024-472E-9B21-E094DFC40CAB" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "6f0f3ad2-4989-4f50-b394-0de3c7af35ad" )]
     [CustomizedGrid]
     public class StreakTypeList : RockListBlockType<StreakTypeList.StreakTypeWithEnrollment>
     {
@@ -62,11 +63,6 @@ namespace Rock.Blocks.Engagement
             public const string DetailPage = "DetailPage";
         }
 
-        private static class PreferenceKey
-        {
-            public const string FilterActiveStatus = "filter-active-status";
-        }
-
         #endregion Keys
 
         #region Fields
@@ -75,19 +71,6 @@ namespace Rock.Blocks.Engagement
         /// The StreakType attributes configured to show on the grid.
         /// </summary>
         private readonly Lazy<List<AttributeCache>> _gridAttributes = new System.Lazy<List<AttributeCache>>( BuildGridAttributes );
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// If true only active streak types are included in the result.
-        /// </summary>
-        /// <value>
-        /// The active status filter.
-        /// </value>
-        protected string FilterActiveStatus => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterActiveStatus );
 
         #endregion
 
@@ -149,17 +132,6 @@ namespace Rock.Blocks.Engagement
             // query when they add, edit, etc
             var streakTypeService = new StreakTypeService( rockContext );
             var streakTypeQueryable = streakTypeService.Queryable().AsNoTracking();
-
-            // Filter by: Active
-            switch ( FilterActiveStatus )
-            {
-                case "Active":
-                    streakTypeQueryable = streakTypeQueryable.Where( s => s.IsActive );
-                    break;
-                case "Inactive":
-                    streakTypeQueryable = streakTypeQueryable.Where( s => !s.IsActive );
-                    break;
-            }
 
             var streakQueryable = new StreakService( rockContext ).Queryable().AsNoTracking();
 
@@ -267,7 +239,7 @@ namespace Rock.Blocks.Engagement
                     return ActionBadRequest( $"Not authorized to delete {StreakType.FriendlyTypeName}." );
                 }
 
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
+                if ( !entityService.CanDelete( entity, out var errorMessage, true ) )
                 {
                     return ActionBadRequest( errorMessage );
                 }

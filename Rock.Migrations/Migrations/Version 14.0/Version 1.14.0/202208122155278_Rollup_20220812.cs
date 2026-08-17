@@ -120,6 +120,18 @@ namespace Rock.Migrations
         /// </summary>
         private void AddAdminChecklistItemForRedis()
         {
+            /*
+                 4/15/2026 - NA
+
+                 This method is no longer required because Redis support was removed in Rock v13.
+                 The related migration logic remains in place to preserve stability and avoid
+                 introducing unintended side effects during upgrades. This admin checklist item
+                 that was previously added by this method will no longer be created.
+
+                 Reason: Redis support was deprecated and removed, making this method obsolete.
+            */
+
+            /*
             // Now check to see if Redis is enabled and create a checklist item if it is.
 #pragma warning disable CS0618 // Type or member is obsolete
             var redisEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).AsBoolean();
@@ -156,6 +168,7 @@ namespace Rock.Migrations
                     , GETDATE()
                     , 1)" );
             }
+            */
         }
 
         /// <summary>

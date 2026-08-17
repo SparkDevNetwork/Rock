@@ -346,7 +346,7 @@ function defineFileConfig(input, output, options) {
             babel({
                 babelHelpers: "bundled",
                 presets: [
-                    ["@babel/preset-env", { targets: "edge >= 13, chrome >= 50, chromeandroid >= 50, firefox >= 53, safari >= 10, ios >= 10" }],
+                    ["@babel/preset-env", { targets: "and_chr >= 145, and_ff >= 147, and_qq >= 14.9, and_uc >= 15.5, android >= 145, chrome >= 103, edge >= 109, firefox >= 115, ios_saf >= 11.0, op_mob >= 80, opera >= 94, safari >= 14.1, samsung >= 25" }],
                     "@babel/typescript"
                 ],
                 extensions: [".js", ".jsx", ".ts", ".tsx", ".obs"],

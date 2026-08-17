@@ -12,7 +12,11 @@
             </div>
         </div>
 
-        <div class="well">
+        <div v-if="isCaptchaEnabled" v-show="!isCaptchaComplete">
+            <Captcha ref="captchaElement"></Captcha>
+        </div>
+
+        <div v-if="!isCaptchaEnabled || isCaptchaComplete" class="well">
             <ElectronicSignature v-model="signature"
                                  :documentTerm="documentTerm"
                                  :isDrawn="isDrawn"
@@ -24,14 +28,16 @@
 </template>
 
 <script setup lang="ts">
+    import Captcha from "@Obsidian/Controls/captcha.obs";
     import ElectronicSignature from "@Obsidian/Controls/electronicSignature.obs";
     import { SignatureType } from "@Obsidian/Enums/Core/signatureType";
     import { Guid } from "@Obsidian/Types";
     import { asBoolean } from "@Obsidian/Utility/booleanUtils";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { useSuspense } from "@Obsidian/Utility/suspense";
+    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
     import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
-    import { computed, ref } from "vue";
+    import { computed, onMounted, ref } from "vue";
     import { interactiveActionProps } from "../types";
 
     const enum ComponentConfigurationKey {
@@ -58,6 +64,10 @@
 
     const signature = ref<ElectronicSignatureValue>();
     let frameLoadOperationKey: Guid | undefined = newGuid();
+
+    const isCaptchaComplete = ref<boolean>(false);
+    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
+    const captchaToken = ref<string | null | undefined>();
 
     // #endregion
 
@@ -116,7 +126,31 @@
             [ComponentDataKey.SignedByEmail]: signature.value?.signedByEmail
         };
 
-        await props.submit(newData);
+        let actionContext: BlockActionContextBag | undefined;
+
+        if (captchaToken.value) {
+            actionContext = {
+                ...actionContext,
+                captcha: captchaToken.value
+            };
+        }
+
+        await props.submit(newData, actionContext);
+    }
+
+    async function waitForCaptcha(): Promise<void> {
+        if (!props.isCaptchaEnabled || !captchaElement.value) {
+            return;
+        }
+
+        captchaToken.value = await captchaElement.value.getToken() || null;
+
+        if (!captchaToken.value) {
+            isCaptchaComplete.value = false;
+        }
+        else {
+            isCaptchaComplete.value = true;
+        }
     }
 
     // #endregion
@@ -126,4 +160,8 @@
             suspense.startAsyncOperation(frameLoadOperationKey);
         }
     }
+
+    onMounted(async () => {
+        await waitForCaptcha();
+    });
 </script>

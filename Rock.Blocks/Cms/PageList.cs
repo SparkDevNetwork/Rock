@@ -39,7 +39,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of pages." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -53,7 +53,8 @@ namespace Rock.Blocks.Cms
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "b49f5c5b-95d4-448d-8a82-be7661e4ff1d" )]
-    [Rock.SystemGuid.BlockTypeGuid( "39b02b93-b1af-4f9b-a535-33f470d91106" )]
+    [Rock.SystemGuid.BlockTypeGuid( "D9847FE8-5279-4CC4-BD69-8A71B2F1ED70" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "39b02b93-b1af-4f9b-a535-33f470d91106" )]
     [CustomizedGrid]
     public class PageList : RockEntityListBlockType<Page>
     {
@@ -105,16 +106,26 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override IQueryable<Page> GetListQueryable( RockContext rockContext )
         {
-            // Retrieve the siteId from page parameters
-            var siteIdParam = PageParameter( PageParameterKey.SiteId );
-            var siteId = Rock.Utility.IdHasher.Instance.GetId( siteIdParam ) ?? siteIdParam.AsIntegerOrNull();
+            var siteId = SiteCache.Get(
+                PageParameter( PageParameterKey.SiteId ),
+                !PageCache.Layout.Site.DisablePredictableIds
+            )?.Id ?? 0;
 
             // Fetch pages directly associated with the site
-            var pages = new PageService( rockContext )
-                .Queryable().AsNoTracking()
-                .Where( p => p.Layout.SiteId == siteId );
+            var pages = new PageService( rockContext ).Queryable()
+                .AsNoTracking()
+                .Include( p => p.Layout )
+                .Where( p => p.SiteId == siteId );
 
             return pages;
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<Page> GetOrderedListQueryable( IQueryable<Page> queryable, RockContext rockContext )
+        {
+            return queryable
+                .OrderBy( p => p.Layout.Name )
+                .ThenBy( p => p.InternalName );
         }
 
         /// <inheritdoc/>
@@ -128,7 +139,7 @@ namespace Rock.Blocks.Cms
                 .AddTextField( "description", a => a.Description )
                 .AddTextField( "layout", a => a.Layout?.Name )
                 .AddField( "isSystem", a => a.IsSystem )
-                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddField( "isSecurityDisabled", a => !( PageCache.Get( a.Id )?.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) ?? true ) )
                 .AddAttributeFields( GetGridAttributes() );
         }
 
@@ -144,31 +155,30 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new PageService( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
             {
-                var entityService = new PageService( rockContext );
-                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-                if ( entity == null )
-                {
-                    return ActionBadRequest( $"{Page.FriendlyTypeName} not found." );
-                }
-
-                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete ${Page.FriendlyTypeName}." );
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( $"{Page.FriendlyTypeName} not found." );
             }
+
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete ${Page.FriendlyTypeName}." );
+            }
+
+            // Pass includeSecondLvl so the delete is blocked when a Site references this page
+            // as its Default/Login/Registration/PageNotFound page; the base CanDelete misses that.
+            if ( !entityService.CanDelete( entity, out var errorMessage, includeSecondLvl: true ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         #endregion

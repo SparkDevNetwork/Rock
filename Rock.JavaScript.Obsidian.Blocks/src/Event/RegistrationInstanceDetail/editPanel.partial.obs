@@ -1,0 +1,480 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSectionContainer>
+        <ContentSection light>
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="name" label="Registration Instance Name" rules="required"
+                             help="The name will be used to describe the registration on the registration screens and emails." />
+                </div>
+                <div class="col-md-6">
+                    <CheckBox v-model="isActive" label="Active" />
+                </div>
+            </div>
+        </ContentSection>
+
+        <ContentSection title="Registration Details" icon="ti ti-calendar-event">
+            <ContentStack>
+                <div class="row">
+                    <div class="col-md-6">
+                        <DateTimePicker v-model="startDateTime" label="Registration Starts" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <DateTimePicker v-model="endDateTime" label="Registration Ends" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <NumberBox v-model="maxAttendees"
+                                   label="Maximum Attendees"
+                                   help="Total number of people who can register for the event. Leave blank for unlimited." />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <WorkflowTypePicker v-model="registrationWorkflowType"
+                                            label="Registration Workflow"
+                                            :multiple="false"
+                                            help="An optional workflow type to launch when a new registration is completed." />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <DateTimePicker v-model="sendReminderDateTime" label="Send Reminder Date" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <DefinedValuePicker v-model="registrantRecordSource"
+                                            label="Record Source"
+                                            :definedTypeGuid="recordSourceDefinedTypeGuid"
+                                            help="The record source to use for new individuals. If not set, the registration template's record source will be used. If a 'RecordSource' page parameter is found at the time of registration, it will be used instead." />
+                    </div>
+                </div>
+                <div class="row">
+                    <div v-if="modelValue.bag?.isPaymentPlanAllowed" class="col-md-6">
+                        <DatePicker v-model="paymentDeadlineDate"
+                                    label="Payment Deadline"
+                                    rules="required"
+                                    help="The date that all payments must be completed by. This date will be used by the payment plan feature to calculate the payment schedule and amount." />
+                    </div>
+                </div>
+                <div v-if="reminderSent" class="row">
+                    <div class="col-xs-8"></div>
+                    <div class="col-xs-4">
+                        <InlineCheckBox v-model="reminderSentModel" label="Reminder Sent" />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Registration Contact Information" icon="ti ti-user">
+            <ContentStack>
+                <div class="row">
+                    <div class="col-md-6">
+                        <PersonPicker v-model="contactPersonAlias"
+                                      label="Contact"
+                                      enableSelfSelection />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <PhoneNumberBox v-model="contactPhone" label="Phone" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <EmailBox v-model="contactEmail" label="Email" />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection v-if="showFinancialSection" title="Registration Financial Information" icon="ti ti-currency-dollar">
+            <ContentStack>
+                <div v-if="modelValue.bag?.isFinancialGatewayConfigured" class="row">
+                    <div class="col-md-6">
+                        <AccountPicker v-model="account"
+                                       label="Account"
+                                       rules="required"
+                                       activeOnly />
+                    </div>
+                </div>
+                <div v-if="modelValue.bag?.isSetCostOnInstance" class="row">
+                    <div class="col-md-6">
+                        <CurrencyBox v-model="cost" label="Cost" help="The cost per registrant" />
+                    </div>
+                </div>
+                <div v-if="modelValue.bag?.isSetCostOnInstance" class="row">
+                    <div class="col-md-6">
+                        <CurrencyBox v-model="minimumInitialPayment"
+                                     label="Minimum Initial Payment"
+                                     help="The minimum amount required per registrant. Leave value blank if full amount is required." />
+                    </div>
+                </div>
+                <div v-if="modelValue.bag?.isRedirectionGateway" class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="externalGatewayMerchantId"
+                                      :label="gatewayMerchantLabel"
+                                      :items="gatewayMerchantItems"
+                                      showBlankItem />
+                    </div>
+                </div>
+                <div v-if="modelValue.bag?.isRedirectionGateway" class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="externalGatewayFundId"
+                                      :label="gatewayFundLabel"
+                                      :items="gatewayFundItems"
+                                      showBlankItem />
+                    </div>
+                </div>
+                <div v-if="modelValue.bag?.isSetCostOnInstance" class="row">
+                    <div class="col-md-6">
+                        <CurrencyBox v-model="defaultPayment"
+                                     label="Default Payment Amount"
+                                     help="The default payment amount per registrant. Leave value blank to default to the full amount. NOTE: This requires that a Minimum Initial Payment is greater than 0." />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Registration Messages" icon="ti ti-message">
+            <ContentStack>
+                <div class="row">
+                    <div class="col-md-12">
+                        <HtmlEditor v-model="registrationInstructions"
+                                    label="Registration Instructions"
+                                    toolbar="light"
+                                    :editorHeight="200"
+                                    help="These instructions will appear at the beginning of the registration process. Instructions can be provided on the registration template also. Any instructions here will override the instructions on the template." />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <HtmlEditor v-model="additionalReminderDetails"
+                                    label="Additional Reminder Details"
+                                    toolbar="light"
+                                    :editorHeight="200"
+                                    help="These reminder details will be included in the reminder notification." />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <HtmlEditor v-model="additionalConfirmationDetails"
+                                    label="Additional Confirmation Details"
+                                    toolbar="light"
+                                    :editorHeight="200"
+                                    help="These confirmation details will be appended to those from the registration template when displayed at the end of the registration process." />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection v-if="showSessionSection" title="Registration Session" icon="ti ti-clock">
+            <ContentStack>
+                <div class="row">
+                    <div class="col-md-3">
+                        <NumberBox v-model="timeoutLengthMinutes"
+                                   label="Timeout Length"
+                                   appendText="minutes"
+                                   help="Applies a timeout to registration sessions to help manage limited spots. Individuals have this amount of time to complete each page before losing their reserved spots. Defaults to 15 minutes if left blank. Sessions are automatically enabled when a Maximum Attendee limit is set." />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <NumberBox v-model="timeoutThreshold"
+                                   label="Timeout Threshold"
+                                   appendText="% registrants"
+                                   help="Determines when registration sessions begin based on the percentage of spots remaining. This helps prevent overselling by activating sessions only as availability gets low. If left blank, the threshold defaults to 33%. Sessions are automatically enabled when a Maximum Attendee limit is set." />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection v-if="hasAttributes" title="Attributes" icon="ti ti-list-details">
+            <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+        </ContentSection>
+    </ContentSectionContainer>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import { setPropertiesBoxValue, useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { RegistrationInstanceBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceDetail/registrationInstanceBag";
+    import { RegistrationInstanceDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceDetail/registrationInstanceDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<RegistrationInstanceBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<RegistrationInstanceDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<RegistrationInstanceBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const recordSourceDefinedTypeGuid = DefinedType.RecordSourceType;
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? true, "IsActive");
+    const startDateTime = propertyRef(props.modelValue.bag?.startDateTime ?? "", "StartDateTime");
+    const endDateTime = propertyRef(props.modelValue.bag?.endDateTime ?? "", "EndDateTime");
+    const maxAttendees = propertyRef(props.modelValue.bag?.maxAttendees ?? null, "MaxAttendees");
+    const registrationWorkflowType = propertyRef(props.modelValue.bag?.registrationWorkflowType ?? undefined, "RegistrationWorkflowType");
+    const registrantRecordSource = propertyRef(props.modelValue.bag?.registrantRecordSource ?? undefined, "RegistrantRecordSource");
+    const cost = propertyRef(props.modelValue.bag?.cost ?? null, "Cost");
+    const minimumInitialPayment = propertyRef(props.modelValue.bag?.minimumInitialPayment ?? null, "MinimumInitialPayment");
+    const defaultPayment = propertyRef(props.modelValue.bag?.defaultPayment ?? null, "DefaultPayment");
+    const account = propertyRef(props.modelValue.bag?.account ?? {}, "Account");
+    const contactPersonAlias = propertyRef(props.modelValue.bag?.contactPersonAlias ?? undefined, "ContactPersonAlias");
+    const contactPhone = propertyRef(props.modelValue.bag?.contactPhone ?? "", "ContactPhone");
+    const contactEmail = propertyRef(props.modelValue.bag?.contactEmail ?? "", "ContactEmail");
+    const sendReminderDateTime = propertyRef(props.modelValue.bag?.sendReminderDateTime ?? "", "SendReminderDateTime");
+    const paymentDeadlineDate = propertyRef(props.modelValue.bag?.paymentDeadlineDate ?? "", "PaymentDeadlineDate");
+    const reminderSent = propertyRef(props.modelValue.bag?.reminderSent ?? false, "ReminderSent");
+    const registrationInstructions = propertyRef(props.modelValue.bag?.registrationInstructions ?? "", "RegistrationInstructions");
+    const additionalReminderDetails = propertyRef(props.modelValue.bag?.additionalReminderDetails ?? "", "AdditionalReminderDetails");
+    const additionalConfirmationDetails = propertyRef(props.modelValue.bag?.additionalConfirmationDetails ?? "", "AdditionalConfirmationDetails");
+    const timeoutLengthMinutes = propertyRef(props.modelValue.bag?.timeoutLengthMinutes ?? 15, "TimeoutLengthMinutes");
+    const timeoutThreshold = propertyRef(props.modelValue.bag?.timeoutThreshold ?? 33, "TimeoutThreshold");
+    const externalGatewayMerchantId = propertyRef(props.modelValue.bag?.externalGatewayMerchantId ?? "", "ExternalGatewayMerchantId");
+    const externalGatewayFundId = propertyRef(props.modelValue.bag?.externalGatewayFundId ?? "", "ExternalGatewayFundId");
+
+    // Keep the list of available fund options in local state so the Merchant-change handler
+    // can swap it when the user picks a different merchant.
+    const gatewayFunds = ref<ListItemBag[]>(props.modelValue.bag?.gatewayFunds ?? []);
+
+    // InlineCheckBox can't be bound directly to a propertyRef while preserving the
+    // watcher signature used by watchPropertyChanges, so shadow it into a plain ref
+    // that writes through to the propertyRef.
+    const reminderSentModel = computed({
+        get: () => reminderSent.value,
+        set: (value: boolean) => {
+            reminderSent.value = value;
+        }
+    });
+
+    const propRefs = [
+        name, isActive, startDateTime, endDateTime, maxAttendees,
+        registrationWorkflowType, registrantRecordSource, cost, minimumInitialPayment,
+        defaultPayment, account, contactPersonAlias, contactPhone, contactEmail,
+        sendReminderDateTime, paymentDeadlineDate, reminderSent, registrationInstructions,
+        additionalReminderDetails, additionalConfirmationDetails, timeoutLengthMinutes,
+        timeoutThreshold, externalGatewayMerchantId, externalGatewayFundId
+    ];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const showFinancialSection = computed((): boolean => {
+        return props.modelValue.bag?.isSetCostOnInstance === true
+            || props.modelValue.bag?.isFinancialGatewayConfigured === true;
+    });
+
+    const hasAttributes = computed((): boolean => {
+        return Object.keys(attributes.value).length > 0;
+    });
+
+    const showSessionSection = computed((): boolean => {
+        return (maxAttendees.value ?? 0) > 0;
+    });
+
+    const gatewayMerchantLabel = computed((): string => {
+        return props.modelValue.bag?.gatewayMerchantFieldLabel ?? "Merchant";
+    });
+
+    const gatewayFundLabel = computed((): string => {
+        return props.modelValue.bag?.gatewayFundFieldLabel ?? "Fund";
+    });
+
+    const gatewayMerchantItems = computed((): ListItemBag[] => {
+        return props.modelValue.bag?.gatewayMerchants ?? [];
+    });
+
+    const gatewayFundItems = computed((): ListItemBag[] => {
+        return gatewayFunds.value;
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // Auto-fills blank contact fields when the user picks a person. Wired via watch() below
+    // so it only runs on user-initiated changes (not on bag refreshes).
+    async function autoFillContactFromPerson(value: ListItemBag | undefined): Promise<void> {
+        if (!value?.value) {
+            return;
+        }
+
+        if (contactPhone.value && contactEmail.value) {
+            return;
+        }
+
+        const result = await invokeBlockAction<{ email: string; phone: string }>("GetContactInfo", {
+            personAliasGuid: value.value
+        });
+
+        if (!result.isSuccess || !result.data) {
+            return;
+        }
+
+        if (!contactEmail.value && result.data.email) {
+            contactEmail.value = result.data.email;
+        }
+
+        if (!contactPhone.value && result.data.phone) {
+            contactPhone.value = result.data.phone;
+        }
+    }
+
+    // Cascades the fund dropdown when the merchant changes. Wired via watch() below so it
+    // only runs on user-initiated merchant selections (not on bag refresh).
+    async function cascadeGatewayFunds(value: string | string[]): Promise<void> {
+        const merchantId = Array.isArray(value) ? value[0] ?? "" : value;
+
+        // Reset the fund selection and list whenever the merchant changes.
+        externalGatewayFundId.value = "";
+        gatewayFunds.value = [];
+
+        if (!merchantId) {
+            return;
+        }
+
+        // The template (not the instance) owns the gateway, so templateKey resolves for
+        // both existing records and the new-instance Add flow.
+        const templateKey = props.modelValue.bag?.registrationTemplateIdKey ?? "";
+        const result = await invokeBlockAction<ListItemBag[]>("GetGatewayFunds", {
+            templateKey,
+            merchantId
+        });
+
+        if (result.isSuccess && result.data) {
+            gatewayFunds.value = result.data;
+        }
+    }
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? true);
+        updateRefValue(startDateTime, props.modelValue.bag?.startDateTime ?? "");
+        updateRefValue(endDateTime, props.modelValue.bag?.endDateTime ?? "");
+        updateRefValue(maxAttendees, props.modelValue.bag?.maxAttendees ?? null);
+        updateRefValue(registrationWorkflowType, props.modelValue.bag?.registrationWorkflowType ?? undefined);
+        updateRefValue(registrantRecordSource, props.modelValue.bag?.registrantRecordSource ?? undefined);
+        updateRefValue(cost, props.modelValue.bag?.cost ?? null);
+        updateRefValue(minimumInitialPayment, props.modelValue.bag?.minimumInitialPayment ?? null);
+        updateRefValue(defaultPayment, props.modelValue.bag?.defaultPayment ?? null);
+        updateRefValue(account, props.modelValue.bag?.account ?? {});
+        updateRefValue(contactPersonAlias, props.modelValue.bag?.contactPersonAlias ?? undefined);
+        updateRefValue(contactPhone, props.modelValue.bag?.contactPhone ?? "");
+        updateRefValue(contactEmail, props.modelValue.bag?.contactEmail ?? "");
+        updateRefValue(sendReminderDateTime, props.modelValue.bag?.sendReminderDateTime ?? "");
+        updateRefValue(paymentDeadlineDate, props.modelValue.bag?.paymentDeadlineDate ?? "");
+        updateRefValue(reminderSent, props.modelValue.bag?.reminderSent ?? false);
+        updateRefValue(registrationInstructions, props.modelValue.bag?.registrationInstructions ?? "");
+        updateRefValue(additionalReminderDetails, props.modelValue.bag?.additionalReminderDetails ?? "");
+        updateRefValue(additionalConfirmationDetails, props.modelValue.bag?.additionalConfirmationDetails ?? "");
+        updateRefValue(timeoutLengthMinutes, props.modelValue.bag?.timeoutLengthMinutes ?? 15);
+        updateRefValue(timeoutThreshold, props.modelValue.bag?.timeoutThreshold ?? 33);
+        updateRefValue(externalGatewayMerchantId, props.modelValue.bag?.externalGatewayMerchantId ?? "");
+        updateRefValue(externalGatewayFundId, props.modelValue.bag?.externalGatewayFundId ?? "");
+        gatewayFunds.value = props.modelValue.bag?.gatewayFunds ?? [];
+    });
+
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<RegistrationInstanceBag> = {
+            bag: { ...props.modelValue.bag } as RegistrationInstanceBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "details", props.modelValue.bag?.details ?? null);
+        setPropertiesBoxValue(newValue, "startDateTime", startDateTime.value);
+        setPropertiesBoxValue(newValue, "endDateTime", endDateTime.value);
+        setPropertiesBoxValue(newValue, "maxAttendees", maxAttendees.value);
+        setPropertiesBoxValue(newValue, "registrationWorkflowType", registrationWorkflowType.value);
+        setPropertiesBoxValue(newValue, "registrantRecordSource", registrantRecordSource.value);
+        setPropertiesBoxValue(newValue, "cost", cost.value);
+        setPropertiesBoxValue(newValue, "minimumInitialPayment", minimumInitialPayment.value);
+        setPropertiesBoxValue(newValue, "defaultPayment", defaultPayment.value);
+        setPropertiesBoxValue(newValue, "account", account.value);
+        setPropertiesBoxValue(newValue, "contactPersonAlias", contactPersonAlias.value);
+        setPropertiesBoxValue(newValue, "contactPhone", contactPhone.value);
+        setPropertiesBoxValue(newValue, "contactEmail", contactEmail.value);
+        setPropertiesBoxValue(newValue, "sendReminderDateTime", sendReminderDateTime.value);
+        setPropertiesBoxValue(newValue, "paymentDeadlineDate", paymentDeadlineDate.value);
+        setPropertiesBoxValue(newValue, "reminderSent", reminderSent.value);
+        setPropertiesBoxValue(newValue, "registrationInstructions", registrationInstructions.value);
+        setPropertiesBoxValue(newValue, "additionalReminderDetails", additionalReminderDetails.value);
+        setPropertiesBoxValue(newValue, "additionalConfirmationDetails", additionalConfirmationDetails.value);
+        setPropertiesBoxValue(newValue, "timeoutLengthMinutes", timeoutLengthMinutes.value);
+        setPropertiesBoxValue(newValue, "timeoutThreshold", timeoutThreshold.value);
+        setPropertiesBoxValue(newValue, "externalGatewayMerchantId", externalGatewayMerchantId.value);
+        setPropertiesBoxValue(newValue, "externalGatewayFundId", externalGatewayFundId.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Skip the side effect when the new value matches the bag — that's a bag refresh,
+    // not a user selection.
+    watch(contactPersonAlias, (newValue) => {
+        if ((newValue?.value ?? "") === (props.modelValue.bag?.contactPersonAlias?.value ?? "")) {
+            return;
+        }
+        void autoFillContactFromPerson(newValue);
+    });
+
+    watch(externalGatewayMerchantId, (newValue) => {
+        if (newValue === (props.modelValue.bag?.externalGatewayMerchantId ?? "")) {
+            return;
+        }
+        void cascadeGatewayFunds(newValue);
+    });
+
+    watchPropertyChanges(propRefs, emit);
+</script>

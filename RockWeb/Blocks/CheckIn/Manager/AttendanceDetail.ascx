@@ -33,16 +33,44 @@
                     </asp:Panel>
                 </div>
                 <div class="col-md-6">
-                    <label class="control-label"><asp:Literal ID="lChangeHistory" runat="server" Text="Change History" /></label>
-                    <ul>
-                        <asp:Repeater ID="rptHistoryList" runat="server">
-                            <ItemTemplate>
-                                <li><a href="/Person/<%# ((RockWeb.Blocks.CheckIn.Manager.ChangeHistoryData)Container.DataItem).CreatedPersonId %>"><%# ((RockWeb.Blocks.CheckIn.Manager.ChangeHistoryData)Container.DataItem).CreatedPersonName %> </a> (<%# ((RockWeb.Blocks.CheckIn.Manager.ChangeHistoryData)Container.DataItem).CreatedDateTime %>) <br />
-                                    <%# ((RockWeb.Blocks.CheckIn.Manager.ChangeHistoryData)Container.DataItem).Description %>
-                                </li>
-                            </ItemTemplate>
-                        </asp:Repeater>
-                    </ul>
+                    <div class="form-group static-control">
+                        <asp:Label ID="lChangeHistory" runat="server" CssClass="control-label" Text="Change History" />
+                        <div class="control-wrapper">
+                            <ul>
+                                <asp:Repeater ID="rptHistoryList" runat="server">
+                                    <ItemTemplate>
+                                        <li><a href="/Person/<%# ((RockWeb.Blocks.CheckIn.Manager.ChangeHistoryData)Container.DataItem).CreatedPersonId %>"><%# ((RockWeb.Blocks.CheckIn.Manager.ChangeHistoryData)Container.DataItem).CreatedPersonName %> </a> (<%# ((RockWeb.Blocks.CheckIn.Manager.ChangeHistoryData)Container.DataItem).CreatedDateTime %>) <br />
+                                            <%# ((RockWeb.Blocks.CheckIn.Manager.ChangeHistoryData)Container.DataItem).Description %>
+                                        </li>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <asp:Panel ID="pnlSearch" runat="server" Visible="false">
+                        <asp:Panel ID="pnlSearchResultGroup" runat="server">
+                            <Rock:RockLiteral ID="lSearchResultGroupName" runat="server" Label="Search Group Name" CssClass="mb-spacing-none" />
+                            <asp:Repeater ID="rptSearchGroupAdults" runat="server">
+                                <HeaderTemplate>
+                                    <ul class="ml-spacing-md mt-spacing-none mb-spacing-md">
+                                </HeaderTemplate>
+                                <ItemTemplate>
+                                    <li class="mb-spacing-xs">
+                                        <a href='<%# Eval("ProfileUrl") %>'><%# Eval("FullName") %></a>
+                                        <asp:Panel ID="pnlAdultMobile" runat="server" CssClass="d-block text-sm text-muted leading-snug" Visible='<%# !string.IsNullOrWhiteSpace( (string)Eval("MobileNumberFormatted") ) %>'>
+                                            <%# Eval("MobileNumberFormatted") %> <span class="text-muted">Mobile</span>
+                                        </asp:Panel>
+                                    </li>
+                                </ItemTemplate>
+                                <FooterTemplate>
+                                    </ul>
+                                </FooterTemplate>
+                            </asp:Repeater>
+                        </asp:Panel>
+                        <Rock:RockLiteral ID="lSearchType" runat="server" Label="Search Type" />
+                        <Rock:RockLiteral ID="lSearchValue" runat="server" Label="Search Value" />
+                    </asp:Panel>
                 </div>
             </div>
 

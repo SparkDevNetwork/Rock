@@ -48,11 +48,22 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         /// <param name="entityTypeGuid">The entity type unique identifier.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public ReminderTypesFieldAttribute( string name = "Reminder Types", string description = "", bool required = true, string defaultReminderTypeGuids = "", string category = "",
             int order = 0, string key = null, string entityTypeGuid = "" )
-            : base( name, description, required, defaultReminderTypeGuids, category, order, key, typeof( Rock.Field.Types.ReminderTypesFieldType ).FullName )
+            : base( SystemGuid.FieldType.REMINDER_TYPES.AsGuid(), name, description, required, defaultReminderTypeGuids, category, order, key )
         {
             EntityTypeGuid = entityTypeGuid;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ReminderTypesFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public ReminderTypesFieldAttribute( string name )
+            : base( SystemGuid.FieldType.REMINDER_TYPES.AsGuid(), name )
+        {
         }
 
         /// <summary>

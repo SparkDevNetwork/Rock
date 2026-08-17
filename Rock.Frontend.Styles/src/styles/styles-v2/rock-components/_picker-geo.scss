@@ -15,34 +15,51 @@
     overflow: hidden;
 }
 
-.gm-clear-button {
-    z-index:            10;
-    position:           absolute;
-    /* right: 0px; */
-    margin-top:         var(--spacing-tiny);
-    line-height:        0;
-    overflow:           hidden;
-    color:              #8c4b4b;
+// On-map drawing toolbar buttons (Pan, Draw, Clear). Sized and shadowed to
+// harmonize with Google's Map / Styled Map toggles. Pushed into
+// map.controls[TOP_LEFT] by the GeoPicker so Google handles positioning.
+.gm-tool-button {
+    display:            inline-flex;
+    align-items:        center;
+    justify-content:    center;
+    width:              28px;
+    height:             28px;
+    margin:             var(--spacing-tiny) 0 0 var(--spacing-tiny);
     background:         var(--color-interface-softest);
-    padding:            var(--spacing-tiny);
+    color:              #333;
+    border:             0;
     border-radius:      var(--rounded-tiny);
     box-shadow:         rgba(0, 0, 0, 0.3) 0 1px 4px -1px;
-    border:             0;
-    text-align:         left;
+    cursor:             pointer;
+    font-size:          16px;
+    padding:            0;
+    line-height:        0;
 }
 
-.gm-clear-button:hover {
+.gm-tool-button:hover:not(:disabled) {
     background: whitesmoke;
 }
 
-.gm-clear-button:disabled {
+.gm-tool-button:disabled {
     color: #aaa;
-    background: var(--color-interface-softest);
+    cursor: default;
 }
 
-.gm-clear-button i.fa {
-    font-size: var(--font-size-regular);
-    padding: 0 2.5px;
+// When a tool is disabled because its mode is currently in use (e.g. the Draw
+// button while polygon drawing is in progress), text-info signals "in use".
+// The default :disabled color would otherwise force #aaa.
+.gm-tool-button.text-info:disabled {
+    color: var(--color-info-strong);
+}
+
+// The X (delete) tool uses the red-brown color from the legacy clear button
+// to signal a destructive action. Only when clickable; a disabled X stays #aaa.
+.gm-tool-button:not(:disabled) i.ti-x {
+    color: #8c4b4b;
+}
+
+.gm-tool-button i.ti {
+    line-height: 1;
 }
 
 .static-map-size {

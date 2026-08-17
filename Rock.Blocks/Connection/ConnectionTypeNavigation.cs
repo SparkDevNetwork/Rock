@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Connection;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
@@ -61,26 +62,32 @@ namespace Rock.Blocks.Connection
         Order = 1,
         IsRequired = true )]
 
-    [LinkedPage( "Connections List Page",
-        Key = AttributeKey.ConnectionsListPage,
-        Description = "Select the page that the list button should open to view the connections list.",
-        DefaultValue = Rock.SystemGuid.Page.CONNECTIONS_LIST,
+    [LinkedPage( "Connections Hub Page",
+        Key = AttributeKey.ConnectionsHubPage,
+        Description = "Select the page that the list, board, and grid buttons should open to view the connections hub.",
+        DefaultValue = Rock.SystemGuid.Page.CONNECTIONS_HUB,
         Order = 2,
-        IsRequired = true )]
-
-    [LinkedPage( "Connection Board Page",
-        Key = AttributeKey.ConnectionBoardPage,
-        Description = "Select the page that the board and grid buttons should open to view the connection board in board or grid view.",
-        DefaultValue = Rock.SystemGuid.Page.CONNECTIONS_BOARD,
-        Order = 3,
         IsRequired = true )]
 
     [LinkedPage( "Operational Snapshot Page",
         Key = AttributeKey.OperationalSnapshotPage,
         Description = "Select the page that the snapshot button should open to view the operational snapshot.",
         DefaultValue = Rock.SystemGuid.Page.CONNECTIONS_OPERATIONAL_SNAPSHOT,
+        Order = 3,
+        IsRequired = true )]
+
+    [LinkedPage( "My Connections Page",
+        Key = AttributeKey.MyConnectionsPage,
+        Description = "Select the page that the My Connections button should open to view a personal Connections workspace.",
+        DefaultValue = Rock.SystemGuid.Page.MY_CONNECTIONS,
         Order = 4,
         IsRequired = true )]
+
+    [LinkedPage( "Celebrations Report Page",
+        Key = AttributeKey.CelebrationsReportPage,
+        Description = "Select the page that the celebrations button should open to view the celebrations report.",
+        Order = 4,
+        IsRequired = false )]
 
     [ConnectionTypesField( "Connection Types",
         Key = AttributeKey.ConnectionTypes,
@@ -100,9 +107,10 @@ namespace Rock.Blocks.Connection
         {
             public const string ConfigurationPage = "ConfigurationPage";
             public const string OpportunitiesPage = "OpportunitiesPage";
-            public const string ConnectionsListPage = "ConnectionsListPage";
-            public const string ConnectionBoardPage = "ConnectionBoardPage";
+            public const string ConnectionsHubPage = "ConnectionsHubPage";
             public const string OperationalSnapshotPage = "OperationalSnapshotPage";
+            public const string MyConnectionsPage = "MyConnectionsPage";
+            public const string CelebrationsReportPage = "CelebrationsReportPage";
             public const string ConnectionTypes = "ConnectionTypes";
         }
 
@@ -111,19 +119,27 @@ namespace Rock.Blocks.Connection
             // Connection Type-level URLs.
             public const string ConfigurationPage = "ConfigurationPage";
             public const string OpportunitiesPage = "OpportunitiesPage";
-            public const string ConnectionsListPage = "ConnectionsListPage";
-            public const string ConnectionBoardPage = "ConnectionBoardPage";
+            public const string ConnectionsHubListViewPage = "ConnectionsHubListViewPage";
+            public const string ConnectionsHubBoardViewPage = "ConnectionsHubBoardViewPage";
+            public const string ConnectionsHubGridViewPage = "ConnectionsHubGridViewPage";
             public const string OperationalSnapshotPage = "OperationalSnapshotPage";
+            public const string CelebrationsReportPage = "CelebrationsReportPage";
 
             // Connection Opportunity-level URLs.
-            public const string OpportunityConnectionsListPage = "OpportunityConnectionsListPage";
-            public const string OpportunityConnectionBoardPage = "OpportunityConnectionBoardPage";
+            public const string OpportunityConnectionsHubListViewPage = "OpportunityConnectionsHubListViewPage";
+            public const string OpportunityConnectionsHubBoardViewPage = "OpportunityConnectionsHubBoardViewPage";
+            public const string OpportunityConnectionsHubGridViewPage = "OpportunityConnectionsHubGridViewPage";
+
+            // My Connections-level URLs.
+            public const string MyConnectionsPage = "MyConnectionsPage";
         }
 
         private static class PageParameterKey
         {
             public const string ConnectionType = "ConnectionType";
             public const string ConnectionOpportunity = "ConnectionOpportunity";
+            public const string Connector = "Connector";
+            public const string IsMyConnectionsView = "IsMyConnectionsView";
         }
 
         private static class PersonPreferenceKey
@@ -167,7 +183,7 @@ namespace Rock.Blocks.Connection
         private PersonPreferenceCollection BlockPersonPreferences => this.GetBlockPersonPreferences();
 
         /// <summary>
-        /// Gets or sets the current person's connection type visibility preference.
+        /// Gets the current person's connection type visibility preference.
         /// </summary>
         private string TypeVisibilityPreference
         {
@@ -386,7 +402,8 @@ namespace Rock.Blocks.Connection
                         OverdueRequestCount = counts == null ? 0 : counts.OverdueRequestCount,
                         UnassignedRequestCount = counts == null ? 0 : counts.UnassignedRequestCount,
                         AssignedToYouRequestCount = counts == null ? 0 : counts.AssignedToYouRequestCount,
-                        EnabledViews = x.ConnectionType.EnabledViews
+                        EnabledViews = x.ConnectionType.EnabledViews,
+                        IsCelebrationEnabled = x.ConnectionType.EnabledFeatures.HasFlag( EnabledFeatureFlags.Celebration )
                     }
                 )
                 .OrderBy( s => s.Order )
@@ -471,10 +488,25 @@ namespace Rock.Blocks.Connection
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
-            var opportunityQueryParams = new Dictionary<string, string>
+            // The list-view and board-view URLs resolve to the same Connections Hub
+            // page; they differ only in the SelectedView query parameter that
+            // tells the hub which view to open with.
+            var hubListViewQueryParams = new Dictionary<string, string>
             {
-                { PageParameterKey.ConnectionType, "((TypeKey))" },
-                { PageParameterKey.ConnectionOpportunity, "((Key))" }
+                [PageParameterKey.ConnectionType] = "((Key))",
+                ["SelectedView"] = EnabledViewFlags.List.ToString().ToLower()
+            };
+
+            var hubBoardViewQueryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.ConnectionType] = "((Key))",
+                ["SelectedView"] = EnabledViewFlags.Board.ToString().ToLower()
+            };
+
+            var hubGridViewQueryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.ConnectionType] = "((Key))",
+                ["SelectedView"] = EnabledViewFlags.Grid.ToString().ToLower()
             };
 
             return new Dictionary<string, string>
@@ -482,13 +514,47 @@ namespace Rock.Blocks.Connection
                 // Connection Type-level URLs.
                 [NavigationUrlKey.ConfigurationPage] = this.GetLinkedPageUrl( AttributeKey.ConfigurationPage ),
                 [NavigationUrlKey.OpportunitiesPage] = this.GetLinkedPageUrl( AttributeKey.OpportunitiesPage, PageParameterKey.ConnectionType, "((Key))" ),
-                [NavigationUrlKey.ConnectionsListPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsListPage, PageParameterKey.ConnectionType, "((Key))" ),
-                [NavigationUrlKey.ConnectionBoardPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionBoardPage, PageParameterKey.ConnectionType, "((Key))" ),
+                [NavigationUrlKey.ConnectionsHubListViewPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsHubPage, hubListViewQueryParams ),
+                [NavigationUrlKey.ConnectionsHubBoardViewPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsHubPage, hubBoardViewQueryParams ),
+                [NavigationUrlKey.ConnectionsHubGridViewPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsHubPage, hubGridViewQueryParams ),
                 [NavigationUrlKey.OperationalSnapshotPage] = this.GetLinkedPageUrl( AttributeKey.OperationalSnapshotPage, PageParameterKey.ConnectionType, "((Key))" ),
+                [NavigationUrlKey.CelebrationsReportPage] = this.GetLinkedPageUrl( AttributeKey.CelebrationsReportPage ),
 
                 // Connection Opportunity-level URLs.
-                [NavigationUrlKey.OpportunityConnectionsListPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsListPage, opportunityQueryParams ),
-                [NavigationUrlKey.OpportunityConnectionBoardPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionBoardPage, opportunityQueryParams )
+                [NavigationUrlKey.OpportunityConnectionsHubListViewPage] = this.GetLinkedPageUrl(
+                    AttributeKey.ConnectionsHubPage,
+                    new Dictionary<string, string>( hubListViewQueryParams )
+                    {
+                        [PageParameterKey.ConnectionType] = "((TypeKey))",
+                        [PageParameterKey.ConnectionOpportunity] = "((Key))"
+                    }
+                ),
+                [NavigationUrlKey.OpportunityConnectionsHubBoardViewPage] = this.GetLinkedPageUrl(
+                    AttributeKey.ConnectionsHubPage,
+                    new Dictionary<string, string>( hubBoardViewQueryParams )
+                    {
+                        [PageParameterKey.ConnectionType] = "((TypeKey))",
+                        [PageParameterKey.ConnectionOpportunity] = "((Key))"
+                    }
+                ),
+                [NavigationUrlKey.OpportunityConnectionsHubGridViewPage] = this.GetLinkedPageUrl(
+                    AttributeKey.ConnectionsHubPage,
+                    new Dictionary<string, string>( hubGridViewQueryParams )
+                    {
+                        [PageParameterKey.ConnectionType] = "((TypeKey))",
+                        [PageParameterKey.ConnectionOpportunity] = "((Key))"
+                    }
+                ),
+
+                // My Connections-level URLs.
+                [NavigationUrlKey.MyConnectionsPage] = this.GetLinkedPageUrl(
+                    AttributeKey.MyConnectionsPage,
+                    new Dictionary<string, string>
+                    {
+                        [PageParameterKey.IsMyConnectionsView] = "true",
+                        [PageParameterKey.Connector] = GetCurrentPerson()?.IdKey ?? string.Empty
+                    }
+                )
             };
         }
 

@@ -46,14 +46,42 @@ namespace RockWeb.Blocks.Event
     [Description( "Displays the details of a given registration." )]
     [SecurityAction( SecurityActionKey.EditPaymentPlan, "The roles and/or users that can edit the payment plan for the selected persons." )]
 
-    [LinkedPage( "Registrant Page", "The page for viewing details about a registrant", true, "", "", 0 )]
-    [LinkedPage( "Transaction Page", "The page for viewing transaction details", true, "", "", 1 )]
-    [LinkedPage( "Group Detail Page", "The page for viewing details about a group", true, "", "", 2 )]
-    [LinkedPage( "Group Member Page", "The page for viewing details about a group member", true, "", "", 3 )]
-    [LinkedPage( "Transaction Detail Page", "The page for viewing details about a payment", true, "", "", 4 )]
-    [LinkedPage( "Audit Page", "Page used to display the history of changes to a registration.", true, "", "", 5 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false, Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION, "", 6 )]
-    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Event Registration", "", 7 )]
+    [LinkedPage( "Registrant Page",
+        Description = "The page for viewing details about a registrant",
+        IsRequired = true,
+        Order = 0 )]
+    [LinkedPage( "Transaction Page",
+        Description = "The page for viewing transaction details",
+        IsRequired = true,
+        Order = 1 )]
+    [LinkedPage( "Group Detail Page",
+        Description = "The page for viewing details about a group",
+        IsRequired = true,
+        Order = 2 )]
+    [LinkedPage( "Group Member Page",
+        Description = "The page for viewing details about a group member",
+        IsRequired = true,
+        Order = 3 )]
+    [LinkedPage( "Transaction Detail Page",
+        Description = "The page for viewing details about a payment",
+        IsRequired = true,
+        Order = 4 )]
+    [LinkedPage( "Audit Page",
+        Description = "Page used to display the history of changes to a registration.",
+        IsRequired = true,
+        Order = 5 )]
+    [DefinedValueField( "Source",
+        Description = "The Financial Source Type to use when creating transactions",
+        IsRequired = false,
+        AllowMultiple = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE,
+        DefaultValue = Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION,
+        Order = 6 )]
+    [TextField( "Batch Name Prefix",
+        Description = "The batch prefix name to use when creating a new batch",
+        IsRequired = false,
+        DefaultValue = "Event Registration",
+        Order = 7 )]
     [Rock.SystemGuid.BlockTypeGuid( "A1C967B2-EEDA-416F-A53C-7BE46D6DA4E1" )]
     public partial class RegistrationDetail : RockBlock
     {
@@ -77,6 +105,22 @@ namespace RockWeb.Blocks.Event
         }
 
         #endregion Security Actions
+
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters. Both keys accept either a numeric Id
+        /// or an IdKey (hashed) value so that links from Obsidian blocks and
+        /// legacy numeric URLs both resolve.
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string RegistrationInstanceId = "RegistrationInstanceId";
+            public const string RegistrationId = "RegistrationId";
+            public const string ReturnUrl = "ReturnUrl";
+        }
+
+        #endregion Page Parameter Keys
 
         #region Fields
 
@@ -188,10 +232,10 @@ namespace RockWeb.Blocks.Event
                 else
                 {
                     var rockContext = new RockContext();
-                    var registrationInstanceId = this.PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
+                    var registrationInstanceId = GetRegistrationInstanceIdFromPage();
                     if ( !registrationInstanceId.HasValue )
                     {
-                        var registrationId = this.PageParameter( "RegistrationId" ).AsIntegerOrNull();
+                        var registrationId = GetRegistrationIdFromPage();
                         if ( registrationId.HasValue )
                         {
                             registrationInstanceId = new RegistrationService( rockContext ).GetSelect( registrationId.Value, s => s.RegistrationInstanceId );
@@ -273,6 +317,66 @@ namespace RockWeb.Blocks.Event
         private List<RegistrantInfo> RegistrantsState { get; set; }
 
         #endregion Properties
+
+        #region Page Parameter Helpers
+
+        /// <summary>
+        /// Resolves the RegistrationInstanceId page parameter, accepting either a
+        /// numeric Id or an IdKey string. Returns null when neither form resolves.
+        /// </summary>
+        private int? GetRegistrationInstanceIdFromPage()
+        {
+            var key = PageParameter( PageParameterKey.RegistrationInstanceId );
+            return key.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( key );
+        }
+
+        /// <summary>
+        /// Resolves the RegistrationId page parameter, accepting either a numeric
+        /// Id or an IdKey string. Returns null when neither form resolves.
+        /// </summary>
+        private int? GetRegistrationIdFromPage()
+        {
+            var key = PageParameter( PageParameterKey.RegistrationId );
+            return key.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( key );
+        }
+
+        /// <summary>
+        /// Navigates to the ReturnUrl page parameter if it is a safe local URL,
+        /// otherwise navigates to the parent page with the supplied query parameters.
+        /// </summary>
+        /// <param name="pageParams">The query parameters to use when falling back to the parent page.</param>
+        private void NavigateToReturnUrlOrParentPage( Dictionary<string, string> pageParams )
+        {
+            /*
+                6/5/26 - MSE
+
+                This block's parent page is the Registrations tab, so navigating to
+                the parent page loses the tab the individual came from (Registrants,
+                Payments, etc.). Linking blocks pass ReturnUrl so we can send them back.
+
+                Reason: Preserve the source tab when navigating away from this block.
+            */
+            var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
+
+            // Only allow site-relative paths to prevent open redirects.
+            // "//" and "/\" are rejected because browsers treat them as protocol-relative.
+            var isSafeLocalUrl = returnUrl.IsNotNullOrWhiteSpace()
+                && returnUrl.StartsWith( "/" )
+                && !returnUrl.StartsWith( "//" )
+                && !returnUrl.StartsWith( @"/\" )
+                && !returnUrl.RedirectUrlContainsXss();
+
+            if ( isSafeLocalUrl )
+            {
+                Response.Redirect( returnUrl, false );
+                Context.ApplicationInstance.CompleteRequest();
+                return;
+            }
+
+            NavigateToParentPage( pageParams );
+        }
+
+        #endregion Page Parameter Helpers
 
         #region Control Methods
 
@@ -479,7 +583,7 @@ namespace RockWeb.Blocks.Event
 
                     var pageParams = new Dictionary<string, string>();
                     pageParams.Add( "RegistrationInstanceId", RegistrationInstanceId.ToString() );
-                    NavigateToParentPage( pageParams );
+                    NavigateToReturnUrlOrParentPage( pageParams );
                 }
             }
         }
@@ -637,7 +741,7 @@ namespace RockWeb.Blocks.Event
             {
                 var pageParams = new Dictionary<string, string>();
                 pageParams.Add( "RegistrationInstanceId", RegistrationInstanceId.ToString() );
-                NavigateToParentPage( pageParams );
+                NavigateToReturnUrlOrParentPage( pageParams );
             }
             else
             {
@@ -664,7 +768,7 @@ namespace RockWeb.Blocks.Event
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    int instanceId = PageParameter( "RegistrationInstanceId" ).AsInteger();
+                    int instanceId = GetRegistrationInstanceIdFromPage() ?? 0;
                     templateId = new RegistrationInstanceService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( i => i.Id == instanceId )
@@ -689,10 +793,14 @@ namespace RockWeb.Blocks.Event
         {
             var qryParams = new Dictionary<string, string>();
             var pageCache = PageCache.Get( RockPage.PageId );
-            var instanceId = Registration != null ? Registration.RegistrationInstanceId.ToString() : PageParameter( "RegistrationInstanceId" );
+
+            var instanceId = Registration != null
+                ? Registration.RegistrationInstanceId.ToString()
+                : GetRegistrationInstanceIdFromPage()?.ToString()
+                  ?? PageParameter( PageParameterKey.RegistrationInstanceId );
             if ( pageCache != null && pageCache.ParentPage != null )
             {
-                qryParams.Add( "RegistrationInstanceId", instanceId );
+                qryParams.Add( PageParameterKey.RegistrationInstanceId, instanceId );
                 NavigateToPage( pageCache.ParentPage.Guid, qryParams );
             }
         }
@@ -710,10 +818,10 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                string registrationId = PageParameter( "RegistrationId" );
-                if ( !string.IsNullOrWhiteSpace( registrationId ) )
+                var registrationId = GetRegistrationIdFromPage();
+                if ( registrationId.HasValue )
                 {
-                    ShowDetail( registrationId.AsInteger(), PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull() );
+                    ShowDetail( registrationId.Value, GetRegistrationInstanceIdFromPage() );
                 }
                 else
                 {
@@ -1115,7 +1223,8 @@ namespace RockWeb.Blocks.Event
                     // reload registration
                     Registration = GetRegistration( Registration.Id, rockContext );
 
-                    RockPage.UpdateBlocks( "~/Blocks/Finance/TransactionList.ascx" );
+
+                    //RockPage.UpdateBlocks( "~/Blocks/Finance/TransactionList.ascx" );
 
                     ShowReadonlyDetails( Registration );
 
@@ -1428,8 +1537,8 @@ namespace RockWeb.Blocks.Event
             if ( !RegistrationInstanceId.HasValue )
             {
                 Title = "New Registration";
-                RegistrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
-                RegistrationId = PageParameter( "RegistrationId" ).AsIntegerOrNull();
+                RegistrationInstanceId = GetRegistrationInstanceIdFromPage();
+                RegistrationId = GetRegistrationIdFromPage();
 
                 var rockContext = new RockContext();
 
@@ -1754,10 +1863,32 @@ namespace RockWeb.Blocks.Event
 
             bool anyPayments = registration.PaymentPlanFinancialScheduledTransaction != null && registration.PaymentPlanFinancialScheduledTransaction.IsActive;
             hfHasPayments.Value = anyPayments.ToString();
-            foreach ( RockWeb.Blocks.Finance.TransactionList block in RockPage.RockBlocks.Where( a => a is RockWeb.Blocks.Finance.TransactionList ) )
-            {
-                block.SetVisible( anyPayments );
-            }
+
+            /*
+                6/23/26 - CH
+
+                The commented-out loop below was the legacy WebForms mechanism for toggling a sibling
+                Transaction List block on this same page: it reached into RockPage.RockBlocks, found any
+                instance of the WebForms TransactionList block, and showed/hid it based on whether the
+                registration had active payments. The strongly-typed cast required the
+                "<%@ Reference Control="~/Blocks/Finance/TransactionList.ascx" %>" directive in the .ascx,
+                which is why removing the chopped WebForms block broke the build.
+
+                In current Rock, no page places a Transaction List block alongside the Registration Detail
+                block, so this loop was already a no-op and has been left commented out for context.
+
+                When the Registration Detail block is itself converted to Obsidian, this cross-block
+                visibility coordination cannot be replicated with RockPage.RockBlocks (Obsidian blocks are
+                not WebForms controls). If we ever want to keep this behavior, the Obsidian-friendly
+                approach is the browser bus: Registration Detail would publish a message (e.g. a
+                "registration payments changed" event carrying the hasPayments flag) and an Obsidian
+                Transaction List block on the same page would subscribe and toggle its own visibility.
+            */
+
+            //foreach ( RockWeb.Blocks.Finance.TransactionList block in RockPage.RockBlocks.Where( a => a is RockWeb.Blocks.Finance.TransactionList ) )
+            //{
+            //    block.SetVisible( anyPayments );
+            //}
 
             lbAddRegistrant.Visible = EditAllowed;
 
@@ -1778,7 +1909,7 @@ namespace RockWeb.Blocks.Event
                 var balanceDue = registration.BalanceDue;
                 hlBalance.Visible = true;
                 hlBalance.Text = balanceDue.FormatAsCurrency();
-                
+
                 var isPaymentPlanActive = registration.IsPaymentPlanActive;
 
                 if ( balanceDue > 0.0m )
@@ -1959,6 +2090,10 @@ namespace RockWeb.Blocks.Event
                 paymentInfo.UpdateAddressFieldsFromAddressControl( acBillingAddress );
 
                 paymentInfo.Amount = amount;
+                paymentInfo.AccountAllocations = new List<FinancialTransactionService.AccountAllocation>
+                {
+                    new FinancialTransactionService.AccountAllocation( registration.RegistrationInstance.AccountId.Value, amount )
+                };
                 paymentInfo.Email = registration.ConfirmationEmail;
 
                 paymentInfo.FirstName = registration.FirstName;
@@ -2491,6 +2626,14 @@ namespace RockWeb.Blocks.Event
             spanChangeButtonWrapper.Visible = _canEditPaymentPlan;
             lbDeletePaymentPlan.Visible = _canEditPaymentPlan;
 
+            // Warn when the remaining scheduled plan payments don't equal the registration's remaining balance.
+            // This catches plans that no longer cover the balance because registrants were removed,
+            // discount codes were modified, or fees/costs changed after the plan was set up.
+            var paymentPlan = registration.PaymentPlanFinancialScheduledTransaction.PaymentPlan;
+            nbPaymentPlanAmountMismatch.Visible = paymentPlan != null
+                && paymentPlan.IsActive
+                && paymentPlan.PlannedAmountRemaining != registration.BalanceDue;
+
             var paymentPlanFinancialScheduledTransactionId = registration.PaymentPlanFinancialScheduledTransactionId.Value;
             var lastTransactionDate = new FinancialTransactionService( new RockContext() )
                 .Queryable()
@@ -2500,12 +2643,12 @@ namespace RockWeb.Blocks.Event
                     && a.TransactionDateTime.HasValue
                 )
                 .Max( t => ( DateTime? ) t.TransactionDateTime.Value );
-            
+
             // Use the financial gateway associated with the existing payment plan
             // instead of what's configured on the template, as the template's gateway may
             // have changed after the payment plan was created.
             var nextPaymentDate = registration.PaymentPlanFinancialScheduledTransaction.FinancialGateway?.GetGatewayComponent()?.GetNextPaymentDate( registration.PaymentPlanFinancialScheduledTransaction, lastTransactionDate );
-                
+
             if ( nextPaymentDate.HasValue )
             {
                 // Show the next payment date.
@@ -3119,7 +3262,7 @@ namespace RockWeb.Blocks.Event
         }
 
         #endregion Support Classes and Enumerations
-        
+
         #region Payment Plan Methods
 
         /// <summary>
@@ -3171,7 +3314,7 @@ namespace RockWeb.Blocks.Event
 
                 AmountForPaymentPlan = this.Registration.BalanceDue,
                 CurrencyPrecision = new RockCurrencyCodeInfo().DecimalPlaces,
-                
+
                 // Admins can choose whatever payment frequency and number of payments as long as there is at least one payment.
                 DesiredNumberOfPayments = this.Registration.PaymentPlanFinancialScheduledTransaction.NumberOfPayments ?? 0,
                 IsNumberOfPaymentsLimited = false,
@@ -3180,7 +3323,7 @@ namespace RockWeb.Blocks.Event
                 // The start date should default to tomorrow if the next payment date is not set.
                 DesiredStartDate = ( financialGatewayComponent.GetNextPaymentDate( this.Registration.PaymentPlanFinancialScheduledTransaction, lastTransactionDate )
                     ?? RockDateTime.Now.AddDays( 1 ) ).Date,
-                
+
                 // The Registration Instance payment deadline should have a value since it's a required field,
                 // but default to next year just in case it's missing.
                 EndDate = ( this.Registration.RegistrationInstance.PaymentDeadlineDate
@@ -3240,7 +3383,7 @@ namespace RockWeb.Blocks.Event
                 DesiredAllowedPaymentFrequencies = frequencyValueOptions,
 
                 // Admins can choose whatever payment frequency and number of payments as long as there is at least one payment.
-                IsNumberOfPaymentsLimited = false,                
+                IsNumberOfPaymentsLimited = false,
                 DesiredNumberOfPayments = nbUpdatePaymentPlanNumberOfPayments.IntegerValue ?? 0,
                 MinNumberOfPayments = 1,
 
@@ -3260,7 +3403,7 @@ namespace RockWeb.Blocks.Event
                 // Ensure the selected frequency value is one of the available options.
                 paymentPlanConfigurationOptions.DesiredPaymentFrequency = paymentPlanConfigurationOptions.DesiredAllowedPaymentFrequencies.FirstOrDefault( option => option.Id == frequencyValueId.Value );
             }
-        
+
             return new PaymentPlanConfigurationService().Get( paymentPlanConfigurationOptions );
         }
 
@@ -3303,7 +3446,7 @@ namespace RockWeb.Blocks.Event
             }
 
             if ( paymentPlanConfiguration.AmountPerPayment > 0 )
-            { 
+            {
                 pnlUpdatePaymentPlanSummary.Visible = true;
             }
             else
@@ -3347,7 +3490,7 @@ namespace RockWeb.Blocks.Event
                     .Include( f => f.FinancialPaymentDetail )
                     .Include( f => f.FinancialGateway )
                     .FirstOrDefault( f => f.Id == paymentPlanFinancialScheduledTransactionId.Value );
-                
+
                 // Use the financial gateway associated with the existing payment plan
                 // instead of what's configured on the template, as the template's gateway may
                 // have changed after the payment plan was created.
@@ -3407,8 +3550,8 @@ namespace RockWeb.Blocks.Event
                     /*
                         07/11/2025 - NA
 
-                        Some gateways do not properly populate the FinancialPaymentDetail record they create 
-                        during the UpdateScheduledPayment() method. To compensate, we're preserving existing 
+                        Some gateways do not properly populate the FinancialPaymentDetail record they create
+                        during the UpdateScheduledPayment() method. To compensate, we're preserving existing
                         values to restore them if needed.
 
                         Reason: Expedites resolution of issue #6367 by ensuring payment details remain complete.
@@ -3431,9 +3574,9 @@ namespace RockWeb.Blocks.Event
                     /*
                         07/11/2025 - NA
 
-                        After the transaction is processed, the gateway should populate the FinancialPaymentDetail 
-                        since it has more data than Rock (as the gateway collects the payment information directly). 
-                        However, if paymentPlanPaymentInfo contains additional values, we’ll attempt to merge those 
+                        After the transaction is processed, the gateway should populate the FinancialPaymentDetail
+                        since it has more data than Rock (as the gateway collects the payment information directly).
+                        However, if paymentPlanPaymentInfo contains additional values, we’ll attempt to merge those
                         into FinancialPaymentDetail.
 
                         Reason: This mirrors similar logic used in the TransactionEntryV2 block.
@@ -3610,7 +3753,7 @@ namespace RockWeb.Blocks.Event
         protected void dpPaymentPlanStartDate_SelectDate( object sender, EventArgs e )
         {
             var paymentPlanConfiguration = GetPaymentPlanConfigurationFromModal();
-            SetUpdatePaymentPlanModalConfiguration( paymentPlanConfiguration ); 
+            SetUpdatePaymentPlanModalConfiguration( paymentPlanConfiguration );
         }
 
         protected void ddlPaymentPlanNumberOfPayments_SelectedIndexChanged( object sender, EventArgs e )

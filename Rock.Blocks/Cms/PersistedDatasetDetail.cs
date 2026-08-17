@@ -24,11 +24,11 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Cms;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.PersistedDatasetDetail;
-using Rock.ViewModels.Blocks.Core.ScheduleDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -182,25 +182,18 @@ namespace Rock.Blocks.Cms
                 return null;
             }
 
-            var rockContext = new RockContext();
-            Schedule schedule = null;
             string friendlyScheduleText = null;
             bool isNamedSchedule = false;
             string iCalContent = "";
 
             if ( entity.PersistedScheduleId.HasValue )
             {
-                schedule = new ScheduleService( rockContext ).Get( entity.PersistedScheduleId.Value );
-                if ( schedule != null && schedule.Name.IsNotNullOrWhiteSpace() )
+                var schedule = new ScheduleService( RockContext ).Get( entity.PersistedScheduleId.Value );
+                if ( schedule != null )
                 {
                     friendlyScheduleText = schedule.ToFriendlyScheduleText();
                     iCalContent = schedule.iCalendarContent;
-                    isNamedSchedule = true;
-                }
-                else
-                {
-                    friendlyScheduleText = schedule.ToFriendlyScheduleText();
-                    iCalContent = schedule.iCalendarContent;
+                    isNamedSchedule = schedule.Name.IsNotNullOrWhiteSpace();
                 }
             }
 
@@ -218,55 +211,48 @@ namespace Rock.Blocks.Cms
                 IsActive = entity.IsActive,
                 LastRefreshDateTime = entity.LastRefreshDateTime,
                 TimeToBuildMS = entity.TimeToBuildMS,
-                MemoryCacheDurationHours = entity.MemoryCacheDurationMS,
                 Name = entity.Name,
                 PersistedScheduleId = entity.PersistedScheduleId,
-                RefreshInterval = entity.PersistedScheduleIntervalMinutes,
                 PersistenceType = entity.PersistedScheduleId.HasValue ? "Schedule" : ( entity.PersistedScheduleIntervalMinutes.HasValue ? "Interval" : null ),
                 PersistedScheduleType = isNamedSchedule ? "NamedSchedule" : "Unique",
                 PersistedSchedule = iCalContent,
-                FriendlyScheduleText = friendlyScheduleText
+                FriendlyScheduleText = friendlyScheduleText,
+                NamedSchedules = LoadNamedSchedules(),
             };
 
-            if ( entity.PersistedScheduleIntervalMinutes.HasValue )
-            {
-                entityBag.RefreshIntervalHours = Convert.ToInt32( TimeSpan.FromMinutes( entity.PersistedScheduleIntervalMinutes.Value ).TotalHours );
-            }
-
+            // Memory cache duration: stored as milliseconds in the entity,
+            // presented as hours in the bag.
             if ( entity.MemoryCacheDurationMS.HasValue )
             {
                 entityBag.MemoryCacheDurationHours = Convert.ToInt32( TimeSpan.FromMilliseconds( entity.MemoryCacheDurationMS.Value ).TotalHours );
             }
 
-            // Set PersistedScheduleIntervalType by PersistedScheduleIntervalMinutes
+            // Persistence interval: stored as minutes in the entity,
+            // presented as a (count, unit) pair using the largest unit
+            // that divides evenly. RefreshIntervalHours is kept on the
+            // bag for backward compatibility with older consumers.
             if ( entity.PersistedScheduleIntervalMinutes.HasValue )
             {
                 int intervalMinutes = entity.PersistedScheduleIntervalMinutes.Value;
 
-                if ( intervalMinutes % 1440 == 0 ) // Check if it's in days
+                if ( intervalMinutes % 1440 == 0 )
                 {
                     entityBag.PersistedScheduleIntervalType = "Days";
                     entityBag.RefreshInterval = intervalMinutes / 1440;
                 }
-                else if ( intervalMinutes % 60 == 0 ) // Check if it's in hours
+                else if ( intervalMinutes % 60 == 0 )
                 {
                     entityBag.PersistedScheduleIntervalType = "Hours";
                     entityBag.RefreshInterval = intervalMinutes / 60;
                 }
-                else // It's in minutes
+                else
                 {
                     entityBag.PersistedScheduleIntervalType = "Mins";
                     entityBag.RefreshInterval = intervalMinutes;
                 }
-            }
-            else
-            {
-                // If no interval minutes are set, ensure the type is also null
-                entityBag.PersistedScheduleIntervalType = null;
-            }
 
-            var namedSchedules = LoadNamedSchedules();
-            entityBag.NamedSchedules = namedSchedules;
+                entityBag.RefreshIntervalHours = Convert.ToInt32( TimeSpan.FromMinutes( intervalMinutes ).TotalHours );
+            }
 
             return entityBag;
         }
@@ -307,7 +293,12 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
-        /// Updates the entity from the data in the save box.
+        /// Updates the entity from the data in the save box. Schedule
+        /// references (PersistedScheduleId, PersistedSchedule) are
+        /// intentionally not handled here; they are managed by
+        /// <see cref="ApplyScheduleSelection"/> after this method runs so
+        /// that an existing Unique schedule row can be updated in place
+        /// instead of being orphaned.
         /// </summary>
         /// <param name="entity">The entity to be updated.</param>
         /// <param name="box">The box containing the information to be updated.</param>
@@ -320,7 +311,6 @@ namespace Rock.Blocks.Cms
                 return false;
             }
 
-            // Update properties
             box.IfValidProperty( nameof( box.Entity.AccessKey ),
                 () => entity.AccessKey = box.Entity.AccessKey );
 
@@ -345,70 +335,115 @@ namespace Rock.Blocks.Cms
             box.IfValidProperty( nameof( box.Entity.IsActive ),
                 () => entity.IsActive = box.Entity.IsActive );
 
-            box.IfValidProperty( nameof( box.Entity.RefreshInterval ),
-                () => entity.PersistedScheduleIntervalMinutes = box.Entity.RefreshInterval );
-
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );
-
-            box.IfValidProperty( nameof( box.Entity.PersistedScheduleId ),
-                () =>
-                {
-                    if ( box.Entity.PersistenceType == "Schedule" )
-                    {
-                        if ( box.Entity.PersistedScheduleType == "NamedSchedule" && box.Entity.PersistedScheduleId.HasValue )
-                        {
-                            entity.PersistedScheduleId = box.Entity.PersistedScheduleId;
-                        }
-                        else
-                        {
-                            entity.PersistedScheduleId = null;
-                        }
-                    }
-                } );
 
             if ( box.Entity.MemoryCacheDurationHours.HasValue )
             {
                 box.IfValidProperty( nameof( box.Entity.MemoryCacheDurationHours ),
                     () => entity.MemoryCacheDurationMS = ( int ) TimeSpan.FromHours( box.Entity.MemoryCacheDurationHours.Value ).TotalMilliseconds );
             }
-
-            if ( box.Entity.RefreshIntervalHours.HasValue )
+            else
             {
-                box.IfValidProperty( nameof( box.Entity.RefreshIntervalHours ),
-                    () => entity.PersistedScheduleIntervalMinutes = ( int ) TimeSpan.FromHours( box.Entity.RefreshIntervalHours.Value ).TotalMinutes );
+                box.IfValidProperty( nameof( box.Entity.MemoryCacheDurationHours ),
+                    () => entity.MemoryCacheDurationMS = null );
             }
 
-            // Update PersistedScheduleIntervalMinutes based on Interval Type
+            // Convert the user-friendly RefreshInterval + IntervalType pair
+            // into the underlying PersistedScheduleIntervalMinutes column.
             if ( box.Entity.PersistenceType == "Interval" && box.Entity.RefreshInterval.HasValue )
             {
-                // Ensure the schedule is removed if the PersistenceType is Interval
-                entity.PersistedSchedule = null;
-                entity.PersistedScheduleId = null;
-
-                int intervalMinutes = box.Entity.RefreshInterval.Value;
-                string intervalType = box.Entity.PersistedScheduleIntervalType ?? "Mins";
-
-                switch ( intervalType )
+                int intervalCount = box.Entity.RefreshInterval.Value;
+                int multiplier;
+                switch ( box.Entity.PersistedScheduleIntervalType )
                 {
                     case "Days":
-                        intervalMinutes *= 1440; // Convert days to minutes
+                        multiplier = 1440;
                         break;
                     case "Hours":
-                        intervalMinutes *= 60; // Convert hours to minutes
+                        multiplier = 60;
+                        break;
+                    default:
+                        // "Mins" or anything unrecognized, treated as minutes.
+                        multiplier = 1;
                         break;
                 }
 
-                // Update the entity's PersistedScheduleIntervalMinutes
-                entity.PersistedScheduleIntervalMinutes = intervalMinutes;
+                entity.PersistedScheduleIntervalMinutes = intervalCount * multiplier;
             }
             else
             {
-                // If the PersistenceType is not 'Interval', reset the interval minutes
                 entity.PersistedScheduleIntervalMinutes = null;
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Applies the user's schedule selection to the entity. Should be
+        /// called after <see cref="UpdateEntityFromBox"/> so it can read
+        /// the entity's current PersistedScheduleId to decide whether to
+        /// update an existing Unique schedule row in place or create a
+        /// new one.
+        /// </summary>
+        /// <param name="entity">The persisted dataset being saved.</param>
+        /// <param name="box">The save box from the client.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void ApplyScheduleSelection( PersistedDataset entity, DetailBlockBox<PersistedDatasetBag, PersistedDatasetDetailOptionsBag> box, RockContext rockContext )
+        {
+            // Anything other than "Schedule" persistence drops the schedule
+            // reference. The Interval branch in UpdateEntityFromBox has
+            // already set PersistedScheduleIntervalMinutes; we just need
+            // to make sure the schedule link doesn't linger.
+            if ( box.Entity.PersistenceType != "Schedule" )
+            {
+                entity.PersistedScheduleId = null;
+                return;
+            }
+
+            if ( box.Entity.PersistedScheduleType == "NamedSchedule" )
+            {
+                // Reuse an existing named schedule by Id.
+                entity.PersistedScheduleId = box.Entity.PersistedScheduleId;
+                return;
+            }
+
+            // Unique schedule. Without iCal content there is nothing to
+            // persist, so drop the link rather than creating an empty
+            // Schedule row.
+            if ( string.IsNullOrEmpty( box.Entity.PersistedSchedule ) )
+            {
+                entity.PersistedScheduleId = null;
+                return;
+            }
+
+            // Update the entity's existing Unique schedule row in place if
+            // one is already attached, otherwise create a new Schedule.
+            // A Unique schedule has no Name; a Named schedule does, so we
+            // only reuse rows with an empty Name.
+            var scheduleService = new ScheduleService( rockContext );
+            Schedule schedule = null;
+
+            if ( entity.PersistedScheduleId.HasValue )
+            {
+                var existing = scheduleService.Get( entity.PersistedScheduleId.Value );
+                if ( existing != null && string.IsNullOrWhiteSpace( existing.Name ) )
+                {
+                    schedule = existing;
+                }
+            }
+
+            if ( schedule == null )
+            {
+                schedule = new Schedule();
+                scheduleService.Add( schedule );
+            }
+
+            schedule.iCalendarContent = box.Entity.PersistedSchedule;
+
+            // Persist the schedule first so it has an Id to point at.
+            rockContext.SaveChanges();
+            entity.PersistedScheduleId = schedule.Id;
         }
 
         /// <summary>
@@ -541,69 +576,41 @@ namespace Rock.Blocks.Cms
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<PersistedDatasetBag, PersistedDatasetDetailOptionsBag> box, ScheduleBag scheduleBag )
+        public BlockActionResult Save( DetailBlockBox<PersistedDatasetBag, PersistedDatasetDetailOptionsBag> box )
         {
             using ( var rockContext = new RockContext() )
             {
-                var entityService = new PersistedDatasetService( rockContext );
-
-                // Determine if we are editing an existing dataset or creating a new one.
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
                     return actionError;
                 }
 
-                // Update the entity instance from the information in the box.
                 if ( !UpdateEntityFromBox( entity, box, rockContext ) )
                 {
                     return ActionBadRequest( "Invalid data." );
                 }
 
-                // Manage Schedule if applicable
-                if ( box.Entity.PersistenceType == "Schedule" && !string.IsNullOrEmpty( scheduleBag.iCalendarContent ) )
-                {
-                    var scheduleService = new ScheduleService( rockContext );
-                    Schedule schedule = null;
-
-                    if ( box.Entity.PersistedScheduleType == "NamedSchedule" )
-                    {
-                        // If it's a Named Schedule, retrieve the schedule using the PersistedScheduleId
-                        if ( box.Entity.PersistedScheduleId.HasValue )
-                        {
-                            var namedSchedule = NamedScheduleCache.Get( box.Entity.PersistedScheduleId.Value );
-                            if ( namedSchedule != null )
-                            {
-                                box.Entity.FriendlyScheduleText = namedSchedule.FriendlyScheduleText;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // If it's a Unique Schedule, create a new schedule
-                        schedule = new Schedule
-                        {
-                            iCalendarContent = scheduleBag.iCalendarContent
-                        };
-                        scheduleService.Add( schedule );
-                        rockContext.SaveChanges();
-                        entity.PersistedScheduleId = schedule.Id;
-                        box.Entity.FriendlyScheduleText = schedule.ToFriendlyScheduleText();
-                    }
-                }
-
-                // Validate the dataset
+                // Validate before any DB writes so a failure does not leave
+                // a half-saved Schedule row behind.
                 if ( !ValidatePersistedDataset( entity, rockContext, out var validationMessage ) )
                 {
                     return ActionBadRequest( validationMessage );
                 }
 
+                // Force a rebuild on next refresh by clearing the cached
+                // build metadata. Any save (even a metadata-only edit) is
+                // treated as a reason to refetch.
                 entity.LastRefreshDateTime = null;
                 entity.TimeToBuildMS = null;
+                entity.Status = PersistedDatasetStatus.Unknown;
 
                 var isNew = entity.Id == 0;
 
+                // Wrap everything that touches the DB in a transaction so
+                // the schedule write and the entity write commit together.
                 rockContext.WrapTransaction( () =>
                 {
+                    ApplyScheduleSelection( entity, box, rockContext );
                     rockContext.SaveChanges();
                 } );
 

@@ -364,7 +364,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gets the Check-in page guid
-        /// ParentPage: 
+        /// ParentPage:
         /// </summary>
         public const string CHECK_IN_ROOT = "CDF2C599-D341-42FD-B7DC-CD402EA96050";
 
@@ -475,6 +475,12 @@ namespace Rock.SystemGuid
         /// ParentPage: Check-in
         /// </summary>
         public const string CHECKIN_CHECK_OUT_SUCCESS = "21A855BA-6D68-4504-97B4-D787452CEC29";
+
+        /// <summary>
+        /// Gets the Check-in Areas and Groups page guid
+        /// ParentPage: Check-in
+        /// </summary>
+        public const string CHECK_IN_AREAS_AND_GROUPS = "BAF3E806-8555-41D4-825B-838673DAFEB5";
 
         /// <summary>
         /// Gets the ChildPages page guid
@@ -613,11 +619,25 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CONNECTIONS_OPPORTUNITIES = "F8B0E0CE-76A3-4449-B4EB-28DD9A42D71F";
 
-		/// <summary>
+        /// <summary>
+        /// Gets the Connections Hub page guid.
+        /// ParentPage: Connections
+        /// </summary>
+        public const string CONNECTIONS_HUB = "8B5F2875-0D36-4625-8EE4-B738AE8E12F5";
+
+        /// <summary>
+        /// Gets the My Connections page guid.
+        /// ParentPage: Connections
+        /// </summary>
+        public const string MY_CONNECTIONS = "3E55BE64-C8E8-487B-9BD4-E94C7F99BE1B";
+
+        /// <summary>
         /// Gets the Connections List page guid.
         /// ParentPage: Connections
         /// </summary>
-        public const string CONNECTIONS_LIST = "8B5F2875-0D36-4625-8EE4-B738AE8E12F5";
+        [RockObsolete( "20.0" )]
+        [Obsolete( "Use CONNECTIONS_HUB instead." )]
+        public const string CONNECTIONS_LIST = CONNECTIONS_HUB;
 
         /// <summary>
         /// Gets the Connections Operational Snapshot page guid.
@@ -666,6 +686,12 @@ namespace Rock.SystemGuid
         /// ParentPage: Content Channel Detail
         /// </summary>
         public const string CONTENT_ITEM_DETAIL = "ABF26679-1051-4F4F-8A67-5958E5BF71F8";
+
+        /// <summary>
+        /// Gets the Content Item Metrics page guid
+        /// ParentPage: Content Channel Detail
+        /// </summary>
+        public const string CONTENT_ITEM_METRICS = "B917B620-C172-4E52-9695-917E3833DB09";
 
         /// <summary>
         /// Gets the Content Type Detail page guid
@@ -979,7 +1005,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gets the External Homepage page guid
-        /// ParentPage: 
+        /// ParentPage:
         /// </summary>
         public const string EXTERNAL_HOMEPAGE = "85F25819-E948-4960-9DDF-00F54D32444E";
 
@@ -1233,7 +1259,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gets the Internal Homepage page guid
-        /// ParentPage: 
+        /// ParentPage:
         /// </summary>
         public const string INTERNAL_HOMEPAGE = "20F97A93-7949-4C2A-8A5E-C756FE8585CA";
 
@@ -2154,5 +2180,15 @@ namespace Rock.SystemGuid
         /// The Group Placement page.
         /// </summary>
         public const string GROUP_PLACEMENT = "C1B0C21F-FF3B-4D79-A11A-75BF689A954A";
+
+        /// <summary>
+        /// The Ncoa Process Page
+        /// </summary>
+        public const string NCOA_PROCESS = "56EDE500-CEE6-41F4-B724-E44E66A4432F";
+
+        /// <summary>
+        /// The Mobile Page Layout Detail Page
+        /// </summary>
+        public const string MOBILE_LAYOUT = "5583A55D-7398-48E9-971F-6A1EF8158943";
     }
 }

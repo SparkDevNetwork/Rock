@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels.Attributes;
+using Rock.Web.Cache;
 
 namespace Rock.UniversalSearch.IndexModels
 {
@@ -44,7 +45,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The content.
         /// </value>
-        [RockIndexField( Analyzer = "snowball")] //https://www.elastic.co/blog/found-text-analysis-part-1
+        [RockIndexField( Analyzer = "snowball" )] //https://www.elastic.co/blog/found-text-analysis-part-1
         public string Content { get; set; }
 
         /// <summary>
@@ -53,7 +54,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The content channel identifier.
         /// </value>
-        [RockIndexField( Type = IndexFieldType.Number)]
+        [RockIndexField( Type = IndexFieldType.Number )]
         public int ContentChannelId { get; set; }
 
         /// <summary>
@@ -153,7 +154,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// </summary>
         /// <param name="contentChannelItem">The content channel item.</param>
         /// <returns></returns>
-        public static ContentChannelItemIndex LoadByModel(ContentChannelItem contentChannelItem )
+        public static ContentChannelItemIndex LoadByModel( ContentChannelItem contentChannelItem )
         {
             var contentChannelItemIndex = new ContentChannelItemIndex();
             contentChannelItemIndex.SourceIndexModel = "Rock.Model.ContentChannelItem";
@@ -173,7 +174,7 @@ namespace Rock.UniversalSearch.IndexModels
             contentChannelItemIndex.DocumentName = contentChannelItem.Title;
             contentChannelItemIndex.PrimarySlug = contentChannelItem.PrimarySlug;
 
-            if ( contentChannelItem.ContentChannel != null && ((contentChannelItem.ContentChannel.RequiresApproval && contentChannelItem.ApprovedDateTime != null) || contentChannelItem.ContentChannelType.DisableStatus ) )
+            if ( contentChannelItem.ContentChannel != null && ( ( contentChannelItem.ContentChannel.RequiresApproval && contentChannelItem.ApprovedDateTime != null ) || contentChannelItem.ContentChannelType.DisableStatus ) )
             {
                 contentChannelItemIndex.IsApproved = true;
             }
@@ -206,10 +207,10 @@ namespace Rock.UniversalSearch.IndexModels
             if ( !isSecurityDisabled )
             {
                 // check security
-                var contentChannelItem = new ContentChannelItemService( new RockContext() ).Get( (int)this.Id );
+                var contentChannelItem = ContentChannelItemCache.Get( ( int ) this.Id );
                 var isAllowedView = false;
 
-                if (contentChannelItem != null )
+                if ( contentChannelItem != null )
                 {
                     isAllowedView = contentChannelItem.IsAuthorized( "View", person );
                 }
@@ -235,13 +236,13 @@ namespace Rock.UniversalSearch.IndexModels
                             mergeFields = new Dictionary<string, object>();
 
                         }
-                        
+
                         mergeFields.AddOrReplace( "Id", this.Id );
                         mergeFields.AddOrReplace( "Title", this.Title );
                         mergeFields.AddOrReplace( "ContentChannelId", this.ContentChannelId );
                         mergeFields.AddOrReplace( "Slug", this.PrimarySlug );
 
-                        if (displayOptions == null )
+                        if ( displayOptions == null )
                         {
                             displayOptions = new Dictionary<string, object>();
                         }
@@ -256,7 +257,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <inheritdoc/>
         public override bool IsViewAllowed( Person person, RockContext rockContext )
         {
-            var contentChannelItem = new ContentChannelItemService( rockContext ).Get( ( int ) this.Id );
+            var contentChannelItem = ContentChannelItemCache.Get( ( int ) this.Id );
 
             return contentChannelItem?.IsAuthorized( Security.Authorization.VIEW, person ) ?? false;
         }

@@ -14,7 +14,7 @@ using Rock.Model;
 using Rock.Rest.Controllers;
 using Rock.Rest.Filters;
 using Rock.Security;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Rest

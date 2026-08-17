@@ -891,13 +891,6 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_CONNECTION_STATUS_PROSPECT = "368DD475-242C-49C4-A42C-7278BE690CC2";
 
-        /// <summary>
-        /// Person Connection Status - Web Prospect
-        /// </summary>
-        [Obsolete( "This is the same as the old Web Prospect but it is renamed to just Prospect." )]
-        [RockObsolete( "1.13" )]
-        public const string PERSON_CONNECTION_STATUS_WEB_PROSPECT = "368DD475-242C-49C4-A42C-7278BE690CC2";
-
         #endregion
 
         #region Person Review Reason
@@ -1651,6 +1644,11 @@ namespace Rock.SystemGuid
         /// The Serving Connection record source.
         /// </summary>
         public const string RECORD_SOURCE_TYPE_SERVING_CONNECTION = "2CF9DE9F-14D5-4036-B329-85B192A63A9B";
+
+        /// <summary>
+        /// The benevolence request record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_BENEVOLENCE_REQUEST = "BF2EB0CB-7B23-4E2D-87D6-C1F9106CEE00";
 
         #endregion
 

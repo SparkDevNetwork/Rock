@@ -280,8 +280,7 @@ namespace Rock.Migrations.Migrations {
         ///    BEGIN
         ///	
         ///	    -- configuration of the duration in weeks
-        ///	    DECLARE @GivingDurationLongWeeks int = 52
-        /// [rest of string was truncated]&quot;;.
+        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202101292141445_Rollup_01291_spCrm_FamilyAnalyticsGiving {
             get {
@@ -1756,8 +1755,7 @@ namespace Rock.Migrations.Migrations {
         ///    &lt;/returns&gt;
         ///
         ///    &lt;param name=&apos;@RegistrationTemplatePlacementEntityTypeId&apos; datatype=&apos;int&apos;&gt;
-        ///		The EntityTypeId for RegistrationTemplatePlacement.
-        /// [rest of string was truncated]&quot;;.
+        ///		The EntityTypeId for RegistrationTemplatePlacement.        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202506232302341_AddAndSwapToObsidianGroupPlacementBlock_spGetGroupPlacementPeople {
             get {
@@ -1819,8 +1817,7 @@ namespace Rock.Migrations.Migrations {
         ///    &lt;/returns&gt;
         ///
         ///    &lt;param name=&apos;@RegistrationTemplatePlacementEntityTypeId&apos; datatype=&apos;int&apos;&gt;
-        ///		The EntityTypeId for RegistrationTemplatePlacement.
-        /// [rest of string was truncated]&quot;;.
+        ///		The EntityTypeId for RegistrationTemplatePlacement.        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202507162006509_UpdateGroupPlacementStoredProcedure_spGetGroupPlacementPeople {
             get {
@@ -1884,8 +1881,7 @@ namespace Rock.Migrations.Migrations {
         ///    &lt;/returns&gt;
         ///
         ///    &lt;param name=&apos;@RegistrationTemplatePlacementEntityTypeId&apos; datatype=&apos;int&apos;&gt;
-        ///		The EntityTypeId for RegistrationTemplatePlacement.
-        /// [rest of string was truncated]&quot;;.
+        ///		The EntityTypeId for RegistrationTemplatePlacement.        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202511051918499_UpdateGetGroupPlacementPeopleStoredProcedure_spGetGroupPlacementPeople {
             get {
@@ -2143,6 +2139,103 @@ namespace Rock.Migrations.Migrations {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        This stored procedure retrieves placed and unplaced people for all supported
+        ///        configurations of the Group Placement block in Rock RMS. It supports filtering
+        ///        by template, instance, groups, entity sets, demographics, campus, DataView
+        ///        membership, and fee qualifications.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        A result set containing placement-eligible people along with placement status
+        ///        and contextual registration or group information.
+        ///     [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202607081740281_Rollup_20260708_295_FixGoupPlacementPersonFilter_spGetGroupPlacementPeople {
+            get {
+                return ResourceManager.GetString("_202607081740281_Rollup_20260708_295_FixGoupPlacementPersonFilter_spGetGroupPlace" +
+                        "mentPeople", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        This stored procedure retrieves placed and unplaced people for all supported
+        ///        configurations of the Group Placement block in Rock RMS. It supports filtering
+        ///        by template, instance, groups, entity sets, demographics, campus, DataView
+        ///        membership, and fee qualifications.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        A result set containing placement-eligible people along with placement status
+        ///        and contextual registration or group information.
+        ///     [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202607081740281_Rollup_20260708_298_FixGroupPlacementWaitList_spGetGroupPlacementPeople {
+            get {
+                return ResourceManager.GetString("_202607081740281_Rollup_20260708_298_FixGroupPlacementWaitList_spGetGroupPlacemen" +
+                        "tPeople", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CREATE PROCEDURE [dbo].[spAnalytics_ETL_Family]
+        ///AS
+        ///BEGIN
+        ///    DECLARE @EtlDate DATE = convert(DATE, SysDateTime())
+        ///        ,@MaxExpireDate DATE = DateFromParts(9999, 1, 1)
+        ///        ,@RecordStatusActiveId INT = (
+        ///            SELECT TOP 1 Id
+        ///            FROM DefinedValue
+        ///            WHERE [Guid] = &apos;618F906C-C33D-4FA3-8AEF-E58CB7B63F1E&apos;
+        ///            )
+        ///        ,@GroupTypeFamilyId INT = (
+        ///            SELECT TOP 1 Id
+        ///            FROM GroupType
+        ///            WHERE [Guid] = &apos;790E3215-3B10-442B-AF69-616C0DCB [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202607081740281_Rollup_20260708_299_FixAnalyticsETLFamilyOperatorPrecedence_spAnalytics_ETL_Family {
+            get {
+                return ResourceManager.GetString("_202607081740281_Rollup_20260708_299_FixAnalyticsETLFamilyOperatorPrecedence_spAn" +
+                        "alytics_ETL_Family", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to the [spCrm_FamilyAnalyticsEraDataset] stored procedure..
+        /// </summary>
+        public static string _202607301833333_Rollup_20260730_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsEraDataset {
+            get {
+                return ResourceManager.GetString("_202607301833333_Rollup_20260730_306_FixEraFamilyAnalyticsWeekBoundaries6902_spC" +
+                        "rm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to the [spCrm_FamilyAnalyticsGiving] stored procedure..
+        /// </summary>
+        public static string _202607301833333_Rollup_20260730_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsGiving {
+            get {
+                return ResourceManager.GetString("_202607301833333_Rollup_20260730_306_FixEraFamilyAnalyticsWeekBoundaries6902_spC" +
+                        "rm_FamilyAnalyticsGiving", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to the [spCrm_FamilyAnalyticsAttendance] stored procedure..
+        /// </summary>
+        public static string _202607301833333_Rollup_20260730_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsAttendance {
+            get {
+                return ResourceManager.GetString("_202607301833333_Rollup_20260730_306_FixEraFamilyAnalyticsWeekBoundaries6902_spC" +
+                        "rm_FamilyAnalyticsAttendance", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>

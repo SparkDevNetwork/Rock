@@ -97,6 +97,9 @@ export type LearningClassActivityCompletionBag = {
     /** Indicates whether or not the activity was completed late or is late (if incomplete). */
     isLate: boolean;
 
+    /** Indicates whether a retake has been assigned for this completion. */
+    isRetakeAssigned: boolean;
+
     /** Indicates whether or not the related activity instance has been completed by the student. */
     isStudentCompleted: boolean;
 
@@ -111,6 +114,12 @@ export type LearningClassActivityCompletionBag = {
 
     /** Gets or sets whether the activity requires a facilitator to grade/score it. */
     requiresScoring: boolean;
+
+    /**
+     * Gets or sets the warning message describing an automatically assigned retake, shown to
+     * the student in the workspace when Rock.ViewModels.Blocks.Lms.LearningClassActivityCompletionDetail.LearningClassActivityCompletionBag.IsRetakeAssigned is set on the response.
+     */
+    retakeMessage?: string | null;
 
     /** Gets or sets the student the activity is for. */
     student?: LearningActivityParticipantBag | null;

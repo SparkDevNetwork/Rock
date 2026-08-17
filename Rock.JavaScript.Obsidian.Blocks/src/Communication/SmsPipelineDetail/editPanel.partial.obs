@@ -1,0 +1,66 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive" label="Active" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline"
+                 :rows="3" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { SmsPipelineBag } from "@Obsidian/ViewModels/Blocks/Communication/SmsPipelineDetail/smsPipelineBag";
+
+    const props = defineProps({
+        pipeline: {
+            type: Object as PropType<SmsPipelineBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:pipeline", value: SmsPipelineBag): void;
+    }>();
+
+    // #region Computed Values
+
+    const name = computed({
+        get: () => props.pipeline.name ?? "",
+        set: (v) => patch("name", v)
+    });
+
+    const description = computed({
+        get: () => props.pipeline.description ?? "",
+        set: (v) => patch("description", v)
+    });
+
+    const isActive = computed({
+        get: () => props.pipeline.isActive,
+        set: (v) => patch("isActive", v)
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function patch<K extends keyof SmsPipelineBag>(key: K, value: SmsPipelineBag[K]): void {
+        emit("update:pipeline", { ...props.pipeline, [key]: value });
+    }
+
+    // #endregion Functions
+</script>

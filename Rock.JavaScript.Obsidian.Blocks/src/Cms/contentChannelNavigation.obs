@@ -1,0 +1,557 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.errorMessage || blockError" :alertType="AlertType.Warning">
+        {{ config.errorMessage || blockError }}
+    </NotificationBox>
+
+    <div v-if="!config.errorMessage">
+        <!-- Channel Tiles Panel -->
+        <Panel type="block"
+               title="My Content"
+               class="list-as-blocks">
+            <template #headerActions>
+                <div class="d-none d-md-flex align-items-center gap-spacing-md">
+                    <div v-if="config.options?.isCategoryFilterShown" class="form-horizontal label-auto">
+                        <DropDownList v-model="selectedCategoryValue"
+                                      label="Category"
+                                      :items="config.options?.categoryItems ?? []"
+                                      :showBlankItem="true"
+                                      inputClasses="input-width-xl"
+                                      enhanceForLongLists
+                                      @update:modelValue="onCategoryChanged" />
+                    </div>
+
+                    <Toggle v-model="isPendingFilterActive"
+                            trueText="Pending"
+                            falseText="All Items"
+                            onButtonActiveCssClass="btn-success"
+                            offButtonActiveCssClass="btn-success"
+                            btnSize="sm"
+                            @update:modelValue="onPendingToggleChanged" />
+                </div>
+            </template>
+
+            <div class="d-md-none d-flex flex-column gap-spacing-md mb-spacing-md">
+                <DropDownList v-if="config.options?.isCategoryFilterShown"
+                              v-model="selectedCategoryValue"
+                              label="Category"
+                              :items="config.options?.categoryItems ?? []"
+                              :showBlankItem="true"
+                              enhanceForLongLists
+                              @update:modelValue="onCategoryChanged" />
+
+                <Toggle v-model="isPendingFilterActive"
+                        trueText="Pending"
+                        falseText="All Items"
+                        onButtonActiveCssClass="btn-success"
+                        offButtonActiveCssClass="btn-success"
+                        btnSize="sm"
+                        @update:modelValue="onPendingToggleChanged" />
+            </div>
+
+            <ul>
+                <li v-for="(channel, index) in channels"
+                    :key="channel.guid ?? index"
+                    :class="{ active: channel.guid === selectedChannelGuid }">
+                    <a href="#" @click.prevent="onChannelClick(channel)">
+                        <i :class="channel.iconCssClass ?? 'ti ti-speakerphone'"></i>
+                        <h3>{{ channel.name }}</h3>
+                        <div v-if="(channel.pendingCount ?? 0) > 0" class="notification">
+                            <span class="label label-danger">{{ formatNumber(channel.pendingCount ?? 0) }}</span>
+                        </div>
+                    </a>
+                </li>
+            </ul>
+        </Panel>
+
+        <!-- Items Grid -->
+        <Grid v-if="selectedChannelGuid && gridDefinition"
+              :definition="gridDefinition"
+              :data="gridDataSource"
+              keyField="guid"
+              :entityTypeGuid="EntityType.ContentChannelItem"
+              :title="`${channelName} Items`"
+              :itemTerm="'Item'"
+              liveUpdates
+              stickyHeader
+              gridSettings
+              :gridSettingsActive="hasActiveFilters"
+              :onAddItem="canEdit ? onAddItem : undefined"
+              @gridSettingsClick="isGridSettingsVisible = true"
+              @selectItem="onSelectItem">
+
+            <ReorderColumn v-if="isReorderEnabled"
+                           @orderChanged="onOrderChanged" />
+
+            <TextColumn name="title"
+                        title="Title"
+                        field="title"
+                        :filter="textValueFilter" />
+
+            <AttributeColumns :attributes="gridDefinition?.attributeFields ?? []" />
+
+            <DateTimeColumn v-if="showStartDateTimeColumn && isIncludeTime"
+                            name="startDateTime"
+                            :title="startDateTimeTitle"
+                            field="startDateTime"
+                            :filter="dateValueFilter" />
+
+            <DateColumn v-else-if="showStartDateTimeColumn"
+                        name="startDateTime"
+                        :title="startDateTimeTitle"
+                        field="startDateTime"
+                        :filter="dateValueFilter" />
+
+            <Column v-if="showStartDateTimeColumn && showDateStatusColumn"
+                    name="dateStatus"
+                    title="">
+                <template #format="{ row }">
+                    <i v-if="row['isScheduled']" class="ti ti-clock"></i>
+                </template>
+            </Column>
+
+            <DateTimeColumn v-if="showExpireDateTimeColumn && isIncludeTime"
+                            name="expireDateTime"
+                            title="Expire"
+                            field="expireDateTime"
+                            :filter="dateValueFilter" />
+
+            <DateColumn v-else-if="showExpireDateTimeColumn"
+                        name="expireDateTime"
+                        title="Expire"
+                        field="expireDateTime"
+                        :filter="dateValueFilter"
+                        visiblePriority="md" />
+
+            <NumberColumn v-if="showPriorityColumn"
+                          name="priority"
+                          title="Priority"
+                          field="priority"
+                          :filter="numberValueFilter" />
+
+            <Column v-if="showStatusColumn"
+                    name="status"
+                    title="Status"
+                    field="status"
+                    :filterValue="statusFilterValue"
+                    :quickFilterValue="statusFilterValue">
+                <template #format="{ row }">
+                    <span :class="getStatusLabelClass(row['status'])">
+                        {{ getStatusText(row['status']) }}
+                    </span>
+                </template>
+            </Column>
+
+            <BooleanColumn v-if="showOccurrencesColumn"
+                           name="occurrences"
+                           title="Event Occurrences"
+                           field="occurrences" />
+
+            <PersonColumn name="createdByPerson"
+                          title="Created By"
+                          field="createdByPerson"
+                          showAsLink
+                          :detailField="false" />
+
+            <Column v-if="showTagsColumn"
+                    name="tags"
+                    title="Tags"
+                    field="tags">
+                <template #format="{ row }">
+                    <span class="taglist" v-html="row['tags']"></span>
+                </template>
+            </Column>
+
+            <SecurityColumn v-if="canEdit" itemTitle="title" />
+
+            <DeleteColumn v-if="canEdit" @click="onDeleteClick" />
+        </Grid>
+
+        <GridSettingsModal v-model="gridSettings"
+                           v-model:visible="isGridSettingsVisible"
+                           :attributeFilters="attributeFilters" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, reactive, ref, watch } from "vue";
+    import { NavigationUrlKey, PreferenceKey, GridSettingsOptions } from "./ContentChannelNavigation/types.partial";
+    import GridSettingsModal from "./ContentChannelNavigation/gridSettingsModal.partial.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import Grid, { AttributeColumns, BooleanColumn, Column, DateColumn, DateTimeColumn, DeleteColumn, NumberColumn, PersonColumn, ReorderColumn, SecurityColumn, TextColumn, dateValueFilter, numberValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
+    import { useConfigurationValues, useInvokeBlockAction, useReloadBlock, onConfigurationValuesChanged, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { safeParseJson } from "@Obsidian/Utility/jsonUtils";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { ContentChannelItemStatus, ContentChannelItemStatusDescription } from "@Obsidian/Enums/Cms/contentChannelItemStatus";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+    import { ContentChannelNavigationBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelNavigation/contentChannelNavigationBag";
+    import { ContentChannelNavigationOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelNavigation/contentChannelNavigationOptionsBag";
+    import { ContentChannelNavigationChannelBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelNavigation/contentChannelNavigationChannelBag";
+    import { ContentChannelNavigationGetGridDataResponseBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelNavigation/contentChannelNavigationGetGridDataResponseBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    const config = useConfigurationValues<CustomBlockBox<ContentChannelNavigationBag, ContentChannelNavigationOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const blockError = ref("");
+
+    const selectedChannelGuid = ref<string | null>(config.bag?.selectedChannelGuid || preferences.getValue(PreferenceKey.SelectedChannel) || null);
+    const selectedCategoryValue = ref(config.bag?.selectedCategoryGuid || preferences.getValue(PreferenceKey.CategoryFilter) || "");
+    const isPendingFilterActive = ref(asBooleanOrNull(preferences.getValue(PreferenceKey.StatusFilter)) ?? false);
+
+    const channels = ref<ContentChannelNavigationChannelBag[]>([]);
+    const channelName = ref("");
+    const canEdit = ref(false);
+
+    const gridDefinition = ref<GridDefinitionBag | null>(null);
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+    const gridSettings = ref<GridSettingsOptions>(getGridSettingsFromPreferences());
+    const isGridSettingsVisible = ref(false);
+    let isReplacingGridSettingsForChannelSwitch = false;
+
+    const isReorderEnabled = ref(false);
+    const hasActiveFilters = ref(false);
+    const isIncludeTime = ref(false);
+    const showDateStatusColumn = ref(false);
+    const showOccurrencesColumn = ref(false);
+    const addItemUrl = ref("");
+    const attributeFilters = ref<PublicAttributeBag[]>([]);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * Whether the start date/time column should be visible.
+     */
+    const showStartDateTimeColumn = computed((): boolean => {
+        return gridDefinition.value?.fields?.some(f => f.name === "startDateTime") ?? false;
+    });
+
+    /**
+     * The title for the start date column.
+     */
+    const startDateTimeTitle = computed((): string => {
+        return showExpireDateTimeColumn.value ? "Start" : "Date";
+    });
+
+    /**
+     * Whether the expire date/time column should be visible.
+     */
+    const showExpireDateTimeColumn = computed((): boolean => {
+        return gridDefinition.value?.fields?.some(f => f.name === "expireDateTime") ?? false;
+    });
+
+    /**
+     * Whether the priority column should be visible.
+     */
+    const showPriorityColumn = computed((): boolean => {
+        return gridDefinition.value?.fields?.some(f => f.name === "priority") ?? false;
+    });
+
+    /**
+     * Whether the status column should be visible.
+     */
+    const showStatusColumn = computed((): boolean => {
+        return gridDefinition.value?.fields?.some(f => f.name === "status") ?? false;
+    });
+
+    /**
+     * Whether the tags column should be visible.
+     */
+    const showTagsColumn = computed((): boolean => {
+        return gridDefinition.value?.fields?.some(f => f.name === "tags") ?? false;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Formats a number with locale-appropriate separators.
+     */
+    function formatNumber(value: number): string {
+        return value.toLocaleString();
+    }
+
+    /**
+     * Returns the display text for a status value, used by the grid filter and quick filter.
+     */
+    function statusFilterValue(row: Record<string, unknown>): string {
+        return getStatusText(row["status"] as number);
+    }
+
+    /**
+     * Returns the CSS class for a content channel item status label.
+     */
+    function getStatusLabelClass(status: number): string {
+        switch (status) {
+            case ContentChannelItemStatus.Approved: return "label label-success";
+            case ContentChannelItemStatus.Denied: return "label label-danger";
+            default: return "label label-default";
+        }
+    }
+
+    /**
+     * Returns the display text for a content channel item status enum value.
+     */
+    function getStatusText(status: number): string {
+        return ContentChannelItemStatusDescription[status] ?? "";
+    }
+
+    /**
+     * Returns the saved grid filter settings for the currently selected channel.
+     */
+    function getGridSettingsFromPreferences(): GridSettingsOptions {
+        const allFilters = safeParseJson<Record<string, GridSettingsOptions>>(preferences.getValue(PreferenceKey.FilterGridSettings)) ?? {};
+        const filtersForChannel = selectedChannelGuid.value ? allFilters[selectedChannelGuid.value] : undefined;
+
+        return {
+            dateRangeLower: filtersForChannel?.dateRangeLower ?? "",
+            dateRangeUpper: filtersForChannel?.dateRangeUpper ?? "",
+            status: filtersForChannel?.status ?? "",
+            title: filtersForChannel?.title ?? "",
+            createdBy: filtersForChannel?.createdBy,
+            attributeFilterValues: filtersForChannel?.attributeFilterValues ?? {}
+        };
+    }
+
+    /**
+     * Loads the grid data for the currently selected channel from the server.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        if (!selectedChannelGuid.value) {
+            throw new Error("No channel selected.");
+        }
+
+        const result = await invokeBlockAction<ContentChannelNavigationGetGridDataResponseBag>("GetGridData", {
+            request: { channelGuid: selectedChannelGuid.value }
+        });
+
+        if (result.isSuccess && result.data) {
+            blockError.value = "";
+            gridDefinition.value = result.data.gridDefinition ?? null;
+            channelName.value = result.data.channelName ?? "";
+            canEdit.value = result.data.canEdit ?? false;
+            isReorderEnabled.value = result.data.isReorderEnabled ?? false;
+            hasActiveFilters.value = result.data.hasActiveFilters ?? false;
+            addItemUrl.value = result.data.addItemUrl ?? "";
+            attributeFilters.value = result.data.attributeFilters ?? [];
+            isIncludeTime.value = result.data.isIncludeTime ?? false;
+            showDateStatusColumn.value = result.data.hasScheduledItems ?? false;
+            showOccurrencesColumn.value = result.data.hasEventOccurrences ?? false;
+
+            if (result.data.gridData) {
+                gridData = reactive(result.data.gridData);
+                return gridData;
+            }
+        }
+
+        blockError.value = result.errorMessage ?? "Failed to load grid data.";
+        throw new Error(blockError.value);
+    }
+
+    /**
+     * Fetches the channel list from the server based on the current category and pending filter.
+     */
+    async function refreshChannels(): Promise<void> {
+        const result = await invokeBlockAction<ContentChannelNavigationChannelBag[]>("GetChannels", {
+            categoryValue: selectedCategoryValue.value || null,
+            showPendingOnly: isPendingFilterActive.value
+        });
+
+        if (result.isSuccess && result.data) {
+            blockError.value = "";
+
+            const preferredGuid = preferences.getValue(PreferenceKey.SelectedChannel);
+            const isInList = (guid: string | null): boolean => !!guid && result.data!.some(c => c.guid === guid);
+
+            // If the preferred channel reappeared, pre-load its grid data
+            // before updating channels so both render in the same frame.
+            if (!selectedChannelGuid.value && isInList(preferredGuid)) {
+                selectedChannelGuid.value = preferredGuid;
+                isReplacingGridSettingsForChannelSwitch = true;
+                gridSettings.value = getGridSettingsFromPreferences();
+                gridDataSource.value = loadGridData();
+                await gridDataSource.value.catch(() => { });
+            }
+
+            channels.value = result.data;
+
+            if (selectedChannelGuid.value && !isInList(selectedChannelGuid.value)) {
+                // Selected channel is no longer in the filtered list;
+                // hide the grid but keep the preference for auto-restore.
+                selectedChannelGuid.value = null;
+                gridDefinition.value = null;
+                gridData = undefined;
+            }
+        }
+        else {
+            blockError.value = result.errorMessage ?? "Failed to load channels.";
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when a channel tile is clicked. Selects the channel and loads its grid data.
+     */
+    async function onChannelClick(channel: ContentChannelNavigationChannelBag): Promise<void> {
+        selectedChannelGuid.value = channel.guid ?? null;
+
+        preferences.setValue(PreferenceKey.SelectedChannel, channel.guid ?? "");
+        await preferences.save();
+
+        // Load saved filter settings for this channel.
+        isReplacingGridSettingsForChannelSwitch = true;
+        gridSettings.value = getGridSettingsFromPreferences();
+
+        if (channel.guid) {
+            gridDataSource.value = loadGridData();
+        }
+    }
+
+    /**
+     * Called when the category dropdown value changes.
+     */
+    async function onCategoryChanged(): Promise<void> {
+        preferences.setValue(PreferenceKey.CategoryFilter, selectedCategoryValue.value);
+        await preferences.save();
+
+        await refreshChannels();
+    }
+
+    /**
+     * Called when the pending/all toggle changes.
+     */
+    async function onPendingToggleChanged(): Promise<void> {
+        preferences.setValue(PreferenceKey.StatusFilter, asTrueOrFalseString(isPendingFilterActive.value));
+        await preferences.save();
+
+        await refreshChannels();
+    }
+
+    /**
+     * Called when a grid row is clicked. Navigates to the content item detail page.
+     */
+    function onSelectItem(key: string): void {
+        const detailUrl = config.navigationUrls?.[NavigationUrlKey.DetailPage];
+        if (detailUrl) {
+            window.location.href = detailUrl.replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when the add item button is clicked.
+     */
+    function onAddItem(): void {
+        if (addItemUrl.value) {
+            window.location.href = addItemUrl.value;
+        }
+    }
+
+    /**
+     * Called when a delete button is clicked. Deletes the item and removes it from the grid.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("DeleteItem", { guid: key });
+
+        if (result.isSuccess && gridData?.rows) {
+            blockError.value = "";
+            const index = gridData.rows.findIndex(r => r["guid"] === key);
+            let wasPending = false;
+
+            if (index !== -1) {
+                wasPending = gridData.rows[index]["status"] === ContentChannelItemStatus.PendingApproval;
+                gridData.rows.splice(index, 1);
+            }
+
+            // Refresh channel tiles so pending count badges stay accurate.
+            if (wasPending) {
+                await refreshChannels();
+            }
+        }
+        else {
+            blockError.value = result.errorMessage ?? "Failed to delete item.";
+        }
+    }
+
+    /**
+     * Called when a grid row is reordered. Sends the new order to the server.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const result = await invokeBlockAction("ReorderItem", {
+            channelGuid: selectedChannelGuid.value,
+            key: item["guid"],
+            beforeKey: beforeItem?.["guid"] ?? null
+        });
+
+        if (!result.isSuccess) {
+            blockError.value = result.errorMessage ?? "Failed to reorder items.";
+        }
+
+        return result.isSuccess;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    /**
+     * When grid filter settings change, persist them to person preferences and reload grid data.
+     */
+    watch(gridSettings, async () => {
+        if (isReplacingGridSettingsForChannelSwitch) {
+            isReplacingGridSettingsForChannelSwitch = false;
+            return;
+        }
+
+        if (selectedChannelGuid.value) {
+            const allFilters = safeParseJson<Record<string, GridSettingsOptions>>(preferences.getValue(PreferenceKey.FilterGridSettings)) ?? {};
+
+            allFilters[selectedChannelGuid.value] = gridSettings.value;
+
+            preferences.setValue(PreferenceKey.FilterGridSettings, JSON.stringify(allFilters));
+            await preferences.save();
+
+            gridDataSource.value = loadGridData();
+        }
+    });
+
+    // #endregion Watchers
+
+    // Persist page-parameter-driven selections to preferences so they
+    // survive a return visit without the query string.
+    if (config.bag?.selectedCategoryGuid) {
+        preferences.setValue(PreferenceKey.CategoryFilter, config.bag.selectedCategoryGuid);
+        preferences.save();
+    }
+
+    (async () => {
+        try {
+            await refreshChannels();
+
+            if (selectedChannelGuid.value && !gridDataSource.value) {
+                gridDataSource.value = loadGridData();
+            }
+        }
+        catch (error) {
+            blockError.value = error instanceof Error ? error.message : "Failed to initialize block.";
+        }
+    })();
+</script>

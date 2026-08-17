@@ -7,6 +7,14 @@
             <DropDownList v-model="typeVisibility"
                           :items="config.typeVisibilityItems ?? []"
                           :showBlankItem="false" />
+            <template #rightContent>
+                <RockButton isSquare
+                            title="My Connections"
+                            :btnSize="BtnSize.Small"
+                            @click="onMyConnectionsClick">
+                    <i class="ti ti-user-circle"></i>
+                </RockButton>
+            </template>
         </ContextSlicer>
 
         <div class="connection-types-container row">
@@ -14,6 +22,12 @@
             <div :class="connectionTypeListCssClass">
                 <Panel title="Connection Types">
                     <template v-if="config.showConfigureConnectionTypesButton" #headerActions>
+                        <RockButton v-if="isCelebrationReportEnabled"
+                                    title="View Celebrations"
+                                    :btnSize="BtnSize.Small"
+                                    @click="onCelebrationReportClick">
+                            <i class="ti ti-confetti"></i> <span v-if="breakpointHelper?.isSmOrLarger">Celebrations</span>
+                        </RockButton>
                         <button type="button"
                                 class="btn btn-panel-action"
                                 @click="onConfigurationClick">
@@ -177,7 +191,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, ref, watch } from "vue";
+    import { computed, onMounted, onUnmounted, ref, watch } from "vue";
     import { NavigationUrlKey, PreferenceKey } from "./ConnectionTypeNavigation/types.partial";
     import ContextSlicer from "@Obsidian/Controls/contextSlicer.obs";
     import DisplayCardContainer from "@Obsidian/Controls/displayCardContainer.obs";
@@ -187,8 +201,10 @@
     import Following from "@Obsidian/Controls/following.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { useContextEntities } from "@Obsidian/Core/Utilities/contextEntity";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
     import { ContextEntityChangedData, Message } from "@Obsidian/Types/Utility/browserBus";
@@ -237,17 +253,35 @@
     // Connection Type-level URLs.
     const configurationPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ConfigurationPage]);
     const opportunitiesPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunitiesPage]);
-    const connectionsListPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ConnectionsListPage]);
-    const connectionBoardPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ConnectionBoardPage]);
+    const connectionsHubListViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ConnectionsHubListViewPage]);
+    const connectionsHubBoardViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ConnectionsHubBoardViewPage]);
+    const connectionsHubGridViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ConnectionsHubGridViewPage]);
     const operationalSnapshotPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OperationalSnapshotPage]);
+    const celebrationsReportPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.CelebrationsReportPage]);
+
+    // Tracks window width for responsive button labels in the panel header.
+    const windowWidth = ref(window.innerWidth);
 
     // Connection Opportunity-level URLs.
-    const opportunityConnectionsListPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsListPage]);
-    const opportunityConnectionBoardPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionBoardPage]);
+    const opportunityConnectionsHubListViewPage = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubListViewPage]);
+    const opportunityConnectionsHubBoardViewPage = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubBoardViewPage]);
+    const opportunityConnectionsHubGridViewPage = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubGridViewPage]);
+
+    // My Connections-level URLs.
+    const myConnectionsPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.MyConnectionsPage]);
 
     // #endregion Values
 
     // #region Computed Values
+
+    /** Provides responsive breakpoint info for panel header button labels. */
+    const breakpointHelper = computed(() => ({ isSmOrLarger: windowWidth.value >= 768 }));
+
+    /** True when the celebrations report page is configured and at least one visible connection type has celebrations enabled. */
+    const isCelebrationReportEnabled = computed((): boolean => {
+        return !!celebrationsReportPageUrl.value
+            && connectionTypeSummaries.value.some(s => s.isCelebrationEnabled);
+    });
 
     /** Gets the campus page parameter for the current selection. */
     const campusPageParam = computed((): string => {
@@ -301,39 +335,37 @@
     function getPrimaryActions(summary: ConnectionTypeSummaryBag): MenuAction[] {
         const actions: MenuAction[] = [];
 
-        if (connectionsListPageUrl.value && summary.isListViewEnabled) {
+        if (connectionsHubListViewPageUrl.value && summary.isListViewEnabled) {
             actions.push({
                 iconCssClass: "ti ti-layout-list",
                 title: "Connections List",
                 type: "default",
                 handler: () => {
-                    window.location.href = connectionsListPageUrl.value!.replace("((Key))", summary.idKey!);
+                    window.location.href = connectionsHubListViewPageUrl.value!.replace("((Key))", summary.idKey!);
                 }
             });
         }
 
-        if (connectionBoardPageUrl.value) {
-            if (summary.isBoardViewEnabled) {
-                actions.push({
-                    iconCssClass: "ti ti-layout-cards",
-                    title: "Connection Board",
-                    type: "default",
-                    handler: () => {
-                        window.location.href = `${connectionBoardPageUrl.value!.replace("((Key))", summary.idKey!)}&IsCardViewMode=True${campusPageParam.value}`;
-                    }
-                });
-            }
+        if (connectionsHubBoardViewPageUrl.value && summary.isBoardViewEnabled) {
+            actions.push({
+                iconCssClass: "ti ti-layout-cards",
+                title: "Connection Board",
+                type: "default",
+                handler: () => {
+                    window.location.href = `${connectionsHubBoardViewPageUrl.value!.replace("((Key))", summary.idKey!)}${campusPageParam.value}`;
+                }
+            });
+        }
 
-            if (summary.isGridViewEnabled) {
-                actions.push({
-                    iconCssClass: "ti ti-table",
-                    title: "Connection Board (Grid View)",
-                    type: "default",
-                    handler: () => {
-                        window.location.href = `${connectionBoardPageUrl.value!.replace("((Key))", summary.idKey!)}&IsCardViewMode=False${campusPageParam.value}`;
-                    }
-                });
-            }
+        if (connectionsHubGridViewPageUrl.value && summary.isGridViewEnabled) {
+            actions.push({
+                iconCssClass: "ti ti-table",
+                title: "Connection Grid",
+                type: "default",
+                handler: () => {
+                    window.location.href = `${connectionsHubGridViewPageUrl.value!.replace("((Key))", summary.idKey!)}${campusPageParam.value}`;
+                }
+            });
         }
 
         if (operationalSnapshotPageUrl.value && summary.isSnapshotViewEnabled) {
@@ -343,6 +375,17 @@
                 type: "default",
                 handler: () => {
                     window.location.href = operationalSnapshotPageUrl.value!.replace("((Key))", summary.idKey!);
+                }
+            });
+        }
+
+        if (celebrationsReportPageUrl.value && summary.isCelebrationEnabled) {
+            actions.push({
+                iconCssClass: "ti ti-trophy",
+                title: "Celebrations",
+                type: "default",
+                handler: () => {
+                    window.location.href = `${celebrationsReportPageUrl.value!}?ConnectionTypeId=${summary.idKey}`;
                 }
             });
         }
@@ -387,17 +430,22 @@
         const resolveUrl = (template: string): string =>
             template.replace("((TypeKey))", typeIdKey).replace("((Key))", idKey);
 
-        if (opportunityConnectionsListPageUrl.value && (typeSummary?.isListViewEnabled ?? true)) {
-            return resolveUrl(opportunityConnectionsListPageUrl.value);
+        // Prefer List > Board > Grid when multiple views are enabled, falling
+        // back to the list URL as a last resort so the user always lands somewhere.
+        if (opportunityConnectionsHubListViewPage.value && typeSummary?.isListViewEnabled) {
+            return resolveUrl(opportunityConnectionsHubListViewPage.value);
+        }
+        else if (opportunityConnectionsHubBoardViewPage.value && typeSummary?.isBoardViewEnabled) {
+            return resolveUrl(opportunityConnectionsHubBoardViewPage.value);
+        }
+        else if (opportunityConnectionsHubGridViewPage.value && typeSummary?.isGridViewEnabled) {
+            return resolveUrl(opportunityConnectionsHubGridViewPage.value);
+        }
+        else if (opportunityConnectionsHubListViewPage.value) {
+            return resolveUrl(opportunityConnectionsHubListViewPage.value);
         }
 
-        if (opportunityConnectionBoardPageUrl.value && (typeSummary?.isBoardViewEnabled || typeSummary?.isGridViewEnabled)) {
-            const isCardViewMode = typeSummary?.isBoardViewEnabled ? "True" : "False";
-            return `${resolveUrl(opportunityConnectionBoardPageUrl.value)}&IsCardViewMode=${isCardViewMode}${campusPageParam.value}`;
-        }
-
-        // Navigate to Connections List if there are no enabled views and the page URL is setup.
-        return opportunityConnectionsListPageUrl.value ? resolveUrl(opportunityConnectionsListPageUrl.value) : "#";
+        return "#";
     }
 
     // #endregion Functions
@@ -411,6 +459,13 @@
     function onUnfavoriteClick(group: ConnectionFavoriteOpportunityGroupBag, opportunity: ConnectionFavoriteOpportunityBag): void {
         group.opportunities = group.opportunities?.filter(o => o.idKey !== opportunity.idKey) ?? [];
         favoriteGroups.value = favoriteGroups.value.filter(g => !!g.opportunities?.length);
+    }
+
+    /** Navigates to the celebrations report page. */
+    function onCelebrationReportClick(): void {
+        if (celebrationsReportPageUrl.value) {
+            window.location.href = celebrationsReportPageUrl.value;
+        }
     }
 
     /** Navigates to the configuration page. */
@@ -430,6 +485,13 @@
         }
     }
 
+    /** Navigates to the My Connections page for the current person. */
+    function onMyConnectionsClick(): void {
+        if (myConnectionsPageUrl.value) {
+            window.location.href = myConnectionsPageUrl.value;
+        }
+    }
+
     // #endregion Event Handlers
 
     // #region Watchers
@@ -442,6 +504,13 @@
     });
 
     // #endregion Watchers
+
+    function onWindowResize(): void {
+        windowWidth.value = window.innerWidth;
+    }
+
+    onMounted(() => window.addEventListener("resize", onWindowResize));
+    onUnmounted(() => window.removeEventListener("resize", onWindowResize));
 
     loadContextValues();
 </script>

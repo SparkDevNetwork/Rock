@@ -1,0 +1,29 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="snapshot-container">
+        <div class="header">{{ metrics?.dashboardTitle }} • <span class="subtext">Last 28 Days</span></div>
+        <CompletionMetricsPanel :metrics="metrics"
+                                footerSuffix=" vs. Previous 28 Days" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    /**
+     * snapshot.partial.obs - Renders the Connections Hub snapshot header (dashboard title and
+     * "Last 28 Days" label) above the completion metrics panel.
+     */
+    import { PropType } from "vue";
+    import { CompletionMetricsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/completionMetricsBag";
+    import CompletionMetricsPanel from "./completionMetricsPanel.partial.obs";
+
+    defineProps({
+        /**
+         * The completion metrics payload. When null or undefined the tiles render
+         * placeholder dashes.
+         */
+        metrics: {
+            type: Object as PropType<CompletionMetricsBag | null | undefined>,
+            default: null
+        }
+    });
+</script>

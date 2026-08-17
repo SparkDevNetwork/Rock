@@ -14,29 +14,34 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Web.Cache;
-
 using System;
-using System.Collections.Generic;
 using System.Web.Http.Validation;
 
 namespace Rock.Rest.Validation
 {
     /// <summary>
-    /// Used to recursively validate an object, while bypassing
-    /// types known to lead to infinite recursion, Etc.
+    /// Recursively validates a body-bound object, skipping types that are
+    /// resolved server-side rather than bound from the request. Those types
+    /// carry no request input to validate, and walking them is expensive.
     /// </summary>
     public class RockBodyModelValidator : DefaultBodyModelValidator
     {
-        private readonly HashSet<string> BypassTypes = new HashSet<string>
-        {
-            typeof( GroupTypeCache ).FullName
-        };
-
         /// <inheritdoc/>
         public override bool ShouldValidateType( Type type )
         {
-            return !BypassTypes.Contains( type.FullName ) && base.ShouldValidateType( type );
+            // These are resolved server-side and never populated from the request body, so validating
+            // them produces no meaningful ModelState errors, and recursing into them is unboundedly
+            // expensive (it reaches live singletons and reflection metadata that hash whole assemblies).
+            if ( typeof( Rock.Extension.Component ).IsAssignableFrom( type )
+                || typeof( Rock.Web.Cache.IEntityCache ).IsAssignableFrom( type )
+                || typeof( System.Reflection.MemberInfo ).IsAssignableFrom( type )
+                || typeof( System.Reflection.Module ).IsAssignableFrom( type )
+                || typeof( System.Reflection.Assembly ).IsAssignableFrom( type ) )
+            {
+                return false;
+            }
+
+            return base.ShouldValidateType( type );
         }
     }
 }

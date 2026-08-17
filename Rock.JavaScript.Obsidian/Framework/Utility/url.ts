@@ -250,6 +250,28 @@ export function syncRefsWithQueryParams(bindings: QueryParamBinding[]): void {
 }
 
 /**
+ * Appends a query parameter to a URL, automatically choosing the correct
+ * separator (`?` if the URL has no existing query string, otherwise `&`).
+ * Any trailing hash fragment is preserved at the end of the resulting URL.
+ *
+ * The key and value are URI-encoded. Do not pre-encode them.
+ *
+ * @param url The URL to append to. May be relative or absolute.
+ * @param key The query parameter name.
+ * @param value The query parameter value.
+ *
+ * @returns The URL with the query parameter appended.
+ */
+export function appendQueryParam(url: string, key: string, value: string): string {
+    const hashIndex = url.indexOf("#");
+    const path = hashIndex >= 0 ? url.slice(0, hashIndex) : url;
+    const hash = hashIndex >= 0 ? url.slice(hashIndex) : "";
+
+    const separator = path.includes("?") ? "&" : "?";
+    return `${path}${separator}${encodeURIComponent(key)}=${encodeURIComponent(value)}${hash}`;
+}
+
+/**
  * Removes query parameters from the current URL and replaces the state in history.
  *
  * @param queryParamKeys The string array of query parameter keys to remove from the current URL.

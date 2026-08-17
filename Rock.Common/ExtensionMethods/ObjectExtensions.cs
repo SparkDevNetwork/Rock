@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -30,37 +31,11 @@ namespace Rock
         #region Object Extensions
 
         /// <summary>
-        /// Determines whether the specified value is not null.
+        /// Per-type cache of public property lookups keyed by property name.
+        /// The dictionary is built with <see cref="StringComparer.Ordinal"/> to match the case-sensitive
+        /// behavior of <see cref="Type.GetProperty(string)"/>.
         /// </summary>
-        /// <typeparam name="T">The value type.</typeparam>
-        /// <param name="value">The value.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified value is not null; otherwise, <c>false</c>.
-        /// </returns>
-        /// https://github.com/aljazsim/defensive-programming-framework-for-net
-        [RockObsolete("1.13.3")]
-        [Obsolete("Use the standard object != null instead.")]
-        public static bool IsNotNull<T>( this T value )
-            where T : class
-        {
-            return value != null;
-        }
-
-        /// <summary>
-        /// Determines whether the specified value is null.
-        /// </summary>
-        /// <typeparam name="T">The value type.</typeparam>
-        /// <param name="value">The value.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified value is null; otherwise, <c>false</c>.
-        /// </returns>
-        /// https://github.com/aljazsim/defensive-programming-framework-for-net
-        [RockObsolete("1.13.3")]
-        [Obsolete("Use the standard object == null instead.")]
-        public static bool IsNull<T>( this T value ) where T : class
-        {
-            return value == null;
-        }
+        private static readonly ConcurrentDictionary<Type, Dictionary<string, PropertyInfo>> _propertyInfoCache = new ConcurrentDictionary<Type, Dictionary<string, PropertyInfo>>();
 
         /// <summary>
         /// Gets the property Value of the object's property as specified by propertyPathName.
@@ -71,25 +46,38 @@ namespace Rock
         /// <returns></returns>
         public static object GetPropertyValue( this object rootObj, string propertyPathName )
         {
-            var propPath = propertyPathName.Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries ).ToList<string>();
+            var propPath = propertyPathName.Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries );
 
             object obj = rootObj;
             Type objType = rootObj.GetType();
 
-            while ( propPath.Any() && obj != null )
+            for ( int pathIndex = 0; pathIndex < propPath.Length && obj != null; pathIndex++ )
             {
+                var segment = propPath[pathIndex];
+
                 if ( obj is IDictionary dictionary )
                 {
-                    obj = dictionary[propPath.First()];
+                    obj = dictionary[segment];
                 }
                 else if ( obj is IDictionary<string, object> stringDictionary )
                 {
-                    obj = stringDictionary[propPath.First()];
+                    obj = stringDictionary[segment];
                 }
                 else
                 {
-                    PropertyInfo property = objType.GetProperty( propPath.First() );
-                    if ( property != null )
+                    var propertyMap = _propertyInfoCache.GetOrAdd( objType, t =>
+                    {
+                        var props = t.GetProperties();
+
+                        var map = new Dictionary<string, PropertyInfo>( props.Length, StringComparer.Ordinal );
+                        foreach ( var prop in props )
+                        {
+                            map[prop.Name] = prop;
+                        }
+                        return map;
+                    } );
+
+                    if ( propertyMap.TryGetValue( segment, out var property ) )
                     {
                         obj = property.GetValue( obj );
                         objType = property.PropertyType;
@@ -99,8 +87,6 @@ namespace Rock
                         obj = null;
                     }
                 }
-
-                propPath = propPath.Skip( 1 ).ToList();
             }
 
             return obj;

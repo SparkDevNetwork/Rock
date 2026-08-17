@@ -33,10 +33,22 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Workflow Set Status (other workflow)" )]
 
-    [TextField( "Status", "The status to set workflow to. <span class='tip tip-lava'></span>", true, "", "", 0 )]
-    [WorkflowAttribute( "Workflow", "The workflow to set the status of.", true, "", "", 1, null,
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.WorkflowFieldType" } )]
-    [BooleanField("Process Target Workflow", "Should this action process the target workflow after setting the status (if not, workflow may not be processed until next time workflow job runs).", false, "", 2, "ProcessNow" )]
+    [TextField( "Status",
+        Description = "The status to set workflow to. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
+        Order = 0 )]
+    [WorkflowAttribute( "Workflow",
+        Description = "The workflow to set the status of.",
+        IsRequired = true,
+        Order = 1,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.WorkflowFieldType" } )]
+    [BooleanField( "Process Target Workflow",
+        Description = "Should this action process the target workflow after setting the status (if not, workflow may not be processed until next time workflow job runs).",
+        DefaultBooleanValue = false,
+        Order = 2,
+        Key = "ProcessNow" )]
     [Rock.SystemGuid.EntityTypeGuid( "8C66083E-1A6E-40F7-B3ED-3077FA82E65E")]
     public class SetStatusInOtherWorkflow : ActionComponent
     {

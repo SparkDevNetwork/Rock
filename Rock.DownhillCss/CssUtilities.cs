@@ -1278,14 +1278,24 @@ formfield.required .required-indicator,
   margin: 12, 0;    
 }
 
-/* Divider */
+/*
+    Divider
+
+    These are intentionally literal semi-transparent values rather than palette
+    tokens. Apple's HIG uses a translucent separator so the line keeps a
+    consistent visual weight over any parent background, instead of only looking
+    right over pure white / pure black. #4A3C3C43 is rgba( 60, 60, 67, 0.29 ) in
+    ARGB; #4AFFFFFF is the white equivalent for dark mode. Do not convert these
+    back to ?color-interface-* tokens - opaque tokens are what caused the
+    per-instance color overrides this replaced.
+*/
 .divider {
-    background-color: ?color-interface-soft;
+    background-color: #4A3C3C43;
     height: 1;
 }
 
 .dark-mode .divider {
-    background-color: ?color-interface-strong;
+    background-color: #4AFFFFFF;
 }
 
 .divider-thick {

@@ -118,14 +118,10 @@ namespace Rock.Blocks.Cms
         {
             var options = new AdaptiveMessageDetailOptionsBag();
 
-            var parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
-            if ( parentCategoryId.HasValue )
+            var parentCategory = new CategoryService( RockContext ).Get( PageParameter( PageParameterKey.ParentCategoryId ), !PageCache.Layout.Site.DisablePredictableIds );
+            if ( parentCategory != null && parentCategory.EntityType.Guid == Rock.SystemGuid.EntityType.ADAPTIVE_MESSAGE_CATEGORY.AsGuid() )
             {
-                var parentCategory = new CategoryService( RockContext ).Get( parentCategoryId.Value );
-                if ( parentCategory != null && parentCategory.EntityType.Guid == Rock.SystemGuid.EntityType.ADAPTIVE_MESSAGE_CATEGORY.AsGuid() )
-                {
-                    options.ParentCategory = parentCategory.ToListItemBag();
-                }
+                options.ParentCategory = parentCategory.ToListItemBag();
             }
 
             return options;
@@ -384,14 +380,10 @@ namespace Rock.Blocks.Cms
 
             if ( PageParameter( PageParameterKey.AdaptiveMessageCategoryId ).IsNotNullOrWhiteSpace() )
             {
-                var adaptiveMessageCategoryId = PageParameter( PageParameterKey.AdaptiveMessageCategoryId ).AsIntegerOrNull();
-                if ( adaptiveMessageCategoryId.HasValue )
+                var adaptiveMessageCategory = new AdaptiveMessageCategoryService( RockContext ).Get( PageParameter( PageParameterKey.AdaptiveMessageCategoryId ), !PageCache.Layout.Site.DisablePredictableIds );
+                if ( adaptiveMessageCategory != null )
                 {
-                    var adaptiveMessageCategory = new AdaptiveMessageCategoryService( RockContext ).Get( adaptiveMessageCategoryId.Value );
-                    if ( adaptiveMessageCategory != null )
-                    {
-                        entity = adaptiveMessageCategory.AdaptiveMessage;
-                    }
+                    entity = adaptiveMessageCategory.AdaptiveMessage;
                 }
             }
 
@@ -648,7 +640,7 @@ namespace Rock.Blocks.Cms
                 return ActionBadRequest( errorMessage );
             }
 
-            var adaptiveMessageCategoryId = PageParameter( PageParameterKey.AdaptiveMessageCategoryId ).AsIntegerOrNull();
+            var adaptiveMessageCategoryId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.AdaptiveMessageCategoryId ) ) ?? PageParameter( PageParameterKey.AdaptiveMessageCategoryId ).AsIntegerOrNull();
             // reload page, selecting the deleted data view's parent
             var qryParams = new Dictionary<string, string>();
             if ( adaptiveMessageCategoryId.HasValue )
@@ -656,7 +648,7 @@ namespace Rock.Blocks.Cms
                 var adaptiveMessageCategory = entity.AdaptiveMessageCategories.FirstOrDefault( a => a.Id == adaptiveMessageCategoryId.Value );
                 if ( adaptiveMessageCategory != null )
                 {
-                    qryParams["CategoryId"] = adaptiveMessageCategory.CategoryId.ToString();
+                    qryParams["CategoryId"] = adaptiveMessageCategory.Category?.IdKey ?? CategoryCache.Get( adaptiveMessageCategory.CategoryId )?.IdKey;
                 }
             }
 
@@ -772,10 +764,10 @@ namespace Rock.Blocks.Cms
         private string GetPageLinkWithoutMessageId()
         {
             var qryParams = new Dictionary<string, string>();
-            var parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
-            if ( parentCategoryId.HasValue )
+            var parentCategory = new CategoryService( RockContext ).Get( PageParameter( PageParameterKey.ParentCategoryId ), !PageCache.Layout.Site.DisablePredictableIds );
+            if ( parentCategory != null )
             {
-                qryParams[PageParameterKey.CategoryId] = parentCategoryId.ToString();
+                qryParams[PageParameterKey.CategoryId] = parentCategory.IdKey;
             }
 
             qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );

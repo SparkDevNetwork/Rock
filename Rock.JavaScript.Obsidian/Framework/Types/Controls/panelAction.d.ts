@@ -44,4 +44,21 @@ export type PanelAction = {
 
     /** If true then the action will be disabled and not respond to clicks. */
     disabled?: boolean;
+
+    /**
+     * Tooltip text rendered as the HTML `title` attribute on the action's
+     * containing element. Useful for label-style actions where the visible
+     * text is short (e.g. a deploy badge) but the user benefits from
+     * additional context on hover (e.g. the precise deploy timestamp).
+     */
+    tooltip?: string;
+
+    /**
+     * Inline CSS style string applied to the action's rendered element.
+     * Useful for label-style actions that need a per-instance custom color
+     * (for example, a GroupType chip tinted by GroupType.GroupTypeColor)
+     * which the predefined `type` palette can't express. Use sparingly;
+     * prefer `type` and CSS classes when a token-based color works.
+     */
+    style?: string;
 };

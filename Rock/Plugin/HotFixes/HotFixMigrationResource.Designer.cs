@@ -1143,5 +1143,61 @@ namespace Rock.Plugin.HotFixes {
                 return ResourceManager.GetString("_299_FixAnalyticsETLFamilyOperatorPrecedence_spAnalytics_ETL_Family", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up the ALTER PROCEDURE script for [spCrm_FamilyAnalyticsEraDataset]
+        ///   that fixes the week-boundary comparison (issue #6902).
+        /// </summary>
+        public static string _306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsEraDataset {
+            get {
+                return ResourceManager.GetString("_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up the ALTER PROCEDURE script for [spCrm_FamilyAnalyticsGiving]
+        ///   that fixes the week-boundary comparison (issue #6902).
+        /// </summary>
+        public static string _306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsGiving {
+            get {
+                return ResourceManager.GetString("_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsGiving", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up the ALTER PROCEDURE script for [spCrm_FamilyAnalyticsAttendance]
+        ///   that fixes the week-boundary comparison (issue #6902).
+        /// </summary>
+        public static string _306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsAttendance {
+            get {
+                return ResourceManager.GetString("_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsAttendance", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Follow-up ALTER PROCEDURE script for [spCrm_FamilyAnalyticsEraDataset]
+        ///   that aligns the giving and attendance temp-table pre-filters to the
+        ///   SundayDate week-boundary logic used everywhere else in the procedure
+        ///   and switches GETDATE() to dbo.RockGetDate() so timestamps honor
+        ///   Rock's configured time zone (issue #6902).
+        /// </summary>
+        public static string _311_FixEraFamilyAnalyticsWeekBoundariesFollowup6902_spCrm_FamilyAnalyticsEraDataset {
+            get {
+                return ResourceManager.GetString("_311_FixEraFamilyAnalyticsWeekBoundariesFollowup6902_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   ALTER PROCEDURE script for [spCrm_PersonDuplicateFinder] that adds
+        ///   IS NOT NULL guards to the BirthDate, MaritalStatusValueId, and
+        ///   SuffixValueId score-update self-joins so the optimizer stops
+        ///   picking a many-to-many merge plan that spins on the NULL block
+        ///   on large, NULL-heavy Person tables (issue #6959).
+        /// </summary>
+        public static string _313_FixPersonDuplicateFinderNullSelfJoinPerformance6959_spCrm_PersonDuplicateFinder {
+            get {
+                return ResourceManager.GetString("_313_FixPersonDuplicateFinderNullSelfJoinPerformance6959_spCrm_PersonDuplicateFinder", resourceCulture);
+            }
+        }
     }
 }

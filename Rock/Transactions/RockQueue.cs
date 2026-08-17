@@ -129,16 +129,12 @@ namespace Rock.Transactions
 
         /// <summary>
         /// Gets the transactions that are waiting to be processed in the
-        /// standard transaciton queue.
+        /// standard transaction queue.
         /// </summary>
         /// <returns>A collection of <see cref="ITransaction"/> objects that are waiting to be processed.</returns>
         public static List<ITransaction> GetStandardQueuedTransactions()
         {
             var transactions = new List<ITransaction>();
-
-#pragma warning disable CS0618 // Type or member is obsolete
-            transactions.AddRange( TransactionQueue );
-#pragma warning restore CS0618 // Type or member is obsolete
 
             transactions.AddRange( _standardTransactionQueue );
 
@@ -190,50 +186,13 @@ namespace Rock.Transactions
         /// <param name="errorHandler">The error handler.</param>
         public static void Drain( Action<Exception> errorHandler )
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            if ( TransactionQueue.Count == 0 && _standardTransactionQueue.Count == 0 )
-#pragma warning restore CS0618 // Type or member is obsolete
+            if ( _standardTransactionQueue.Count == 0 )
             {
                 return;
             }
 
             using ( var activity = ObservabilityHelper.StartActivity( "Draining RockQueue" ) )
             {
-#pragma warning disable CS0618 // Type or member is obsolete
-                while ( TransactionQueue.TryDequeue( out var transaction ) )
-                {
-                    CurrentlyExecutingTransaction = transaction;
-
-                    if ( CurrentlyExecutingTransaction == null )
-                    {
-                        continue;
-                    }
-
-                    try
-                    {
-                        // This is a bit of a hack just in case somebody puts an
-                        // IQueuedTransaction into the legacy queue.
-                        if ( CurrentlyExecutingTransaction is IQueuedTransaction queuedTransaction )
-                        {
-                            queuedTransaction.OnEnqueue();
-                        }
-
-                        if ( CurrentlyExecutingTransaction is IAsyncTransaction asyncTransation )
-                        {
-                            asyncTransation.ExecuteAsync().Wait();
-                        }
-                        else
-                        {
-                            CurrentlyExecutingTransaction.Execute();
-                        }
-                    }
-                    catch ( Exception ex )
-                    {
-                        errorHandler( new Exception( $"Exception in RockQueue.Drain(): {transaction.GetType().Name}", ex ) );
-                    }
-                }
-#pragma warning restore CS0618 // Type or member is obsolete
-
                 while ( _standardTransactionQueue.TryDequeue( out var transaction ) )
                 {
                     try
@@ -452,79 +411,11 @@ namespace Rock.Transactions
         /// </summary>
         internal static void Clear()
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            while ( TransactionQueue.TryDequeue( out _ ) )
-                ;
-#pragma warning restore CS0618 // Type or member is obsolete
-
             while ( _standardTransactionQueue.TryDequeue( out _ ) )
                 ;
 
             while ( _fastTransactionQueue.TryDequeue( out _ ) )
                 ;
-        }
-
-        #endregion
-
-        #region Obsolete
-
-        /// <summary>
-        /// Gets the currently executing transaction progress. This should be between 0 and 100
-        /// percent or null if the progress cannot be reported.
-        /// </summary>
-        /// <value>
-        /// The currently executing transaction progress.
-        /// </value>
-        [Obsolete( "This property should not be used and will be removed in a future version of Rock." )]
-        [RockObsolete( "1.15" )]
-        public static int? CurrentlyExecutingTransactionProgress { get; private set; }
-
-        /// <summary>
-        /// The currently executing transaction.
-        /// </summary>
-        /// <value>
-        /// The currently executing transaction.
-        /// </value>
-        [Obsolete( "This property should not be used and will be removed in a future version of Rock." )]
-        [RockObsolete( "1.15" )]
-        public static ITransaction CurrentlyExecutingTransaction { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the transaction queue.
-        /// </summary>
-        /// <value>
-        /// The transaction queue.
-        /// </value>
-        [Obsolete( "Use the method GetQueuedStandardTransactions() instead." )]
-        [RockObsolete( "1.15" )]
-        public static ConcurrentQueue<ITransaction> TransactionQueue { get; set; } = new ConcurrentQueue<ITransaction>();
-
-        /// <summary>
-        /// Determines whether a transaction of a certain type is being run.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns>
-        ///   <c>true</c> if [has transaction of type]; otherwise, <c>false</c>.
-        /// </returns>
-        [Obsolete( "This method should not be used and will be removed in a future version of Rock." )]
-        [RockObsolete( "1.15" )]
-        public static bool IsExecuting<T>() where T : ITransaction 
-        {
-            return CurrentlyExecutingTransaction?.GetType() == typeof( T );
-        }
-
-        /// <summary>
-        /// Determines whether a transaction of a certain type is in the queue.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns>
-        ///   <c>true</c> if [has transaction of type]; otherwise, <c>false</c>.
-        /// </returns>
-        [Obsolete( "This method should not be used and will be removed in a future version of Rock." )]
-        [RockObsolete( "1.15" )]
-        public static bool IsInQueue<T>() where T : ITransaction
-        {
-            return TransactionQueue.Any( t => t.GetType() == typeof( T ) );
         }
 
         #endregion

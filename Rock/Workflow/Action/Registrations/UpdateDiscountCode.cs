@@ -34,18 +34,39 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Update Discount Code" )]
 
-    [CustomDropdownListField( "Registration Template", "Registration template the discount code belongs to.",
-        "SELECT [Id] AS [Value], [Name] AS [Text] FROM [RegistrationTemplate] ORDER BY [Name]", true, "", "", 0 )]
+    [CustomDropdownListField( "Registration Template",
+        Description = "Registration template the discount code belongs to.",
+        ListSource = "SELECT [Id] AS [Value], [Name] AS [Text] FROM [RegistrationTemplate] ORDER BY [Name]",
+        IsRequired = true,
+        Order = 0 )]
 
-    [WorkflowTextOrAttribute( "Discount Code", "Discount Code Attribute", "Discount code to update.", true,
-        "", "", 1, "DiscountCode", new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [WorkflowTextOrAttribute( "Discount Code",
+        "Discount Code Attribute",
+        Description = "Discount code to update.",
+        IsRequired = true,
+        Order = 1,
+        Key = "DiscountCode",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType" } )]
 
-    [CustomRadioListField( "Discount Type", "Type of discount to apply, percent or amount", "Percent, Amount", true, "Percent", "", 2, "DiscountType" )]
+    [CustomRadioListField( "Discount Type",
+        Description = "Type of discount to apply, percent or amount",
+        ListSource = "Percent, Amount",
+        IsRequired = true,
+        DefaultValue = "Percent",
+        Order = 2,
+        Key = "DiscountType" )]
 
-    [WorkflowTextOrAttribute( "Discount Amount", "Discount Amount Attribute", "Amount in decimal to set the discount (percent or amount)", true,
-        "", "", 3, "DiscountAmount", new string[] { "Rock.Field.Types.DecimalFieldType" } )]
+    [WorkflowTextOrAttribute( "Discount Amount",
+        "Discount Amount Attribute",
+        Description = "Amount in decimal to set the discount (percent or amount)",
+        IsRequired = true,
+        Order = 3,
+        Key = "DiscountAmount",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.DecimalFieldType" } )]
 
-    [BooleanField( "Update Past Registrations", "Should registrations that have used this discount code be retroactively updated?", order: 4 )]
+    [BooleanField( "Update Past Registrations",
+        Description = "Should registrations that have used this discount code be retroactively updated?",
+        Order = 4 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "0BA8600C-7FB2-4E6E-B47C-37B1CE27A13E")]
     public class UpdateDiscountCode : ActionComponent

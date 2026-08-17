@@ -36,12 +36,41 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "This block displays a selected report from Power BI." )]
 
-    [DefinedValueField( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS, "Power BI Account", "The Power BI account to use to retrieve the report.", true, false, "", "CustomSetting", 0, "PowerBiAccount" )]
-    [TextField( "Workspace", "The PowerBI workspace that the report belongs to", true, "", "CustomSetting", 1, key: "GroupId" )]
-    [TextField( "Report URL", "The URL of the report to display.", true, "", "CustomSetting", 2, "ReportUrl" )]
-    [BooleanField("Show Right Pane", "Determines whether the right pane in the embedded report should be shown.", defaultValue: true, category: "CustomSetting", key: "ShowRightPane" )]
-    [BooleanField("Show Navigation Pane", "Determines whether the navigation pane in the embedded report should be shown.", defaultValue: true, category: "CustomSetting", key: "ShowNavPane" )]
-    [BooleanField("Show Fullsize Button", "Determines whether the fullsize button should be shown.", defaultValue: true, category: "CustomSetting", key: "ShowFullsizeBtn" )]
+    [DefinedValueField( "Power BI Account",
+        Description = "The Power BI account to use to retrieve the report.",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS,
+        Category = "CustomSetting",
+        Order = 0,
+        Key = "PowerBiAccount" )]
+    [TextField( "Workspace", 
+        Description = "The PowerBI workspace that the report belongs to",
+        IsRequired = true,
+        Category = "CustomSetting",
+        Order = 1,
+        Key = "GroupId" )]
+    [TextField( "Report URL", 
+        Description = "The URL of the report to display.",
+        IsRequired = true,
+        Category = "CustomSetting",
+        Order = 2,
+        Key = "ReportUrl" )]
+    [BooleanField("Show Right Pane", 
+        Description = "Determines whether the right pane in the embedded report should be shown.",
+        DefaultBooleanValue = true,
+        Category = "CustomSetting",
+        Key = "ShowRightPane" )]
+    [BooleanField("Show Navigation Pane", 
+        Description = "Determines whether the navigation pane in the embedded report should be shown.",
+        DefaultBooleanValue = true,
+        Category = "CustomSetting",
+        Key = "ShowNavPane" )]
+    [BooleanField("Show Fullsize Button", 
+        Description = "Determines whether the fullsize button should be shown.",
+        DefaultBooleanValue = true,
+        Category = "CustomSetting",
+        Key = "ShowFullsizeBtn" )]
     [CodeEditorField( "URL Append Lava Template",
         Description = "The Lava Template for the Append Url",
         IsRequired = false,

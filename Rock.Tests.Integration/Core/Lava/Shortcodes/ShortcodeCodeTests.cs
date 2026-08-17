@@ -21,7 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Tests.Shared.Lava;
+using Rock.Tests.Integration.TestFramework.Lava;
 
 namespace Rock.Tests.Integration.Core.Lava.Shortcodes
 {
@@ -503,7 +503,7 @@ Restored Value: {{Error}}";
         /// Verify that a shortcode embedded in an [[ item ]] tag is rendered correctly.
         /// </summary>
         [TestMethod]
-        [Ignore( "This test documents a potential bug. The nested [[ item ]] tag is not resolved correctly." )]
+        //[Ignore( "This test documents a potential bug. The nested [[ item ]] tag is not resolved correctly." )]
         public void ShortcodeParsing_ShortcodeEmbeddedInItemElement_IsParsedCorrectly()
         {
             var input = @"

@@ -43,6 +43,7 @@ using Ical.Net.DataTypes;
 
 using ImageResizer;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
@@ -68,8 +69,6 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 using TimeZoneConverter;
-
-using UAParser;
 
 namespace Rock.Lava
 {
@@ -2221,11 +2220,9 @@ namespace Rock.Lava
                     }
 
                     // check if attribute is a key value list and return a collection of key/value pairs
-                    if ( field is Rock.Field.Types.KeyValueListFieldType )
+                    if ( attribute.FieldType.Guid == SystemGuid.FieldType.KEY_VALUE_LIST.AsGuid() )
                     {
-                        var keyValueField = ( Rock.Field.Types.KeyValueListFieldType ) field;
-
-                        return keyValueField.GetValuesFromString( null, rawValue, attribute.QualifierValues, false );
+                        return Field.Helper.GetKeyValueListValuesFromString( rawValue, attribute.ConfigurationValues, false );
                     }
 
                     if ( qualifier.Equals( "Object", StringComparison.OrdinalIgnoreCase ) && field is Rock.Field.ICachedEntitiesFieldType )
@@ -2762,6 +2759,21 @@ namespace Rock.Lava
                     case "ContentChannel":
                         {
                             modelCacheType = typeof( ContentChannelCache );
+                            break;
+                        }
+                    case "ContentChannelItem":
+                        {
+                            modelCacheType = typeof( ContentChannelItemCache );
+                            break;
+                        }
+                    case "ContentChannelItemAssociation":
+                        {
+                            modelCacheType = typeof( ContentChannelItemAssociationCache );
+                            break;
+                        }
+                    case "ContentChannelItemSlug":
+                        {
+                            modelCacheType = typeof( ContentChannelItemSlugCache );
                             break;
                         }
                     default:
@@ -3605,10 +3617,7 @@ namespace Rock.Lava
                     }
                 case "BROWSER":
                     {
-                        Parser uaParser = Parser.GetDefault();
-                        ClientInfo client = uaParser.Parse( HttpContext.Current.Request.UserAgent.ToStringSafe() );
-
-                        return client;
+                        return RockApp.Current.GetRequiredService<Rock.Net.IUserAgentParser>().Parse( HttpContext.Current.Request.UserAgent.ToStringSafe() );
                     }
                 case "PARMLIST":
                     {

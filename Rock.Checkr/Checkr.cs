@@ -38,7 +38,11 @@ namespace Rock.Checkr
     [Export( typeof( BackgroundCheckComponent ) )]
     [ExportMetadata( "ComponentName", "Checkr" )]
 
-    [EncryptedTextField( "Access Token", "Checkr Access Token", true, "", "", 0, null, true )]
+    [EncryptedTextField( "Access Token",
+        Description = "Checkr Access Token",
+        IsRequired = true,
+        Order = 0,
+        IsPassword = true )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CHECKR_PROVIDER )]
     public class Checkr : BackgroundCheckComponent
     {

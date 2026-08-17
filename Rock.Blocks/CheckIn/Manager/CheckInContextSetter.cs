@@ -53,7 +53,8 @@ namespace Rock.Blocks.CheckIn.Manager
         Category = AttributeCategoryKey.Campus,
         Key = AttributeKey.IncludeInactiveCampuses )]
 
-    [CampusField( "Default Campus", includeInactive: true,
+    [CampusField( "Default Campus",
+        IncludeInactive = true,
         Description = "When there is no campus value, what campus should be displayed?",
         IsRequired = false,
         Order = 5,

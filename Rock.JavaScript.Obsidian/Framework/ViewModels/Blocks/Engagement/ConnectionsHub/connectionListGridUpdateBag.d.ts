@@ -36,8 +36,8 @@ export type ConnectionListGridUpdateBag = {
     /** Gets or sets the Campus name, or null when none is assigned. */
     campus?: string | null;
 
-    /** Gets or sets the grouping field data for the campus column. */
-    campusGrouping?: GroupingFieldBag | null;
+    /** Gets or sets the grouping key for the campus column. */
+    campusGrouping?: string | null;
 
     /** Gets or sets the Campus Guid, or null when none is assigned. */
     campusGuid?: Guid | null;
@@ -54,6 +54,9 @@ export type ConnectionListGridUpdateBag = {
     /** Gets or sets the ConnectionOpportunity Guid. */
     connectionOpportunityGuid?: Guid | null;
 
+    /** Gets or sets the Connection Opportunity CSS Class. */
+    connectionOpportunityIconCssClass?: string | null;
+
     /** Gets or sets the current connection state (e.g., Active, Inactive, Future Follow-up) for this request. */
     connectionState: ConnectionState;
 
@@ -63,8 +66,16 @@ export type ConnectionListGridUpdateBag = {
     /** Gets or sets the currently assigned connector as a list item. */
     connectorDetails?: ListItemBag | null;
 
-    /** Gets or sets the grouping field data for the connector column. */
-    connectorGrouping?: GroupingFieldBag | null;
+    /** Gets or sets the grouping key for the connector column. */
+    connectorGrouping?: string | null;
+
+    /**
+     * Gets or sets the grouping metadata for the currently assigned connector. Used by
+     * the client to label the connector's group when the connector is not part of the
+     * block-load available groupings list. Null when the connector was not changed or
+     * the request is unassigned.
+     */
+    connectorGroupingField?: GroupingFieldBag | null;
 
     /** Gets or sets the date by which this request should be completed. */
     dueDate?: string | null;
@@ -75,8 +86,8 @@ export type ConnectionListGridUpdateBag = {
     /** Gets or sets the due status indicating whether this request is on time, due soon, or overdue. */
     dueStatus: DueStatus;
 
-    /** Gets or sets the grouping field data for the due status column. */
-    dueStatusGrouping?: GroupingFieldBag | null;
+    /** Gets or sets the grouping key for the due status column. */
+    dueStatusGrouping?: string | null;
 
     /** Gets or sets the follow-up date for this request when it is in the Future Follow-up state. */
     followUpDate?: string | null;
@@ -87,12 +98,15 @@ export type ConnectionListGridUpdateBag = {
     /** Gets or sets the date and time of the most recent activity logged against this request. */
     lastActivityDateTime?: string | null;
 
-    /** Gets or sets the grouping field data for the connection opportunity column. */
-    opportunityGrouping?: GroupingFieldBag | null;
+    /** Gets or sets the grouping key for the connection opportunity column. */
+    opportunityGrouping?: string | null;
 
-    /** Gets or sets the grouping field data for the connection state column. */
-    stateGrouping?: GroupingFieldBag | null;
+    /** Gets or sets the sort order of the connection request within its status column. */
+    order: number;
 
-    /** Gets or sets the grouping field data for the connection status column. */
-    statusGrouping?: GroupingFieldBag | null;
+    /** Gets or sets the grouping key for the connection state column. */
+    stateGrouping?: string | null;
+
+    /** Gets or sets the grouping key for the connection status column. */
+    statusGrouping?: string | null;
 };

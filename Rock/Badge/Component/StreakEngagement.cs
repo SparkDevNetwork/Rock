@@ -33,37 +33,32 @@ namespace Rock.Badge.Component
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Streak Engagement" )]
 
-    [StreakTypeField(
-        name: "Streak Type",
-        description: "The streak type to display streak data for the given person about",
-        required: true,
-        key: AttributeKey.StreakType )]
+    [StreakTypeField( "Streak Type",
+        Description = "The streak type to display streak data for the given person about",
+        IsRequired = true,
+        Key = AttributeKey.StreakType )]
 
-    [IntegerField(
-        name: "Units To Display",
-        description: "The number of days or months to show on the chart (default 24.)",
-        required: false,
-        defaultValue: AttributeDefault.BarCount,
-        key: AttributeKey.BarCount )]
+    [IntegerField( "Units To Display",
+        Description = "The number of days or months to show on the chart (default 24.)",
+        IsRequired = false,
+        DefaultIntegerValue = AttributeDefault.BarCount,
+        Key = AttributeKey.BarCount )]
 
-    [IntegerField(
-        name: "Minimum Bar Height",
-        description: "The minimum height of a bar (in pixels). Useful for showing hint of bar when attendance was 0. (default 2.)",
-        required: false,
-        defaultValue: AttributeDefault.MinBarHeight,
-        key: AttributeKey.MinBarHeight )]
+    [IntegerField( "Minimum Bar Height",
+        Description = "The minimum height of a bar (in pixels). Useful for showing hint of bar when attendance was 0. (default 2.)",
+        IsRequired = false,
+        DefaultIntegerValue = AttributeDefault.MinBarHeight,
+        Key = AttributeKey.MinBarHeight )]
 
-    [BooleanField(
-        name: "Animate Bars",
-        description: "Determine whether bars should animate when displayed.",
-        defaultValue: AttributeDefault.AnimateBars,
-        key: AttributeKey.AnimateBars )]
+    [BooleanField( "Animate Bars",
+        Description = "Determine whether bars should animate when displayed.",
+        DefaultBooleanValue = AttributeDefault.AnimateBars,
+        Key = AttributeKey.AnimateBars )]
 
-    [LinkedPage(
-        name: "Streak Detail Page",
-        description: "If set, clicking this badge will navigate to the given page.",
-        required: false,
-        key: AttributeKey.StreakDetailPage )]
+    [LinkedPage( "Streak Detail Page",
+        Description = "If set, clicking this badge will navigate to the given page.",
+        IsRequired = false,
+        Key = AttributeKey.StreakDetailPage )]
 
     [Rock.SystemGuid.EntityTypeGuid( "095EDDED-D648-456B-9673-D8CB41FC9558")]
     public class StreakEngagement : BadgeComponent

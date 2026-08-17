@@ -145,7 +145,8 @@ namespace Rock.Blocks.Cms
                 AllowManualRefresh = p.AllowManualRefresh,
                 ResultSize = p.ResultData != null ? p.ResultData.Length / 1024 : 0,
                 IsSystem = p.IsSystem,
-                IsActive = p.IsActive
+                IsActive = p.IsActive,
+                Status = p.Status
             } );
         }
 
@@ -193,7 +194,8 @@ namespace Rock.Blocks.Cms
                 */
                 .AddField( "resultSize", a => a.ResultSize )
                 .AddField( "isSystem", a => a.IsSystem )
-                .AddField( "isActive", a => a.IsActive );
+                .AddField( "isActive", a => a.IsActive )
+                .AddField( "status", a => a.Status);
         }
 
         #endregion

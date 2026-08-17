@@ -21,9 +21,19 @@ namespace Rock.Attribute
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     class AssetStorageProviderFieldAttributeAttribute : FieldAttribute
     {
-        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AssetStorageProviderFieldAttributeAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public AssetStorageProviderFieldAttributeAttribute( string name )
+            : base( SystemGuid.FieldType.ASSET_STORAGE_PROVIDER.AsGuid(), name )
+        {
+        }
+
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public AssetStorageProviderFieldAttributeAttribute( string name = "Asset Storage System", string description = "", bool required = true, string defaultFinancialGatewayGuid = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultFinancialGatewayGuid, category, order, key, typeof( Rock.Field.Types.AssetStorageProviderFieldType ).FullName )
+            : base( SystemGuid.FieldType.ASSET_STORAGE_PROVIDER.AsGuid(), name, description, required, defaultFinancialGatewayGuid, category, order, key )
         {
         }
     }
