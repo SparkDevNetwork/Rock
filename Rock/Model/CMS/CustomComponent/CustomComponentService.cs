@@ -40,7 +40,7 @@ namespace Rock.Model
         /// </summary>
         /// <remarks>
         /// The returned record, when newly created, has already been added to the context. The caller is
-        /// responsible for populating its content and calling <see cref="Rock.Data.RockContext.SaveChanges()"/>.
+        /// responsible for populating its content and calling SaveChanges() on the <see cref="Rock.Data.RockContext"/>.
         /// </remarks>
         /// <param name="blockId">A <see cref="System.Int32"/> representing the Id of the owning <see cref="Rock.Model.Block"/>.</param>
         /// <returns>The existing or newly created <see cref="Rock.Model.CustomComponent"/> for the specified block.</returns>
