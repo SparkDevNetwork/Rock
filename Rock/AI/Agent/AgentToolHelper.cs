@@ -656,9 +656,27 @@ namespace Rock.AI.Agent
         /// <summary>
         /// Gets the attributes that are available on the entity.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This is the overload to reach for. Nearly every caller has an entity in
+        /// hand, and this one resolves that entity's attribute definitions before
+        /// describing them, loading them first when they are not already populated.
+        /// </para>
+        /// <para>
+        /// Use the <see cref="GetAvailableAttributes(IEnumerable{AttributeCache}, bool)"/>
+        /// overload only when there is no entity instance to work from, such as a
+        /// caller that has an entity type and reads definitions from the cache.
+        /// </para>
+        /// <para>
+        /// The two overloads cannot be told apart by a bare <c>null</c>, since
+        /// neither parameter type is more specific than the other. A caller passing
+        /// a null literal must cast it, as
+        /// <c>GetAvailableAttributes( ( IHasAttributes ) null )</c>.
+        /// </para>
+        /// </remarks>
         /// <param name="entity">The entity whose attributes are to be retrieved.</param>
         /// <param name="enforceSecurity">Determines if security should be enforced or not when getting attributes.</param>
-        /// <returns></returns>
+        /// <returns>A collection of results describing the attributes the current person may see, or an empty collection when <paramref name="entity"/> is <c>null</c>.</returns>
         public ICollection<AttributeResult> GetAvailableAttributes( IHasAttributes entity, bool enforceSecurity = true )
         {
             if ( entity == null )
@@ -671,6 +689,9 @@ namespace Rock.AI.Agent
                 entity.LoadAttributes( _rockContext );
             }
 
+            // Resolving the definitions is all this overload does on its own. The
+            // visibility and authorization filtering belongs to the overload below,
+            // so that it exists in exactly one place.
             return GetAvailableAttributes( entity.Attributes.Values, enforceSecurity );
         }
 
@@ -679,16 +700,32 @@ namespace Rock.AI.Agent
         /// attribute definitions.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// This exists for callers that work from an entity type rather than an
         /// entity instance, where there is no object to hang <c>LoadAttributes</c>
-        /// on. It shares the visibility and authorization filtering with the
-        /// entity overload deliberately: a second copy of those filters would
-        /// drift, and when it drifted it would leak attribute definitions the
-        /// person is not allowed to see.
+        /// on. <c>CoreAdministrationSkill.GetEntityAvailableAttributes</c> is the
+        /// case it was added for: it takes an entity type, reads the unqualified
+        /// definitions from <see cref="AttributeCache"/>, and never materializes an
+        /// entity at all.
+        /// </para>
+        /// <para>
+        /// It shares the visibility and authorization filtering with the entity
+        /// overload deliberately, and that sharing is the reason it is public rather
+        /// than a private helper. A caller that could not reach this method would
+        /// build the results itself, which means a second copy of those filters.
+        /// That copy would drift, and when it drifted it would leak attribute
+        /// definitions the person is not allowed to see. Silently, since a leaked
+        /// definition looks exactly like one the caller was entitled to.
+        /// </para>
+        /// <para>
+        /// Prefer <see cref="GetAvailableAttributes(IHasAttributes, bool)"/> whenever
+        /// an entity is available. See that overload for the note on passing
+        /// <c>null</c> to either one.
+        /// </para>
         /// </remarks>
         /// <param name="attributes">The attribute definitions to describe.</param>
         /// <param name="enforceSecurity">Determines if security should be enforced or not.</param>
-        /// <returns>A collection of results describing the attributes the current person may see.</returns>
+        /// <returns>A collection of results describing the attributes the current person may see, or an empty collection when <paramref name="attributes"/> is <c>null</c>.</returns>
         public ICollection<AttributeResult> GetAvailableAttributes( IEnumerable<AttributeCache> attributes, bool enforceSecurity = true )
         {
             if ( attributes == null )
