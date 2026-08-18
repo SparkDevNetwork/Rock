@@ -3,14 +3,14 @@ author: Jon Edmiston
 date_created: 2026-08-17
 summary: >-
   An AI agent skill that reads the Rock community knowledge base over HTTP.
-  Seven read-only tools across three remote stores: hybrid keyword and semantic
+  Eight read-only tools across three remote stores: hybrid keyword and semantic
   search over documentation and community content, semantic and literal search
   over the Rock source, and progressive disclosure of curated topic trees. The
   overview endpoint is a prerequisite for the rest and is the source of every
   valid filter value. Category scope is the skill's only setting, and its picker
   populates from the remote managed lists so it never drifts from the server.
-  The host is fixed and the organization id is resolved from Rock, so neither is
-  configured.
+  The host is fixed and the organization id comes from Connected Services, so
+  neither is configured.
 contributors: []
 ---
 
@@ -18,7 +18,7 @@ contributors: []
 
 ## Summary
 
-Seven read-only tools that query the Rock community knowledge base, a remote HTTP service
+Eight read-only tools that query the Rock community knowledge base, a remote HTTP service
 holding three separate stores. Nothing in this skill touches the Rock database except to
 read its own configuration and its own version number.
 
@@ -42,21 +42,21 @@ That is why the overview endpoint is not one tool among eight. It is the tool th
 other seven work, and the design below spends more effort forcing it to be called first than
 it spends on any single search.
 
-The second silent failure is filter values. A category, domain, or source the server does not
-recognize is not an error. It returns an empty result that is indistinguishable from a search
-that genuinely found nothing, so the agent rephrases the query instead of fixing the filter,
-and keeps rephrasing. Every filter is therefore validated locally before the request leaves
-Rock.
+Filter values are the same problem wearing different clothes. A category, domain, or source the
+server does not recognize is not an error; it returns an empty result indistinguishable from a
+search that genuinely found nothing. The overview is where the real values live, with counts, which
+is the second reason it comes first.
+
+The skill does not police this. It says loudly and repeatedly where the values come from, and a
+caller that skips the overview and guesses gets the empty result its guess earned. That is a
+deliberate trade, recorded in [Decided](#filters-are-not-validated-before-sending).
 
 ## Requirements
 
-- The skill MUST validate every filter value against the remote managed lists before sending
-  a request, and MUST return an error naming the valid values rather than passing an unknown
-  value through to an empty result.
-- An error raised by that validation MUST point the agent at `GetKnowledgeBaseOverview`,
-  which reports the valid values for this deployment's actual corpus. Naming the values in
-  the error is what lets the agent correct itself; naming the tool is what stops it guessing
-  again on the next call.
+- `GetKnowledgeBaseOverview` MUST be declared a prerequisite of every search tool, at both the
+  skill and the tool level, and every filter parameter MUST name it as the source of its values.
+- The skill MUST NOT pre-validate filter values against the remote. An unknown value is sent as
+  given and the empty result stands.
 - Every tool that accepts a Rock version MUST supply it from the running Rock instance. The
   agent MUST NOT be given a version parameter.
 - The category picker in skill configuration MUST populate from the remote managed lists. When
@@ -66,12 +66,13 @@ Rock.
   reads as AND.
 - The configured category scope MUST be applied to every knowledge search, and the skill MUST
   state plainly where that scope does not reach.
-- `GetKnowledgeBaseOverview` MUST be declared a prerequisite of every search tool, at both the
-  skill and the tool level.
 - A retrieval key for a topic or article MUST NOT be constructible by the agent. Keys are only
   ever taken from a table of contents or a parent article.
 - Remote error detail MUST be surfaced, not swallowed. The service writes its `detail` strings
   to name the valid values, which is usually enough for a model to correct itself in one turn.
+- An empty search result MUST echo every filter that was applied, including those the skill
+  supplied rather than the agent, and MUST name `GetKnowledgeBaseOverview` as where real values
+  come from. This is the recovery path that replaces validation.
 - A `429` MUST NOT be retried inside the tool.
 - No tool MAY write. The remote API is read-only and this skill has no write surface.
 
@@ -83,8 +84,9 @@ Rock.
 [Description( "Provides access to the Rock community knowledge base: product documentation, community content, the Rock source code, and curated topic guides." )]
 [AgentSkillName( "Community Knowledge Base" )]
 [AgentPurpose( "Answers questions about how Rock RMS works, from documentation, community content, curated guides, and the Rock source." )]
-[AgentUsage( "Always call GetKnowledgeBaseOverview before the first search in a conversation. It reports what the knowledge base actually holds and which store answers which kind of question. Searching without it means guessing." )]
+[AgentUsage( "Always call GetKnowledgeBaseOverview before the first search in a conversation. It reports what the knowledge base actually holds, which store answers which kind of question, and the exact values every filter accepts. Searching without it means guessing, and a guessed filter value returns nothing rather than an error." )]
 [AgentUsage( "Prefer SearchKnowledge for almost every question. Reach for the code tools only when the question is about implementation detail, or when SearchKnowledge has already failed to answer it." )]
+[AgentUsage( "When you do not know enough about a subject to know what to search for, open a curated topic instead of guessing at search terms. The overview lists the topics with a hint for each; GetTopic opens one and GetArticle reads down through it, revealing a little at a time so you can choose where to go next. Curated topics are never returned by search, so this is the only route to them." )]
 [AgentSkillGuid( "DFCBFDE8-6BF2-4DDF-81FE-FDD436E5FD90" )]
 [EntityTypeGuid( "959F0B92-A3BB-4AAA-9143-CF7D77895392" )]
 internal sealed partial class CommunityKnowledgeBaseSkill : AgentSkillComponent
@@ -99,7 +101,7 @@ words beat one run-together one.
 | Store | Answers | Tools |
 |---|---|---|
 | **Knowledge** | "How does this work?", "What is the recommended way to?" Hybrid keyword and semantic search over documentation, guides, and community content. | `SearchKnowledge` |
-| **Code** | "How does Rock actually implement this?" Semantic search, then literal grep, then read the lines. | `SearchCode`, `GrepCode`, `GetCodeLines` |
+| **Code** | "How does Rock actually implement this?" Semantic search, then literal grep, then read the lines, or the whole file when it is genuinely needed. | `SearchCode`, `GrepCode`, `GetCodeLines`, `GetCodeFile` |
 | **Topics** | "I do not know enough to know what to search for." Hand-curated trees, walked progressively. Never returned by search. | `GetTopic`, `GetArticle`, entered from the overview |
 
 The routing rules, stated once here and repeated in the tool annotations:
@@ -132,28 +134,58 @@ private static class ConfigurationKey
 
 | Setting | Type | Required | Notes |
 |---|---|---|---|
-| Categories | multi-select | no | Empty means every category. |
+| Categories | enhanced multi-select dropdown | no | Empty means every category. |
 
 Configuration is a hand-rolled dynamic component rather than a `FieldAttribute` declaration,
 following `PrayerSkill`. The picker has to be populated from a live HTTP call, and the base class
 builds its bags from static attribute metadata, so the two cannot be mixed. Overriding
 `GetComponentDefinition` replaces the whole surface.
 
-#### The organization id is resolved, not configured
+#### The organization id comes from Connected Services
 
 It is a UUID version 5 hash of the Rock organization GUID, computed under a namespace each
-knowledge base deployment holds privately. **Rock cannot compute it.** It will be available from
-Rock directly, at all times; the exact source is being decided separately and is recorded as an
-open question below.
+knowledge base deployment holds privately. **Rock cannot compute it.** Spark provisions it and
+hands it to Rock through the Connected Services manifest, which is why the skill never asks for it
+and never derives it.
 
-**When it cannot be read, send the empty GUID**, `00000000-0000-0000-0000-000000000000`. Not an
-error, not a refusal, not a prompt. Log it once at debug level and carry on.
+```csharp
+using Rock.Configuration;
+using Rock.Configuration.ConnectedServices;
+
+private static readonly Guid EmptyOrganizationId = Guid.Empty;
+
+private string GetOrganizationId()
+{
+    var provider = RockApp.Current.GetService<ConnectedServicesProvider>();
+    var apiKey = provider?.GetConfiguration()?.KnowledgeBase?.ApiKey;
+
+    return apiKey.IsNotNullOrWhiteSpace()
+        ? apiKey
+        : EmptyOrganizationId.ToString();
+}
+```
+
+**Every step of that chain can be null**, and none of them are exceptional. The service resolves to
+null when Connected Services is not registered, `GetConfiguration()` returns null before a manifest
+has been fetched, and `KnowledgeBase` is null when the organization has no `knowledge-base` entry
+in its manifest, which is the normal state for an organization that has not subscribed. Hence the
+null-conditional at each hop rather than a guard that treats any of them as an error.
+
+**Accessibility.** `ConnectedServicesConfiguration` and `KnowledgeBase.ServiceConfiguration` are
+both `internal` to the `Rock` assembly. This works only because `Rock` declares
+`[assembly: InternalsVisibleTo( "Rock.AI.Agent" )]`. Worth knowing for two reasons: the resolver
+must live in `Rock.AI.Agent` rather than in a plugin, and a plugin author copying this skill cannot
+reach the value at all.
+
+#### When it cannot be read, send the empty GUID
+
+`00000000-0000-0000-0000-000000000000`. Not an error, not a refusal, not a prompt. Log the fallback
+once at debug level, **never the value itself**, and carry on.
 
 That is safe because of what the id is and is not:
 
-1. **It is not a credential.** It authenticates nothing. Read endpoints are open, with no key, no
-   sign-in, and no cookie. Do not build a permission model around it and do not store it
-   encrypted.
+1. **It is not used for authorization.** Read endpoints are open, with no sign-in and no cookie.
+   Do not build a permission model around it.
 2. **It is not verified.** The service does not check that an id corresponds to a real
    organization. Any well-formed UUID is accepted and recorded as an unknown organization.
 3. **It exists for analytics and rate limiting.** Attribution and a per-organization quota, and
@@ -167,6 +199,12 @@ plausible-looking wrong one.
 **The only hard rule is the shape.** A malformed id is rejected with a `400` of type
 `invalid-organization`, before rate limiting and before logging. Send the bare hyphenated
 8-4-4-4-12 form, lowercased. No braces, no `urn:uuid:` prefix. The empty GUID satisfies this.
+
+**Treat the value as sensitive even though it is not a credential.** Connected Services names the
+property `ApiKey` and documents it as authenticating with the service. Whatever it turns out to be
+on the wire, it is provisioned per organization and should never be logged, echoed in a tool
+result, surfaced in an error message, or shown to an agent. The cost of that discipline is zero and
+it does not depend on resolving the question below.
 
 **Do not derive it.** The namespace is per-deployment and not public. The skill must never accept
 a Rock organization GUID and hash it, and must never offer to.
@@ -194,6 +232,23 @@ No parameters are threaded through, because there is nothing left to thread. The
 constant and the organization id resolves itself, so the fetch always has everything it needs and
 works on a brand new skill instance with nothing filled in. This is what removing the two settings
 bought, and it is why `ExecuteComponentRequest` is not needed at all.
+
+
+#### `GetComponentDefinition` is synchronous, and that is a trap
+
+The override is a synchronous method, so fetching the categories means blocking on an async call.
+Doing that directly on the request thread **deadlocks**: the HTTP continuation needs the request's
+synchronization context to resume, and the wait is holding it. The failure is not an exception. The
+request simply never returns, the block action never resolves, and the skill's edit button in the
+agent UI stays disabled forever with nothing in the log. It also parks a worker thread per attempt.
+
+Two defences, both kept because either alone is enough and neither is guaranteed to survive a later
+edit: `ConfigureAwait( false )` on every await inside the client, and a `Task.Run` around the call
+so the wait happens off the request context.
+
+The call also carries its own short deadline, currently 8 seconds, separate from the client's 30.
+This one blocks a configuration screen from rendering, and an empty picker with a warning beats a
+thirty second wait for the same outcome.
 
 `managed-lists` takes no parameters beyond `{org}`, no paging, and no version scoping, and every
 key is always present, so an unconfigured list is an empty array rather than a missing key. That
@@ -312,23 +367,28 @@ a wrong guess produces either a `400` or, worse, quiet filtering.
 major release carries no trailing minor. Getting this wrong produces a `400` at best and quiet
 filtering at worst, so it is worth stating twice.
 
-Resolution runs once per request and is cached:
+Resolution is one line, with no lookup in front of it:
 
-1. Read `VersionInfo.GetRockSemanticVersionNumber()` and take the major component. `19.1.2` gives
-   `19`. Send it as the bare string `"19"`.
-2. Check it against `rock_versions` from the cached managed lists, which holds bare majors in the
-   same format. A plain string comparison, no normalizing. See Section 4.
-3. **Present:** send it. This is the normal path.
-4. **Absent**, meaning Rock is running ahead of what has been indexed: send the highest version the
-   list does hold, and attach `.WithInstructions()` naming both numbers, for example *"the
-   knowledge base holds nothing for Rock 20; these results describe Rock 19."*
+```csharp
+var rockVersion = VersionInfo.GetRockSemanticVersionNumber().Split( '.' ).First();   // "19.1.2" -> "19"
+```
 
-Step 2 is a check, not a lookup. The format comes from Rock, not from the server's list; the list
-only answers whether that version is indexed.
+Send that. **No pre-check that the version is indexed.** If it is not, the service answers `400`
+`unknown-rock-version` and lists the versions it holds in `detail`, which is more current than
+anything the skill could have cached.
 
-Step 4 is a real case and the one worth handling well. Rock ships ahead of its documentation
-routinely. The honest answer, *"here is Rock 19 material, 20 is not indexed"*, beats both an empty
-result and a `400`, and it tells the reader exactly how much to trust what follows.
+**On that `400`, retry once with the highest version named in `detail`**, and attach
+`.WithInstructions()` naming both numbers, for example *"the knowledge base holds nothing for
+Rock 21; these results describe Rock 20."*
+
+This is the case worth handling well, because Rock ships ahead of its documentation routinely. The
+honest answer beats both an empty result and a bare error, and it tells the reader exactly how much
+to trust what follows. It costs one extra round trip in a situation that is rare and temporary, and
+nothing at all the rest of the time.
+
+An earlier draft checked the version against `rock_versions` from `/managed-lists` on every session
+to avoid that one retry. That traded a guaranteed request for a rare one, which is the wrong
+direction, and it is the same reasoning that removed filter validation.
 
 Content tagged as "all versions" matches every request regardless of what is sent.
 
@@ -344,103 +404,85 @@ The skill sends the resolved version on every **content** route regardless. The 
 documented here so nobody later "simplifies" the browse calls by dropping it and quietly changes
 what those tools return.
 
-#### Never send a version to `/managed-lists` or `/tags`
-
-**This is load-bearing, and getting it wrong deadlocks the skill.**
+#### Never send a version to `/managed-lists`
 
 Version validation runs in the shared request wrapper, so it applies to every route, including the
-two that ignore the parameter entirely:
+one that ignores the parameter entirely:
 
 ```
 GET /managed-lists?rock_version=99  ->  400 unknown-rock-version
 ```
 
-Step 2 above reads `rock_versions` from `/managed-lists` in order to discover whether the running
-Rock version is indexed. If that call carried the version, then on the one occasion the check
-exists for, Rock running ahead of the corpus, the call needed to detect it would be the call that
-fails. The skill would report a transport error instead of *"Rock 21 is not indexed, here is 20."*
+`/managed-lists` is called once, at configuration time, to populate the category picker. A version
+on that call buys nothing and can only fail. It also fails at the worst moment: an operator
+configuring the skill on a Rock newer than the corpus would get an error on a call that has nothing
+to do with versions.
 
-So both infrastructure routes are called **with no version, always**. `/tags` follows the same rule
-for the same reason.
+**Griffin is changing this, and it has not shipped.**
+`specs/260817-unscoped-route-version-tolerance-and-code-document-id.md` makes the unscoped routes
+accept and ignore a version rather than reject an unknown one. It is `planned`, gated behind a
+changeset still awaiting approval, so the rejection above is live behavior today.
 
-**This survives the fix, which has not shipped.**
-`specs/260817-unscoped-route-version-tolerance-and-code-document-id.md` makes both routes accept and
-ignore a version rather than reject an unknown one. It is `planned`, gated behind a changeset still
-awaiting approval, so the deadlock above is live behavior today and the rule is load-bearing right
-now.
-
-It stays the rule afterwards. Tolerating a parameter is not the same as wanting one, and a
-parameter a route ignores is noise that a later reader mistakes for intent.
+The rule stays afterwards. Tolerating a parameter is not the same as wanting one, and a parameter a
+route ignores is noise that a later reader mistakes for intent.
 
 The split is clean and worth stating as a rule rather than a list:
 
 | Route class | Version |
 |---|---|
 | Content: search, code, overview, topics, articles | Resolved version, always |
-| Infrastructure: `/managed-lists`, `/tags` | Never |
+| Configuration: `/managed-lists` | Never |
 
 ### 4. Managed lists are infrastructure, not a tool
 
-`GET /{org}/managed-lists` returns the five closed sets a search can be filtered by:
-`categories`, `rock_domains`, `code_source_types`, `code_roles`, and `rock_versions`.
+`GET /{org}/managed-lists` returns the closed sets a search can be filtered by: `categories`,
+`rock_domains`, `code_source_types`, `code_roles`, and `rock_versions`.
 
-**It is not exposed as a tool.** It answers "what may I type", which is a question the skill
-answers on the agent's behalf by validating before sending. Exposing it would put a tool in the
-inventory whose only correct use is one the skill already performs.
+**The skill calls it once, at configuration time, for one purpose: populating the category picker.**
+Nothing at request time reads it, and it is not exposed as a tool.
+
+Cached in `RockCache` under `Rock:AI:CommunityKnowledgeBase:ManagedLists:{organizationId}` with a
+one hour expiration.
 
 **`rock_versions` holds bare majors**, `["18", "19", "20"]`, matching the format the routes expect.
 The hand-off document's example shows `["16.0", "17.0", "18.0"]`; that is an error in the document
-and not a second format. Compare as strings, with no normalizing and no trimming of a trailing
-`.0`. Anything that strips a suffix here is coding around a bug that does not exist, and it would
-mask a real format change if one ever came.
+and not a second format. The skill no longer reads this list, since version handling is now a send
+and a retry (Section 3), but the format is recorded here because the same trap waits for anyone who
+starts reading it again: no normalizing, no trimming a trailing `.0`.
 
-Cached in `RockCache` under `Rock:AI:CommunityKnowledgeBase:ManagedLists:{organizationId}` with a
-one hour expiration. The lists change only when an operator edits one.
+#### Filter values come from the overview, and are not checked
 
-Every filter parameter on every tool is checked before the request is built. This is the single
-highest-value behavior in the skill, for the reason given in Motivation: the server treats a bad
-filter as a legitimate search that found nothing, so without local validation the agent has nothing
-to learn from and rephrases the query instead.
+The valid values for `category`, `domain`, and `source` are reported by
+`GetKnowledgeBaseOverview`, **with document counts for the current scope**, which is strictly more
+useful than a bare list of names. A category that exists but holds nothing looks identical to a
+misspelled one in a search result; only the counts separate them, and the overview is the only
+place they appear.
 
-#### Say which kind of wrong it is
+So the overview is where the skill points, everywhere and repeatedly:
 
-A rejected filter value is one of two different things, and telling the agent the wrong one causes
-lasting damage.
+- `[AgentToolPrerequisite]` on every search tool.
+- The description of every filter parameter names it as the source of values.
+- Every empty result echoes the filters that were applied and names it again.
 
-**Misspelled or invented.** The value does not exist anywhere. Say it is not valid, list the valid
-ones:
+**And then the skill sends whatever it was given.** No local check, no lookup, no error. An
+unrecognized value produces an empty result, which is the caller's answer.
+
+The reasoning is in [Decided](#filters-are-not-validated-before-sending). The short version: a
+guaranteed cost on every request is a bad trade against a rare mistake, and the recovery path
+already exists in the empty result.
+
+**One exception, and it is not validation.** A `category` outside the skill's configured scope is
+refused, because the configured scope is an operator's decision rather than a guess about the
+corpus. That check is local, free, and about honoring configuration:
 
 ```csharp
-return Error( $"'{category}' is not a valid category." )
-    .WithInstructions( $"Valid categories are: {string.Join( ", ", validCategories )}. "
-        + $"Call {nameof( GetKnowledgeBaseOverview )} to see which of these hold content for this Rock version." );
+return Error( $"The category '{category}' is outside the categories this skill is scoped to." )
+    .WithInstructions( $"This skill is scoped to: {string.Join( ", ", configuredCategories )}." );
 ```
 
-**Real, but not reachable right now.** The value exists and is spelled correctly; it is excluded by
-the configured category scope, or it holds no documents in the current scope. **Do not call this
-invalid.**
-
-```csharp
-return Error( $"The source '{source}' is not available in the current scope." )
-    .WithInstructions( $"This skill is scoped to the categories: {string.Join( ", ", configuredCategories )}. "
-        + $"Sources with content in that scope are: {string.Join( ", ", availableSources )}. "
-        + $"Call {nameof( GetKnowledgeBaseOverview )} to see document counts per source." );
-```
-
-The distinction is not pedantry. *"'Podcast' is not a valid source"* is a false statement about a
-source that exists, and an agent that believes it will stop reaching for that name **for the rest
-of the conversation**, including in a later turn where the scope is different or where the name
-would have been the right answer. A false "invalid" is learned and carried forward; a true "not in
-scope right now" is not.
-
-This applies to `source` and `domain`, which the overview narrows by scope, and to `category`
-whenever the configured scope is what excluded it rather than a typo.
-
-Both message shapes keep the valid-values list and the pointer at `GetKnowledgeBaseOverview`. The
-list is what fixes the call just made; the pointer is what stops the next guess, and it is the more
-useful of the two, because the overview reports which values hold content **for this deployment and
-this version**, with counts. A category that is valid but empty produces the same empty result as
-one that is misspelled, and only those counts separate them.
+Note the wording. It does not say the category is invalid, because it very likely is not. Saying so
+would teach the agent something false that it carries for the rest of the conversation, including
+into a later turn against a differently scoped skill.
 
 #### Facet filter semantics
 
@@ -462,7 +504,8 @@ it meant.
 Three consequences shape this skill.
 
 **1. Only `categories` and `tags` can take a repeated parameter.** They are the only fields stored
-as arrays in the index. `filter_domain` and `filter_source` are scalar, so:
+as arrays in the index. This skill exposes neither as a repeated parameter and does not expose tags
+at all, but the rule is recorded because `filter_domain` and `filter_source` are scalar, so:
 
 | Written as | Means | Result |
 |---|---|---|
@@ -505,39 +548,20 @@ this skill depends on.
 The comma-reservation rule protects the overview too, even though it does not use the shared
 builder, since no category name may contain a comma in the first place.
 
-#### The configured scope is validated at request time, not only at save time
+#### On unknown categories reaching the overview
 
-This falls out of how the overview handles an unknown category, and it is the one place point 2
-above has teeth.
+Worth knowing, because it is the one place an unrecognized value behaves oddly rather than simply
+matching nothing.
 
-If **every** named category is unknown, the service reports an empty corpus rather than ignoring
-the filter. That is deliberate on its side and correct. But if **only some** are unknown, the
-unknown ones are quietly dropped and the scope is wider than what was asked for, with no signal in
-the response.
+If **every** category named on `/overview` is unknown, the service reports an empty corpus rather
+than ignoring the filter. That is deliberate on its side and correct. But if **only some** are
+unknown, the unknown ones are quietly dropped and the described scope is wider than what was asked
+for, with no signal in the response.
 
-Neither case can be reached by an agent, because tool parameters are validated before they are
-sent. **The configured scope can reach both**, because it was saved once and the server's category
-list moves independently. An operator scopes a skill to four categories, someone renames one of
-them a month later, and the saved value is now a name the service does not recognize.
-
-So the configured scope is filtered against the cached managed lists on every request:
-
-1. **All configured categories still valid**, the normal path: send them.
-2. **Some are stale:** send the valid ones and report the dropped names through
-   `.WithMetadata()`. Log a warning naming the skill. The scope is wider than the operator
-   intended, and the only thing worse than that is it being wider invisibly.
-3. **All are stale:** `Error` naming the setting. Do not send an unfiltered request. Dropping every
-   stale value leaves no `filter_category` at all, which silently widens a deliberately narrow
-   scope to the entire corpus. That is the failure this whole section exists to prevent, arriving
-   through the configuration screen instead of through a tool call.
-
-Case 3 is the one that justifies the rule. Cases 1 and 2 are cheap; case 3 is a configuration that
-reads as working and searches everything.
-
-**Distinct from the overview.** Both report categories and domains, and the difference matters:
-managed lists answer "what may I type" with no scoping and no counts; the overview answers "what
-is in the corpus for my scope" with counts, and omits empty values. Validation uses managed lists.
-Routing uses the overview.
+The skill does not defend against this, and does not need to. It sends the configured scope
+unchanged, so the worst case is an overview that describes slightly more of the corpus than the
+operator's setting implies. Nothing about the actual search changes, since `filter_category` on
+search is applied by the facet builder and does not drop unknown values.
 
 ### 5. Departures from the shared conventions
 
@@ -561,8 +585,9 @@ otherwise read as an oversight.
 | 3 | `SearchCode` | code | `/search/code` | page number |
 | 4 | `GrepCode` | code | `/code/grep` | none, capped by the server |
 | 5 | `GetCodeLines` | code | `/code/documents/{id}/lines` | line range |
-| 6 | `GetTopic` | topics | `/topics/{key}` | none |
-| 7 | `GetArticle` | topics | `/articles/{key}` | none |
+| 6 | `GetCodeFile` | code | `/code/documents/{id}/raw` | none, refuses above a size threshold |
+| 7 | `GetTopic` | topics | `/topics/{key}` | none |
+| 8 | `GetArticle` | topics | `/articles/{key}` | none |
 
 #### There is no `LookupTopics`
 
@@ -601,7 +626,7 @@ No parameters. The Rock version and the configured categories are supplied by th
 [AgentUsage( "Call this once, before the first search of a conversation. Its result stays available for the rest of the conversation and does not need to be called again." )]
 [AgentUsage( "This is also where curated topics are found. Take a topic key from here and open it with GetTopic." )]
 [AgentToolReturnsDescription( "The knowledge sources with document counts, the indexed code repositories and the Rock releases they cover, the published topics with a key and a hint for each, the valid filter values, and operator-written guidance on store selection." )]
-[AgentToolPreamble( "Checking the knowledge base" )]
+[AgentToolPreamble( "Reading Knowledge Base Contents" )]
 ```
 
 **Output.** `Guidance`, `KnowledgeSources[]`, `CodeRepositories[]`, `Topics[]`, `Filters`,
@@ -672,7 +697,7 @@ from the front of every conversation.
 is not enough:
 
 1. `[AgentUsage]` at the skill level, quoted in the declaration above.
-2. `[AgentToolPrerequisite( "Call GetKnowledgeBaseOverview first..." )]` on tools 2 through 7.
+2. `[AgentToolPrerequisite( "Call GetKnowledgeBaseOverview first..." )]` on tools 2 through 8.
 3. On a `NoData` from any search tool, `.WithInstructions()` naming this tool.
 
 Point 3 is the one that matters. A model that skipped the overview and found nothing will
@@ -693,61 +718,35 @@ public async Task<AgentToolResult> SearchKnowledge(
     string category = null,
     string domain = null,
     string source = null,
-    string tags = null,
     int pageNumber = 1 )
 ```
 
 ```csharp
 [Description( "Searches Rock documentation, guides, and community content using combined keyword and meaning-based matching. This is the right first move for almost every question about Rock." )]
-[AgentPurpose( "Answers questions about how Rock works, with a citation for every result." )]
+[AgentPurpose( "Answers questions about Rock RMS and the community around it. Returns a citation for every result." )]
 [AgentUsage( "Prefer this over the code tools. Use the code tools only when the question is about implementation detail, or when this tool has already failed to answer it." )]
 [AgentToolPrerequisite( "Call GetKnowledgeBaseOverview first so the available sources and their coverage are known." )]
 [AgentToolReturnsDescription( "Matching passages, each with its title, snippet, source, and the citation link it came from. One document may return several passages." )]
-[AgentToolPreamble( "Searching the knowledge base" )]
+[AgentToolPreamble( "Searching Knowledge Base" )]
 ```
 
 | Input | Required | Notes |
 |---|---|---|
 | `query` | **yes** | Maps to `q`. |
-| `category` | no | Validated against managed lists **and** against the configured scope. |
-| `domain` | no | Maps to `filter_domain`. Comma-separated means any of them. Validated against `rock_domains`. **Never repeated**, see Section 4. |
-| `source` | no | Maps to `filter_source`. Same rules as `domain`. Validated against the sources reported by the overview. |
-| `tags` | no | Maps to `filter_tags`. Comma-separated means any of them, emitted as **one** parameter. Validated against `/tags`. |
+| `category` | no | Intersected with the configured scope, which is the one refusal this tool makes. |
+| `domain` | no | Maps to `filter_domain`. Comma-separated means any of them. **Never repeated**, see Section 4. |
+| `source` | no | Maps to `filter_source`. Same rules as `domain`. |
 | `pageNumber` | no | Default 1. |
 
-All four filters accept a comma-separated list and mean "any of these". Each part is validated
-separately after the split, which is safe because no facet value may contain a comma. See
-[Facet filter semantics](#facet-filter-semantics).
+All three filters accept a comma-separated list meaning "any of these", and each is sent as a
+single parameter. See [Facet filter semantics](#facet-filter-semantics).
 
-**On `tags`.** `filter_tags` is a real parameter on this route, and its validation source is
-`GET /{org}/tags` rather than `managed-lists`. That matters more than it sounds, because **`/tags`
-is paginated** and `managed-lists` is not: it returns `offset`, `limit`, and `total`, so building
-the validation set means paging until `total` is reached rather than reading one response.
+**Every filter description must name the overview as the source of its values**, since nothing
+checks them. Wording along the lines of *"Take this value from the filters reported by
+GetKnowledgeBaseOverview. A value that is not in that list returns no results."*
 
-**Page it at `limit=250`, not the default 50.** The set has to be assembled in full regardless, so
-the default costs five times the round trips for nothing. 250 is the route maximum.
-
-Send no `rock_version`; `/tags` is an infrastructure route, see Section 3. Cache the assembled set
-exactly like the managed lists, one hour, since it changes at the same rate and for the same
-reason.
-
-This is the one place in the skill where a validation list costs more than a single call. Do not
-validate a tag against the first page and call it done; a tag that is real but sits on page two
-would be rejected as invalid, which is the precise failure this validation exists to prevent,
-inverted.
-
-**Tags are OR'd, not AND'd.** `tags` is an array field, so a repeated parameter would work and
-would mean "carries every one of these tags". **AND is not exposed anywhere in this skill.** This
-is a decided requirement, not a default awaiting review.
-
-The reasoning, recorded so it is not relitigated: a model handed a `tags` parameter and writing
-`checkin,troubleshooting` almost certainly means "about either of these", not "tagged with both".
-Guessing wrong in the AND direction returns nothing, which is the failure mode with no diagnosis,
-since the agent cannot tell an over-narrow filter from an empty corpus and will rephrase the query,
-which cannot fix it. Guessing wrong in the OR direction returns too much, which the agent can see
-and narrow.
-
-When the two failures are unequal, take the one that leaves evidence.
+**No `tags` parameter.** `filter_tags` exists on this route and is deliberately not exposed. See
+[Out of Scope](#out-of-scope).
 
 **Category resolution**, in order:
 
@@ -766,9 +765,13 @@ which is close to nothing. An operator who scoped a skill to four categories to 
 answers would instead get none, with no error and no way to connect the empty result to the
 setting that caused it. One parameter, commas, always.
 
-Steps 2 and 3 send the configured scope only after it has been filtered against the cached managed
-lists, since a saved category name can go stale between configuration and use. See
-[The configured scope is validated at request time](#the-configured-scope-is-validated-at-request-time-not-only-at-save-time).
+**A stale configured scope is sent as-is.** A category saved months ago can be renamed on the
+server, and the skill does not check. That is the safe direction: the unrecognized name simply
+matches nothing, so the search returns empty and the operator sees a skill that stopped finding
+things. An earlier draft filtered the configured scope against a cached list and dropped stale
+names, which turned out to be the dangerous version. Drop every name and no `filter_category` is
+sent at all, so a deliberately narrow skill silently searches the entire corpus. Sending what was
+configured cannot leak scope.
 
 **Output.** For each hit: `Title`, `Snippet`, `SourceName`, `Category`, `Domain`, `Citation`,
 `PublishDate`, `Score`.
@@ -807,9 +810,16 @@ back unchanged.
 it through `.WithMetadata()` **labelled as approximate**, or not at all. Never present it as a
 count.
 
-**Empty result.** `NoData()`, echoing the query and every filter applied, including filters the
-skill supplied rather than the agent. An agent that does not know a category scope was applied
-will conclude the corpus is empty.
+**Empty result.** `NoData()`, echoing the query and **every filter applied**, including the ones
+the skill supplied rather than the agent, plus an instruction naming `GetKnowledgeBaseOverview`.
+
+This carries more weight than a usual `NoData`, because nothing validates filters. It is the only
+place an agent finds out that a filter value was wrong, and it has to serve two readers at once:
+one whose query genuinely found nothing, and one whose `domain` was misspelled. Echoing the filters
+lets the agent tell those apart; naming the overview tells it where real values live.
+
+An agent that does not know a category scope was applied will otherwise conclude the corpus is
+empty.
 
 ---
 
@@ -830,7 +840,7 @@ public async Task<AgentToolResult> SearchCode(
 [AgentUsage( "Use for implementation questions, not general ones. A question about how to use a feature belongs in SearchKnowledge." )]
 [AgentToolPrerequisite( "Call GetKnowledgeBaseOverview first to confirm this Rock release has code indexed." )]
 [AgentToolReturnsDescription( "Matching files with their path, repository, and document id. No code content; read it with GrepCode or GetCodeLines." )]
-[AgentToolPreamble( "Searching the Rock source" )]
+[AgentToolPreamble( "Searching Rock Source" )]
 ```
 
 `sourceType` is validated against `code_source_types`, for example `cs`, `js`, `sql`.
@@ -876,9 +886,13 @@ is `planned`, gated behind a changeset still awaiting approval, and **has not sh
 being removed in v1, since that is a breaking change belonging to a future path version. So the
 mapping above is right before and after, and nothing in this skill waits on it.
 
-**The three code tools are a sequence.** Search to find the file, grep to find the line, read the
-lines around it. Say this in `[AgentUsage]` on all three. A model that searches and then asks for
-a whole file has skipped the middle step and is about to spend its context on it.
+**The code tools are a sequence.** Search to find the file, grep to find the line, read the lines
+around it. Say this in `[AgentUsage]` on all of them. A model that searches and then immediately
+asks for a whole file has skipped the middle steps and is about to spend its context on it.
+
+`GetCodeFile` sits at the end of that sequence rather than as an alternative to it. It is the right
+call once the file is known to be small, which is something only a prior `GetCodeLines` can
+establish.
 
 **An empty result may not mean "no match".** Code is indexed per Rock release and has no
 "all versions" option. The response reports this as **`meta.no_code_for_version`**, a boolean that
@@ -926,7 +940,7 @@ public async Task<AgentToolResult> GrepCode(
 [AgentUsage( "Use this when the exact text is known, such as a method name, class name, or constant. When only the concept is known, use SearchCode first." )]
 [AgentToolPrerequisite( "Call GetKnowledgeBaseOverview first to confirm this Rock release has code indexed." )]
 [AgentToolReturnsDescription( "Each match with its file path, line number, matched line, and surrounding context lines. Reports whether a cap truncated the search." )]
-[AgentToolPreamble( "Searching the Rock source" )]
+[AgentToolPreamble( "Grepping Rock Source" )]
 ```
 
 **On the name.** `Grep` is not in the conventions' prefix table, and it is used here on purpose.
@@ -974,9 +988,9 @@ public async Task<AgentToolResult> GetCodeLines( string documentId, int startLin
 ```csharp
 [Description( "Reads a range of lines from one Rock source file." )]
 [AgentPurpose( "Reads the code around a known location, after SearchCode or GrepCode has found it." )]
-[AgentUsage( "Ask for the smallest range that answers the question, then widen if needed. Whole files are not available through this skill." )]
+[AgentUsage( "Ask for the smallest range that answers the question, then widen if needed. Use GetCodeFile only when the whole file is genuinely needed." )]
 [AgentToolReturnsDescription( "The requested lines with their line numbers, the file path, the file's total line count, and whether more lines follow the range returned." )]
-[AgentToolPreamble( "Reading source" )]
+[AgentToolPreamble( "Reading Rock Source" )]
 ```
 
 `documentId` comes from `SearchCode` or `GrepCode`, mapped from `id` there and `code_document_id`
@@ -1005,11 +1019,80 @@ The `404` is `NoData` rather than `Error` for the same reason a stale topic key 
 nothing wrong, it used an id that has since moved, and the recovery is to re-search rather than to
 re-word.
 
-**Why `/raw` is not exposed.** See [Out of Scope](#out-of-scope).
+---
+
+### 6. GetCodeFile
+
+`[AgentToolGuid( "90764482-BA27-4FC0-B9CE-1585F07A6C64" )]`
+
+```csharp
+public async Task<AgentToolResult> GetCodeFile( string documentId )
+```
+
+```csharp
+[Description( "Reads one Rock source file in full." )]
+[AgentPurpose( "Reads a whole file when the question is about its overall structure rather than one location in it." )]
+[AgentUsage( "Prefer GetCodeLines. Use this only when the whole file is genuinely needed, such as understanding how a small class is organized. A large file consumes the context the answer needs." )]
+[AgentToolPrerequisite( "Call GetCodeLines first to see the file's total line count, so the size of this call is known before making it." )]
+[AgentToolReturnsDescription( "The complete text of the file, with its path and total line count." )]
+[AgentToolPreamble( "Reading Rock Source File" )]
+```
+
+`documentId` comes from `SearchCode` or `GrepCode`, the same value `GetCodeLines` takes.
+
+**Output.** `FilePath`, `TotalLines`, `Content`.
+
+#### This route breaks the envelope
+
+`GET /{org}/code/documents/{id}/raw` returns **`text/plain`**, not `{ data, meta }`. It is the only
+route in the API that does, because wrapping a source file in JSON would escape every newline.
+
+So the shared response handler cannot parse it. Read the body as text and construct the result
+here. The error path still returns `application/problem+json`, so **the status code decides which
+parser runs**, not the route. A handler that assumes the envelope on success and problem+json on
+failure works everywhere except here, and here it works on failures only.
+
+`FilePath` and `TotalLines` are not in the response either, since there is no envelope to carry
+them. Compute `TotalLines` from the content and carry `FilePath` from whichever tool supplied the
+`documentId`, or omit it. Do not fabricate a `meta` block that the route did not send.
+
+#### On the size risk, and why the prerequisite is doing real work
+
+The hand-off is blunt that this route will blow an agent's context on a large file, and an earlier
+draft of this spec left it out entirely for that reason. It is included because the reasoning was
+wrong in a specific way: `GetCodeLines` reaches every line of every file, so nothing was
+unreachable, but reconstructing a 400-line file through eight ranged calls costs more context than
+reading it once, plus eight round trips.
+
+The real distinction is not size, it is **whether the agent knows the size before it commits**.
+That is what the `[AgentToolPrerequisite]` buys. `GetCodeLines` returns `TotalLines` on every call,
+so a single ranged read makes the file's length known, and the choice to read the whole thing
+becomes informed rather than blind.
+
+**No cap, and no truncation.** Per convention section 6, a `Get` returns one item whole or refuses.
+Clipping the file here would be the silent-truncation failure the conventions forbid, and it would
+be worse than usual because clipped code still parses and reads as complete.
+
+**Refuse instead, above a threshold.** Implemented as 2000 lines, a judgment call rather than a
+service limit. When the file exceeds a size the skill considers
+unreasonable, return an `Error` that states the real line count and names `GetCodeLines` as the
+way through:
+
+```csharp
+return Error( $"'{filePath}' is {totalLines} lines, which is too large to return in full." )
+    .WithInstructions( $"Call {nameof( GetCodeLines )} with a range instead. {nameof( GrepCode )} will locate the lines worth reading." );
+```
+
+That is the refuse-and-instruct pattern the conventions call for, and it is the one place this tool
+earns its keep over a silent failure: the agent learns the file's size and gets a route that works,
+rather than a truncated file it believes is complete.
+
+**Errors.** Identical to `GetCodeLines`: `400` `invalid-code-document` for a malformed id, `404`
+`code-document-not-found` as `NoData` pointing at a fresh search.
 
 ---
 
-### 6. GetTopic
+### 7. GetTopic
 
 `[AgentToolGuid( "F0179643-6979-416B-8D30-E45CBD96E49E" )]`
 
@@ -1022,7 +1105,7 @@ public async Task<AgentToolResult> GetTopic( string topicKey )
 [AgentPurpose( "Opens a topic so its articles can be read in order." )]
 [AgentToolPrerequisite( "Take topicKey from the Topics list returned by GetKnowledgeBaseOverview. Never construct or edit a key." )]
 [AgentToolReturnsDescription( "The topic's guidance text and its top-level articles, each with a retrieval key and title." )]
-[AgentToolPreamble( "Reading topic" )]
+[AgentToolPreamble( "Reading Topic" )]
 ```
 
 **Output.** `TopicKey`, `Guidance`, `Articles[]` of `ArticleKey`, `Title`, `Summary`.
@@ -1069,7 +1152,7 @@ actual cause and the agent has no other way to see it. A miss is a result, per c
 
 ---
 
-### 7. GetArticle
+### 8. GetArticle
 
 `[AgentToolGuid( "BCE7AD22-3768-4DEE-A2E1-71BC324905EE" )]`
 
@@ -1082,7 +1165,7 @@ public async Task<AgentToolResult> GetArticle( string articleKey )
 [AgentPurpose( "Reads a curated article and reveals what sits beneath it." )]
 [AgentToolPrerequisite( "Take articleKey from GetTopic or from a parent article's child list. Never construct or edit a key." )]
 [AgentToolReturnsDescription( "The article's full content, its summary, the topic it belongs to, and its child articles with their keys." )]
-[AgentToolPreamble( "Reading article" )]
+[AgentToolPreamble( "Reading Topic Article" )]
 ```
 
 **Output.** `ArticleKey`, `Topic`, `Title`, `Summary`, `Content`, `ChildArticles[]`, mapped from
@@ -1139,7 +1222,7 @@ Keys contain slashes, `db-schema/attendance-model`, and are used as a path segme
 only from the overview's `Topics` list, a topic's table of contents, or a parent article's child
 list. An invented key returns not-found.
 
-This is asserted three ways: `[AgentToolPrerequisite]` on tools 6 and 7, the instruction text on
+This is asserted three ways: `[AgentToolPrerequisite]` on tools 7 and 8, the instruction text on
 every `NoData` from either, and an `[AgentGuardrail]` on the skill. It is worth the repetition
 because a key that looks like a readable slug is exactly the kind of value a model will happily
 assemble from a heading it just read.
@@ -1161,8 +1244,9 @@ for the reason in Departures.
 | `CodeSearchHitResult` | 3 |
 | `CodeGrepMatchResult` | 4 |
 | `CodeLinesResult` | 5 |
-| `TopicTableOfContentsResult` | 6 |
-| `ArticleResult` | 7 |
+| `CodeFileResult` | 6 |
+| `TopicTableOfContentsResult` | 7 |
+| `ArticleResult` | 8 |
 
 One shared internal envelope type deserializes `{ data, meta }`, and one problem-details type
 deserializes the error shape. Neither is a result class and neither is returned to the agent.
@@ -1178,10 +1262,10 @@ The host is a constant because there is one knowledge base and it lives at
 `knowledge.rockrms.com`. A setting for it would be a field nobody should ever change, sitting in
 front of every operator, inviting exactly one kind of mistake.
 
-The id is resolved from Rock because Rock will have it. A setting for a value the software can
-read itself is a transcription step with a failure mode and no upside, and the failure mode here
-is the bad one: a valid-but-wrong UUID returns correct answers under someone else's attribution
-and reports nothing.
+The id is read from Connected Services because Spark provisions it there. A setting for a value the
+software already holds is a transcription step with a failure mode and no upside, and the failure
+mode here is the bad one: a valid-but-wrong UUID returns correct answers under someone else's
+attribution and reports nothing.
 
 What is left is category scope, which is genuinely a choice, and genuinely per agent. A developer
 agent scoped to `developer-reference` and `plugins` alongside a staff agent scoped to
@@ -1221,12 +1305,38 @@ choice reliable. If they prove insufficient in practice, the fallback is to inli
 `Guidance` field into the skill instructions while keeping the tool. That is a smaller change than
 it sounds and does not affect anything else here.
 
-### Filters are validated locally rather than passed through
+### Filters are not validated before sending
 
-Passing an unknown filter through is one fewer round trip and one fewer thing to keep in sync. It
-is rejected because of how the failure looks: an empty result, identical to a genuine miss. The
-agent has nothing to learn from and rephrases the query, which cannot fix a bad filter. Local
-validation converts a silent wrong answer into a message naming the valid values.
+An earlier draft validated every filter value against the remote lists before building a request,
+and returned an error naming the valid ones. That is reversed. Filters are sent as given.
+
+The case for validating was real: an unknown value returns an empty result identical to a genuine
+miss, so the agent's natural recovery is to rephrase the query, which cannot fix a bad filter.
+
+The case against is that the cure was charged to every request and the disease is rare. Validation
+needs the remote lists, which means a fetch and a cache and a staleness question, on every session,
+to catch a mistake an agent should rarely make, because the overview it is already required to call
+reports the real values with counts.
+
+Three things settled it.
+
+1. **The overview already solves it, earlier and better.** It is a prerequisite anyway, it names
+   every valid value, and its counts distinguish "misspelled" from "real but empty here", which a
+   validation list cannot do at all.
+2. **Validation added a scope-leak risk that not validating does not have.** Filtering a stale
+   configured scope against a cached list meant dropping unrecognized names, and dropping all of
+   them meant sending no `filter_category` at all, quietly widening a deliberately narrow skill to
+   the whole corpus. Sending the configured scope unchanged cannot do that. The worst case becomes
+   an empty result, which is visible.
+3. **It removed a whole subsystem.** No `managed-lists` at request time, no `/tags` walk, no second
+   cache, no rules about which list backs which parameter.
+
+What replaces it is instruction plus an honest empty result: the overview named as prerequisite on
+every search tool, named again in every filter parameter's description, and named a third time in
+the `NoData` that comes back, alongside an echo of every filter that was applied.
+
+A caller that skips all three and guesses gets nothing back. That is the intended outcome, not a
+gap.
 
 ### No retry on 429
 
@@ -1236,11 +1346,6 @@ immediately. Backing off is a decision about the whole conversation, not about o
 
 ## Out of Scope
 
-- **`GET /{org}/code/documents/{id}/raw`.** Returns a whole file as `text/plain`, outside the
-  usual envelope. A large source file will consume the agent's context and leave no room for the
-  answer. `GetCodeLines` reaches every line of every file through a bounded range, so nothing is
-  unreachable; the missing capability is only "all of it at once", which is the part that causes
-  the harm.
 - **`GET /api/health`.** Operational, not something an agent should reason about. A failed call is
   already reported as a transport error naming the host.
 - **Deriving the organization id.** The namespace is per-deployment and not public. The skill must
@@ -1249,9 +1354,14 @@ immediately. Backing off is a decision about the whole conversation, not about o
 - **Writes.** The API is read-only.
 - **A tool wrapping `managed-lists`.** See Section 4.
 - **`GET /{org}/topics` and a `LookupTopics` tool.** See the note under the tool inventory.
-- **`/sources` and `/tags` as tools.** Both are validation infrastructure rather than tools, the
-  same as `managed-lists`. The overview already reports the knowledge sources for `filter_source`,
-  and `/tags` is consumed by the `tags` validation on tool 2.
+- **Tag filtering, and the `/tags` route with it.** `filter_tags` works on knowledge search, but
+  supporting it means assembling a validation-grade tag set from a paginated route, and tags are
+  the least discoverable filter the corpus has: unlike categories and domains, they are not
+  reported by the overview, so an agent has no way to learn real ones. Both halves of that argue
+  for leaving it out of the first version. Adding it later is a parameter and a route, and nothing
+  in this design blocks it.
+- **`/sources` as a tool.** The overview already reports the knowledge sources with counts, which
+  is what `filter_source` needs and more than `/sources` returns.
 - **The MCP surface.** This skill speaks REST throughout. The service also exposes MCP tools whose
   responses differ in shape, notably `get_article` segmentation and the placement of
   `no_code_for_version`. Those differences are documented at tools 3 and 7 so nobody ports logic
@@ -1259,12 +1369,33 @@ immediately. Backing off is a decision about the whole conversation, not about o
 
 ## Open Questions
 
-One remains, and it is a dependency on other work rather than a design question.
+One remains, and it is a ten-second check against a real value rather than a design question.
 
-1. **Where does the organization id come from in Rock?** Being decided separately. Until it lands,
-   send the empty GUID, which is also the permanent fallback for when the value cannot be read.
-   Whatever the source turns out to be, it is read behind one resolver method and nothing else in
-   the skill changes.
+1. **Is the Connected Services `ApiKey` the path segment, or a header credential?**
+
+   The source is settled: `ConnectedServicesProvider` → `GetConfiguration()` → `KnowledgeBase` →
+   `ApiKey`, provisioned by Spark per organization through the manifest. The design above assumes
+   that value **is** the hashed organization id and goes in the `{org}` path segment.
+
+   Two things argue for that reading. Spark provisions it, and Spark is the only party that knows
+   the private hashing namespace. And the `ToGuidV5` Lava filter was added specifically to hash the
+   organization GUID "so it can be shared externally (specifically in the Rock Community Knowledge
+   Base)", which is the same value by a different route.
+
+   One thing argues against. Connected Services names the property `ApiKey` and its summary reads
+   "the API key used to authenticate with the Knowledge Base service." The API hand-off is equally
+   plain that read endpoints are open and that the organization id authenticates nothing.
+
+   Both cannot be true, and the difference is not cosmetic. If it is the organization id it goes in
+   the URL path. If it is a genuine credential it goes in a header, the endpoints are not open, and
+   the organization id is still unaccounted for.
+
+   **How to settle it:** print the value on an instance that has the service connected. A bare
+   hyphenated UUID confirms the design as written. Anything else, and the transport section needs a
+   header and this question reopens as a real one.
+
+   Until then the empty-GUID fallback covers the gap, and it is the permanent fallback regardless
+   of how this resolves.
 
 ### Noted, upstream
 
@@ -1283,12 +1414,13 @@ the other way, or making the overview treat repetition as AND, would not.
 | Question | Answer | Where it landed |
 |---|---|---|
 | Does `rock_versions` return bare majors? | Yes. The hand-off's `["16.0", "17.0", "18.0"]` example is an error in that document. | Section 4, with an explicit warning against suffix-stripping |
-| Does `/search/knowledge` accept `filter_tags`? | Yes, as a repeatable array. Validation source is `/tags`, which unlike `managed-lists` **is paginated**. | Tool 2, with the paging trap called out |
+| Does `/search/knowledge` accept `filter_tags`? | Yes, as a repeatable array, backed by the paginated `/tags` route. Confirmed but no longer used: tag filtering is out of scope for the first version. | Out of Scope |
 | Do the overview's topic entries carry the key and the hint? | Yes, both, plus `name`, `rock_version`, and `article_count`. `LookupTopics` stays dropped and the inventory does not shift. | Tool inventory note and tool 1 |
 | What are the article segment paging field names? | **Premise was wrong.** REST returns the whole article with no paging. Segmentation exists only on the MCP `get_article` tool. | Tool 7, where the paging parameter and flag were deleted |
 | What flag marks "no code indexed for this release"? | `meta.no_code_for_version` on the REST code routes, always present, on **both** search and grep. | Tools 3 and 4, with the probe, MCP-shape, and `no_code_in_scope` traps documented |
 | Is `filter_category` repeatable or comma-separated? | **Both, meaning different things.** Commas are OR within a group, a repeated parameter is AND across groups. Only `categories` and `tags` are array fields, so only they can take a repeated parameter at all. | Section 4, "Facet filter semantics", plus the category resolution rules on tool 2 |
 | Does `/overview` follow the same rules? | No. It uses a separate parser that flattens everything to one OR'd set, so repetition means OR there and AND on search. The skill's one comma-joined parameter is correct on both. | Section 4, "`/overview` does not share the builder" |
+| Where does the organization id come from in Rock? | Connected Services, provisioned by Spark through the manifest: `ConnectedServicesProvider` → `GetConfiguration()` → `KnowledgeBase` → `ApiKey`. Reachable from `Rock.AI.Agent` via `InternalsVisibleTo`. | Section 1, "The organization id comes from Connected Services". What remains is only whether that value is the path segment or a header credential, which is open question 1. |
 
 ## Related
 
