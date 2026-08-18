@@ -1,27 +1,20 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Panel v-if="isLoading || hasDimensions" :title="cardTitle" panelHeaderCssClass="border-bottom-0">
-        <template #headerActions>
-            <div v-if="isDimensionPickerShown" class="utm-dimension-picker">
+    <RankedListBarChart v-if="isLoading || hasDimensions"
+                        :title="cardTitle"
+                        :items="activeItems">
+        <template v-if="isDimensionPickerShown" #headerActions>
+            <div class="utm-dimension-picker">
                 <DropDownList v-model="selectedDimensionValue"
                               :items="dimensionOptions"
                               :showBlankItem="false" />
             </div>
         </template>
-        <div v-if="isLoading" class="skeleton utm-skeleton"></div>
-        <div v-else ref="bodyContainer" class="utm-body">
-            <Transition name="utm-fade"
-                        mode="out-in"
-                        @beforeLeave="onBeforeLeave"
-                        @enter="onEnter"
-                        @afterEnter="onAfterEnter">
-                <div :key="selectedDimensionValue" class="utm-body-content">
-                    <NothingToShow v-if="activeItems.length === 0" />
-                    <RankedListBarChart v-else :items="activeItems" />
-                </div>
-            </Transition>
-        </div>
-    </Panel>
+
+        <template v-if="isLoading" #empty>
+            <div class="skeleton utm-skeleton"></div>
+        </template>
+    </RankedListBarChart>
 </template>
 
 <style scoped>
@@ -42,44 +35,12 @@
     height: 220px;
     border-radius: var(--rounded-small);
 }
-
-/* Animate the body's height directly between the old and new content rather than collapsing to
-   zero. The height values are measured and set in the transition hooks. overflow:hidden keeps the
-   taller content clipped while the height catches up. */
-.utm-body {
-    overflow: hidden;
-    transition: height 0.35s ease;
-}
-
-/* flow-root gives the measured content its own block formatting context so its offsetHeight
-   includes the last row's margin-bottom. Without it the measured height is short by that margin
-   and the height snaps when it is released back to auto, causing the jitter. */
-.utm-body-content {
-    display: flow-root;
-}
-
-/* Cross-fade the swapped content. The enter duration matches the body's height transition (0.35s)
-   so afterEnter, which resets the height back to auto, fires exactly when the morph finishes. */
-.utm-fade-leave-active {
-    transition: opacity 0.2s ease;
-}
-
-.utm-fade-enter-active {
-    transition: opacity 0.35s ease;
-}
-
-.utm-fade-enter-from,
-.utm-fade-leave-to {
-    opacity: 0;
-}
 </style>
 
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
-    import NothingToShow from "./nothingToShow.partial.obs";
-    import RankedListBarChart from "./rankedListBarChart.partial.obs";
+    import RankedListBarChart from "@Obsidian/Controls/rankedListBarChart.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import Panel from "@Obsidian/Controls/panel.obs";
     import { UtmDimension, UtmDimensionDescription } from "@Obsidian/Enums/Cms/utmDimension";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { MetricSliceBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemMetrics/metricSliceBag";
@@ -101,9 +62,6 @@
 
     // The dimension currently shown, held as its enum value in string form for the dropdown.
     const selectedDimensionValue = ref<string>("");
-
-    // The body wrapper whose height is animated between the outgoing and incoming content.
-    const bodyContainer = ref<HTMLElement | null>(null);
 
     // #endregion Values
 
@@ -153,41 +111,6 @@
     });
 
     // #endregion Computed Values
-
-    // #region Event Handlers
-
-    /**
-     * Locks the body to the outgoing content's height so the swap starts from where it is rather
-     * than collapsing to zero.
-     */
-    function onBeforeLeave(): void {
-        if (bodyContainer.value) {
-            bodyContainer.value.style.height = `${bodyContainer.value.offsetHeight}px`;
-        }
-    }
-
-    /**
-     * Animates the body from the locked height to the incoming content's natural height.
-     *
-     * @param element The entering content element.
-     */
-    function onEnter(element: Element): void {
-        if (bodyContainer.value && element instanceof HTMLElement) {
-            bodyContainer.value.style.height = `${element.offsetHeight}px`;
-        }
-    }
-
-    /**
-     * Releases the fixed height back to auto once the animation completes so later content is
-     * measured correctly.
-     */
-    function onAfterEnter(): void {
-        if (bodyContainer.value) {
-            bodyContainer.value.style.height = "";
-        }
-    }
-
-    // #endregion Event Handlers
 
     // #region Watchers
 

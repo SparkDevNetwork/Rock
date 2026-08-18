@@ -245,6 +245,7 @@ import AdaptiveMessagePickerGallery from "./ControlGallery/adaptiveMessagePicker
 import EmailEditorGallery from "./ControlGallery/emailEditorGallery.partial.obs";
 import KpiGallery from "./ControlGallery/kpiGallery.partial.obs";
 import KpiTileGallery from "./ControlGallery/kpiTileGallery.partial.obs";
+import RankedListBarChartGallery from "./ControlGallery/rankedListBarChartGallery.partial.obs";
 import LearningClassPickerGallery from "./ControlGallery/learningClassPickerGallery.partial.obs";
 import LearningClassActivityPickerGallery from "./ControlGallery/learningClassActivityPickerGallery.partial.obs";
 import DisplayCardGallery from "./ControlGallery/displayCardGallery.partial.obs";
@@ -459,6 +460,7 @@ const controlGalleryComponents: Record<string, Component> = [
     EmailEditorGallery,
     KpiGallery,
     KpiTileGallery,
+    RankedListBarChartGallery,
     LearningClassPickerGallery,
     LearningClassActivityPickerGallery,
     DisplayCardGallery,
