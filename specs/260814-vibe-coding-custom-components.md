@@ -80,7 +80,7 @@ The payoff is disproportionate to the new surface because the hard rendering pro
 flowchart TD
     User["User in a chat"] --> Client["MCP client (Claude)"]
     Client -->|"coding guide, controls catalog"| KB["Rock knowledge base MCP<br/>(outside Rock)"]
-    Client -->|"/api/v2/mcp/vibe-coding"| Agent["Vibe Agent<br/>AIAgent, AgentType.Mcp"]
+    Client -->|"/api/v2/mcp/vibe-coding"| Agent["Vibe MCP Agent<br/>AIAgent, AgentType.Mcp"]
     Agent --> PB["Cms<br/>site, page and block tools"]
     Agent --> LD["LavaApplication<br/>AddOrUpdate/Get application,<br/>AddOrUpdate/Get/Delete endpoint"]
     Agent --> VC["CustomComponent<br/>GetRockVersion, GetCustomComponent, AddOrUpdateCustomComponent"]
@@ -113,7 +113,7 @@ Each layer is independently testable and depends only on those above it.
 
 Layers 1 and 7 ship in the same EF migration. Scaffold the migration once, late, after the skills exist, so the table creation and the seeding land as one file with one timestamp that sorts after every existing migration.
 
-**Layers 1 through 8 are built.** Layer 9 is not; it adds a second, non-MCP agent so the loop runs from Rock's own chat UI ([Layer 9](#layer-9-internal-chat-agent-not-built)).
+**All nine layers are built**, with one pending attachment: the chat agent ships honestly degraded until the Rock-side knowledge base skill lands and is attached by editing the seeding migration in place ([Layer 9](#layer-9-internal-chat-agent)).
 
 ### Layer 1: Data model
 
@@ -267,7 +267,7 @@ The revision makes the application a first-class entity with a single create pat
 - **`GetLavaApplication`** takes the application slug and returns the application's name, slug, active state, and a summarized list of its endpoints (slug, method, name, security mode, URL). This closes the discoverability gap: before it, an agent resuming work on a dashboard had no way to learn which endpoints existed without already knowing each slug and method.
 - **`AddOrUpdateLavaEndpoint` drops `applicationName` and requires the application to exist**, erroring with a recovery hint to call `AddOrUpdateLavaApplication` first. Endpoints keep identifying their application by slug: it is the application's natural key and the component's `useLavaApp` call uses it too.
 
-The cost is one extra tool call when starting a new dashboard. The seeding (layer 7) gains two tool rows and two entries in the agent's `EnabledTools` list, and the Vibe Agent's Build Order instruction text changes to `AddOrUpdateLavaApplication` then `AddOrUpdateLavaEndpoint`. Because the seeding migration is still unreleased, it is edited in place, matching how the Cms skill consolidation was handled.
+The cost is one extra tool call when starting a new dashboard. The seeding (layer 7) gains two tool rows and two entries in the agent's `EnabledTools` list, and the Vibe MCP Agent's Build Order instruction text changes to `AddOrUpdateLavaApplication` then `AddOrUpdateLavaEndpoint`. Because the seeding migration is still unreleased, it is edited in place, matching how the Cms skill consolidation was handled.
 
 Behavior worth specifying:
 
@@ -283,7 +283,7 @@ Seeding lives in the **same EF migration as layer 1**, after the table and block
 
 1. Register each skill's EntityType (`RockMigrationHelper.AddOrUpdateEntityType`, names under `Rock.AI.Agent.Skills.*`) **before** the `AISkill` row references it. Startup registration runs after migrations, so a missing EntityType yields a null `CodeEntityTypeId` and a skill that exposes nothing.
 2. Upsert `AISkill` and `AISkillTool` rows. Seeded names and descriptions MUST match what startup re-registration derives (the class name split-cased, the class and method `[Description]` values), or startup silently rewrites them; see layer 6.
-3. Insert the `AIAgent` row **only when absent**: name "Vibe Agent", `AgentType.Mcp`, `AudienceType.Internal`, `AdditionalSettingsJson` of `{ "McpAgentSettings": { "Slug": "vibe-coding", "IsExcludingSystemSkills": false } }`, GUID `DC44435A-8900-4AB4-9EB3-1756FCC1B355`.
+3. Insert the `AIAgent` rows **only when absent**: "Vibe MCP Agent" (`AgentType.Mcp`, `AudienceType.Internal`, `AdditionalSettingsJson` of `{ "McpAgentSettings": { "Slug": "vibe-coding", "IsExcludingSystemSkills": false } }`, GUID `DC44435A-8900-4AB4-9EB3-1756FCC1B355`) and "Vibe Chat Agent" (see layer 9). One narrow exception to create-only: an existing row still named "Vibe Agent", the pre-release default, is renamed to "Vibe MCP Agent", since an untuned name is safe to bring in line.
 4. Insert `AIAgentSkill` link rows, each carrying an **explicit `EnabledTools` allowlist** in `{ "AgentSkillSettings": { "EnabledTools": [...] } }`.
 5. Grant VIEW to Rock Administrators, deny to all users. For the LavaApplication and CustomComponent skills this lands at the skill level; for the Cms skill it lands on its two mutating tools only, because its read tools serve any audience.
 
@@ -343,9 +343,9 @@ Set the endpoint in Admin Tools > General Settings > System Settings, key `core_
 
 Steps 2 and 5 are the pair that prove the defect fixed. Step 4 is the one that must not be skipped for being tedious.
 
-### Layer 9: Internal chat agent (NOT BUILT)
+### Layer 9: Internal chat agent
 
-**What it is.** A second `AIAgent` row with `AgentType.Chat`, attached to the same three skills, so an administrator runs the whole authoring loop from Rock's own chat UI with no external MCP client at all. The MCP agent stays; this is a sibling on a different transport, not a replacement.
+**What it is.** A second `AIAgent` row with `AgentType.Chat`, attached to the same three skills, so an administrator runs the whole authoring loop from Rock's own chat UI with no external MCP client at all. The MCP agent stays; this is a sibling on a different transport, not a replacement. As built, the two agents are named **Vibe MCP Agent** (renamed from the pre-release "Vibe Agent"; the migration renames an existing row only while it still carries that untuned default name) and **Vibe Chat Agent**.
 
 **What carries over free.** Everything below the agent row. The skills are transport-agnostic `AgentSkillComponent`s: `AgentRequestContext.CurrentPerson` is the signed-in person in chat exactly as it is the authenticated person over MCP, so every EDIT and ADMINISTRATE gate, the provenance stamp model, and the server compile path work unchanged. Attachment mechanics are identical too, including the `EnabledTools` allowlist (and its trap: attaching without populating it yields an agent that sees nothing).
 
@@ -356,9 +356,9 @@ Steps 2 and 5 are the pair that prove the defect fixed. Step 4 is the one that m
 
 **The control-discovery decision is the heart of this layer.**
 
-- **MUST: honest degradation.** The chat agent's instructions must state that it cannot verify control APIs on this transport, must restrict itself to controls it can see in the block's existing source or plain HTML, and must tell the user what it is not able to do. The skills' existing "do not guess a control's props" rules already point this direction; the chat instructions make it explicit. This alone makes the layer shippable, but weak.
-- **SHOULD: a local control-reference tool.** Add a tool to CustomComponentSkill (e.g. `GetControlDefinition`) that reads the shipped build output: the `.d.ts` files emit every control's props and slots, and each `*.obs.js.map` embeds the original source in `sourcesContent`. This was [Considered but Rejected](#considered-but-rejected) for the MCP flow because local extraction yields source while the curated catalog yields curation, and the MCP client had the catalog. The chat agent has nothing, and source beats silence; the rejection's own reasoning flips here. Version-correctness comes free since the files are the instance's own build. Tool GUID assigned at implementation.
-- **Out of scope still: proxying the knowledge base through Rock.** That remains the eventual consolidation for both transports and still needs the outbound MCP client Rock does not have.
+- **MUST: honest degradation. Shipped.** The chat agent's instructions carry a Control Discovery section stating that it cannot verify control APIs on this transport, must never guess a control's props, must restrict itself to controls visible in the block's existing source plus plain HTML with Rock utility classes, and must tell the user what it is not able to do.
+- **PENDING: the Rock-side knowledge base skill.** Rock-side knowledge base access is being built separately on the connected-services plumbing (a `knowledge-base` manifest entry with a per-instance API key already parses in core; the skill and tools that consume it are in flight). When that skill lands, attach it to the Vibe Chat Agent in `AttachSkillsToAgents_Up` with an explicit `EnabledTools` list and replace the instructions' Control Discovery section; the migration carries an engineering note marking that exact seam. This supersedes the earlier idea of a local `.d.ts`-scraping tool, which remains a fallback only if the knowledge base skill never ships.
+- **Out of scope still: proxying the knowledge base to MCP clients.** External clients keep connecting knowledge.rockrms.com as a second MCP server for now; the incoming skill may eventually collapse that too, since skills are transport-agnostic and would surface on the MCP agent as well.
 
 **Seeding.** Same single migration, honoring the one-migration requirement. The branch is unmerged, so amending `202608172102127_AddCustomComponent` is legitimate; any dev database that already applied it must re-run the new seeding method by hand or roll the migration back and forward. Pinned values:
 
@@ -378,7 +378,7 @@ The instructions are NOT a copy of the MCP agent's. Same persona, guardrails, bu
 1. Apply the amended migration on a clean database. Both agents exist; the chat agent's skills, tools, and security match the MCP agent's row for row.
 2. With no AI provider configured, open the chat agent as an administrator. It responds with its not-configured message rather than erroring.
 3. Configure an AI provider. As an administrator, ask it to build a small dashboard. It walks the build order (`SearchPages`, `AddOrUpdatePage`, `AddOrUpdateBlock`, `AddOrUpdateLavaApplication`, `AddOrUpdateLavaEndpoint`, `AddOrUpdateCustomComponent`), and the resulting page renders for a normal member.
-4. Ask it to use a Rock control it has no source for. It declines to guess the props and says why, or (if the SHOULD tool is built) looks the control up with `GetControlDefinition` and uses real props.
+4. Ask it to use a Rock control it has no source for. It declines to guess the props, says why, and builds with plain HTML instead. Once the knowledge base skill is attached, this step upgrades from a refusal to a real lookup.
 5. As a person who is not a Rock administrator, confirm the agent is not visible in chat at all (the deny auth), and separately, as a person who can see the agent but lacks EDIT on a target block, confirm `AddOrUpdateCustomComponent` refuses with the authorization message. The transport changed; the gates must not have.
 6. Restart the application. Skill and tool names and descriptions are unchanged (the startup re-registration parity check, re-proven with two agents attached).
 7. Re-run the migration's seeding on an instance where an administrator has retuned the chat agent's instructions. The tuning survives.

@@ -24,7 +24,9 @@ namespace Rock.Migrations
 
     /// <summary>
     /// Adds the CustomComponent table and the Custom Component block, then seeds the
-    /// Vibe Agent MCP server with the three skills that author custom components.
+    /// three skills that author custom components and the two agents that expose
+    /// them: the Vibe MCP Agent for external AI clients and the Vibe Chat Agent for
+    /// Rock's own chat.
     /// </summary>
     public partial class AddCustomComponent : Rock.Migrations.RockMigration
     {
@@ -41,14 +43,19 @@ namespace Rock.Migrations
         private const string BlockTypeGuid = "D4A5F720-493C-4DE8-B4B6-D6667D7ED2A2";
 
         /// <summary>
-        /// The Guid of the Vibe Agent AIAgent row.
+        /// The Guid of the Vibe MCP Agent AIAgent row.
         /// </summary>
-        private const string VibeAgentGuid = "DC44435A-8900-4AB4-9EB3-1756FCC1B355";
+        private const string VibeMcpAgentGuid = "DC44435A-8900-4AB4-9EB3-1756FCC1B355";
 
         /// <summary>
-        /// The MCP slug the Vibe Agent is served under (/api/v2/mcp/vibe-coding).
+        /// The MCP slug the Vibe MCP Agent is served under (/api/v2/mcp/vibe-coding).
         /// </summary>
-        private const string VibeAgentSlug = "vibe-coding";
+        private const string VibeMcpAgentSlug = "vibe-coding";
+
+        /// <summary>
+        /// The Guid of the Vibe Chat Agent AIAgent row.
+        /// </summary>
+        private const string VibeChatAgentGuid = "5A2BC280-C12E-4C13-AA1F-D169DB27D3FE";
 
         /// <summary>
         /// The AISkill Guid of the Cms skill.
@@ -90,7 +97,7 @@ namespace Rock.Migrations
         /// description, so it carries only what the tool metadata cannot. Per-tool
         /// rules live in the skills' AgentUsage attributes.
         /// </summary>
-        private const string VibeAgentInstructions = @"# Persona
+        private const string VibeMcpAgentInstructions = @"# Persona
 
 You build custom UI inside this Rock instance: a page, a Custom Component block on it, the Vue component that block renders, and the Lava endpoints feeding that component. Everything is stored in the database. There is no repository file and no build step.
 
@@ -113,6 +120,52 @@ Plain JavaScript only. `lang=""ts""` is not supported and nothing strips types, 
 Imports must be plain top-level `import X from ""path"";` statements. Side-effect and dynamic imports do not resolve.
 
 Import from `@Obsidian/*` (Controls, Core, Directives, Enums, FieldTypes, Libs, PageState, SystemGuids, Templates, Utility, ValidationRules) plus `vue`, `axios`, `luxon`, `mitt`, `ant-design-vue`, `tslib`. `@Obsidian/ViewModels/*` is unavailable because repo blocks import those as types only.
+
+# After Saving
+
+Give the user the page URL and tell them to check it as a normal member, not as an administrator. Components run as whoever views the page, and a new Lava application has no security rules until someone adds them, so your data may be missing or over-shared for everyone else. If they report a problem, GetCustomComponent, fix it, and save again.";
+
+        /// <summary>
+        /// The instructions for the chat agent. Same persona, guardrails, build
+        /// order, and authoring contract as the MCP agent, reworked for Rock's own
+        /// chat: markdown presentation guidance per the Staff Agent precedent, a
+        /// plain statement for the unconfigured-provider state, and an honest
+        /// control-discovery limitation because no knowledge base is reachable
+        /// from this transport yet.
+        /// </summary>
+        private const string VibeChatAgentInstructions = @"# Persona
+
+You build custom UI inside this Rock instance: a page, a Custom Component block on it, the Vue component that block renders, and the Lava endpoints feeding that component. Everything is stored in the database. There is no repository file and no build step.
+
+If you cannot act at all, this instance's AI provider may not be configured yet; say so plainly rather than guessing at a cause.
+
+# Guardrails
+
+Ask before building: what it shows, who the audience is, which parent page it lives under, how the data is scoped, and roughly what it should look like. Ask in one message, not one at a time. If the user says to just build something, pick defaults, state them, and produce a first version they can react to.
+
+Confirm the parent page, route, and block type before creating anything. Those change site structure.
+
+A successful save means the source compiled. It does not mean the component works. Never report otherwise.
+
+# Control Discovery
+
+You cannot look up Rock control documentation from this chat. Never guess a control's props: only use controls whose API you can see in the block's existing source, and build everything else with plain HTML and Rock utility classes. When a richer Rock control probably exists that you cannot verify from here, tell the user what you are doing instead and why.
+
+# Build Order
+
+GetRockVersion, then SearchPages and AddOrUpdatePage (pass a kebab-case route), then AddOrUpdateBlock with the ""Custom Component"" block type resolved through ListBlockTypes. Keep the block id it returns. Create the Lava application with AddOrUpdateLavaApplication and its endpoints under that one slug, then AddOrUpdateCustomComponent.
+
+# Authoring Contract
+
+Plain JavaScript only. `lang=""ts""` is not supported and nothing strips types, so remove every annotation when adapting a repo `.obs` file.
+
+Imports must be plain top-level `import X from ""path"";` statements. Side-effect and dynamic imports do not resolve.
+
+Import from `@Obsidian/*` (Controls, Core, Directives, Enums, FieldTypes, Libs, PageState, SystemGuids, Templates, Utility, ValidationRules) plus `vue`, `axios`, `luxon`, `mitt`, `ant-design-vue`, `tslib`. `@Obsidian/ViewModels/*` is unavailable because repo blocks import those as types only.
+
+# Presentation
+
+You are chatting inside Rock, so make a pleasant UX using markdown: short sections with headers, bold what matters, tables when listing 4 or more items, and one line per build step when reporting progress. Link to the pages you create so the user can open them.
 
 # After Saving
 
@@ -160,8 +213,9 @@ Give the user the page URL and tell them to check it as a normal member, not as 
             AddCmsSkill_Up();
             AddLavaApplicationSkill_Up();
             AddCustomComponentSkill_Up();
-            AddVibeAgent_Up();
-            AttachSkillsToAgent_Up();
+            AddVibeMcpAgent_Up();
+            AddVibeChatAgent_Up();
+            AttachSkillsToAgents_Up();
         }
 
         /// <summary>
@@ -498,10 +552,8 @@ Give the user the page URL and tell them to check it as a normal member, not as 
             var skillGuids = $"'{CmsSkillGuid}', '{LavaApplicationSkillGuid}', '{CustomComponentSkillGuid}'";
 
             Sql( $@"
-DECLARE @AgentId INT = (SELECT [Id] FROM [AIAgent] WHERE [Guid] = '{VibeAgentGuid}')
-
 DELETE FROM [AIAgentSkill]
-WHERE [AIAgentId] = @AgentId
+WHERE [AIAgentId] IN (SELECT [Id] FROM [AIAgent] WHERE [Guid] IN ('{VibeMcpAgentGuid}', '{VibeChatAgentGuid}'))
     AND [AISkillId] IN (SELECT [Id] FROM [AISkill] WHERE [Guid] IN ({skillGuids}))" );
 
             RockMigrationHelper.DeleteSecurityAuth( "4A95B31D-A629-4F76-B68A-6D74B7C578EE" );
@@ -530,14 +582,17 @@ WHERE [Guid] IN ({skillGuids})" );
         #region Agent
 
         /// <summary>
-        /// Creates the Vibe Agent as an MCP server, if it does not already exist.
+        /// Creates the Vibe MCP Agent as an MCP server, if it does not already exist.
         /// </summary>
-        private void AddVibeAgent_Up()
+        private void AddVibeMcpAgent_Up()
         {
             // Create-only, never update. An administrator may retune the
             // instructions, and re-running this migration must not discard that.
+            // The one exception is the rename below: a row still carrying the
+            // pre-release default name 'Vibe Agent' has not been tuned, so it is
+            // safe to bring in line with the shipped name.
             Sql( $@"
-IF NOT EXISTS (SELECT [Id] FROM [AIAgent] WHERE [Guid] = '{VibeAgentGuid}')
+IF NOT EXISTS (SELECT [Id] FROM [AIAgent] WHERE [Guid] = '{VibeMcpAgentGuid}')
 BEGIN
     INSERT INTO [AIAgent] (
         [Name]
@@ -549,18 +604,25 @@ BEGIN
         , [Guid]
     )
     VALUES (
-        'Vibe Agent'
+        'Vibe MCP Agent'
         , 'An MCP server that lets an AI client build custom UI in this instance: a page, a Custom Component block, the Vue component it renders, and the Lava endpoints feeding it.'
-        , '{VibeAgentInstructions.Replace( "'", "''" )}'
+        , '{VibeMcpAgentInstructions.Replace( "'", "''" )}'
         , {( int ) Enums.AI.Agent.AgentType.Mcp}
         , {( int ) Enums.AI.Agent.AudienceType.Internal}
-        , '{{ ""McpAgentSettings"": {{ ""Slug"": ""{VibeAgentSlug}"", ""IsExcludingSystemSkills"": false }} }}'
-        , '{VibeAgentGuid}'
+        , '{{ ""McpAgentSettings"": {{ ""Slug"": ""{VibeMcpAgentSlug}"", ""IsExcludingSystemSkills"": false }} }}'
+        , '{VibeMcpAgentGuid}'
     )
+END
+ELSE
+BEGIN
+    UPDATE [AIAgent]
+    SET [Name] = 'Vibe MCP Agent'
+    WHERE [Guid] = '{VibeMcpAgentGuid}'
+        AND [Name] = 'Vibe Agent'
 END" );
 
             RockMigrationHelper.AddSecurityAuthForAIAgent(
-                VibeAgentGuid,
+                VibeMcpAgentGuid,
                 0,
                 Authorization.VIEW,
                 true,
@@ -569,7 +631,7 @@ END" );
                 "7FB09F45-4FB1-45FE-A994-E130F6543078" );
 
             RockMigrationHelper.AddSecurityAuthForAIAgent(
-                VibeAgentGuid,
+                VibeMcpAgentGuid,
                 1,
                 Authorization.VIEW,
                 false,
@@ -579,44 +641,123 @@ END" );
         }
 
         /// <summary>
-        /// Attaches the three skills to the agent with explicit enabled-tool lists.
-        /// Attaching a skill alone does not expose its tools.
+        /// Creates the Vibe Chat Agent, if it does not already exist. Same skills
+        /// and tools as the MCP agent on Rock's own chat transport, following the
+        /// Staff Agent precedent for chat agents: create-only, no additional
+        /// settings, markdown presentation guidance in the instructions.
         /// </summary>
-        private void AttachSkillsToAgent_Up()
+        private void AddVibeChatAgent_Up()
         {
-            AttachSkillToAgent( CmsSkillGuid, new[]
-            {
-                "6234BB68-99B8-4B7C-884D-0D760B1F081C", // Lookup Sites
-                "16C84C00-62DC-4AE9-9A85-F7CDE7D20FC8", // Get Site
-                "1F7C1F00-F481-468A-860F-314D1B43A477", // List Pages
-                "8968B4EF-3A1D-472A-9BC6-17A80B8F824F", // List Pages For Site
-                "C668CAE0-CFA7-4AFF-87FF-5025860170BA", // Search Pages
-                "E2CFF69F-C4B2-47F5-B322-4041D841F37C", // Get Page
-                "4A64B0B9-0DF9-42CF-BF5C-8FE24EFA4633", // Add Or Update Page
-                "82C06D71-800E-4064-B72D-98F1B2A684D7", // List Layouts
-                "F9A5AC4D-E40C-4FAF-895D-8C0E10A37EEC", // List Block Types
-                "98F33433-0712-4248-9C71-EAE4D9F9CA38", // List Blocks
-                "05C9C108-4516-46B7-85FB-5C8FE6212CCF", // Add Or Update Block
-                "BB6C42F3-C448-49D5-BB85-4072960178FC", // Delete Page
-                "B30F66EA-0D9E-4854-BB82-A96BE7719D00"  // Delete Block
-            } );
+            /*
+                8/18/2026 - CLAUDE
 
-            AttachSkillToAgent( LavaApplicationSkillGuid, new[]
-            {
-                "A82B55AE-16A6-4321-95E1-59762C7CED14", // Add Or Update Lava Application
-                "9A078C57-946C-4D5F-8EBE-5009E6390EF2", // Get Lava Application
-                "9066DD4A-2158-4B1C-87E3-4058CBEE1E5C", // Add Or Update Lava Endpoint
-                "11AE1557-1EF3-4E03-9E8E-FCF99F72FCD9", // Get Lava Endpoint
-                "B3E1A5C7-6F24-4D1B-9C88-05D7F42A61E9", // Delete Lava Endpoint
-                "9A47C2D1-83B5-4E60-A7F3-1B58C90D24E6"  // Delete Lava Application
-            } );
+                The knowledge base skill is not attached yet. Rock-side knowledge
+                base access is being built separately (the connected services
+                ApiKey plumbing exists; the skill and its tools do not), so the
+                chat agent ships honestly degraded: its instructions tell it that
+                it cannot look up control APIs and must never guess props. When
+                that skill lands, attach it in AttachSkillsToAgents_Up with an
+                explicit EnabledTools list and replace the Control Discovery
+                section of VibeChatAgentInstructions.
 
-            AttachSkillToAgent( CustomComponentSkillGuid, new[]
-            {
-                "3E7A1C42-8B95-4D06-A1F3-2C64D9B7E508", // Get Rock Version
-                "7D3A8200-3A90-44CC-9E30-B600383E835F", // Get Custom Component
-                "26FFEE94-4868-4DEC-BE40-68FBE30DAEB8"  // Add Or Update Custom Component
-            } );
+                Reason: Ship the chat agent honestly degraded until the knowledge base skill exists.
+            */
+            Sql( $@"
+IF NOT EXISTS (SELECT [Id] FROM [AIAgent] WHERE [Guid] = '{VibeChatAgentGuid}')
+BEGIN
+    INSERT INTO [AIAgent] (
+        [Name]
+        , [Description]
+        , [Instructions]
+        , [AgentType]
+        , [AudienceType]
+        , [Guid]
+    )
+    VALUES (
+        'Vibe Chat Agent'
+        , 'A chat agent that builds custom UI in this instance from Rock''s own chat: a page, a Custom Component block, the Vue component it renders, and the Lava endpoints feeding it.'
+        , '{VibeChatAgentInstructions.Replace( "'", "''" )}'
+        , {( int ) Enums.AI.Agent.AgentType.Chat}
+        , {( int ) Enums.AI.Agent.AudienceType.Internal}
+        , '{VibeChatAgentGuid}'
+    )
+END" );
+
+            RockMigrationHelper.AddSecurityAuthForAIAgent(
+                VibeChatAgentGuid,
+                0,
+                Authorization.VIEW,
+                true,
+                SystemGuid.Group.GROUP_ADMINISTRATORS,
+                ( int ) Model.SpecialRole.None,
+                "555E5B64-1F3F-4117-B108-20ADB95F8A04" );
+
+            RockMigrationHelper.AddSecurityAuthForAIAgent(
+                VibeChatAgentGuid,
+                1,
+                Authorization.VIEW,
+                false,
+                null,
+                ( int ) Model.SpecialRole.AllUsers,
+                "0CCA182B-7827-4FE7-BA69-B63C79BDE4D3" );
+        }
+
+        /// <summary>
+        /// The enabled tools of the Cms skill, shared by both agents.
+        /// </summary>
+        private static readonly string[] CmsSkillEnabledTools = new[]
+        {
+            "6234BB68-99B8-4B7C-884D-0D760B1F081C", // Lookup Sites
+            "16C84C00-62DC-4AE9-9A85-F7CDE7D20FC8", // Get Site
+            "1F7C1F00-F481-468A-860F-314D1B43A477", // List Pages
+            "8968B4EF-3A1D-472A-9BC6-17A80B8F824F", // List Pages For Site
+            "C668CAE0-CFA7-4AFF-87FF-5025860170BA", // Search Pages
+            "E2CFF69F-C4B2-47F5-B322-4041D841F37C", // Get Page
+            "4A64B0B9-0DF9-42CF-BF5C-8FE24EFA4633", // Add Or Update Page
+            "82C06D71-800E-4064-B72D-98F1B2A684D7", // List Layouts
+            "F9A5AC4D-E40C-4FAF-895D-8C0E10A37EEC", // List Block Types
+            "98F33433-0712-4248-9C71-EAE4D9F9CA38", // List Blocks
+            "05C9C108-4516-46B7-85FB-5C8FE6212CCF", // Add Or Update Block
+            "BB6C42F3-C448-49D5-BB85-4072960178FC", // Delete Page
+            "B30F66EA-0D9E-4854-BB82-A96BE7719D00"  // Delete Block
+        };
+
+        /// <summary>
+        /// The enabled tools of the Lava Application skill, shared by both agents.
+        /// </summary>
+        private static readonly string[] LavaApplicationSkillEnabledTools = new[]
+        {
+            "A82B55AE-16A6-4321-95E1-59762C7CED14", // Add Or Update Lava Application
+            "9A078C57-946C-4D5F-8EBE-5009E6390EF2", // Get Lava Application
+            "9066DD4A-2158-4B1C-87E3-4058CBEE1E5C", // Add Or Update Lava Endpoint
+            "11AE1557-1EF3-4E03-9E8E-FCF99F72FCD9", // Get Lava Endpoint
+            "B3E1A5C7-6F24-4D1B-9C88-05D7F42A61E9", // Delete Lava Endpoint
+            "9A47C2D1-83B5-4E60-A7F3-1B58C90D24E6"  // Delete Lava Application
+        };
+
+        /// <summary>
+        /// The enabled tools of the Custom Component skill, shared by both agents.
+        /// </summary>
+        private static readonly string[] CustomComponentSkillEnabledTools = new[]
+        {
+            "3E7A1C42-8B95-4D06-A1F3-2C64D9B7E508", // Get Rock Version
+            "7D3A8200-3A90-44CC-9E30-B600383E835F", // Get Custom Component
+            "26FFEE94-4868-4DEC-BE40-68FBE30DAEB8"  // Add Or Update Custom Component
+        };
+
+        /// <summary>
+        /// Attaches the three skills to both agents with explicit enabled-tool
+        /// lists. Attaching a skill alone does not expose its tools.
+        /// </summary>
+        private void AttachSkillsToAgents_Up()
+        {
+            AttachSkillToAgent( VibeMcpAgentGuid, CmsSkillGuid, CmsSkillEnabledTools );
+            AttachSkillToAgent( VibeMcpAgentGuid, LavaApplicationSkillGuid, LavaApplicationSkillEnabledTools );
+            AttachSkillToAgent( VibeMcpAgentGuid, CustomComponentSkillGuid, CustomComponentSkillEnabledTools );
+
+            AttachSkillToAgent( VibeChatAgentGuid, CmsSkillGuid, CmsSkillEnabledTools );
+            AttachSkillToAgent( VibeChatAgentGuid, LavaApplicationSkillGuid, LavaApplicationSkillEnabledTools );
+            AttachSkillToAgent( VibeChatAgentGuid, CustomComponentSkillGuid, CustomComponentSkillEnabledTools );
         }
 
         #endregion Agent
@@ -624,19 +765,20 @@ END" );
         #region Helper Methods
 
         /// <summary>
-        /// Links one skill to the Vibe Agent with an explicit enabled-tool list.
+        /// Links one skill to one agent with an explicit enabled-tool list.
         /// Attaching a skill alone does not expose its tools.
         /// </summary>
+        /// <param name="agentGuid">The Guid of the AIAgent to attach the skill to.</param>
         /// <param name="skillGuid">The Guid of the AISkill to attach.</param>
         /// <param name="enabledToolGuids">The Guids of the tools to enable.</param>
-        private void AttachSkillToAgent( string skillGuid, string[] enabledToolGuids )
+        private void AttachSkillToAgent( string agentGuid, string skillGuid, string[] enabledToolGuids )
         {
             // Produces "guid", "guid". The value is interpolated into the verbatim
             // SQL below as-is, so it must already contain the double quotes.
             var enabledTools = string.Join( ", ", enabledToolGuids.Select( g => $"\"{g}\"" ) );
 
             Sql( $@"
-DECLARE @AgentId INT = (SELECT [Id] FROM [AIAgent] WHERE [Guid] = '{VibeAgentGuid}')
+DECLARE @AgentId INT = (SELECT [Id] FROM [AIAgent] WHERE [Guid] = '{agentGuid}')
 DECLARE @SkillId INT = (SELECT [Id] FROM [AISkill] WHERE [Guid] = '{skillGuid}')
 
 IF @AgentId IS NOT NULL AND @SkillId IS NOT NULL
