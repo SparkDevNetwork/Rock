@@ -659,6 +659,14 @@ a.rock-bookmark {
         .nav-childpages {
           display: inline-block;
           box-shadow: var(--popup-box-shadow);
+          // Glass Nav: visible end-state. Paired with the closed state's transition (allow-discrete on display) and @starting-style, the flyout slides + fades on open and reverses on close.
+          opacity: 1;
+          transform: translateX(0);
+
+          @starting-style {
+            opacity: var(--nav-glass-flyout-opacity, 1);
+            transform: var(--nav-glass-flyout-transform, none);
+          }
         }
         .item-title,
         .nav-childpages li.title {
@@ -953,11 +961,19 @@ a.rock-bookmark {
       // Glass Nav detaches the flyout from the rail with an extra left gap and fully rounded corners.
       margin-left: var(--nav-glass-gap, 0);
       border-radius: var(--nav-glass-radius, 0 14px 14px 0);
-      // Glass Nav gives the panel a bright rim border and a lifting drop shadow so it reads as a floating glass surface.
+      // Glass Nav gives the panel a bright rim border so it reads as a floating glass surface.
       border: var(--nav-glass-border, 1px solid var(--color-interface-soft));
-      box-shadow: var(--nav-glass-shadow, none);
       margin-top:     var(--spacing-xsmall);
       margin-bottom:  var(--spacing-xsmall);
+      // Glass Nav: closed resting state for the flyout slide + fade. It stays display:none when idle (no wasted blur); allow-discrete on the transition keeps it rendered through the exit animation. Off resolves to none, so display just toggles.
+      opacity: var(--nav-glass-flyout-opacity, 1);
+      transform: var(--nav-glass-flyout-transform, none);
+      transition: var(--nav-glass-flyout-transition, none);
+
+      // Glass Nav: during a direct switch between open flyouts, drop the transition so the panel swaps instantly with no exit/enter.
+      body.nav-flyout-switching & {
+        transition: none;
+      }
 
       .title {
         padding-top: var(--spacing-large);

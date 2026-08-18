@@ -104,6 +104,8 @@ function navMouseEvents() {
       } else if (!$this.data('navHoverTimeout')) {
         const openLi = navbarSide.find('li.open');
         if (openLi.length > 0) {
+          // A flyout is already open, so this is a switch: mark it so the entrance animation is suppressed and the panel just swaps content.
+          bodyElement.addClass('nav-flyout-switching');
           navbarSideLi.removeClass('open');
           navbarStaticSide.addClass('open-secondary-nav');
           $this.addClass('open');
@@ -132,11 +134,26 @@ function navMouseEvents() {
         $this.removeData('navHoverTimeout');
       } else if (!$this.data('navUnHoverTimeout')) {
         $this.data('navUnHoverTimeout', setTimeout(function() {
+          // Clear the switch marker before closing so this flyout's exit animation can play; a direct switch re-adds it on mouseenter.
+          bodyElement.removeClass('nav-flyout-switching');
           $this.removeClass('open');
           if (navbarSide.find('li.open').length < 1) {
-            navbarStaticSide.removeClass('open-secondary-nav');
-            bodyElement.removeClass('nav-open').css('padding-right', '');
-            navbarFixedTop.css('right', '');
+            const resetRail = function() {
+              navbarStaticSide.removeClass('open-secondary-nav');
+              bodyElement.removeClass('nav-open').css('padding-right', '');
+              navbarFixedTop.css('right', '');
+            };
+            // Glass Nav is on only when it has injected its flyout transition variable. When on, keep the rail elevated until the flyout finishes animating out; otherwise the rail drops below the top header and the exiting flyout is hidden behind it. Must exceed the flyout exit duration and is guarded so a quick re-open cancels it. When off there is no exit animation, so reset immediately to avoid a delayed layout shift.
+            const isGlassNavOn = getComputedStyle(document.documentElement).getPropertyValue('--nav-glass-flyout-transition').trim() !== '';
+            if (isGlassNavOn) {
+              setTimeout(function() {
+                if (navbarSide.find('li.open').length < 1) {
+                  resetRail();
+                }
+              }, 320);
+            } else {
+              resetRail();
+            }
           }
           $this.removeData('navUnHoverTimeout');
         }, hideDelay));
