@@ -23,6 +23,17 @@
                     "variable": "logo-image",
                     "description": "The logo that will be displayed throughout the site. For best results, use a white SVG file to ensure clear and consistent display across the site.",
                     "default": "~/Assets/Images/rock-logo-circle-white.svg"
+                },
+                {
+                    "type": "switch",
+                    "name": "Glass Nav",
+                    "variable": "nav-glass-bg",
+                    "description": "Experimental glass styling for the navigation. For now this gives the nav flyout panel a translucent glass background while it is open.",
+                    "default": "false",
+                    "onValue": "color-mix(in srgb, var(--color-interface-softest) 20%, transparent)",
+                    "offValue": "var(--color-interface-softer)",
+                    "onContent": ":root { --nav-glass-image: linear-gradient(180deg, color-mix(in srgb, var(--color-interface-softest) 30%, transparent), color-mix(in srgb, var(--color-interface-softest) 16%, transparent)); --nav-glass-blur: blur(20px) saturate(160%); --nav-glass-gap: 8px; --nav-glass-radius: 14px; --nav-glass-rail-radius: 0 0 12px 12px; --nav-glass-brand-radius: var(--rounded-large) var(--rounded-large) 0 0; }",
+                    "hideReset": true
                 }
             ]
         },

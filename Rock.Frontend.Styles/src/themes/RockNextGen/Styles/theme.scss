@@ -877,7 +877,8 @@ a.rock-bookmark {
 
     .nav-open & {
       z-index: 2000;
-      border-radius: 0 0 0 var(--rounded-large);
+      // Glass Nav keeps the rail's bottom-right corner rounded when a flyout is open.
+      border-radius: var(--nav-glass-rail-radius, 0 0 0 var(--rounded-large));
     }
 
     .navbar-side:first-child {
@@ -923,13 +924,30 @@ a.rock-bookmark {
         width: calc($navbarside-width - 8px);
         border-radius:    var(--rounded-medium) 0 0 var(--rounded-medium);
       }
+
+      // Glass Nav: invisible bridge over the detached gap so hovering between the rail and flyout keeps it open.
+      &.open::after {
+        position: fixed;
+        content: "";
+        top: 0;
+        bottom: 0;
+        left: calc($navbarside-width + 8px);
+        width: var(--nav-glass-gap, 0);
+      }
     }
 
     .nav-childpages {
       top: 0;
       left: calc($navbarside-width + 8px);
       width: 280px;
-      border-radius: 0 14px 14px 0;
+      // Glass Nav turns the flyout into a translucent glass surface, kept desktop-only so mobile avoids a full-viewport backdrop blur.
+      background-color: var(--nav-glass-bg, var(--color-interface-softer));
+      background-image: var(--nav-glass-image, none);
+      backdrop-filter: var(--nav-glass-blur, none);
+      -webkit-backdrop-filter: var(--nav-glass-blur, none);
+      // Glass Nav detaches the flyout from the rail with an extra left gap and fully rounded corners.
+      margin-left: var(--nav-glass-gap, 0);
+      border-radius: var(--nav-glass-radius, 0 14px 14px 0);
       margin-top:     var(--spacing-xsmall);
       margin-bottom:  var(--spacing-xsmall);
 
@@ -1086,7 +1104,8 @@ $hamburger-spacing: 4px;
   .nav-open {
     & .rock-top-header .navbar-brand-corner {
       background-color: var(--color-primary);
-      border-radius: var(--rounded-large) 0 0 0;
+      // Glass Nav keeps the brand corner's top-right rounded since the detached flyout no longer meets it.
+      border-radius: var(--nav-glass-brand-radius, var(--rounded-large) 0 0 0);
     }
   }
 }
