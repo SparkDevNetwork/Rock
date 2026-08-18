@@ -48,9 +48,9 @@ internal sealed partial class WorkflowBuilderSkill
     [Description( "Gets a workflow type in full, including its attributes and every activity and action. Long values are clipped." )]
     [AgentPurpose( "Provides the complete current structure of a workflow, which is what editing it requires." )]
     [AgentUsage( "Call this after a failed write to see what was actually saved before continuing. Values marked as truncated can be read whole with GetWorkflowActionType." )]
-    [AgentToolPrerequisite( "Call ListWorkflowTypes to determine the workflowTypeIdKey." )]
+    [AgentToolPrerequisite( "Call LookupWorkflowTypes to determine the workflowTypeIdKey." )]
     [AgentToolGuid( "01D84BCE-8B18-4200-9435-3D1F5572BD92" )]
-    public AgentToolResult GetWorkflowType( string workflowTypeIdKey )
+    public AgentToolResult GetWorkflowTypeConfiguration( string workflowTypeIdKey )
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
         var rockContext = AgentRequestContext.RockContext;
@@ -60,7 +60,7 @@ internal sealed partial class WorkflowBuilderSkill
         if ( workflowType == null )
         {
             return helper.ErrorResult
-                .WithInstructions( $"Call the {nameof( ListWorkflowTypes )} function to determine the available workflow types." );
+                .WithInstructions( $"Call the {nameof( WorkflowSkill.LookupWorkflowTypes )} function to determine the available workflow types." );
         }
 
         // Everything the tree needs, pulled in one query rather than letting each

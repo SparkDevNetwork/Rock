@@ -47,7 +47,7 @@ namespace Rock.AI.Agent.Skills;
 /// There is no transaction across tool calls. Each write opens its own context
 /// and saves independently, so a failed call can leave a workflow half built. The
 /// skill does not try to solve that. The agent recovers by reading the current
-/// state back with GetWorkflowType and continuing from what is actually there,
+/// state back with GetWorkflowTypeConfiguration and continuing from what is actually there,
 /// which is why that tool returns the whole tree in one call.
 /// </para>
 /// </remarks>
@@ -87,7 +87,7 @@ internal sealed partial class WorkflowBuilderSkill : AgentSkillComponent
 
     /// <summary>
     /// The point at which a single setting value, form header, or form footer is
-    /// clipped by <see cref="GetWorkflowType"/>.
+    /// clipped by <see cref="GetWorkflowTypeConfiguration"/>.
     /// </summary>
     /// <remarks>
     /// The purpose of the clipped text is recognition, not reading: enough to tell

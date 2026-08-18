@@ -19,7 +19,9 @@ using System.Linq;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Skills.WorkflowSkill;
+using Rock.Security;
 using Rock.SystemGuid;
+using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills;
 
@@ -27,12 +29,20 @@ internal sealed partial class WorkflowSkill
 {
     #region Tool(s)
 
-    [Description( "Retrieves all workflow types configured for the agent." )]
-    [AgentPurpose( "Retrieves all workflow types configured for the agent." )]
+    [Description( "Retrieves the workflow types the current person is authorized to view." )]
+    [AgentPurpose( "Finds an existing workflow type the current person can view." )]
+    [AgentUsage( "Not every type returned here can be launched. Launching is limited to the workflow types configured on this skill; when none are configured, any type the person can view may be launched." )]
     [AgentToolGuid( "93d7c53f-5b2c-4d62-8274-89c21e387f88" )]
     public AgentToolResult LookupWorkflowTypes()
     {
-        var workflowTypeResults = GetConfiguredWorkflowTypes()
+        var currentPerson = AgentRequestContext.CurrentPerson;
+        var rockContext = AgentRequestContext.RockContext;
+
+        var workflowTypeResults = WorkflowTypeCache.All( rockContext )
+            .Where( wt => wt.IsAuthorized( Authorization.VIEW, currentPerson ) )
+            .OrderBy( wt => wt.Order )
+            .ThenBy( wt => wt.Name )
+            .ThenBy( wt => wt.Id )
             .Select( c => new WorkflowTypeResult
             {
                 Id = c.Id,

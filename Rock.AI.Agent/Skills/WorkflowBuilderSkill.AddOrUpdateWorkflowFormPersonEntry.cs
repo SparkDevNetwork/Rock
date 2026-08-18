@@ -59,7 +59,7 @@ internal sealed partial class WorkflowBuilderSkill
     [Description( "Turns on the person entry block of a user entry form, or updates its settings. Person entry collects a real person, matching or creating the record, rather than collecting plain attribute values." )]
     [AgentPurpose( "Configures a form to collect a person record rather than loose text fields." )]
     [AgentUsage( "personAttributeIdKey is required when turning person entry on, because without it the matched person is collected and then unreachable. Every parameter merges, so send only what is changing." )]
-    [AgentToolPrerequisite( "Call GetWorkflowType to determine the actionTypeIdKey and the workflow attributes the person, spouse, and family can be written to." )]
+    [AgentToolPrerequisite( "Call GetWorkflowTypeConfiguration to determine the actionTypeIdKey and the workflow attributes the person, spouse, and family can be written to." )]
     [AgentToolGuid( "3E7B1A4C-5D26-4F98-9C03-8B41D5E6720F" )]
     public AgentToolResult AddOrUpdateWorkflowFormPersonEntry(
         [Description( "The user entry action whose form this is. Always required." )]
@@ -74,23 +74,14 @@ internal sealed partial class WorkflowBuilderSkill
         [Description( "The workflow attribute the family group is written to." )]
         SetOrClear<string> familyAttributeIdKey = null,
 
-        [Description( "Whether the address is Hidden, Optional, or Required." )]
         WorkflowActionFormPersonEntryOption? addressOption = null,
-        [Description( "Whether the birthdate is Hidden, Optional, or Required." )]
         WorkflowActionFormPersonEntryOption? birthdateOption = null,
-        [Description( "Whether the email address is Hidden, Optional, or Required." )]
         WorkflowActionFormPersonEntryOption? emailOption = null,
-        [Description( "Whether ethnicity is Hidden, Optional, or Required." )]
         WorkflowActionFormPersonEntryOption? ethnicityOption = null,
-        [Description( "Whether gender is Hidden, Optional, or Required." )]
         WorkflowActionFormPersonEntryOption? genderOption = null,
-        [Description( "Whether marital status is Hidden, Optional, or Required." )]
         WorkflowActionFormPersonEntryOption? maritalStatusOption = null,
-        [Description( "Whether the mobile phone number is Hidden, Optional, or Required." )]
         WorkflowActionFormPersonEntryOption? mobilePhoneOption = null,
-        [Description( "Whether race is Hidden, Optional, or Required." )]
         WorkflowActionFormPersonEntryOption? raceOption = null,
-        [Description( "Whether the spouse fields are Hidden, Optional, or Required." )]
         WorkflowActionFormPersonEntryOption? spouseOption = null,
         [Description( "Whether the SMS opt-in checkbox is Show or Hide. A different set of values from the other options, because opt-in cannot be required." )]
         WorkflowActionFormShowHideOption? smsOptInOption = null,
@@ -141,7 +132,7 @@ internal sealed partial class WorkflowBuilderSkill
         if ( actionTypeIdKey.IsNullOrWhiteSpace() )
         {
             return Error( $"{nameof( actionTypeIdKey )} is required." )
-                .WithInstructions( $"Call the {nameof( GetWorkflowType )} function to determine the user entry action this form belongs to." );
+                .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the user entry action this form belongs to." );
         }
 
         var actionType = helper.GetRequiredEntity<WorkflowActionType>( actionTypeIdKey );
@@ -149,7 +140,7 @@ internal sealed partial class WorkflowBuilderSkill
         if ( actionType == null )
         {
             return helper.ErrorResult
-                .WithInstructions( $"Call the {nameof( GetWorkflowType )} function to determine the available actions." );
+                .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the available actions." );
         }
 
         var activityType = actionType.ActivityType;

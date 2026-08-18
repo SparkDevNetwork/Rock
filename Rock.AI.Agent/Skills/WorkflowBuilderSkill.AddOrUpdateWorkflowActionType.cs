@@ -83,7 +83,7 @@ internal sealed partial class WorkflowBuilderSkill
         SetOrClear<string> criteriaValue = null,
         // One of the four slots stored unchanged, so a value holds a guid rather than
         // an idKey. Named in the skill description; keep the two in step.
-        [Description( "The action's configuration, as setting keys and values. Each value is written into Rock's stored configuration unchanged. When a setting's field type references another record, see fieldType from GetWorkflowActionTypeAvailableAttributes, the value must be that record's guid: take it from the guid GetWorkflowType returns on every node, or from the target entity's own Get tool, never from its idKey. Put the value in value; textValue is output only and is ignored on write." )]
+        [Description( "The action's configuration, as setting keys and values. Each value is written into Rock's stored configuration unchanged. When a setting's field type references another record, see fieldType from GetWorkflowActionTypeAvailableAttributes, the value must be that record's guid: take it from the guid GetWorkflowTypeConfiguration returns on every node, or from the target entity's own Get tool, never from its idKey. Put the value in value; textValue is output only and is ignored on write." )]
         List<AttributeValueResult> settings = null,
         [Description( "The key of the action this one should follow." )]
         string insertAfterActionTypeIdKey = null,
@@ -113,7 +113,7 @@ internal sealed partial class WorkflowBuilderSkill
             if ( actionType == null )
             {
                 return helper.ErrorResult
-                    .WithInstructions( $"Call the {nameof( GetWorkflowType )} function to determine the available actions." );
+                    .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the available actions." );
             }
 
             // The parent comes from the action on an update, so a caller holding only
@@ -128,13 +128,13 @@ internal sealed partial class WorkflowBuilderSkill
                 if ( suppliedActivityType == null )
                 {
                     return helper.ErrorResult
-                        .WithInstructions( $"Call the {nameof( GetWorkflowType )} function to determine the available activities." );
+                        .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the available activities." );
                 }
 
                 if ( actionType.ActivityTypeId != suppliedActivityType.Id )
                 {
                     return Error( $"The action '{actionType.Name}' does not belong to the activity '{suppliedActivityType.Name}'." )
-                        .WithInstructions( $"Call the {nameof( GetWorkflowType )} function to determine which actions belong to this activity." );
+                        .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine which actions belong to this activity." );
                 }
             }
         }
@@ -143,7 +143,7 @@ internal sealed partial class WorkflowBuilderSkill
             if ( activityTypeIdKey.IsNullOrWhiteSpace() )
             {
                 return Error( $"{nameof( activityTypeIdKey )} is required when adding an action." )
-                    .WithInstructions( $"Call the {nameof( GetWorkflowType )} function to determine the available activities, or supply {nameof( actionTypeIdKey )} to update an existing action instead." );
+                    .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the available activities, or supply {nameof( actionTypeIdKey )} to update an existing action instead." );
             }
 
             activityType = helper.GetRequiredEntity<WorkflowActivityType>( activityTypeIdKey );
@@ -151,7 +151,7 @@ internal sealed partial class WorkflowBuilderSkill
             if ( activityType == null )
             {
                 return helper.ErrorResult
-                    .WithInstructions( $"Call the {nameof( GetWorkflowType )} function to determine the available activities." );
+                    .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the available activities." );
             }
 
             if ( name.IsNullOrWhiteSpace() )
@@ -229,7 +229,7 @@ internal sealed partial class WorkflowBuilderSkill
             if ( criteriaAttribute == null )
             {
                 return helper.ErrorResult
-                    .WithInstructions( $"Call the {nameof( GetWorkflowType )} function to determine the workflow's attributes." );
+                    .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the workflow's attributes." );
             }
 
             // Scoped deliberately. Without this any attribute in Rock would be
@@ -241,7 +241,7 @@ internal sealed partial class WorkflowBuilderSkill
             if ( !isReferenceable )
             {
                 return Error( $"The attribute '{criteriaAttribute.Name}' is not an attribute of this workflow type or of the activity this action belongs to." )
-                    .WithInstructions( $"Call the {nameof( GetWorkflowType )} function to determine which attributes this action can test." );
+                    .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine which attributes this action can test." );
             }
 
             // Stored as a unique identifier rather than an id, because an action's

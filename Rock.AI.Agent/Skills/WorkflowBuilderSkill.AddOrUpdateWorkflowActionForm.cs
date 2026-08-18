@@ -55,7 +55,7 @@ internal sealed partial class WorkflowBuilderSkill
     /// </remarks>
     [Description( "Adds the form shown by a user entry action, or updates an existing one, including its fields and buttons." )]
     [AgentUsage( "Supplying fields replaces every existing field. Supplying buttons replaces every existing button. Omit either to leave it untouched, which is how you change only the header. Use a field's preHtml and postHtml for layout and styling; there are no sections and no column widths." )]
-    [AgentToolPrerequisite( "Call GetWorkflowType to determine the actionTypeIdKey and the workflow attributes the form's fields can edit." )]
+    [AgentToolPrerequisite( "Call GetWorkflowTypeConfiguration to determine the actionTypeIdKey and the workflow attributes the form's fields can edit." )]
     [AgentGuardrail( "Supplying fields deletes every field currently on the form. Read the form first and send back the complete set, not just the parts being changed. Refuses on a workflow type whose isFormBuilder is true; only the form is off limits there, the rest of that workflow can still be edited." )]
     [AgentToolGuid( "AEF3A669-4696-42E0-AC97-FF109CC72FE2" )]
     public AgentToolResult AddOrUpdateWorkflowActionForm(
@@ -84,7 +84,7 @@ internal sealed partial class WorkflowBuilderSkill
         if ( actionTypeIdKey.IsNullOrWhiteSpace() )
         {
             return Error( $"{nameof( actionTypeIdKey )} is required." )
-                .WithInstructions( $"Call the {nameof( GetWorkflowType )} function to determine the user entry action this form belongs to." );
+                .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the user entry action this form belongs to." );
         }
 
         var actionType = helper.GetRequiredEntity<WorkflowActionType>( actionTypeIdKey );
@@ -92,7 +92,7 @@ internal sealed partial class WorkflowBuilderSkill
         if ( actionType == null )
         {
             return helper.ErrorResult
-                .WithInstructions( $"Call the {nameof( GetWorkflowType )} function to determine the available actions." );
+                .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the available actions." );
         }
 
         var workflowTypeId = actionType.ActivityType?.WorkflowTypeId;

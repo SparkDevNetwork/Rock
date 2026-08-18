@@ -90,7 +90,7 @@ internal sealed partial class WorkflowBuilderSkill
             if ( workflowType == null )
             {
                 return helper.ErrorResult
-                    .WithInstructions( $"Call the {nameof( ListWorkflowTypes )} function to determine the available workflow types." );
+                    .WithInstructions( $"Call the {nameof( WorkflowSkill.LookupWorkflowTypes )} function to determine the available workflow types." );
             }
         }
         else

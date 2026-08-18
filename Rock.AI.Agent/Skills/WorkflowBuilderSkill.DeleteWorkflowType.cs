@@ -58,7 +58,7 @@ internal sealed partial class WorkflowBuilderSkill
     [Description( "Removes a whole workflow type: its attributes and their stored values, its activities and actions, their forms, and every workflow instance with its entire execution history." )]
     [AgentUsage( "Call this once without isConfirmed to get the counts. Offer deactivation, which is fully reversible, then report the counts and ask the person to confirm. Only call again with isConfirmed set to true after they agree in their own words." )]
     [AgentGuardrail( "This permanently deletes the workflow type, every activity and action in it, every workflow attribute and its stored values, and every workflow instance and its entire execution history. It cannot be undone. Deactivating the workflow type is the non-destructive alternative. Confirm with the person before proceeding." )]
-    [AgentToolPrerequisite( "Call ListWorkflowTypes to determine the workflowTypeIdKey." )]
+    [AgentToolPrerequisite( "Call LookupWorkflowTypes to determine the workflowTypeIdKey." )]
     [AgentToolGuid( "6C0A6C0E-9E24-4C1B-B60E-2B2A2A5FA7F1" )]
     public AgentToolResult DeleteWorkflowType(
         string workflowTypeIdKey,
@@ -75,7 +75,7 @@ internal sealed partial class WorkflowBuilderSkill
         if ( workflowType == null )
         {
             return helper.ErrorResult
-                .WithInstructions( $"Call the {nameof( ListWorkflowTypes )} function to determine the available workflow types." );
+                .WithInstructions( $"Call the {nameof( WorkflowSkill.LookupWorkflowTypes )} function to determine the available workflow types." );
         }
 
         // ADMINISTRATE rather than EDIT, matching what Rock's own workflow type

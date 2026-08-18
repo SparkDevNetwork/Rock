@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,7 +16,6 @@
 
 using System.Collections.Generic;
 
-using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 
 namespace Rock.AI.Agent.Classes.Skills.WorkflowBuilderSkill;
@@ -28,10 +27,6 @@ namespace Rock.AI.Agent.Classes.Skills.WorkflowBuilderSkill;
 internal class WorkflowAttributeResult : EntityResultBase
 {
     /// <summary>
-    /// The key used to reference the attribute from Lava and from action
-    /// settings.
-    /// </summary>
-    /// <summary>
     /// How far this variable reaches: the whole workflow, or one activity.
     /// </summary>
     /// <remarks>
@@ -41,6 +36,10 @@ internal class WorkflowAttributeResult : EntityResultBase
     /// </remarks>
     public WorkflowAttributeScope Scope { get; set; }
 
+    /// <summary>
+    /// The key used to reference the attribute from Lava and from action
+    /// settings.
+    /// </summary>
     public string Key { get; set; }
 
     /// <summary>

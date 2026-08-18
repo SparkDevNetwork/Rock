@@ -43,7 +43,7 @@ internal sealed partial class WorkflowBuilderSkill
     [Description( "Adds an activity to a workflow type, or updates an existing one. An activity is a group of actions that run together." )]
     [AgentUsage( "name is required when adding. Supplying activityTypeIdKey updates that activity and leaves any parameter you omit unchanged. Supply at most one of insertAfterActivityTypeIdKey or insertBeforeActivityTypeIdKey." )]
     [AgentUsage( "At least one activity in a workflow needs isActivatedWithWorkflow set to true, or the workflow starts and does nothing." )]
-    [AgentToolPrerequisite( "Call ListWorkflowTypes to determine the workflowTypeIdKey, then GetWorkflowType to see the existing activities before positioning a new one." )]
+    [AgentToolPrerequisite( "Call LookupWorkflowTypes to determine the workflowTypeIdKey, then GetWorkflowTypeConfiguration to see the existing activities before positioning a new one." )]
     [AgentToolGuid( "85129AA8-724E-4BAB-BBAB-7DF9253F11DE" )]
     public AgentToolResult AddOrUpdateWorkflowActivityType(
         [Description( "Required when editing an existing activity." )]
@@ -83,7 +83,7 @@ internal sealed partial class WorkflowBuilderSkill
             if ( activityType == null )
             {
                 return helper.ErrorResult
-                    .WithInstructions( $"Call the {nameof( GetWorkflowType )} function to determine the available activities." );
+                    .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the available activities." );
             }
 
             // The parent comes from the activity on an update, so a caller holding
@@ -99,13 +99,13 @@ internal sealed partial class WorkflowBuilderSkill
                 if ( suppliedWorkflowType == null )
                 {
                     return helper.ErrorResult
-                        .WithInstructions( $"Call the {nameof( ListWorkflowTypes )} function to determine the available workflow types." );
+                        .WithInstructions( $"Call the {nameof( WorkflowSkill.LookupWorkflowTypes )} function to determine the available workflow types." );
                 }
 
                 if ( activityType.WorkflowTypeId != suppliedWorkflowType.Id )
                 {
                     return Error( $"The activity '{activityType.Name}' does not belong to the workflow type '{suppliedWorkflowType.Name}'." )
-                        .WithInstructions( $"Call the {nameof( GetWorkflowType )} function to determine which activities belong to this workflow type." );
+                        .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine which activities belong to this workflow type." );
                 }
             }
         }
@@ -114,7 +114,7 @@ internal sealed partial class WorkflowBuilderSkill
             if ( workflowTypeIdKey.IsNullOrWhiteSpace() )
             {
                 return Error( $"{nameof( workflowTypeIdKey )} is required when adding an activity." )
-                    .WithInstructions( $"Call the {nameof( ListWorkflowTypes )} function to determine the available workflow types, or supply {nameof( activityTypeIdKey )} to update an existing activity instead." );
+                    .WithInstructions( $"Call the {nameof( WorkflowSkill.LookupWorkflowTypes )} function to determine the available workflow types, or supply {nameof( activityTypeIdKey )} to update an existing activity instead." );
             }
 
             workflowType = helper.GetRequiredEntity<Rock.Model.WorkflowType>( workflowTypeIdKey );
@@ -122,7 +122,7 @@ internal sealed partial class WorkflowBuilderSkill
             if ( workflowType == null )
             {
                 return helper.ErrorResult
-                    .WithInstructions( $"Call the {nameof( ListWorkflowTypes )} function to determine the available workflow types." );
+                    .WithInstructions( $"Call the {nameof( WorkflowSkill.LookupWorkflowTypes )} function to determine the available workflow types." );
             }
 
             if ( name.IsNullOrWhiteSpace() )

@@ -48,7 +48,7 @@ internal sealed partial class WorkflowBuilderSkill
     [Description( "Removes a workflow attribute, every form field that edits it, and every value stored for it across all existing workflow instances." )]
     [AgentUsage( "Report the stored value count to the person before calling this. Actions that reference the attribute inside a setting value cannot be detected and will keep a reference that no longer resolves." )]
     [AgentGuardrail( "This permanently deletes the workflow attribute and every stored value for it across all existing workflow instances. Confirm the attribute with the person before proceeding." )]
-    [AgentToolPrerequisite( "Call GetWorkflowType to determine the attributeIdKey." )]
+    [AgentToolPrerequisite( "Call GetWorkflowTypeConfiguration to determine the attributeIdKey." )]
     [AgentToolGuid( "A8A8FA55-A8D5-4791-991C-691E5D8279C3" )]
     public AgentToolResult DeleteWorkflowAttribute( string attributeIdKey )
     {
@@ -63,7 +63,7 @@ internal sealed partial class WorkflowBuilderSkill
         if ( attribute == null )
         {
             return helper.ErrorResult
-                .WithInstructions( $"Call the {nameof( GetWorkflowType )} function to determine the workflow's attributes." );
+                .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the workflow's attributes." );
         }
 
         // Proves this is a workflow or activity attribute before removing it, so the
