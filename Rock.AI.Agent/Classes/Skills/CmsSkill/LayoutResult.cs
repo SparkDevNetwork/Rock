@@ -19,8 +19,8 @@ using Rock.AI.Agent.Classes.Entity;
 namespace Rock.AI.Agent.Classes.Skills.CmsSkill;
 
 /// <summary>
-/// Lightweight result model for a page layout, nested inside
-/// <see cref="PageResult"/> and <see cref="BlockResult"/>.
+/// Result model for a page layout, returned by the ListLayouts tool and
+/// nested inside <see cref="PageResult"/> and <see cref="BlockResult"/>.
 /// </summary>
 internal class LayoutResult : EntityResultBase
 {
@@ -33,4 +33,9 @@ internal class LayoutResult : EntityResultBase
     /// The name of the site the layout belongs to.
     /// </summary>
     public string SiteName { get; set; }
+
+    /// <summary>
+    /// What the layout looks like or is for. ListLayouts only.
+    /// </summary>
+    public string Description { get; set; }
 }

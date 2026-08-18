@@ -343,6 +343,12 @@ Give the user the page URL and tell them to check it as a normal member, not as 
 
             AddOrUpdateCodeAISkillTool(
                 CmsSkillGuid,
+                "List Layouts",
+                "Lists the layouts pages can render with, optionally filtered to one site. Returns the layoutIdKey that AddOrUpdatePage accepts.",
+                "82C06D71-800E-4064-B72D-98F1B2A684D7" );
+
+            AddOrUpdateCodeAISkillTool(
+                CmsSkillGuid,
                 "List Block Types",
                 "Lists the block types available to place on a page, filtered by a partial name or category. Returns the blockTypeIdKey that AddOrUpdateBlock needs.",
                 "F9A5AC4D-E40C-4FAF-895D-8C0E10A37EEC" );
@@ -587,6 +593,7 @@ END" );
                 "C668CAE0-CFA7-4AFF-87FF-5025860170BA", // Search Pages
                 "E2CFF69F-C4B2-47F5-B322-4041D841F37C", // Get Page
                 "4A64B0B9-0DF9-42CF-BF5C-8FE24EFA4633", // Add Or Update Page
+                "82C06D71-800E-4064-B72D-98F1B2A684D7", // List Layouts
                 "F9A5AC4D-E40C-4FAF-895D-8C0E10A37EEC", // List Block Types
                 "98F33433-0712-4248-9C71-EAE4D9F9CA38", // List Blocks
                 "05C9C108-4516-46B7-85FB-5C8FE6212CCF", // Add Or Update Block

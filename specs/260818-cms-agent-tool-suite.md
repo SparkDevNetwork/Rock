@@ -41,7 +41,7 @@ The gap also blocks the vibe-coding flow itself. Once a page has more than a cou
 
 ### Organization
 
-- All twelve tools (the ten assigned plus the two deletes) MUST live on `CmsSkill` (`Rock.AI.Agent/Skills/CmsSkill.cs`, skill guid `613D7110-6453-4BAB-892B-064222F8397C`).
+- All thirteen tools (the ten assigned, the two deletes, and `ListLayouts`) MUST live on `CmsSkill` (`Rock.AI.Agent/Skills/CmsSkill.cs`, skill guid `613D7110-6453-4BAB-892B-064222F8397C`).
 - `PageSkill` MUST be retired. Its three tools move to `CmsSkill` and keep their existing `[AgentToolGuid]` values so the `AISkillTool` rows and any agent `EnabledTools` lists survive the move.
 - Each tool MUST be its own partial-class file named `CmsSkill.{ToolName}.cs`, matching the convention already used across `Rock.AI.Agent/Skills/`.
 - Result models MUST live under `Rock.AI.Agent/Classes/Skills/CmsSkill/`.
@@ -89,8 +89,11 @@ public AgentToolResult AddOrUpdatePage(
 
 - Add requires `parentPageIdKey` and `internalName`. Update requires `pageIdKey` and rejects `parentPageIdKey` (moving a page in the tree is out of scope).
 - `layoutIdKey` is optional on add and defaults to the parent's layout, preserving today's behavior.
+- When `layoutIdKey` is provided, the layout MUST belong to the same site as the parent page (on add) or the page's current layout (on update). A page's site is derived through its layout, so an unvalidated cross-site layout silently moves the page to another site; Rock's admin UI scopes its layout picker to the page's site for the same reason.
 - Route validation, `PageRouteWasUpdatedMessage.Publish()`, sibling ordering, `Authorization.CopyAuthorization`, and the parent `PageCache.Remove` all carry over from `AddPage` unchanged.
 - On update, changing the route MUST replace the existing route rather than adding a second one.
+
+**`ListLayouts( string siteIdKey = null, string cursor = null )`** (new). Lists the layouts pages can render with, optionally filtered to one site. This is the tool that feeds `layoutIdKey` into `AddOrUpdatePage`; without it the model could only copy a layout `IdKey` from a page that already uses it, and could not resolve "use the Full Width layout" by name.
 
 **`ListBlockTypes( string name = null, string category = null, string cursor = null )`** (new). Partial-name and category filters over `BlockTypeCache`. Returns `IdKey`, `Name`, `Category`, `Description`, and whether the block type is Obsidian or WebForms, so the model can prefer Obsidian blocks. This is the tool that feeds `blockTypeIdKey` into `AddOrUpdateBlock`.
 
@@ -145,10 +148,10 @@ public AgentToolResult AddOrUpdateBlock(
 - Seeding MUST be done by editing the existing `Rock.Migrations/Migrations/202608172102127_AddCustomComponent.cs` in place. No new EF migration is created. That migration exists only on `feature-kh-vibe-coding` (commit `5707f55bbe`) and has never shipped, so it is still the right place for the vibe-coding seed data. Adding a second migration to correct an unreleased one leaves both in the permanent history for no benefit.
 - The edits to that migration are:
   - Replace the `PageSkillGuid` and `PageSkillEntityTypeGuid` constants with `CmsSkillGuid` (`613D7110-6453-4BAB-892B-064222F8397C`) and `CmsSkillEntityTypeGuid` (`7A63570D-6FC3-4573-BDF2-89CFF605D5AB`).
-  - Rename `AddPageSkill_Up()` to `AddCmsSkill_Up()` and seed all twelve tools instead of three.
+  - Rename `AddPageSkill_Up()` to `AddCmsSkill_Up()` and seed all thirteen tools instead of three.
   - Point `RegisterCustomComponentEntityTypes_Up()` at `Rock.AI.Agent.Skills.CmsSkill` in place of `Rock.AI.Agent.Skills.PageSkill`.
   - Replace the skill-level `AddAdministratorOnlySecurityForAISkill()` call with `AddSecurityAuthForAISkillTool()` allow/deny pairs, one per mutating tool (`AddOrUpdatePage`, `AddOrUpdateBlock`, `DeletePage`, `DeleteBlock`). The two existing auth guids can be reused for the first pair; the other pairs need new guids added to `RemoveSkillsAndTools_Down()`.
-  - Update the tool guid list in `AttachSkillsToAgent_Up()` from three entries to twelve.
+  - Update the tool guid list in `AttachSkillsToAgent_Up()` from three entries to thirteen.
   - Update the `skillGuids` list in `RemoveSkillsAndTools_Down()` so `Down()` removes the CMS skill rather than the page skill.
 - Seeded names and descriptions MUST match the strings the attributes derive, per the engineering note in `Rock.Migrations/Migrations/202608172102127_AddCustomComponent.cs:280`. Startup re-registration overwrites drift, so mismatched seed text silently disappears on first restart and is worse than useless.
 - Because the migration has already run on any dev instance that pulled the branch, editing it in place does nothing on those instances. Developers MUST roll the migration back (or restore a pre-migration database) and re-run it to pick up the new seed data.
@@ -189,6 +192,7 @@ Rock.AI.Agent/
     CmsSkill.ListPagesForSite.cs     (new)
     CmsSkill.SearchPages.cs          (moved from PageSkill, edited)
     CmsSkill.GetPage.cs              (new)
+    CmsSkill.ListLayouts.cs          (new)
     CmsSkill.AddOrUpdatePage.cs      (moved from PageSkill.AddPage.cs, edited)
     CmsSkill.ListBlockTypes.cs       (new)
     CmsSkill.ListBlocks.cs           (new)
@@ -262,6 +266,13 @@ Added after phases 1 through 5 shipped, so it is written as its own phase.
 21. Tool guids, reserved here: `DeletePage` `BB6C42F3-C448-49D5-BB85-4072960178FC`, `DeleteBlock` `B30F66EA-0D9E-4854-BB82-A96BE7719D00`. Auth guids: DeletePage allow/deny `7483110B-1155-45FC-A7F7-B77959DB3982` / `A4118437-30B1-48C7-88D9-89E34E0C4B46`, DeleteBlock allow/deny `AFBD660A-35C7-48BB-8A82-15099CF595AE` / `557884F7-F369-4FE5-9F18-6C41FBE13900`.
 22. Verify: create a page and block through the tools, delete the block, then the page; both succeed and the page tree is clean. Then confirm `DeletePage` refuses a page with child pages, and that both tools refuse targets the acting person cannot ADMINISTRATE.
 
+### Phase 7: layouts
+
+23. `CmsSkill.ListLayouts.cs` per the behavior above. Read tool, no extra security. Tool guid, reserved here: `82C06D71-800E-4064-B72D-98F1B2A684D7`.
+24. Add the same-site layout validation to `AddOrUpdatePage`, erroring with a pointer at `ListLayouts` filtered by the page's site.
+25. Migration: one more seeded tool row and `EnabledTools` entry (thirteen total).
+26. Verify: `ListLayouts` with a `siteIdKey` returns only that site's layouts; `AddOrUpdatePage` with a layout from another site errors rather than moving the page.
+
 ## Open Questions
 
 - `SearchPages` does not fit the documented verb taxonomy (`Lookup`, `List`, `Get`, `AddOrUpdate`). The planning task itself flags it with "???". With `ListPages`, `ListPagesForSite`, and a name filter available, `SearchPages` may be redundant. `PersonSkill` does ship `SearchPerson` and `SearchPersonPartial`, so the verb has precedent. Retaining it is the assumption here; dropping it in favor of a name filter on `ListPagesForSite` is the alternative.
@@ -294,7 +305,7 @@ Rejected. `LookupSites` already distinguishes internal from external audiences a
 ## Out of Scope
 
 - `GetSiteAvailableAttributes`, `GetPageAvailableAttributes`, `GetBlockAvailableAttributes` (see Open Questions).
-- `AddOrUpdateSite`, `ListLayouts`, `ListShortcodes`, personalization segment and request filter tools. These are on the parent planning task but are not assigned to Kyle.
+- `AddOrUpdateSite`, `ListShortcodes`, personalization segment and request filter tools. These are on the parent planning task but are not assigned to Kyle. (`ListLayouts` was originally in this list; it was pulled in because `AddOrUpdatePage` takes a `layoutIdKey` the model otherwise had no way to discover.)
 - Moving a page to a new parent.
 - Any change to `CustomComponentSkill` or `LavaApplicationSkill` beyond the usage annotation update in step 13.
 

@@ -234,7 +234,7 @@ Two revisions since this layer first shipped:
 
 | Skill | Skill GUID / EntityType GUID | Tools | Gate |
 |---|---|---|---|
-| Cms | `613D7110-6453-4BAB-892B-064222F8397C` / `7A63570D-6FC3-4573-BDF2-89CFF605D5AB` | Twelve site, page, and block tools, including `DeletePage` and `DeleteBlock`; see [specs/260818-cms-agent-tool-suite.md](260818-cms-agent-tool-suite.md) | ADMINISTRATE of the target (mutating tools also administrator-only at the tool level) |
+| Cms | `613D7110-6453-4BAB-892B-064222F8397C` / `7A63570D-6FC3-4573-BDF2-89CFF605D5AB` | Thirteen site, layout, page, and block tools, including `DeletePage` and `DeleteBlock`; see [specs/260818-cms-agent-tool-suite.md](260818-cms-agent-tool-suite.md) | ADMINISTRATE of the target (mutating tools also administrator-only at the tool level) |
 | LavaApplication | `8660E7C0-1101-4058-BAF5-20B860600027` / `CABB72CF-DD09-48CD-9BB9-4819488BC7CA` | `AddOrUpdateLavaApplication`, `GetLavaApplication`, `AddOrUpdateLavaEndpoint`, `GetLavaEndpoint`, `DeleteLavaEndpoint`, `DeleteLavaApplication` | ADMINISTRATE of the application |
 | CustomComponent | `647770A9-F3D7-4924-B046-5C9C43959ECB` / `4C833FA4-A7EF-4D49-9549-B24CBB629A73` | `GetRockVersion`, `GetCustomComponent`, `AddOrUpdateCustomComponent` | EDIT of the block (`GetRockVersion` ungated) |
 

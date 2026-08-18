@@ -101,6 +101,22 @@ internal sealed partial class CmsSkill
 
         var layout = helper.GetOptionalEntity<Model.Layout>( layoutIdKey, checkSecurity: false );
 
+        // A page's site is derived through its layout, so a layout from
+        // another site would silently move the page to that site. The admin
+        // UI scopes its layout picker to the page's site for the same reason.
+        if ( layout != null )
+        {
+            var currentLayoutId = isAdd ? parent?.LayoutId : page?.LayoutId;
+            var currentSiteId = currentLayoutId.HasValue
+                ? LayoutCache.Get( currentLayoutId.Value, rockContext )?.SiteId
+                : null;
+
+            if ( currentSiteId.HasValue && layout.SiteId != currentSiteId.Value )
+            {
+                helper.AddError( $"The '{layout.Name}' layout belongs to a different site than the page. Pick a layout from the page's own site; call {nameof( ListLayouts )} with the site's IdKey to see the choices." );
+            }
+        }
+
         // Validate the route before the page is saved, so a bad route is a
         // clean error rather than a page saved without the URL the caller
         // asked for.
