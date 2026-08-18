@@ -16,21 +16,22 @@
 
 using Rock.AI.Agent.Classes.Entity;
 
-namespace Rock.AI.Agent.Classes.Skills.PageSkill;
+namespace Rock.AI.Agent.Classes.Skills.LavaApplicationSkill;
 
 /// <summary>
-/// Result model for a page added by the AddPage tool.
+/// Trimmed reference to a Lava application, used as the history content for
+/// results whose full payload (the endpoint list) is too large to keep in
+/// session context.
 /// </summary>
-internal class AddPageResult : EntityResultBase
+internal class LavaApplicationReferenceResult : EntityResultBase
 {
     /// <summary>
-    /// The internal name of the new page.
+    /// The name of the application.
     /// </summary>
     public string Name { get; set; }
 
     /// <summary>
-    /// The relative URL the new page is reachable at. This is the friendly
-    /// route when one was created, otherwise the /page/id fallback.
+    /// The slug the application is addressed by.
     /// </summary>
-    public string Url { get; set; }
+    public string ApplicationSlug { get; set; }
 }

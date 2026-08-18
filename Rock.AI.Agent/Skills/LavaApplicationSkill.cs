@@ -69,10 +69,10 @@ namespace Rock.AI.Agent.Skills;
 /// an authored Custom Component has a data source shaped for exactly what it
 /// renders.
 /// </summary>
-[Description( "Create and edit Lava endpoints that return JSON data to authored components." )]
+[Description( "Create and edit Lava applications and endpoints that return JSON data to authored components." )]
 [AgentPurpose( "Create the data endpoints an authored Custom Component calls, by writing Lava rather than searching for an existing REST endpoint." )]
-[AgentUsage( "When an authored Custom Component needs data, create a Lava endpoint with AddOrUpdateLavaEndpoint. Do not search for an existing Rock REST endpoint first; write the Lava that returns exactly the JSON the component renders." )]
-[AgentUsage( "Group all of a block's endpoints under one application, named after the dashboard. Pass the same applicationSlug each time and the application is reused." )]
+[AgentUsage( "When an authored Custom Component needs data, create a Lava application with AddOrUpdateLavaApplication, then create its endpoints with AddOrUpdateLavaEndpoint. Do not search for an existing Rock REST endpoint first; write the Lava that returns exactly the JSON the component renders." )]
+[AgentUsage( "Create one application per block, named after the dashboard, and group all of the block's endpoints under it by passing the same applicationSlug each time. Use GetLavaApplication to see what an application already contains before adding to it." )]
 [AgentUsage( "In the component, import { useLavaApp } from '@Obsidian/Utility/lavaApp', bind the application once with useLavaApp('application-slug'), then call lavaApp.invoke('endpoint-slug'). Do not hand-roll the URL, the CSRF header, or the JSON parsing." )]
 [AgentUsage( "invoke returns the same shape as invokeBlockAction. Check isSuccess before reading data, and render an empty state rather than an error when the call succeeds but legitimately has no rows." )]
 [AgentUsage( "Values sent by invoke arrive in the template under the 'Body' merge field for Post endpoints and 'QueryString' for Get, never as bare merge fields. Read '{{ Body.teamId }}', not '{{ teamId }}'. A bare parameter renders as empty with no error, so a query built from one silently returns wrong data." )]
@@ -520,6 +520,41 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
     private string GetEndpointUrl( string applicationSlug, string endpointSlug )
     {
         return $"{AgentRequestContext.RootUrlPath}/api/v2/lava-app/{RouteVersion}/{applicationSlug}/{endpointSlug}";
+    }
+
+    /// <summary>
+    /// Builds the application result shared by GetLavaApplication and
+    /// AddOrUpdateLavaApplication: the application itself plus a summarized
+    /// list of its endpoints, templates excluded.
+    /// </summary>
+    /// <param name="application">The application to describe.</param>
+    /// <returns>The detail result.</returns>
+    private LavaApplicationDetailResult CreateApplicationDetailResult( LavaApplication application )
+    {
+        var endpoints = application.LavaEndpoints
+            .OrderBy( e => e.Slug )
+            .ThenBy( e => e.HttpMethod )
+            .Select( e => new LavaEndpointSummaryResult
+            {
+                EndpointSlug = e.Slug,
+                Method = e.HttpMethod.ToString(),
+                Name = e.Name,
+                SecurityMode = e.SecurityMode.ToString(),
+                IsActive = e.IsActive,
+                Url = GetEndpointUrl( application.Slug, e.Slug )
+            } )
+            .ToList();
+
+        return new LavaApplicationDetailResult
+        {
+            Id = application.Id,
+            Guid = application.Guid,
+            Name = application.Name,
+            ApplicationSlug = application.Slug,
+            Description = application.Description,
+            IsActive = application.IsActive,
+            Endpoints = endpoints
+        };
     }
 
     /// <summary>

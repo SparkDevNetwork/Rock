@@ -51,9 +51,9 @@ namespace Rock.Migrations
         private const string VibeAgentSlug = "vibe-coding";
 
         /// <summary>
-        /// The AISkill Guid of the Page skill.
+        /// The AISkill Guid of the Cms skill.
         /// </summary>
-        private const string PageSkillGuid = "EE27BE5A-1276-433F-A636-1BEF3550EC1E";
+        private const string CmsSkillGuid = "613D7110-6453-4BAB-892B-064222F8397C";
 
         /// <summary>
         /// The AISkill Guid of the Lava Application skill.
@@ -66,9 +66,9 @@ namespace Rock.Migrations
         private const string CustomComponentSkillGuid = "647770A9-F3D7-4924-B046-5C9C43959ECB";
 
         /// <summary>
-        /// The EntityType Guid of <c>Rock.AI.Agent.Skills.PageSkill</c>.
+        /// The EntityType Guid of <c>Rock.AI.Agent.Skills.CmsSkill</c>.
         /// </summary>
-        private const string PageSkillEntityTypeGuid = "1D5FD674-F94D-4166-BC10-F2EA86412C4B";
+        private const string CmsSkillEntityTypeGuid = "7A63570D-6FC3-4573-BDF2-89CFF605D5AB";
 
         /// <summary>
         /// The EntityType Guid of <c>Rock.AI.Agent.Skills.LavaApplicationSkill</c>.
@@ -104,7 +104,7 @@ A successful save means the source compiled. It does not mean the component work
 
 # Build Order
 
-GetRockVersion, then SearchPages and AddPage (pass a kebab-case route), then AddBlock with the ""Custom Component"" block type. Keep the block id it returns. Look up your controls in the knowledge base, create the Lava endpoints under one application slug, then AddOrUpdateCustomComponent.
+GetRockVersion, then SearchPages and AddOrUpdatePage (pass a kebab-case route), then AddOrUpdateBlock with the ""Custom Component"" block type resolved through ListBlockTypes. Keep the block id it returns. Look up your controls in the knowledge base, create the Lava application with AddOrUpdateLavaApplication and its endpoints under that one slug, then AddOrUpdateCustomComponent.
 
 # Authoring Contract
 
@@ -157,7 +157,7 @@ Give the user the page URL and tell them to check it as a normal member, not as 
 
             RegisterCustomComponentEntityTypes_Up();
             AddCustomComponentBlockType_Up();
-            AddPageSkill_Up();
+            AddCmsSkill_Up();
             AddLavaApplicationSkill_Up();
             AddCustomComponentSkill_Up();
             AddVibeAgent_Up();
@@ -227,8 +227,8 @@ Give the user the page URL and tell them to check it as a normal member, not as 
                 BlockEntityTypeGuid );
 
             RockMigrationHelper.AddOrUpdateEntityType(
-                "Rock.AI.Agent.Skills.PageSkill",
-                PageSkillEntityTypeGuid,
+                "Rock.AI.Agent.Skills.CmsSkill",
+                CmsSkillEntityTypeGuid,
                 false,
                 false );
 
@@ -286,38 +286,113 @@ Give the user the page URL and tell them to check it as a normal member, not as 
         */
 
         /// <summary>
-        /// Registers the Page skill, its security, and its tools.
+        /// Registers the Cms skill, its tools, and administrator-only security
+        /// on the two mutating tools. The skill itself carries no security
+        /// rules: its read tools (LookupSites and friends) are usable by any
+        /// audience, so the lockdown is per tool rather than per skill.
         /// </summary>
-        private void AddPageSkill_Up()
+        private void AddCmsSkill_Up()
         {
             AddOrUpdateCodeAISkill(
-                "Page Skill",
-                "Create CMS pages and add blocks to them.",
-                PageSkillEntityTypeGuid,
-                PageSkillGuid );
-
-            AddAdministratorOnlySecurityForAISkill(
-                PageSkillGuid,
-                "4A95B31D-A629-4F76-B68A-6D74B7C578EE",
-                "C2D66CDA-336D-4D1E-BF29-B2960A25AAB6" );
+                "Cms Skill",
+                "Explore and manage sites, pages, and blocks in Rock's CMS.",
+                CmsSkillEntityTypeGuid,
+                CmsSkillGuid );
 
             AddOrUpdateCodeAISkillTool(
-                PageSkillGuid,
+                CmsSkillGuid,
+                "Lookup Sites",
+                "Retrieves all configured websites in Rock.",
+                "6234BB68-99B8-4B7C-884D-0D760B1F081C" );
+
+            AddOrUpdateCodeAISkillTool(
+                CmsSkillGuid,
+                "Get Site",
+                "Gets the details of a single site, including its theme, default page, and login page.",
+                "16C84C00-62DC-4AE9-9A85-F7CDE7D20FC8" );
+
+            AddOrUpdateCodeAISkillTool(
+                CmsSkillGuid,
+                "List Pages",
+                "Lists one level of the page tree: the root pages of every site, or the immediate children of a parent page. Call repeatedly with a returned page's IdKey to walk deeper.",
+                "1F7C1F00-F481-468A-860F-314D1B43A477" );
+
+            AddOrUpdateCodeAISkillTool(
+                CmsSkillGuid,
+                "List Pages For Site",
+                "Lists every page belonging to one site as a flat list. Each page includes its parent page so the hierarchy can be reconstructed.",
+                "8968B4EF-3A1D-472A-9BC6-17A80B8F824F" );
+
+            AddOrUpdateCodeAISkillTool(
+                CmsSkillGuid,
                 "Search Pages",
                 "Searches CMS pages by a partial name match so a page can be resolved and confirmed with the user before adding a child page under it or adding a block to it.",
                 "C668CAE0-CFA7-4AFF-87FF-5025860170BA" );
 
             AddOrUpdateCodeAISkillTool(
-                PageSkillGuid,
-                "Add Page",
-                "Adds a new child page under a parent page, inheriting the parent's layout and therefore its site and zones. Pass a kebab-case route so the page gets a friendly URL.",
+                CmsSkillGuid,
+                "Get Page",
+                "Gets the details of a single page, including its routes, layout, and the blocks already placed on it.",
+                "E2CFF69F-C4B2-47F5-B322-4041D841F37C" );
+
+            AddOrUpdateCodeAISkillTool(
+                CmsSkillGuid,
+                "Add Or Update Page",
+                "Adds a new child page under a parent page or updates an existing page. New pages inherit the parent's layout unless a layout is specified. Pass a kebab-case route so the page gets a friendly URL.",
                 "4A64B0B9-0DF9-42CF-BF5C-8FE24EFA4633" );
 
             AddOrUpdateCodeAISkillTool(
-                PageSkillGuid,
-                "Add Block",
-                "Adds a block to a page in the specified zone. Returns the new block's IdKey, which is the block id the CustomComponent skill's AddOrUpdateCustomComponent tool needs.",
+                CmsSkillGuid,
+                "List Block Types",
+                "Lists the block types available to place on a page, filtered by a partial name or category. Returns the blockTypeIdKey that AddOrUpdateBlock needs.",
+                "F9A5AC4D-E40C-4FAF-895D-8C0E10A37EEC" );
+
+            AddOrUpdateCodeAISkillTool(
+                CmsSkillGuid,
+                "List Blocks",
+                "Lists the blocks placed on a page, a layout, or a site. At least one filter is required.",
+                "98F33433-0712-4248-9C71-EAE4D9F9CA38" );
+
+            AddOrUpdateCodeAISkillTool(
+                CmsSkillGuid,
+                "Add Or Update Block",
+                "Adds a block to a page, layout, or site, or updates an existing block. Returns the block's IdKey, which is the block id the CustomComponent skill's AddOrUpdateCustomComponent tool needs.",
                 "05C9C108-4516-46B7-85FB-5C8FE6212CCF" );
+
+            AddOrUpdateCodeAISkillTool(
+                CmsSkillGuid,
+                "Delete Page",
+                "Deletes a page along with its blocks and routes. Pages with child pages are refused; delete or move the children first.",
+                "BB6C42F3-C448-49D5-BB85-4072960178FC" );
+
+            AddOrUpdateCodeAISkillTool(
+                CmsSkillGuid,
+                "Delete Block",
+                "Deletes a block from its page, layout, or site, along with any custom component content stored against it.",
+                "B30F66EA-0D9E-4854-BB82-A96BE7719D00" );
+
+            // Only the mutating tools are locked to administrators. The read
+            // tools stay visible and rely on per-person VIEW filtering inside
+            // each tool.
+            AddAdministratorOnlySecurityForAISkillTool(
+                "4A64B0B9-0DF9-42CF-BF5C-8FE24EFA4633", // Add Or Update Page
+                "4A95B31D-A629-4F76-B68A-6D74B7C578EE",
+                "C2D66CDA-336D-4D1E-BF29-B2960A25AAB6" );
+
+            AddAdministratorOnlySecurityForAISkillTool(
+                "05C9C108-4516-46B7-85FB-5C8FE6212CCF", // Add Or Update Block
+                "3FC10ED8-FF27-4B28-9C11-19B4F1993A80",
+                "70241AD4-ED95-4757-A19D-ECD27FDB430A" );
+
+            AddAdministratorOnlySecurityForAISkillTool(
+                "BB6C42F3-C448-49D5-BB85-4072960178FC", // Delete Page
+                "7483110B-1155-45FC-A7F7-B77959DB3982",
+                "A4118437-30B1-48C7-88D9-89E34E0C4B46" );
+
+            AddAdministratorOnlySecurityForAISkillTool(
+                "B30F66EA-0D9E-4854-BB82-A96BE7719D00", // Delete Block
+                "AFBD660A-35C7-48BB-8A82-15099CF595AE",
+                "557884F7-F369-4FE5-9F18-6C41FBE13900" );
         }
 
         /// <summary>
@@ -327,7 +402,7 @@ Give the user the page URL and tell them to check it as a normal member, not as 
         {
             AddOrUpdateCodeAISkill(
                 "Lava Application Skill",
-                "Create and edit Lava endpoints that return JSON data to authored components.",
+                "Create and edit Lava applications and endpoints that return JSON data to authored components.",
                 LavaApplicationEntityTypeGuid,
                 LavaApplicationSkillGuid );
 
@@ -338,8 +413,20 @@ Give the user the page URL and tell them to check it as a normal member, not as 
 
             AddOrUpdateCodeAISkillTool(
                 LavaApplicationSkillGuid,
+                "Add Or Update Lava Application",
+                "Adds a new Lava application or updates one this skill created. Applications group a block's endpoints and must exist before endpoints can be added.",
+                "A82B55AE-16A6-4321-95E1-59762C7CED14" );
+
+            AddOrUpdateCodeAISkillTool(
+                LavaApplicationSkillGuid,
+                "Get Lava Application",
+                "Reads a Lava application and lists its endpoints so existing work can be discovered before adding more.",
+                "9A078C57-946C-4D5F-8EBE-5009E6390EF2" );
+
+            AddOrUpdateCodeAISkillTool(
+                LavaApplicationSkillGuid,
                 "Add Or Update Lava Endpoint",
-                "Adds a new Lava endpoint or updates an existing one, keyed by slug and HTTP method, creating the containing Lava application first if it does not exist yet. Returns the result of test-executing the template.",
+                "Adds a new Lava endpoint or updates an existing one, keyed by slug and HTTP method, within an existing Lava application. Returns the result of test-executing the template.",
                 "9066DD4A-2158-4B1C-87E3-4058CBEE1E5C" );
 
             AddOrUpdateCodeAISkillTool(
@@ -402,7 +489,7 @@ Give the user the page URL and tell them to check it as a normal member, not as 
         /// </summary>
         private void RemoveSkillsAndTools_Down()
         {
-            var skillGuids = $"'{PageSkillGuid}', '{LavaApplicationSkillGuid}', '{CustomComponentSkillGuid}'";
+            var skillGuids = $"'{CmsSkillGuid}', '{LavaApplicationSkillGuid}', '{CustomComponentSkillGuid}'";
 
             Sql( $@"
 DECLARE @AgentId INT = (SELECT [Id] FROM [AIAgent] WHERE [Guid] = '{VibeAgentGuid}')
@@ -413,6 +500,12 @@ WHERE [AIAgentId] = @AgentId
 
             RockMigrationHelper.DeleteSecurityAuth( "4A95B31D-A629-4F76-B68A-6D74B7C578EE" );
             RockMigrationHelper.DeleteSecurityAuth( "C2D66CDA-336D-4D1E-BF29-B2960A25AAB6" );
+            RockMigrationHelper.DeleteSecurityAuth( "3FC10ED8-FF27-4B28-9C11-19B4F1993A80" );
+            RockMigrationHelper.DeleteSecurityAuth( "70241AD4-ED95-4757-A19D-ECD27FDB430A" );
+            RockMigrationHelper.DeleteSecurityAuth( "7483110B-1155-45FC-A7F7-B77959DB3982" );
+            RockMigrationHelper.DeleteSecurityAuth( "A4118437-30B1-48C7-88D9-89E34E0C4B46" );
+            RockMigrationHelper.DeleteSecurityAuth( "AFBD660A-35C7-48BB-8A82-15099CF595AE" );
+            RockMigrationHelper.DeleteSecurityAuth( "557884F7-F369-4FE5-9F18-6C41FBE13900" );
             RockMigrationHelper.DeleteSecurityAuth( "36E7ED26-E777-4E22-A133-A3148C85A9B8" );
             RockMigrationHelper.DeleteSecurityAuth( "53F703F0-E8CA-42A3-9516-8E9935760C07" );
             RockMigrationHelper.DeleteSecurityAuth( "4E646B3E-E483-48C0-9B5B-5D01FEFC2406" );
@@ -485,15 +578,26 @@ END" );
         /// </summary>
         private void AttachSkillsToAgent_Up()
         {
-            AttachSkillToAgent( PageSkillGuid, new[]
+            AttachSkillToAgent( CmsSkillGuid, new[]
             {
+                "6234BB68-99B8-4B7C-884D-0D760B1F081C", // Lookup Sites
+                "16C84C00-62DC-4AE9-9A85-F7CDE7D20FC8", // Get Site
+                "1F7C1F00-F481-468A-860F-314D1B43A477", // List Pages
+                "8968B4EF-3A1D-472A-9BC6-17A80B8F824F", // List Pages For Site
                 "C668CAE0-CFA7-4AFF-87FF-5025860170BA", // Search Pages
-                "4A64B0B9-0DF9-42CF-BF5C-8FE24EFA4633", // Add Page
-                "05C9C108-4516-46B7-85FB-5C8FE6212CCF"  // Add Block
+                "E2CFF69F-C4B2-47F5-B322-4041D841F37C", // Get Page
+                "4A64B0B9-0DF9-42CF-BF5C-8FE24EFA4633", // Add Or Update Page
+                "F9A5AC4D-E40C-4FAF-895D-8C0E10A37EEC", // List Block Types
+                "98F33433-0712-4248-9C71-EAE4D9F9CA38", // List Blocks
+                "05C9C108-4516-46B7-85FB-5C8FE6212CCF", // Add Or Update Block
+                "BB6C42F3-C448-49D5-BB85-4072960178FC", // Delete Page
+                "B30F66EA-0D9E-4854-BB82-A96BE7719D00"  // Delete Block
             } );
 
             AttachSkillToAgent( LavaApplicationSkillGuid, new[]
             {
+                "A82B55AE-16A6-4321-95E1-59762C7CED14", // Add Or Update Lava Application
+                "9A078C57-946C-4D5F-8EBE-5009E6390EF2", // Get Lava Application
                 "9066DD4A-2158-4B1C-87E3-4058CBEE1E5C", // Add Or Update Lava Endpoint
                 "11AE1557-1EF3-4E03-9E8E-FCF99F72FCD9", // Get Lava Endpoint
                 "B3E1A5C7-6F24-4D1B-9C88-05D7F42A61E9", // Delete Lava Endpoint
@@ -567,6 +671,37 @@ END" );
 
             RockMigrationHelper.AddSecurityAuthForAISkill(
                 skillGuid,
+                1,
+                Authorization.VIEW,
+                false,
+                null,
+                ( int ) Model.SpecialRole.AllUsers,
+                denyAuthGuid );
+        }
+
+        /// <summary>
+        /// Grants VIEW on a single tool to Rock administrators and denies it to
+        /// everyone else. Used for mutating tools on a skill whose read tools
+        /// stay open, so the lockdown lands on the tool rather than the skill.
+        /// A tool a person is not authorized to VIEW is simply never offered to
+        /// the model.
+        /// </summary>
+        /// <param name="toolGuid">The Guid of the AISkillTool to secure.</param>
+        /// <param name="allowAuthGuid">The Guid of the administrator allow rule.</param>
+        /// <param name="denyAuthGuid">The Guid of the all-users deny rule.</param>
+        private void AddAdministratorOnlySecurityForAISkillTool( string toolGuid, string allowAuthGuid, string denyAuthGuid )
+        {
+            RockMigrationHelper.AddSecurityAuthForAISkillTool(
+                toolGuid,
+                0,
+                Authorization.VIEW,
+                true,
+                SystemGuid.Group.GROUP_ADMINISTRATORS,
+                ( int ) Model.SpecialRole.None,
+                allowAuthGuid );
+
+            RockMigrationHelper.AddSecurityAuthForAISkillTool(
+                toolGuid,
                 1,
                 Authorization.VIEW,
                 false,

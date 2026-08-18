@@ -16,22 +16,21 @@
 
 using Rock.AI.Agent.Classes.Entity;
 
-namespace Rock.AI.Agent.Classes.Skills.PageSkill;
+namespace Rock.AI.Agent.Classes.Skills.CmsSkill;
 
 /// <summary>
-/// Result model for a block added to a page by the AddBlock tool. The IdKey
-/// is the block id to pass to the CustomComponent skill's
-/// AddOrUpdateCustomComponent tool.
+/// Lightweight result model for a page layout, nested inside
+/// <see cref="PageResult"/> and <see cref="BlockResult"/>.
 /// </summary>
-internal class AddBlockResult : EntityResultBase
+internal class LayoutResult : EntityResultBase
 {
     /// <summary>
-    /// The zone on the page the block was placed in.
+    /// The name of the layout.
     /// </summary>
-    public string Zone { get; set; }
+    public string Name { get; set; }
 
     /// <summary>
-    /// The relative URL of the page the block was added to.
+    /// The name of the site the layout belongs to.
     /// </summary>
-    public string PageUrl { get; set; }
+    public string SiteName { get; set; }
 }

@@ -81,8 +81,8 @@ flowchart TD
     User["User in a chat"] --> Client["MCP client (Claude)"]
     Client -->|"coding guide, controls catalog"| KB["Rock knowledge base MCP<br/>(outside Rock)"]
     Client -->|"/api/v2/mcp/vibe-coding"| Agent["Vibe Agent<br/>AIAgent, AgentType.Mcp"]
-    Agent --> PB["Page<br/>SearchPages, AddPage, AddBlock"]
-    Agent --> LD["LavaApplication<br/>AddOrUpdate/Get/Delete endpoint"]
+    Agent --> PB["Cms<br/>site, page and block tools"]
+    Agent --> LD["LavaApplication<br/>AddOrUpdate/Get application,<br/>AddOrUpdate/Get/Delete endpoint"]
     Agent --> VC["CustomComponent<br/>GetRockVersion, GetCustomComponent, AddOrUpdateCustomComponent"]
     PB --> Page["Page + Custom Component block"]
     LD --> Lava["Lava application + JSON endpoints"]
@@ -212,7 +212,12 @@ Three small changes to existing Lava application infrastructure:
 
 ### Layer 6: Agent skills
 
-Three `AgentSkillComponent` subclasses. They compose by handing off identifiers: Page returns a block `IdKey`, CustomComponent writes against it, LavaApplication feeds it.
+Three `AgentSkillComponent` subclasses. They compose by handing off identifiers: Cms returns a block `IdKey`, CustomComponent writes against it, LavaApplication feeds it.
+
+Two revisions since this layer first shipped:
+
+- **The Page skill was folded into the Cms skill and expanded to ten tools** (`AddPage` became `AddOrUpdatePage`, `AddBlock` became `AddOrUpdateBlock`, both keeping their tool GUIDs). That work is specified in [specs/260818-cms-agent-tool-suite.md](260818-cms-agent-tool-suite.md) and is built; this spec keeps only the summary rows below.
+- **The Lava application becomes a first-class entity** with its own upsert and read tools, and the endpoint tool stops creating applications implicitly. Designed below; built.
 
 **They are built to the established skill shape, not the exploration's.** The exploration placed them loose in the `Rock` project as monolithic files (`LavaApplicationSkill.cs` reached 1,243 lines) and diverged from the 21 shipped skills on nearly every convention. The rebuild follows the shipped pattern exactly:
 
@@ -229,16 +234,18 @@ Three `AgentSkillComponent` subclasses. They compose by handing off identifiers:
 
 | Skill | Skill GUID / EntityType GUID | Tools | Gate |
 |---|---|---|---|
-| Page | `EE27BE5A-1276-433F-A636-1BEF3550EC1E` / `1D5FD674-F94D-4166-BC10-F2EA86412C4B` | `SearchPages`, `AddPage`, `AddBlock` | ADMINISTRATE of the page |
-| LavaApplication | `8660E7C0-1101-4058-BAF5-20B860600027` / `CABB72CF-DD09-48CD-9BB9-4819488BC7CA` | `AddOrUpdateLavaEndpoint`, `GetLavaEndpoint`, `DeleteLavaEndpoint`, `DeleteLavaApplication` | ADMINISTRATE of the application |
+| Cms | `613D7110-6453-4BAB-892B-064222F8397C` / `7A63570D-6FC3-4573-BDF2-89CFF605D5AB` | Twelve site, page, and block tools, including `DeletePage` and `DeleteBlock`; see [specs/260818-cms-agent-tool-suite.md](260818-cms-agent-tool-suite.md) | ADMINISTRATE of the target (mutating tools also administrator-only at the tool level) |
+| LavaApplication | `8660E7C0-1101-4058-BAF5-20B860600027` / `CABB72CF-DD09-48CD-9BB9-4819488BC7CA` | `AddOrUpdateLavaApplication`, `GetLavaApplication`, `AddOrUpdateLavaEndpoint`, `GetLavaEndpoint`, `DeleteLavaEndpoint`, `DeleteLavaApplication` | ADMINISTRATE of the application |
 | CustomComponent | `647770A9-F3D7-4924-B046-5C9C43959ECB` / `4C833FA4-A7EF-4D49-9549-B24CBB629A73` | `GetRockVersion`, `GetCustomComponent`, `AddOrUpdateCustomComponent` | EDIT of the block (`GetRockVersion` ungated) |
 
-Tool GUIDs:
+Tool GUIDs (the Cms skill's ten are listed in its own spec; the three inherited from the original Page skill are repeated here because they predate the split):
 
 ```
 SearchPages                 C668CAE0-CFA7-4AFF-87FF-5025860170BA
-AddPage                     4A64B0B9-0DF9-42CF-BF5C-8FE24EFA4633
-AddBlock                    05C9C108-4516-46B7-85FB-5C8FE6212CCF
+AddOrUpdatePage             4A64B0B9-0DF9-42CF-BF5C-8FE24EFA4633   (was AddPage)
+AddOrUpdateBlock            05C9C108-4516-46B7-85FB-5C8FE6212CCF   (was AddBlock)
+AddOrUpdateLavaApplication  A82B55AE-16A6-4321-95E1-59762C7CED14
+GetLavaApplication          9A078C57-946C-4D5F-8EBE-5009E6390EF2
 AddOrUpdateLavaEndpoint     9066DD4A-2158-4B1C-87E3-4058CBEE1E5C
 GetLavaEndpoint             11AE1557-1EF3-4E03-9E8E-FCF99F72FCD9
 DeleteLavaEndpoint          B3E1A5C7-6F24-4D1B-9C88-05D7F42A61E9
@@ -250,10 +257,22 @@ AddOrUpdateCustomComponent  26FFEE94-4868-4DEC-BE40-68FBE30DAEB8
 
 The exploration also had an `UpdateLavaEndpoint` tool (`2F92D13B-A2A2-455C-8324-57A181D505C2`). It was merged into `AddOrUpdateLavaEndpoint` to match the established `AddOrUpdateX` plus `DeleteX` write shape, and its GUID is retired: it must not be reused.
 
+#### Revision: the Lava application becomes first-class
+
+As first shipped, `AddOrUpdateLavaEndpoint` created the containing application implicitly when the slug did not exist, taking an `applicationName` that was "only used when the application has to be created." That was the outlier in the codebase: the established parent-child shape (`AddOrUpdateContentChannelItem`) requires the parent to exist and errors otherwise. The implicit create produced three concrete defects: a state-dependent parameter the model cannot reason about, a misspelled `applicationSlug` silently creating a phantom application instead of erroring, and application-creation logic (provenance stamping, the `"{}"` configuration rigging seed) buried where nobody would look for it.
+
+The revision makes the application a first-class entity with a single create path:
+
+- **`AddOrUpdateLavaApplication`** is the only way the skill creates an application. Standard upsert shape: optional `lavaApplicationIdKey` (present means update, absent means add), plus `slug`, `name`, `description`, and `isActive`. Creation stamps the provenance `ForeignKey` and seeds the configuration rigging with `"{}"`; both move here from the endpoint tool. Updates only accept applications this skill created, keyed by `IdKey` so a slug typo cannot silently create a second application.
+- **`GetLavaApplication`** takes the application slug and returns the application's name, slug, active state, and a summarized list of its endpoints (slug, method, name, security mode, URL). This closes the discoverability gap: before it, an agent resuming work on a dashboard had no way to learn which endpoints existed without already knowing each slug and method.
+- **`AddOrUpdateLavaEndpoint` drops `applicationName` and requires the application to exist**, erroring with a recovery hint to call `AddOrUpdateLavaApplication` first. Endpoints keep identifying their application by slug: it is the application's natural key and the component's `useLavaApp` call uses it too.
+
+The cost is one extra tool call when starting a new dashboard. The seeding (layer 7) gains two tool rows and two entries in the agent's `EnabledTools` list, and the Vibe Agent's Build Order instruction text changes to `AddOrUpdateLavaApplication` then `AddOrUpdateLavaEndpoint`. Because the seeding migration is still unreleased, it is edited in place, matching how the Cms skill consolidation was handled.
+
 Behavior worth specifying:
 
-- **`AddPage` takes a kebab-case route** and publishes `PageRouteWasUpdatedMessage`, or the friendly URL 404s until restart.
-- **`AddOrUpdateLavaEndpoint` groups by application.** One application per block, named after the dashboard, so security is rigged once.
+- **`AddOrUpdatePage` takes a kebab-case route** and publishes `PageRouteWasUpdatedMessage`, or the friendly URL 404s until restart.
+- **One application per block**, named after the dashboard, so security is rigged once. Endpoints group under it by `applicationSlug`.
 - **Update and delete only accept records this skill created**, identified by `ForeignKey = "AI-Agent:LavaDataSkill"` (an opaque provenance token that predates the skill's rename and must never change). The provenance stamp is the entire safety model: the skill can modify and unwind its own work and nothing else, so an upsert can never overwrite a hand-authored endpoint that happens to share a slug.
 - **`Sql` is refused** without a `sqlJustification` argument, because raw SQL bypasses Rock's per-row entity security while the entity commands respect it.
 - **`AddOrUpdateCustomComponent` stores nothing on compile failure** and returns the compiler's error text.
@@ -266,7 +285,7 @@ Seeding lives in the **same EF migration as layer 1**, after the table and block
 2. Upsert `AISkill` and `AISkillTool` rows. Seeded names and descriptions MUST match what startup re-registration derives (the class name split-cased, the class and method `[Description]` values), or startup silently rewrites them; see layer 6.
 3. Insert the `AIAgent` row **only when absent**: name "Vibe Agent", `AgentType.Mcp`, `AudienceType.Internal`, `AdditionalSettingsJson` of `{ "McpAgentSettings": { "Slug": "vibe-coding", "IsExcludingSystemSkills": false } }`, GUID `DC44435A-8900-4AB4-9EB3-1756FCC1B355`.
 4. Insert `AIAgentSkill` link rows, each carrying an **explicit `EnabledTools` allowlist** in `{ "AgentSkillSettings": { "EnabledTools": [...] } }`.
-5. Grant VIEW to Rock Administrators, deny to all users.
+5. Grant VIEW to Rock Administrators, deny to all users. For the LavaApplication and CustomComponent skills this lands at the skill level; for the Cms skill it lands on its two mutating tools only, because its read tools serve any audience.
 
 **Attaching a skill does not enable its tools.** Step 4 is the one most likely to be missed, and the symptom is an agent that connects and sees nothing.
 
@@ -358,7 +377,7 @@ The instructions are NOT a copy of the MCP agent's. Same persona, guardrails, bu
 
 1. Apply the amended migration on a clean database. Both agents exist; the chat agent's skills, tools, and security match the MCP agent's row for row.
 2. With no AI provider configured, open the chat agent as an administrator. It responds with its not-configured message rather than erroring.
-3. Configure an AI provider. As an administrator, ask it to build a small dashboard. It walks the build order (`SearchPages`, `AddPage`, `AddBlock`, `AddOrUpdateLavaEndpoint`, `AddOrUpdateCustomComponent`), and the resulting page renders for a normal member.
+3. Configure an AI provider. As an administrator, ask it to build a small dashboard. It walks the build order (`SearchPages`, `AddOrUpdatePage`, `AddOrUpdateBlock`, `AddOrUpdateLavaApplication`, `AddOrUpdateLavaEndpoint`, `AddOrUpdateCustomComponent`), and the resulting page renders for a normal member.
 4. Ask it to use a Rock control it has no source for. It declines to guess the props and says why, or (if the SHOULD tool is built) looks the control up with `GetControlDefinition` and uses real props.
 5. As a person who is not a Rock administrator, confirm the agent is not visible in chat at all (the deny auth), and separately, as a person who can see the agent but lacks EDIT on a target block, confirm `AddOrUpdateCustomComponent` refuses with the authorization message. The transport changed; the gates must not have.
 6. Restart the application. Skill and tool names and descriptions are unchanged (the startup re-registration parity check, re-proven with two agents attached).
@@ -413,7 +432,7 @@ Things that fail silently, in rough order of how much time they cost.
 3. View the same page as a non-administrator. The component renders and `Source` is not present in the payload.
 4. Restart the application. Skill and tool names and descriptions are unchanged, proving the seeded values match what startup re-registration derives.
 5. Through an MCP client connected to `/api/v2/mcp/vibe-coding`: `GetRockVersion` returns this instance's version.
-6. `AddPage` with a route, then `AddBlock` with the Custom Component block type. The friendly URL resolves.
+6. `AddOrUpdatePage` with a route, then `AddOrUpdateBlock` with the Custom Component block type resolved through `ListBlockTypes`. The friendly URL resolves.
 7. `AddOrUpdateCustomComponent` with a valid component. It compiles server side and stores. The page renders it.
 8. `AddOrUpdateCustomComponent` with a syntax error. Nothing is stored, and the compiler's error text comes back.
 9. `AddOrUpdateCustomComponent` with pathologically deep nesting (several hundred levels). It returns an error and **the site keeps serving**. This is the regression test for the whole compile design.
@@ -422,7 +441,7 @@ Things that fail silently, in rough order of how much time they cost.
 
 ## Open Questions
 
-1. **Lava application security.** The tools create applications with no rules and do not set any. Likely fix: take the intended audience as a parameter and write the matching `EXECUTE_VIEW` `Auth` rows at creation. Until then the tools must not claim security is handled.
+1. **Lava application security.** The tools create applications with no rules and do not set any. Likely fix: take the intended audience as a parameter and write the matching `EXECUTE_VIEW` `Auth` rows at creation. `AddOrUpdateLavaApplication` (the layer 6 revision) is the natural home for that parameter once it exists. Until then the tools must not claim security is handled.
 2. **No compile circuit breaker.** If a compile ever does kill something, nothing records it, so a retrying client repeats it.
 3. **No version history.** Repeated saves overwrite `Source`; audit columns record who, never what.
 

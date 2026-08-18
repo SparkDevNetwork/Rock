@@ -39,13 +39,6 @@ internal sealed partial class LavaApplicationSkill
     /// </summary>
     private static readonly string JsonContentType = "application/json";
 
-    /// <summary>
-    /// The configuration rigging a new application starts with. This has to
-    /// be valid JSON rather than left unset, because the value is parsed on
-    /// every request to the application and the parser rejects null.
-    /// </summary>
-    private static readonly string EmptyConfigurationRigging = "{}";
-
     #endregion
 
     #region Tool(s)
@@ -61,19 +54,24 @@ internal sealed partial class LavaApplicationSkill
         The endpoint's natural key (application slug, endpoint slug, HTTP
         method) decides the path: missing means add, present means update.
 
-        The two paths keep the gates they had as separate tools. Adding goes
-        through the create-an-application authorization fallback and stamps
-        the provenance ForeignKey; updating requires that stamp, so the skill
-        can rework its own endpoints but never silently overwrite one a
-        person authored, and re-gates Sql only when this call changes the
-        enabled commands.
+        The two paths keep the gates they had as separate tools. Adding
+        stamps the provenance ForeignKey; updating requires that stamp, so
+        the skill can rework its own endpoints but never silently overwrite
+        one a person authored, and re-gates Sql only when this call changes
+        the enabled commands.
+
+        The containing application must already exist. This tool used to
+        create it implicitly, which turned a misspelled applicationSlug into
+        a silently created phantom application; now the miss is a loud error
+        pointing at AddOrUpdateLavaApplication, matching the parent-child
+        shape AddOrUpdateContentChannelItem established.
 
         Reason: Match the established AddOrUpdateX + DeleteX write shape
         without loosening either path's safety model.
     */
-    [Description( "Adds a new Lava endpoint or updates an existing one, keyed by slug and HTTP method, creating the containing Lava application first if it does not exist yet. Returns the result of test-executing the template." )]
+    [Description( "Adds a new Lava endpoint or updates an existing one, keyed by slug and HTTP method, within an existing Lava application. Returns the result of test-executing the template." )]
     [AgentToolPreamble( "Saving the Lava endpoint." )]
-    [AgentUsage( "applicationSlug groups a block's endpoints; reuse the same slug for every endpoint of one dashboard. applicationName is only read when the application does not exist yet." )]
+    [AgentUsage( "applicationSlug groups a block's endpoints; reuse the same slug for every endpoint of one dashboard. The application must already exist; create it with AddOrUpdateLavaApplication first." )]
     [AgentUsage( "Endpoints are keyed by slug AND method, so the same slug with Get and with Post are two different endpoints. When the endpoint already exists it is updated in place; otherwise it is created." )]
     [AgentUsage( "An update replaces the whole template, so send the complete Lava rather than a fragment. Read it with GetLavaEndpoint first if you did not write the current version. Omitted definition fields are left unchanged on an update, so a template-only edit cannot quietly change the endpoint's security mode or commands." )]
     [AgentUsage( "Only endpoints created by this skill can be updated; anything a person authored has to be changed through the Lava Applications admin pages." )]
@@ -91,9 +89,6 @@ internal sealed partial class LavaApplicationSkill
 
         [Description( "The definition of the endpoint: its Lava template, HTTP method, security mode, enabled Lava commands and content type. On an update, omitted fields are left unchanged." )]
         LavaEndpointDefinition definition,
-
-        [Description( "The name of the application. Only used when the application has to be created." )]
-        string applicationName = null,
 
         [Description( "Why raw SQL is unavoidable. Required only when definition.enabledLavaCommands includes 'Sql', and only after the user explicitly approved it." )]
         string sqlJustification = null,
@@ -177,74 +172,23 @@ internal sealed partial class LavaApplicationSkill
         var applicationService = new LavaApplicationService( rockContext );
         var application = applicationService.Queryable().FirstOrDefault( a => a.Slug == applicationSlug );
 
-        if ( !IsAuthorizedToAuthor( application ) )
+        if ( application == null )
         {
-            helper.AddError( application == null
-                ? "You are not authorized to create Lava applications."
-                : $"You are not authorized to administrate the '{applicationSlug}' Lava application." );
+            helper.AddError( $"No Lava application exists with the slug '{applicationSlug}'. Create it first with {nameof( AddOrUpdateLavaApplication )}." );
 
             return helper.ErrorResult;
         }
 
-        var isNewApplication = application == null;
-
-        if ( isNewApplication )
+        if ( !IsAuthorizedToAuthor( application ) )
         {
-            if ( applicationName.IsNullOrWhiteSpace() )
-            {
-                helper.AddError( $"No Lava application exists with the slug '{applicationSlug}'. Provide an applicationName so it can be created." );
+            helper.AddError( $"You are not authorized to administrate the '{applicationSlug}' Lava application." );
 
-                return helper.ErrorResult;
-            }
-
-            /*
-                8/17/2026 - CLAUDE
-
-                ConfigurationRiggingJson has to be set to valid JSON here.
-                Every request to a Lava application reads
-                LavaApplicationCache.ConfigurationRigging, which parses this
-                string, and the parser throws on null rather than returning
-                null. Leaving the property unset therefore makes every
-                endpoint on the application fail with a 500 that names
-                Newtonsoft rather than anything recognizable, and it fails
-                for the person who just created it.
-
-                The Lava Application Detail block always assigns the property
-                from its bag, so an application created through the admin
-                pages never reaches this state. Only a caller that news up
-                the entity directly can.
-
-                Reason: An unset rigging value breaks every endpoint on the
-                application.
-            */
-            application = new LavaApplication
-            {
-                Name = applicationName,
-                Slug = applicationSlug,
-                IsActive = true,
-                ConfigurationRiggingJson = EmptyConfigurationRigging,
-                ForeignKey = AgentProvenanceKey
-            };
-
-            applicationService.Add( application );
-
-            if ( !application.IsValid )
-            {
-                foreach ( var validationResult in application.ValidationResults )
-                {
-                    helper.AddError( validationResult.ErrorMessage );
-                }
-
-                return helper.ErrorResult;
-            }
+            return helper.ErrorResult;
         }
 
         // The endpoint's natural key decides the path: missing means add,
-        // present means update. A brand new application cannot have the
-        // endpoint yet, so its lookup is skipped.
-        var endpoint = isNewApplication
-            ? null
-            : application.LavaEndpoints.FirstOrDefault( e => e.Slug == endpointSlug && e.HttpMethod == method );
+        // present means update.
+        var endpoint = application.LavaEndpoints.FirstOrDefault( e => e.Slug == endpointSlug && e.HttpMethod == method );
 
         var isNewEndpoint = endpoint == null;
 
@@ -347,9 +291,10 @@ internal sealed partial class LavaApplicationSkill
         /*
             8/17/2026 - CLAUDE
 
-            Two different authorization gaps can leave a brand new endpoint
-            uncallable, and they need different advice, so report whichever
-            one applies.
+            A brand new endpoint in EndpointExecute mode is uncallable in a
+            way that needs its own advice. (The equivalent gap for a brand
+            new application is reported by AddOrUpdateLavaApplication, which
+            is where applications are created now.)
 
             In EndpointExecute mode the endpoint answers for itself. A new
             endpoint has no authorization rules, and while its parent
@@ -372,10 +317,6 @@ internal sealed partial class LavaApplicationSkill
         if ( isNewEndpoint && endpoint.SecurityMode == LavaEndpointSecurityMode.EndpointExecute )
         {
             result.WithInstructions( $"The '{endpoint.Slug}' endpoint uses the EndpointExecute security mode and has no authorization rules, so nobody can call it yet, administrators included. Either grant Execute on the endpoint through the Lava Applications admin pages, or call AddOrUpdateLavaEndpoint again with the definition's securityMode set to ApplicationView so it defers to the application. Tell the user this before they test the page, because the call will fail with a 401 rather than an error they can read." );
-        }
-        else if ( isNewApplication )
-        {
-            result.WithInstructions( $"The '{application.Slug}' Lava application was created with no security rules and deliberately does not inherit any. Only the Rock Administrators and Lava Application Developers roles can execute its endpoints until someone grants rights on the application through the Lava Applications admin pages. Tell the user this before they test the page as a normal visitor." );
         }
 
         // Only when this call is what asked for SQL: on a new endpoint that

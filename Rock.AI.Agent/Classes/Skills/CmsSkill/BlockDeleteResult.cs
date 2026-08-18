@@ -14,27 +14,20 @@
 // limitations under the License.
 // </copyright>
 
-using Rock.AI.Agent.Classes.Entity;
-
-namespace Rock.AI.Agent.Classes.Skills.PageSkill;
+namespace Rock.AI.Agent.Classes.Skills.CmsSkill;
 
 /// <summary>
-/// Lightweight result model for a page matched by the SearchPages tool.
+/// Result model for a block removed by the DeleteBlock tool.
 /// </summary>
-internal class PageResult : EntityResultBase
+internal class BlockDeleteResult
 {
     /// <summary>
-    /// The internal (administrative) name of the page.
+    /// Whether the block was deleted.
     /// </summary>
-    public string InternalName { get; set; }
+    public bool IsDeleted { get; set; }
 
     /// <summary>
-    /// The title shown to visitors when the page renders.
+    /// The administrative name the deleted block had.
     /// </summary>
-    public string PageTitle { get; set; }
-
-    /// <summary>
-    /// The name of the site the page belongs to, when known.
-    /// </summary>
-    public string SiteName { get; set; }
+    public string Name { get; set; }
 }
