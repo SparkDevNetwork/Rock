@@ -324,6 +324,24 @@ const count = 1;
             Assert.IsTrue( result.IsBundleMissing );
         }
 
+        [TestMethod]
+        public void CompileSource_WithUnreachableRenderEndpoint_ReportsEndpointUnreachable()
+        {
+            // A dead endpoint must surface as its own configuration-problem result:
+            // not a compile error the caller should fix source for, and above all
+            // not IsBrowserMissing, whose "still provisioning, retry shortly" advice
+            // is a lie when the endpoint is simply down.
+            var unreachableEndpoint = "ws://localhost:1/does-not-exist";
+            var compiler = new CustomComponentCompiler( GetBundlePathOrInconclusive(), browserWSEndpoint: unreachableEndpoint );
+
+            var result = compiler.CompileSource( ValidSource );
+
+            Assert.IsFalse( result.IsSuccess );
+            Assert.IsTrue( result.IsRenderEndpointUnreachable );
+            Assert.IsFalse( result.IsBrowserMissing, "An unreachable endpoint must not masquerade as a browser still being provisioned." );
+            Assert.IsTrue( result.Errors.Any( e => e.Contains( unreachableEndpoint ) ), "The error must name the endpoint that could not be reached." );
+        }
+
         #endregion CompileSource
 
         #region Support

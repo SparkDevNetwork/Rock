@@ -97,6 +97,15 @@ internal sealed partial class CustomComponentSkill
             return helper.ErrorResult;
         }
 
+        if ( compileResult.IsRenderEndpointUnreachable )
+        {
+            // A configuration problem, not a wait and not the caller's source.
+            // The compiler's message names the endpoint and the setting.
+            helper.AddError( string.Join( "\n", compileResult.Errors ) + " Nothing was saved. This is not a problem with your source; tell the user their configured external render endpoint appears to be down." );
+
+            return helper.ErrorResult;
+        }
+
         if ( compileResult.IsBundleMissing )
         {
             // Nothing is stored, deliberately. An earlier design saved source-only

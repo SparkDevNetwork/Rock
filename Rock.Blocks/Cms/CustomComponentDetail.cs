@@ -123,6 +123,13 @@ namespace Rock.Blocks.Cms
                 return ActionBadRequest( "The compile engine is still being provisioned on this server. Try again in a few minutes." );
             }
 
+            if ( compileResult.IsRenderEndpointUnreachable )
+            {
+                // A configuration problem, not a wait: the compiler's own message
+                // names the endpoint and the setting, so pass it through untouched.
+                return ActionBadRequest( string.Join( "\n", compileResult.Errors ) );
+            }
+
             if ( compileResult.IsBundleMissing )
             {
                 return ActionBadRequest( "The compiler bundle is not deployed on this server, so the component cannot be compiled." );

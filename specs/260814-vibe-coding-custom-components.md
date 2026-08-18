@@ -113,7 +113,7 @@ Each layer is independently testable and depends only on those above it.
 
 Layers 1 and 7 ship in the same EF migration. Scaffold the migration once, late, after the skills exist, so the table creation and the seeding land as one file with one timestamp that sorts after every existing migration.
 
-**Layers 1 through 7 are built.** Layers 8 and 9 are not. Until layer 8 lands, the feature is unusable on any instance configured with an external PDF render endpoint ([Layer 8](#layer-8-external-render-endpoint-not-built)). Layer 9 adds a second, non-MCP agent so the loop runs from Rock's own chat UI ([Layer 9](#layer-9-internal-chat-agent-not-built)).
+**Layers 1 through 8 are built.** Layer 9 is not; it adds a second, non-MCP agent so the loop runs from Rock's own chat UI ([Layer 9](#layer-9-internal-chat-agent-not-built)).
 
 ### Layer 1: Data model
 
@@ -194,7 +194,7 @@ The page gets the same `System.register` shim the Jint host used, for the same r
 
 **Chromium is never installed from this path.** `PdfGenerator` downloads on demand, which is right for a background job. Here an agent is waiting on a tool call and the download is ~100 MB. A missing browser returns a distinct `IsBrowserMissing` result, and the skill tells the caller to retry once provisioning completes.
 
-Provisioning normally needs no help: `Global.asax.cs` calls `PdfGenerator.EnsureChromeEngineInstalled()` on a background thread during `Application_Start`, so a fresh instance downloads Chromium on its own. `IsBrowserMissing` is therefore a transient race, hit only by compiling within a minute or two of a cold start. **Except on an instance with an external render endpoint, where it is permanent and the retry advice is a lie.** That is [Layer 8](#layer-8-external-render-endpoint-not-built).
+Provisioning normally needs no help: `Global.asax.cs` calls `PdfGenerator.EnsureChromeEngineInstalled()` on a background thread during `Application_Start`, so a fresh instance downloads Chromium on its own. `IsBrowserMissing` is therefore a transient race, hit only by compiling within a minute or two of a cold start. On an instance with an external render endpoint no local browser exists at all; [Layer 8](#layer-8-external-render-endpoint) honors that configuration by connecting to the remote browser instead.
 
 `CompileSource` is synchronous and called from a synchronous tool; bridge with `AsyncHelper.RunSync`, as `PdfGenerator` does.
 
@@ -276,24 +276,19 @@ The `AddOrUpdateCodeAISkill` and `AddOrUpdateCodeAISkillTool` helpers are privat
 
 `Down()` drops the table, the block type, and the seeded skill and tool rows, but leaves the agent row alone for the same reason re-running `Up()` does: it may carry administrator tuning.
 
-### Layer 8: External render endpoint (NOT BUILT)
+### Layer 8: External render endpoint
 
-**The problem.** An instance can set the `core_PDFExternalRenderEndpoint` system setting to offload browser work to a remote Chrome. When it is set, `PdfGenerator.EnsureChromeEngineInstalled` returns immediately without downloading, by design: no local Chromium is wanted. `CustomComponentCompiler` does not know about that setting, so `IsBrowserInstalled()` is false forever, every compile returns `IsBrowserMissing`, and both writers tell the user to retry in a few minutes for a condition that will never change. **The feature is silently unusable on those instances, and the error message is misleading rather than merely unhelpful.**
+**The problem it fixed.** An instance can set the `core_PDFExternalRenderEndpoint` system setting to offload browser work to a remote Chrome. When it is set, `PdfGenerator.EnsureChromeEngineInstalled` returns immediately without downloading, by design: no local Chromium is wanted. `CustomComponentCompiler` did not know about that setting, so `IsBrowserInstalled()` was false forever, every compile returned `IsBrowserMissing`, and both writers told the user to retry in a few minutes for a condition that would never change. The feature was silently unusable on those instances, and the error message was misleading rather than merely unhelpful.
 
-**The fix is small, because the pattern already exists.** The setting holds a Chrome DevTools WebSocket URL, and `PdfGenerator.InitializeChromeEngine` already branches on it (`Rock/Pdf/PdfGenerator.cs:270`):
-
-```csharp
-_puppeteerBrowser = Puppeteer.ConnectAsync( new ConnectOptions { BrowserWSEndpoint = pdfExternalRenderEndpoint } ).Result;
-```
-
-`CustomComponentCompiler` needs the same branch in two places:
+**The fix, as built.** The setting holds a Chrome DevTools WebSocket URL, and `PdfGenerator.InitializeChromeEngine` already branches on it (`Rock/Pdf/PdfGenerator.cs:270`); `CustomComponentCompiler` now mirrors that handling:
 
 | Method | Change |
 |---|---|
 | `LaunchBrowserAsync` | When the setting is populated, `Puppeteer.ConnectAsync` with `BrowserWSEndpoint` instead of `Puppeteer.LaunchAsync` with `ExecutablePath` |
-| `IsBrowserInstalled` | Skip the local `File.Exists` gate entirely when the setting is populated. That gate is what currently produces the false `IsBrowserMissing` |
+| `IsBrowserInstalled` | Skips the local `File.Exists` gate entirely when the setting is populated. That gate is what produced the false `IsBrowserMissing` |
+| `GetBrowserAsync` | Tracks which endpoint configuration the long-lived browser was created for and swaps it when the setting changes, disconnecting a remote browser (shared infrastructure Rock does not own) but closing a local one (so its process exits) |
 
-A failed connect must return its own result, distinct from `IsBrowserMissing`, saying the configured render endpoint is unreachable and naming it. Do not reuse the provisioning message; the whole defect being fixed is a permanent condition wearing a transient message.
+A failed connect returns its own result, `IsRenderEndpointUnreachable`, distinct from `IsBrowserMissing`: it names the endpoint and the system setting, and both writers pass that through instead of the provisioning message, because the whole defect being fixed was a permanent condition wearing a transient message. The test seam grew a `browserWSEndpoint` parameter (which, like an explicit browser path, suppresses the system setting so tests never touch the database), and `CompileSource_WithUnreachableRenderEndpoint_ReportsEndpointUnreachable` locks the distinction in.
 
 **Three design consequences worth deciding deliberately, not by default.**
 
@@ -409,7 +404,7 @@ Things that fail silently, in rough order of how much time they cost.
 | Non-plain import statements | The compiler extracts imports by regex; side-effect and dynamic imports do not resolve |
 | Test-executing a write-capable template | Performs real, unattributed writes. Endpoints enabling `RockEntityModify` or `RockEntityDelete` are **not** test-executed for this reason |
 | Creating a page without a route | Reachable only at `/page/id` |
-| An instance with `core_PDFExternalRenderEndpoint` set | No local Chromium is ever installed, so every compile reports "still being provisioned" forever. Fixed by [Layer 8](#layer-8-external-render-endpoint-not-built) |
+| An instance with `core_PDFExternalRenderEndpoint` set | No local Chromium is ever installed; before [layer 8](#layer-8-external-render-endpoint) every compile reported "still being provisioned" forever. The compiler now connects to the configured endpoint instead |
 
 ## Verification Steps
 

@@ -27,6 +27,7 @@ using PuppeteerSharp;
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Pdf;
+using Rock.SystemKey;
 using Rock.Utility;
 
 namespace Rock.Cms
@@ -52,7 +53,16 @@ namespace Rock.Cms
 
         - A SEPARATE browser process from PdfGenerator's. The install is shared, so
           there is no second download, but a wedged compile must not disturb
-          statement generation and vice versa.
+          statement generation and vice versa. When an external render endpoint is
+          configured (see below) both features connect to the same remote browser
+          and that isolation is no longer Rock's to guarantee; the fresh page per
+          compile becomes the only isolation left.
+        - The core_PDFExternalRenderEndpoint system setting is honored, exactly as
+          PdfGenerator honors it. When set, no local Chromium is ever installed, so
+          the local-install check would otherwise report "still provisioning"
+          forever; instead the compiler connects to the configured DevTools
+          websocket. A failed connect is its own result, distinct from a missing
+          browser, because it is a configuration problem and not a wait.
         - A FRESH PAGE per compile, disposed afterward, so one compile cannot leave
           state behind for the next. The browser itself is long lived because
           launching one costs far more than opening a page.
@@ -156,6 +166,14 @@ window.System = {
         private static IBrowser _browser;
 
         /// <summary>
+        /// The external render endpoint <see cref="_browser"/> was created for, or
+        /// an empty string when it is a locally launched browser. Compared against
+        /// the currently configured endpoint so a settings change swaps the browser
+        /// instead of silently keeping the old one. Guarded by <see cref="_browserLock"/>.
+        /// </summary>
+        private static string _browserEndpoint = string.Empty;
+
+        /// <summary>
         /// Serializes browser creation so a burst of saves cannot launch several.
         /// </summary>
         private static readonly object _browserLock = new object();
@@ -173,6 +191,14 @@ window.System = {
         /// </summary>
         private readonly string _browserExecutablePath;
 
+        /// <summary>
+        /// An explicit browser websocket endpoint, used by tests. When null the
+        /// endpoint is resolved from the system setting, except that an explicit
+        /// <see cref="_browserExecutablePath"/> suppresses the setting entirely so
+        /// tests never touch the database.
+        /// </summary>
+        private readonly string _browserWSEndpoint;
+
         #endregion Fields
 
         #region Constructors
@@ -186,15 +212,17 @@ window.System = {
 
         /// <summary>
         /// Creates a compiler that reads the bundle and the browser from explicit
-        /// physical paths. This exists for tests, which run without a hosted web
-        /// root and therefore cannot resolve either through <see cref="RockApp"/>.
+        /// paths. This exists for tests, which run without a hosted web root and
+        /// therefore cannot resolve anything through <see cref="RockApp"/>.
         /// </summary>
         /// <param name="bundlePhysicalPath">The physical path of the compiler bundle.</param>
         /// <param name="browserExecutablePath">The physical path of the browser executable.</param>
-        internal CustomComponentCompiler( string bundlePhysicalPath, string browserExecutablePath = null )
+        /// <param name="browserWSEndpoint">The websocket endpoint of a remote browser, taking precedence over <paramref name="browserExecutablePath"/>.</param>
+        internal CustomComponentCompiler( string bundlePhysicalPath, string browserExecutablePath = null, string browserWSEndpoint = null )
         {
             _bundlePhysicalPath = bundlePhysicalPath;
             _browserExecutablePath = browserExecutablePath;
+            _browserWSEndpoint = browserWSEndpoint;
         }
 
         #endregion Constructors
@@ -243,6 +271,14 @@ window.System = {
                 var actual = ex is AggregateException aggregate
                     ? aggregate.Flatten().InnerExceptions.FirstOrDefault() ?? ex
                     : ex;
+
+                // A configuration problem, not a compile problem and not a wait.
+                // Reported as its own result so callers never advise retrying or
+                // fixing source for an endpoint that is simply down.
+                if ( actual is RenderEndpointUnreachableException unreachable )
+                {
+                    return CustomComponentCompileResult.RenderEndpointUnreachable( unreachable.Endpoint );
+                }
 
                 return CustomComponentCompileResult.Failure( DescribeFailure( actual ) );
             }
@@ -306,15 +342,17 @@ window.System = {
         }
 
         /// <summary>
-        /// Gets the shared compile browser, launching it when it is missing or has
-        /// disconnected.
+        /// Gets the shared compile browser, launching or connecting when it is
+        /// missing, has disconnected, or was created for a different endpoint
+        /// configuration than is in effect now.
         /// </summary>
         /// <returns>A connected browser.</returns>
         private async Task<IBrowser> GetBrowserAsync()
         {
+            var desiredEndpoint = GetExternalRenderEndpoint() ?? string.Empty;
             var existing = _browser;
 
-            if ( existing != null && existing.IsConnected )
+            if ( existing != null && existing.IsConnected && _browserEndpoint == desiredEndpoint )
             {
                 return existing;
             }
@@ -322,35 +360,64 @@ window.System = {
             // Launching is slow enough that a burst of saves could otherwise start
             // several browsers. The lock is held only while starting one.
             var launchTask = null as Task<IBrowser>;
+            var staleBrowser = null as IBrowser;
+            var staleBrowserWasRemote = false;
 
             lock ( _browserLock )
             {
-                if ( _browser != null && _browser.IsConnected )
+                if ( _browser != null && _browser.IsConnected && _browserEndpoint == desiredEndpoint )
                 {
                     return _browser;
                 }
 
+                staleBrowser = _browser;
+                staleBrowserWasRemote = _browserEndpoint != string.Empty;
                 _browser = null;
-                launchTask = LaunchBrowserAsync();
+                launchTask = LaunchBrowserAsync( desiredEndpoint );
             }
+
+            // An endpoint change can leave a still-connected browser behind;
+            // release it so a local process does not outlive its usefulness.
+            await ReleaseBrowserAsync( staleBrowser, staleBrowserWasRemote ).ConfigureAwait( false );
 
             var browser = await launchTask.ConfigureAwait( false );
 
             lock ( _browserLock )
             {
                 _browser = browser;
+                _browserEndpoint = desiredEndpoint;
             }
 
             return browser;
         }
 
         /// <summary>
-        /// Launches a headless browser dedicated to compiling, using the Chromium
-        /// build already pinned and installed for PDF generation.
+        /// Launches a headless browser dedicated to compiling using the Chromium
+        /// build already pinned and installed for PDF generation, or connects to
+        /// the configured external render endpoint when one is set, mirroring
+        /// <see cref="PdfGenerator"/>'s handling of the same setting.
         /// </summary>
-        /// <returns>The launched browser.</returns>
-        private async Task<IBrowser> LaunchBrowserAsync()
+        /// <param name="externalRenderEndpoint">The external render endpoint, or an empty string to launch locally.</param>
+        /// <returns>The launched or connected browser.</returns>
+        private async Task<IBrowser> LaunchBrowserAsync( string externalRenderEndpoint )
         {
+            if ( externalRenderEndpoint.IsNotNullOrWhiteSpace() )
+            {
+                var connectOptions = new ConnectOptions
+                {
+                    BrowserWSEndpoint = externalRenderEndpoint
+                };
+
+                try
+                {
+                    return await Puppeteer.ConnectAsync( connectOptions ).ConfigureAwait( false );
+                }
+                catch ( Exception ex )
+                {
+                    throw new RenderEndpointUnreachableException( externalRenderEndpoint, ex );
+                }
+            }
+
             var launchOptions = new LaunchOptions
             {
                 Headless = true,
@@ -358,6 +425,39 @@ window.System = {
             };
 
             return await Puppeteer.LaunchAsync( launchOptions ).ConfigureAwait( false );
+        }
+
+        /// <summary>
+        /// Releases a browser this compiler no longer uses because the endpoint
+        /// configuration changed. A remote browser is disconnected rather than
+        /// closed, because it is shared infrastructure this instance does not own;
+        /// a locally launched browser is closed so its process exits.
+        /// </summary>
+        /// <param name="browser">The browser to release, or null.</param>
+        /// <param name="isRemote">Whether the browser is a remote connection.</param>
+        private static async Task ReleaseBrowserAsync( IBrowser browser, bool isRemote )
+        {
+            if ( browser == null || !browser.IsConnected )
+            {
+                return;
+            }
+
+            try
+            {
+                if ( isRemote )
+                {
+                    browser.Disconnect();
+                }
+                else
+                {
+                    await browser.CloseAsync().ConfigureAwait( false );
+                }
+            }
+            catch
+            {
+                // Intentionally ignored: the stale browser may already be gone, and
+                // failing to release it must not block getting a working one.
+            }
         }
 
         /// <summary>
@@ -372,6 +472,15 @@ window.System = {
         /// <returns><c>true</c> when the browser can be launched.</returns>
         private bool IsBrowserInstalled()
         {
+            // A configured external render endpoint means no local browser is
+            // wanted or installed, by design; the local-install check below would
+            // report "still provisioning" forever. Reachability of the endpoint is
+            // determined at connect time and reported as its own result.
+            if ( GetExternalRenderEndpoint().IsNotNullOrWhiteSpace() )
+            {
+                return true;
+            }
+
             try
             {
                 var executablePath = GetBrowserExecutablePath();
@@ -385,6 +494,29 @@ window.System = {
                 // correct advice either way.
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Resolves the external render endpoint, preferring an explicit endpoint
+        /// supplied for tests. Reads the same system setting <see cref="PdfGenerator"/>
+        /// honors so the two features cannot disagree about where browser work
+        /// happens. An explicit test browser path suppresses the setting entirely
+        /// so tests never touch the database.
+        /// </summary>
+        /// <returns>The websocket endpoint of the external browser, or null to use a local one.</returns>
+        private string GetExternalRenderEndpoint()
+        {
+            if ( _browserWSEndpoint.IsNotNullOrWhiteSpace() )
+            {
+                return _browserWSEndpoint;
+            }
+
+            if ( _browserExecutablePath.IsNotNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            return Rock.Web.SystemSettings.GetValue( SystemSetting.PDF_EXTERNAL_RENDER_ENDPOINT );
         }
 
         /// <summary>
@@ -467,6 +599,29 @@ window.System = {
             public string VueVersion { get; set; }
         }
 
+        /// <summary>
+        /// Raised when the configured external render endpoint cannot be connected
+        /// to, so the failure surfaces as its own result instead of a compile error.
+        /// </summary>
+        private class RenderEndpointUnreachableException : Exception
+        {
+            /// <summary>
+            /// Gets the endpoint that could not be reached.
+            /// </summary>
+            public string Endpoint { get; }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="RenderEndpointUnreachableException"/> class.
+            /// </summary>
+            /// <param name="endpoint">The endpoint that could not be reached.</param>
+            /// <param name="innerException">The connect failure.</param>
+            public RenderEndpointUnreachableException( string endpoint, Exception innerException )
+                : base( $"Unable to connect to the external render endpoint '{endpoint}'.", innerException )
+            {
+                Endpoint = endpoint;
+            }
+        }
+
         #endregion Support Classes
     }
 
@@ -498,6 +653,15 @@ window.System = {
         /// callers should advise retrying rather than report a failure.
         /// </summary>
         public bool IsBrowserMissing { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the compile could not be attempted
+        /// because the configured external render endpoint could not be reached.
+        /// Unlike <see cref="IsBrowserMissing"/> this is a configuration problem
+        /// and not a wait, so callers should name the endpoint and point at the
+        /// setting rather than advise retrying.
+        /// </summary>
+        public bool IsRenderEndpointUnreachable { get; private set; }
 
         /// <summary>
         /// Gets the compiled SystemJS module string, or null when the compile failed.
@@ -583,6 +747,25 @@ window.System = {
             };
 
             result.Errors.Add( "The browser engine used to compile is not installed on this server yet." );
+
+            return result;
+        }
+
+        /// <summary>
+        /// Creates a result indicating the configured external render endpoint
+        /// could not be reached, so no compile could be attempted.
+        /// </summary>
+        /// <param name="endpoint">The endpoint that could not be reached.</param>
+        /// <returns>The result.</returns>
+        public static CustomComponentCompileResult RenderEndpointUnreachable( string endpoint )
+        {
+            var result = new CustomComponentCompileResult
+            {
+                IsSuccess = false,
+                IsRenderEndpointUnreachable = true
+            };
+
+            result.Errors.Add( $"The configured external render endpoint '{endpoint}' could not be reached, so the component cannot be compiled. Verify the {SystemKey.SystemSetting.PDF_EXTERNAL_RENDER_ENDPOINT} system setting points at a running browser." );
 
             return result;
         }
