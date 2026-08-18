@@ -743,7 +743,8 @@ a.rock-bookmark {
         display: flex;
         align-items: center;
         margin: 0;
-        color: var(--color-interface-strong);
+        // Glass Nav nudges the resting item text a little darker in light mode and lighter in dark for more contrast.
+        color: var(--nav-glass-item-color, var(--color-interface-strong));
         transition: all ease 0.05s;
 
         &:last-child{
@@ -756,8 +757,9 @@ a.rock-bookmark {
         }
 
         &:hover {
-          color: var(--color-primary);
-          background-color:  var(--color-primary-soft);
+          // Glass Nav softens the hover to a neutral well with unchanged text, matching the design.
+          color: var(--nav-glass-item-hover-color, var(--color-primary));
+          background-color: var(--nav-glass-item-hover-bg, var(--color-primary-soft));
           border-radius: var(--rounded-medium);
 
           &::before {
@@ -771,8 +773,9 @@ a.rock-bookmark {
       &.current {
         .nav-link {
           font-weight: var(--font-weight-semibold);
-          color: #FFFFFF;
-          background-color: var(--color-primary);
+          // Glass Nav marks the selected item with primary text over a translucent primary tint, matching the design.
+          color: var(--nav-glass-item-active-color, #FFFFFF);
+          background-color: var(--nav-glass-item-active-bg, var(--color-primary));
           border-radius: var(--rounded-medium);
 
           &::before {
@@ -903,10 +906,11 @@ a.rock-bookmark {
       &.current {
         background-color: #ffffff30;
         border-radius:    var(--rounded-medium) var(--rounded-medium) var(--rounded-medium) var(--rounded-medium);
-        border: 0;
+        // Glass Nav outlines the active rail icon's highlight with a subtle white border, matching the design.
+        border: var(--nav-glass-rail-active-border, 0);
         &:hover {
           background-color: transparent;
-          border-radius: var(--rounded-medium) 0 0 var(--rounded-medium);
+          border-radius: var(--nav-glass-rail-hover-radius, var(--rounded-medium) 0 0 var(--rounded-medium));
         }
       }
 
@@ -921,18 +925,19 @@ a.rock-bookmark {
         top:0;
         left:0;
         height: 100%;
-        width: calc($navbarside-width - 8px);
-        border-radius:    var(--rounded-medium) 0 0 var(--rounded-medium);
+        // Glass Nav contains the hover highlight to the icon instead of extending it to the rail's right edge.
+        width: var(--nav-glass-rail-hover-width, calc(#{$navbarside-width} - 8px));
+        border-radius: var(--nav-glass-rail-hover-radius, var(--rounded-medium) 0 0 var(--rounded-medium));
       }
 
-      // Glass Nav: invisible bridge over the detached gap so hovering between the rail and flyout keeps it open.
+      // Glass Nav: invisible bridge from the icon's right edge across the detached gap so hovering between the rail and flyout keeps it open.
       &.open::after {
         position: fixed;
         content: "";
         top: 0;
         bottom: 0;
-        left: calc($navbarside-width + 8px);
-        width: var(--nav-glass-gap, 0);
+        left: $navbarside-width;
+        width: var(--nav-glass-bridge-width, 0);
       }
     }
 
