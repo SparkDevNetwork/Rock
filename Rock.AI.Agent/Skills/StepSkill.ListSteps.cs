@@ -100,13 +100,16 @@ internal partial class StepSkill
             .Select( s => new StepResult
             {
                 Id = s.Id,
+                Guid = s.Guid,
                 StepType = new StepTypeResult
                 {
                     Id = s.StepType.Id,
+                    Guid = s.StepType.Guid,
                     Name = s.StepType.Name,
                     StepProgram = new StepProgramResult
                     {
                         Id = s.StepType.StepProgram.Id,
+                        Guid = s.StepType.StepProgram.Guid,
                         Name = s.StepType.StepProgram.Name,
                     },
                 },
@@ -114,6 +117,7 @@ internal partial class StepSkill
                     ? new StepStatusResult
                     {
                         Id = s.StepStatusId.Value,
+                        Guid = s.StepStatus.Guid,
                         Name = s.StepStatus.Name,
                     }
                     : null,

@@ -65,6 +65,7 @@ internal sealed partial class ContentChannelSkill : AgentSkillComponent
         return new ContentChannelItemResult
         {
             Id = contentChannelItem.Id,
+            Guid = contentChannelItem.Guid,
             Name = contentChannelItem.Title,
             ContentChannel = new ContentChannelResult
             {

@@ -65,6 +65,7 @@ internal sealed partial class PersonSkill
             .Select( pd => new PersonalDeviceResult
             {
                 Id = pd.Id,
+                Guid = pd.Guid,
                 CreatedDateTime = pd.CreatedDateTime,
                 Name = pd.Name,
                 IsBeaconMonitoringEnabled = pd.IsBeaconMonitoringEnabled,

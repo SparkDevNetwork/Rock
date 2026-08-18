@@ -98,14 +98,17 @@ internal sealed partial class LearningManagementSkill
             .Select( g => new LearningClassResult
             {
                 Id = g.Id,
+                Guid = g.Guid,
                 Name = g.Name,
                 LearningCourse = new LearningCourseResult
                 {
                     Id = g.LearningCourse.Id,
+                    Guid = g.LearningCourse.Guid,
                     Name = g.LearningCourse.Name,
                     LearningProgram = new LearningProgramResult
                     {
                         Id = g.LearningCourse.LearningProgram.Id,
+                        Guid = g.LearningCourse.LearningProgram.Guid,
                         Name = g.LearningCourse.LearningProgram.Name,
                     },
                 },
@@ -113,6 +116,7 @@ internal sealed partial class LearningManagementSkill
                     ? new CampusResult
                     {
                         Id = g.Campus.Id,
+                        Guid = g.Campus.Guid,
                         Name = g.Campus.Name,
                     }
                     : null,
@@ -123,6 +127,7 @@ internal sealed partial class LearningManagementSkill
         var historyPage = cursorPage.WithItems( cursorPage.Items.Select( cr => new KeyNameResult
         {
             Id = cr.Id,
+            Guid = cr.Guid,
             Name = cr.ToString()
         } ) );
 

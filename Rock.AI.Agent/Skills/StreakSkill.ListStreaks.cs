@@ -76,9 +76,11 @@ internal partial class StreakSkill
             .Select( s => new StreakResult
             {
                 Id = s.Id,
+                Guid = s.Guid,
                 StreakType = new StreakTypeResult
                 {
                     Id = s.StreakTypeId,
+                    Guid = s.StreakType.Guid,
                     Name = s.StreakType.Name,
                     OccurrenceFrequency = s.StreakType.OccurrenceFrequency,
                 },

@@ -351,6 +351,7 @@ internal sealed partial class FinanceSkill : AgentSkillComponent
                 ? new KeyNameResult
                 {
                     Id = a.FinancialPaymentDetail.CurrencyTypeValue.Id,
+                    Guid = a.FinancialPaymentDetail.CurrencyTypeValue.Guid,
                     Name = a.FinancialPaymentDetail.CurrencyTypeValue.Value
                 }
                 : null,
@@ -359,6 +360,7 @@ internal sealed partial class FinanceSkill : AgentSkillComponent
                 ? new KeyNameResult
                 {
                     Id = a.FinancialPaymentDetail.CreditCardTypeValue.Id,
+                    Guid = a.FinancialPaymentDetail.CreditCardTypeValue.Guid,
                     Name = a.FinancialPaymentDetail.CreditCardTypeValue.Value
                 }
                 : null,

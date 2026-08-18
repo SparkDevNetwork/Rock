@@ -47,6 +47,7 @@ internal partial class LearningManagementSkill
             .Select( lp => new LearningProgramResult
             {
                 Id = lp.Id,
+                Guid = lp.Guid,
                 Name = lp.Name,
                 Courses = lp.LearningCourses
                     .Where( lc => lc.IsActive
@@ -54,6 +55,7 @@ internal partial class LearningManagementSkill
                     .Select( r => new LearningCourseResult
                     {
                         Id = r.Id,
+                        Guid = r.Guid,
                         Name = r.Name,
                     } )
                     .ToList(),

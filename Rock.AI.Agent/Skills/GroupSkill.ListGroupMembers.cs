@@ -80,10 +80,12 @@ internal sealed partial class GroupSkill
             .Select( gm => new GroupMemberResult
             {
                 Id = gm.Id,
+                Guid = gm.Guid,
                 Person = PersonResult.NameOnly( gm.Person ),
                 Role = new KeyNameResult
                 {
                     Id = gm.GroupRoleId,
+                    Guid = gm.GroupRole.Guid,
                     Name = gm.GroupRole.Name
                 },
                 Status = gm.GroupMemberStatus,
@@ -95,6 +97,7 @@ internal sealed partial class GroupSkill
         var historyPage = page.WithItems( page.Items.Select( gm => new GroupMemberResult
         {
             Id = gm.Id,
+            Guid = gm.Guid,
             Person = gm.Person,
         } ) );
 

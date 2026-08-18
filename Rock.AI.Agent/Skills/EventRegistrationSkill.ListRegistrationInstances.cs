@@ -99,10 +99,12 @@ internal sealed partial class EventRegistrationSkill
             .Select( ri => new RegistrationInstanceResult
             {
                 Id = ri.Id,
+                Guid = ri.Guid,
                 Name = ri.Name,
                 RegistrationTemplate = new RegistrationTemplateResult
                 {
                     Id = ri.RegistrationTemplate.Id,
+                    Guid = ri.RegistrationTemplate.Guid,
                     Name = ri.RegistrationTemplate.Name,
                 },
                 StartDateTime = ri.StartDateTime,
@@ -114,6 +116,7 @@ internal sealed partial class EventRegistrationSkill
             .Select( ri => new RegistrationInstanceResult
             {
                 Id = ri.Id,
+                Guid = ri.Guid,
                 Name = ri.Name,
             } )
             .ToList() );

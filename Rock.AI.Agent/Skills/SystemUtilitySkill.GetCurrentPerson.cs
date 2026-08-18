@@ -41,6 +41,12 @@ internal partial class SystemUtilitySkill
         var result = PersonResult.Basic( currentPerson );
         var historyResult = PersonResult.NameOnly( currentPerson );
 
+        // PersonResult.Basic is also used for nested references inside list
+        // results, which deliberately do not carry a Guid. Set it here so it is
+        // only present on this tool's own top-level result.
+        result.Guid = currentPerson.Guid;
+        result.PrimaryAliasGuid = currentPerson.PrimaryAliasGuid;
+
         result.BirthDay = currentPerson.BirthDay;
         result.BirthMonth = currentPerson.BirthMonth;
         result.BirthYear = currentPerson.BirthYear;

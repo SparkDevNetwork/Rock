@@ -46,11 +46,13 @@ internal sealed partial class ConnectionSkill
                 .Select( ct => new ConnectionTypeResult
                 {
                     Id = ct.Id,
+                    Guid = ct.Guid,
                     Name = ct.Name,
                     Opportunities = ct.Opportunities
                         .Select( o => new ConnectionOpportunityResult
                         {
                             Id = o.Id,
+                            Guid = o.Guid,
                             Name = o.Name,
                         } )
                         .ToList(),
@@ -58,6 +60,7 @@ internal sealed partial class ConnectionSkill
                         .Select( s => new KeyNameResult
                         {
                             Id = s.Id,
+                            Guid = s.Guid,
                             Name = s.Name
                         } )
                         .ToList(),
@@ -91,6 +94,7 @@ internal sealed partial class ConnectionSkill
             .Select( cr => new ConnectionTypeResult
             {
                 Id = cr.Id,
+                Guid = cr.Guid,
                 Name = cr.Name,
                 Description = cr.Description,
                 AttributeValues = cr.GetAttributeValueResults( AgentRequestContext ).ToList(),
@@ -130,6 +134,7 @@ internal sealed partial class ConnectionSkill
                 .Select( co => new ConnectionOpportunityResult
                 {
                     Id = co.Id,
+                    Guid = co.Guid,
                     Name = co.Name,
                     Description = co.Description,
                     PublicName = co.PublicName,
@@ -139,6 +144,7 @@ internal sealed partial class ConnectionSkill
                         .Select( c => new CampusResult
                         {
                             Id = c.CampusId,
+                            Guid = c.Campus.Guid,
                             Name = c.Campus.Name
                         } )
                         .ToList(),

@@ -111,6 +111,7 @@ namespace Rock.AI.Agent.Classes.Common
         public KeyNameResult( int id, Guid guid, string name )
         {
             Id = id;
+            Guid = guid;
             Name = name;
         }
 

@@ -46,12 +46,14 @@ internal partial class FinanceSkill
             var result = new FinancialAccountResult
             {
                 Id = acct.Id,
+                Guid = acct.Guid,
                 IsTaxDeductible = acct.IsTaxDeductible,
                 Name = acct.PublicName,
                 PublicDescription = acct.PublicDescription,
                 Campus = acct.CampusId.HasValue ? new CampusResult
                 {
                     Id = acct.CampusId.Value,
+                    Guid = acct.Campus.Guid,
                     Name = acct.Campus.Name
                 } : null
             };
@@ -70,6 +72,7 @@ internal partial class FinanceSkill
                 result.Children.Add( new FinancialAccountResult
                 {
                     Id = childAcct.Id,
+                    Guid = childAcct.Guid,
                     IsTaxDeductible = childAcct.IsTaxDeductible,
                     Name = childAcct.PublicName,
                     PublicDescription = childAcct.PublicDescription,
@@ -77,6 +80,7 @@ internal partial class FinanceSkill
                     Campus = childAcct.CampusId.HasValue ? new CampusResult
                     {
                         Id = childAcct.CampusId.Value,
+                        Guid = childAcct.Campus.Guid,
                         Name = childAcct.Campus.Name
                     } : null
                 } );

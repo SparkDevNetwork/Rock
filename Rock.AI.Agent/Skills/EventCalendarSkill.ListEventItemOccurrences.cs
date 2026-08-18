@@ -113,9 +113,11 @@ internal sealed partial class EventCalendarSkill
             .Select( eio => new EventItemOccurrenceResult
             {
                 Id = eio.Id,
+                Guid = eio.Guid,
                 EventItem = new EventItemResult
                 {
                     Id = eio.EventItemId,
+                    Guid = eio.EventItem.Guid,
                     Name = eio.EventItem.Name,
                 },
                 NextStartDateTime = eio.NextStartDateTime,
@@ -127,6 +129,7 @@ internal sealed partial class EventCalendarSkill
             .Select( eio => new EventItemOccurrenceResult
             {
                 Id = eio.Id,
+                Guid = eio.Guid,
                 EventItem = eio.EventItem,
                 NextStartDateTime = eio.NextStartDateTime,
             } )

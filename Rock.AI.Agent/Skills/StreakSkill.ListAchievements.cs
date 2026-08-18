@@ -95,9 +95,11 @@ internal partial class StreakSkill
             .Select( aa => new AchievementAttemptResult
             {
                 Id = aa.AchievementAttempt.Id,
+                Guid = aa.AchievementAttempt.Guid,
                 AchievementType = new KeyNameResult
                 {
                     Id = aa.AchievementAttempt.AchievementType.Id,
+                    Guid = aa.AchievementAttempt.AchievementType.Guid,
                     Name = aa.AchievementAttempt.AchievementType.Name,
                 },
                 Person = PersonResult.NameOnly( aa.Person ),

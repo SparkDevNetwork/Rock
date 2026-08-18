@@ -60,6 +60,7 @@ internal sealed partial class SystemUtilitySkill
             .Select( c => new CampusResult
             {
                 Id = c.Id,
+                Guid = c.Guid,
                 Name = c.Name,
                 IsActive = c.IsActive ?? false,
                 Abbreviation = c.ShortCode,
@@ -117,6 +118,7 @@ internal sealed partial class SystemUtilitySkill
                     TeamMember = new PersonResult
                     {
                         Id = m.PersonId,
+                        Guid = m.Person.Guid,
                         NickName = m.Person.NickName,
                         LastName = m.Person.LastName,
                         Email = m.Person.Email

@@ -43,6 +43,7 @@ internal sealed partial class AttendanceSkill
             .Select( c => new KeyNameResult
             {
                 Id = c.Id,
+                Guid = c.Guid,
                 Name = c.Name,
             } )
             .ToList();
