@@ -948,6 +948,9 @@ a.rock-bookmark {
       // Glass Nav detaches the flyout from the rail with an extra left gap and fully rounded corners.
       margin-left: var(--nav-glass-gap, 0);
       border-radius: var(--nav-glass-radius, 0 14px 14px 0);
+      // Glass Nav gives the panel a bright rim border and a lifting drop shadow so it reads as a floating glass surface.
+      border: var(--nav-glass-border, 1px solid var(--color-interface-soft));
+      box-shadow: var(--nav-glass-shadow, none);
       margin-top:     var(--spacing-xsmall);
       margin-bottom:  var(--spacing-xsmall);
 
