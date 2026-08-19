@@ -658,7 +658,8 @@ a.rock-bookmark {
       &.open {
         .nav-childpages {
           display: inline-block;
-          box-shadow: var(--popup-box-shadow);
+          // Glass Nav adds a two-part inset rim (bright top-left, soft bottom-right) over the popup shadow to give the glass a beveled edge; off resolves to just the popup shadow.
+          box-shadow: var(--nav-glass-shadow, var(--popup-box-shadow));
           // Glass Nav: visible end-state. Paired with the closed state's transition (allow-discrete on display) and @starting-style, the flyout slides + fades on open and reverses on close.
           opacity: 1;
           transform: translateX(0);
