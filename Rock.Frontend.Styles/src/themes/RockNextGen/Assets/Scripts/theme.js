@@ -85,6 +85,15 @@ function topHeaderOffset() {
   //  document.body.style.setProperty('--sticky-element-offset', '0px');
   //}
 }
+// Glass Nav on/off is fixed for the page's lifetime, so detect it once via a variable the theme only sets when the feature is on.
+var isGlassNavCached = null;
+function getIsGlassNavOn() {
+  if (isGlassNavCached === null) {
+    isGlassNavCached = getComputedStyle(document.documentElement).getPropertyValue('--nav-glass-gap').trim() !== '';
+  }
+  return isGlassNavCached;
+}
+
 function navMouseEvents() {
   var hoverDelay = 50,
   hideDelay = 100;
@@ -143,9 +152,9 @@ function navMouseEvents() {
               bodyElement.removeClass('nav-open').css('padding-right', '');
               navbarFixedTop.css('right', '');
             };
-            // Glass Nav is on only when it has injected its flyout transition variable. When on, keep the rail elevated until the flyout finishes animating out; otherwise the rail drops below the top header and the exiting flyout is hidden behind it. Must exceed the flyout exit duration and is guarded so a quick re-open cancels it. When off there is no exit animation, so reset immediately to avoid a delayed layout shift.
-            const isGlassNavOn = getComputedStyle(document.documentElement).getPropertyValue('--nav-glass-flyout-transition').trim() !== '';
-            if (isGlassNavOn) {
+            // Wait for the flyout's exit animation before dropping the rail (otherwise it hides the exiting flyout behind the header), but skip the wait when Glass Nav is off or reduced motion removed the animation so the rail resets immediately with no delayed layout shift.
+            const hasFlyoutExitAnimation = getIsGlassNavOn() && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (hasFlyoutExitAnimation) {
               setTimeout(function() {
                 if (navbarSide.find('li.open').length < 1) {
                   resetRail();
