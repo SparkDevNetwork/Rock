@@ -98,6 +98,7 @@ internal sealed partial class NoteSkill : AgentSkillComponent
 
         return new NoteResult
         {
+            Guid = note.Guid,
             Author = PersonResult.NameOnly( note.CreatedByPersonAlias ),
             NoteType = new NoteTypeResult
             {

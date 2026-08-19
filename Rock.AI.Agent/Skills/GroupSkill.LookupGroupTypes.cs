@@ -43,6 +43,7 @@ internal partial class GroupSkill
             .Select( gt => new GroupTypeResult
             {
                 Id = gt.Id,
+                Guid = gt.Guid,
                 Name = gt.Name,
                 Roles = gt.Roles
                     .Select( r => new KeyNameResult( r.Id, r.Name ) )

@@ -38,6 +38,7 @@ internal sealed partial class ContentChannelSkill
             .Select( cct => new ContentChannelTypeResult
             {
                 Id = cct.Id,
+                Guid = cct.Guid,
                 Name = cct.Name,
             } )
             .OrderBy( kn => kn.Name )

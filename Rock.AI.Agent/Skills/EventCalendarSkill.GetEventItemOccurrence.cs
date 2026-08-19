@@ -81,6 +81,7 @@ internal sealed partial class EventCalendarSkill
         var result = new EventItemOccurrenceResult
         {
             Id = eventItemOccurrence.Id,
+            Guid = eventItemOccurrence.Guid,
             EventItem = new EventItemResult
             {
                 Id = eventItemOccurrence.EventItemId,

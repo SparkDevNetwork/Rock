@@ -15,28 +15,42 @@
 // </copyright>
 //
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Quartz;
 
+using Rock.Bus.Locking;
+using Rock.Configuration;
 using Rock.Logging;
 
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Implementation of the ITriggerListener so Rock can be informed when a ITrigger fires
-    /// -- and namely make a decision about whether or not to veto a job that's about to run.
-    /// This is primarily needed because running a job manually will create a new scheduler
-    /// to do it.  This class's VetoJobExecution is the traffic cop that will query all
-    /// schedulers to decide if a job should be vetoed from running.
+    /// Implementation of <see cref="ITriggerListener"/> that gates every Rock
+    /// job fire behind a distributed lock. Exactly one node (or one scheduler
+    /// on one node) wins the lock and runs the job; every other fire vetos
+    /// silently. This is what prevents duplicate execution during IIS app
+    /// pool overlaps, across a Rock farm, and between the main scheduler and
+    /// a Run Now-created scheduler on the same node. Every Rock job inherits
+    /// <c>[DisallowConcurrentExecution]</c> from <see cref="RockJob"/>, so
+    /// Quartz already prevents same-scheduler double-fires; this listener
+    /// covers the cases Quartz cannot. See
+    /// <c>specs/completed/core/*distributed-locking*</c> for the design.
     /// </summary>
     [RockLoggingCategory]
     public class RockTriggerListener : ITriggerListener
     {
+        /// <summary>
+        /// The key used to stash the acquired <see cref="ILockHandle"/> on the
+        /// <see cref="IJobExecutionContext"/> for the duration of a job's
+        /// execution. <see cref="RockJobListener.JobWasExecuted"/> retrieves
+        /// and disposes the handle to release the distributed lock.
+        /// </summary>
+        internal const string DistributedLockHandleKey = "Rock.DistributedLockHandle";
         /// <summary>
         /// The logger for this instance.
         /// </summary>
@@ -75,35 +89,36 @@ namespace Rock.Jobs
         /// <returns>Returns true if job execution should be vetoed, false otherwise.</returns>
         public bool VetoJobExecution( ITrigger trigger, IJobExecutionContext context )
         {
-            // get job type id
+            // ServiceJob.Id is stashed on JobDetail.Description at
+            // BuildQuartzJob time, so this pulls the Rock domain identity we
+            // key the distributed lock on.
             int jobId = context.JobDetail.Description.AsInteger();
 
-            var allSchedulers = new Quartz.Impl.StdSchedulerFactory().AllSchedulers;
-
-            // Check if other schedulers are running this job...
-            // TODO NOTE: Someday we would want to see if this also can work across
-            // multiple 'hosts' in a Rock cluster else we should handle this explicitly.
-            var otherSchedulers = allSchedulers
-                .Where( s => s.SchedulerName != context.Scheduler.SchedulerName );
-
-            foreach ( var scheduler in otherSchedulers )
+            // Every fire races for the same lock keyed by ServiceJob.Id.
+            // The legacy "check every local scheduler for a concurrent run"
+            // enumeration used to live here but was fully redundant with the
+            // distributed lock: every Rock job inherits
+            // [DisallowConcurrentExecution], so Quartz already prevents
+            // same-scheduler double-fires, and the distributed lock covers
+            // the remaining cases (Run Now scheduler vs main scheduler on
+            // the same node, and cross-node fires across the farm).
+            if ( !TryAcquireDistributedLock( context, jobId, out var lockAcquired ) )
             {
-                var currentlyExecutingJobs = scheduler.GetCurrentlyExecutingJobs();
-                if ( currentlyExecutingJobs.Where( j => j.JobDetail.Description == context.JobDetail.Description &&
-                    j.JobDetail.ConcurrentExectionDisallowed ).Any() )
-                {
-                    System.Diagnostics.Debug.WriteLine( RockDateTime.Now.ToString() + $" VETOED! Scheduler '{scheduler.SchedulerName}' is already executing job Id '{context.JobDetail.Description}' (key: {context.JobDetail.Key})" );
+                // Provider threw. Vetoed to avoid uncoordinated execution.
+                return true;
+            }
 
-                    Logger.LogDebug(
-                        $"Job ID: {{jobId}} (App PID: {{processId}}-{{domainId}}), Job Key: {{jobKey}}, Job trigger was vetoed because scheduler '{scheduler.SchedulerName}' is already executing job.",
-                        jobId,
-                        Rock.WebFarm.RockWebFarm.ProcessId,
-                        AppDomain.CurrentDomain.Id,
-                        context.JobDetail?.Key
-                    );
+            if ( !lockAcquired )
+            {
+                Logger.LogDebug(
+                    "Job ID: {jobId} (App PID: {processId}-{domainId}), Job Key: {jobKey}, Job trigger was vetoed because another node holds the distributed lock.",
+                    jobId,
+                    Rock.WebFarm.RockWebFarm.ProcessId,
+                    AppDomain.CurrentDomain.Id,
+                    context.JobDetail?.Key
+                );
 
-                    return true;
-                }
+                return true;
             }
 
             Logger.LogDebug(
@@ -115,6 +130,81 @@ namespace Rock.Jobs
             );
 
             return false;
+        }
+
+        /// <summary>
+        /// Attempts to acquire the distributed lock for
+        /// <paramref name="jobId"/>. On success the handle is stashed on
+        /// <paramref name="context"/> so
+        /// <see cref="RockJobListener.JobWasExecuted"/> can dispose it.
+        /// </summary>
+        /// <param name="context">The Quartz execution context.</param>
+        /// <param name="jobId">The <c>ServiceJob.Id</c> being fired.</param>
+        /// <param name="lockAcquired">
+        /// Set to <c>true</c> when the lock was obtained and the job may
+        /// proceed. Set to <c>false</c> when another node holds the lock or
+        /// an infrastructure error occurred (the caller should veto in that
+        /// case).
+        /// </param>
+        /// <returns>
+        /// <c>false</c> when the provider threw an unexpected exception (an
+        /// argument-validation failure or a programmer error). The caller
+        /// MUST veto in this case rather than run the job without
+        /// coordination. <c>true</c> in every other case; inspect
+        /// <paramref name="lockAcquired"/> to distinguish "acquired" from
+        /// "not acquired."
+        /// </returns>
+        private bool TryAcquireDistributedLock( IJobExecutionContext context, int jobId, out bool lockAcquired )
+        {
+            lockAcquired = false;
+
+            // GetRequiredService is deliberate: if the provider is not
+            // registered, that means Rock's startup ordering is broken (Quartz
+            // is running before DI is complete) or an operator has deregistered
+            // the primitive. Both are catastrophic developer bugs, not a
+            // recoverable condition. The InvalidOperationException from
+            // GetRequiredService (or an NRE if RockApp.Current is null)
+            // propagates out of VetoJobExecution and wedges the trigger — the
+            // loud, correct consequence for a systemic misconfiguration.
+            // Silently running jobs without cross-node coordination is worse
+            // than not running them at all; the operator needs to see the
+            // failure and fix it.
+            var lockProvider = RockApp.Current.GetRequiredService<IDistributedLockProvider>();
+
+            ILockHandle handle;
+
+            try
+            {
+                handle = lockProvider.TryAcquire( typeof( RockTriggerListener ), jobId.ToString(), TimeSpan.Zero );
+            }
+            catch ( Exception ex )
+            {
+                // Argument validation failure or provider bug. The primitive
+                // has already logged at Error. From the scheduler's
+                // perspective the safest response is to veto: running the
+                // job without coordination is worse than not running it
+                // this cycle (it will fire again on the next scheduled tick).
+                Logger.LogError( ex, "Distributed lock provider threw for Job ID {jobId}. Vetoing this fire.", jobId );
+                return false;
+            }
+
+            if ( !handle.IsAcquired )
+            {
+                // Contention loss or infrastructure failure. The provider
+                // has already logged infrastructure failures at Warning;
+                // contention loss is deliberately silent. Dispose the handle
+                // (safe on an unacquired one) and let the caller veto.
+                handle.Dispose();
+                return true;
+            }
+
+            // Stash the handle on the context so it survives to the
+            // JobWasExecuted callback where it can be released. Using the
+            // context is safe because Rock runs Quartz with RAMJobStore, so
+            // the context is in-process and never serialized.
+            context.Put( DistributedLockHandleKey, handle );
+            lockAcquired = true;
+            return true;
         }
 
         /// <summary>

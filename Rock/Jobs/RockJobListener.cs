@@ -22,6 +22,7 @@ using Microsoft.Extensions.Logging;
 
 using Quartz;
 
+using Rock.Bus.Locking;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Lava;
@@ -193,6 +194,11 @@ namespace Rock.Jobs
                 jobKey
             );
 
+            // Defensive: when the veto came from our own distributed-lock
+            // check, RockTriggerListener does not stash a handle on the
+            // context. But if a future code path ever stashes a handle and
+            // then vetoes anyway, this call prevents the leak.
+            ReleaseDistributedLock( context );
         }
 
         /// <summary>
@@ -373,6 +379,47 @@ namespace Rock.Jobs
                 {
                     ExceptionLogService.LogException( new Exception( $"Unable to send the notification message for the '{job.Name}' job (ID: {job.Id}).", ex ), null );
                 }
+            }
+
+            // Release the distributed lock after all bookkeeping is done.
+            // Holding through bookkeeping ensures only the lock winner
+            // updates ServiceJob run-history columns; another node cannot
+            // fire this job and race the same columns until we release.
+            ReleaseDistributedLock( context );
+        }
+
+        /// <summary>
+        /// Retrieves the distributed lock handle stashed on
+        /// <paramref name="context"/> by
+        /// <see cref="RockTriggerListener.VetoJobExecution"/> and disposes it,
+        /// releasing the lock in SQL Server. Safe to call when no handle was
+        /// stashed (returns without side effect). Never throws; any error is
+        /// logged and swallowed so a Dispose failure cannot bubble up and
+        /// leave Quartz in a bad state.
+        /// </summary>
+        private void ReleaseDistributedLock( IJobExecutionContext context )
+        {
+            var handle = context.Get( RockTriggerListener.DistributedLockHandleKey ) as ILockHandle;
+
+            if ( handle == null )
+            {
+                return;
+            }
+
+            try
+            {
+                handle.Dispose();
+            }
+            catch ( Exception ex )
+            {
+                Logger.LogWarning( ex, "Failed to release distributed lock for Job ID {jobId}.", context.JobDetail?.Description.AsIntegerOrNull() );
+            }
+            finally
+            {
+                // Prevent double-release if this method is invoked twice for
+                // the same context (defensive; JobWasExecuted is the intended
+                // caller and only runs once per fire).
+                context.Put( RockTriggerListener.DistributedLockHandleKey, null );
             }
         }
 

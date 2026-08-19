@@ -71,6 +71,7 @@ internal sealed partial class GroupSkill
             .Select( g => new GroupResult
             {
                 Id = g.Id,
+                Guid = g.Guid,
                 Name = g.Name,
                 AttributeValues = g.GetGridAttributeValueResults( AgentRequestContext ).ToList(),
             } )
@@ -79,6 +80,7 @@ internal sealed partial class GroupSkill
         var historyPage = cursorPage.WithItems( cursorPage.Items.Select( cr => new KeyNameResult
         {
             Id = cr.Id,
+            Guid = cr.Guid,
             Name = cr.ToString()
         } ) );
 

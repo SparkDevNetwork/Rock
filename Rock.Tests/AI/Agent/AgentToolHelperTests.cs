@@ -14,6 +14,7 @@ using Rock.AI.Agent;
 using Rock.AI.Agent.Classes;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
+using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.AI.Agent;
@@ -1117,7 +1118,11 @@ namespace Rock.Tests.AI.Agent
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
 
-            var result = helper.GetAvailableAttributes( null );
+            // The cast picks the overload under test. GetAvailableAttributes also
+            // accepts IEnumerable<AttributeCache>, and neither parameter type is
+            // more specific than the other, so a bare null matches both and does
+            // not compile. This test covers the entity overload.
+            var result = helper.GetAvailableAttributes( ( IHasAttributes ) null );
 
             Assert.IsEmpty( result );
         }

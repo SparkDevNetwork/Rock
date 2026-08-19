@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using Rock.AI.Agent.Classes.Common;
+
 namespace Rock.AI.Agent.Classes.Entity
 {
     /// <summary>
@@ -22,6 +24,14 @@ namespace Rock.AI.Agent.Classes.Entity
     /// such as sending SMS messages. Includes meta data about the number and (optionally) the
     /// person currently assigned to monitor or respond from this number.
     /// </summary>
+    /// <remarks>
+    /// This class serves both the lookup and the detail tool. The lookup fills in a small
+    /// subset and leaves the rest null; the serializer omits null values, so the lookup's
+    /// output is unaffected by the properties it does not set. Every property must therefore
+    /// be nullable. A non-nullable value type would serialize its default (<c>false</c> or
+    /// <c>0</c>) on every row the lookup returns, which reads as a real answer rather than
+    /// an absent one.
+    /// </remarks>
     internal class SystemPhoneNumberResult : EntityResultBase
     {
         /// <summary>
@@ -53,5 +63,63 @@ namespace Rock.AI.Agent.Classes.Entity
         /// </summary>
         /// <value><c>true</c> if the number can send and receive SMS; otherwise, <c>false</c>.</value>
         public bool? IsSmsEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the number is active. Populated by
+        /// <c>GetSystemPhoneNumber</c> only, since the lookup returns active numbers alone.
+        /// </summary>
+        /// <value><c>true</c> if the number is in use; otherwise, <c>false</c>.</value>
+        public bool? IsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sort order of the number. Populated by
+        /// <c>GetSystemPhoneNumber</c> only.
+        /// </summary>
+        /// <value>An ascending sort value, where a lower number sorts first.</value>
+        public int? Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether incoming messages are forwarded to the
+        /// assigned person. Populated by <c>GetSystemPhoneNumber</c> only.
+        /// </summary>
+        /// <value><c>true</c> if incoming messages are forwarded; otherwise, <c>false</c>.</value>
+        public bool? IsSmsForwardingEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow type launched when an SMS message arrives on this
+        /// number. Populated by <c>GetSystemPhoneNumber</c> only.
+        /// </summary>
+        /// <value>A reference to the workflow type, or <c>null</c> when none is configured.</value>
+        public KeyNameResult SmsReceivedWorkflowType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group whose active members are notified when a new SMS message
+        /// arrives on this number. Populated by <c>GetSystemPhoneNumber</c> only.
+        /// </summary>
+        /// <value>A reference to the group, or <c>null</c> when none is configured.</value>
+        public KeyNameResult SmsNotificationGroup { get; set; }
+
+        /// <summary>
+        /// Gets or sets the mobile application site used to decide which devices receive
+        /// push notifications. Populated by <c>GetSystemPhoneNumber</c> only.
+        /// </summary>
+        /// <value>A reference to the site, or <c>null</c> when none is configured.</value>
+        public KeyNameResult MobileApplicationSite { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether Rock is prevented from sending automatic
+        /// replies to opt-in and opt-out messages. Populated by
+        /// <c>GetSystemPhoneNumber</c> only.
+        /// </summary>
+        /// <value><c>true</c> when the messaging provider handles these replies instead.</value>
+        public bool? SuppressSmsOptInOutAutoReplies { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether Rock is prevented from updating a
+        /// person's SMS status when they opt in or out. Populated by
+        /// <c>GetSystemPhoneNumber</c> only.
+        /// </summary>
+        /// <value><c>true</c> when the organization tracks opt-in and opt-out itself.</value>
+        public bool? DisableSmsOptInOutTracking { get; set; }
     }
 }

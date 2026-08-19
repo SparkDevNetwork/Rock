@@ -64,6 +64,7 @@ internal sealed partial class AttendeeSkill
             .Select( g => new GroupResult
             {
                 Id = g.Id,
+                Guid = g.Guid,
                 Name = g.Name,
                 GroupType = new GroupTypeResult
                 {
@@ -75,6 +76,7 @@ internal sealed partial class AttendeeSkill
         var historyPage = cursorPage.WithItems( cursorPage.Items.Select( g => new KeyNameResult
         {
             Id = g.Id,
+            Guid = g.Guid,
             Name = g.Name,
         } ) );
 

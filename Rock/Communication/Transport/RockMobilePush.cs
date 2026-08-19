@@ -352,16 +352,20 @@ namespace Rock.Communication.Transport
                                             Data = GetPushNotificationData( communication.PushOpenAction, pushData, recipient )
                                         };
 
+                                        // Android config. ClickAction routes a system tray tap to
+                                        // MainActivity instead of the launcher, which is what delivers
+                                        // the notification data when the app is already backgrounded.
+                                        notification.Android = new AndroidConfig
+                                        {
+                                            Notification = new AndroidNotification
+                                            {
+                                                ClickAction = "Rock.Mobile.Main",
+                                                Sound = sound ?? string.Empty
+                                            }
+                                        };
+
                                         if ( sound.IsNotNullOrWhiteSpace() )
                                         {
-                                            notification.Android = new AndroidConfig
-                                            {
-                                                Notification = new AndroidNotification
-                                                {
-                                                    Sound = sound
-                                                }
-                                            };
-
                                             notification.Apns = new ApnsConfig
                                             {
                                                 Aps = new Aps

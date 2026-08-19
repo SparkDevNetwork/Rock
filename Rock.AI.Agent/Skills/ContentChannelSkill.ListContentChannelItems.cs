@@ -62,10 +62,12 @@ internal partial class ContentChannelSkill
             .Select( cci => new ContentChannelItemResult
             {
                 Id = cci.Id,
+                Guid = cci.Guid,
                 Name = cci.Title,
                 ContentChannel = new ContentChannelResult
                 {
                     Id = cci.ContentChannelId,
+                    Guid = cci.ContentChannel.Guid,
                     Name = cci.ContentChannel.Name,
                 },
                 AttributeValues = cci.GetGridAttributeValueResults( AgentRequestContext ).ToList(),
@@ -75,6 +77,7 @@ internal partial class ContentChannelSkill
         var historyPage = cursorPage.WithItems( cursorPage.Items.Select( cci => new KeyNameResult
         {
             Id = cci.Id,
+            Guid = cci.Guid,
             Name = cci.ToString()
         } ) );
 

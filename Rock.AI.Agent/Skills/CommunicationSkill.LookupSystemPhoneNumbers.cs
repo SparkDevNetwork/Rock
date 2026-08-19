@@ -41,6 +41,7 @@ internal partial class CommunicationSkill
         var trimmedSpns = spnResults.Select( spn => new KeyNameResult
         {
             Id = spn.Id,
+            Guid = spn.Guid,
             Name = spn.Name
         } );
 
@@ -70,6 +71,12 @@ internal partial class CommunicationSkill
                 var spnResult = new SystemPhoneNumberResult
                 {
                     Id = spn.Id,
+
+                    // Workflow action settings store a system phone number by
+                    // Guid, so the lookup carries it rather than making a caller
+                    // round trip through GetSystemPhoneNumber for the identifier
+                    // alone.
+                    Guid = spn.Guid,
                     Name = spn.Name,
                     Description = spn.Description,
                     Number = spn.Number,
