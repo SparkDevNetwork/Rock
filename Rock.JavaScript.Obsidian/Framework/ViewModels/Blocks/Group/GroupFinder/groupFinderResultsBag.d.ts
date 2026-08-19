@@ -51,14 +51,7 @@ export type GroupFinderResultsBag = {
     /** Gets or sets the east edge of the origin's raw geocoded viewport. */
     resolvedViewportEast?: number | null;
 
-    /**
-     * Gets or sets the north edge of the origin's raw geocoded viewport, for the client to hold and echo back so the same origin is not geocoded again while paging or refiltering.
-     * This is the geocoder's own viewport for the origin, before it is unioned with the default radius
-     * into SearchBoundsNorth. Returned only for a geocoded typed origin, and all four
-     * edges are returned together or all null (the origin resolved to a point with no viewport). The
-     * client pairs it with OriginLatitude and OriginLongitude as the
-     * resolved origin it sends back in the query.
-     */
+    /** Gets or sets the north edge of the origin's raw geocoded viewport, for the client to hold and echo back so the same origin is not geocoded again while paging or refiltering. */
     resolvedViewportNorth?: number | null;
 
     /** Gets or sets the south edge of the origin's raw geocoded viewport. */
@@ -70,12 +63,7 @@ export type GroupFinderResultsBag = {
     /** Gets or sets the east edge of the area the results were searched within. */
     searchBoundsEast?: number | null;
 
-    /**
-     * Gets or sets the north edge of the area the results were searched within, so the client can frame the map to it, or null when no origin was in use.
-     * This is the boundary the server actually applied: the origin's geocoded viewport, a default
-     * radius around it, or the explicit area the visitor searched. All four edges are returned
-     * together or all null.
-     */
+    /** Gets or sets the north edge of the area the results were searched within, so the client can frame the map to it, or null when no origin was in use. */
     searchBoundsNorth?: number | null;
 
     /** Gets or sets the south edge of the area the results were searched within. */

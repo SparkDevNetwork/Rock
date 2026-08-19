@@ -22,8 +22,8 @@
 //
 
 import { ContentChannelItemStatus } from "@Obsidian/Enums/Cms/contentChannelItemStatus";
+import { ViewerFilterOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemMetrics/viewerFilterOptionsBag";
 import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
-import { ViewerFilterOptionsBag } from "./viewerFilterOptionsBag";
 
 /** The initialization data for the Content Channel Item Metrics block. */
 export type ContentChannelItemMetricsInitializationBox = {
@@ -45,18 +45,18 @@ export type ContentChannelItemMetricsInitializationBox = {
      */
     isStatusVisible: boolean;
 
-    /**
-     * Gets or sets the grid definition for the Viewer Details grid, including the built-in
-     * person grid action URLs (communicate, merge, bulk update, launch workflow, export).
-     */
-    viewerGridDefinition?: GridDefinitionBag | null;
-
-    /** Gets or sets the option lists for the Viewer Details grid filters. */
-    viewerFilterOptions?: ViewerFilterOptionsBag | null;
-
     /** Gets or sets the approval status of the content channel item. */
     itemStatus: ContentChannelItemStatus;
 
     /** Gets or sets the title of the content channel item whose metrics are shown. */
     title?: string | null;
+
+    /** Gets or sets the option lists for the Viewer Details grid filters. */
+    viewerFilterOptions?: ViewerFilterOptionsBag | null;
+
+    /**
+     * Gets or sets the grid definition for the Viewer Details grid, including the built-in
+     * person grid action URLs (communicate, merge, bulk update, launch workflow, export).
+     */
+    viewerGridDefinition?: GridDefinitionBag | null;
 };
