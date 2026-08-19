@@ -73,6 +73,12 @@ export type EditPersonOptionsBag = {
     /** Gets or sets a value indicating whether SMS is enabled by default on a new (blank) mobile number. */
     isMobileSmsEnabledByDefault: boolean;
 
+    /**
+     * Gets or sets a value indicating whether the person is the only active member of their
+     * primary family, so marking them inactive would also inactivate the family.
+     */
+    isOnlyActiveFamilyMember: boolean;
+
     /** Gets or sets a value indicating whether the current user may edit the record source. */
     isRecordSourceEditable: boolean;
 
@@ -81,6 +87,9 @@ export type EditPersonOptionsBag = {
      * inactive reason, deceased date, and inactive reason note.
      */
     isRecordStatusEditable: boolean;
+
+    /** Gets or sets the placeholder photo URL (the person's initials avatar) shown when they have no photo. */
+    noPictureUrl?: string | null;
 
     /** Gets or sets whether the race field is hidden, optional, or required ("Hide", "Optional", "Required"). */
     raceOption?: string | null;

@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 using Rock;
 using Rock.Attribute;
@@ -79,7 +80,7 @@ namespace Rock.Blocks.Crm.PersonDetail
     [BooleanField(
         "Require Complete Birth Date",
         Key = AttributeKey.RequireCompleteBirthDate,
-        Description = "Whether the user is required to enter a year once a birth month and day are present.",
+        Description = "Whether the year is required once a birth month and day are present.",
         DefaultBooleanValue = false,
         Order = 3 )]
 
@@ -254,6 +255,8 @@ namespace Rock.Blocks.Crm.PersonDetail
             {
                 options.FamilyName = person.PrimaryFamily?.Name;
                 options.CampusName = person.PrimaryCampus?.Name;
+                options.NoPictureUrl = RequestContext.ResolveRockUrl( Person.GetPersonPhotoUrl( person, 400 ) );
+                options.IsOnlyActiveFamilyMember = IsOnlyActiveFamilyMember( person );
                 SetAccountProtectionProfileMessage( options, person );
             }
 
@@ -303,6 +306,11 @@ namespace Rock.Blocks.Crm.PersonDetail
                 LastName = person.LastName,
                 Suffix = ToDefinedValueListItemBag( person.SuffixValueId ),
                 Photo = GetPhotoListItem( person ),
+                ConnectionStatus = ToDefinedValueListItemBag( person.ConnectionStatusValueId ),
+                RecordStatus = ToDefinedValueListItemBag( person.RecordStatusValueId ),
+                RecordStatusReason = ToDefinedValueListItemBag( person.RecordStatusReasonValueId ),
+                DeceasedDate = person.DeceasedDate?.ToString( "yyyy-MM-dd" ),
+                RecordSource = ToDefinedValueListItemBag( person.RecordSourceValueId ),
                 Gender = person.Gender,
                 Email = person.Email,
                 IsEmailActive = person.IsEmailActive,
@@ -325,9 +333,8 @@ namespace Rock.Blocks.Crm.PersonDetail
 
                 The following still need to be mapped from the person as their inputs are built
                 (see EditPerson.ascx.cs ShowDetails around lines 877-1049):
-                  - Defined-value ListItemBags: MaritalStatus, ConnectionStatus, RecordStatus,
-                    RecordStatusReason, RecordSource, Race, Ethnicity, Grade.
-                  - BirthDate (BirthdayPickerBag), AnniversaryDate, DeceasedDate.
+                  - Defined-value ListItemBags: MaritalStatus, Race, Ethnicity, Grade.
+                  - BirthDate (BirthdayPickerBag), AnniversaryDate.
                   - Chat tri-state values (when chat is enabled and the person has a chat alias).
                   - GivingGroupGuid and GivingEnvelopeNumber (person attribute value).
                   - PhoneNumbers, PreviousLastNames, AlternateIds, SearchKeys.
@@ -345,6 +352,12 @@ namespace Rock.Blocks.Crm.PersonDetail
             {
                 return false;
             }
+
+            // Per-field edit permissions are re-checked on the server; client visibility is never trusted.
+            var canAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
+            var canEditConnectionStatus = canAdministrate || BlockCache.IsAuthorized( SecurityActionKey.EditConnectionStatus, RequestContext.CurrentPerson );
+            var canEditRecordStatus = canAdministrate || BlockCache.IsAuthorized( SecurityActionKey.EditRecordStatus, RequestContext.CurrentPerson );
+            var canEditRecordSource = canAdministrate;
 
             box.IfValidProperty( nameof( box.Bag.Title ),
                 () => entity.TitleValueId = GetDefinedValueId( box.Bag.Title ) );
@@ -375,6 +388,71 @@ namespace Rock.Blocks.Crm.PersonDetail
                     if ( newPhotoBinaryFile != null )
                     {
                         newPhotoBinaryFile.IsTemporary = false;
+                    }
+                } );
+
+            box.IfValidProperty( nameof( box.Bag.ConnectionStatus ),
+                () =>
+                {
+                    if ( canEditConnectionStatus )
+                    {
+                        entity.ConnectionStatusValueId = GetDefinedValueId( box.Bag.ConnectionStatus );
+                    }
+                } );
+
+            box.IfValidProperty( nameof( box.Bag.RecordSource ),
+                () =>
+                {
+                    if ( canEditRecordSource )
+                    {
+                        entity.RecordSourceValueId = GetDefinedValueId( box.Bag.RecordSource );
+                    }
+                } );
+
+            box.IfValidProperty( nameof( box.Bag.RecordStatus ),
+                () =>
+                {
+                    if ( canEditRecordStatus )
+                    {
+                        entity.RecordStatusValueId = GetDefinedValueId( box.Bag.RecordStatus );
+                    }
+                } );
+
+            box.IfValidProperty( nameof( box.Bag.RecordStatusReason ),
+                () =>
+                {
+                    if ( canEditRecordStatus )
+                    {
+                        var recordStatusInactiveId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() )?.Id;
+
+                        // The reason only applies while the record is inactive.
+                        entity.RecordStatusReasonValueId = entity.RecordStatusValueId == recordStatusInactiveId
+                            ? GetDefinedValueId( box.Bag.RecordStatusReason )
+                            : null;
+                    }
+                } );
+
+            box.IfValidProperty( nameof( box.Bag.DeceasedDate ),
+                () =>
+                {
+                    if ( canEditRecordStatus )
+                    {
+                        var reasonDeceasedId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() )?.Id;
+
+                        // NOTE: The deceased-date-before-birth-date validation is added with the Birth Date field.
+                        // The deceased date only applies when the inactive reason is deceased.
+                        entity.DeceasedDate = entity.RecordStatusReasonValueId == reasonDeceasedId
+                            ? box.Bag.DeceasedDate.AsDateTime()
+                            : null;
+                    }
+                } );
+
+            box.IfValidProperty( nameof( box.Bag.InactiveReasonNote ),
+                () =>
+                {
+                    if ( canEditRecordStatus )
+                    {
+                        entity.InactiveReasonNote = box.Bag.InactiveReasonNote?.Trim();
                     }
                 } );
 
@@ -488,6 +566,52 @@ namespace Rock.Blocks.Crm.PersonDetail
         }
 
         /// <summary>
+        /// Determines whether the person is the only active member of their primary family, so
+        /// marking them inactive would leave no active members.
+        /// </summary>
+        /// <param name="person">The person being edited.</param>
+        /// <returns><c>true</c> when the person is the only active member of their primary family.</returns>
+        private bool IsOnlyActiveFamilyMember( Person person )
+        {
+            var primaryFamily = person.PrimaryFamily;
+            if ( primaryFamily == null )
+            {
+                return false;
+            }
+
+            var recordStatusInactiveId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() )?.Id;
+
+            return !primaryFamily.Members.Any( m => m.PersonId != person.Id && m.Person.RecordStatusValueId != recordStatusInactiveId );
+        }
+
+        /// <summary>
+        /// Re-evaluates the active state of the person's families when their record status changed
+        /// to or from inactive. Mirrors the WebForms btnSave_Click family activation logic.
+        /// </summary>
+        /// <param name="person">The saved person.</param>
+        /// <param name="originalRecordStatusValueId">The record status value id before the save.</param>
+        private void ReevaluateFamilyActiveState( Person person, int? originalRecordStatusValueId )
+        {
+            var recordStatusInactiveId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() )?.Id;
+
+            var changedToOrFromInactive = originalRecordStatusValueId != person.RecordStatusValueId
+                && ( originalRecordStatusValueId == recordStatusInactiveId || person.RecordStatusValueId == recordStatusInactiveId );
+
+            if ( !changedToOrFromInactive )
+            {
+                return;
+            }
+
+            // A family stays active as long as it has at least one non-inactive member.
+            foreach ( var family in new PersonService( RockContext ).GetFamilies( person.Id ) )
+            {
+                family.IsActive = family.Members.Any( m => m.Person.RecordStatusValueId != recordStatusInactiveId );
+            }
+
+            RockContext.SaveChanges();
+        }
+
+        /// <summary>
         /// Sets the account protection profile warning on the options when the current user may view it
         /// and the person's profile is above Low. Mirrors the WebForms ShowDetails() banner logic.
         /// </summary>
@@ -544,6 +668,7 @@ namespace Rock.Blocks.Crm.PersonDetail
             }
 
             var originalPhotoId = entity.PhotoId;
+            var originalRecordStatusValueId = entity.RecordStatusValueId;
 
             if ( !UpdateEntityFromBox( entity, box ) )
             {
@@ -564,6 +689,8 @@ namespace Rock.Blocks.Crm.PersonDetail
                         RockContext.SaveChanges();
                     }
                 }
+
+                ReevaluateFamilyActiveState( entity, originalRecordStatusValueId );
             } );
 
             return ActionOk( RequestContext.ResolveRockUrl( $"~/Person/{entity.IdKey}" ) );

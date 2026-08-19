@@ -34,10 +34,65 @@
             <div class="row">
                 <div class="col-md-3 mb-4">
                     <ContentSection light>
-                        <ImageEditor v-model="photo"
-                                     :binaryFileTypeGuid="BinaryFiletype.PersonImage"
-                                     label="Photo"
-                                     help="The photo shown with this person throughout Rock, including check-in and directories." />
+                        <div>
+                            <ImageEditor v-model="photo"
+                                         :binaryFileTypeGuid="BinaryFiletype.PersonImage"
+                                         :noPictureUrl="options.noPictureUrl ?? undefined"
+                                         label="Profile Photo"
+                                         help="The photo shown with this person throughout Rock, including check-in and directories." />
+
+                            <DefinedValuePicker v-if="options.isConnectionStatusEditable"
+                                                v-model="connectionStatus"
+                                                :definedTypeGuid="DefinedType.PersonConnectionStatus"
+                                                label="Connection Status"
+                                                help="This person's relationship to your church, such as Member or Attendee."
+                                                rules="required" />
+                            <StaticFormControl v-else label="Connection Status" :modelValue="connectionStatus?.text ?? ''" />
+
+                            <DefinedValuePicker v-if="options.isRecordStatusEditable"
+                                                v-model="recordStatus"
+                                                :definedTypeGuid="DefinedType.PersonRecordStatus"
+                                                label="Record Status"
+                                                help="Whether this person's record is active. Inactive retires a record without deleting it."
+                                                :showBlankItem="false" />
+                            <StaticFormControl v-else label="Record Status" :modelValue="recordStatus?.text ?? ''" />
+
+                            <p v-if="isRecordInactive && options.isOnlyActiveFamilyMember" class="text-muted mb-3">
+                                {{ familyInactiveMessage }}
+                            </p>
+
+                            <ConditionalWell v-if="isRecordInactive">
+                                <DefinedValuePicker v-if="options.isRecordStatusEditable"
+                                                    v-model="recordStatusReason"
+                                                    :definedTypeGuid="DefinedType.PersonRecordStatusReason"
+                                                    label="Reason"
+                                                    help="Why this record is inactive. Used for reporting on why people leave."
+                                                    :showBlankItem="true" />
+                                <StaticFormControl v-else label="Reason" :modelValue="recordStatusReason?.text ?? ''" />
+
+                                <DatePicker v-if="isReasonDeceased && options.isRecordStatusEditable"
+                                            v-model="deceasedDate"
+                                            label="Deceased Date"
+                                            help="The date this person passed away. Must be on or after their birth date." />
+                                <StaticFormControl v-else-if="isReasonDeceased" label="Deceased Date" :modelValue="deceasedDate" />
+
+                                <TextBox v-if="options.isRecordStatusEditable"
+                                         v-model="inactiveReasonNote"
+                                         label="Note"
+                                         textMode="multiline"
+                                         :rows="3"
+                                         help="Additional detail about why this record is inactive." />
+                                <StaticFormControl v-else label="Note" :modelValue="inactiveReasonNote" />
+                            </ConditionalWell>
+
+                            <DefinedValuePicker v-if="options.isRecordSourceEditable"
+                                                v-model="recordSource"
+                                                :definedTypeGuid="DefinedType.RecordSourceType"
+                                                label="Record Source"
+                                                help="How this record first entered Rock. Set automatically when the record is created; changing it replaces the original attribution."
+                                                :showBlankItem="true" />
+                            <StaticFormControl v-else label="Record Source" :modelValue="recordSource?.text ?? ''" />
+                        </div>
                     </ContentSection>
                 </div>
                 <div class="col-md-9">
@@ -60,11 +115,13 @@
                                     <div class="col-md-6">
                                         <FirstNameTextBox v-model="firstName"
                                                           label="First Name"
+                                                          help="The person's legal first name."
                                                           rules="nospecialcharacters|noemojisorspecialfonts" />
                                     </div>
                                     <div class="col-md-6">
                                         <TextBox v-model="nickName"
                                                  label="Nickname"
+                                                 help="The name this person goes by. Rock uses it wherever their name is displayed. When blank, the first name is used."
                                                  rules="nospecialcharacters|noemojisorspecialfonts" />
                                     </div>
                                 </div>
@@ -116,7 +173,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, ref, watch } from "vue";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
@@ -127,6 +184,9 @@
     import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
     import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
@@ -134,8 +194,10 @@
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { setPropertiesBoxValue, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { areEqual } from "@Obsidian/Utility/guid";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
     import { NavigationUrlKey } from "./EditPerson/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
@@ -164,6 +226,12 @@
     const suffix = ref<ListItemBag | null>(config.entity?.suffix ?? null);
 
     // Status & Photo (left column)
+    const recordStatus = ref<ListItemBag | null>(config.entity?.recordStatus ?? null);
+    const connectionStatus = ref<ListItemBag | null>(config.entity?.connectionStatus ?? null);
+    const recordSource = ref<ListItemBag | null>(config.entity?.recordSource ?? null);
+    const recordStatusReason = ref<ListItemBag | null>(config.entity?.recordStatusReason ?? null);
+    const deceasedDate = ref(config.entity?.deceasedDate ?? "");
+    const inactiveReasonNote = ref(config.entity?.inactiveReasonNote ?? "");
     const photo = ref<ListItemBag | null>(config.entity?.photo ?? null);
 
     // #endregion Values
@@ -189,7 +257,41 @@
             : AlertType.Warning;
     });
 
+    const isRecordInactive = computed<boolean>(() => {
+        return areEqual(recordStatus.value?.value, DefinedValue.PersonRecordStatusInactive);
+    });
+
+    const isReasonDeceased = computed<boolean>(() => {
+        return areEqual(recordStatusReason.value?.value, DefinedValue.PersonRecordStatusReasonDeceased);
+    });
+
+    const familyInactiveMessage = computed<string>(() => {
+        const personName = nickName.value || firstName.value || "This person";
+        const family = options.value.familyName || "family";
+        return `${personName} is the only active member of the ${family}. Saving will also mark the family inactive.`;
+    });
+
     // #endregion Computed Values
+
+    // #region Watchers
+
+    // Redesign bug fix: when the record returns to Active, hide and clear the inactive-only fields.
+    watch(isRecordInactive, (inactive) => {
+        if (!inactive) {
+            recordStatusReason.value = null;
+            deceasedDate.value = "";
+            inactiveReasonNote.value = "";
+        }
+    });
+
+    // Clear the deceased date when the reason is no longer Deceased.
+    watch(isReasonDeceased, (deceased) => {
+        if (!deceased) {
+            deceasedDate.value = "";
+        }
+    });
+
+    // #endregion Watchers
 
     // #region Event Handlers
 
@@ -213,6 +315,12 @@
             setPropertiesBoxValue(box, "middleName", middleName.value);
             setPropertiesBoxValue(box, "lastName", lastName.value);
             setPropertiesBoxValue(box, "suffix", suffix.value);
+            setPropertiesBoxValue(box, "recordStatus", recordStatus.value);
+            setPropertiesBoxValue(box, "connectionStatus", connectionStatus.value);
+            setPropertiesBoxValue(box, "recordSource", recordSource.value);
+            setPropertiesBoxValue(box, "recordStatusReason", recordStatusReason.value);
+            setPropertiesBoxValue(box, "deceasedDate", deceasedDate.value);
+            setPropertiesBoxValue(box, "inactiveReasonNote", inactiveReasonNote.value);
             setPropertiesBoxValue(box, "photo", photo.value);
 
             const result = await invokeBlockAction<ValidPropertiesBox<EditPersonBag> | string>("Save", { box });

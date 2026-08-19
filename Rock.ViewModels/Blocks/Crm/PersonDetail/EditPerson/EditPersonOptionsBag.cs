@@ -127,6 +127,17 @@ namespace Rock.ViewModels.Blocks.Crm.PersonDetail.EditPerson
         public string CampusName { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the person is the only active member of their
+        /// primary family, so marking them inactive would also inactivate the family.
+        /// </summary>
+        public bool IsOnlyActiveFamilyMember { get; set; }
+
+        /// <summary>
+        /// Gets or sets the placeholder photo URL (the person's initials avatar) shown when they have no photo.
+        /// </summary>
+        public string NoPictureUrl { get; set; }
+
+        /// <summary>
         /// Gets or sets the account protection profile warning message, when applicable.
         /// </summary>
         public string AccountProtectionProfileMessage { get; set; }
