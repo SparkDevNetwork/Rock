@@ -31,9 +31,71 @@
                 {{ options.accountProtectionProfileMessage }}
             </NotificationBox>
 
-            <EditPanel v-model="editBag"
-                       :options="options"
-                       @propertyChanged="baseBlock.onPropertyChanged" />
+            <div class="row">
+                <div class="col-md-3 mb-4">
+                    <ContentSection light>
+                        <ImageEditor v-model="photo"
+                                     :binaryFileTypeGuid="BinaryFiletype.PersonImage"
+                                     label="Photo"
+                                     help="The photo shown with this person throughout Rock, including check-in and directories." />
+                    </ContentSection>
+                </div>
+                <div class="col-md-9">
+                    <ContentSectionContainer :sidebar="false">
+                        <ContentSection title="Personal Information"
+                                        icon="ti ti-user-circle"
+                                        disableCollapse>
+                            <ContentStack title="Name"
+                                          description="Enter the person's legal name, plus the name they go by. Rock shows the nickname wherever their name appears.">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <DefinedValuePicker v-model="title"
+                                                            :definedTypeGuid="DefinedType.PersonTitle"
+                                                            label="Title"
+                                                            class="input-width-md"
+                                                            :showBlankItem="true" />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <FirstNameTextBox v-model="firstName"
+                                                          label="First Name"
+                                                          rules="nospecialcharacters|noemojisorspecialfonts" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <TextBox v-model="nickName"
+                                                 label="Nickname"
+                                                 rules="nospecialcharacters|noemojisorspecialfonts" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <TextBox v-model="middleName"
+                                                 label="Middle Name"
+                                                 rules="nospecialcharacters|noemojisorspecialfonts" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <TextBox v-model="lastName"
+                                                 label="Last Name"
+                                                 rules="nospecialcharacters|noemojisorspecialfonts" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <DefinedValuePicker v-model="suffix"
+                                                            :definedTypeGuid="DefinedType.PersonSuffix"
+                                                            label="Suffix"
+                                                            class="input-width-md"
+                                                            :showBlankItem="true" />
+                                    </div>
+                                </div>
+                            </ContentStack>
+                        </ContentSection>
+                    </ContentSectionContainer>
+                </div>
+            </div>
 
             <template #footerActions>
                 <RockButton :btnType="BtnType.Primary"
@@ -61,14 +123,23 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import ExperienceModePicker from "@Obsidian/Controls/experienceModePicker.obs";
-    import EditPanel from "./EditPerson/editPanel.partial.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
-    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { NavigationUrlKey } from "./EditPerson/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { EditPersonBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/EditPerson/editPersonBag";
     import { EditPersonOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/EditPerson/editPersonOptionsBag";
 
@@ -80,19 +151,20 @@
     const blockError = ref("");
     const errorMessage = ref("");
 
-    const editBag = ref<ValidPropertiesBox<EditPersonBag>>({
-        bag: config.entity ?? {} as EditPersonBag,
-        validProperties: config.entity ? Object.keys(config.entity) : null
-    });
-
     const isSaving = ref(false);
     const isNavigating = ref(false);
     const submitForm = ref(false);
 
-    const baseBlock = useEntityDetailBlock({
-        blockConfig: config,
-        entity: editBag
-    });
+    // Personal Information > Name
+    const title = ref<ListItemBag | null>(config.entity?.title ?? null);
+    const firstName = ref(config.entity?.firstName ?? "");
+    const nickName = ref(config.entity?.nickName ?? "");
+    const middleName = ref(config.entity?.middleName ?? "");
+    const lastName = ref(config.entity?.lastName ?? "");
+    const suffix = ref<ListItemBag | null>(config.entity?.suffix ?? null);
+
+    // Status & Photo (left column)
+    const photo = ref<ListItemBag | null>(config.entity?.photo ?? null);
 
     // #endregion Values
 
@@ -103,9 +175,7 @@
     });
 
     const panelTitle = computed<string>(() => {
-        const bag = editBag.value.bag;
-
-        const displayName = [bag?.nickName || bag?.firstName, bag?.lastName]
+        const displayName = [nickName.value || firstName.value, lastName.value]
             .filter(name => !!name)
             .join(" ")
             .trim();
@@ -131,9 +201,21 @@
         isSaving.value = true;
 
         try {
-            const result = await invokeBlockAction<ValidPropertiesBox<EditPersonBag> | string>("Save", {
-                box: editBag.value
-            });
+            // Only the edited fields are marked valid; the server writes just those, leaving
+            // unbuilt sections untouched.
+            const box: ValidPropertiesBox<EditPersonBag> = {
+                bag: { ...config.entity } as EditPersonBag
+            };
+
+            setPropertiesBoxValue(box, "title", title.value);
+            setPropertiesBoxValue(box, "firstName", firstName.value);
+            setPropertiesBoxValue(box, "nickName", nickName.value);
+            setPropertiesBoxValue(box, "middleName", middleName.value);
+            setPropertiesBoxValue(box, "lastName", lastName.value);
+            setPropertiesBoxValue(box, "suffix", suffix.value);
+            setPropertiesBoxValue(box, "photo", photo.value);
+
+            const result = await invokeBlockAction<ValidPropertiesBox<EditPersonBag> | string>("Save", { box });
 
             if (result.isSuccess && result.data) {
                 if (result.statusCode === 200 && typeof result.data === "string") {
