@@ -30,6 +30,11 @@ namespace Rock.ViewModels.Blocks.Crm.PersonDetail.EditPerson
     /// </summary>
     public class EditPersonBag
     {
+        /// <summary>
+        /// Gets or sets the identifier key of the person being edited.
+        /// </summary>
+        public string IdKey { get; set; }
+
         #region Identity
 
         /// <summary>

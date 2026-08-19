@@ -80,6 +80,9 @@ export type EditPersonBag = {
     /** Gets or sets the high school graduation year. */
     graduationYear?: number | null;
 
+    /** Gets or sets the identifier key of the person being edited. */
+    idKey?: string | null;
+
     /** Gets or sets the free-form note describing why the record is inactive. */
     inactiveReasonNote?: string | null;
 

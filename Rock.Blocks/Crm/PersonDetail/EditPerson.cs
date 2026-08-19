@@ -15,25 +15,26 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using System.ComponentModel;
 
+using Rock;
 using Rock.Attribute;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Crm.PersonDetail.EditPerson;
-
-/*******************************************************************************************************************************
- * NOTE: The Security/AccountEdit block has very similar functionality.  If updating this block, make sure to check
- * that block also.  It may need the same updates.
- *******************************************************************************************************************************/
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Crm.PersonDetail
 {
     /// <summary>
     /// Allows you to edit a person's full profile.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockBlockType" />
+    /// <seealso cref="Rock.Blocks.RockEntityDetailBlockType{Person, EditPersonBag}" />
 
     [DisplayName( "Edit Person" )]
     [Category( "CRM > Person Detail" )]
@@ -113,7 +114,7 @@ namespace Rock.Blocks.Crm.PersonDetail
     [Rock.SystemGuid.EntityTypeGuid( "E295AD66-880C-4FB8-954B-36D11B8C2E92" )]
     [Rock.SystemGuid.BlockTypeGuid( "3A036FB2-366E-4F8A-AF7F-2044230CAADA" )]
     //[Rock.SystemGuid.BlockTypeGuid( "0A15F28C-4828-4B38-AF66-58AC5BDE48E0" )]
-    public class EditPerson : RockBlockType
+    public class EditPerson : RockEntityDetailBlockType<Person, EditPersonBag>
     {
         #region Keys
 
@@ -140,6 +141,11 @@ namespace Rock.Blocks.Crm.PersonDetail
         private static class PageParameterKey
         {
             public const string PersonId = "PersonId";
+        }
+
+        private static class NavigationUrlKey
+        {
+            public const string ParentPage = "ParentPage";
         }
 
         #endregion Keys
@@ -181,62 +187,51 @@ namespace Rock.Blocks.Crm.PersonDetail
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var box = new EditPersonBox();
+            var box = new DetailBlockBox<EditPersonBag, EditPersonOptionsBag>();
 
-            var person = GetPerson();
+            var person = GetInitialEntity();
 
-            // Guard: no person to edit. Render the not-found state rather than an empty form.
-            if ( person == null )
-            {
-                box.IsPersonFound = false;
-                return box;
-            }
+            SetBoxInitialEntityState( box, person );
 
-            box.IsPersonFound = true;
-            box.PersonIdKey = person.IdKey;
-            box.IsEditAllowed = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
-            box.CancelUrl = RequestContext.ResolveRockUrl( $"~/Person/{person.IdKey}" );
-            box.FamilyName = person.PrimaryFamily?.Name;
-            box.CampusName = person.PrimaryCampus?.Name;
-            box.Options = GetOptions( person );
-            box.Person = GetPersonBag( person );
-
-            SetAccountProtectionProfileMessage( box, person );
+            box.NavigationUrls = GetBoxNavigationUrls( person );
+            box.Options = GetBoxOptions( person );
 
             return box;
         }
 
         /// <summary>
-        /// Gets the person to be edited, preferring the block context and falling back to the
-        /// person identified by the page parameter.
+        /// Sets the initial entity state of the box. Populates the Entity or ErrorMessage
+        /// depending on the person and the current user's edit permission.
         /// </summary>
-        /// <returns>The <see cref="Person"/> to edit, or <c>null</c> if one could not be determined.</returns>
-        private Person GetPerson()
+        /// <param name="box">The box to be populated.</param>
+        /// <param name="person">The person being edited, or null when one could not be resolved.</param>
+        private void SetBoxInitialEntityState( DetailBlockBox<EditPersonBag, EditPersonOptionsBag> box, Person person )
         {
-            var contextPerson = RequestContext.GetContextEntity<Person>();
-
-            if ( contextPerson != null )
+            if ( person == null )
             {
-                return contextPerson;
+                box.ErrorMessage = $"The {Person.FriendlyTypeName} was not found.";
+                return;
             }
 
-            var personKey = PageParameter( PageParameterKey.PersonId );
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-            if ( personKey.IsNullOrWhiteSpace() )
+            if ( box.IsEditable )
             {
-                return null;
+                box.Entity = GetEntityBagForEdit( person );
             }
-
-            return new PersonService( RockContext ).Get( personKey, !PageCache.Layout.Site.DisablePredictableIds );
+            else
+            {
+                box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( Person.FriendlyTypeName );
+            }
         }
 
         /// <summary>
-        /// Builds the configuration, feature flags, and option sources for the form, applying the
-        /// block settings and the current user's per-field permissions.
+        /// Gets the box options for rendering the form: block-setting flags, per-field security,
+        /// header labels, and the account protection profile banner.
         /// </summary>
-        /// <param name="person">The person being edited.</param>
+        /// <param name="person">The person being edited, or null.</param>
         /// <returns>The populated <see cref="EditPersonOptionsBag"/>.</returns>
-        private EditPersonOptionsBag GetOptions( Person person )
+        private EditPersonOptionsBag GetBoxOptions( Person person )
         {
             var canAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
 
@@ -255,34 +250,59 @@ namespace Rock.Blocks.Crm.PersonDetail
                 IsGivingSectionVisible = canAdministrate || BlockCache.IsAuthorized( SecurityActionKey.EditFinancials, RequestContext.CurrentPerson ),
             };
 
+            if ( person != null )
+            {
+                options.FamilyName = person.PrimaryFamily?.Name;
+                options.CampusName = person.PrimaryCampus?.Name;
+                SetAccountProtectionProfileMessage( options, person );
+            }
+
             /*
                 8/19/26 - CLAUDE
 
-                Boilerplate scaffold. The remaining option sources and feature flags still need wiring:
-                  - IsChatVisible: ChatHelper.IsChatEnabled && person.HasChatAlias.
-                  - IsEnvelopeNumberVisible: GlobalAttributesCache.Get().EnableGivingEnvelopeNumber && the giving envelope attribute exists.
-                  - GivingGroups: PersonService.GetFamilies(person.Id) formatted like the WebForms GetFamilyNameWithFirstNames helper.
-                  - SearchKeyTypes: the add-search-key dropdown options (GetValidSearchKeyTypes minus the Alternate-Id type).
+                Remaining option sources still to wire as their sections come online:
+                  - IsChatVisible, IsEnvelopeNumberVisible feature flags.
+                  - GivingGroups and SearchKeyTypes option lists.
 
-                Reason: Options wiring pending.
+                Reason: Options grow with the client sections.
             */
 
             return options;
         }
 
+        /// <inheritdoc/>
+        protected override EditPersonBag GetEntityBagForView( Person entity )
+        {
+            return GetEntityBag( entity );
+        }
+
+        /// <inheritdoc/>
+        protected override EditPersonBag GetEntityBagForEdit( Person entity )
+        {
+            return GetEntityBag( entity );
+        }
+
         /// <summary>
-        /// Maps the person's current values onto the editable bag used to pre-fill the form.
-        /// Mirrors the WebForms ShowDetails() flow.
+        /// Maps the person's current values onto the editable bag. Mirrors the WebForms ShowDetails() flow.
         /// </summary>
         /// <param name="person">The person being edited.</param>
-        /// <returns>The populated <see cref="EditPersonBag"/>.</returns>
-        private EditPersonBag GetPersonBag( Person person )
+        /// <returns>The populated <see cref="EditPersonBag"/>, or null.</returns>
+        private EditPersonBag GetEntityBag( Person person )
         {
+            if ( person == null )
+            {
+                return null;
+            }
+
             var bag = new EditPersonBag
             {
+                IdKey = person.IdKey,
+                Title = ToDefinedValueListItemBag( person.TitleValueId ),
                 FirstName = person.FirstName,
                 MiddleName = person.MiddleName,
                 LastName = person.LastName,
+                Suffix = ToDefinedValueListItemBag( person.SuffixValueId ),
+                Photo = GetPhotoListItem( person ),
                 Gender = person.Gender,
                 Email = person.Email,
                 IsEmailActive = person.IsEmailActive,
@@ -303,31 +323,177 @@ namespace Rock.Blocks.Crm.PersonDetail
             /*
                 8/19/26 - CLAUDE
 
-                Boilerplate scaffold. The following still need to be mapped from the person (see
-                EditPerson.ascx.cs ShowDetails around lines 877-1049):
-                  - Defined-value ListItemBags: Title, Suffix, MaritalStatus, ConnectionStatus,
-                    RecordStatus, RecordStatusReason, RecordSource, Race, Ethnicity, Grade.
-                  - Photo (ListItemBag), BirthDate (BirthdayPickerBag), AnniversaryDate, DeceasedDate.
-                  - Chat tri-state values (only when chat is enabled and the person has a chat alias).
+                The following still need to be mapped from the person as their inputs are built
+                (see EditPerson.ascx.cs ShowDetails around lines 877-1049):
+                  - Defined-value ListItemBags: MaritalStatus, ConnectionStatus, RecordStatus,
+                    RecordStatusReason, RecordSource, Race, Ethnicity, Grade.
+                  - BirthDate (BirthdayPickerBag), AnniversaryDate, DeceasedDate.
+                  - Chat tri-state values (when chat is enabled and the person has a chat alias).
                   - GivingGroupGuid and GivingEnvelopeNumber (person attribute value).
-                  - PhoneNumbers: one row per active phone number type, with the "default mobile SMS"
-                    behavior applied to a blank mobile row.
-                  - PreviousLastNames (person.GetPreviousNames()).
-                  - AlternateIds and SearchKeys (person.GetPersonSearchKeys() split by the Alternate-Id type).
+                  - PhoneNumbers, PreviousLastNames, AlternateIds, SearchKeys.
 
-                Reason: Person value mapping pending.
+                Reason: Person value mapping grows with the client sections.
             */
 
             return bag;
         }
 
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( Person entity, ValidPropertiesBox<EditPersonBag> box )
+        {
+            if ( box.ValidProperties == null )
+            {
+                return false;
+            }
+
+            box.IfValidProperty( nameof( box.Bag.Title ),
+                () => entity.TitleValueId = GetDefinedValueId( box.Bag.Title ) );
+
+            box.IfValidProperty( nameof( box.Bag.FirstName ),
+                () => entity.FirstName = box.Bag.FirstName );
+
+            box.IfValidProperty( nameof( box.Bag.NickName ),
+                () => entity.NickName = box.Bag.NickName );
+
+            box.IfValidProperty( nameof( box.Bag.MiddleName ),
+                () => entity.MiddleName = box.Bag.MiddleName );
+
+            box.IfValidProperty( nameof( box.Bag.LastName ),
+                () => entity.LastName = box.Bag.LastName );
+
+            box.IfValidProperty( nameof( box.Bag.Suffix ),
+                () => entity.SuffixValueId = GetDefinedValueId( box.Bag.Suffix ) );
+
+            box.IfValidProperty( nameof( box.Bag.Photo ),
+                () =>
+                {
+                    var newPhotoGuid = box.Bag.Photo?.Value.AsGuidOrNull();
+                    var newPhotoBinaryFile = newPhotoGuid.HasValue ? new BinaryFileService( RockContext ).Get( newPhotoGuid.Value ) : null;
+                    entity.PhotoId = newPhotoBinaryFile?.Id;
+
+                    // A newly uploaded photo starts out temporary; keep it now that it is in use.
+                    if ( newPhotoBinaryFile != null )
+                    {
+                        newPhotoBinaryFile.IsTemporary = false;
+                    }
+                } );
+
+            /*
+                8/19/26 - CLAUDE
+
+                Fields without an IfValidProperty here (gender, communication/email preference,
+                lock-as-child, and every unbuilt section) are intentionally never written, so the
+                server cannot clobber values the client did not edit. Each gets its IfValidProperty
+                as its client input is built, along with the WebForms per-field security re-checks,
+                soft validations, phone SMS single-select, and family re-evaluation.
+
+                Reason: Mutation grows field-by-field with the client sections.
+            */
+
+            return true;
+        }
+
+        /// <inheritdoc/>
+        protected override Person GetInitialEntity()
+        {
+            // Prefer the block context, falling back to the PersonId page parameter.
+            var contextPerson = RequestContext.GetContextEntity<Person>();
+
+            if ( contextPerson != null )
+            {
+                return contextPerson;
+            }
+
+            return GetInitialEntity<Person, PersonService>( RockContext, PageParameterKey.PersonId );
+        }
+
+        /// <inheritdoc/>
+        protected override bool TryGetEntityForEditAction( string idKey, out Person entity, out BlockActionResult error )
+        {
+            var entityService = new PersonService( RockContext );
+            error = null;
+
+            entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
+            {
+                error = ActionBadRequest( $"{Person.FriendlyTypeName} not found." );
+                return false;
+            }
+
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                error = ActionBadRequest( $"Not authorized to edit {Person.FriendlyTypeName}." );
+                return false;
+            }
+
+            return true;
+        }
+
         /// <summary>
-        /// Sets the account protection profile warning on the box when the current user may view it
+        /// Gets the box navigation URLs required for the page to operate.
+        /// </summary>
+        /// <param name="person">The person being edited, or null.</param>
+        /// <returns>A dictionary of key names and URL values.</returns>
+        private Dictionary<string, string> GetBoxNavigationUrls( Person person )
+        {
+            return new Dictionary<string, string>
+            {
+                [NavigationUrlKey.ParentPage] = person != null ? RequestContext.ResolveRockUrl( $"~/Person/{person.IdKey}" ) : string.Empty
+            };
+        }
+
+        /// <summary>
+        /// Converts a defined value id to a <see cref="ListItemBag"/>, or null when no value is set.
+        /// </summary>
+        /// <param name="definedValueId">The defined value id.</param>
+        /// <returns>The list item, or null.</returns>
+        private static ListItemBag ToDefinedValueListItemBag( int? definedValueId )
+        {
+            return definedValueId.HasValue
+                ? DefinedValueCache.Get( definedValueId.Value )?.ToListItemBag()
+                : null;
+        }
+
+        /// <summary>
+        /// Resolves a defined-value <see cref="ListItemBag"/> (whose value is a guid) back to its id.
+        /// </summary>
+        /// <param name="listItem">The list item selected on the client.</param>
+        /// <returns>The defined value id, or null.</returns>
+        private static int? GetDefinedValueId( ListItemBag listItem )
+        {
+            var guid = listItem?.Value.AsGuidOrNull();
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            return DefinedValueCache.Get( guid.Value )?.Id;
+        }
+
+        /// <summary>
+        /// Gets the person's current photo as a list item (binary file guid + name), or null.
+        /// </summary>
+        /// <param name="person">The person being edited.</param>
+        /// <returns>The photo list item, or null when the person has no photo.</returns>
+        private ListItemBag GetPhotoListItem( Person person )
+        {
+            if ( !person.PhotoId.HasValue )
+            {
+                return null;
+            }
+
+            var photo = new BinaryFileService( RockContext ).Get( person.PhotoId.Value );
+            return photo?.ToListItemBag( photo.FileName );
+        }
+
+        /// <summary>
+        /// Sets the account protection profile warning on the options when the current user may view it
         /// and the person's profile is above Low. Mirrors the WebForms ShowDetails() banner logic.
         /// </summary>
-        /// <param name="box">The initialization box to populate.</param>
+        /// <param name="options">The options bag to populate.</param>
         /// <param name="person">The person being edited.</param>
-        private void SetAccountProtectionProfileMessage( EditPersonBox box, Person person )
+        private void SetAccountProtectionProfileMessage( EditPersonOptionsBag options, Person person )
         {
             if ( !BlockCache.IsAuthorized( SecurityActionKey.ViewProtectionProfile, RequestContext.CurrentPerson ) )
             {
@@ -344,18 +510,18 @@ namespace Rock.Blocks.Crm.PersonDetail
             switch ( person.AccountProtectionProfile )
             {
                 case Rock.Utility.Enums.AccountProtectionProfile.Medium:
-                    box.AccountProtectionProfileMessage = $"Use care when editing this record as the individual has a login. {messageSuffix}";
-                    box.AccountProtectionProfileAlertType = "Warning";
+                    options.AccountProtectionProfileMessage = $"Use care when editing this record as the individual has a login. {messageSuffix}";
+                    options.AccountProtectionProfileAlertType = "Warning";
                     break;
 
                 case Rock.Utility.Enums.AccountProtectionProfile.High:
-                    box.AccountProtectionProfileMessage = $"Use care when editing this record as the individual has financial account information stored in Rock or is a member of a sensitive security role. {messageSuffix}";
-                    box.AccountProtectionProfileAlertType = "Danger";
+                    options.AccountProtectionProfileMessage = $"Use care when editing this record as the individual has financial account information stored in Rock or is a member of a sensitive security role. {messageSuffix}";
+                    options.AccountProtectionProfileAlertType = "Danger";
                     break;
 
                 case Rock.Utility.Enums.AccountProtectionProfile.Extreme:
-                    box.AccountProtectionProfileMessage = $"Use care when editing this record as the individual is in a sensitive security role. {messageSuffix}";
-                    box.AccountProtectionProfileAlertType = "Danger";
+                    options.AccountProtectionProfileMessage = $"Use care when editing this record as the individual is in a sensitive security role. {messageSuffix}";
+                    options.AccountProtectionProfileAlertType = "Danger";
                     break;
             }
         }
@@ -365,53 +531,42 @@ namespace Rock.Blocks.Crm.PersonDetail
         #region Block Actions
 
         /// <summary>
-        /// Saves the edited person. Ports the WebForms btnSave_Click transaction.
+        /// Saves the edited person and returns the person profile URL to redirect to.
         /// </summary>
-        /// <param name="bag">The save request.</param>
-        /// <returns>The save result, including any validation warnings or a redirect URL on success.</returns>
-        [BlockAction( "Save" )]
-        public BlockActionResult Save( EditPersonSaveRequestBag bag )
+        /// <param name="box">The box that contains the edited values.</param>
+        /// <returns>The URL to redirect to on success.</returns>
+        [BlockAction]
+        public BlockActionResult Save( ValidPropertiesBox<EditPersonBag> box )
         {
-            // Re-authorize on the server; never trust the client's IsEditAllowed flag.
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                return ActionForbidden( "You are not authorized to edit this person." );
+                return actionError;
             }
 
-            var personService = new PersonService( RockContext );
-            var person = personService.Get( bag?.PersonIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+            var originalPhotoId = entity.PhotoId;
 
-            if ( person == null )
+            if ( !UpdateEntityFromBox( entity, box ) )
             {
-                return ActionNotFound( "The person to edit could not be found." );
+                return ActionBadRequest( "Invalid data." );
             }
 
-            /*
-                8/19/26 - CLAUDE
-
-                Boilerplate scaffold. The mutation logic still needs to be ported from
-                EditPerson.ascx.cs btnSave_Click (lines 440-832), inside a RockContext transaction,
-                re-checking each per-field security action before applying that group:
-                  - Identity/demographics, status, contact, chat, giving, advanced field mapping.
-                  - SMS single-select enforcement and RemoveEmptyAndDuplicatePhoneNumbers.
-                  - Communication-preference-SMS-requires-number warning (soft failure).
-                  - Deceased-date-before-birthday validation (soft failure). Also HIDE/CLEAR the
-                    deceased date on the client when Record Status returns to Active (redesign bug fix).
-                  - Alternate-identifier uniqueness validation (soft failure, inline).
-                  - Envelope-number reassignment confirmation flow (EnvelopeNumberConfirmationMessage).
-                  - Previous names / search keys diff against the database.
-                  - Orphaned/cropped photo cleanup and family activate/inactivate re-evaluation.
-                  - On success, return RedirectUrl = ~/Person/{person.Id}.
-
-                Reason: Save mutation logic pending.
-            */
-
-            var response = new EditPersonSaveResponseBag
+            RockContext.WrapTransaction( () =>
             {
-                IsSuccess = false
-            };
+                RockContext.SaveChanges();
 
-            return ActionOk( response );
+                // Flag the previous photo as temporary so it gets cleaned up later.
+                if ( originalPhotoId.HasValue && originalPhotoId != entity.PhotoId )
+                {
+                    var orphanedBinaryFile = new BinaryFileService( RockContext ).Get( originalPhotoId.Value );
+                    if ( orphanedBinaryFile != null )
+                    {
+                        orphanedBinaryFile.IsTemporary = true;
+                        RockContext.SaveChanges();
+                    }
+                }
+            } );
+
+            return ActionOk( RequestContext.ResolveRockUrl( $"~/Person/{entity.IdKey}" ) );
         }
 
         #endregion Block Actions

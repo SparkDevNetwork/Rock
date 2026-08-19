@@ -25,8 +25,23 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Configuration, feature flags, and option sources that control how the Edit Person form renders. */
 export type EditPersonOptionsBag = {
+    /**
+     * Gets or sets the notification box type for the account protection profile message
+     * (e.g., "Warning" or "Danger").
+     */
+    accountProtectionProfileAlertType?: string | null;
+
+    /** Gets or sets the account protection profile warning message, when applicable. */
+    accountProtectionProfileMessage?: string | null;
+
+    /** Gets or sets the name of the person's primary campus, shown as a panel header label. */
+    campusName?: string | null;
+
     /** Gets or sets whether the ethnicity field is hidden, optional, or required ("Hide", "Optional", "Required"). */
     ethnicityOption?: string | null;
+
+    /** Gets or sets the name of the person's primary family, shown as a panel header label. */
+    familyName?: string | null;
 
     /** Gets or sets the families whose giving this person's gifts may be combined with. */
     givingGroups?: ListItemBag[] | null;

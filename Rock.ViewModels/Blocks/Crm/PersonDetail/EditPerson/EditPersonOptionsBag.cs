@@ -113,5 +113,30 @@ namespace Rock.ViewModels.Blocks.Crm.PersonDetail.EditPerson
         public List<ListItemBag> SearchKeyTypes { get; set; }
 
         #endregion Option Sources
+
+        #region Header / Banners
+
+        /// <summary>
+        /// Gets or sets the name of the person's primary family, shown as a panel header label.
+        /// </summary>
+        public string FamilyName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the person's primary campus, shown as a panel header label.
+        /// </summary>
+        public string CampusName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the account protection profile warning message, when applicable.
+        /// </summary>
+        public string AccountProtectionProfileMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the notification box type for the account protection profile message
+        /// (e.g., "Warning" or "Danger").
+        /// </summary>
+        public string AccountProtectionProfileAlertType { get; set; }
+
+        #endregion Header / Banners
     }
 }
