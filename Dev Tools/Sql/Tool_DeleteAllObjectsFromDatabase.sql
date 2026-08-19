@@ -141,3 +141,105 @@ BEGIN
     SELECT @name = (SELECT TOP 1 [name] FROM sysobjects WHERE [type] IN (N'FN', N'IF', N'TF', N'FS', N'FT') AND category = 0 AND [name] > @name ORDER BY [name])
 END
 GO
+
+/* Drop all synonyms */
+DECLARE @name VARCHAR(128)
+DECLARE @schema VARCHAR(128)
+DECLARE @SQL VARCHAR(514)
+
+SET @name = NULL
+SET @schema = NULL
+SELECT TOP 1 @name = sn.[name], @schema = SCHEMA_NAME(sn.[schema_id])
+FROM sys.synonyms sn
+ORDER BY sn.[name]
+
+WHILE @name IS NOT NULL
+BEGIN
+    SELECT @SQL = 'DROP SYNONYM [' + @schema + '].[' + RTRIM(@name) +']'
+    EXEC (@SQL)
+    PRINT 'Dropped Synonym: [' + @schema + '].[' + @name + ']'
+    SET @name = NULL
+    SET @schema = NULL
+    SELECT TOP 1 @name = sn.[name], @schema = SCHEMA_NAME(sn.[schema_id])
+    FROM sys.synonyms sn
+    ORDER BY sn.[name]
+END
+GO
+
+/* Drop all sequences */
+DECLARE @name VARCHAR(128)
+DECLARE @schema VARCHAR(128)
+DECLARE @SQL VARCHAR(514)
+
+SET @name = NULL
+SET @schema = NULL
+SELECT TOP 1 @name = sq.[name], @schema = SCHEMA_NAME(sq.[schema_id])
+FROM sys.sequences sq
+ORDER BY sq.[name]
+
+WHILE @name IS NOT NULL
+BEGIN
+    SELECT @SQL = 'DROP SEQUENCE [' + @schema + '].[' + RTRIM(@name) +']'
+    EXEC (@SQL)
+    PRINT 'Dropped Sequence: [' + @schema + '].[' + @name + ']'
+    SET @name = NULL
+    SET @schema = NULL
+    SELECT TOP 1 @name = sq.[name], @schema = SCHEMA_NAME(sq.[schema_id])
+    FROM sys.sequences sq
+    ORDER BY sq.[name]
+END
+GO
+
+/* Drop all user-defined table types.
+   Must run AFTER tables, functions, and procs are dropped, since those can
+   reference table types as columns or parameters. */
+DECLARE @name VARCHAR(128)
+DECLARE @schema VARCHAR(128)
+DECLARE @SQL VARCHAR(514)
+
+SET @name = NULL
+SET @schema = NULL
+SELECT TOP 1 @name = tt.[name], @schema = SCHEMA_NAME(tt.[schema_id])
+FROM sys.table_types tt
+ORDER BY tt.[name]
+
+WHILE @name IS NOT NULL
+BEGIN
+    SELECT @SQL = 'DROP TYPE [' + @schema + '].[' + RTRIM(@name) +']'
+    EXEC (@SQL)
+    PRINT 'Dropped Table Type: [' + @schema + '].[' + @name + ']'
+    SET @name = NULL
+    SET @schema = NULL
+    SELECT TOP 1 @name = tt.[name], @schema = SCHEMA_NAME(tt.[schema_id])
+    FROM sys.table_types tt
+    ORDER BY tt.[name]
+END
+GO
+
+/* Drop all user-defined (scalar / alias) types.
+   Must run AFTER user-defined table types, since a UDTT column can be
+   declared with a scalar UDT. */
+DECLARE @name VARCHAR(128)
+DECLARE @schema VARCHAR(128)
+DECLARE @SQL VARCHAR(514)
+
+SET @name = NULL
+SET @schema = NULL
+SELECT TOP 1 @name = t.[name], @schema = SCHEMA_NAME(t.[schema_id])
+FROM sys.types t
+WHERE t.is_user_defined = 1 AND t.is_table_type = 0
+ORDER BY t.[name]
+
+WHILE @name IS NOT NULL
+BEGIN
+    SELECT @SQL = 'DROP TYPE [' + @schema + '].[' + RTRIM(@name) +']'
+    EXEC (@SQL)
+    PRINT 'Dropped Type: [' + @schema + '].[' + @name + ']'
+    SET @name = NULL
+    SET @schema = NULL
+    SELECT TOP 1 @name = t.[name], @schema = SCHEMA_NAME(t.[schema_id])
+    FROM sys.types t
+    WHERE t.is_user_defined = 1 AND t.is_table_type = 0
+    ORDER BY t.[name]
+END
+GO
