@@ -831,7 +831,8 @@ a.rock-bookmark {
         font-size: var(--font-size-xsmall);
         font-weight: var(--font-weight-semibold);
         line-height: 1;
-        color: var(--color-interface-medium);
+        // Glass Nav lifts the section eyebrow to a higher-contrast color so it stays legible over the translucent panel.
+        color: var(--nav-glass-header-color, var(--color-interface-medium));
         text-transform: uppercase;
         letter-spacing: 2px;
         border-top: 1px solid var(--color-interface-soft);
