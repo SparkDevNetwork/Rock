@@ -87,36 +87,6 @@ internal sealed partial class WorkflowBuilderSkill
             .Where( a => !VestigialSettingKeys.Contains( a.Key ) )
             .ToList();
 
-        /*
-            8/18/26 - CLAUDE
-
-            The helper fills Values from the framework's field hints, which only a few
-            field types implement and the select family does not. So the settings whose
-            values are impossible to guess, the enum-backed ones storing a number
-            behind a friendly label, were the ones arriving here described only by
-            field type name. A caller with nothing to go on writes the label, which
-            saves and then renders as an empty required field in Rock's editor.
-
-            Reason: Report the values a select-backed setting actually accepts.
-        */
-        foreach ( var setting in settings.Where( s => s.Values == null ) )
-        {
-            if ( !stubActionType.Attributes.TryGetValue( setting.Key, out var attribute ) )
-            {
-                continue;
-            }
-
-            var selectableValues = GetSelectableValues( attribute );
-
-            if ( selectableValues == null )
-            {
-                continue;
-            }
-
-            setting.Values = selectableValues;
-            setting.IsCompleteList = true;
-        }
-
         if ( !settings.Any() )
         {
             return NoData()

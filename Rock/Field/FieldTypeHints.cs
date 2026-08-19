@@ -58,5 +58,32 @@ namespace Rock.Field
         /// </para>
         /// </summary>
         public string ValueFormat { get; set; }
+
+        /// <summary>
+        /// <para>
+        /// What a consumer must do to obtain the valid values, when they cannot
+        /// be read from <see cref="Values"/> alone. Typically because the list
+        /// is too large to enumerate, or because it lives on another record
+        /// that has to be looked up.
+        /// </para>
+        /// <para>
+        /// This is written for an automated consumer deciding its next call, not
+        /// for display to a person. Name the record that holds the values and the
+        /// identifier needed to reach it, for example 'To find the correct values
+        /// look them up using the Defined Type IdKey of aBc123XyZ.'
+        /// </para>
+        /// <para>
+        /// Never name a specific tool, API, or endpoint. A field type has no
+        /// knowledge of what is calling it, and the same hint is read by consumers
+        /// with entirely different tooling. Describe the data, and let the caller
+        /// choose how to fetch it.
+        /// </para>
+        /// <para>
+        /// This is distinct from <see cref="ValueFormat"/>, which describes what a
+        /// stored value looks like. This describes how to discover which values are
+        /// allowed.
+        /// </para>
+        /// </summary>
+        public string Instructions { get; set; }
     }
 }

@@ -366,6 +366,52 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            /*
+                8/19/26 - CLAUDE
+
+                Two different delimiters, neither of them guessable, and getting either
+                one wrong produces a value that saves without complaint and then parses
+                into nonsense. Rock splits pairs on '|' and then splits each pair on
+                '^', so a value built with the wrong separator becomes one malformed
+                entry rather than an error anybody sees.
+
+                No Values, because the keys are whatever the caller decides. The shape
+                is the only thing worth describing, and it is the thing most likely to
+                be got wrong.
+
+                Reason: An unguessable format that fails silently is exactly what
+                ValueFormat is for.
+            */
+            var hints = new FieldTypeHints
+            {
+                ValueFormat = "Key and value pairs in one string. Pairs are separated from each other by a pipe, and within a pair the key is separated from the value by a caret, as in key1^value1|key2^value2. Neither character can appear inside a key or a value."
+            };
+
+            // When the values come from a defined type the value half is constrained,
+            // so say where those come from. The keys stay free text either way.
+            var definedTypeId = privateConfigurationValues.GetValueOrNull( "definedtype" ).AsIntegerOrNull();
+
+            if ( definedTypeId.HasValue )
+            {
+                var definedType = DefinedTypeCache.Get( definedTypeId.Value );
+
+                if ( definedType != null )
+                {
+                    hints.IsCompleteList = false;
+                    hints.Instructions = $"The value half of each pair must be a guid from the '{definedType.Name}' defined type. To find the correct values look them up using the Defined Type IdKey of {definedType.IdKey}.";
+                }
+            }
+
+            return hints;
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

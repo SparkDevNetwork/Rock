@@ -266,6 +266,22 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. The set is unbounded or depends on other configuration, so
+            // the shape of the value and where to get one is what can be described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a row in the PersonAlias table, not the Person table. A person can have several aliases, so a Person guid will not resolve here.",
+                Instructions = "To find the correct value, look up the person and take the guid of their primary alias."
+            };
+        }
+
+        #endregion
         #region WebForms
 #if WEBFORMS
 
