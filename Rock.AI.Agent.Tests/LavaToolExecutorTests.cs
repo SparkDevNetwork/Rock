@@ -1,0 +1,615 @@
+﻿using System;
+using System.Collections.Generic;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Moq;
+
+using Rock.Enums.AI.Agent;
+using Rock.Lava;
+using Rock.Lava.Fluid;
+using Rock.Net;
+using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
+
+namespace Rock.AI.Agent.Tests;
+
+[TestClass]
+public class LavaToolExecutorTests
+{
+    #region AddParametersToMergeFields Tests
+
+    [TestMethod]
+    public void AddParametersToMergeFields_UnknownParameter_IsIgnored()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>();
+        var args = new KernelArguments
+        {
+            ["UnknownProperty"] = "Some Value"
+        };
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.IsEmpty( mergeFields );
+    }
+
+    [TestMethod]
+    public void AddParametersToMergeFields_MissingStringParameter_IsAddedAsNull()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "MissingParameter",
+                DataType = ParameterSchemaDataType.String,
+            }
+        };
+        var args = new KernelArguments();
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.IsNull( mergeFields["MissingParameter"] );
+    }
+
+    [TestMethod]
+    public void AddParametersToMergeFields_MissingNumberParameter_IsAddedAsNull()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "MissingParameter",
+                DataType = ParameterSchemaDataType.Number,
+            }
+        };
+        var args = new KernelArguments();
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.IsNull( mergeFields["MissingParameter"] );
+    }
+
+    [TestMethod]
+    public void AddParametersToMergeFields_MissingBooleanParameter_IsAddedAsNull()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "MissingParameter",
+                DataType = ParameterSchemaDataType.Boolean,
+            }
+        };
+        var args = new KernelArguments();
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.IsNull( mergeFields["MissingParameter"] );
+    }
+
+    [TestMethod]
+    public void AddParametersToMergeFields_MissingDateParameter_IsAddedAsNull()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "MissingParameter",
+                DataType = ParameterSchemaDataType.Date,
+            }
+        };
+        var args = new KernelArguments();
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.IsNull( mergeFields["MissingParameter"] );
+    }
+
+    [TestMethod]
+    public void AddParametersToMergeFields_MissingDateTimeParameter_IsAddedAsNull()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "MissingParameter",
+                DataType = ParameterSchemaDataType.DateTime,
+            }
+        };
+        var args = new KernelArguments();
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.IsNull( mergeFields["MissingParameter"] );
+    }
+
+    [TestMethod]
+    public void AddParametersToMergeFields_MissingStringCollectionParameter_IsAddedAsNull()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "MissingParameter",
+                DataType = ParameterSchemaDataType.String,
+                IsCollection = true,
+            }
+        };
+        var args = new KernelArguments();
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.IsNull( mergeFields["MissingParameter"] );
+    }
+
+
+    [TestMethod]
+    public void AddParametersToMergeFields_DefaultStringParameter_IsAddedAsString()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "MissingParameter",
+                DataType = ParameterSchemaDataType.String,
+                DefaultValue = "Default Value"
+            }
+        };
+        var args = new KernelArguments();
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.AreEqual( "Default Value", mergeFields["MissingParameter"] );
+    }
+
+    [TestMethod]
+    public void AddParametersToMergeFields_DefaultNumberParameter_IsAddedAsNumber()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "MissingParameter",
+                DataType = ParameterSchemaDataType.Number,
+                DefaultValue = "42"
+            }
+        };
+        var args = new KernelArguments();
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.AreEqual( 42d, mergeFields["MissingParameter"] );
+    }
+
+    [TestMethod]
+    public void AddParametersToMergeFields_DefaultBooleanParameter_IsAddedAsBoolean()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "MissingParameter",
+                DataType = ParameterSchemaDataType.Boolean,
+                DefaultValue = "True"
+            }
+        };
+        var args = new KernelArguments();
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.IsTrue( ( bool? ) mergeFields["MissingParameter"] );
+    }
+
+    [TestMethod]
+    public void AddParametersToMergeFields_DefaultDateParameter_IsAddedAsDateTime()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "MissingParameter",
+                DataType = ParameterSchemaDataType.Date,
+                DefaultValue = "2025-07-30"
+            }
+        };
+        var args = new KernelArguments();
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.AreEqual( new DateTime( 2025, 7, 30 ), mergeFields["MissingParameter"] );
+    }
+
+    [TestMethod]
+    public void AddParametersToMergeFields_DefaultDateTimeParameter_IsAddedAsDateTime()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "MissingParameter",
+                DataType = ParameterSchemaDataType.DateTime,
+                DefaultValue = "2025-07-30T18:23:12"
+            }
+        };
+        var args = new KernelArguments();
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.AreEqual( new DateTime( 2025, 7, 30, 18, 23, 12 ), mergeFields["MissingParameter"] );
+    }
+
+    [TestMethod]
+    public void AddParametersToMergeFields_CollectionParameter_IsAddedAsCollection()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "PersonIds",
+                DataType = ParameterSchemaDataType.Number,
+                IsCollection = true,
+            }
+        };
+        var args = new KernelArguments
+        {
+            ["PersonIds"] = new List<int> { 1, 2, 3 }
+        };
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        var result = mergeFields["PersonIds"];
+
+        Assert.IsInstanceOfType( result, typeof( List<object> ) );
+        CollectionAssert.AreEqual( new List<object> { 1, 2, 3 }, ( List<object> ) result );
+    }
+
+    [TestMethod]
+    public void AddParametersToMergeFields_NonCollectionParameter_IsAddedAsSingleValue()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "PersonId",
+                DataType = ParameterSchemaDataType.Number,
+                IsCollection = false,
+            }
+        };
+        var args = new KernelArguments
+        {
+            ["PersonId"] = 42
+        };
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        var result = mergeFields["PersonId"];
+
+        Assert.AreEqual( 42, result );
+    }
+
+    #endregion
+
+    #region ConvertValueToCollection Tests
+
+    [TestMethod]
+    public void ConvertValueToCollection_StringsAsStringCollection_ReturnsStringCollection()
+    {
+        var expectedValue = new List<string> { "Hello", "World" };
+
+        var result = LavaToolExecutor.ConvertValueToCollection( expectedValue, ParameterSchemaDataType.String );
+
+        CollectionAssert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToCollection_IntsAsStringCollection_ReturnsStringCollection()
+    {
+        var expectedValue = new List<string> { "10", "20" };
+
+        var result = LavaToolExecutor.ConvertValueToCollection( new[] { 10, 20 }, ParameterSchemaDataType.String );
+
+        CollectionAssert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToCollection_SingleStringAsStringCollection_ReturnsStringCollection()
+    {
+        var expectedValue = new List<string> { "Hello" };
+
+        var result = LavaToolExecutor.ConvertValueToCollection( "Hello", ParameterSchemaDataType.String );
+
+        CollectionAssert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToCollection_SingleIntAsStringCollection_ReturnsStringCollection()
+    {
+        var expectedValue = new List<string> { "10" };
+
+        var result = LavaToolExecutor.ConvertValueToCollection( 10, ParameterSchemaDataType.String );
+
+        CollectionAssert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToCollection_JsonIntArrayAsStringCollection_ReturnsStringCollection()
+    {
+        var expectedValue = new List<string> { "10", "20" };
+
+        var result = LavaToolExecutor.ConvertValueToCollection( "[10, 20]", ParameterSchemaDataType.String );
+
+        CollectionAssert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToCollection_JsonNullAsStringCollection_ReturnsEmptyStringCollection()
+    {
+        var result = LavaToolExecutor.ConvertValueToCollection( "null", ParameterSchemaDataType.String );
+
+        Assert.IsEmpty( result );
+    }
+
+    #endregion
+
+    #region ConvertValueToType Tests
+
+    [TestMethod]
+    public void ConvertValueToType_StringAsString_ReturnsString()
+    {
+        var expectedValue = "Hello World!";
+
+        var result = LavaToolExecutor.ConvertValueToType( expectedValue, ParameterSchemaDataType.String );
+
+        Assert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_IntegerAsString_ReturnsString()
+    {
+        var expectedValue = "42";
+
+        var result = LavaToolExecutor.ConvertValueToType( 42, ParameterSchemaDataType.String );
+
+        Assert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_BooleanAsString_ReturnsString()
+    {
+        var expectedValue = "True";
+
+        var result = LavaToolExecutor.ConvertValueToType( true, ParameterSchemaDataType.String );
+
+        Assert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_NullAsString_ReturnsNull()
+    {
+        var result = LavaToolExecutor.ConvertValueToType( null, ParameterSchemaDataType.String );
+
+        Assert.IsNull( result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_IntAsNumber_ReturnsInt()
+    {
+        var expectedValue = 42;
+
+        var result = LavaToolExecutor.ConvertValueToType( 42, ParameterSchemaDataType.Number );
+
+        Assert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_DoubleAsNumber_ReturnsInt()
+    {
+        var expectedValue = 42.0;
+
+        var result = LavaToolExecutor.ConvertValueToType( 42.0, ParameterSchemaDataType.Number );
+
+        Assert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_StringAsNumber_ReturnsDouble()
+    {
+        var expectedValue = 42.0;
+
+        var result = LavaToolExecutor.ConvertValueToType( "42", ParameterSchemaDataType.Number );
+
+        Assert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_NullAsNumber_ReturnsNull()
+    {
+        var result = LavaToolExecutor.ConvertValueToType( null, ParameterSchemaDataType.Number );
+
+        Assert.IsNull( result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_BooleanAsBoolean_ReturnsBoolean()
+    {
+        var expectedValue = true;
+
+        var result = LavaToolExecutor.ConvertValueToType( true, ParameterSchemaDataType.Boolean );
+
+        Assert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_IntAsBoolean_ReturnsBoolean()
+    {
+        var expectedValue = true;
+
+        var result = LavaToolExecutor.ConvertValueToType( 1, ParameterSchemaDataType.Boolean );
+
+        Assert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_StringAsBoolean_ReturnsBoolean()
+    {
+        var expectedValue = true;
+
+        var result = LavaToolExecutor.ConvertValueToType( "True", ParameterSchemaDataType.Boolean );
+
+        Assert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_NullAsBoolean_ReturnsNull()
+    {
+        var result = LavaToolExecutor.ConvertValueToType( null, ParameterSchemaDataType.Boolean );
+
+        Assert.IsNull( result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_NullAsDate_ReturnsNull()
+    {
+        var result = LavaToolExecutor.ConvertValueToType( null, ParameterSchemaDataType.Date );
+
+        Assert.IsNull( result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_ValidDateAsDate_ReturnsDateTime()
+    {
+        var expectedValue = new DateTime( 2025, 7, 30 );
+
+        var result = LavaToolExecutor.ConvertValueToType( "2025-07-30", ParameterSchemaDataType.Date );
+
+        Assert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_ValidDateWithTimeAsDate_ReturnsDateOnly()
+    {
+        var expectedValue = new DateTime( 2025, 7, 30 );
+
+        var result = LavaToolExecutor.ConvertValueToType( "2025-07-30T18:30:00", ParameterSchemaDataType.Date );
+
+        Assert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_InvalidDateAsDate_ReturnsNull()
+    {
+        var result = LavaToolExecutor.ConvertValueToType( "today", ParameterSchemaDataType.Date );
+
+        Assert.IsNull( result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_NullAsDateTime_ReturnsNull()
+    {
+        var result = LavaToolExecutor.ConvertValueToType( null, ParameterSchemaDataType.DateTime );
+
+        Assert.IsNull( result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_ValidDateAsDateTime_ReturnsDateTime()
+    {
+        var expectedValue = new DateTime( 2025, 7, 30, 18, 23, 12 );
+
+        var result = LavaToolExecutor.ConvertValueToType( "2025-07-30T18:23:12", ParameterSchemaDataType.DateTime );
+
+        Assert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_InvalidDateAsDateTime_ReturnsNull()
+    {
+        var result = LavaToolExecutor.ConvertValueToType( "today at noon", ParameterSchemaDataType.DateTime );
+
+        Assert.IsNull( result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_StringAsUnknown_ReturnsNull()
+    {
+        var result = LavaToolExecutor.ConvertValueToType( "Hello World!", ( ParameterSchemaDataType ) 999 );
+
+        Assert.IsNull( result );
+    }
+
+    #endregion
+
+    #region ExecuteLava Tests
+
+    [TestMethod]
+    public void ExecuteLava_ValidTool_ReturnsExpectedResult()
+    {
+        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+
+        using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+        {
+            var rockRequestContextMock = new Mock<RockRequestContext>();
+            var agentConfiguration = new AgentConfiguration( 0, null, "Test", AgentType.Chat, AudienceType.Internal, "", new ChatAgentSettings(), [] );
+
+            rockRequestContextMock
+                .Setup( m => m.GetCommonMergeFields( It.IsAny<Model.Person>(), It.IsAny<Lava.CommonMergeFieldsOptions>() ) )
+                .Returns( [] );
+
+            var requestContext = new AgentRequestContextImplementation( rockRequestContextMock.Object, agentConfiguration, null );
+
+            var tool = new AgentTool
+            {
+                Prompt = "Hello, {{ Name }}!",
+                Parameters =
+                [
+                    new ParameterSchema
+                {
+                    Name = "Name",
+                    DataType = ParameterSchemaDataType.String,
+                    IsRequired = true,
+                    Instructions = "The name of the person to greet."
+                }
+                ]
+            };
+
+            var args = new KernelArguments
+            {
+                ["Name"] = "Alisha"
+            };
+
+            try
+            {
+
+                LavaService.SetCurrentEngine( new FluidEngine() );
+
+                var executor = new LavaToolExecutor( requestContext, rockRequestContextMock.Object );
+                var result = ( AgentToolResult ) executor.ExecuteLava( tool, args );
+
+                Assert.AreEqual( "Hello, Alisha!", result.Content );
+            }
+            finally
+            {
+                LavaService.SetCurrentEngine( ( Type ) null );
+            }
+        }
+    }
+
+    #endregion
+}

@@ -1,34 +1,21 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div v-if="isSequentialStatusMode"
-         class="cursor-pointer py-spacing-tiny px-spacing-xs rounded-huge text-semibold text-interface-softest d-flex align-items-center justify-content-between"
+         class="connectionstatus-button"
          :class="{ 'cursor-not-allowed': disabled }"
          :style="`background-color: ${highlightColor}`">
-        <i class="ti ti-circle-check"></i>
-        <span class="font-size-sm text-center overflow-ellipsis" :ref="(el) => addTooltipIfOverflow(el as HTMLElement, currentStatusName ?? '')">{{ currentStatusName }}</span>
-        <i class="ti ti-circle-check spacer-icon" aria-hidden="true"></i>
+        <span :ref="(el) => addTooltipIfOverflow(el as HTMLElement, currentStatusName ?? '')">{{ currentStatusName }}</span>
+        <i class="ti ti-circle-check" aria-hidden="true"></i>
     </div>
     <div v-else
-         class="cursor-pointer py-spacing-tiny px-spacing-xs rounded-huge text-semibold text-interface-softest d-flex align-items-center justify-content-between"
+         class="connectionstatus-button"
          :class="{ 'cursor-not-allowed': disabled }"
          :style="`background-color: ${highlightColor}`">
-        <i class="ti ti-caret-down-filled spacer-icon" aria-hidden="true"></i>
-        <span class="font-size-sm text-center overflow-ellipsis" :ref="(el) => addTooltipIfOverflow(el as HTMLElement, currentStatusName ?? '')">{{ currentStatusName }}</span>
+        <span :ref="(el) => addTooltipIfOverflow(el as HTMLElement, currentStatusName ?? '')">{{ currentStatusName }}</span>
         <i class="ti ti-caret-down-filled"></i>
     </div>
 </template>
 
-<style scoped>
-.overflow-ellipsis {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.spacer-icon {
-    visibility: hidden;
-}
-</style>
 
 <script setup lang="ts">
     import { PropType } from "vue";

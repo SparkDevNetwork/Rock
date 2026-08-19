@@ -148,6 +148,14 @@ namespace Rock.Blocks.Cms
         Order = 0,
         IsRequired = true )]
 
+    [LinkedPage(
+        "Content Channel Item Metrics Page",
+        Key = AttributeKey.MetricsPage,
+        Description = "The page that links to the metrics for the content channel item.",
+        Category = AttributeCategory.Pages,
+        Order = 1,
+        IsRequired = false )]
+
     #endregion Pages
 
     #endregion Block Attributes
@@ -179,6 +187,7 @@ namespace Rock.Blocks.Cms
 
             // Pages
             public const string DetailPage = "DetailPage";
+            public const string MetricsPage = "MetricsPage";
         }
 
         private static class AttributeCategory
@@ -201,6 +210,7 @@ namespace Rock.Blocks.Cms
             public const string NewItemPage = "NewItemPage";
             public const string LibraryDownloadPage = "LibraryDownloadPage";
             public const string MediaElementPage = "MediaElementPage";
+            public const string MetricsPage = "MetricsPage";
         }
 
         #endregion Keys
@@ -341,7 +351,11 @@ namespace Rock.Blocks.Cms
                     ["ContentChannelId"] = contentChannel.IdKey
                 } ),
                 [NavigationUrlKey.LibraryDownloadPage] = libraryDownloadUrl,
-                [NavigationUrlKey.MediaElementPage] = "/admin/cms/media-accounts/items/((Key))"
+                [NavigationUrlKey.MediaElementPage] = "/admin/cms/media-accounts/items/((Key))",
+                [NavigationUrlKey.MetricsPage] = this.GetLinkedPageUrl( AttributeKey.MetricsPage, new Dictionary<string, string>
+                {
+                    ["ContentChannelItemId"] = "((Key))"
+                } )
             };
         }
 

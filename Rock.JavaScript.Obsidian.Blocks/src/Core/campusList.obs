@@ -35,8 +35,6 @@
                       title="Campus Leader"
                       field="leader"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getPersonNameFilterValue"
-                      :quickFilterValue="getPersonNameFilterValue"
                       visiblePriority="sm" />
 
         <TextColumn name="campusType"
@@ -95,7 +93,6 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./CampusList/types.partial";
     import { reactive, ref } from "vue";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { CampusBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusBag";
 
     const config = useConfigurationValues<ListBlockBox<CampusListOptionsBag>>();
@@ -139,16 +136,6 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
-    }
-
-    /**
-    * Gets the filter value text to use for the name column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getPersonNameFilterValue(row: Record<string, unknown>): string {
-        const person = row["leader"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     // #endregion

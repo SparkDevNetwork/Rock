@@ -1,0 +1,409 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :data="gridData"
+          keyField="key"
+          :itemTerm="itemTerm"
+          :entityTypeGuid="EntityType.Attribute"
+          liveUpdates
+          light
+          @addItem="onAddClick">
+        <ReorderColumn v-if="!isReorderHidden" @orderChanged="onOrderChanged" />
+        <TextColumn name="name" field="name" title="Attribute" />
+        <TextColumn name="description" field="description" title="Description" />
+        <BooleanColumn name="isRequired" field="isRequired" title="Required" />
+        <SecurityColumn itemTitle="name" idField="guid" />
+        <EditColumn @click="onEditClick" />
+        <DeleteColumn @click="onDeleteClick" disableConfirmation />
+    </Grid>
+
+    <Modal v-model="isModalVisible"
+           :title="modalTitle || itemTerm"
+           saveText="Save"
+           cancelText="Cancel"
+           :onSave="onModalSave">
+        <AttributeEditor :key="modalEditorKey" v-model="modalAttribute" :reservedKeyNames="modalReservedKeyNames" :attributeEntityTypeGuid="attributeEntityTypeGuid" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, toRaw, watch } from "vue";
+    import Grid, { BooleanColumn, DeleteColumn, EditColumn, ReorderColumn, SecurityColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { Guid } from "@Obsidian/Types";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
+
+    /*
+        8/14/2026 - MSE
+
+        Why this control exists:
+        Attribute grids minted a client-side guid for new rows
+        and exposed it to a SecurityColumn. Setting security on such an
+        unsaved row wrote EntityId 0 auth rules against the Attribute entity
+        type, silently rewriting default security for ALL attributes,
+        including Global Attributes.
+
+        https://app.asana.com/1/20866866924293/project/1208321217019996/task/1217254861234833?focus=true
+
+        How this control works:
+        The list of attributes is held in memory and only persisted when the parent block
+        saves its entity. A new attribute keeps a null guid until then,
+        and the SecurityColumn reads the guid through its idField, so the security button only
+        renders for rows that exist in the database. Grid row identity comes
+        from a separate client-only key that is never sent to the server.
+
+        Use this control when all of the following are true:
+        1. A block edits a list of attribute definitions (PublicEditableAttributeBag).
+        2. Persistence is deferred: the list is only saved with the parent entity.
+        3. The grid offers per-row (per-attribute) security (or any action that needs a real persisted identifier).
+
+        Reason: Shared editable attribute grid that keeps unsaved rows from being securable.
+    */
+
+    const props = defineProps({
+        /** The editable list of attributes. */
+        modelValue: {
+            type: Array as PropType<PublicEditableAttributeBag[]>,
+            required: true
+        },
+
+        /**
+         * The name that describes a single attribute in the grid, such as
+         * "Group Attribute". Also used as the modal title when no
+         * modalTitle is provided.
+         */
+        itemTerm: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /**
+         * The title of the add/edit modal, such as "Group Attributes".
+         * When not provided the itemTerm is used.
+         */
+        modalTitle: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /**
+         * The unique identifier of the entity type the attributes will be
+         * attached to, such as EntityType.Group. Provided to the
+         * AttributeEditor so field types can offer entity-aware options.
+         */
+        attributeEntityTypeGuid: {
+            type: String as PropType<Guid>,
+            required: true
+        },
+
+        /**
+         * Attribute keys reserved by the surrounding context, such as keys
+         * of inherited attributes. Keys of the attributes in modelValue are
+         * reserved automatically and do not need to be included.
+         */
+        reservedKeyNames: {
+            type: Array as PropType<string[]>,
+            default: () => []
+        },
+
+        /** True if the reorder column should not be shown. */
+        isReorderHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: PublicEditableAttributeBag[]): void
+    }>();
+
+    // #region Values
+
+    const modalEditorKey = ref("");
+    const isModalVisible = ref(false);
+
+    /** The working copy of the attribute currently shown in the modal. */
+    const modalAttribute = ref<PublicEditableAttributeBag | null>(null);
+
+    /**
+     * The grid row key of the attribute the modal is editing, or null when
+     * the modal is adding a new attribute. Identifies which list item the
+     * modal's draft replaces on save, and unreserves that item's key while
+     * it is being edited.
+     */
+    const editingRowKey = ref<string | null>(null);
+
+    /**
+     * The client-side grid row key for each attribute in the list. Row keys
+     * are minted on demand and only used for grid row identity; they are
+     * intentionally separate from the attribute's guid, which stays null
+     * until the attribute has been persisted. Entries are keyed by the raw
+     * (non-proxied) attribute object, because the parent stores the list in
+     * a deep ref and hands this control reactive proxies whose identity
+     * differs from the raw object. Entries release automatically when an
+     * attribute is no longer referenced.
+     */
+    const rowKeyByAttribute = new WeakMap<PublicEditableAttributeBag, string>();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * Two-way proxy for the modelValue. Reads from the prop and writes
+     * through the update:modelValue emit.
+     */
+    const attributes = computed({
+        get(): PublicEditableAttributeBag[] {
+            return props.modelValue ?? [];
+        },
+        set(value: PublicEditableAttributeBag[]) {
+            emit("update:modelValue", value);
+        }
+    });
+
+    /** Row data for the grid. */
+    const gridData = computed(() => {
+        const rows = (attributes.value ?? []).map(a => ({
+            key: getAttributeRowKey(a),
+            guid: a.guid ?? null,
+            name: a.name,
+            description: a.description,
+            isRequired: a.isRequired,
+            isSystem: a.isSystem
+        }));
+
+        return { rows };
+    });
+
+    /**
+     * The keys the AttributeEditor must not allow: the context's reserved
+     * keys (such as inherited attribute keys), which are always reserved,
+     * plus the keys of the other attributes in the list. The currently
+     * edited attribute itself is excluded by identity so the individual can
+     * keep its existing key. This matches the WebForms behavior, where
+     * inherited keys were unconditionally reserved, so a local key that
+     * collides with an inherited key must be renamed before it can be
+     * saved again.
+     */
+    const modalReservedKeyNames = computed((): string[] => {
+        const ownKeys = (attributes.value ?? [])
+            .filter(a => editingRowKey.value === null || getAttributeRowKey(a) !== editingRowKey.value)
+            .map(a => a.key)
+            .filter((k): k is string => !!k);
+
+        const externalKeys = (props.reservedKeyNames ?? []).filter(k => !!k);
+
+        return Array.from(new Set([...externalKeys, ...ownKeys]));
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the Add button on the grid is clicked.
+     */
+    function onAddClick(): void {
+        editingRowKey.value = null;
+        modalAttribute.value = createNewAttribute();
+        modalEditorKey.value = `attribute-editor-${newGuid()}`;
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Called when the Edit button for a row is clicked.
+     *
+     * @param rowKey The grid row key of the attribute to edit.
+     */
+    function onEditClick(rowKey: string): void {
+        const selected = (attributes.value ?? []).find(a => getAttributeRowKey(a) === rowKey);
+
+        if (selected) {
+            editingRowKey.value = rowKey;
+            modalAttribute.value = {
+                ...selected,
+                configurationValues: { ...(selected.configurationValues ?? {}) },
+                categories: (selected.categories ?? []).map(c => ({ ...c }))
+            };
+            modalEditorKey.value = `attribute-editor-${newGuid()}`;
+            isModalVisible.value = true;
+        }
+        else {
+            onAddClick();
+        }
+    }
+
+    /**
+     * Called when the Delete button for a row is clicked.
+     *
+     * @param rowKey The grid row key of the attribute to delete.
+     */
+    function onDeleteClick(rowKey: string): void {
+        isModalVisible.value = false;
+        attributes.value = (attributes.value ?? []).filter(a => getAttributeRowKey(a) !== rowKey);
+    }
+
+    /**
+     * Called when the modal Save button is clicked. Replaces the item being
+     * edited, or appends a new item whose guid stays null until the parent
+     * block persists it.
+     */
+    function onModalSave(): void {
+        if (!modalAttribute.value) {
+            return;
+        }
+
+        const currentAttributes = attributes.value ?? [];
+        const editedAttribute = { ...modalAttribute.value };
+
+        const originalRowKey = editingRowKey.value;
+
+        let updatedAttributes: PublicEditableAttributeBag[];
+        const editIndex = originalRowKey ? currentAttributes.findIndex(a => getAttributeRowKey(a) === originalRowKey) : -1;
+
+        // The item being edited could no longer be found in the list, so
+        // fail closed rather than appending a duplicate.
+        if (originalRowKey && editIndex === -1) {
+            return;
+        }
+
+        if (editIndex !== -1 && originalRowKey) {
+            updatedAttributes = [...currentAttributes];
+            updatedAttributes.splice(editIndex, 1, editedAttribute);
+
+            // Carry the row identity over to the replacement object so the
+            // grid treats it as the same row.
+            rowKeyByAttribute.set(toRaw(editedAttribute), originalRowKey);
+        }
+        else {
+            updatedAttributes = [...currentAttributes, editedAttribute];
+        }
+
+        attributes.value = updatedAttributes;
+        editingRowKey.value = null;
+        isModalVisible.value = false;
+    }
+
+    /**
+     * Called when a row is reordered in the grid.
+     *
+     * @param item The row being moved.
+     * @param beforeItem The row the moved item was placed before, or null if moved to end.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const itemKey = item["key"] as string;
+        const beforeItemKey = (beforeItem?.["key"] as string | undefined) ?? null;
+
+        const currentItems = [...(attributes.value ?? [])];
+        const index = currentItems.findIndex(a => getAttributeRowKey(a) === itemKey);
+
+        if (index < 0) {
+            return false;
+        }
+
+        const itemToMove = currentItems.splice(index, 1)[0];
+
+        if (beforeItemKey) {
+            const beforeIndex = currentItems.findIndex(a => getAttributeRowKey(a) === beforeItemKey);
+
+            if (beforeIndex < 0) {
+                currentItems.push(itemToMove);
+            }
+            else {
+                currentItems.splice(beforeIndex, 0, itemToMove);
+            }
+        }
+        else {
+            currentItems.push(itemToMove);
+        }
+
+        attributes.value = currentItems;
+        return true;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Gets the stable client-side grid row key for an attribute, minting one
+     * the first time an attribute is seen.
+     *
+     * @param attribute The attribute whose row key is needed.
+     *
+     * @returns The grid row key.
+     */
+    function getAttributeRowKey(attribute: PublicEditableAttributeBag): string {
+        // Normalize to the raw object so the same attribute resolves to the
+        // same key whether it arrives directly or as a reactive proxy.
+        const rawAttribute = toRaw(attribute);
+
+        let key = rowKeyByAttribute.get(rawAttribute);
+
+        if (!key) {
+            // The prefix makes it obvious in devtools and in the DOM that
+            // this is a client-only row key, not an entity guid.
+            key = `attribute-row-${newGuid()}`;
+            rowKeyByAttribute.set(rawAttribute, key);
+        }
+
+        return key;
+    }
+
+    /**
+     * Creates a new attribute with default values, suitable for editing with
+     * the AttributeEditor. The guid is null because the attribute does not
+     * exist in the database yet; the server assigns the real guid on save.
+     *
+     * @returns A new attribute.
+     */
+    function createNewAttribute(): PublicEditableAttributeBag {
+        return {
+            guid: null,
+            name: "",
+            description: "",
+            isActive: true,
+            isPublic: false,
+            isRequired: false,
+            isShowOnBulk: false,
+            isShowInGrid: false,
+            isAnalytic: false,
+            isAnalyticHistory: false,
+            isAllowSearch: false,
+            isEnableHistory: false,
+            isIndexEnabled: false,
+            isSystem: false,
+            fieldTypeGuid: FieldType.Text,
+            configurationValues: {},
+            categories: [],
+            key: "",
+            abbreviatedName: "",
+            preHtml: "",
+            postHtml: "",
+            defaultValue: "",
+            isSuppressHistoryLogging: false,
+            attributeColor: "",
+            iconCssClass: ""
+        };
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    /**
+     * Release the item being edited when the modal closes without saving so
+     * its key becomes reserved again.
+     */
+    watch(isModalVisible, () => {
+        if (!isModalVisible.value) {
+            editingRowKey.value = null;
+        }
+    });
+
+    // #endregion Watchers
+</script>

@@ -96,5 +96,15 @@ namespace Rock.ViewModels.Core.Grid
         /// Property values for specific field types.
         /// </value>
         public Dictionary<string, object> FieldProperties { get; set; }
+
+        /// <summary>
+        /// Gets or sets the names of fields on the row bag to use as sort keys
+        /// for this column, in priority order. Empty means the client sorts by
+        /// the display value on <see cref="Name"/>. Populated by output helpers
+        /// that project <c>DataSelectComponent.SortProperties(selection)</c>
+        /// results into paired row fields.
+        /// </summary>
+        /// <value>The ordered list of sort field names.</value>
+        public List<string> SortFields { get; set; }
     }
 }

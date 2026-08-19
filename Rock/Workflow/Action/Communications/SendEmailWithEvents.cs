@@ -53,6 +53,8 @@ namespace Rock.Workflow.Action
     [TextField( "Subject",
         Description = "The subject that should be used when sending email. <span class='tip tip-lava'></span>",
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 2 )]
     [CodeEditorField( "Body",
         Description = "The body of the email that should be sent. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",

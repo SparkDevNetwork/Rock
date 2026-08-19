@@ -1,1096 +1,902 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ContextSlicer title="View"
-                   class="mb-spacing-lg connections-hub-slicer"
-                   showCampus
-                   isContentWrapped>
-        <template #default>
-            <div class="slicer-content-left">
-                <ButtonGroup v-show="enabledViews.length > 1"
-                             v-model="selectedView"
-                             :items="enabledViews"
-                             :btnSize="BtnSize.ExtraSmall" />
-            </div>
-            <DropDownList v-if="!isMyConnectionsView"
-                          v-model="selectedConnector"
-                          :items="staticConnectionTypeOptions?.connectorKeyItems ?? []"
-                          blankValue="All Requests"
-                          enhanceForLongLists />
-            <DropDownList v-else-if="!selectedOpportunity"
-                          v-model="selectedType"
-                          :items="box.options?.connectionTypeItems ?? []"
-                          blankValue="All Types" />
-            <DropDownList v-model="selectedOpportunity"
-                          :items="connectionOpportunities ?? []"
-                          blankValue="All Opportunities" />
-        </template>
-        <template #rightContent v-if="!isMyConnectionsView">
-            <RockButton isSquare
-                        title="My Connections"
-                        :btnSize="BtnSize.Small"
-                        @click="onMyConnectionsClick">
-                <i class="ti ti-user-circle"></i>
-            </RockButton>
-        </template>
-    </ContextSlicer>
-
-    <GroupedPanel v-model:quickFilterValue="rawQuickFilter"
-                  v-model:groupingKey="selectedGrouping"
-                  v-model:orderedRequestKeys="orderedRequestKeys"
-                  v-model:viewMode="selectedView"
-                  ref="groupedPanel"
-                  :title="box.options?.title ?? ''"
-                  :titleIconCssClass="`${box.options?.iconCssClass ?? ''} panel-icon d-inline-block`"
-                  :isSelectedView="hasAnySelectedKeys"
-                  :rows="gridData?.rows ?? []"
-                  :filteredAndSortedRows="visibleRowsFilteredByGrid"
-                  :panelSettingsActive="hasSettingsFilters"
-                  :groupingFields="groupingFields"
-                  itemTerm="Request"
-                  :isCountMessageVisible="isGroupCountMessageVisible"
-                  hasFullscreen
-                  :onAddItem="canEditConnectionRequests ? onAddItem : undefined"
-                  :onPanelSettingsClick="onPanelSettingsClick"
-                  :isAutoCollapseEnabled="isAutoCollapseEnabled"
-                  :headerSecondaryActions="secondaryActions"
-                  :availableGroups="availableGroups"
-                  :canDropOnGroup="canDropOnGroup"
-                  :isGroupDrag="isCardInGroupDrag"
-                  :selectedCount="allSelectedKeys.length"
-                  :onSnapshotClick="isMyConnectionsView ? onSnapshotClick : undefined"
-                  :isSnapshotVisible="isSnapshotVisible"
-                  @cardMoved="onCardMoved">
-        <template #snapshot>
-            <Snapshot :metrics="snapshotMetrics" />
-        </template>
-        <template #selectedActionToolbar>
-            <div ref="toolbarElement" class="left-actions d-flex align-items-center gap-spacing-md">
-                <div class="d-flex align-items-center gap-spacing-tiny">
-                    <RockLabel class="text-info-strong mb-0">Selected</RockLabel>
-                    <Badge class="font-weight-semibold bg-info-strong">{{ allSelectedKeys.length }}</Badge>
+    <div class="connections-hub">
+        <ContextSlicer title="View"
+                       class="connections-hub-slicer"
+                       showCampus
+                       isContentWrapped>
+            <template #default>
+                <div class="connections-hub-view-toggle">
+                    <ButtonGroup v-show="enabledViews.length > 1"
+                                 v-model="selectedView"
+                                 :items="enabledViews"
+                                 :btnSize="BtnSize.ExtraSmall" />
                 </div>
-                <div class="d-flex align-items-center gap-spacing-xs">
-                    <!-- Primary actions are always shown as buttons in both layouts. -->
-                    <RockButton class="activity-btn" @click="showAssignRequestModal" :disabled="!canEditConnectionRequests || disableConnectionTypeSpecificBulkActions">
-                        <i class="ti ti-user-circle"></i>
-                        <span class="activity-btn-label">Assign</span>
-                    </RockButton>
-                    <RockButton @click="showChangeStatusModal()" class="activity-btn" :disabled="!canEditConnectionRequests || disableConnectionTypeSpecificBulkActions">
-                        <template v-if="bulkConnectionTypeOptions?.isSequentialStatusMode">
-                            <i class="ti ti-arrow-right"></i>
-                            <span class="activity-btn-label">Advance to Next Status</span>
-                        </template>
-                        <template v-else>
-                            <i class="ti ti-select"></i>
-                            <span class="activity-btn-label">Change Status</span>
-                        </template>
-                    </RockButton>
+                <DropDownList v-if="!isMyConnectionsView"
+                              v-model="selectedConnector"
+                              :items="staticConnectionTypeOptions?.connectorKeyItems ?? []"
+                              blankValue="All Requests"
+                              enhanceForLongLists />
+                <DropDownList v-else-if="!selectedOpportunity"
+                              v-model="selectedType"
+                              :items="box.options?.connectionTypeItems ?? []"
+                              blankValue="All Types" />
+                <DropDownList v-model="selectedOpportunity"
+                              :items="connectionOpportunities ?? []"
+                              blankValue="All Opportunities" />
+            </template>
+            <template #rightContent v-if="!isMyConnectionsView">
+                <RockButton isSquare
+                            title="My Connections"
+                            :btnSize="BtnSize.Small"
+                            @click="onMyConnectionsClick">
+                    <i class="ti ti-user-circle"></i>
+                </RockButton>
+            </template>
+        </ContextSlicer>
 
-                    <!-- Left-hand secondary actions: buttons on wide screens, folded into the overflow menu when compact. -->
-                    <template v-if="!isToolbarCompact">
-                        <RockButton v-for="action in primaryToolbarActions"
-                                    :key="action.key"
-                                    class="activity-btn"
-                                    :disabled="isToolbarActionDisabled(action)"
-                                    @click="action.handler()">
-                            <i :class="action.iconCssClass"></i>
-                            <span class="activity-btn-label">{{ action.label }}</span>
-                        </RockButton>
-                    </template>
-
-                    <!--
-                        A single overflow menu. On wide screens it holds only the edit-only state
-                        changes; when the toolbar collapses (isToolbarCompact) the secondary
-                        actions fold in above them.
-                    -->
-                    <DropDownContent v-if="isToolbarOverflowMenuShown"
-                                     v-model="isToolbarOverflowMenuOpen"
-                                     enableFlip
-                                     :placement="isToolbarCompact ? 'bottom-end' : 'bottom-start'"
-                                     preventAnchorClickPropagation>
-                        <template #anchor>
-                            <i class="ti ti-dots-vertical cursor-pointer"></i>
-                        </template>
-                        <div class="d-flex flex-column bg-interface-softest dropdown-content text-sm">
-                            <template v-if="isToolbarCompact">
-                                <div v-for="action in foldedToolbarActions"
-                                     :key="action.key"
-                                     class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
-                                     :class="{ 'text-danger': action.isDanger, disabled: isToolbarActionDisabled(action) }"
-                                     @click.stop="onToolbarMenuActionClick(action)">
-                                    <i :class="getToolbarMenuIconClass(action)"></i>{{ action.label }}
-                                </div>
-                                <div v-if="canEditConnectionRequests" class="dropdown-content-divider"></div>
-                            </template>
-                            <template v-if="canEditConnectionRequests">
-                                <div v-for="action in stateToolbarActions"
-                                     :key="action.key"
-                                     class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
-                                     :class="{ 'text-danger': action.isDanger, disabled: isToolbarActionDisabled(action) }"
-                                     @click.stop="onToolbarMenuActionClick(action)">
-                                    <i :class="getToolbarMenuIconClass(action)"></i>{{ action.label }}
-                                </div>
-                            </template>
-                        </div>
-                    </DropDownContent>
-                </div>
-            </div>
-            <div class="right-actions d-flex align-items-center gap-spacing-md">
-                <!-- Right-hand secondary actions: buttons on wide screens, folded into the overflow menu when compact. -->
-                <template v-if="!isToolbarCompact">
-                    <div class="pl-spacing-md d-flex align-items-center gap-spacing-xs">
-                        <RockButton v-for="action in communicationToolbarActions"
-                                    :key="action.key"
-                                    class="activity-btn"
-                                    :disabled="isToolbarActionDisabled(action)"
-                                    @click="action.handler()">
-                            <i :class="action.iconCssClass"></i>
-                            <span class="activity-btn-label">{{ action.label }}</span>
-                        </RockButton>
+        <GroupedPanel v-model:quickFilterValue="rawQuickFilter"
+                      v-model:groupingKey="selectedGrouping"
+                      v-model:orderedRequestKeys="orderedRequestKeys"
+                      v-model:viewMode="selectedView"
+                      ref="groupedPanel"
+                      :title="box.options?.title ?? ''"
+                      :titleIconCssClass="`${box.options?.iconCssClass ?? ''} panel-icon`"
+                      :isSelectedView="hasAnySelectedKeys"
+                      :rows="gridData?.rows ?? []"
+                      :filteredAndSortedRows="visibleRowsFilteredByGrid"
+                      :panelSettingsActive="hasSettingsFilters"
+                      :groupingFields="groupingFields"
+                      itemTerm="Request"
+                      :isCountMessageVisible="isGroupCountMessageVisible"
+                      hasFullscreen
+                      :onAddItem="canEditConnectionRequests ? onAddItem : undefined"
+                      :onPanelSettingsClick="onPanelSettingsClick"
+                      :isAutoCollapseEnabled="isAutoCollapseEnabled"
+                      :headerSecondaryActions="secondaryActions"
+                      :availableGroups="availableGroups"
+                      :canDropOnGroup="canDropOnGroup"
+                      :isGroupDrag="isCardInGroupDrag"
+                      :selectedCount="allSelectedKeys.length"
+                      :onSnapshotClick="isMyConnectionsView ? onSnapshotClick : undefined"
+                      :isSnapshotVisible="isSnapshotVisible"
+                      @cardMoved="onCardMoved">
+            <template #snapshot>
+                <Snapshot :metrics="snapshotMetrics" />
+            </template>
+            <template #selectedActionToolbar>
+                <div ref="toolbarElement" class="left-actions">
+                    <div class="selected-count">
+                        <RockLabel class="selected-count-label">Selected</RockLabel>
+                        <Badge class="selected-count-badge">{{ allSelectedKeys.length }}</Badge>
                     </div>
-                    <div class="border-left-divider pl-spacing-md d-flex align-items-center gap-spacing-md">
-                        <RockButton v-for="action in managementToolbarActions"
-                                    :key="action.key"
-                                    class="activity-btn"
-                                    :disabled="isToolbarActionDisabled(action)"
-                                    @click="action.handler()">
-                            <i :class="action.iconCssClass"></i>
-                            <span class="activity-btn-label">{{ action.label }}</span>
+                    <div class="toolbar-primary-actions">
+                        <!-- Primary actions are always shown as buttons in both layouts. -->
+                        <RockButton class="activity-btn" @click="showAssignRequestModal" :disabled="!canEditConnectionRequests || disableConnectionTypeSpecificBulkActions">
+                            <i class="ti ti-user-circle"></i>
+                            <span class="activity-btn-label">Assign</span>
                         </RockButton>
-                    </div>
-                </template>
-                <div class="d-flex align-items-center gap-spacing-sm">
-                    <i class="ti ti-x cursor-pointer" @click="clearAllSelections"></i>
-                </div>
-            </div>
-        </template>
-        <template #headerActions="{ groupRows }">
-            <HighlightLabel v-if="shouldShowDueSoonHighlight(groupRows)" labelType="warning">
-                {{ getDueSoonCount(groupRows) }} Due Soon
-            </HighlightLabel>
-            <HighlightLabel v-if="shouldShowOverdueHighlight(groupRows)" labelType="danger">
-                {{ getOverdueCount(groupRows) }} Overdue
-            </HighlightLabel>
-        </template>
-        <template #grid="{ group, setGridRef }">
-            <Grid :definition="box.gridDefinition ?? undefined"
-                  :ref="setGridRef"
-                  :data="group.gridData"
-                  keyField="idKey"
-                  :isTitleHidden="true"
-                  :isSearchVisible="false"
-                  :isFooterHidden="true"
-                  :showExport="false"
-                  :showMergeTemplate="false"
-                  :isCountMessageVisible="false"
-                  :hideFilterHeaderRow="true"
-                  light
-                  :forceVirtualRowsOnLight="true"
-                  class="grid-hover"
-                  @selectedKeysChanged="state => onSelectedKeysChanged(group.key, state)"
-                  @selectItem="onSelectItem"
-                  @onLoad="state => onGridLoad(group.key, state)"
-                  @onUnload="state => onGridUnload(group.key, state)">
-                <SelectColumn />
-
-                <PersonColumn name="requestDetails"
-                              title="Request Details"
-                              field="requestDetails" />
-
-                <Column v-if="isMyConnectionsView"
-                        name="type"
-                        field="connectionTypeName"
-                        width="80px">
-                    <template #format="{ row }">
-                        <div class="type-icon-container" v-tooltip="`Type: ${row.connectionTypeName}`">
-                            <i :class="row.connectionTypeIconCssClass" class="type-icon"></i>
-                        </div>
-                    </template>
-                </Column>
-
-                <Column v-if="viewOptions.gridDataToShow?.includes('connectionOpportunity') && selectedGrouping !== 'opportunityGrouping'"
-                        name="connectionOpportunity"
-                        field="connectionOpportunity">
-                    <template #format="{ row }">
-                        <div class="d-flex flex-column align-items-start gap-spacing-tiny">
-                            <HighlightLabel labelType="custom"
-                                            customClass="label-default text-xs text-semibold text-interface-strong">
-                                {{ row.connectionOpportunity }}
-                            </HighlightLabel>
-                            <span v-if="!isNullOrWhiteSpace(row.connectionTypeSource) && viewOptions.isRequestSourceShown"
-                                  class="text-small text-interface-medium">
-                                {{ row.connectionTypeSource }}
-                            </span>
-                        </div>
-                    </template>
-                </Column>
-
-                <Column v-if="selectedGrouping !== 'connectorGrouping'"
-                        title="Connector"
-                        name="connectorDetails"
-                        field="connectorDetails">
-                    <template #format="{ row }">
-                        {{ row.connectorDetails?.text }}
-                    </template>
-                </Column>
-
-                <Column v-if="selectedGrouping !== 'campusGrouping'"
-                        name="campus"
-                        title="Campus"
-                        field="campus">
-                    <template #format="{ row }">
-                        <div v-if="!!row.campus">
-                            {{ row.campus }}
-                        </div>
-                        <div v-else>
-                            <i class="ti ti-minus"></i>
-                        </div>
-                    </template>
-                </Column>
-
-                <Column v-if="allConnectionTypeOptions.some(t => t.areGroupPlacementsEnabled)"
-                        name="group"
-                        title="Group"
-                        field="group">
-                    <template #format="{ row }">
-                        <template v-if="!!row.group && connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.areGroupPlacementsEnabled">
-                            <div v-if="row.isPendingMember" :class="{ 'text-muted': !!row.isPlacementGroupInactiveOrArchived }" v-tooltip="'Pending group member. The requester will be added once the request is completed.'">
-                                {{ row.group }}
-                                <i class="ti ti-user-share text-interface-medium"></i>
-                            </div>
-                            <div v-else :class="{ 'text-muted': !!row.isPlacementGroupInactiveOrArchived }">
-                                {{ row.group }}
-                            </div>
-                        </template>
-                        <div v-else>
-                            <i class="ti ti-minus"></i>
-                        </div>
-                    </template>
-                </Column>
-
-                <Column v-if="viewOptions.gridDataToShow?.includes('activity')"
-                        name="activity"
-                        title="Activity"
-                        field="activity">
-                    <template #format="{ row }">
-                        <div v-if="!!row.lastActivityDateTime && !!row.activityCount"
-                             class="d-flex align-items-center gap-spacing-tiny">
-                            <div class="activity-metric activity-date">
-                                <i class="ti ti-calendar-month"></i>
-                                <span>
-                                    {{ getElapsedShortTime(row.lastActivityDateTime) }}
-                                </span>
-                            </div>
-                            <div class="activity-metric activity-count">
-                                <i class="ti ti-bolt"></i>
-                                <span>
-                                    {{ row.activityCount }}
-                                </span>
-                            </div>
-                        </div>
-                        <div v-else>
-                            <i class="ti ti-minus"></i>
-                        </div>
-                    </template>
-                </Column>
-
-                <Column v-if="viewOptions.gridDataToShow?.includes('dueDate')"
-                        name="dueDate"
-                        title="Due"
-                        field="dueDate"
-                        width="2%">
-                    <template #format="{ row }">
-                        <div v-if="!!row.dueDate && row.connectionState !== ConnectionState.Inactive" :class="getDueDateColor(row.dueStatus, row.connectionState === ConnectionState.Connected)">
-                            {{ formatDueDateShortLabel(row.dueDate, row.connectionState === ConnectionState.Connected, row.completedDateTime) }}
-                        </div>
-                        <div v-else>
-                            <i class="ti ti-minus"></i>
-                        </div>
-                    </template>
-                </Column>
-
-                <AttributeColumns :attributes="attributesToShow" />
-
-                <Column v-if="allConnectionTypeOptions.some(t => t.areCelebrationsEnabled)"
-                        name="celebration"
-                        field="celebration"
-                        width="52">
-                    <template #format="{ row }">
-                        <template v-if="!isMyConnectionsView || connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.areCelebrationsEnabled === true">
-                            <i v-if="isNullOrWhiteSpace(row.celebrationText)"
-                               class="ti ti-confetti cursor-pointer"
-                               :ref="(el) => addTooltip(el as Element)"
-                               data-toggle="tooltip"
-                               data-placement="auto"
-                               data-container="body"
-                               data-original-title="Add Celebration"
-                               @click.stop="showCelebrationModal(row)">
-                            </i>
-                            <i v-else
-                               class="ti ti-confetti-filled cursor-pointer text-info-strong"
-                               :ref="(el) => addTooltip(el as Element)"
-                               data-toggle="tooltip"
-                               data-placement="auto"
-                               data-container="body"
-                               data-original-title="Has Celebration"
-                               @click.stop="showCelebrationModal(row)">
-                            </i>
-                        </template>
-                        <template v-else>
-                            <i class="ti ti-confetti disabled"></i>
-                        </template>
-                    </template>
-                </Column>
-
-                <Column v-if="allConnectionTypeOptions.some(t => t.areRemindersEnabled)"
-                        name="reminder"
-                        field="reminder"
-                        width="52">
-                    <template #format="{ row }">
-                        <template v-if="!isMyConnectionsView || connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.areRemindersEnabled === true">
-                            <i v-if="row.reminderCount > 0"
-                               class="ti ti-bell-filled cursor-pointer text-info-strong"
-                               :ref="(el) => addTooltip(el as Element)"
-                               data-toggle="tooltip"
-                               data-placement="auto"
-                               data-container="body"
-                               :data-original-title="`${row.reminderCount} ${pluralize('Reminder', row.reminderCount)}`"
-                               @click.stop="showReminderModal(row)">
-                            </i>
-                            <i v-else
-                               class="ti ti-bell cursor-pointer"
-                               :ref="(el) => addTooltip(el as Element)"
-                               data-toggle="tooltip"
-                               data-placement="auto"
-                               data-container="body"
-                               data-original-title="Add Reminder"
-                               @click.stop="showReminderModal(row)">
-                            </i>
-                        </template>
-                        <template v-else>
-                            <i class="ti ti-bell disabled"></i>
-                        </template>
-                    </template>
-                </Column>
-
-                <Column name="connectionStatus"
-                        field="connectionStatus">
-                    <template #format="{ row }">
-                        <div class="w-100">
-                            <template v-if="row.connectionState === ConnectionState.Active">
-                                <ConnectionStatusButton :isSequentialStatusMode="connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.isSequentialStatusMode"
-                                                        :highlightColor="row.connectionStatus.highlightColor"
-                                                        :currentStatusName="row.connectionStatus.name"
-                                                        :disabled="!canEditConnectionRequests"
-                                                        @click.stop="(e) => onStatusClick(row, e)" />
+                        <RockButton @click="showChangeStatusModal()" class="activity-btn" :disabled="!canEditConnectionRequests || disableConnectionTypeSpecificBulkActions">
+                            <template v-if="bulkConnectionTypeOptions?.isSequentialStatusMode">
+                                <i class="ti ti-arrow-right"></i>
+                                <span class="activity-btn-label">Advance to Next Status</span>
                             </template>
-                            <div v-else-if="row.connectionState === ConnectionState.Inactive"
-                                 class=" font-size-sm text-center text-semibold text-slate">
-                                {{ ConnectionStateDescription[ConnectionState.Inactive] }}
-                            </div>
-                            <div v-else-if="row.connectionState === ConnectionState.FutureFollowUp"
-                                 class="font-size-sm text-center text-semibold text-info-strong">
-                                {{ ConnectionStateDescription[ConnectionState.FutureFollowUp] }} - {{ asLocaleString(row.followUpDate) }}
-                            </div>
-                            <div v-else-if="row.connectionState === ConnectionState.Connected"
-                                 class="font-size-sm text-center text-semibold text-emerald">
-                                {{ ConnectionStateDescription[ConnectionState.Connected] }}
-                            </div>
-                        </div>
-                    </template>
-                </Column>
+                            <template v-else>
+                                <i class="ti ti-select"></i>
+                                <span class="activity-btn-label">Change Status</span>
+                            </template>
+                        </RockButton>
 
-                <Column name="options"
-                        field="options"
-                        width="52"
-                        itemClass="grid-cell-overflow">
-                    <template #format="{ row }">
-                        <DropDownContent :modelValue="openDropdownIndex === row.idKey"
-                                         @update:modelValue="val => openDropdownIndex = val ? row.idKey : null"
+                        <!-- Left-hand secondary actions: buttons on wide screens, folded into the overflow menu when compact. -->
+                        <template v-if="!isToolbarCompact">
+                            <RockButton v-for="action in primaryToolbarActions"
+                                        :key="action.key"
+                                        class="activity-btn"
+                                        :disabled="isToolbarActionDisabled(action)"
+                                        @click="action.handler()">
+                                <i :class="action.iconCssClass"></i>
+                                <span class="activity-btn-label">{{ action.label }}</span>
+                            </RockButton>
+                        </template>
+
+                        <!--
+                            A single overflow menu. On wide screens it holds only the edit-only state
+                            changes; when the toolbar collapses (isToolbarCompact) the secondary
+                            actions fold in above them.
+                        -->
+                        <DropDownContent v-if="isToolbarOverflowMenuShown"
+                                         v-model="isToolbarOverflowMenuOpen"
                                          enableFlip
-                                         placement="bottom-end"
+                                         :placement="isToolbarCompact ? 'bottom-end' : 'bottom-start'"
                                          preventAnchorClickPropagation>
                             <template #anchor>
-                                <i class="ti ti-dots-vertical cursor-pointer"></i>
+                                <i class="ti ti-dots-vertical dropdown-anchor-icon"></i>
                             </template>
-                            <div class="d-flex flex-column bg-interface-softest dropdown-content text-sm">
-                                <template v-if="canEditConnectionRequests">
-                                    <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
-                                         @click.stop="showChangeStateModal(ConnectionState.Active, row)">
-                                        <i class="ti ti-user pr-spacing-sm text-interface-medium"></i>Set as Active
+                            <div class="dropdown-content">
+                                <template v-if="isToolbarCompact">
+                                    <div v-for="action in foldedToolbarActions"
+                                         :key="action.key"
+                                         class="dropdown-content-item dropdown-content-item--menu-action"
+                                         :class="{ 'dropdown-content-item--danger': action.isDanger, disabled: isToolbarActionDisabled(action) }"
+                                         @click.stop="onToolbarMenuActionClick(action)">
+                                        <i :class="getToolbarMenuIconClass(action)"></i>{{ action.label }}
                                     </div>
-                                    <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
-                                         @click.stop="showChangeStateModal(ConnectionState.Inactive, row)">
-                                        <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
-                                    </div>
-                                    <div v-if="box.options?.connectionTypeOptionsByIdKey && box.options.connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.isFutureFollowUpEnabled"
-                                         class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
-                                         @click.stop="showChangeStateModal(ConnectionState.FutureFollowUp, row)">
-                                        <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
-                                    </div>
-                                    <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
-                                         @click.stop="showChangeStateModal(ConnectionState.Connected, row)">
-                                        <i class="ti ti-circle-check pr-spacing-sm text-interface-medium"></i>Mark Complete
-                                    </div>
+                                    <div v-if="canEditConnectionRequests" class="dropdown-content-divider"></div>
                                 </template>
-                                <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
-                                     @click.stop="showLaunchWorkflowModal(row)">
-                                    <i class="ti ti-settings-cog pr-spacing-sm text-interface-medium"></i>Launch Workflow
-                                </div>
                                 <template v-if="canEditConnectionRequests">
-                                    <div v-if="!row.isRequestSecurityDisabled"
-                                         class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
-                                         @click.stop="showSecurityModal(row.idKey)">
-                                        <i class="ti ti-lock pr-spacing-sm text-interface-medium"></i>Security
-                                    </div>
-                                    <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold text-danger"
-                                         @click.stop="showDeleteRequestModal(row)">
-                                        <i class="ti ti-trash pr-spacing-sm text-danger"></i>Delete
+                                    <div v-for="action in stateToolbarActions"
+                                         :key="action.key"
+                                         class="dropdown-content-item dropdown-content-item--menu-action"
+                                         :class="{ 'dropdown-content-item--danger': action.isDanger, disabled: isToolbarActionDisabled(action) }"
+                                         @click.stop="onToolbarMenuActionClick(action)">
+                                        <i :class="getToolbarMenuIconClass(action)"></i>{{ action.label }}
                                     </div>
                                 </template>
                             </div>
                         </DropDownContent>
+                    </div>
+                </div>
+                <div class="right-actions">
+                    <!-- Right-hand secondary actions: buttons on wide screens, folded into the overflow menu when compact. -->
+                    <template v-if="!isToolbarCompact">
+                        <div class="toolbar-communication-actions">
+                            <RockButton v-for="action in communicationToolbarActions"
+                                        :key="action.key"
+                                        class="activity-btn"
+                                        :disabled="isToolbarActionDisabled(action)"
+                                        @click="action.handler()">
+                                <i :class="action.iconCssClass"></i>
+                                <span class="activity-btn-label">{{ action.label }}</span>
+                            </RockButton>
+                        </div>
+                        <div class="border-left-divider toolbar-management-actions">
+                            <RockButton v-for="action in managementToolbarActions"
+                                        :key="action.key"
+                                        class="activity-btn"
+                                        :disabled="isToolbarActionDisabled(action)"
+                                        @click="action.handler()">
+                                <i :class="action.iconCssClass"></i>
+                                <span class="activity-btn-label">{{ action.label }}</span>
+                            </RockButton>
+                        </div>
                     </template>
-                </Column>
-            </Grid>
-        </template>
-        <template #emptyView>
-            <template v-if="areRequestsLoading">
-                <!-- Board View Skeleton -->
-                <div v-if="selectedView === 'board'" class="skeleton-board">
-                    <div v-for="columnIndex in skeletonCount" :key="`board-col-${columnIndex}`" class="skeleton-board-column">
-                        <div class="skeleton skeleton-heading"></div>
-                        <div v-for="cardIndex in 4" :key="`board-card-${columnIndex}-${cardIndex}`"
-                             class="skeleton rounded skeleton-board-card"></div>
-                    </div>
-                </div>
-                <!-- Grid View Skeleton -->
-                <div v-else-if="selectedView === 'grid'" class="d-flex flex-column">
-                    <div v-for="rowIndex in 16" :key="`grid-row-${rowIndex}`" class="skeleton-grid-row" :class="{ 'bg-interface-softer': rowIndex % 2 === 0 }">
-                        <div v-for="colIndex in 8" :key="`grid-col-${colIndex}`"
-                             :style="colIndex % 2 === 0 ? 'max-width: 260px;' : 'max-width: 160px;'"
-                             class="skeleton skeleton-text m-spacing-xs" />
-                    </div>
-                </div>
-                <!-- List View Skeleton -->
-                <div v-else class="skeleton-list">
-                    <div v-for="index in skeletonCount" :key="`list-${index}`" class="skeleton rounded" style="height: 300px"></div>
-                </div>
-            </template>
-            <template v-else>
-                <NotificationBox v-if="!isNullOrWhiteSpace(requestListErrorMessage)"
-                                 alertType="danger">
-                    {{ requestListErrorMessage }}
-                </NotificationBox>
-                <div class="empty-list">
-                    <i class="ti ti-id-off text-interface-medium" style="font-size: 20px;"></i>
-                    <div class="text-interface-medium text-semibold text-lg">
-                        No Connection Requests Available
-                    </div>
-                    <div v-if="canEditConnectionRequests"
-                         class="text-link cursor-pointer"
-                         @click="onAddItem">
-                        Add a Request to Get Started
+                    <div class="toolbar-clear-selection">
+                        <i class="ti ti-x" @click="clearAllSelections"></i>
                     </div>
                 </div>
             </template>
-        </template>
-        <template #boardCard="{ row }">
-            <ConnectionRequestCard :connectionRequest="row"
-                                   :options="box.options"
-                                   :connectionTypeOptions="staticConnectionTypeOptions"
-                                   :canEditConnectionRequests="canEditConnectionRequests"
-                                   :hideCampusLabel="selectedCampus !== null"
-                                   :viewOptions="viewOptions"
-                                   :attributesToShow="attributesToShow"
-                                   :currentPersonIdKey="currentPerson?.idKey"
-                                   :isSelected="allSelectedKeySet.has(row.idKey as string)"
-                                   @selectItem="onSelectBoardCard"
-                                   @toggleSelection="onToggleBoardCardSelection"
-                                   @changeState="showChangeStateModal"
-                                   @launchWorkflow="showLaunchWorkflowModal"
-                                   @showSecurity="showSecurityModal"
-                                   @delete="showDeleteRequestModal" />
-        </template>
-        <template #emptyColumn>
-            <div class="text-center p-spacing-md border rounded">No requests available.</div>
-        </template>
-        <template #gridView>
-            <Grid :definition="box.gridDefinition ?? undefined"
-                  :data="gridViewData"
-                  ref="gridViewGridRef"
-                  keyField="idKey"
-                  personKeyField="personIdKey"
-                  :isTitleHidden="true"
-                  :isSearchVisible="false"
-                  :isFooterHidden="true"
-                  :showExport="false"
-                  :showMergeTemplate="false"
-                  :isCountMessageVisible="false"
-                  :hideFilterHeaderRow="true"
-                  :entityTypeGuid="EntityType.ConnectionRequest"
-                  class="grid-hover border-0 mb-spacing-none"
-                  @selectItem="onSelectItem"
-                  @selectedKeysChanged="state => onSelectedKeysChanged('all', state)"
-                  @filteredRowsChanged="onFilteredRowsChanged">
-                <SelectColumn />
+            <template #headerActions="{ groupRows }">
+                <HighlightLabel v-if="shouldShowDueSoonHighlight(groupRows)" labelType="warning">
+                    {{ getDueSoonCount(groupRows) }} Due Soon
+                </HighlightLabel>
+                <HighlightLabel v-if="shouldShowOverdueHighlight(groupRows)" labelType="danger">
+                    {{ getOverdueCount(groupRows) }} Overdue
+                </HighlightLabel>
+            </template>
+            <template #grid="{ group, setGridRef }">
+                <Grid :definition="box.gridDefinition ?? undefined"
+                      :ref="setGridRef"
+                      :data="group.gridData"
+                      keyField="idKey"
+                      :isTitleHidden="true"
+                      :isSearchVisible="false"
+                      :isFooterHidden="true"
+                      :showExport="false"
+                      :showMergeTemplate="false"
+                      :isCountMessageVisible="false"
+                      :hideFilterHeaderRow="true"
+                      light
+                      :forceVirtualRowsOnLight="true"
+                      class="grid-hover"
+                      @selectedKeysChanged="state => onSelectedKeysChanged(group.key, state)"
+                      @selectItem="onSelectItem"
+                      @onLoad="state => onGridLoad(group.key, state)"
+                      @onUnload="state => onGridUnload(group.key, state)">
+                    <SelectColumn />
 
-                <Column name="requestDetails"
-                        title="Name"
-                        field="requestDetails"
-                        :filter="pickExistingValueFilter"
-                        :filterValue="getRequesterFilterValue"
-                        :sortValue="getRequesterFilterValue">
-                    <template #format="{ row }">
-                        {{ row.requestDetails.nickName }} {{ row.requestDetails.lastName }}
-                    </template>
-                </Column>
+                    <PersonColumn name="requestDetails"
+                                  title="Request Details"
+                                  field="requestDetails" />
 
-                <Column title="Connector"
-                        name="connectorDetails"
-                        field="connectorDetails"
-                        :filter="pickExistingValueFilter"
-                        :filterValue="getConnectorFilterValue"
-                        :sortValue="getConnectorFilterValue">
-                    <template #format="{ row }">
-                        {{ row.connectorDetails?.text }}
-                    </template>
-                </Column>
-
-                <Column name="campus"
-                        title="Campus"
-                        field="campus"
-                        :filter="pickExistingValueFilter">
-                    <template #format="{ row }">
-                        <div v-if="!!row.campus">
-                            {{ row.campus }}
-                        </div>
-                        <div v-else>
-                            <i class="ti ti-minus"></i>
-                        </div>
-                    </template>
-                </Column>
-
-                <TextColumn name="connectionTypeName"
-                            title="Type"
+                    <Column v-if="isMyConnectionsView"
+                            name="type"
                             field="connectionTypeName"
-                            :filter="pickExistingValueFilter" />
-
-                <Column v-if="viewOptions.gridDataToShow?.includes('connectionOpportunity')"
-                        name="connectionOpportunity"
-                        title="Opportunity"
-                        field="connectionOpportunity"
-                        :filter="pickExistingValueFilter">
-                    <template #format="{ row }">
-                        <div class="d-flex flex-column align-items-start gap-1">
-                            <div>
-                                {{ row.connectionOpportunity }}
-                            </div>
-                            <span v-if="!isNullOrWhiteSpace(row.connectionTypeSource) && viewOptions.isRequestSourceShown"
-                                  class="text-small text-interface-medium">
-                                {{ row.connectionTypeSource }}
-                            </span>
-                        </div>
-                    </template>
-                    <template #condensed="{ row }">
-                        {{ row.connectionOpportunity }}
-                    </template>
-                </Column>
-
-                <Column v-if="allConnectionTypeOptions.some(t => t.areGroupPlacementsEnabled)"
-                        name="group"
-                        title="Group"
-                        field="group"
-                        :filter="pickExistingValueFilter">
-                    <template #format="{ row }">
-                        <template v-if="!!row.group && (!isMyConnectionsView || connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.areGroupPlacementsEnabled === true)">
-                            <div v-if="row.isPendingMember" v-tooltip="'Pending group member. The requester will be added once the request is completed.'">
-                                {{ row.group }}
-                                <i class="ti ti-user-share text-interface-medium"></i>
-                            </div>
-                            <div v-else>
-                                {{ row.group }}
+                            width="80px">
+                        <template #format="{ row }">
+                            <div class="type-icon-container" v-tooltip="`Type: ${row.connectionTypeName}`">
+                                <i :class="row.connectionTypeIconCssClass" class="type-icon"></i>
                             </div>
                         </template>
-                        <div v-else>
-                            <i class="ti ti-minus"></i>
-                        </div>
-                    </template>
-                    <template #condensed="{ row }">
-                        <div v-if="!!row.group">
-                            {{ row.group }}
-                        </div>
-                        <div v-else>
-                            <i class="ti ti-minus"></i>
-                        </div>
-                    </template>
-                </Column>
+                    </Column>
 
-                <Column v-if="viewOptions.gridDataToShow?.includes('activity')"
-                        name="activityCount"
-                        title="Activity"
-                        field="activityCount">
-                    <template #format="{ row }">
-                        <div v-if="!!row.lastActivityDateTime && !!row.activityCount"
-                             class="d-flex flex-column align-items-start gap-1">
-                            <div>
-                                {{ row.activityCount }} {{ pluralize("Activity", row.activityCount) }}
+                    <Column v-if="viewOptions.gridDataToShow?.includes('connectionOpportunity') && selectedGrouping !== 'opportunityGrouping'"
+                            name="connectionOpportunity"
+                            field="connectionOpportunity">
+                        <template #format="{ row }">
+                            <div class="grid-opportunity-cell">
+                                <HighlightLabel labelType="custom"
+                                                customClass="label-default grid-opportunity-cell-label">
+                                    {{ row.connectionOpportunity }}
+                                </HighlightLabel>
+                                <span v-if="!isNullOrWhiteSpace(row.connectionTypeSource) && viewOptions.isRequestSourceShown"
+                                      class="grid-cell-subtext">
+                                    {{ row.connectionTypeSource }}
+                                </span>
                             </div>
-                            <div class="text-small text-interface-medium" v-tooltip="`Last Activity: ${formatColumnDate(row.lastActivityDateTime)}`">
-                                Last Activity: {{ getElapsedShortTime(row.lastActivityDateTime) }}
+                        </template>
+                    </Column>
+
+                    <Column v-if="selectedGrouping !== 'connectorGrouping'"
+                            title="Connector"
+                            name="connectorDetails"
+                            field="connectorDetails">
+                        <template #format="{ row }">
+                            {{ row.connectorDetails?.text }}
+                        </template>
+                    </Column>
+
+                    <Column v-if="selectedGrouping !== 'campusGrouping'"
+                            name="campus"
+                            title="Campus"
+                            field="campus">
+                        <template #format="{ row }">
+                            <div v-if="!!row.campus">
+                                {{ row.campus }}
                             </div>
-                        </div>
-                        <div v-else>
-                            <i class="ti ti-minus"></i>
-                        </div>
-                    </template>
-                </Column>
-
-                <Column v-if="viewOptions.gridDataToShow?.includes('dueDate')"
-                        name="dueDate"
-                        title="Due Date"
-                        field="dueDate"
-                        width="5%"
-                        :filter="dateValueFilter"
-                        :sortValue="getDueDateSortValue">
-                    <template #format="{ row }">
-                        <div v-if="!!row.dueDate && row.connectionState !== ConnectionState.Inactive" :class="getDueDateColor(row.dueStatus, row.connectionState === ConnectionState.Connected)">
-                            {{ formatColumnDate(row.dueDate) }}
-                        </div>
-                        <div v-else>
-                            <i class="ti ti-minus"></i>
-                        </div>
-                    </template>
-                </Column>
-
-                <Column name="connectionState"
-                        title="State"
-                        field="connectionState"
-                        :filter="pickExistingValueFilter">
-                    <template #format="{ row }">
-                        <HighlightLabel :labelType="getConnectionStateLabel(row.connectionState)">
-                            {{ ConnectionStateDescription[row.connectionState] }}<template v-if="row.connectionState === ConnectionState.FutureFollowUp"> - {{ formatColumnDate(row.followUpDate) }}</template>
-                        </HighlightLabel>
-                    </template>
-                    <template #condensed="{ row }">
-                        <HighlightLabel :labelType="getConnectionStateLabel(row.connectionState)">
-                            {{ ConnectionStateDescription[row.connectionState] }}
-                        </HighlightLabel>
-                    </template>
-                </Column>
-
-                <Column name="connectionStatus"
-                        title="Status"
-                        field="connectionStatus"
-                        width="5%"
-                        :filter="pickExistingValueFilter"
-                        :filterValue="getStatusFilterValue"
-                        :sortValue="getStatusFilterValue">
-                    <template #format="{ row }">
-                        <HighlightLabel labelType="custom"
-                                        :style="`background-color: ${row.connectionStatus.highlightColor};`">
-                            <div class="text-truncate" v-tooltip.overflow="row.connectionStatus.name">
-                                {{ row.connectionStatus.name }}
+                            <div v-else>
+                                <i class="ti ti-minus"></i>
                             </div>
-                        </HighlightLabel>
-                    </template>
-                </Column>
+                        </template>
+                    </Column>
 
-                <AttributeColumns :attributes="attributesToShow" />
+                    <Column v-if="allConnectionTypeOptions.some(t => t.areGroupPlacementsEnabled)"
+                            name="group"
+                            title="Group"
+                            field="group">
+                        <template #format="{ row }">
+                            <template v-if="!!row.group && connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.areGroupPlacementsEnabled">
+                                <div v-if="row.isPendingMember" class="grid-group-cell" :class="{ 'grid-group-cell--archived': !!row.isPlacementGroupInactiveOrArchived }" v-tooltip="'Pending group member. The requester will be added once the request is completed.'">
+                                    {{ row.group }}
+                                    <i class="ti ti-user-share"></i>
+                                </div>
+                                <div v-else class="grid-group-cell" :class="{ 'grid-group-cell--archived': !!row.isPlacementGroupInactiveOrArchived }">
+                                    {{ row.group }}
+                                </div>
+                            </template>
+                            <div v-else>
+                                <i class="ti ti-minus"></i>
+                            </div>
+                        </template>
+                    </Column>
 
-                <SecurityColumn v-if="canEditConnectionRequests" disabledField="isRequestSecurityDisabled" :itemTitle="() => 'Item'" />
-            </Grid>
-        </template>
-    </GroupedPanel>
+                    <Column v-if="viewOptions.gridDataToShow?.includes('activity')"
+                            name="activity"
+                            title="Activity"
+                            field="activity">
+                        <template #format="{ row }">
+                            <div v-if="!!row.lastActivityDateTime && !!row.activityCount"
+                                 class="grid-activity-cell">
+                                <div class="activity-metric activity-metric--date">
+                                    <i class="ti ti-calendar-month"></i>
+                                    <span>
+                                        {{ getElapsedShortTime(row.lastActivityDateTime) }}
+                                    </span>
+                                </div>
+                                <div class="activity-metric activity-metric--count">
+                                    <i class="ti ti-bolt"></i>
+                                    <span>
+                                        {{ row.activityCount }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div v-else>
+                                <i class="ti ti-minus"></i>
+                            </div>
+                        </template>
+                    </Column>
 
-    <ChangeStatusFlyout v-model="isFlyoutOpen"
-                        :errorMessage="flyoutErrorMessage"
-                        :isCompletionButtonLoading="isFlyoutCompletionButtonLoading"
-                        :isSaving="isFlyoutSaving"
-                        :anchorEl="flyoutAnchorEl"
-                        :connectionRequestUpdateBag="connectionRequestUpdateBag"
-                        :isNoteRequired="isNoteRequired"
-                        :connectionTypeOptions="activeActionConnectionTypeOptions"
-                        @updateStatus="changeRequestStatus"
-                        @updateState="updateStateFromFlyout"
-                        @dismissErrorMessage="flyoutErrorMessage = ''"
-                        @close="onFlyoutClose" />
+                    <Column v-if="viewOptions.gridDataToShow?.includes('dueDate')"
+                            name="dueDate"
+                            title="Due"
+                            field="dueDate"
+                            width="2%">
+                        <template #format="{ row }">
+                            <div v-if="!!row.dueDate && row.connectionState !== ConnectionState.Inactive" :class="getDueDateColor(row.dueStatus, row.connectionState === ConnectionState.Connected)">
+                                {{ formatDueDateShortLabel(row.dueDate, row.connectionState === ConnectionState.Connected, row.completedDateTime) }}
+                            </div>
+                            <div v-else>
+                                <i class="ti ti-minus"></i>
+                            </div>
+                        </template>
+                    </Column>
 
-    <AddConnectionRequestModal :modelValue="newConnectionRequest"
-                               v-model:visible="isAddConnectionRequestModalVisible"
-                               :options="box.options"
-                               :connectionStateItems="connectionStateItems"
-                               :connectionTypeOptionsByIdKey="connectionTypeOptionsByIdKey"
-                               :selectedConnectionTypeOptions="selectedConnectionTypeOptions"
-                               :connectionOpportunityDetails="connectionOpportunityDetails"
-                               :placementGroupDetails="placementGroupDetails"
-                               :isConnectionOpportunityFilterSelected="hasSelectedOpportunity"
-                               :isExistingActiveRequesterOnConnectionType="isExistingActiveRequesterOnConnectionType"
-                               :isSaving="isModalSaving"
-                               :errorMessage="modalErrorMessage"
-                               @dismissErrorMessage="onModalErrorMessageDismissed"
-                               @checkForActiveRequester="checkForActiveRequester"
-                               @save="onAddRequest"
-                               @close="resetNewConnectionRequest"
-                               @fetchConnectionOpportunityDetails="fetchConnectionOpportunityDetails"
-                               @fetchConnectorOptions="fetchConnectorOptionsForAdd"
-                               @fetchPlacementGroupItems="fetchPlacementGroupItems"
-                               @fetchPlacementGroupDetails="fetchPlacementGroupDetails" />
+                    <AttributeColumns :attributes="attributesToShow" />
 
-    <AddFromCampaignModal v-model:visible="isAddFromCampaignModalVisible"
-                          :selectedOpportunityGuid="selectedOpportunity"
-                          :allConnectionOpportunityItems="connectionOpportunities ?? []"
-                          :isLoading="areCampaignsLoading"
+                    <Column v-if="allConnectionTypeOptions.some(t => t.areCelebrationsEnabled)"
+                            name="celebration"
+                            field="celebration"
+                            width="52">
+                        <template #format="{ row }">
+                            <template v-if="!isMyConnectionsView || connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.areCelebrationsEnabled === true">
+                                <i v-if="isNullOrWhiteSpace(row.celebrationText)"
+                                   class="ti ti-confetti grid-action-icon"
+                                   :ref="(el) => addTooltip(el as Element)"
+                                   data-toggle="tooltip"
+                                   data-placement="auto"
+                                   data-container="body"
+                                   data-original-title="Add Celebration"
+                                   @click.stop="showCelebrationModal(row)">
+                                </i>
+                                <i v-else
+                                   class="ti ti-confetti-filled grid-action-icon grid-action-icon--active"
+                                   :ref="(el) => addTooltip(el as Element)"
+                                   data-toggle="tooltip"
+                                   data-placement="auto"
+                                   data-container="body"
+                                   data-original-title="Has Celebration"
+                                   @click.stop="showCelebrationModal(row)">
+                                </i>
+                            </template>
+                            <template v-else>
+                                <i class="ti ti-confetti disabled"></i>
+                            </template>
+                        </template>
+                    </Column>
+
+                    <Column v-if="allConnectionTypeOptions.some(t => t.areRemindersEnabled)"
+                            name="reminder"
+                            field="reminder"
+                            width="52">
+                        <template #format="{ row }">
+                            <template v-if="!isMyConnectionsView || connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.areRemindersEnabled === true">
+                                <i v-if="row.reminderCount > 0"
+                                   class="ti ti-bell-filled grid-action-icon grid-action-icon--active"
+                                   :ref="(el) => addTooltip(el as Element)"
+                                   data-toggle="tooltip"
+                                   data-placement="auto"
+                                   data-container="body"
+                                   :data-original-title="`${row.reminderCount} ${pluralize('Reminder', row.reminderCount)}`"
+                                   @click.stop="showReminderModal(row)">
+                                </i>
+                                <i v-else
+                                   class="ti ti-bell grid-action-icon"
+                                   :ref="(el) => addTooltip(el as Element)"
+                                   data-toggle="tooltip"
+                                   data-placement="auto"
+                                   data-container="body"
+                                   data-original-title="Add Reminder"
+                                   @click.stop="showReminderModal(row)">
+                                </i>
+                            </template>
+                            <template v-else>
+                                <i class="ti ti-bell disabled"></i>
+                            </template>
+                        </template>
+                    </Column>
+
+                    <Column name="connectionStatus"
+                            field="connectionStatus">
+                        <template #format="{ row }">
+                            <div class="grid-status-cell">
+                                <template v-if="row.connectionState === ConnectionState.Active">
+                                    <ConnectionStatusButton :isSequentialStatusMode="connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.isSequentialStatusMode"
+                                                            :highlightColor="row.connectionStatus.highlightColor"
+                                                            :currentStatusName="row.connectionStatus.name"
+                                                            :disabled="!canEditConnectionRequests"
+                                                            @click.stop="(e) => onStatusClick(row, e)" />
+                                </template>
+                                <div v-else-if="row.connectionState === ConnectionState.Inactive"
+                                     class="grid-status-cell-state-label text-slate">
+                                    {{ ConnectionStateDescription[ConnectionState.Inactive] }}
+                                </div>
+                                <div v-else-if="row.connectionState === ConnectionState.FutureFollowUp"
+                                     class="grid-status-cell-state-label grid-status-cell-state-label--future-follow-up">
+                                    {{ ConnectionStateDescription[ConnectionState.FutureFollowUp] }} - {{ asLocaleString(row.followUpDate) }}
+                                </div>
+                                <div v-else-if="row.connectionState === ConnectionState.Connected"
+                                     class="grid-status-cell-state-label text-emerald">
+                                    {{ ConnectionStateDescription[ConnectionState.Connected] }}
+                                </div>
+                            </div>
+                        </template>
+                    </Column>
+
+                    <Column name="options"
+                            field="options"
+                            width="52"
+                            itemClass="grid-cell-overflow">
+                        <template #format="{ row }">
+                            <DropDownContent :modelValue="openDropdownIndex === row.idKey"
+                                             @update:modelValue="val => openDropdownIndex = val ? row.idKey : null"
+                                             enableFlip
+                                             placement="bottom-end"
+                                             preventAnchorClickPropagation>
+                                <template #anchor>
+                                    <i class="ti ti-dots-vertical dropdown-anchor-icon"></i>
+                                </template>
+                                <div class="dropdown-content">
+                                    <template v-if="canEditConnectionRequests">
+                                        <div class="dropdown-content-item dropdown-content-item--menu-action"
+                                             @click.stop="showChangeStateModal(ConnectionState.Active, row)">
+                                            <i class="ti ti-user"></i>Set as Active
+                                        </div>
+                                        <div class="dropdown-content-item dropdown-content-item--menu-action"
+                                             @click.stop="showChangeStateModal(ConnectionState.Inactive, row)">
+                                            <i class="ti ti-user-off"></i>Set as Inactive
+                                        </div>
+                                        <div v-if="box.options?.connectionTypeOptionsByIdKey && box.options.connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.isFutureFollowUpEnabled"
+                                             class="dropdown-content-item dropdown-content-item--menu-action"
+                                             @click.stop="showChangeStateModal(ConnectionState.FutureFollowUp, row)">
+                                            <i class="ti ti-calendar"></i>Set as Future Follow-Up
+                                        </div>
+                                        <div class="dropdown-content-item dropdown-content-item--menu-action"
+                                             @click.stop="showChangeStateModal(ConnectionState.Connected, row)">
+                                            <i class="ti ti-circle-check"></i>Mark Complete
+                                        </div>
+                                    </template>
+                                    <div class="dropdown-content-item dropdown-content-item--menu-action"
+                                         @click.stop="showLaunchWorkflowModal(row)">
+                                        <i class="ti ti-settings-cog"></i>Launch Workflow
+                                    </div>
+                                    <template v-if="canEditConnectionRequests">
+                                        <div v-if="!row.isRequestSecurityDisabled"
+                                             class="dropdown-content-item dropdown-content-item--menu-action"
+                                             @click.stop="showSecurityModal(row.idKey)">
+                                            <i class="ti ti-lock"></i>Security
+                                        </div>
+                                        <div class="dropdown-content-item dropdown-content-item--menu-action dropdown-content-item--danger"
+                                             @click.stop="showDeleteRequestModal(row)">
+                                            <i class="ti ti-trash"></i>Delete
+                                        </div>
+                                    </template>
+                                </div>
+                            </DropDownContent>
+                        </template>
+                    </Column>
+                </Grid>
+            </template>
+            <template #emptyView>
+                <template v-if="areRequestsLoading">
+                    <!-- Board View Skeleton -->
+                    <div v-if="selectedView === 'board'" class="skeleton-board">
+                        <div v-for="columnIndex in skeletonCount" :key="`board-col-${columnIndex}`" class="skeleton-board-column">
+                            <div class="skeleton skeleton-heading"></div>
+                            <div v-for="cardIndex in 4" :key="`board-card-${columnIndex}-${cardIndex}`"
+                                 class="skeleton skeleton-board-card"></div>
+                        </div>
+                    </div>
+                    <!-- Grid View Skeleton -->
+                    <div v-else-if="selectedView === 'grid'" class="skeleton-grid">
+                        <div v-for="rowIndex in 16" :key="`grid-row-${rowIndex}`" class="skeleton-grid-row" :class="{ 'skeleton-grid-row--alt': rowIndex % 2 === 0 }">
+                            <div v-for="colIndex in 8" :key="`grid-col-${colIndex}`"
+                                 :style="colIndex % 2 === 0 ? 'max-width: 260px;' : 'max-width: 160px;'"
+                                 class="skeleton skeleton-text" />
+                        </div>
+                    </div>
+                    <!-- List View Skeleton -->
+                    <div v-else class="skeleton-list">
+                        <div v-for="index in skeletonCount" :key="`list-${index}`" class="skeleton skeleton-list-item"></div>
+                    </div>
+                </template>
+                <template v-else>
+                    <NotificationBox v-if="!isNullOrWhiteSpace(requestListErrorMessage)"
+                                     alertType="danger">
+                        {{ requestListErrorMessage }}
+                    </NotificationBox>
+                    <div class="empty-list">
+                        <i class="ti ti-id-off empty-list-icon"></i>
+                        <div class="empty-list-message">
+                            No Connection Requests Available
+                        </div>
+                        <div v-if="canEditConnectionRequests"
+                             class="empty-list-cta"
+                             @click="onAddItem">
+                            Add a Request to Get Started
+                        </div>
+                    </div>
+                </template>
+            </template>
+            <template #boardCard="{ row }">
+                <ConnectionRequestCard :connectionRequest="row"
+                                       :options="box.options"
+                                       :connectionTypeOptions="staticConnectionTypeOptions"
+                                       :canEditConnectionRequests="canEditConnectionRequests"
+                                       :hideCampusLabel="selectedCampus !== null"
+                                       :viewOptions="viewOptions"
+                                       :attributesToShow="attributesToShow"
+                                       :currentPersonIdKey="currentPerson?.idKey"
+                                       :isSelected="allSelectedKeySet.has(row.idKey as string)"
+                                       @selectItem="onSelectBoardCard"
+                                       @toggleSelection="onToggleBoardCardSelection"
+                                       @changeState="showChangeStateModal"
+                                       @launchWorkflow="showLaunchWorkflowModal"
+                                       @showSecurity="showSecurityModal"
+                                       @delete="showDeleteRequestModal" />
+            </template>
+            <template #emptyColumn>
+                <div class="grid-empty-column">No requests available.</div>
+            </template>
+            <template #gridView>
+                <Grid :definition="box.gridDefinition ?? undefined"
+                      :data="gridViewData"
+                      ref="gridViewGridRef"
+                      keyField="idKey"
+                      personKeyField="personIdKey"
+                      :isTitleHidden="true"
+                      :isSearchVisible="false"
+                      :isFooterHidden="true"
+                      :showExport="false"
+                      :showMergeTemplate="false"
+                      :isCountMessageVisible="false"
+                      :hideFilterHeaderRow="true"
+                      :entityTypeGuid="EntityType.ConnectionRequest"
+                      class="grid-hover connections-hub-list-grid"
+                      @selectItem="onSelectItem"
+                      @selectedKeysChanged="state => onSelectedKeysChanged('all', state)"
+                      @filteredRowsChanged="onFilteredRowsChanged">
+                    <SelectColumn />
+
+                    <Column name="requestDetails"
+                            title="Name"
+                            field="requestDetails"
+                            :filter="pickExistingValueFilter"
+                            :filterValue="getRequesterFilterValue"
+                            :sortValue="getRequesterFilterValue">
+                        <template #format="{ row }">
+                            {{ row.requestDetails.nickName }} {{ row.requestDetails.lastName }}
+                        </template>
+                    </Column>
+
+                    <Column title="Connector"
+                            name="connectorDetails"
+                            field="connectorDetails"
+                            :filter="pickExistingValueFilter"
+                            :filterValue="getConnectorFilterValue"
+                            :sortValue="getConnectorFilterValue">
+                        <template #format="{ row }">
+                            {{ row.connectorDetails?.text }}
+                        </template>
+                    </Column>
+
+                    <Column name="campus"
+                            title="Campus"
+                            field="campus"
+                            :filter="pickExistingValueFilter">
+                        <template #format="{ row }">
+                            <div v-if="!!row.campus">
+                                {{ row.campus }}
+                            </div>
+                            <div v-else>
+                                <i class="ti ti-minus"></i>
+                            </div>
+                        </template>
+                    </Column>
+
+                    <TextColumn name="connectionTypeName"
+                                title="Type"
+                                field="connectionTypeName"
+                                :filter="pickExistingValueFilter" />
+
+                    <Column v-if="viewOptions.gridDataToShow?.includes('connectionOpportunity')"
+                            name="connectionOpportunity"
+                            title="Opportunity"
+                            field="connectionOpportunity"
+                            :filter="pickExistingValueFilter">
+                        <template #format="{ row }">
+                            <div class="grid-opportunity-cell">
+                                <div>
+                                    {{ row.connectionOpportunity }}
+                                </div>
+                                <span v-if="!isNullOrWhiteSpace(row.connectionTypeSource) && viewOptions.isRequestSourceShown"
+                                      class="grid-cell-subtext">
+                                    {{ row.connectionTypeSource }}
+                                </span>
+                            </div>
+                        </template>
+                        <template #condensed="{ row }">
+                            {{ row.connectionOpportunity }}
+                        </template>
+                    </Column>
+
+                    <Column v-if="allConnectionTypeOptions.some(t => t.areGroupPlacementsEnabled)"
+                            name="group"
+                            title="Group"
+                            field="group"
+                            :filter="pickExistingValueFilter">
+                        <template #format="{ row }">
+                            <template v-if="!!row.group && (!isMyConnectionsView || connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.areGroupPlacementsEnabled === true)">
+                                <div v-if="row.isPendingMember" class="grid-group-cell" v-tooltip="'Pending group member. The requester will be added once the request is completed.'">
+                                    {{ row.group }}
+                                    <i class="ti ti-user-share"></i>
+                                </div>
+                                <div v-else>
+                                    {{ row.group }}
+                                </div>
+                            </template>
+                            <div v-else>
+                                <i class="ti ti-minus"></i>
+                            </div>
+                        </template>
+                        <template #condensed="{ row }">
+                            <div v-if="!!row.group">
+                                {{ row.group }}
+                            </div>
+                            <div v-else>
+                                <i class="ti ti-minus"></i>
+                            </div>
+                        </template>
+                    </Column>
+
+                    <Column v-if="viewOptions.gridDataToShow?.includes('activity')"
+                            name="activityCount"
+                            title="Activity"
+                            field="activityCount">
+                        <template #format="{ row }">
+                            <div v-if="!!row.lastActivityDateTime && !!row.activityCount"
+                                 class="grid-activity-count-cell">
+                                <div>
+                                    {{ row.activityCount }} {{ pluralize("Activity", row.activityCount) }}
+                                </div>
+                                <div class="grid-cell-subtext" v-tooltip="`Last Activity: ${formatColumnDate(row.lastActivityDateTime)}`">
+                                    Last Activity: {{ getElapsedShortTime(row.lastActivityDateTime) }}
+                                </div>
+                            </div>
+                            <div v-else>
+                                <i class="ti ti-minus"></i>
+                            </div>
+                        </template>
+                    </Column>
+
+                    <Column v-if="viewOptions.gridDataToShow?.includes('dueDate')"
+                            name="dueDate"
+                            title="Due Date"
+                            field="dueDate"
+                            width="5%"
+                            :filter="dateValueFilter"
+                            :sortValue="getDueDateSortValue">
+                        <template #format="{ row }">
+                            <div v-if="!!row.dueDate && row.connectionState !== ConnectionState.Inactive" :class="getDueDateColor(row.dueStatus, row.connectionState === ConnectionState.Connected)">
+                                {{ formatColumnDate(row.dueDate) }}
+                            </div>
+                            <div v-else>
+                                <i class="ti ti-minus"></i>
+                            </div>
+                        </template>
+                    </Column>
+
+                    <Column name="connectionState"
+                            title="State"
+                            field="connectionState"
+                            :filter="pickExistingValueFilter">
+                        <template #format="{ row }">
+                            <HighlightLabel :labelType="getConnectionStateLabel(row.connectionState)">
+                                {{ ConnectionStateDescription[row.connectionState] }}<template v-if="row.connectionState === ConnectionState.FutureFollowUp"> - {{ formatColumnDate(row.followUpDate) }}</template>
+                            </HighlightLabel>
+                        </template>
+                        <template #condensed="{ row }">
+                            <HighlightLabel :labelType="getConnectionStateLabel(row.connectionState)">
+                                {{ ConnectionStateDescription[row.connectionState] }}
+                            </HighlightLabel>
+                        </template>
+                    </Column>
+
+                    <Column name="connectionStatus"
+                            title="Status"
+                            field="connectionStatus"
+                            width="5%"
+                            :filter="pickExistingValueFilter"
+                            :filterValue="getStatusFilterValue"
+                            :sortValue="getStatusFilterValue">
+                        <template #format="{ row }">
+                            <HighlightLabel labelType="custom"
+                                            :style="`background-color: ${row.connectionStatus.highlightColor};`">
+                                <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" v-tooltip.overflow="row.connectionStatus.name">
+                                    {{ row.connectionStatus.name }}
+                                </div>
+                            </HighlightLabel>
+                        </template>
+                    </Column>
+
+                    <AttributeColumns :attributes="attributesToShow" />
+
+                    <SecurityColumn v-if="canEditConnectionRequests" disabledField="isRequestSecurityDisabled" :itemTitle="() => 'Item'" />
+                </Grid>
+            </template>
+        </GroupedPanel>
+
+        <ChangeStatusFlyout v-model="isFlyoutOpen"
+                            :errorMessage="flyoutErrorMessage"
+                            :isCompletionButtonLoading="isFlyoutCompletionButtonLoading"
+                            :isSaving="isFlyoutSaving"
+                            :anchorEl="flyoutAnchorEl"
+                            :connectionRequestUpdateBag="connectionRequestUpdateBag"
+                            :isNoteRequired="isNoteRequired"
+                            :connectionTypeOptions="activeActionConnectionTypeOptions"
+                            @updateStatus="changeRequestStatus"
+                            @updateState="updateStateFromFlyout"
+                            @dismissErrorMessage="flyoutErrorMessage = ''"
+                            @close="onFlyoutClose" />
+
+        <AddConnectionRequestModal :modelValue="newConnectionRequest"
+                                   v-model:visible="isAddConnectionRequestModalVisible"
+                                   :options="box.options"
+                                   :connectionStateItems="connectionStateItems"
+                                   :connectionTypeOptionsByIdKey="connectionTypeOptionsByIdKey"
+                                   :selectedConnectionTypeOptions="selectedConnectionTypeOptions"
+                                   :connectionOpportunityDetails="connectionOpportunityDetails"
+                                   :placementGroupDetails="placementGroupDetails"
+                                   :isConnectionOpportunityFilterSelected="hasSelectedOpportunity"
+                                   :isExistingActiveRequesterOnConnectionType="isExistingActiveRequesterOnConnectionType"
+                                   :isSaving="isModalSaving"
+                                   :errorMessage="modalErrorMessage"
+                                   @dismissErrorMessage="onModalErrorMessageDismissed"
+                                   @checkForActiveRequester="checkForActiveRequester"
+                                   @save="onAddRequest"
+                                   @close="resetNewConnectionRequest"
+                                   @fetchConnectionOpportunityDetails="fetchConnectionOpportunityDetails"
+                                   @fetchConnectorOptions="fetchConnectorOptionsForAdd"
+                                   @fetchPlacementGroupItems="fetchPlacementGroupItems"
+                                   @fetchPlacementGroupDetails="fetchPlacementGroupDetails" />
+
+        <AddFromCampaignModal v-model:visible="isAddFromCampaignModalVisible"
+                              :selectedOpportunityGuid="selectedOpportunity"
+                              :allConnectionOpportunityItems="connectionOpportunities ?? []"
+                              :isLoading="areCampaignsLoading"
+                              :isSaving="isModalSaving"
+                              :campaignRecordBags="campaignRecordBags"
+                              :errorMessage="modalErrorMessage"
+                              @dismissErrorMessage="onModalErrorMessageDismissed"
+                              @close="onModalErrorMessageDismissed"
+                              @assignRequests="assignRequestsFromCampaign" />
+
+        <CelebrationModal v-model:visible="isCelebrationModalVisible"
+                          :requestDetails="requestDetailsForModal"
+                          :viewOptions="viewOptions"
                           :isSaving="isModalSaving"
-                          :campaignRecordBags="campaignRecordBags"
+                          :canEditCelebration="canEditConnectionRequests"
                           :errorMessage="modalErrorMessage"
                           @dismissErrorMessage="onModalErrorMessageDismissed"
                           @close="onModalErrorMessageDismissed"
-                          @assignRequests="assignRequestsFromCampaign" />
+                          @upsertCelebration="upsertCelebration" />
 
-    <CelebrationModal v-model:visible="isCelebrationModalVisible"
-                      :requestDetails="requestDetailsForModal"
-                      :viewOptions="viewOptions"
-                      :isSaving="isModalSaving"
-                      :canEditCelebration="canEditConnectionRequests"
-                      :errorMessage="modalErrorMessage"
-                      @dismissErrorMessage="onModalErrorMessageDismissed"
-                      @close="onModalErrorMessageDismissed"
-                      @upsertCelebration="upsertCelebration" />
+        <ReminderModal v-model="isReminderModalVisible"
+                       :contextEntityGuid="reminderEntityGuid"
+                       :contextEntityTypeGuid="EntityType.PersonAlias"
+                       :areDetailsRequired="true"
+                       :isAdditionalOptionsLinkVisible="false"
+                       @reminderClosed="decreaseReminderCount"
+                       @addSuccess="increaseReminderCount">
+            <template #postBody>
+                <RequestTable :requestDetails="requestDetailsForModal"
+                              :viewOptions="viewOptions"
+                              :isConnectorVisible="true" />
+            </template>
+        </ReminderModal>
 
-    <ReminderModal v-model="isReminderModalVisible"
-                   :contextEntityGuid="reminderEntityGuid"
-                   :contextEntityTypeGuid="EntityType.PersonAlias"
-                   :areDetailsRequired="true"
-                   :isAdditionalOptionsLinkVisible="false"
-                   @reminderClosed="decreaseReminderCount"
-                   @addSuccess="increaseReminderCount">
-        <template #postBody>
-            <RequestTable :requestDetails="requestDetailsForModal"
+        <AssignRequestModal v-model:visible="isAssignRequestModalVisible"
+                            :connectorItems="bulkConnectionTypeOptions?.connectorAliasItems ?? []"
+                            :requestDetails="requestDetailsForModal"
+                            :viewOptions="viewOptions"
+                            :isSaving="isModalSaving"
+                            :errorMessage="modalErrorMessage"
+                            @dismissErrorMessage="onModalErrorMessageDismissed"
+                            @close="onModalErrorMessageDismissed"
+                            @updateConnector="updateConnectorFromModal" />
+        <ChangeStateModal v-model:visible="isChangeStateModalVisible"
+                          :isLoading="areRequestDetailsForModalLoading"
+                          :isSaving="isModalSaving"
+                          :connectionState="changeStateTo"
+                          :requestDetails="requestDetailsForModal"
+                          :failingRequestDetails="failingRequestDetailsForModal"
                           :viewOptions="viewOptions"
-                          :isConnectorVisible="true" />
-        </template>
-    </ReminderModal>
-
-    <AssignRequestModal v-model:visible="isAssignRequestModalVisible"
-                        :connectorItems="bulkConnectionTypeOptions?.connectorAliasItems ?? []"
-                        :requestDetails="requestDetailsForModal"
-                        :viewOptions="viewOptions"
-                        :isSaving="isModalSaving"
-                        :errorMessage="modalErrorMessage"
-                        @dismissErrorMessage="onModalErrorMessageDismissed"
-                        @close="onModalErrorMessageDismissed"
-                        @updateConnector="updateConnectorFromModal" />
-    <ChangeStateModal v-model:visible="isChangeStateModalVisible"
-                      :isLoading="areRequestDetailsForModalLoading"
-                      :isSaving="isModalSaving"
-                      :connectionState="changeStateTo"
-                      :requestDetails="requestDetailsForModal"
-                      :failingRequestDetails="failingRequestDetailsForModal"
-                      :viewOptions="viewOptions"
-                      :errorMessage="modalErrorMessage"
-                      @dismissErrorMessage="onModalErrorMessageDismissed"
-                      @close="onModalErrorMessageDismissed"
-                      @updateState="updateStateFromModal" />
-    <DeleteRequestModal v-model:visible="isDeleteRequestModalVisible"
-                        :requestDetails="requestDetailsForModal"
-                        :viewOptions="viewOptions"
-                        :isSaving="isModalSaving"
-                        :errorMessage="modalErrorMessage"
-                        @dismissErrorMessage="onModalErrorMessageDismissed"
-                        @close="onModalErrorMessageDismissed"
-                        @deleteRequests="deleteRequestsFromModal" />
-    <ActivityModal v-model:visible="isActivityModalVisible"
-                   :connectorItems="activeActionConnectionTypeOptions?.connectorAliasItems ?? []"
-                   :requestDetails="requestDetailsForModal"
-                   :connectionActivities="connectionActivityItems ?? []"
-                   :viewOptions="viewOptions"
-                   :currentPerson="currentPerson"
-                   :activityToEdit="activityToEdit"
-                   :isSaving="isModalSaving"
-                   :errorMessage="modalErrorMessage"
-                   @dismissErrorMessage="onModalErrorMessageDismissed"
-                   @close="onModalErrorMessageDismissed"
-                   @upsertActivity="upsertActivity" />
-    <ChangeStatusModal v-model:visible="isChangeStatusModalVisible"
-                       :connectionStatusItems="connectionStatusItems"
-                       :isSequentialMode="activeActionConnectionTypeOptions?.isSequentialStatusMode ?? false"
-                       :isSaving="isModalSaving"
+                          :errorMessage="modalErrorMessage"
+                          @dismissErrorMessage="onModalErrorMessageDismissed"
+                          @close="onModalErrorMessageDismissed"
+                          @updateState="updateStateFromModal" />
+        <DeleteRequestModal v-model:visible="isDeleteRequestModalVisible"
+                            :requestDetails="requestDetailsForModal"
+                            :viewOptions="viewOptions"
+                            :isSaving="isModalSaving"
+                            :errorMessage="modalErrorMessage"
+                            @dismissErrorMessage="onModalErrorMessageDismissed"
+                            @close="onModalErrorMessageDismissed"
+                            @deleteRequests="deleteRequestsFromModal" />
+        <ActivityModal v-model:visible="isActivityModalVisible"
+                       :connectorItems="activeActionConnectionTypeOptions?.connectorAliasItems ?? []"
                        :requestDetails="requestDetailsForModal"
+                       :connectionActivities="connectionActivityItems ?? []"
                        :viewOptions="viewOptions"
+                       :currentPerson="currentPerson"
+                       :activityToEdit="activityToEdit"
+                       :isSaving="isModalSaving"
                        :errorMessage="modalErrorMessage"
-                       :selectedStatus="selectedStatus"
                        @dismissErrorMessage="onModalErrorMessageDismissed"
                        @close="onModalErrorMessageDismissed"
-                       @updateStatus="updateStatusFromModal" />
-    <LaunchWorkflowModal v-model:visible="isLaunchWorkflowModalVisible"
-                         :workflowItems="activeActionConnectionTypeOptions?.workflowItems ?? []"
-                         :requestDetails="requestDetailsForModal"
-                         :viewOptions="viewOptions"
-                         :isSaving="isModalSaving"
-                         :errorMessage="modalErrorMessage"
-                         @dismissErrorMessage="onModalErrorMessageDismissed"
-                         @close="onModalErrorMessageDismissed"
-                         @launchWorkflows="launchWorkflowForRequests" />
-    <SendSMSModal v-model:visible="isSendSMSModalVisible"
-                  :communicationRecipients="communicationRecipients"
-                  :smsFromSystemPhoneNumbers="smsFromSystemPhoneNumbers"
-                  :smsSnippets="smsSnippets"
-                  @onSuccessfulSend="refreshActivityEntries(dockedPanelDetailsBox?.entity?.connectionRequestIdKey)" />
-    <SendEmailModal v-model:visible="isSendEmailModalVisible"
-                    :communicationRecipients="communicationRecipients"
-                    :communicationTemplates="communicationTemplates"
-                    :fromName="emailFromName"
-                    :fromEmail="emailFromEmail"
-                    @onSuccessfulSend="refreshActivityEntries(dockedPanelDetailsBox?.entity?.connectionRequestIdKey)" />
-    <ViewOptionsModal :modelValue="viewOptionsForModal"
-                      @update:modelValue="onViewOptionsUpdate"
-                      v-model:visible="isViewOptionsModalVisible"
-                      :gridDataToShowItems="filteredGridDataToShowItems"
-                      :connectionStates="connectionStateItems"
-                      :connectionStatuses="staticConnectionTypeOptions?.connectionStatuses ?? []"
-                      :attributeFilters="visibleAttributeFilters"
-                      :isMyConnectionsView="isMyConnectionsView" />
+                       @upsertActivity="upsertActivity" />
+        <ChangeStatusModal v-model:visible="isChangeStatusModalVisible"
+                           :connectionStatusItems="connectionStatusItems"
+                           :isSequentialMode="activeActionConnectionTypeOptions?.isSequentialStatusMode ?? false"
+                           :isSaving="isModalSaving"
+                           :requestDetails="requestDetailsForModal"
+                           :viewOptions="viewOptions"
+                           :errorMessage="modalErrorMessage"
+                           :selectedStatus="selectedStatus"
+                           @dismissErrorMessage="onModalErrorMessageDismissed"
+                           @close="onModalErrorMessageDismissed"
+                           @updateStatus="updateStatusFromModal" />
+        <LaunchWorkflowModal v-model:visible="isLaunchWorkflowModalVisible"
+                             :workflowItems="activeActionConnectionTypeOptions?.workflowItems ?? []"
+                             :requestDetails="requestDetailsForModal"
+                             :viewOptions="viewOptions"
+                             :isSaving="isModalSaving"
+                             :errorMessage="modalErrorMessage"
+                             @dismissErrorMessage="onModalErrorMessageDismissed"
+                             @close="onModalErrorMessageDismissed"
+                             @launchWorkflows="launchWorkflowForRequests" />
+        <SendSMSModal v-model:visible="isSendSMSModalVisible"
+                      :communicationRecipients="communicationRecipients"
+                      :smsFromSystemPhoneNumbers="smsFromSystemPhoneNumbers"
+                      :smsSnippets="smsSnippets"
+                      @onSuccessfulSend="refreshActivityEntries(dockedPanelDetailsBox?.entity?.connectionRequestIdKey)" />
+        <SendEmailModal v-model:visible="isSendEmailModalVisible"
+                        :communicationRecipients="communicationRecipients"
+                        :communicationTemplates="communicationTemplates"
+                        :fromName="emailFromName"
+                        :fromEmail="emailFromEmail"
+                        @onSuccessfulSend="refreshActivityEntries(dockedPanelDetailsBox?.entity?.connectionRequestIdKey)" />
+        <ViewOptionsModal :modelValue="viewOptionsForModal"
+                          @update:modelValue="onViewOptionsUpdate"
+                          v-model:visible="isViewOptionsModalVisible"
+                          :gridDataToShowItems="filteredGridDataToShowItems"
+                          :connectionStates="connectionStateItems"
+                          :connectionStatuses="staticConnectionTypeOptions?.connectionStatuses ?? []"
+                          :attributeFilters="visibleAttributeFilters"
+                          :isMyConnectionsView="isMyConnectionsView" />
 
-    <ModalAlert v-model="isModalAlertVisible">
-        <p>{{ modalAlertText }}</p>
-    </ModalAlert>
+        <ModalAlert v-model="isModalAlertVisible">
+            <p>{{ modalAlertText }}</p>
+        </ModalAlert>
 
-    <ConnectionRequestDockedPanel v-model="isDockedPanelVisible"
-                                  ref="connectionRequestDockedPanelRef"
-                                  :currentKey="selectedRequestKeyForDockedPanel"
-                                  :connectionRequestBreadcrumbs="connectionRequestBreadcrumbs"
-                                  :orderedKeys="orderedRequestKeys ?? []"
-                                  :detailsBox="dockedPanelDetailsBox"
-                                  :dockedPanelCloseOnOutsideClick="dockedPanelCloseOnOutsideClick"
-                                  :navigationUrls="box.navigationUrls ?? {}"
-                                  @navigate="updateSelectedRequestKey"
-                                  @navigateToBreadcrumb="navigateToBreadcrumb"
-                                  @navigateToAdditionalRequest="navigateToAdditionalRequest"
-                                  @editActivity="onEditActivity"
-                                  :isSaving="isDockedPanelSaving"
-                                  @editRequest="onEditRequest"
-                                  @transferRequest="onTransferClick"
-                                  @addActivity="showAddActivityModal(dockedPanelDetailsBox)"
-                                  @onCelebrationClick="box => showCelebrationModal(null, box)"
-                                  @onReminderClick="box => showReminderModal(null, box)"
-                                  @onSMSClick="showSMSModal(true)"
-                                  @onEmailClick="showEmailModal(true)"
-                                  @onReassignConnector="(connector) => reassignConnector([dockedPanelDetailsBox?.entity?.connectionRequestIdKey ?? ''], connector, true)"
-                                  @onRequestStateChanged="updateRequestStates"
-                                  @onStatusButtonClick="onStatusClickFromDockedPanel"
-                                  @launchWorkflow="launchWorkflowForRequests"
-                                  @deleteRequest="showDeleteRequestModal(null, dockedPanelDetailsBox)" />
+        <ConnectionRequestDockedPanel v-model="isDockedPanelVisible"
+                                      ref="connectionRequestDockedPanelRef"
+                                      :currentKey="selectedRequestKeyForDockedPanel"
+                                      :connectionRequestBreadcrumbs="connectionRequestBreadcrumbs"
+                                      :orderedKeys="orderedRequestKeys ?? []"
+                                      :detailsBox="dockedPanelDetailsBox"
+                                      :dockedPanelCloseOnOutsideClick="dockedPanelCloseOnOutsideClick"
+                                      :navigationUrls="box.navigationUrls ?? {}"
+                                      @navigate="updateSelectedRequestKey"
+                                      @navigateToBreadcrumb="navigateToBreadcrumb"
+                                      @navigateToAdditionalRequest="navigateToAdditionalRequest"
+                                      @editActivity="onEditActivity"
+                                      :isSaving="isDockedPanelSaving"
+                                      @editRequest="onEditRequest"
+                                      @transferRequest="onTransferClick"
+                                      @addActivity="showAddActivityModal(dockedPanelDetailsBox)"
+                                      @onCelebrationClick="box => showCelebrationModal(null, box)"
+                                      @onReminderClick="box => showReminderModal(null, box)"
+                                      @onSMSClick="showSMSModal(true)"
+                                      @onEmailClick="showEmailModal(true)"
+                                      @onReassignConnector="(connector) => reassignConnector([dockedPanelDetailsBox?.entity?.connectionRequestIdKey ?? ''], connector, true)"
+                                      @onRequestStateChanged="updateRequestStates"
+                                      @onStatusButtonClick="onStatusClickFromDockedPanel"
+                                      @launchWorkflow="launchWorkflowForRequests"
+                                      @deleteRequest="showDeleteRequestModal(null, dockedPanelDetailsBox)" />
 
-    <TransferConnectionRequestModal v-model="isTransferModalVisible"
-                                    :isLoading="areTransferDetailsLoading"
-                                    :transferDetails="transferRequestDetails"
-                                    :isSaving="isModalSaving"
-                                    :errorMessage="modalErrorMessage"
-                                    :isBulkTransfer="isBulkTransfer"
-                                    :requestDetails="requestDetailsForModal"
-                                    :viewOptions="viewOptions"
-                                    @fetchConnectorOptions="fetchConnectorOptionsForTransfer"
-                                    @dismissErrorMessage="onModalErrorMessageDismissed"
-                                    @close="onTransferModalClose"
-                                    @transfer="selectTransferProcess" />
+        <TransferConnectionRequestModal v-model="isTransferModalVisible"
+                                        :isLoading="areTransferDetailsLoading"
+                                        :transferDetails="transferRequestDetails"
+                                        :isSaving="isModalSaving"
+                                        :errorMessage="modalErrorMessage"
+                                        :isBulkTransfer="isBulkTransfer"
+                                        :requestDetails="requestDetailsForModal"
+                                        :viewOptions="viewOptions"
+                                        @fetchConnectorOptions="fetchConnectorOptionsForTransfer"
+                                        @dismissErrorMessage="onModalErrorMessageDismissed"
+                                        @close="onTransferModalClose"
+                                        @transfer="selectTransferProcess" />
+    </div>
 </template>
-
-<style>
-/* Temporary fix. See https://app.asana.com/1/20866866924293/project/1208321217019996/task/1212533216082714?focus=true */
-.panel-icon {
-    color: var(--color-interface-stronger) !important;
-}
-</style>
-
-<style scoped>
-.connection-source {
-    font-size: var(--font-size-small);
-    font-weight: var(--font-weight-regular);
-    color: var(--color-interface-medium);
-}
-
-.connections-hub-slicer > :deep(.contextslicer-title) {
-    flex-grow: 0;
-}
-
-.slicer-content-left {
-    flex-grow: 1;
-}
-
-.connections-hub-slicer > :deep(.contextslicer-content) {
-    flex: 1;
-}
-
-/* The .grid-cell class sets overflow: hidden. This prevens the dropdown menu from working within the cell. This class will set overflow: visible for any grid column with the itemClass "grid-cell-overflow" */
-:deep(.grid-cell.grid-cell-overflow) {
-    overflow: visible;
-}
-
-/* The dropdown content within the action-toolbar needs to have a greater z index then the grid column header (currently 3). */
-:deep(.action-toolbar .floating-dropdown) {
-    z-index: 4;
-}
-
-/* The dropdown content within the List View needs to have a greater z index then the grid column header (currently 3). */
-:deep(.grid-cell-overflow .floating-dropdown) {
-    z-index: 4;
-}
-
-/* A disabled overflow-menu item is muted and non-interactive, matching the disabled toolbar buttons it stands in for. */
-.dropdown-content-item.disabled {
-    opacity: 0.5;
-    cursor: default;
-}
-
-.dropdown-content-item.disabled:hover {
-    background-color: transparent;
-}
-
-/* Separates the folded actions from the state-change actions in the compact overflow menu. */
-.dropdown-content-divider {
-    height: 1px;
-    margin: var(--spacing-xsmall) 0;
-    background-color: var(--color-interface-soft);
-}
-
-:deep(.grid-body) {
-    border-bottom-left-radius: var(--rounded-medium);
-    border-bottom-right-radius: var(--rounded-medium);
-}
-
-.type-icon-container {
-    width: 36px;
-    height: 36px;
-    padding: var(--spacing-xsmall);
-    background-color: var(--color-interface-softer);
-    border-radius: var(--rounded-small);
-}
-
-.type-icon-container > .type-icon {
-    font-size: 20px;
-}
-
-i.disabled {
-    color: var(--color-interface-medium);
-    cursor: not-allowed;
-}
-
-.activity-metric {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-}
-
-.skeleton-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-medium);
-}
-
-.skeleton-board {
-    display: flex;
-    gap: var(--spacing-large);
-    overflow-x: hidden;
-    height: 100%;
-}
-
-.skeleton-board-column {
-    flex: 0 0 380px;
-    width: 380px;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-small);
-    padding: var(--spacing-medium);
-    background-color: var(--color-interface-softer);
-    border-radius: var(--rounded-large);
-}
-
-.skeleton-board-column .skeleton-heading {
-    background-color: var(--color-interface-soft);
-    border-radius: var(--rounded-small);
-    flex-shrink: 0;
-    margin: var(--spacing-small) 0;
-}
-
-.skeleton-board-card {
-    height: 180px;
-    background-color: var(--color-interface-soft);
-}
-
-.skeleton-grid-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--spacing-small) var(--spacing-medium);
-    border-bottom: 1px solid var(--color-interface-softer);
-}
-
-.skeleton-grid-row .skeleton {
-    background-color: var(--color-interface-soft);
-}
-
-.empty-list {
-    min-height: calc(70vh - 200px);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-xsmall);
-}
-
-.ddl-min-width {
-    min-width: 150px;
-}
-
-.activity-date {
-    color: var(--color-interface-strong);
-}
-
-.activity-count {
-    color: var(--color-interface-medium);
-}
-
-.border-left-divider {
-    border-left: 1px solid var(--color-interface-softer);
-}
-
-.text-slate {
-    color: #64748B;
-}
-
-.text-emerald {
-    color: #10B981;
-}
-
-:deep(.dropdown-min-width) {
-    min-width: var(--vs-dropdown-min-width);
-}
-
-.activity-btn i {
-    padding-right: var(--spacing-tiny);
-}
-
-@media (max-width: 1418px) {
-    .right-actions .activity-btn-label {
-        display: none;
-    }
-
-    .right-actions .activity-btn i {
-        padding: 0;
-    }
-}
-
-@media (max-width: 1190px) {
-    .left-actions .activity-btn-label {
-        display: none;
-    }
-
-    .left-actions .activity-btn i {
-        padding: 0;
-    }
-}
-</style>
 
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
@@ -1892,8 +1698,7 @@ i.disabled {
 
     /** Builds the icon class for an overflow-menu item, tinting destructive actions red. */
     function getToolbarMenuIconClass(action: SelectedRowAction): string {
-        const colorClass = action.isDanger ? "text-danger" : "text-interface-medium";
-        return `${action.iconCssClass} pr-spacing-sm ${colorClass}`;
+        return action.iconCssClass;
     }
 
     /**
@@ -2607,13 +2412,13 @@ i.disabled {
     function getDueDateColor(dueStatus: DueStatus | null | undefined, isCompleted: boolean): string {
         switch (dueStatus) {
             case DueStatus.DueLater:
-                return isCompleted ? "text-emerald text-semibold" : "text-interface-strong";
+                return isCompleted ? "grid-due-date-label grid-due-date-label--completed-early" : "grid-due-date-label grid-due-date-label--neutral";
             case DueStatus.DueSoon:
-                return "text-warning text-semibold";
+                return "grid-due-date-label grid-due-date-label--due-soon";
             case DueStatus.Overdue:
-                return "text-danger text-semibold";
+                return "grid-due-date-label grid-due-date-label--overdue";
             default:
-                return "text-interface-strong";
+                return "grid-due-date-label grid-due-date-label--neutral";
         }
     }
 

@@ -10,6 +10,7 @@
           stickyHeader
           liveUpdates
           gridSettings
+          :rowClass="rowClass"
           :gridSettingsActive="hasActiveFilters"
           @gridSettingsClick="isGridSettingsVisible = true"
           @selectItem="onSelectItem">
@@ -29,8 +30,6 @@
                       itemClass="text-nowrap"
                       :showAsLink="true"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getRequesterFilterValue"
-                      :quickFilterValue="getRequesterFilterValue"
                       visiblePriority="xs" />
 
         <LabelColumn v-if="!gridSettings.connectionType"
@@ -99,6 +98,10 @@
 .story-author {
     font-weight: 600;
 }
+
+:deep(.grid-row-no-edit) {
+    cursor: default;
+}
 </style>
 
 
@@ -108,7 +111,6 @@
     import EditStoryModal from "./CelebrationsReport/editStoryModal.partial.obs";
     import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./CelebrationsReport/types.partial";
     import Grid, { DateColumn, PersonColumn, Column, dateValueFilter, textValueFilter, pickExistingValueFilter, LabelColumn, SelectColumn } from "@Obsidian/Controls/grid";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { RangeType, TimeUnit, parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
     import { safeParseJson } from "@Obsidian/Utility/stringUtils";
@@ -184,11 +186,10 @@
     // #region Functions
 
     /**
-     * Gets the filter value text to use for the requester column.
+     * Marks rows the current person cannot edit so they do not show the clickable cursor.
      */
-    function getRequesterFilterValue(row: Record<string, unknown>): string {
-        const person = row["requester"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    function rowClass(row: Record<string, unknown>): string {
+        return row["canEdit"] === true ? "" : "grid-row-no-edit";
     }
 
     /**
@@ -211,7 +212,7 @@
      */
     function onSelectItem(key: string): void {
         const row = gridData?.rows?.find(r => r["idKey"] === key);
-        if (!row) {
+        if (!row || row["canEdit"] !== true) {
             return;
         }
 

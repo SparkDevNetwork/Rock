@@ -21,7 +21,7 @@ namespace Rock.AI.Agent.Annotations
     /// specific information.
     /// </summary>
     [System.AttributeUsage( System.AttributeTargets.Method, Inherited = false, AllowMultiple = false )]
-    internal class AgentToolReturnDescriptionAttribute : System.Attribute
+    public class AgentToolReturnDescriptionAttribute : System.Attribute
     {
         /// <summary>
         /// The description of the return value.

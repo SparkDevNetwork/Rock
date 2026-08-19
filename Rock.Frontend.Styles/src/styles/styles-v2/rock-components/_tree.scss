@@ -165,7 +165,6 @@ ul.rocktree-children {
     position:       relative;
     display:        inline-block;
     flex-grow:      1;
-    width:          calc(100% - 48px);
     padding:        0 var(--spacing-medium) 0 0;
     line-height:    var(--line-height-xloose);
     cursor:         pointer;
@@ -225,6 +224,7 @@ ul.rocktree-children {
   padding-top:    var(--spacing-xsmall);
   min-height:     200px;
   overflow-x:     auto;
+  display:        flex;
 }
 
 // TreeList clips horizontal overflow and caps width at 100%, so deeply nested

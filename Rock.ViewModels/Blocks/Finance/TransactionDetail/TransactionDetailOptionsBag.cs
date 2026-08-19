@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Finance.TransactionDetail
 {
     /// <summary>
@@ -105,5 +107,11 @@ namespace Rock.ViewModels.Blocks.Finance.TransactionDetail
         /// Only applies when there is exactly one account allocation on the saved transaction.
         /// </summary>
         public bool CarryOverAccount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the organization's configured currency information (symbol, decimal
+        /// places, symbol location) used to format amounts displayed by the block.
+        /// </summary>
+        public CurrencyInfoBag CurrencyInfo { get; set; }
     }
 }

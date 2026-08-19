@@ -1,0 +1,2714 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="root" class="group-finder styled-scroll" :class="{ 'group-finder-layout-split': config.isMapShown }">
+        <NotificationBox v-if="config.configurationWarning" alertType="warning">
+            {{ config.configurationWarning }}
+            <ul v-if="config.configurationWarningItems && config.configurationWarningItems.length" class="mb-0 mt-2">
+                <li v-for="(item, index) in config.configurationWarningItems" :key="index">{{ item }}</li>
+            </ul>
+        </NotificationBox>
+
+        <!-- When the block is unconfigured (no group types), only the message above renders; the finder
+             itself is hidden. -->
+        <template v-if="!config.isUnconfigured">
+        <!-- Desktop filter bar: an Airbnb-style search pill of Campus/Where/When/What segments and a
+             primary search action, with a More Filters dropdown beside it. Each segment shows its
+             current value (or a placeholder) and opens its filter content in an anchored dropdown. -->
+        <div ref="filterBar" class="group-finder-filterbar">
+            <!-- Cancel hint pinned just under the bar, shown when the pending overlay is up and no filter
+                 popover is open. A subtle, temporary affordance for the designer to evaluate; it ignores
+                 pointer events so the scrim handles the click, and it is absolutely positioned so it does
+                 not affect the bar's flex layout. It fades quickly in and out rather than snapping. -->
+            <Transition name="group-finder-hint-fade">
+                <div v-if="isCancelHintShown" class="group-finder-pending-hint" aria-hidden="true">
+                    <i class="ti ti-x"></i>
+                    <span>Click anywhere to cancel</span>
+                </div>
+            </Transition>
+            <div class="group-finder-searchpill">
+                <div class="filter-segments">
+                    <!-- Only More Filters is enabled: the pill collapses to a single "Filters" entry that
+                         opens the More Filters content, with the applied count as its conditional value. -->
+                    <DropDownContent v-if="isFiltersOnlyBar"
+                                     :modelValue="openSection === 'more'"
+                                     @update:modelValue="isOpen => onSectionToggle('more', isOpen)"
+                                     placement="bottom-start"
+                                     preventOverflowClipping
+                                     enableFlip
+                                     rounded
+                                     raised>
+                        <template #anchor>
+                            <button type="button" class="filter-segment filter-segment-filters" :class="{ 'is-open': openSection === 'more' }">
+                                <span class="filter-segment-name">Filters</span>
+                                <span class="filter-segment-value" :class="{ 'is-placeholder': !moreFiltersSummary }">{{ moreFiltersSummary || "Start your search" }}</span>
+                                <i class="ti ti-chevron-down filter-segment-caret"></i>
+                            </button>
+                        </template>
+                        <div class="group-finder-filter-popover filters-more">
+                            <MoreFiltersContent />
+                        </div>
+                    </DropDownContent>
+
+                    <DropDownContent v-if="config.isCampusFilterShown"
+                                     :modelValue="openSection === 'campus'"
+                                     @update:modelValue="isOpen => onSectionToggle('campus', isOpen)"
+                                     placement="bottom-start"
+                                     preventOverflowClipping
+                                     enableFlip
+                                     rounded
+                                     raised>
+                        <template #anchor>
+                            <button type="button" class="filter-segment filter-segment-campus" :class="{ 'is-open': openSection === 'campus' }">
+                                <span class="filter-segment-name">Campus</span>
+                                <span class="filter-segment-value" :class="{ 'is-placeholder': !campusSummary }">{{ campusSummary || "Select a Campus" }}</span>
+                                <i class="ti ti-chevron-down filter-segment-caret"></i>
+                            </button>
+                        </template>
+                        <div class="group-finder-filter-popover filters-campus">
+                            <CampusFilterContent />
+                        </div>
+                    </DropDownContent>
+
+                    <span v-if="config.isWhereFilterShown && config.isCampusFilterShown" class="filter-segment-divider"></span>
+                    <DropDownContent v-if="config.isWhereFilterShown"
+                                     :modelValue="openSection === 'where'"
+                                     @update:modelValue="isOpen => onSectionToggle('where', isOpen)"
+                                     placement="bottom-start"
+                                     preventOverflowClipping
+                                     enableFlip
+                                     rounded
+                                     raised>
+                        <template #anchor>
+                            <button type="button" class="filter-segment filter-segment-where" :class="{ 'is-open': openSection === 'where' }">
+                                <span class="filter-segment-name">Where</span>
+                                <span class="filter-segment-value" :class="{ 'is-placeholder': !whereSummary }">{{ whereSummary || "Discover location near you" }}</span>
+                                <i class="ti ti-chevron-down filter-segment-caret"></i>
+                            </button>
+                        </template>
+                        <div class="group-finder-filter-popover filters-where">
+                            <WhereFilterContent />
+                        </div>
+                    </DropDownContent>
+
+                    <span v-if="config.isWhenFilterShown && (config.isCampusFilterShown || config.isWhereFilterShown)" class="filter-segment-divider"></span>
+                    <DropDownContent v-if="config.isWhenFilterShown"
+                                     :modelValue="openSection === 'when'"
+                                     @update:modelValue="isOpen => onSectionToggle('when', isOpen)"
+                                     placement="bottom-start"
+                                     preventOverflowClipping
+                                     enableFlip
+                                     rounded
+                                     raised>
+                        <template #anchor>
+                            <button type="button" class="filter-segment filter-segment-when" :class="{ 'is-open': openSection === 'when' }">
+                                <span class="filter-segment-name">When</span>
+                                <span class="filter-segment-value" :class="{ 'is-placeholder': !whenSummary }"><i v-if="whenTimeIcon" :class="whenTimeIcon" class="filter-segment-value-icon"></i>{{ whenSummary || "Find when to meet" }}</span>
+                                <i class="ti ti-chevron-down filter-segment-caret"></i>
+                            </button>
+                        </template>
+                        <div class="group-finder-filter-popover filters-when">
+                            <WhenFilterContent />
+                        </div>
+                    </DropDownContent>
+
+                    <span v-if="config.isWhatFilterShown && (config.isCampusFilterShown || config.isWhereFilterShown || config.isWhenFilterShown)" class="filter-segment-divider"></span>
+                    <DropDownContent v-if="config.isWhatFilterShown"
+                                     :modelValue="openSection === 'what'"
+                                     @update:modelValue="isOpen => onSectionToggle('what', isOpen)"
+                                     placement="bottom-start"
+                                     preventOverflowClipping
+                                     enableFlip
+                                     rounded
+                                     raised>
+                        <template #anchor>
+                            <button type="button" class="filter-segment filter-segment-what" :class="{ 'is-open': openSection === 'what' }">
+                                <span class="filter-segment-name">What</span>
+                                <span class="filter-segment-value" :class="{ 'is-placeholder': !whatSummary }">{{ whatSummary || "Search what fits" }}</span>
+                                <i class="ti ti-chevron-down filter-segment-caret"></i>
+                            </button>
+                        </template>
+                        <div class="group-finder-filter-popover filters-what">
+                            <WhatFilterContent />
+                        </div>
+                    </DropDownContent>
+                </div>
+
+                <button type="button" class="filter-search-button" :class="{ 'is-expanded': isPendingOverlayShown }" :disabled="isLoading" aria-label="Search" @click="onSearchClick">
+                    <span v-if="isLoading" class="filter-search-button-spinner" aria-hidden="true"></span>
+                    <i v-else class="ti ti-search"></i>
+                    <span class="filter-search-button-label">Search</span>
+                </button>
+            </div>
+
+            <!-- Only the round icon button is interactive (the dropdown anchor); the label and the padding
+                 around it are not clickable. The button is named from the visible label via aria-labelledby. -->
+            <div v-if="config.isMoreFiltersShown && !isFiltersOnlyBar" class="more-filters">
+                <span id="groupFinderMoreFiltersLabel" class="more-filters-label">More Filters</span>
+                <DropDownContent :modelValue="openSection === 'more'"
+                                 @update:modelValue="isOpen => onSectionToggle('more', isOpen)"
+                                 placement="bottom-end"
+                                 preventOverflowClipping
+                                 enableFlip
+                                 rounded
+                                 raised>
+                    <template #anchor>
+                        <button type="button" class="more-filters-button btn" :class="moreFiltersCount > 0 ? 'btn-primary' : 'btn-default'" aria-labelledby="groupFinderMoreFiltersLabel">
+                            <i v-if="openSection === 'more'" class="ti ti-x more-filters-close"></i>
+                            <span v-else-if="moreFiltersCount > 0" class="filter-count">{{ moreFiltersCount }}</span>
+                            <i v-else class="ti ti-adjustments-horizontal"></i>
+                        </button>
+                    </template>
+                    <div class="group-finder-filter-popover filters-more">
+                        <MoreFiltersContent />
+                    </div>
+                </DropDownContent>
+            </div>
+        </div>
+
+        <!-- Mobile filter bar: a full-width field above the results/map (mobile breakpoint only). Its
+             label and trailing action reflect the applied filters (Start/Refine Your Search, and a search
+             icon or a count), and tapping it opens the full-screen filter panel. -->
+        <button type="button" class="group-finder-mobile-filterbar" @click="isDrawerOpen = true">
+            <span class="group-finder-mobile-filterbar-label">{{ mobileFilterLabel }}</span>
+            <span class="group-finder-mobile-filterbar-action">
+                <span v-if="totalFilterCount > 0" class="group-finder-mobile-filter-count">{{ totalFilterCount }}</span>
+                <i v-else class="ti ti-search"></i>
+            </span>
+        </button>
+
+        <!-- Mobile full-screen filter modal. The Obsidian Modal control provides the overlay, teleport,
+             header (title + close), and footer; inject still resolves the shared filter state across its
+             teleport. The title mirrors the bar label; each section is a collapsible accordion reusing the
+             shared filter partials; the footer clears every filter or applies them (searches and closes). -->
+        <Modal v-model="isDrawerOpen"
+               cancelText=""
+               isFullScreen
+               modalContentClasses="group-finder-filter-modal">
+            <!-- Render the header title as an h4 (via the Modal's header slot) rather than the control's
+                 default h3, keeping the page's heading hierarchy correct. -->
+            <template #header>
+                <h4 class="modal-title">{{ mobileFilterLabel }}</h4>
+            </template>
+
+            <ContentSectionContainer :sidebar="false" class="group-finder-filter-sections">
+                <ContentSection v-if="config.isCampusFilterShown"
+                                title="Campus"
+                                :isCollapsed="mobileOpenSection !== 'campus'"
+                                @update:isCollapsed="collapsed => onMobileSectionToggle('campus', collapsed)">
+                    <template #description>{{ campusSummary || "Select a Campus" }}</template>
+                    <CampusFilterContent />
+                </ContentSection>
+
+                <ContentSection v-if="config.isWhereFilterShown"
+                                title="Where"
+                                :isCollapsed="mobileOpenSection !== 'where'"
+                                @update:isCollapsed="collapsed => onMobileSectionToggle('where', collapsed)">
+                    <template #description>{{ whereSummary || "Discover location near you" }}</template>
+                    <WhereFilterContent />
+                </ContentSection>
+
+                <ContentSection v-if="config.isWhenFilterShown"
+                                title="When"
+                                :isCollapsed="mobileOpenSection !== 'when'"
+                                @update:isCollapsed="collapsed => onMobileSectionToggle('when', collapsed)">
+                    <template #description>{{ whenSummary || "Find when to meet" }}</template>
+                    <WhenFilterContent />
+                </ContentSection>
+
+                <ContentSection v-if="config.isWhatFilterShown"
+                                title="What"
+                                :isCollapsed="mobileOpenSection !== 'what'"
+                                @update:isCollapsed="collapsed => onMobileSectionToggle('what', collapsed)">
+                    <template #description>{{ whatSummary || "Search what fits" }}</template>
+                    <WhatFilterContent />
+                </ContentSection>
+
+                <ContentSection v-if="config.isMoreFiltersShown"
+                                title="More Filters"
+                                :isCollapsed="mobileOpenSection !== 'more'"
+                                @update:isCollapsed="collapsed => onMobileSectionToggle('more', collapsed)">
+                    <template #description>{{ moreFiltersSummary || "Further refine your search" }}</template>
+                    <MoreFiltersContent />
+                </ContentSection>
+            </ContentSectionContainer>
+
+            <template #customButtons>
+                <div class="group-finder-filter-footer">
+                    <RockButton btnType="link" class="group-finder-filter-clear" @click="clearAllFilters">Clear all</RockButton>
+                    <RockButton btnType="primary" @click="onDrawerSearch">Apply</RockButton>
+                </div>
+            </template>
+        </Modal>
+
+
+        <NotificationBox v-if="isLocationNotFound" alertType="warning">
+            We couldn't find "{{ origin }}". Try a different address or ZIP.
+        </NotificationBox>
+
+        <!-- Dim the whole block except the filter bar (which floats above the scrim) while a filter segment
+             is open or filters are pending, so the bar reads as the active surface and the results and map
+             read as stale until the visitor commits the search. The visitor commits with the Search button;
+             clicking the dimmed area cancels, reverting to the last searched filters. Fades in, not snaps. -->
+        <Transition name="group-finder-pending-fade">
+            <div v-if="isPendingOverlayShown" class="group-finder-pending-overlay" @mousedown="onPendingOverlayMouseDown"></div>
+        </Transition>
+
+        <!-- Results -->
+        <div class="group-finder-body" :data-layout="layoutMode">
+
+            <!-- Card list inline for every mode except the drawer, where it rides in the bottom sheet. -->
+            <GroupFinderResults v-if="layoutMode !== 'drawer'"
+                                v-model:selectedGroupGuid="selectedGroupGuid"
+                                v-model:hoveredGroupGuid="hoveredGroupGuid"
+                                :cards="cards"
+                                :resultCountText="resultCountText"
+                                :isLoading="isLoading"
+                                :hasCardImage="hasCardImage"
+                                :hasCardCta="hasCardCta"
+                                columns="auto"
+                                :isPagerShown="isPagerShown"
+                                :currentPage="currentPage"
+                                :pageCount="pageCount"
+                                @pageChange="goToPage" />
+
+            <!-- Map: shown whenever enabled, except in the toggle when the list is chosen. -->
+            <div v-if="config.isMapShown"
+                 ref="mapPane"
+                 class="group-finder-map-pane"
+                 :style="mapPaneHeight ? { height: mapPaneHeight, paddingBottom: mapDrawerReserve } : undefined">
+                <div class="group-finder-map-overlays">
+                    <RockButton v-if="isMapMoved && !isLoading"
+                                btnType="default"
+                                class="group-finder-search-area-button"
+                                @click="onSearchThisArea">
+                        <i class="ti ti-search"></i> Search this area
+                    </RockButton>
+                    <div v-if="isLoading" class="group-finder-map-loading">
+                        <LoadingIndicator isSmall />
+                        <span>Searching&hellip;</span>
+                    </div>
+                </div>
+                <div class="group-finder-map-note-bottom"
+                     :style="mapDrawerReserve ? { bottom: `calc(${mapDrawerReserve} + var(--spacing-medium))` } : undefined">
+                    <div class="group-finder-map-note">
+                        <i class="ti ti-info-circle"></i>
+                        <span>{{ layoutMode === "drawer" ? "Locations are approximate." : "Locations are an approximation of the meeting area." }}</span>
+                    </div>
+                </div>
+                <MapView ref="mapViewRef"
+                         :selectedMarkerId="selectedGroupGuid"
+                         @update:selectedMarkerId="onGroupMarkerSelect"
+                         v-model:hoveredMarkerId="hoveredGroupGuid"
+                         :markers="mapMarkers"
+                         :markerColor="config.groupMarkerColor ?? undefined"
+                         :mapStyleValueGuid="config.mapStyleValueGuid || undefined"
+                         backgroundColor="transparent"
+                         :referenceLocation="proximityLocation"
+                         :referenceLocationColor="config.currentLocationMarkerColor ?? undefined"
+                         :selectionOffsetFraction="layoutMode === 'drawer' ? 0.3 : 0"
+                         :focusMarkerOnClickAtDefaultZoom="layoutMode === 'drawer'"
+                         :centerLatitude="config.visitorLatitude ?? undefined"
+                         :centerLongitude="config.visitorLongitude ?? undefined"
+                         @boundsChanged="onBoundsChanged" />
+            </div>
+
+            <!-- Tiny: the card list rides in a persistent bottom-sheet drawer over the map,
+                 provided by the shared DockedPanel. It opens collapsed to its header (the
+                 "content" stop) and snaps to half or full; dragging or tapping the header changes
+                 the stop. There is no backdrop, so the map stays visible and interactive. -->
+            <DockedPanel v-if="layoutMode === 'drawer'"
+                         v-model="isCardSheetOpen"
+                         v-model:snapPoint="drawerSnapIndex"
+                         v-model:depth="drawerDepth"
+                         position="bottom"
+                         :mode="drawerMode"
+                         :bottomOffset="drawerBottomOffset"
+                         canResize
+                         snapOnTap
+                         squareAtMaxDepth
+                         keepRoundedWhenPushed
+                         :snapPoints="drawerSnapPoints"
+                         @settled="onDrawerSettled">
+                <template #header>
+                    <div class="group-finder-sheet-title">
+                        <span>{{ resultCountText }}</span>
+                        <!-- Only while refreshing an already-populated list; the empty/initial load shows
+                             the single centered indicator in the sheet body instead. -->
+                        <LoadingIndicator v-if="isLoading && cards.length > 0" isSmall />
+                    </div>
+                </template>
+
+                <div class="group-finder-sheet-body">
+                    <GroupFinderResults :selectedGroupGuid="selectedGroupGuid"
+                                        @update:selectedGroupGuid="onGroupCardSelect"
+                                        v-model:hoveredGroupGuid="hoveredGroupGuid"
+                                        :cards="cards"
+                                        :resultCountText="resultCountText"
+                                        :isLoading="isLoading"
+                                        :hasCardImage="hasCardImage"
+                                        :hasCardCta="hasCardCta"
+                                        columns="one"
+                                        :isResultCountHidden="true"
+                                        :isPagerShown="isPagerShown"
+                                        :currentPage="currentPage"
+                                        :pageCount="pageCount"
+                                        @pageChange="goToPage" />
+                </div>
+            </DockedPanel>
+        </div>
+        </template>
+    </div>
+</template>
+
+<style scoped>
+.group-finder {
+    position: relative;
+    /* No outer padding or background: the host layout owns the spacing and backdrop, so the block sits
+       full-bleed on whatever surface it is placed. */
+}
+
+/*
+    New styles land here scoped; the UI team migrates them to shared LESS/SCSS
+    in a later pass.
+*/
+/* Centered filter bar that pins to the top of the block and acts as the sticky header. */
+/* The bar is a soft pill that hugs its content (the white search pill plus the More Filters action) and
+   centers in the block, rather than stretching edge to edge. The soft surface sits behind; the inner
+   search pill carries its own lighter surface and shadow. */
+.group-finder-filterbar {
+    display: flex;
+    gap: var(--spacing-xlarge);
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    max-width: 100%;
+    margin-inline: auto;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    margin-bottom: var(--spacing-medium);
+    padding: var(--spacing-tiny);
+    background: var(--color-interface-softer);
+    /* A soft shadow lifts the pill so its edge reads even when the page background matches the fill. */
+    box-shadow: var(--box-shadow);
+    border-radius: 500px;
+}
+
+/* The search pill: filter segments and the primary search action on one rounded, elevated surface. */
+.group-finder-searchpill {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    gap: var(--spacing-large);
+    /* Right padding insets the search button from the pill's rounded end so its full (square) bounds sit in
+       the straight middle and are not clipped by the border-radius + overflow. Left stays flush. */
+    padding: 0 var(--spacing-small) 0 0;
+    overflow: hidden;
+    background: var(--color-interface-softest, #fff);
+    border-radius: 500px;
+    box-shadow: var(--box-shadow);
+}
+
+.filter-segments {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
+/*
+    DropDownContent wraps each segment in an anchor element that sits between .filter-segments and the
+    button. It belongs to that child component, so :deep is needed to reach it. Make the wrapper a shrinkable
+    flex box (display: flex + min-width: 0) so the 240px button can narrow when the bar runs out of room;
+    without this the wrapper's auto min-width pins the segment. Every direct child that is not a divider is
+    such a wrapper.
+*/
+.filter-segments > :deep(*:not(.filter-segment-divider)) {
+    display: flex;
+    min-width: 0;
+}
+
+/* A two-line segment: the filter name over its current value (or a placeholder), plus a caret. */
+.filter-segment {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    width: 240px;
+    /* Keep 240px as the preferred size, but allow shrinking below it (min-width: 0) when the bar runs out
+       of room, so the segments narrow and their values ellipsize instead of wrapping or overflowing. */
+    min-width: 0;
+    padding: var(--spacing-medium);
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+.filter-segment:hover,
+.filter-segment.is-open {
+    background: var(--color-interface-softer);
+}
+
+.filter-segment-name {
+    font-size: var(--font-size-small, 14px);
+    font-weight: var(--font-weight-semibold, 600);
+    line-height: 1.1;
+    color: var(--color-interface-strong);
+}
+
+.filter-segment-value {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--font-size-regular, 16px);
+    line-height: 1.5;
+    color: var(--color-interface-strong);
+}
+
+.filter-segment-value.is-placeholder {
+    color: var(--color-interface-medium, #8b8ba7);
+}
+
+/* The time-of-day icon sits just before the When value (e.g. a sun beside "Mon, Tue, Thu"). */
+.filter-segment-value-icon {
+    margin-right: var(--spacing-xsmall);
+}
+
+/*
+    Only-More-Filters mode: the sole segment carries a summary of every applied value, which can be long.
+    A flex item defaults to min-width: auto (its content width), so without this the long summary would
+    stretch the segment past its fixed .filter-segment width; min-width: 0 lets the fixed width hold so the
+    value truncates with an ellipsis instead.
+*/
+.filter-segment-filters,
+.filter-segment-filters .filter-segment-value {
+    min-width: 0;
+}
+
+.filter-segment-caret {
+    position: absolute;
+    top: 50%;
+    right: var(--spacing-small);
+    transform: translateY(-50%);
+    font-size: 1rem;
+    color: var(--color-interface-medium, #8b8ba7);
+    transition: transform 0.15s ease-in-out;
+}
+
+/* Open segment: highlight the name and flip the chevron to point up (keeping the vertical centering). */
+.filter-segment.is-open .filter-segment-name {
+    color: var(--color-primary);
+}
+
+.filter-segment.is-open .filter-segment-caret {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.filter-segment-divider {
+    align-self: stretch;
+    flex-shrink: 0;
+    width: 1px;
+    margin: var(--spacing-small) 0;
+    background: var(--color-interface-soft);
+}
+
+/* Round primary search action at the trailing end of the pill. While filters are pending it widens into
+   a pill with a "Search" label (see .is-expanded); the width and label slide in rather than snap. */
+.filter-search-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    /* No gap while collapsed: the zero-width label is still a flex item, so a gap before it would
+       push the icon left of center. The gap is added only once the label is shown (see .is-expanded). */
+    gap: 0;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 1.125rem;
+    white-space: nowrap;
+    overflow: hidden;
+    cursor: pointer;
+    transition: width 0.25s ease, border-radius 0.25s ease, gap 0.25s ease;
+}
+
+.filter-search-button:hover {
+    background: var(--color-primary-shade, var(--color-primary));
+}
+
+/* While a search is running the button is inert and its search glyph becomes a spinner. */
+.filter-search-button:disabled {
+    cursor: default;
+    opacity: 0.65;
+}
+
+/*
+    A CSS ring spinner rather than a rotating icon glyph. An icon font's glyph is not perfectly centered
+    in its em box, so rotating the element makes the glyph orbit its box center and wobble. A bordered
+    circle is radially symmetric, so it spins dead-center with no wobble.
+*/
+.filter-search-button-spinner {
+    box-sizing: border-box;
+    display: inline-block;
+    width: 1.1em;
+    height: 1.1em;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: group-finder-search-spin 0.7s linear infinite;
+}
+
+@keyframes group-finder-search-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.filter-search-button.is-expanded {
+    width: 116px;
+    border-radius: 500px;
+    gap: var(--spacing-xsmall);
+}
+
+/* The label slides open (0 to its width) and fades in as the button widens. */
+.filter-search-button-label {
+    max-width: 0;
+    opacity: 0;
+    font-size: var(--font-size-regular, 16px);
+    transition: max-width 0.25s ease, opacity 0.2s ease;
+}
+
+.filter-search-button.is-expanded .filter-search-button-label {
+    max-width: 5rem;
+    opacity: 1;
+}
+
+/* More Filters: a non-interactive wrapper holding the label and the round button. The padding gives the
+   group breathing room without becoming part of the button's click/hover target - only the button is. */
+.more-filters {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    padding-right: var(--spacing-xsmall);
+}
+
+.more-filters-label {
+    font-size: var(--font-size-h6, 16px);
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--color-interface-strongest);
+    white-space: nowrap;
+}
+
+/*
+    Reuse Rock's real .btn .btn-default for the exact default-button surface, colors, and hover/active/focus
+    effects; only the shape is overridden here (a fixed round icon button) rather than re-implementing the
+    look, which never quite matches.
+*/
+.more-filters-button.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    font-size: 1.125rem;
+    /* The .btn base line-height (1.5) offsets the glyph's line box; reset it so the flex centering
+       actually centers the icon. */
+    line-height: 1;
+}
+
+/* Open: the surface stays put; only the glyph swaps to a larger X that closes the dropdown on click. */
+.more-filters-close {
+    font-size: 1.5rem;
+}
+
+/* Sizing and padding for the filter dropdown content; DropDownContent supplies the floating card
+   surface (anchoring, border, shadow) around it. */
+.group-finder-filter-popover {
+    min-width: 240px;
+    max-width: min(92vw, 420px);
+    padding: var(--spacing-medium);
+    background: var(--color-interface-softest);
+    /* The floating body is rounded but does not clip (preventOverflowClipping lets inner dropdowns such as
+       the address suggestions overflow), so round this opaque content to match, or its square corners paint
+       over the body's rounded ones and the panel looks square. */
+    border-radius: var(--rounded-large);
+}
+
+/* Map pane: rounded, clipped, and the positioning anchor for the approximation banner. */
+.group-finder-map-pane {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--rounded-xlarge);
+}
+
+/* Top-center stack of map overlays: the "Search this area" prompt and, while fetching, the loading
+   pill beneath it. pointer-events: none keeps the map fully interactive under the overlays. Span the
+   full width (left/right 0) rather than left: 50%, so the centered pills can grow to the available
+   width instead of shrink-to-fit against only the right half; align-items: center keeps them centered
+   and the side padding is the gutter. */
+.group-finder-map-overlays {
+    position: absolute;
+    top: var(--spacing-small);
+    left: 0;
+    right: 0;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-tiny);
+    padding: 0 var(--spacing-small);
+    pointer-events: none;
+}
+
+.group-finder-map-note,
+.group-finder-map-loading {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-tiny);
+    max-width: 100%;
+    padding: var(--spacing-tiny) var(--spacing-small);
+    font-size: 13px;
+    color: var(--color-interface-strong, #4a4a4a);
+    background: var(--color-interface-softest, #fff);
+    border-radius: var(--rounded-huge);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* The approximation note sits at the bottom-center of the map, its bottom edge aligned with the bottom of
+   Google's zoom controls (anchoring by bottom keeps that alignment regardless of the note's own height). */
+.group-finder-map-note-bottom {
+    position: absolute;
+    bottom: var(--spacing-large);
+    left: 0;
+    right: 0;
+    z-index: 3;
+    display: flex;
+    justify-content: center;
+    padding: 0 var(--spacing-small);
+    pointer-events: none;
+}
+
+/* "Search this area" prompt at the top-center of the map (in the overlay stack) after a pan or zoom.
+   The overlay container is click-through, so the button re-enables pointer events for itself. */
+.group-finder-search-area-button {
+    pointer-events: auto;
+    background: var(--color-interface-softest, #fff);
+    border-radius: var(--rounded-huge);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/*
+    Layout modes, chosen from the single width threshold in script:
+    - results:    map disabled, full-width grid.
+    - sidebyside: fixed-height two-pane below the sticky filter bar; the card column scrolls
+                  internally and wraps from three to one column as width drops, while the map
+                  fills the rest of the width and the block's height.
+    - drawer:     map is the main view; the list opens in a docked panel over it.
+*/
+.group-finder-body {
+    position: relative;
+}
+
+.group-finder-body[data-layout="results"],
+.group-finder-body[data-layout="drawer"] {
+    display: block;
+}
+
+/*
+    Scrim over the whole page (position: fixed) while filters are pending, so everything behind the filter
+    bar reads as stale, not just the block. The sticky filter bar (z-index 10) paints above the scrim
+    (z-index 5), so only the pill stays lit; an open segment popover also sits above it, so the filter
+    being edited is never dimmed. Fixed resolves against the viewport as long as no ancestor establishes a
+    fixed-positioning containing block (transform/filter/will-change/contain); the block has none today.
+
+    Matches Rock's modal backdrop: the backdrop color and its 0.5 opacity applied separately on the
+    element (as .modal-backdrop.fade.in does), faded in. --modal-backdrop-background carries the theme's
+    backdrop color where defined, falling back to black on themes that do not expose it.
+*/
+.group-finder-pending-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    background: var(--modal-backdrop-background, #000);
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+/* Cancel hint pinned just under the filter bar (a subtle, temporary affordance for the designer to
+   evaluate). It lives inside the sticky bar so it tracks the bar and paints above the scrim, sits a Rock
+   spacing step below the bar, and ignores pointer events so the scrim still handles the click. */
+.group-finder-pending-hint {
+    position: absolute;
+    top: calc(100% + var(--spacing-medium));
+    left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    padding: var(--spacing-tiny) var(--spacing-small);
+    border-radius: var(--rounded-huge);
+    background: var(--color-interface-softest);
+    color: var(--color-interface-medium);
+    box-shadow: var(--box-shadow);
+    font-size: var(--font-size-small);
+    font-weight: 400;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* Fade the scrim in and out (to its resting 0.5) rather than toggling it instantly. */
+.group-finder-pending-fade-enter-active,
+.group-finder-pending-fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.group-finder-pending-fade-enter-from,
+.group-finder-pending-fade-leave-to {
+    opacity: 0;
+}
+
+/* Fade the cancel hint quickly in and out rather than snapping it on and off. */
+.group-finder-hint-fade-enter-active,
+.group-finder-hint-fade-leave-active {
+    transition: opacity 0.12s ease;
+}
+
+.group-finder-hint-fade-enter-from,
+.group-finder-hint-fade-leave-to {
+    opacity: 0;
+}
+
+/*
+    Map-hidden (results) layout: center the capped card grid in the block so a wide page does not leave
+    dead space on one side (which reads as room reserved for the map). The result-count line gets the same
+    capped, centered width with its text flush-left, so "All Groups" lines up with the left edge of the
+    cards rather than centering over them.
+*/
+.group-finder-body[data-layout="results"] :deep(.group-finder-results) {
+    justify-content: start;
+    margin-inline: auto;
+}
+
+.group-finder-body[data-layout="results"] :deep(.group-finder-result-count) {
+    max-width: calc(3 * 370px + 2 * var(--spacing-medium));
+    margin-inline: auto;
+    justify-content: flex-start;
+}
+
+
+/*
+    Side by side is a fixed-height two-pane: the body fills the viewport below the fixed top header
+    and the sticky filter bar, and never scrolls itself. The card column scrolls internally while
+    the map fills its side and stays put, so scrolling the cards does not move the map.
+*/
+.group-finder-body[data-layout="sidebyside"] {
+    display: flex;
+    gap: var(--spacing-large);
+    /*
+        The height is measured in script against the block's own scroll container (see
+        fitSideBySide) rather than the viewport, so the two-pane fills the space actually
+        available to the block in whatever zone or layout it lands in. The min-height is only
+        a pre-measure floor so the panes never collapse before the first measurement lands.
+    */
+    min-height: 400px;
+    overflow: hidden;
+}
+
+/*
+    Cards keep their fixed 370px width and wrap to as many columns as fit; the map takes
+    the leftover width down to a 370px floor. No breakpoints drive the column count here,
+    only the mode switch (side-by-side / stacked / drawer) is breakpoint-driven.
+*/
+.group-finder-body[data-layout="sidebyside"] .group-finder-results-pane {
+    /* Width is set in script to a whole number of 370px card columns plus the scrollbar gutter and this padding. */
+    flex: 0 0 auto;
+    box-sizing: border-box;
+    min-width: 370px;
+    height: 100%;
+    /*
+        Horizontal padding gives card hover shadows room before the overflow clip (overflow-y:auto forces
+        overflow-x to auto too, so anything past the padding box is cut), so the left and right shadows
+        both read. Top and bottom are flush, so only the first/last card's vertical shadow clips at the
+        pane edge (interior cards are unaffected, and the shadow is mostly a downward drop). sizeResultsPane
+        adds the horizontal padding back to the pane width so the column count is unchanged.
+    */
+    padding: 0 var(--spacing-medium);
+    overflow-y: auto;
+    /* Always reserve the scrollbar gutter so the content width (and column count) is stable. */
+    scrollbar-gutter: stable;
+}
+
+.group-finder-body[data-layout="sidebyside"] .group-finder-map-pane {
+    flex: 1 1 auto;
+    min-width: 370px;
+    height: 100%;
+}
+
+/* In drawer (mobile) mode the map spans the full block width and runs to the viewport bottom (height is
+   set inline); square its corners, and give it the block background so the area reserved behind the
+   floating sheet (and its rounded corners) matches the block rather than showing the page behind. */
+.group-finder-body[data-layout="drawer"] .group-finder-map-pane {
+    width: 100%;
+    height: 70vh;
+    border-radius: 0;
+    background: var(--color-interface-softer);
+    /* Ease the fill so the map grows or shrinks smoothly when the reserve changes after a scroll settles,
+       rather than snapping. Only the padding transitions; the inline height stays instant so viewport and
+       layout changes are not animated. */
+    transition: padding-bottom 250ms ease;
+}
+
+/* The drawer-mode pane runs full height behind the sheet, so round the inset map view itself into a
+   card (all four corners) rather than the pane. */
+.group-finder-body[data-layout="drawer"] .group-finder-map-pane :deep(.map-view) {
+    border-radius: var(--rounded-xlarge);
+    overflow: hidden;
+}
+
+/*
+    The drawer is a DockedPanel (position="bottom", dragHandle="header"), which supplies the sheet
+    surface, the grabber, drag-to-snap, and tap-to-toggle. These rules only style the slotted
+    content: the centered header title (with room for the panel's grabber) and the body padding.
+*/
+.group-finder-sheet-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xsmall);
+    padding: var(--spacing-medium) var(--spacing-medium) var(--spacing-small);
+    font-weight: 600;
+}
+
+.group-finder-sheet-body {
+    padding: var(--spacing-medium);
+    background-color: var(--color-interface-softer);
+}
+
+/*
+    Mobile filter bar: a single field above the results that opens the filter modal. Shown only at the
+    mobile breakpoint (see the media query below); the desktop horizontal bar is hidden there. The label
+    reads "Start"/"Refine Your Search" and the trailing action is the search icon or an applied-filter
+    count badge.
+*/
+.group-finder-mobile-filterbar {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-small);
+    width: 100%;
+    margin-bottom: var(--spacing-small);
+    padding: var(--spacing-small) var(--spacing-medium);
+    border: 1px solid var(--color-interface-soft, #e5e5e5);
+    border-radius: var(--rounded-large, 24px);
+    background: var(--color-interface-softest, #fff);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    text-align: left;
+    cursor: pointer;
+}
+
+.group-finder-mobile-filterbar-label {
+    font-weight: 600;
+    color: var(--color-interface-stronger, #333);
+}
+
+.group-finder-mobile-filterbar-action {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 var(--spacing-xsmall);
+    border-radius: 999px;
+    background: var(--color-primary, #ee7725);
+    color: #fff;
+    font-weight: 600;
+}
+
+/* Filter modal footer content (rendered into the Modal's customButtons slot): both buttons grouped to the
+   right (Clear all, then Apply). Styled here on the block's own slot content so it does not depend on
+   overriding the teleported modal's footer styles. */
+.group-finder-filter-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+    gap: var(--spacing-small);
+}
+
+/* At the mobile breakpoint the horizontal filter bar gives way to the mobile filter bar. The filter modal
+   itself is the shared Obsidian Modal (teleported to the body and sized full-screen by the global rule
+   below the scoped block). */
+@media (max-width: 991px) {
+    .group-finder-filterbar {
+        display: none;
+    }
+
+    .group-finder-mobile-filterbar {
+        display: flex;
+    }
+}
+</style>
+
+
+<script setup lang="ts">
+    import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+    import CampusFilterContent from "./GroupFinder/campusFilterContent.partial.obs";
+    import WhereFilterContent from "./GroupFinder/whereFilterContent.partial.obs";
+    import WhenFilterContent from "./GroupFinder/whenFilterContent.partial.obs";
+    import WhatFilterContent from "./GroupFinder/whatFilterContent.partial.obs";
+    import MoreFiltersContent from "./GroupFinder/moreFiltersContent.partial.obs";
+    import GroupFinderResults from "./GroupFinder/groupFinderResults.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import MapView from "@Obsidian/Controls/mapView.obs";
+    import DockedPanel from "@Obsidian/Controls/Internal/dockedPanel.obs";
+    import { MapViewMarker } from "@Obsidian/Types/Controls/mapView";
+    import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { GroupFinderInitializationBox } from "@Obsidian/ViewModels/Blocks/Group/GroupFinder/groupFinderInitializationBox";
+    import { GroupFinderDistanceBag } from "@Obsidian/ViewModels/Blocks/Group/GroupFinder/groupFinderDistanceBag";
+    import { GroupFinderQueryBag } from "@Obsidian/ViewModels/Blocks/Group/GroupFinder/groupFinderQueryBag";
+    import { GroupFinderResultsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupFinder/groupFinderResultsBag";
+    import { GroupFinderCardBag } from "@Obsidian/ViewModels/Blocks/Group/GroupFinder/groupFinderCardBag";
+    import { GroupFinderMapMarkerBag } from "@Obsidian/ViewModels/Blocks/Group/GroupFinder/groupFinderMapMarkerBag";
+    import { provideGroupFinderFilters } from "./GroupFinder/filterState.partial";
+
+    // #region Types
+
+    // The filter inputs captured in a search fingerprint (see filterFingerprint), used to revert a pending
+    // search to its last searched values.
+    type FilterSnapshot = {
+        campuses: string[];
+        meetingStyles: string[];
+        days: string[];
+        timeOfDay: string;
+        term: string;
+        origin: string;
+        isCurrentLocation: boolean;
+        isMapAreaLocation: boolean;
+        featured: Record<string, string[]>;
+        modal: Record<string, ComparisonValue>;
+    };
+
+    // A point (and optional geocoded viewport) the block has already resolved for a typed origin, held so
+    // the same origin is not geocoded again while paging or refiltering (see resolvedOriginByOrigin).
+    type ResolvedOrigin = {
+        latitude: number;
+        longitude: number;
+        viewport: { north: number; south: number; east: number; west: number } | null;
+    };
+
+    // #endregion Types
+
+    // #region Values
+
+    const config = useConfigurationValues<GroupFinderInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+
+    const selectedCampuses = ref<string[]>([]);
+    const selectedMeetingStyles = ref<string[]>([]);
+    const selectedDaysOfWeek = ref<string[]>([]);
+    const selectedTimeOfDay = ref<string>("");
+    const searchTerm = ref<string>("");
+    // The search location (which groups), separate from the proximity location (distance). Empty on
+    // load, so the first request is an unfiltered browse; the visitor sets it by typing an address or
+    // using their current location.
+    const origin = ref<string>("");
+    // True while the origin holds current-location coordinates, so the Where filter can show
+    // "Current Location" instead of the raw "lat,lng".
+    const isCurrentLocation = ref(false);
+    // True while the search is scoped to a map area the visitor chose with "Search this area", so the
+    // Where filter shows that label and the search follows the current map bounds. Mutually exclusive
+    // with a typed address and current location.
+    const isMapAreaLocation = ref(false);
+    // The person's device coordinates for distance/sort, captured only once the visitor opts into
+    // current location. Null falls back to the server's best guess. This is the proximity location and
+    // never selects which groups come back.
+    const proximityCoords = ref<{ latitude: number; longitude: number } | null>(null);
+    // True after the visitor pans or zooms the map away from the last search, so a "Search this area"
+    // button appears. Panning no longer searches on its own; the visitor commits the new area with the
+    // button, which searches around the map center within the visible bounds. Reset once a search runs.
+    const isMapMoved = ref(false);
+    const featuredAttributeSelections = ref<Record<string, string[]>>({});
+    const modalAttributeValues = ref<Record<string, ComparisonValue>>({});
+
+    // The block's own rendered width (not the viewport), so the layout adapts to wherever
+    // the block is placed (main content, a sidebar, a modal). Updated by a ResizeObserver.
+    const blockWidth = ref(0);
+
+    const openSection = ref<"campus" | "where" | "when" | "what" | "more" | null>(null);
+    // Whether the visitor is actively building a search on the desktop filter bar, which drives the
+    // pending-search scrim. It turns on when a filter segment opens and stays on while the visitor works
+    // the bar (opening, closing, or switching segments), so the scrim does not drop when a dropdown closes
+    // or flash off and back on mid-switch. It clears only when the search is committed (Search) or the
+    // visitor clicks the exposed scrim to cancel.
+    const isFilterSessionActive = ref(false);
+    const isDrawerOpen = ref(false);
+    // The single expanded mobile filter accordion (one open at a time), or null when all are collapsed.
+    const mobileOpenSection = ref<string | null>(null);
+    // The group under the pointer (hover) and the clicked group (selection) drive the two-state
+    // highlight shared between the cards and the map circles.
+    const selectedGroupGuid = ref<string | null>(null);
+    const hoveredGroupGuid = ref<string | null>(null);
+    // How the current selection was made, so the drawer can respond in mirror: a card tap reveals its
+    // marker (collapse the sheet to expose the map), a marker tap reveals its card (open the sheet). Null
+    // for a programmatic selection (e.g. the closest-group auto-select), treated as revealing the card.
+    // The selection watcher reads this and then resets it.
+    const selectionSource = ref<"card" | "marker" | null>(null);
+
+    // The map's current viewport bounds, reported by the map on every pan/zoom. The server filters
+    // results to these bounds, so the list and markers are always the in-view set; null until the
+    // map first reports (or when the map is off), where results come back unrestricted.
+    const mapBounds = ref<{ north: number; south: number; east: number; west: number } | null>(null);
+
+    // The map component, so a deliberate refit or recenter can be requested (autoFit is off; see the
+    // origin watcher and device-location refine) without a viewport re-query fighting the user's pan.
+    const mapViewRef = ref<InstanceType<typeof MapView> | null>(null);
+
+    // The mobile card drawer is a DockedPanel bottom sheet. It is always open while the drawer
+    // layout is active (the panel is only rendered then); the collapse state is the first snap
+    // stop, not a closed panel. Stops: collapse to the header, half, then full.
+    const isCardSheetOpen = ref(true);
+    const drawerSnapIndex = ref(0);
+    const drawerSnapPoints: (number | string)[] = ["content", 0.5, 1];
+
+    // The bottom sheet reserves page space (push) only while settled at its collapsed stop, so the
+    // minimized handle does not float over the page footer below the block; every larger stop floats so an
+    // expanded sheet overlays the map. The swap is deferred until the open/close animation settles (see the
+    // drawerSnapIndex watcher), since flipping it mid-slide reparents the sheet and cancels the animation.
+    const drawerMode = ref<"push" | "float">("push");
+
+    // The group card to scroll to once the drawer finishes opening. Opening from minimized swaps the dock
+    // mode and reparents the sheet a beat after it slides open; scrolling before that lands is canceled by
+    // the reparent, so a reveal that opens the drawer parks the target here and the drawer's settled event
+    // does the scroll once the sheet is in its resting place. Null when nothing is waiting to be revealed.
+    const pendingScrollGuid = ref<string | null>(null);
+
+    // A CSS length that holds the collapsed sheet above Rock's admin footer (a fixed bar at the viewport
+    // bottom, shown to admins in edit mode) so the minimized handle does not cover it. Zero when the bar is
+    // absent (public visitors, or outside edit mode). Fed to the drawer's bottomOffset; the map-fill reserve
+    // measures the sheet's real top, so it follows the lift on its own.
+    const drawerBottomOffset = ref<string>("0px");
+
+    // The drawer's live height (bound from the sheet) and, captured whenever it rests at its first
+    // ("content") stop, its collapsed height. The map is sized to sit a gap above that collapsed height
+    // rather than running full height behind the sheet.
+    const drawerDepth = ref<string>("");
+    const collapsedDrawerHeight = ref(0);
+    // In drawer mode the map pane runs to the viewport bottom (its dark background fills behind the
+    // floating sheet's rounded corners) while this bottom reserve insets the actual map so it visually
+    // ends a gap above the collapsed sheet.
+    const mapPaneHeight = ref<string>("");
+    const mapDrawerReserve = ref<string>("");
+
+    const root = ref<HTMLElement | null>(null);
+    const filterBar = ref<HTMLElement | null>(null);
+    const mapPane = ref<HTMLElement | null>(null);
+    const results = ref<GroupFinderResultsBag>(config.results ?? { totalCount: 0, pageSize: 0, cards: [] });
+    // Whether the results currently shown came from a filtered search. Snapshotted when a response is
+    // applied (not from the live filter inputs), so the list title reflects the last search rather than
+    // changing the instant a filter is edited but not yet run. The initial results are an unfiltered browse.
+    const resultsHaveFilters = ref(false);
+    // Whether at least one results response has been applied. Until then the title stays optimistic
+    // ("All Groups") rather than flashing "No Groups" while the initial (empty) set is still loading.
+    const hasLoadedResults = ref((config.results?.cards?.length ?? 0) > 0);
+    // The zero-based results page. The server returns one page (ViewportResultCap groups) per request;
+    // this stays 0 until the pager drives it. TODO (pager): render Prev/Next when totalCount exceeds a
+    // page AND (the map is disabled, or the map is at max zoom with results scoped to that viewport),
+    // set currentPage and reload for a page change, and reset it to 0 whenever a new search is committed.
+    const currentPage = ref(0);
+    // True while a results fetch is in flight, so the list, map, and drawer can show a loading state.
+    const isLoading = ref(false);
+    // True when the last typed-address search could not be geocoded, so it returned no results. Drives
+    // a brief note above the (empty) results explaining why.
+    const isLocationNotFound = ref(false);
+
+    // Fingerprint of the filter inputs captured at the last committed search. Compared against the live
+    // inputs to detect when the visitor has changed filters without searching yet, which drives the dirty
+    // results overlay and the expanded "Search" button. Seeded with the initial (browse) state so a
+    // block that ships with prefetched results does not read as dirty before any interaction.
+    const lastSearchedFingerprint = ref(filterFingerprint());
+
+    // Per-session, in-memory cache of driving distances already obtained, keyed by the server's origin
+    // key then by group guid. Reused so paging, filtering, or re-searching does not look a pair up again
+    // for the same origin. Memory-only: it clears on reload and is never persisted.
+    const distanceCacheByOrigin = new Map<string, Map<string, GroupFinderDistanceBag>>();
+    // The origin key the most recent results were computed for, echoed back so the server can discard the
+    // cached distances when the origin has changed.
+    let lastDistanceOriginKey: string | null = null;
+    // Cap the per-origin cache so a heavily paged session cannot grow the request payload without bound.
+    const maxCachedDistancesPerOrigin = 500;
+
+    // Per-session, in-memory record of origins already geocoded, keyed by the exact origin string sent.
+    // Echoed back so the server reuses the point and viewport instead of geocoding the same origin again on
+    // a page, filter, or sort. Memory-only: it clears on reload and is never persisted.
+    const resolvedOriginByOrigin = new Map<string, ResolvedOrigin>();
+
+    let loadTimer: ReturnType<typeof setTimeout> | undefined;
+    // Holds the pending float/push swap while the drawer animates between stops (see the drawerSnapIndex
+    // watcher). A newer stop change cancels it so only the final resting stop drives the mode.
+    let drawerModeSwapTimer: ReturnType<typeof setTimeout> | undefined;
+
+    // Debounced visibility for the cancel hint. It becomes eligible when the pending overlay is up with no
+    // filter open (isCancelHintEligible), but is only shown once that has held briefly, so rapidly clicking
+    // between filter segments (which momentarily satisfies it) does not flash it. Hidden immediately when
+    // eligibility ends.
+    const cancelHintShowDelayMs = 200;
+    const isCancelHintShown = ref(false);
+    let cancelHintShowTimer: ReturnType<typeof setTimeout> | undefined;
+
+    // Settle tracking for the drawer map fill: the last "paneTop:sheetTop" signal and how many consecutive
+    // frames it has held. The map refills only once both have been stable this many frames, so it is not
+    // resized on every scroll frame and it waits out the sheet's slide-in (a CSS transform) on load before
+    // measuring, instead of latching onto a mid-slide sheet position.
+    let lastDrawerFillKey = "";
+    let drawerSettleFrames = 0;
+    const drawerSettleFrameCount = 6;
+    // Monotonic id stamped on each results request so a slower earlier request cannot overwrite the
+    // results of a newer one - only the latest request's response is applied.
+    let latestRequestId = 0;
+    let filterBarObserver: ResizeObserver | undefined;
+    let blockObserver: ResizeObserver | undefined;
+    let visibilityObserver: IntersectionObserver | undefined;
+    let isFitLoopActive = false;
+    let lastMapHeight = -1;
+    let lastResultsWidth = -1;
+    let lastSideBySideHeight = -1;
+    let cardGapPx = 16;
+    let rowGapPx = 24;
+
+    // The card is a fixed 370px wide; the map keeps at least this much beside it.
+    const cardWidthPx = 370;
+    const mapMinWidthPx = 370;
+    const maxCardColumns = 3;
+
+    // The single layout threshold in block-width pixels (not viewport), tuned to this block's
+    // content: a 370px map + one 370px card + the row gap needs ~764 to sit side-by-side, so that
+    // is where side-by-side begins. Below it the block switches straight to the drawer; there is no
+    // intermediate tier. Within side-by-side the card column wraps from three to one as width drops.
+    const sideBySideMinWidth = 991;
+
+    // Share the filter state with the section partials so the bar and the mobile
+    // drawer both bind to one source of truth.
+    provideGroupFinderFilters({
+        config,
+        selectedCampuses,
+        selectedMeetingStyles,
+        selectedDaysOfWeek,
+        selectedTimeOfDay,
+        searchTerm,
+        origin,
+        isCurrentLocation,
+        isMapAreaLocation,
+        useCurrentLocation,
+        featuredAttributeSelections,
+        modalAttributeValues
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const cards = computed((): GroupFinderCardBag[] => results.value.cards ?? []);
+    const totalCount = computed((): number => results.value.totalCount ?? 0);
+
+    // The proximity location - the point every card's distance is measured from - marked distinctly on
+    // the map so the visitor can see where they sit relative to the groups. The server reports the origin
+    // it actually used (a search location, a typed address geocoded server-side, or the shared device
+    // location), so the marker moves to an entered address to show the drive distance runs from there.
+    // A coarse server guess is reported as null and left unmarked, since a precise pin on a guessed point
+    // could be a city off.
+    const proximityLocation = computed((): { latitude: number; longitude: number; title: string } | null => {
+        const latitude = results.value.originLatitude;
+        const longitude = results.value.originLongitude;
+        if (latitude == null || longitude == null) {
+            return null;
+        }
+
+        // A typed address is the searched-from point, not the visitor themselves; label it accordingly.
+        const isEnteredAddress = origin.value.trim().length > 0 && !isCurrentLocation.value;
+        const title = isEnteredAddress ? "Search location" : "Your location";
+        return { latitude, longitude, title };
+    });
+
+    // The server's per-page cap (falls back to a sane default before the first response), and the
+    // number of pages the current total spans.
+    const pageSize = computed((): number => results.value.pageSize || 50);
+    const pageCount = computed((): number => Math.max(1, Math.ceil(totalCount.value / pageSize.value)));
+
+    // Paging is offered whenever the result set is larger than one page. It is the way to reach the
+    // groups past the server cap in every layout - a list-only block, and a map block where zooming or
+    // filtering is a way to narrow the set but never the only way to see the rest. Each page swaps its
+    // cards and markers together, so the map stays in step with the list.
+    const isPagerShown = computed((): boolean => totalCount.value > pageSize.value);
+
+    // The loading skeleton mirrors the card chrome from the block settings: a media band only when the
+    // card image is shown, and a button bar only when a register page is configured.
+    const hasCardImage = computed((): boolean => config.isImageShown);
+    const hasCardCta = computed((): boolean => !!config.registerPageUrl);
+
+    const resultCountText = computed((): string => {
+        const total = totalCount.value;
+
+        // Keyed off the last search's filter state (resultsHaveFilters), not the live inputs, so the
+        // title only changes when results do. An unfiltered browse is "All Groups" (the whole set, even
+        // when the server caps how many come back at once), or "No Groups" once a load has actually
+        // returned empty; a filtered search reports its matching count. Before the first response the
+        // title stays "All Groups" so the initial load never flashes "No Groups".
+        if (!resultsHaveFilters.value) {
+            return total === 0 && hasLoadedResults.value ? "No Groups" : "All Groups";
+        }
+
+        const noun = total === 1 ? "Group" : "Groups";
+        return `${total} ${noun} Found`;
+    });
+
+    // The text a field type renders for a filter value, empty when nothing is really selected. A field
+    // type's raw filter value can be a non-empty structure (such as JSON) even when cleared, so this is
+    // the reliable way to tell whether a More Filters attribute is actually applied.
+    function modalFilterText(key: string, comparison: ComparisonValue): string {
+        const attribute = (config.modalAttributeFilters ?? []).find(f => f.attributeKey === key)?.attribute;
+        if (!attribute) {
+            return "";
+        }
+
+        const field = getFieldType(toGuidOrNull(attribute.fieldTypeGuid) ?? emptyGuid);
+        return field?.getFilterValueText(comparison, attribute.configurationValues ?? {}) ?? "";
+    }
+
+    // The field type's display text for a filter's value alone - no comparison operator and no surrounding
+    // quotes (unlike modalFilterText) - for the collapsed "Filters" bar summary.
+    function modalFilterValueText(key: string, comparison: ComparisonValue): string {
+        const attribute = (config.modalAttributeFilters ?? []).find(f => f.attributeKey === key)?.attribute;
+        if (!attribute || !comparison.value) {
+            return "";
+        }
+
+        const field = getFieldType(toGuidOrNull(attribute.fieldTypeGuid) ?? emptyGuid);
+        return field?.getTextValue(comparison.value, attribute.configurationValues ?? {}) ?? "";
+    }
+
+    // The number of More Filters (modal) attributes holding a value, shown on the More Filters button. The
+    // featured "What" attributes are summarized by the What segment, not here, so the button count reflects
+    // only what lives behind More Filters.
+    const moreFiltersCount = computed((): number => {
+        return Object.entries(modalAttributeValues.value).filter(([key, comparison]) => modalFilterText(key, comparison).trim().length > 0).length;
+    });
+
+    // Every applied attribute filter across both surfaces (featured "What" pills plus More Filters), for
+    // the whole-block filter tallies (see hasAnyFilter and totalFilterCount).
+    const appliedFilterCount = computed((): number => {
+        const featured = Object.values(featuredAttributeSelections.value).filter(v => v.length > 0).length;
+        return featured + moreFiltersCount.value;
+    });
+
+    // Whether any filter narrows the results: a campus, a location (typed, current, or map area), a
+    // when/what selection, a name search, or an attribute filter. Drives the "All Groups" title, which
+    // only applies to an unfiltered browse.
+    const hasAnyFilter = computed((): boolean => {
+        return selectedCampuses.value.length > 0
+            || selectedMeetingStyles.value.length > 0
+            || selectedDaysOfWeek.value.length > 0
+            || selectedTimeOfDay.value.trim().length > 0
+            || searchTerm.value.trim().length > 0
+            || origin.value.trim().length > 0
+            || isCurrentLocation.value
+            || isMapAreaLocation.value
+            || appliedFilterCount.value > 0;
+    });
+
+    // The mobile filter bar and panel title reflect whether any filter is applied: an unfiltered browse
+    // invites "Start Your Search", and once a filter is set it reads "Refine Your Search".
+    const mobileFilterLabel = computed((): string => {
+        return hasAnyFilter.value ? "Refine Your Search" : "Start Your Search";
+    });
+
+    // The count shown on the mobile filter bar in place of the search icon: the number of filter fields
+    // holding a value. Each section counts once (a campus set, a day set), while each attribute filter is
+    // its own field, so several attribute selections each add one.
+    const totalFilterCount = computed((): number => {
+        let count = appliedFilterCount.value;
+        if (selectedCampuses.value.length > 0) {
+            count++;
+        }
+        if (selectedMeetingStyles.value.length > 0) {
+            count++;
+        }
+        if (selectedDaysOfWeek.value.length > 0) {
+            count++;
+        }
+        if (selectedTimeOfDay.value.trim().length > 0) {
+            count++;
+        }
+        if (searchTerm.value.trim().length > 0) {
+            count++;
+        }
+        if (origin.value.trim().length > 0 || isCurrentLocation.value || isMapAreaLocation.value) {
+            count++;
+        }
+        return count;
+    });
+
+    // When every segment filter (Campus/Where/When/What) is hidden but More Filters remains, the desktop bar
+    // collapses to a single "Filters" entry that opens More Filters, rather than an empty search pill beside
+    // a detached More Filters button.
+    const isFiltersOnlyBar = computed((): boolean =>
+        !config.isCampusFilterShown
+        && !config.isWhereFilterShown
+        && !config.isWhenFilterShown
+        && !config.isWhatFilterShown
+        && config.isMoreFiltersShown);
+
+    /*
+        Each filter bar segment shows a short summary of its current selection under the filter name,
+        falling back to a placeholder when nothing is chosen. These are concise, developer-authored
+        summaries (the design specifies only the placeholder text, not the selected-value format).
+    */
+    const campusSummary = computed((): string => {
+        const guids = selectedCampuses.value;
+        if (guids.length === 0) {
+            return "";
+        }
+        if (guids.length === 1) {
+            return (config.campuses ?? []).find(c => c.value === guids[0])?.text ?? "1 Campus";
+        }
+        return `${guids.length} Campuses`;
+    });
+
+    // Combine the meeting style(s) and the chosen location into one comma-joined line, e.g.
+    // "In-person, 123 Main St". The segment truncates with an ellipsis when it runs long.
+    const whereSummary = computed((): string => {
+        const styleTexts = selectedMeetingStyles.value
+            .map(v => (config.meetingStyles ?? []).find(s => s.value === v)?.text)
+            .filter((t): t is string => !!t);
+
+        let locationLabel = "";
+        if (isMapAreaLocation.value) {
+            locationLabel = "Map area";
+        }
+        else if (isCurrentLocation.value) {
+            locationLabel = "Current Location";
+        }
+        else if (origin.value) {
+            locationLabel = origin.value;
+        }
+
+        return [...styleTexts, locationLabel].filter(part => !!part).join(", ");
+    });
+
+    // Sunday-first week order so the day list reads in calendar order regardless of the toggle order.
+    const dayOrder = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+    // Days as short labels in week order (e.g. "Mon, Tue, Thu"); the time of day rides as an icon
+    // beside the value (see whenTimeIcon), so fall back to its text only when no days are chosen.
+    const whenSummary = computed((): string => {
+        const days = [...selectedDaysOfWeek.value].sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
+        if (days.length > 0) {
+            return days.map(day => day.slice(0, 3)).join(", ");
+        }
+        return selectedTimeOfDay.value;
+    });
+
+    // The time-of-day icon shown before the When value, but only alongside a day list (when no days
+    // are chosen the value already carries the time-of-day text, so an icon would be redundant).
+    const whenTimeIcon = computed((): string => {
+        if (selectedDaysOfWeek.value.length === 0) {
+            return "";
+        }
+        switch (selectedTimeOfDay.value) {
+            case "Morning": return "ti ti-sunrise";
+            case "Afternoon": return "ti ti-sun";
+            case "Evening": return "ti ti-sunset";
+            default: return "";
+        }
+    });
+
+    // Summarizes the What popover in field order: the free-text Group Name (quoted) first, then each
+    // applied featured attribute as "Name: value1, value2". Only fields with a value contribute, and the
+    // parts join with the same comma. The Group Name term stays in the summary even when featured
+    // attributes are also applied. Empty when nothing is applied, which drives the placeholder.
+    const whatSummary = computed((): string => {
+        const parts: string[] = [];
+
+        const term = searchTerm.value.trim();
+        if (term.length > 0) {
+            parts.push(`"${term}"`);
+        }
+
+        for (const filter of config.featuredAttributeFilters ?? []) {
+            const selectedValues = featuredAttributeSelections.value[filter.attributeKey ?? ""] ?? [];
+            if (selectedValues.length === 0) {
+                continue;
+            }
+
+            const valueText = (filter.options ?? [])
+                .filter(option => selectedValues.includes(option.value ?? ""))
+                .map(option => option.text ?? "")
+                .filter(text => text.length > 0)
+                .join(", ");
+            if (valueText.length === 0) {
+                continue;
+            }
+
+            parts.push(filter.label ? `${filter.label}: ${valueText}` : valueText);
+        }
+
+        return parts.join(", ");
+    });
+
+    // Each applied More Filters attribute reads as "Name: value1, value2" (name from the attribute, values
+    // as their public text), and the attributes join with the same comma. Used by the collapsed "Filters"
+    // bar (see isFiltersOnlyBar) and the mobile More Filters section; empty when nothing is applied, which
+    // drives the "Start your search" placeholder.
+    const moreFiltersSummary = computed((): string => {
+        return Object.entries(modalAttributeValues.value)
+            .filter(([key, comparison]) => modalFilterText(key, comparison).trim().length > 0)
+            .map(([key, comparison]) => {
+                const valueText = modalFilterValueText(key, comparison).trim();
+                if (valueText.length === 0) {
+                    return "";
+                }
+
+                const name = (config.modalAttributeFilters ?? []).find(f => f.attributeKey === key)?.attribute?.name ?? "";
+                return name ? `${name}: ${valueText}` : valueText;
+            })
+            .filter(text => text.length > 0)
+            .join(", ");
+    });
+
+    // Markers pair to cards by group guid. Selecting a marker highlights the matching card in the list.
+    const mapMarkers = computed((): MapViewMarker[] => {
+        return (results.value.markers ?? []).map(marker => {
+            return {
+                id: marker.groupGuid ?? "",
+                latitude: marker.latitude,
+                longitude: marker.longitude,
+                circleRadiusMeters: marker.circleRadiusMeters
+            };
+        });
+    });
+
+    // The responsive layout tier, chosen from the block's own width. Only meaningful when the
+    // map is shown; without a map the grid simply fills the width at every size.
+    const layoutMode = computed((): "results" | "sidebyside" | "drawer" => {
+        if (!config.isMapShown) {
+            return "results";
+        }
+        return blockWidth.value >= sideBySideMinWidth ? "sidebyside" : "drawer";
+    });
+
+    // The desktop filter bar (segments + inline pending-search flow) is shown above the mobile breakpoint;
+    // below it the filters live in a full-screen modal with its own Apply, so the pending-search overlay -
+    // which belongs to the desktop click-Search / click-outside-to-cancel flow - is suppressed there.
+    const isDesktopFilterBar = computed((): boolean => blockWidth.value >= sideBySideMinWidth);
+
+    // True once results are loaded and the visitor has edited a filter without committing the search yet.
+    // Drives the dim overlay over the results/map and the expanded Search button, prompting a new search.
+    const hasPendingFilterChanges = computed((): boolean => {
+        return hasLoadedResults.value && filterFingerprint() !== lastSearchedFingerprint.value;
+    });
+
+    // Whether the pending-search scrim is shown (desktop filter bar only): throughout a filter session, so
+    // the bar reads as the active surface while the visitor works it, and whenever filters are pending, so
+    // the results and map read as stale until the visitor commits the search.
+    const isPendingOverlayShown = computed((): boolean => {
+        return isDesktopFilterBar.value && (isFilterSessionActive.value || hasPendingFilterChanges.value);
+    });
+
+    // The cancel hint is eligible when the pending overlay is up and no filter popover is open. Its actual
+    // visibility (isCancelHintShown) is debounced off this so segment-to-segment clicks do not flash it.
+    const isCancelHintEligible = computed((): boolean => {
+        return isPendingOverlayShown.value && openSection.value === null;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    // In the mobile drawer layout, size the map so its bottom rests one gap (--spacing-medium) above the
+    // collapsed card sheet instead of running full height behind it. The sheet is fixed to the viewport
+    // bottom, so the target height is the viewport height less the map's top offset, the collapsed sheet
+    // height, and the gap. Cleared (falls back to the CSS height) in the other layouts. Recomputed by the
+    // block resize observer and the drawer watcher.
+    function updateDrawerMapHeight(): void {
+        if (layoutMode.value !== "drawer" || !mapPane.value) {
+            mapPaneHeight.value = "";
+            mapDrawerReserve.value = "";
+            return;
+        }
+        // The pane fills to the viewport bottom (so its background sits behind the sheet), and reserves
+        // bottom padding so the map itself ends one gap above the sheet.
+        const paneHeight = getDrawerMapHeight(mapPane.value);
+        mapPaneHeight.value = paneHeight > 0 ? `${paneHeight}px` : "";
+        // Apply the resting reserve (collapsed sheet height plus the gap) here rather than the measured
+        // fill. This runs every frame while the sheet slides between stops (the drawer depth watcher), so a
+        // measured fill would resize the map against the moving sheet and make it jump. The scroll/settle
+        // handler refines it to the measured fill once the sheet has come to rest.
+        const collapsed = collapsedDrawerHeight.value || 52;
+        mapDrawerReserve.value = `${collapsed + cardGapPx}px`;
+    }
+
+    /*
+        The reserve is the pane's bottom padding that holds the map one gap (--spacing-medium) above the
+        collapsed sheet. The sheet is fixed to the viewport bottom while the pane is in flow, so as the page
+        scrolls the pane's bottom rises off the sheet and a fixed reserve would leave a growing empty gap.
+        Sizing the reserve from the live distance between the pane bottom and the collapsed sheet top keeps
+        the map filling to one gap above the sheet at any scroll position. It only ever changes padding
+        (the pane is border-box, so its height is unchanged), so the document never grows and the
+        scroll-independent height (getDrawerMapHeight) still holds - there is no feedback loop to reignite.
+    */
+    function computeDrawerReserve(): number {
+        const collapsed = collapsedDrawerHeight.value || 52;
+        if (!mapPane.value) {
+            return collapsed + cardGapPx;
+        }
+        const paneBottom = mapPane.value.getBoundingClientRect().bottom;
+        // Measure the collapsed sheet's real top so the reserve is the distance between two measured rects
+        // in one coordinate space. Deriving it from window.innerHeight instead mixes coordinate spaces and
+        // is wrong on a device where a dynamic browser toolbar, safe-area insets, or an admin bar shift the
+        // sheet off the viewport-bottom estimate. Fall back to that estimate before the sheet has rendered
+        // or while it is expanded (the reserve is hidden behind the sheet then).
+        const sheet = document.querySelector(".docked-panel");
+        const sheetTop = (sheet && drawerSnapIndex.value === 0)
+            ? sheet.getBoundingClientRect().top
+            : window.innerHeight - collapsed;
+        const fill = paneBottom - (sheetTop - cardGapPx);
+        // Never inset less than the gap, nor more than the pane height (which would leave a zero-height map).
+        return Math.max(cardGapPx, Math.min(mapPane.value.offsetHeight, Math.round(fill)));
+    }
+
+    // A stable string of the committed filter inputs. Comparing it to the fingerprint captured at the last
+    // search tells us whether the current filters have been searched yet (see hasPendingFilterChanges).
+    function filterFingerprint(): string {
+        return JSON.stringify({
+            campuses: selectedCampuses.value,
+            meetingStyles: selectedMeetingStyles.value,
+            days: selectedDaysOfWeek.value,
+            timeOfDay: selectedTimeOfDay.value,
+            term: searchTerm.value,
+            origin: origin.value,
+            isCurrentLocation: isCurrentLocation.value,
+            isMapAreaLocation: isMapAreaLocation.value,
+            featured: featuredAttributeSelections.value,
+            modal: modalAttributeValues.value
+        });
+    }
+
+    // Restore every filter input to the values captured at the last committed search, discarding pending
+    // edits. The last-searched fingerprint is that exact serialized snapshot, so parsing it yields fresh
+    // copies to assign back. This does not search - the displayed results already reflect those values, so
+    // clearing the pending state is all that is needed.
+    function revertPendingFilters(): void {
+        const snapshot = JSON.parse(lastSearchedFingerprint.value) as FilterSnapshot;
+
+        selectedCampuses.value = snapshot.campuses;
+        selectedMeetingStyles.value = snapshot.meetingStyles;
+        selectedDaysOfWeek.value = snapshot.days;
+        selectedTimeOfDay.value = snapshot.timeOfDay;
+        searchTerm.value = snapshot.term;
+        origin.value = snapshot.origin;
+        isCurrentLocation.value = snapshot.isCurrentLocation;
+        isMapAreaLocation.value = snapshot.isMapAreaLocation;
+        featuredAttributeSelections.value = snapshot.featured;
+        modalAttributeValues.value = snapshot.modal;
+    }
+
+    // Records the driving distances and times the server looked up for an origin so later requests can
+    // reuse them. Re-inserting a key moves it to the most-recent position, so the size cap evicts oldest-first.
+    function mergeDistanceCache(originKey: string | null, newDistances: Record<string, GroupFinderDistanceBag> | null): void {
+        if (!originKey) {
+            return;
+        }
+
+        lastDistanceOriginKey = originKey;
+
+        let cache = distanceCacheByOrigin.get(originKey);
+        if (!cache) {
+            cache = new Map<string, GroupFinderDistanceBag>();
+            distanceCacheByOrigin.set(originKey, cache);
+        }
+
+        for (const [groupGuid, distance] of Object.entries(newDistances ?? {})) {
+            cache.delete(groupGuid);
+            cache.set(groupGuid, distance);
+        }
+
+        while (cache.size > maxCachedDistancesPerOrigin) {
+            const oldest = cache.keys().next().value;
+            if (oldest === undefined) {
+                break;
+            }
+            cache.delete(oldest);
+        }
+    }
+
+    async function loadResults(keepPage: boolean = false): Promise<void> {
+        isLoading.value = true;
+
+        // Capture the filter inputs this request runs against. It is applied to lastSearchedFingerprint
+        // only once the response comes back successful and not superseded (below), so a failed or
+        // superseded search does not clear the pending-changes overlay/button as though it had run.
+        const searchedFingerprint = filterFingerprint();
+
+        // A fresh search always starts at the first page; only a page change (goToPage) keeps the
+        // current page so the request fetches it.
+        if (!keepPage) {
+            currentPage.value = 0;
+        }
+
+        // Featured pills match their selected value list. More Filters sends each field type's raw filter
+        // value (and comparison) untouched, so the server converts it through the field type rather than
+        // this block parsing a field-type-specific encoding. A filter with no real selection produces no
+        // filter text and is skipped.
+        const attributeSelections: Record<string, string[]> = {};
+        const attributeFilterValues: Record<string, string> = {};
+        const attributeComparisons: Record<string, ComparisonType> = {};
+        for (const [key, values] of Object.entries(featuredAttributeSelections.value)) {
+            if (values.length > 0) {
+                attributeSelections[key] = values;
+            }
+        }
+        for (const [key, comparison] of Object.entries(modalAttributeValues.value)) {
+            if (modalFilterText(key, comparison).trim().length === 0) {
+                continue;
+            }
+
+            attributeFilterValues[key] = comparison?.value ?? "";
+            if (comparison?.comparisonType != null) {
+                attributeComparisons[key] = comparison.comparisonType;
+            }
+        }
+
+        // When the location is a chosen map area, the search follows the current map bounds and centers
+        // on them. Every other location is around the resolved origin, and the server sizes the area to
+        // it (the geocoded viewport, else a default radius), so no bounds are sent.
+        const isAreaSearch = isMapAreaLocation.value && !!mapBounds.value;
+        const bounds = isAreaSearch ? mapBounds.value : null;
+        const queryOrigin = isAreaSearch && bounds
+            ? `${(bounds.north + bounds.south) / 2},${(bounds.east + bounds.west) / 2}`
+            : origin.value;
+
+        // A typed origin (address, ZIP, or city) is the only kind the server geocodes; current-location
+        // and area searches send coordinates. When this exact typed origin was already resolved this
+        // session, send that point and viewport back so the server reuses them instead of geocoding again.
+        const isTypedOriginSearch = !isAreaSearch && !isCurrentLocation.value && !!origin.value.trim();
+        const resolvedOrigin = isTypedOriginSearch ? resolvedOriginByOrigin.get(queryOrigin) : undefined;
+
+        const query: GroupFinderQueryBag = {
+            campusGuids: selectedCampuses.value,
+            meetingStyles: selectedMeetingStyles.value,
+            daysOfWeek: selectedDaysOfWeek.value,
+            timeOfDay: selectedTimeOfDay.value,
+            searchTerm: searchTerm.value,
+            origin: queryOrigin,
+            // The person's coordinates for distance/sort travel on every request, independent of the
+            // search origin above. Null lets the server fall back to its best guess.
+            proximityLatitude: proximityCoords.value?.latitude ?? null,
+            proximityLongitude: proximityCoords.value?.longitude ?? null,
+            // Echo the driving distances already held for the last origin so the server looks up only the
+            // groups it does not have; it ignores them when the origin has changed (key mismatch).
+            knownDistances: lastDistanceOriginKey
+                ? Object.fromEntries(distanceCacheByOrigin.get(lastDistanceOriginKey) ?? new Map<string, GroupFinderDistanceBag>())
+                : {},
+            knownDistancesOriginKey: lastDistanceOriginKey,
+            // Echo the origin already resolved for this typed search (key, point, and viewport) so the
+            // server skips geocoding; a null key on the first search of an origin makes it geocode afresh.
+            resolvedOriginKey: resolvedOrigin ? queryOrigin : null,
+            resolvedOriginLatitude: resolvedOrigin?.latitude ?? null,
+            resolvedOriginLongitude: resolvedOrigin?.longitude ?? null,
+            resolvedViewportNorth: resolvedOrigin?.viewport?.north ?? null,
+            resolvedViewportSouth: resolvedOrigin?.viewport?.south ?? null,
+            resolvedViewportEast: resolvedOrigin?.viewport?.east ?? null,
+            resolvedViewportWest: resolvedOrigin?.viewport?.west ?? null,
+            attributeSelections,
+            attributeFilterValues,
+            attributeComparisons,
+            mapBoundsNorth: bounds?.north ?? null,
+            mapBoundsSouth: bounds?.south ?? null,
+            mapBoundsEast: bounds?.east ?? null,
+            mapBoundsWest: bounds?.west ?? null,
+            page: currentPage.value
+        };
+
+        const requestId = ++latestRequestId;
+        const response = await invokeBlockAction<GroupFinderResultsBag>("GetResults", { query });
+
+        // Drop a superseded request's response. Requests are not cancelled server-side, so a slower
+        // earlier one can resolve after a newer one; applying only the latest keeps the results and
+        // markers consistent with the most recent viewport and filters. A superseded response leaves
+        // the loading flag alone - the newer request that superseded it still owns it.
+        if (requestId !== latestRequestId) {
+            return;
+        }
+
+        isLoading.value = false;
+
+        if (!response.isSuccess || !response.data) {
+            return;
+        }
+
+        const data = response.data;
+
+        // The search ran (successful and not superseded), so treat its inputs as searched: this clears the
+        // pending-changes overlay/button until the visitor edits a filter again.
+        lastSearchedFingerprint.value = searchedFingerprint;
+
+        // A typed free-text search that comes back with no search area could not be geocoded (bad
+        // input, or a quota/transient failure), so the server returned no results. Flag it so the
+        // visitor gets a brief note explaining why. Area and current-location searches never set it.
+        isLocationNotFound.value = isTypedOriginSearch && data.searchBoundsNorth == null;
+
+        // Hold the point and viewport the server resolved for this typed origin so a later page, filter, or
+        // sort of the same origin reuses them (echoed back above) instead of geocoding again. Only a
+        // successfully geocoded origin returns coordinates; a failure returns none and stores nothing.
+        if (isTypedOriginSearch && data.originLatitude != null && data.originLongitude != null) {
+            const hasViewport = data.resolvedViewportNorth != null && data.resolvedViewportSouth != null
+                && data.resolvedViewportEast != null && data.resolvedViewportWest != null;
+            resolvedOriginByOrigin.set(queryOrigin, {
+                latitude: data.originLatitude,
+                longitude: data.originLongitude,
+                viewport: hasViewport
+                    ? {
+                        north: data.resolvedViewportNorth as number,
+                        south: data.resolvedViewportSouth as number,
+                        east: data.resolvedViewportEast as number,
+                        west: data.resolvedViewportWest as number
+                    }
+                    : null
+            });
+        }
+
+        /*
+            07/20/26 - JMH
+
+            A re-query never deselects the group just because the map moved; the selection clears only
+            when the group has genuinely left the results. If the returned set omits the selected
+            group, the one case to preserve is a group trimmed purely by the density cap while it is
+            still in view: the set came back capped (more matched than were returned) and the group's
+            marker still sits inside the viewport. Carry that group forward so a pick the visitor can
+            still see is never dropped out from under them. Otherwise the group has really left the set
+            - panned or zoomed out of view, or filtered out of an uncapped set - so let it deselect.
+            Read the selection after the await so a pick made while the request was in flight counts.
+
+            Reason: Deselect a group only when it has left the results, never just because the map moved.
+        */
+        const selectedGuid = selectedGroupGuid.value;
+        const isSelectionDropped = !!selectedGuid && !(data.cards ?? []).some(card => card.groupGuid === selectedGuid);
+        if (isSelectionDropped) {
+            const retainedCard = results.value.cards?.find(card => card.groupGuid === selectedGuid);
+            const retainedMarker = results.value.markers?.find(marker => marker.groupGuid === selectedGuid);
+            const isSetCapped = (data.totalCount ?? 0) > (data.cards?.length ?? 0);
+            const isTrimmedButInView = isSetCapped
+                && !!retainedMarker
+                && !!mapBounds.value
+                && isMarkerWithinBounds(retainedMarker, mapBounds.value);
+
+            if (isTrimmedButInView) {
+                if (retainedCard) {
+                    data.cards = [...(data.cards ?? []), retainedCard];
+                }
+                if (retainedMarker) {
+                    data.markers = [...(data.markers ?? []), retainedMarker];
+                }
+            }
+            else {
+                selectedGroupGuid.value = null;
+            }
+        }
+
+        results.value = data;
+
+        // Merge the freshly looked-up driving distances into the per-session cache under the origin the
+        // server computed them for, so later requests reuse them instead of looking them up again.
+        mergeDistanceCache(data.originKey ?? null, data.newDistances ?? null);
+
+        // Snapshot the filter state that produced this response so the title reflects the last search,
+        // not filter inputs the visitor has changed but not yet run.
+        resultsHaveFilters.value = hasAnyFilter.value;
+        hasLoadedResults.value = true;
+
+        // On a filtered first-page search with a proximity location in play, pre-select the closest group
+        // so the visitor lands on their nearest match. The server ranks by distance, so the first card is
+        // the closest; the response carries an origin key only when a proximity location was found and the
+        // set was distance-ordered. The unfiltered browse does not auto-select - with no filters the whole
+        // set comes back and the visitor chooses. Skipped when a selection is already in play, so a pick
+        // that survived the search (see the preservation above) is never yanked to the closest.
+        if (currentPage.value === 0 && hasAnyFilter.value && config.isProximityEnabled && selectedGroupGuid.value == null) {
+            const closest = data.cards?.[0];
+            if (closest?.groupGuid && data.originKey != null) {
+                // A programmatic selection, not a card tap, so the drawer opens to show the closest card.
+                selectionSource.value = null;
+                // Let the fitToMarkers below own the camera. Without this the map focus-zooms to the closest
+                // marker and then immediately zooms back out to frame the set, a visible in-then-out jump.
+                mapViewRef.value?.suppressNextSelectionFocus?.();
+                selectedGroupGuid.value = closest.groupGuid;
+            }
+        }
+
+        // Frame the map. Prefer fitting the actual returned markers so the view tightens when results
+        // cluster within the search area and widens when they spread. Only when a search comes back
+        // empty do we fall back to framing the searched area, so the visitor still sees where it looked.
+        // A "Search this area" search leaves the map put - it already shows that area. These are
+        // programmatic moves, so they neither flag a map move nor re-query.
+        if (!isAreaSearch) {
+            if ((data.markers?.length ?? 0) > 0) {
+                // fitToMarkers reads the map's reconciled markers, which update a tick after results
+                // change, so wait for that render before fitting.
+                await nextTick();
+                mapViewRef.value?.fitToMarkers();
+            }
+            else if (data.searchBoundsNorth != null && data.searchBoundsSouth != null
+                && data.searchBoundsEast != null && data.searchBoundsWest != null) {
+                mapViewRef.value?.fitToBounds(
+                    data.searchBoundsNorth,
+                    data.searchBoundsSouth,
+                    data.searchBoundsEast,
+                    data.searchBoundsWest
+                );
+            }
+        }
+
+        // The results now match the current area, so hide the "Search this area" prompt until the next
+        // deliberate pan or zoom.
+        isMapMoved.value = false;
+    }
+
+    // Whether a marker's point falls inside the map viewport, tolerating a viewport that crosses the
+    // antimeridian (its east longitude reads less than its west).
+    function isMarkerWithinBounds(marker: GroupFinderMapMarkerBag, bounds: { north: number; south: number; east: number; west: number }): boolean {
+        const isLatitudeInside = marker.latitude <= bounds.north && marker.latitude >= bounds.south;
+        const isLongitudeInside = bounds.west <= bounds.east
+            ? marker.longitude >= bounds.west && marker.longitude <= bounds.east
+            : marker.longitude >= bounds.west || marker.longitude <= bounds.east;
+        return isLatitudeInside && isLongitudeInside;
+    }
+
+    // Debounced so a burst of pans (each map "idle") or rapid filter changes collapse into one
+    // request after a short quiet period, rather than one call per settle.
+    function scheduleLoad(): void {
+        if (loadTimer) {
+            clearTimeout(loadTimer);
+        }
+        loadTimer = setTimeout(() => loadResults(), 400);
+    }
+
+    // Set the person's coordinates as the search origin, ready for the next search. Like every other
+    // filter, this does not query on its own - the visitor commits it with the Search button. When the
+    // coordinates came from the device (not the server guess), also record them as the proximity
+    // location so distance is measured from the precise point.
+    function applyCurrentLocation(latitude: number, longitude: number, fromDevice: boolean): void {
+        origin.value = `${latitude},${longitude}`;
+        isCurrentLocation.value = true;
+        isMapAreaLocation.value = false;
+        if (fromDevice) {
+            proximityCoords.value = { latitude, longitude };
+        }
+    }
+
+    // The server's best-guess location (profile address, then IP, then campus), used when the browser
+    // cannot supply device geolocation. Distance still resolves from the same guess server-side, so the
+    // proximity coordinates stay unset here. Returns false when no guess is available.
+    function applyGuessLocation(): boolean {
+        if (config.visitorLatitude == null || config.visitorLongitude == null) {
+            return false;
+        }
+        applyCurrentLocation(config.visitorLatitude, config.visitorLongitude, false);
+        return true;
+    }
+
+    // The explicit "Use Current Location" action. Prefers precise device geolocation; when the browser
+    // blocks, denies, or lacks it, falls back to the server's best-guess location so current location
+    // still works without the visitor accepting the browser prompt.
+    function useCurrentLocation(): void {
+        if (!navigator.geolocation) {
+            applyGuessLocation();
+            return;
+        }
+
+        try {
+            navigator.geolocation.getCurrentPosition(
+                position => applyCurrentLocation(position.coords.latitude, position.coords.longitude, true),
+                () => {
+                    applyGuessLocation();
+                },
+                { timeout: 8000, maximumAge: 300000 }
+            );
+        }
+        catch {
+            // Some contexts (e.g. a Permissions-Policy that disables geolocation) throw synchronously
+            // instead of invoking the error callback; fall back to the server estimate here too.
+            applyGuessLocation();
+        }
+    }
+
+    // On load, open as an all-groups browse. When geolocation permission is already granted, resolve the
+    // current location silently and use it as the distance/proximity origin only (no prompt, and the
+    // search filter stays empty so all groups are shown); otherwise the server falls back to its best
+    // guess. The visitor still opts into a current-location search via "Use Current Location". Gated by
+    // Enable Proximity Features (the caller checks it).
+    async function loadInitialResults(): Promise<void> {
+        // Show the loading state while the location check and first fetch are pending.
+        isLoading.value = true;
+
+        if (await isGeolocationPermissionGranted()) {
+            await new Promise<void>(resolve => {
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        proximityCoords.value = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude
+                        };
+                        resolve();
+                    },
+                    () => resolve(),
+                    { timeout: 8000, maximumAge: 300000 }
+                );
+            });
+        }
+
+        void loadResults();
+    }
+
+    // Whether the browser has already granted geolocation permission, so the current location can be
+    // resolved without triggering a prompt. Returns false when the Permissions API is unavailable, so an
+    // undecided or denied visitor is never prompted on load.
+    async function isGeolocationPermissionGranted(): Promise<boolean> {
+        if (!navigator.geolocation || !navigator.permissions?.query) {
+            return false;
+        }
+
+        try {
+            const status = await navigator.permissions.query({ name: "geolocation" as PermissionName });
+            return status.state === "granted";
+        }
+        catch {
+            return false;
+        }
+    }
+
+    // Scroll the selected group's card to the top of the drawer. The selection is re-checked first so a
+    // rapid re-selection that has already moved on does not scroll to a stale card, and nextTick lets the
+    // newly selected card render before the lookup. The caller is responsible for only invoking this once
+    // the drawer is at rest, so the smooth glide is not canceled by an in-flight open or reparent.
+    function scrollCardIntoView(guid: string): void {
+        if (selectedGroupGuid.value !== guid) {
+            return;
+        }
+
+        nextTick(() => {
+            document.querySelector(`[data-group-guid="${guid}"]`)?.scrollIntoView({ block: "start", behavior: "smooth" });
+        });
+    }
+
+    // Reveal the selected group's card in the drawer. Only open the sheet when it is minimized, where the
+    // card is otherwise hidden; at a middle stop the map and list both already show, so leave the depth
+    // where the visitor set it.
+    //
+    // The scroll must run once the sheet is at rest, because opening it swaps the dock mode a beat later and
+    // that swap reparents the sheet, cancelling a smooth scroll mid-glide. The resting mode at any open stop
+    // is "float". While the sheet is minimized, or a swap to float is still pending, park the target and let
+    // the settle scroll it (onDrawerSettled, driven by the DockedPanel settled event on a real reparent, or
+    // by the mode-swap timer when the mode does not actually change). Only a sheet already resting in float
+    // scrolls straight away. Deciding from the mode - not from whether a scroll is already parked - is what
+    // keeps a re-maximize that never toggles the mode (so no settled fires) from stranding the parked scroll.
+    function revealSelectedGroupInDrawer(guid: string): void {
+        if (drawerSnapIndex.value === 0) {
+            pendingScrollGuid.value = guid;
+            drawerSnapIndex.value = drawerSnapPoints.length - 1;
+            return;
+        }
+
+        const isModeSettling = drawerMode.value !== "float" || drawerModeSwapTimer !== undefined;
+        if (isModeSettling) {
+            pendingScrollGuid.value = guid;
+        }
+        else {
+            scrollCardIntoView(guid);
+        }
+    }
+
+    // Scroll to the group parked by revealSelectedGroupInDrawer once the drawer has finished opening and
+    // reparenting (the DockedPanel settled event). Clears the target so an unrelated later settle does not
+    // re-scroll, and scrollCardIntoView drops it anyway if the selection has since changed.
+    function onDrawerSettled(): void {
+        const guid = pendingScrollGuid.value;
+        pendingScrollGuid.value = null;
+        if (guid) {
+            scrollCardIntoView(guid);
+        }
+    }
+
+    // Collapse the sheet to its header only when it is fully maximized, so selecting a card reveals the map
+    // from a full sheet but leaves a partially-open sheet (e.g. the 50% stop) exactly where the visitor put it.
+    function minimizeDrawerIfMaximized(): void {
+        if (drawerSnapIndex.value === drawerSnapPoints.length - 1) {
+            drawerSnapIndex.value = 0;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    // Record the selection source before committing it, so the drawer watcher can respond in mirror (a
+    // card tap reveals the marker, a marker tap reveals the card). Both write the same selection, so the
+    // source is the only thing that tells them apart.
+    function onGroupCardSelect(guid: string | null): void {
+        // A card tap always reveals its group on the map, even when it is already the selection. Assigning
+        // an unchanged value would not fire the selectedGroupGuid watcher, so mirror the watcher's card
+        // branch directly in that case: minimize a maximized sheet to show the map and focus the group's marker.
+        const isAlreadySelected = selectedGroupGuid.value === guid;
+
+        selectionSource.value = "card";
+        selectedGroupGuid.value = guid;
+
+        if (guid && isAlreadySelected && layoutMode.value === "drawer") {
+            minimizeDrawerIfMaximized();
+            mapViewRef.value?.focusMarker(guid);
+        }
+    }
+
+    function onGroupMarkerSelect(guid: string | null): void {
+        // A marker tap always reveals its group in the drawer, even when it is already the selection.
+        // Assigning an unchanged value would not fire the selectedGroupGuid watcher, so reveal directly in
+        // that case; a changed value routes through the watcher as usual.
+        const isAlreadySelected = selectedGroupGuid.value === guid;
+
+        selectionSource.value = "marker";
+        selectedGroupGuid.value = guid;
+
+        if (guid && isAlreadySelected && layoutMode.value === "drawer") {
+            revealSelectedGroupInDrawer(guid);
+        }
+    }
+
+    // Track which filter dropdown is open in one ref so only one is open at a time. Each
+    // DropDownContent toggles its own open state, which maps here: opening sets this section; a close
+    // only clears it when it is still the open one, so switching sections (the outgoing dropdown's
+    // outside-click close racing the incoming one's open) does not wipe the newly opened section.
+    function onSectionToggle(section: "campus" | "where" | "when" | "what" | "more", isOpen: boolean): void {
+        if (isOpen) {
+            openSection.value = section;
+        }
+        else if (openSection.value === section) {
+            openSection.value = null;
+        }
+    }
+
+    // Close the open filter dropdown on Escape (DropDownContent handles the outside-click close).
+    function onDocumentKeyDown(event: KeyboardEvent): void {
+        if (event.key === "Escape") {
+            openSection.value = null;
+        }
+    }
+
+    // Clicking the dimmed results/map area cancels a pending search, reverting the filters to their last
+    // searched values - the desktop equivalent of closing the mobile filter modal. The filter bar sits
+    // above the scrim (its own stacking context over the overlay), so clicks on the bar never reach this
+    // handler; only clicks on the exposed scrim do. Skipped while a filter dropdown is open so the click
+    // that closes a dropdown does not also cancel: this mousedown handler runs during the target phase,
+    // before DropDownContent's document-level mousedown closes the section, so openSection still reads as
+    // open on that first click.
+    function onPendingOverlayMouseDown(): void {
+        if (openSection.value !== null) {
+            return;
+        }
+
+        // Clicking away ends the filter session and discards any uncommitted changes.
+        isFilterSessionActive.value = false;
+        revertPendingFilters();
+    }
+
+    // The primary search action applies the current filters. Filter changes do not query on their own
+    // (only the map re-searches as it moves), so this is how a visitor commits Campus/Where/When/What
+    // selections. It closes any open dropdown and loads immediately against the current filters.
+    function onSearchClick(): void {
+        openSection.value = null;
+
+        // Committing the search ends the filter session, so the scrim clears once the results load.
+        isFilterSessionActive.value = false;
+
+        // A filter change starts a fresh search, so drop any current selection - it belongs to the
+        // previous results. Clearing it also lets the closest-group auto-select run for the new set.
+        selectedGroupGuid.value = null;
+
+        void loadResults();
+    }
+
+    // Mobile panel: commit the filters, then close the panel so the results and map are in view.
+    function onDrawerSearch(): void {
+        isDrawerOpen.value = false;
+        onSearchClick();
+    }
+
+    // Track the one open mobile filter section (one open at a time). Each ContentSection is collapsed
+    // unless it is the open one; when a section reports it opened it becomes the open one (collapsing the
+    // rest), and when it reports it closed none is open.
+    function onMobileSectionToggle(section: string, isCollapsed: boolean): void {
+        mobileOpenSection.value = isCollapsed ? null : section;
+    }
+
+    // Reset every filter section to empty. The mobile bar and panel title fall back to "Start Your
+    // Search" as a result; the visitor commits the cleared (unfiltered) search with Apply.
+    function clearAllFilters(): void {
+        selectedCampuses.value = [];
+        selectedMeetingStyles.value = [];
+        selectedDaysOfWeek.value = [];
+        selectedTimeOfDay.value = "";
+        searchTerm.value = "";
+        origin.value = "";
+        isCurrentLocation.value = false;
+        isMapAreaLocation.value = false;
+        featuredAttributeSelections.value = {};
+        modalAttributeValues.value = {};
+    }
+
+    // The map reports its viewport on load and after every move. Always record the bounds so a "Search
+    // this area" search knows the visible box. A visitor pan/zoom (isUserMove) no longer searches on
+    // its own - it just surfaces the "Search this area" prompt, which the visitor commits explicitly. A
+    // programmatic move (the initial center, or the fit onto a search area) only records the bounds.
+    function onBoundsChanged(bounds: { north: number; south: number; east: number; west: number; isUserMove: boolean; isAtMaxZoom: boolean }): void {
+        mapBounds.value = { north: bounds.north, south: bounds.south, east: bounds.east, west: bounds.west };
+
+        if (!bounds.isUserMove) {
+            return;
+        }
+
+        isMapMoved.value = true;
+    }
+
+    // Commit a "Search this area" search: make the map area the active location (clearing any typed
+    // address or current-location origin, so the Where filter reads "Search this area") and query the
+    // current bounds.
+    function onSearchThisArea(): void {
+        isMapAreaLocation.value = true;
+        isCurrentLocation.value = false;
+        origin.value = "";
+        void loadResults();
+    }
+
+    // Move to a results page (the pager). The filters and search are unchanged, so the current page is
+    // kept and only that page is fetched and its cards/markers swapped in. The list is scrolled back to
+    // the top so the visitor starts the new page at its first card rather than mid-list.
+    function goToPage(page: number): void {
+        const clamped = Math.min(Math.max(page, 0), pageCount.value - 1);
+        if (clamped === currentPage.value) {
+            return;
+        }
+
+        // Clear the selection before loading the page. The selected group belongs to the page being left,
+        // so without this the loadResults carry-forward (which keeps a still-visible selection across a
+        // map re-query) would append it onto the new page.
+        selectedGroupGuid.value = null;
+        currentPage.value = clamped;
+        void loadResults(true);
+        scrollResultsToTop();
+    }
+
+    // Return the results to their top on a page change. The drawer scrolls the docked panel's scrolling
+    // body (the sheet content itself does not scroll); the inline layouts bring the block's top back
+    // into view (the results layout scrolls the page, while side by side scrolls the card pane).
+    function scrollResultsToTop(): void {
+        if (layoutMode.value === "drawer") {
+            document.querySelector(".docked-panel-body")?.scrollTo({ top: 0, behavior: "smooth" });
+            return;
+        }
+
+        root.value?.scrollIntoView({ block: "start", behavior: "smooth" });
+        document.querySelector(".group-finder-results-pane")?.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // Publish the sticky filter bar's height as a CSS variable so the sticky result count
+    // and the map can offset themselves to sit directly beneath it (matching the Airbnb
+    // layout). A ResizeObserver keeps it correct as the bar wraps or the viewport changes.
+    function updateFilterBarHeight(): void {
+        const height = filterBar.value?.offsetHeight ?? 0;
+        root.value?.style.setProperty("--gf-bar-height", `${height}px`);
+    }
+
+    // The nearest ancestor that scrolls the block, or null when the window is the scroller.
+    // Layouts like the Full Worksurface scroll the block inside a fixed-height panel below a top
+    // bar, so the map must be sized against that panel's visible box rather than the window.
+    function getScrollParent(element: HTMLElement): HTMLElement | null {
+        let node = element.parentElement;
+        while (node && node !== document.body) {
+            const overflowY = getComputedStyle(node).overflowY;
+            if (overflowY === "auto" || overflowY === "scroll") {
+                return node;
+            }
+            node = node.parentElement;
+        }
+        return null;
+    }
+
+    /*
+        The drawer-mode map height is the visible box height less the space above the pane within its
+        scroll container. That space is measured scroll-independently (the pane's offset in the
+        container's content, not its viewport-relative top), so the height stays fixed as the page
+        scrolls. A viewport-relative top instead climbs as the page scrolls, which grows the pane, which
+        lengthens the document, which frees more scroll, which grows the pane again - the runaway a drag
+        between the map and the collapsed sheet otherwise sets off. Both drawer sizers below share this so
+        they compute the same height and never fight over the element.
+    */
+    function getDrawerMapHeight(pane: HTMLElement): number {
+        const rect = pane.getBoundingClientRect();
+        const scroller = getScrollParent(pane);
+        const spaceAbove = scroller
+            ? rect.top - scroller.getBoundingClientRect().top + scroller.scrollTop
+            : rect.top + window.scrollY;
+        const visibleHeight = scroller ? scroller.clientHeight : window.innerHeight;
+        return Math.max(200, Math.round(visibleHeight - spaceAbove));
+    }
+
+    /*
+        Size the side-by-side two-pane to the height actually available to the block, measured
+        against its scroll container instead of the viewport, so it works in any zone or layout.
+
+        The available height is the container's visible height minus the body's offset within the
+        container's content (the space taken by anything above the body, e.g. a page title or the
+        filter bar). That offset is scroll-independent, so the height stays put while the container
+        scrolls rather than growing and shrinking under the pointer. When the window is the scroller,
+        the content offset is the body's document-absolute top.
+    */
+    function fitSideBySide(): void {
+        const body = mapPane.value?.parentElement;
+        if (!body) {
+            return;
+        }
+
+        if (layoutMode.value !== "sidebyside") {
+            if (body.style.height) {
+                body.style.height = "";
+                lastSideBySideHeight = -1;
+            }
+            return;
+        }
+
+        const scroller = getScrollParent(body);
+        const bodyRect = body.getBoundingClientRect();
+
+        /*
+            Size the body so the whole scroll container's content fits its visible height with no
+            scrollbar. Reserve the space ABOVE the body (block padding-top, the filter bar and its gap)
+            AND the space BELOW it: the block's own bottom padding plus anything the host layout renders
+            after the block (e.g. the Full Worksurface's trailing content and padding). Both are invariant
+            to the body's height - shrinking the body moves the trailing content up with it - so this
+            settles in one pass rather than oscillating.
+        */
+        let containerHeight: number;
+        let spaceAbove: number;
+        let spaceBelow: number;
+        if (scroller) {
+            const scrollerTop = scroller.getBoundingClientRect().top;
+            containerHeight = scroller.clientHeight;
+            spaceAbove = bodyRect.top - scrollerTop + scroller.scrollTop;
+            spaceBelow = scroller.scrollHeight - (bodyRect.bottom - scrollerTop + scroller.scrollTop);
+        }
+        else {
+            const doc = document.documentElement;
+            containerHeight = doc.clientHeight;
+            spaceAbove = bodyRect.top + window.scrollY;
+            spaceBelow = doc.scrollHeight - (bodyRect.bottom + window.scrollY);
+        }
+
+        const height = Math.max(400, Math.round(containerHeight - spaceAbove - Math.max(0, spaceBelow)));
+
+        if (Math.abs(height - lastSideBySideHeight) > 1) {
+            body.style.height = `${height}px`;
+            lastSideBySideHeight = height;
+        }
+    }
+
+    // The drawer (mobile) tier sizes the map here; side by side sizes its whole body in
+    // fitSideBySide (the map then fills its pane at height 100%), and the remaining tiers take a
+    // fixed height from the stylesheet.
+    // In drawer mode the map is the hero and fills from its top to the bottom of its scroll
+    // container's visible box (the window externally, a fixed-height panel below a top bar on the
+    // Full Worksurface). Measuring the live box each frame closes the gap a static height leaves
+    // when a mobile address bar shows or hides, and capping at the box keeps it from overflowing.
+    function fitMapPane(): void {
+        const pane = mapPane.value;
+        if (!pane) {
+            return;
+        }
+
+        if (layoutMode.value !== "drawer") {
+            if (pane.style.height) {
+                pane.style.height = "";
+                lastMapHeight = -1;
+            }
+            return;
+        }
+
+        const height = getDrawerMapHeight(pane);
+
+        // Only write when it actually changes so the per-frame loop stays cheap.
+        if (Math.abs(height - lastMapHeight) > 1) {
+            pane.style.height = `${height}px`;
+            lastMapHeight = height;
+        }
+    }
+
+    /*
+        Once a page scroll settles, refill the collapsed drawer map to one gap above the sheet (see
+        computeDrawerReserve). The pane's viewport top is the scroll signal - this theme does not emit
+        scroll events our listeners can catch (see startFitLoop) - so this rides the same rAF loop and
+        waits for that top to hold steady for a few frames before refilling, rather than resizing the
+        Google map on every scroll frame. Only runs while the sheet is minimized, since the reserve is
+        hidden behind an expanded sheet.
+    */
+    // Track Rock's admin footer so the collapsed sheet clears it. Read on the fit loop (drawer only) so it
+    // follows the bar appearing or disappearing with page-edit mode; offsetHeight is 0 when it is hidden or
+    // absent, which zeroes the offset for public visitors.
+    function updateDrawerBottomOffset(): void {
+        if (layoutMode.value !== "drawer") {
+            if (drawerBottomOffset.value !== "0px") {
+                drawerBottomOffset.value = "0px";
+            }
+            return;
+        }
+        const adminFooter = document.getElementById("cms-admin-footer");
+        const height = adminFooter ? adminFooter.offsetHeight : 0;
+        const offset = height > 0 ? `${Math.round(height)}px` : "0px";
+        if (offset !== drawerBottomOffset.value) {
+            drawerBottomOffset.value = offset;
+        }
+    }
+
+    function updateDrawerMapFillOnSettle(): void {
+        if (layoutMode.value !== "drawer" || drawerSnapIndex.value !== 0 || !mapPane.value) {
+            lastDrawerFillKey = "";
+            drawerSettleFrames = 0;
+            return;
+        }
+
+        // Track the pane top (the scroll signal) and the sheet top (moves during its slide-in) together, so
+        // a refill waits for both to hold steady rather than latching onto a mid-scroll or mid-slide value.
+        const paneTop = Math.round(mapPane.value.getBoundingClientRect().top);
+        const sheet = document.querySelector(".docked-panel");
+        const sheetTop = sheet ? Math.round(sheet.getBoundingClientRect().top) : 0;
+        const key = `${paneTop}:${sheetTop}`;
+        if (key !== lastDrawerFillKey) {
+            lastDrawerFillKey = key;
+            drawerSettleFrames = 0;
+            return;
+        }
+
+        // The geometry has held; refill exactly once when it first crosses the settle threshold.
+        if (drawerSettleFrames < drawerSettleFrameCount) {
+            drawerSettleFrames++;
+            if (drawerSettleFrames === drawerSettleFrameCount) {
+                mapDrawerReserve.value = `${computeDrawerReserve()}px`;
+            }
+        }
+    }
+
+    // Size the card column to a whole number of 370px cards that fit beside the map (which
+    // keeps a 370px floor). This is measured from the container width, not window
+    // breakpoints, so columns wrap fluidly and the map takes whatever width is left over.
+    function sizeResultsPane(): void {
+        const body = mapPane.value?.parentElement;
+        const results = body?.querySelector(".group-finder-results-pane") as HTMLElement | null;
+        if (!body || !results) {
+            return;
+        }
+
+        if (layoutMode.value !== "sidebyside") {
+            if (results.style.width) {
+                results.style.width = "";
+                lastResultsWidth = -1;
+            }
+            return;
+        }
+
+        // The reserved scrollbar gutter (0 with overlay scrollbars) and the pane's own padding (which
+        // gives card hover shadows room) do not hold cards, so keep both out of the fitting math and add
+        // them back to the final width, leaving the content box wide enough for a whole number of columns.
+        const scrollbarWidth = results.offsetWidth - results.clientWidth;
+        const paneStyle = getComputedStyle(results);
+        const panePaddingX = parseFloat(paneStyle.paddingLeft) + parseFloat(paneStyle.paddingRight);
+        const available = body.clientWidth - mapMinWidthPx - rowGapPx - scrollbarWidth - panePaddingX;
+        const fits = Math.floor((available + cardGapPx) / (cardWidthPx + cardGapPx));
+        const columns = Math.max(1, Math.min(maxCardColumns, fits));
+        const width = columns * cardWidthPx + (columns - 1) * cardGapPx + scrollbarWidth + panePaddingX;
+
+        if (Math.abs(width - lastResultsWidth) > 1) {
+            results.style.width = `${width}px`;
+            lastResultsWidth = width;
+        }
+    }
+
+    /*
+        This theme does not emit scroll events our listeners can catch (verified: even a
+        capture-phase document listener never fires), so the map is refit on a rAF loop
+        while the block is on screen. getBoundingClientRect reflects the live scroll
+        position each frame, so this works regardless of which element is the scroller.
+    */
+    function startFitLoop(): void {
+        if (isFitLoopActive) {
+            return;
+        }
+        isFitLoopActive = true;
+
+        const tick = (): void => {
+            if (!isFitLoopActive) {
+                return;
+            }
+            fitSideBySide();
+            sizeResultsPane();
+            fitMapPane();
+            updateDrawerBottomOffset();
+            updateDrawerMapFillOnSettle();
+            requestAnimationFrame(tick);
+        };
+
+        requestAnimationFrame(tick);
+    }
+
+    function stopFitLoop(): void {
+        isFitLoopActive = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // Opening any filter segment starts a filter session (and shows the scrim). It stays active while the
+    // visitor works the bar - closing a dropdown or switching segments does not end it - so the scrim never
+    // drops on close or flashes off and back on mid-switch. The session ends only on Search (onSearchClick)
+    // or an outside-the-bar cancel (onPendingOverlayMouseDown).
+    watch(openSection, (section) => {
+        if (section !== null) {
+            isFilterSessionActive.value = true;
+        }
+    });
+
+    // Debounce the cancel hint's appearance: show it only once it has stayed eligible for the delay (so
+    // quickly moving between filter segments, which briefly makes it eligible, does not flash it), and hide
+    // it immediately when it stops being eligible.
+    watch(isCancelHintEligible, (isEligible) => {
+        if (cancelHintShowTimer !== undefined) {
+            clearTimeout(cancelHintShowTimer);
+            cancelHintShowTimer = undefined;
+        }
+
+        if (isEligible) {
+            cancelHintShowTimer = setTimeout(() => {
+                isCancelHintShown.value = true;
+                cancelHintShowTimer = undefined;
+            }, cancelHintShowDelayMs);
+        }
+        else {
+            isCancelHintShown.value = false;
+        }
+    });
+
+    // Size the map to the drawer's collapsed height so expanding the drawer floats over the map rather
+    // than resizing it. The collapsed height is the drawer at its first stop, but a drag or expand grows
+    // the reported depth while the stop index is still 0 mid-gesture, so take the smallest depth ever
+    // seen at stop 0 - that is the true collapsed height and it never inflates from a drag.
+    watch([drawerDepth, drawerSnapIndex, layoutMode], () => {
+        if (drawerSnapIndex.value === 0) {
+            const height = parseFloat(drawerDepth.value);
+            if (height > 0 && (collapsedDrawerHeight.value === 0 || height < collapsedDrawerHeight.value)) {
+                collapsedDrawerHeight.value = height;
+            }
+        }
+        updateDrawerMapHeight();
+    });
+
+    /*
+        Swap float/push only once the drawer settles at its new stop. Flipping it the instant the stop
+        index changes would reparent the sheet (float teleports into the content wrapper, push into the
+        body) and toggle the body reserve mid-slide, which cancels the open/close animation. Holding the
+        current mode through the slide and adopting the resting mode after keeps the animation intact. The
+        delay clears the animation window (the sheet's transform easing is 250ms; see dockedPanel.obs), and
+        a newer stop change cancels the pending swap so only the final resting stop drives the mode.
+    */
+    watch(drawerSnapIndex, () => {
+        if (drawerModeSwapTimer !== undefined) {
+            clearTimeout(drawerModeSwapTimer);
+        }
+        drawerModeSwapTimer = setTimeout(() => {
+            drawerModeSwapTimer = undefined;
+            const nextMode = drawerSnapIndex.value === 0 ? "push" : "float";
+            const didModeChange = drawerMode.value !== nextMode;
+            drawerMode.value = nextMode;
+
+            // A real mode change reparents the sheet and DockedPanel emits settled, which scrolls any parked
+            // card. When the mode does not actually change (e.g. re-maximizing before a pending minimize swap
+            // fired, so the sheet stayed float), no settled comes - so scroll the parked card here instead.
+            if (!didModeChange) {
+                onDrawerSettled();
+            }
+        }, 300);
+    });
+
+    // Filter changes (Campus/Where/When/What) intentionally do NOT query on their own - the visitor
+    // commits them with the Search button. A map pan/zoom only surfaces the "Search this area" prompt
+    // (see onBoundsChanged), so no filter watcher fires a search or moves the map here.
+
+    // Changing the origin (entering an address, using current location, or clearing) clears the
+    // stale "location not found" note so it does not linger onto the next search.
+    watch([origin, isCurrentLocation], () => {
+        isLocationNotFound.value = false;
+    });
+
+    // Selecting a group surfaces it on whichever surface the selection did not come from. In the drawer
+    // layout the sheet and the map are two surfaces over each other: a marker tap (or a programmatic
+    // selection) opens the sheet to the card, and a card tap collapses the sheet to its header so the map
+    // - which focuses the tapped marker on selection - is revealed. Other layouts just scroll the card
+    // into view (inline list or teleported sheet, so the lookup is against the document either way).
+    watch(selectedGroupGuid, (guid) => {
+        const source = selectionSource.value;
+        selectionSource.value = null;
+
+        if (guid) {
+            // Committing to a selection drops any lingering hover so the hover-only circle closes and
+            // the selected chip shows. This also covers touch, where a card/marker tap leaves the
+            // hover state stuck (no mouseleave fires).
+            hoveredGroupGuid.value = null;
+        }
+
+        if (!guid) {
+            return;
+        }
+
+        if (layoutMode.value === "drawer") {
+            if (source === "card") {
+                // A card tap reveals its marker: minimize a maximized sheet so the map shows (the map
+                // focuses the marker on selection), but leave a partially-open sheet where the visitor left it.
+                minimizeDrawerIfMaximized();
+            }
+            else {
+                // A marker tap or programmatic selection reveals the card in the sheet.
+                revealSelectedGroupInDrawer(guid);
+            }
+        }
+        else {
+            nextTick(() => {
+                document.querySelector(`[data-group-guid="${guid}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+            });
+        }
+    });
+
+    // Panes are created and destroyed as the layout mode changes (e.g. rotating a tablet between the
+    // side-by-side and drawer tiers), so a freshly mounted pane starts with no inline sizing. Reset
+    // the "last applied" trackers so the fit loop re-applies width and height to the new element
+    // instead of skipping it because a tracker still holds the previous element's value.
+    watch(layoutMode, () => {
+        lastResultsWidth = -1;
+        lastMapHeight = -1;
+        lastSideBySideHeight = -1;
+        lastDrawerFillKey = "";
+        drawerSettleFrames = 0;
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    // The first page ships in the initialization box, so there is no initial
+    // fetch here; the watchers reload only when a filter or page changes.
+    onConfigurationValuesChanged(reloadBlock);
+
+    onMounted(() => {
+        // Resolve the spacing tokens once (they do not change at runtime): the card grid gap and
+        // the row gap between the card column and the map.
+        const rootStyle = getComputedStyle(document.documentElement);
+        cardGapPx = parseFloat(rootStyle.getPropertyValue("--spacing-medium")) || 16;
+        rowGapPx = parseFloat(rootStyle.getPropertyValue("--spacing-large")) || 24;
+
+        if (filterBar.value) {
+            filterBarObserver = new ResizeObserver(updateFilterBarHeight);
+            filterBarObserver.observe(filterBar.value);
+        }
+        updateFilterBarHeight();
+
+        // Drive the layout from the block's own width rather than the viewport, so it adapts
+        // to any placement. ResizeObserver fires on the element's box changing, which is more
+        // reliable than window resize events (which do not fire in every host context).
+        if (root.value) {
+            blockWidth.value = root.value.clientWidth;
+            blockObserver = new ResizeObserver(() => {
+                if (root.value) {
+                    blockWidth.value = root.value.clientWidth;
+                }
+                updateDrawerMapHeight();
+            });
+            blockObserver.observe(root.value);
+        }
+
+        // Start the refit loop immediately, and use the visibility observer only to pause it
+        // while the block is off screen (its initial callback is not a reliable start signal).
+        startFitLoop();
+
+        if (root.value) {
+            visibilityObserver = new IntersectionObserver((entries) => {
+                if (entries[0]?.isIntersecting) {
+                    startFitLoop();
+                }
+                else {
+                    stopFitLoop();
+                }
+            });
+            visibilityObserver.observe(root.value);
+        }
+
+        // Kick off the initial all-groups browse, unless the block is unconfigured (no group types), where
+        // only the message renders and there is nothing to search. When proximity is enabled, use the
+        // visitor's current location as the distance origin if geolocation permission is already granted (no
+        // prompt); otherwise the server's guess drives distance. When proximity is off, search immediately.
+        if (!config.isUnconfigured) {
+            if (config.isProximityEnabled) {
+                void loadInitialResults();
+            }
+            else {
+                scheduleLoad();
+            }
+        }
+
+        // Size the drawer-mode map once the initial layout settles.
+        nextTick(updateDrawerMapHeight);
+
+        // Dismiss an open filter dropdown on Escape.
+        document.addEventListener("keydown", onDocumentKeyDown);
+    });
+
+    onBeforeUnmount(() => {
+        filterBarObserver?.disconnect();
+        blockObserver?.disconnect();
+        visibilityObserver?.disconnect();
+        stopFitLoop();
+        if (drawerModeSwapTimer !== undefined) {
+            clearTimeout(drawerModeSwapTimer);
+        }
+        if (cancelHintShowTimer !== undefined) {
+            clearTimeout(cancelHintShowTimer);
+        }
+        document.removeEventListener("keydown", onDocumentKeyDown);
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

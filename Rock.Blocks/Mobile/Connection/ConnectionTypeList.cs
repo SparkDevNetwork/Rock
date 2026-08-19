@@ -133,9 +133,17 @@ namespace Rock.Blocks.Mobile.Connection
 
             var summaries = LoadConnectionTypeSummaries( RockContext, currentPerson, authorizedConnectionTypeIds, options );
 
+            // The Add button opens the wizard at its Type step and carries no
+            // page parameters, so the gate asks whether the person can add
+            // anywhere rather than scoping to a single type. Short-circuited on
+            // the block setting so an unconfigured block does not pay for it.
+            var addPageConfigured = GetAttributeValue( AttributeKey.AddPage ).AsGuidOrNull().HasValue;
+
             return ActionOk( new GetConnectionTypeSummariesResponseBag
             {
-                Summaries = summaries
+                Summaries = summaries,
+                IsAddEnabled = addPageConfigured
+                    && ConnectionRequestAuthorization.CanAddRequestAnywhere( RockContext, currentPerson )
             } );
         }
 

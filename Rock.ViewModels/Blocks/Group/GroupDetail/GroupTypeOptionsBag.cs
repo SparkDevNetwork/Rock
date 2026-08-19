@@ -157,6 +157,12 @@ namespace Rock.ViewModels.Blocks.Group.GroupDetail
         /// </summary>
         public bool AllowMultipleLocations { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the Meeting Style field is available on groups of this
+        /// type. When false, the Meeting Style picker is hidden on the group.
+        /// </summary>
+        public bool IsMeetingStyleEnabled { get; set; }
+
         #endregion
 
         #region Localization

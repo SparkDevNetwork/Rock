@@ -412,6 +412,7 @@ namespace Rock.Blocks.Cms
                 fieldBag.Name = variableField.Name;
                 fieldBag.Description = variableField.Description;
                 fieldBag.Key = variableField.Key;
+                fieldBag.HideReset = variableField.HideReset;
 
                 if ( variableField.Type == ThemeFieldType.Image || variableField.Type == ThemeFieldType.File )
                 {

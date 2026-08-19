@@ -95,18 +95,18 @@
 
                         <Column title="Processing Fees" name="feeAmount">
                             <template #format="{ row }">
-                                <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.feeAmount) }}</strong>
+                                <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.feeAmount, options.currencyInfo) }}</strong>
                                 <template v-else>
-                                    {{ toCurrencyOrNull(row.feeAmount) }}
+                                    {{ toCurrencyOrNull(row.feeAmount, options.currencyInfo) }}
                                 </template>
                             </template>
                         </Column>
 
                         <Column title="Amount" name="amount">
                             <template #format="{ row }">
-                                <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.amount) }}</strong>
+                                <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.amount, options.currencyInfo) }}</strong>
                                 <template v-else>
-                                    {{ toCurrencyOrNull(row.amount) }}
+                                    {{ toCurrencyOrNull(row.amount, options.currencyInfo) }}
                                 </template>
                             </template>
                         </Column>
@@ -283,11 +283,7 @@
 
             </ContentSection>
         </ContentSectionContainer>
-        <div v-if="isLoading"
-             class="d-flex align-items-center justify-content-center p-4">
-            <i class="ti ti-loader-2 fa-spin" style="font-size: 2rem;" />
-        </div>
-        <EditTransactionDetail v-else-if="isEditTransactionDetailVisible"
+        <EditTransactionDetail v-if="isEditTransactionDetailVisible"
                                :modelValue="editTransactionDetail"
                                :foreignCurrencyCodeGuid="showForeignCurrencyFields ? modelValue.bag?.currencyCode?.value ?? undefined : undefined"
                                @save="onTransactionDetailSave"
@@ -357,12 +353,8 @@ strong {
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: ValidPropertiesBox<TransactionBag>): void,
-        (e: "propertyChanged", value: string): void,
-        (e: "saveThenAdd"): void, // TODO
-        (e: "saveThenViewBatch"): void // TODO
+        (e: "propertyChanged", value: string): void
     }>();
-
-    const isLoading = ref(false);
 
     // #region Values
     const isEditTransactionDetailVisible = ref(false);
@@ -374,14 +366,7 @@ strong {
     const paymentDetailAttributes = ref(props.modelValue.bag?.paymentDetail?.attributes ?? {});
     const paymentDetailAttributeValues = ref(props.modelValue.bag?.paymentDetail?.attributeValues ?? {});
 
-    const personOrBusinessItemBag: ListItemBag | undefined = props.modelValue.bag?.authorizedPerson
-        ? {
-            text: props.modelValue.bag.authorizedPerson.name ?? "",
-            value: props.modelValue.bag.authorizedPerson.guid ?? ""
-        }
-        : undefined;
-
-    const personOrBusiness = propertyRef(personOrBusinessItemBag ?? undefined, "PersonOrBusiness");
+    const personOrBusiness = propertyRef(props.modelValue.bag?.personOrBusiness ?? undefined, "PersonOrBusiness");
 
     const isAnonymous = propertyRef(props.modelValue.bag?.showAsAnonymous ?? false, "IsAnonymous");
 
@@ -759,14 +744,6 @@ strong {
         updateRefValue(refundReason, props.modelValue.bag?.refundDetails?.refundReason ?? null);
         updateRefValue(isRefund, props.modelValue.bag?.isRefund ?? false);
 
-        const updatedPerson: ListItemBag | undefined = props.modelValue.bag?.authorizedPerson
-            ? {
-                text: props.modelValue.bag.authorizedPerson.name ?? "",
-                value: props.modelValue.bag.authorizedPerson.guid ?? ""
-            }
-            : undefined;
-
-
         const newTransactionDetails = props.modelValue.bag?.transactionDetails
             ?.rows?.map(td => ({
                 ...td
@@ -775,7 +752,7 @@ strong {
         updateRefValue(transactionDetails, newTransactionDetails);
         updateRefValue(transactionDetailsAttributeFields, props.modelValue.bag?.transactionDetails?.attributeFields ?? []);
 
-        updateRefValue(personOrBusiness, updatedPerson);
+        updateRefValue(personOrBusiness, props.modelValue.bag?.personOrBusiness ?? undefined);
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -826,11 +803,7 @@ strong {
         );
         setPropertiesBoxValue(newValue, "isRefund", isRefund.value);
 
-        setPropertiesBoxValue(newValue, "authorizedPerson", {
-            ...props.modelValue.bag?.authorizedPerson,
-            name: personOrBusiness.value?.text ?? "",
-            guid: personOrBusiness.value?.value ?? ""
-        });
+        setPropertiesBoxValue(newValue, "personOrBusiness", personOrBusiness.value);
 
         emit("update:modelValue", newValue);
     });

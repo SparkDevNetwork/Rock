@@ -124,8 +124,8 @@ namespace Rock.Blocks.Mobile
         /// zone parser (MobilePageDetail) as well as the mobile shell.
         /// </summary>
         private const string DefaultLayoutXaml = @"<ContentPage xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-             xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-             xmlns:Rock=""clr-namespace:Rock.Mobile.Cms;assembly=Rock.Mobile"">
+    xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+    xmlns:Rock=""clr-namespace:Rock.Mobile.Cms;assembly=Rock.Mobile"">
     <ScrollView VerticalScrollBarVisibility=""Never"">
         <Rock:Zone ZoneName=""Main"" />
     </ScrollView>
@@ -139,8 +139,8 @@ namespace Rock.Blocks.Mobile
         /// as the mobile shell.
         /// </summary>
         private const string FullLayoutXaml = @"<ContentPage xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-             xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-             xmlns:Rock=""clr-namespace:Rock.Mobile.Cms;assembly=Rock.Mobile"">
+    xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+    xmlns:Rock=""clr-namespace:Rock.Mobile.Cms;assembly=Rock.Mobile"">
     <Rock:Zone ZoneName=""Main"" />
 </ContentPage>";
 

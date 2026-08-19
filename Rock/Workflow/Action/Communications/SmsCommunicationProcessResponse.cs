@@ -50,6 +50,8 @@ namespace Rock.Workflow.Action
     [TextField( "Message",
         Description = "The message content to process. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 2 )]
     [WorkflowAttribute( "Error Attribute",
         Description = "Filled in by the SMS system if an error occurred processing the message. This error should generally be sent back to the original sender. Empty string is set if no error occurred.",

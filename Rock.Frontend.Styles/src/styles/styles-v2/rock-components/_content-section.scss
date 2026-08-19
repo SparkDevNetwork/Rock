@@ -18,6 +18,7 @@
     height: auto;
     width: 100%;
     background-color: var(--color-interface-softer);
+    box-shadow: var(--box-shadow);
     padding-left: 0;
     padding-right: 0;
 }
@@ -71,7 +72,7 @@
     padding: var(--spacing-xsmall);
     border-radius: var(--rounded-small);
     flex-shrink: 0;
-    font-size: var(--font-size-h5);
+    font-size: var(--font-size-h6);
 }
 
 .contentsection-header-title-description-stack {
@@ -127,8 +128,14 @@
     padding-top: var(--spacing-large);
 }
 
+// Make the body flush vertically, no padding. See PersonalizationSegmentDetail for example.
+.contentsection.body-flush-vertical {
 
-
+    .contentsection-body {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+}
 
 /* OVERFLOW BODY */
 
@@ -259,6 +266,7 @@
 .contentsection-light {
     background-color: var(--color-interface-softest);
     border: 1px var(--color-interface-soft) solid;
+    box-shadow: none;
 }
 
 .contentsection-light > .contentsection-header {

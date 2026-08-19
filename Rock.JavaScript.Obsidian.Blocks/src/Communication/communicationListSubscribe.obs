@@ -28,15 +28,13 @@
                             </CheckBox>
                         </td>
                         <td v-if="showMediumPreference" class="align-middle text-right" style="width: 150px;">
-                            <div :class="{ 'toggle-disabled': !item.isSubscribed }">
-                                <Toggle :modelValue="item.communicationPreference === CommunicationType.Email"
-                                        trueText="Email"
-                                        formGroupClasses="toggle mb-0"
-                                        falseText="SMS"
-                                        btnSize="xs"
-                                        :disabled="!item.isSubscribed"
-                                        @update:modelValue="onPreferenceChanged(item, $event)" />
-                            </div>
+                            <Toggle :modelValue="item.communicationPreference === CommunicationType.Email"
+                                    trueText="Email"
+                                    formGroupClasses="toggle mb-0"
+                                    falseText="SMS"
+                                    btnSize="xs"
+                                    :disabled="!item.isSubscribed"
+                                    @update:modelValue="onPreferenceChanged(item, $event)" />
                         </td>
                     </tr>
                 </tbody>
@@ -44,13 +42,6 @@
         </div>
     </Block>
 </template>
-
-<style scoped>
-.toggle-disabled {
-    opacity: 0.5;
-    pointer-events: none;
-}
-</style>
 
 <script setup lang="ts">
     import { ref } from "vue";

@@ -6,6 +6,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Transaction"
+          liveUpdates
           :entityTypeGuid="EntityType.FinancialTransaction"
           :customActions="customActions"
           :showMergeTemplate="isTransactionEntityActionEnabled"
@@ -37,8 +38,8 @@
             </div>
         </template>
 
-        <template #gridHeaderPrepend>
-            <NotificationBox v-if="config.options?.showClosedBatchWarning"
+        <template #gridHeaderPrepend v-if="config.options?.showClosedBatchWarning">
+            <NotificationBox
                              alertType="info"
                              heading="Note"
                              class="mb-0">
@@ -46,7 +47,7 @@
             </NotificationBox>
         </template>
 
-        <template #actionToolbar>
+        <template v-if="hasToolbarActions" #actionToolbar>
             <div v-if="isMoveToBatchAvailable" class="d-flex align-items-center gap-2 flex-grow-1">
                 <span class="text-nowrap">Move to Batch</span>
                 <div class="move-to-batch-group">
@@ -74,10 +75,10 @@
             </RockButton>
 
         </template>
+        <SelectColumn />
 
         <TextColumn name="transactionIdKey" field="transactionIdKey" :hideOnScreen="true" />
 
-        <SelectColumn v-if="isMoveToBatchAvailable || config.options?.isReassignVisible" />
         <PersonColumn name="person"
                       title="Name"
                       field="person"
@@ -136,8 +137,8 @@
                 :filter="numberValueFilter"
                 v-if="!config.options?.isBatchContext">
             <template #format="{ row }">
-                <a v-if="config.navigationUrls?.[NavigationUrlKey.BatchPage] && row.batchId"
-                   :href="config.navigationUrls[NavigationUrlKey.BatchPage].replace('((Key))', String(row.batchId))">{{ row.batchId }}</a>
+                <a v-if="config.navigationUrls?.[NavigationUrlKey.BatchPage] && row.batchIdKey"
+                   :href="config.navigationUrls[NavigationUrlKey.BatchPage].replace('((Key))', String(row.batchIdKey))">{{ row.batchId }}</a>
                 <span v-else>{{ row.batchId }}</span>
             </template>
         </Column>
@@ -367,6 +368,14 @@
     const isMoveToBatchAvailable = computed((): boolean => {
         return !!config.options?.isMoveToBatchVisible
             && viewMode.value === ViewMode.Transactions;
+    });
+
+    /**
+     * Whether any selection action (Move to Batch or Reassign) will render in the toolbar. When
+     * false, the action toolbar is not provided at all so no empty toolbar appears for selected rows.
+     */
+    const hasToolbarActions = computed((): boolean => {
+        return isMoveToBatchAvailable.value || !!config.options?.isReassignVisible;
     });
 
     const hasSettingsFilters = computed((): boolean => {

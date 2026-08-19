@@ -207,16 +207,19 @@ namespace Rock.Blocks.Fundraising
         /// <returns>A dictionary of navigation keys to URLs.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var group = GetGroup();
+            var groupId = group?.IdKey ?? string.Empty;
+
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.ParticipantPage] = this.GetLinkedPageUrl( AttributeKey.ParticipantPage, new Dictionary<string, string>
                 {
-                    { PageParameterKey.GroupId, GroupId.ToString() },
+                    { PageParameterKey.GroupId, groupId },
                     { PageParameterKey.GroupMemberId, "((Key))" }
                 } ),
                 [NavigationUrlKey.MainPage] = this.GetLinkedPageUrl( AttributeKey.MainPage, new Dictionary<string, string>
                 {
-                    { PageParameterKey.GroupId, GroupId.ToString() }
+                    { PageParameterKey.GroupId, groupId }
                 } )
             };
         }

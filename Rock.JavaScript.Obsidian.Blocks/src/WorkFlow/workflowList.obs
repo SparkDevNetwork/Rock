@@ -42,8 +42,6 @@
                       :detailField="false"
                       :showAsLink="true"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getInitiatorFilterValue"
-                      :quickFilterValue="getInitiatorFilterValue"
                       visiblePriority="md" />
 
         <Column name="activities"
@@ -166,7 +164,6 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./WorkflowList/types.partial";
     import { computed, reactive, ref, watch } from "vue";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import GridSettingsModal from "./WorkflowList/gridSettingsModal.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
@@ -268,16 +265,6 @@
     function getStateRowFilterValue(row: Record<string, unknown>): string {
         const isCompleted = row.isCompleted as boolean;
         return isCompleted ? "Completed" : "Active";
-    }
-
-    /**
-    * Gets the filter value text to use for the initiator column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getInitiatorFilterValue(row: Record<string, unknown>): string {
-        const person = row["initiator"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     /**

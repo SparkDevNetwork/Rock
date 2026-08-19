@@ -30,3 +30,9 @@
 
 }
 
+// Disable State
+
+.control-wrapper.toggle-disabled .btn-group {
+  opacity:        0.5;
+  pointer-events: none;
+}

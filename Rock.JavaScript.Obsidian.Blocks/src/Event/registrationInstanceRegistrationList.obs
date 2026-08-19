@@ -39,7 +39,7 @@
         <Column name="registrants"
                 title="Registrants"
                 field="registrants"
-                itemClass="registrants-cell"
+                itemClass="grid-cell-stack"
                 :filter="textValueFilter"
                 :filterValue="getRegistrantsFilterValue"
                 :quickFilterValue="getRegistrantsFilterValue"
@@ -48,7 +48,7 @@
             <template #format="{ row }">
                 <div v-for="(registrant, index) in (row.registrants as RegistrantInfoBag[] | null) ?? []"
                      :key="index"
-                     class="registrant-row">
+                     class="cell-row-inline">
                     <span>{{ registrant.displayName }}</span>
                     <span v-if="registrant.isOnWaitList" class="label label-warning label-xs ml-1">WL</span>
                 </div>
@@ -83,7 +83,7 @@
         <Column name="totalCost"
                 title="Total Cost"
                 field="totalCost"
-                headerClass="title-right"
+                headerClass="text-right"
                 itemClass="justify-content-end text-right"
                 :filter="numberValueFilter"
                 :filterValue="getTotalCostFilterValue"
@@ -100,7 +100,7 @@
         <Column name="balanceDue"
                 title="Balance Due"
                 field="balanceDue"
-                headerClass="title-right"
+                headerClass="text-right"
                 itemClass="justify-content-end text-right"
                 :filter="numberValueFilter"
                 :filterValue="getBalanceDueFilterValue"
@@ -126,33 +126,6 @@
                        :campusItems="config.options?.campusItems ?? []"
                        @close="isGridSettingsVisible = false" />
 </template>
-
-<style scoped>
-:deep(.title-right .grid-column-title) {
-    text-align: right;
-}
-
-:deep(.registrants-cell) {
-    flex-direction: column;
-    align-items: flex-start;
-}
-
-:deep(.registrants-cell .registrant-row) {
-    display: block;
-    width: 100%;
-    line-height: 1.5;
-}
-
-:deep(.registrants-cell .label-xs) {
-    padding: 0 4px;
-    font-size: 9px;
-    font-weight: 700;
-    line-height: 1.4;
-    vertical-align: middle;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-</style>
 
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";

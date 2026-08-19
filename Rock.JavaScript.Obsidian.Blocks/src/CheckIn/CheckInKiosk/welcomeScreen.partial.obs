@@ -278,6 +278,9 @@
                 cancellationToken: cts.token
             });
         }
+        else {
+            await alert(response.errorMessage || UnexpectedErrorMessage);
+        }
     }
 
     /**

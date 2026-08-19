@@ -128,7 +128,7 @@
     });
 
     const isVisible = computed((): boolean => {
-        return !!config.options?.streakTypeIdKey;
+        return config.options?.isBlockVisible === true;
     });
 
     //#endregion

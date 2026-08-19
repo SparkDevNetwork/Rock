@@ -185,6 +185,14 @@ namespace Rock.Blocks.Finance
 
             options.CarryOverAccount = GetAttributeValue( AttributeKey.CarryOverAccount ).AsBoolean();
 
+            var currencyInfo = new Rock.Utility.RockCurrencyCodeInfo();
+            options.CurrencyInfo = new Rock.ViewModels.Utility.CurrencyInfoBag
+            {
+                Symbol = currencyInfo.Symbol,
+                DecimalPlaces = currencyInfo.DecimalPlaces,
+                SymbolLocation = currencyInfo.SymbolLocation
+            };
+
             return options;
         }
 
@@ -199,7 +207,11 @@ namespace Rock.Blocks.Finance
         {
             errorMessage = null;
 
-            if ( financialTransaction.BatchId == null || financialTransaction.BatchId == 0 )
+            // Only a new transaction is required to have a batch. An existing transaction may
+            // legitimately have no batch (e.g. a gateway transaction not yet downloaded into one),
+            // so editing it must not be blocked. This matches the legacy new-transaction-only check.
+            if ( financialTransaction.Id == 0
+                && ( financialTransaction.BatchId == null || financialTransaction.BatchId == 0 ) )
             {
                 errorMessage = "New transactions can only be added to an existing batch.";
                 return false;
@@ -238,6 +250,19 @@ namespace Rock.Blocks.Finance
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Determines whether a transaction may be edited based on its batch status. A transaction
+        /// cannot be edited when it belongs to a batch that is closed or automated. Transactions
+        /// with no batch (e.g. a new transaction) are considered editable.
+        /// </summary>
+        /// <param name="entity">The transaction to evaluate.</param>
+        /// <returns><c>true</c> if the transaction's batch permits editing; otherwise <c>false</c>.</returns>
+        private static bool IsBatchEditAllowed( FinancialTransaction entity )
+        {
+            return entity?.Batch == null
+                || ( entity.Batch.Status != BatchStatus.Closed && !entity.Batch.IsAutomated );
         }
 
         /// <summary>
@@ -286,8 +311,7 @@ namespace Rock.Blocks.Finance
             // Check if allowed to edit based on batch status if user has permissions to edit.
             if ( box.IsEditable)
             {
-                box.Options.CanEdit = entity?.Batch == null
-                    || ( entity.Batch.Status != BatchStatus.Closed && !entity.Batch.IsAutomated );
+                box.Options.CanEdit = IsBatchEditAllowed( entity );
             }
 
             PrepareDetailBox( box, entity );
@@ -327,37 +351,13 @@ namespace Rock.Blocks.Finance
                 ScheduledTransactionId = transaction.ScheduledTransactionId,
                 AuthorizedPersonAliasId = transaction.AuthorizedPersonAliasId,
                 ShowAsAnonymous = transaction.ShowAsAnonymous,
-                SourceType = sourceDefinedValue != null ? new ListItemBag
-                {
-                    Value = sourceDefinedValue.Guid.ToString(),
-                    Text = sourceDefinedValue.Value
-                }
-                : null,
-                TransactionType = new ListItemBag
-                {
-                    Value = transactionDefinedValue.Guid.ToString(),
-                    Text = transactionDefinedValue.Value
-                },
+                SourceType = sourceDefinedValue.ToListItemBag(),
+                TransactionType = transactionDefinedValue.ToListItemBag(),
                 TransactionCode = transaction.TransactionCode,
                 Summary = transaction.Summary,
-                FinancialGateway = financialGatewayDefinedValue != null ? new ListItemBag
-                {
-                    Value = financialGatewayDefinedValue.Guid.ToString(),
-                    Text = financialGatewayDefinedValue.Name
-                }
-                : null,
-                NonCashAssetType = assetTypeDefinedValue != null ? new ListItemBag
-                {
-                    Text = assetTypeDefinedValue.Value,
-                    Value = assetTypeDefinedValue.Guid.ToString()
-                }
-                : null,
-                CurrencyCode = currencyDefinedValue != null ? new ListItemBag
-                {
-                    Text = currencyDefinedValue.Value,
-                    Value = currencyDefinedValue.Guid.ToString()
-                }
-                : null,
+                FinancialGateway = financialGatewayDefinedValue.ToListItemBag(),
+                NonCashAssetType = assetTypeDefinedValue.ToListItemBag(),
+                CurrencyCode = currencyDefinedValue.ToListItemBag(),
                 TotalAmount = totalAmount,
                 TotalFeeAmount = totalFeeAmount,
                 TotalFeeCoverageAmount = totalFeeCoverageAmount,
@@ -381,7 +381,10 @@ namespace Rock.Blocks.Finance
                 ForeignKey = transaction.ForeignKey,
                 PaymentDetail = GetPaymentDetailBag( transaction.FinancialPaymentDetail, creditCardGuid ),
                 RefundDetails = GetRefundDetailBag( transaction.RefundDetails ),
-                AuthorizedPerson = GetAuthorizedPersonBag( transaction.AuthorizedPersonAlias?.Person ),
+                AuthorizedPerson = GetAuthorizedPersonBag( transaction.AuthorizedPersonAlias ),
+                PersonOrBusiness = transaction.AuthorizedPersonAlias?.Person == null
+                    ? null
+                    : transaction.AuthorizedPersonAlias.ToListItemBag( transaction.AuthorizedPersonAlias.Person.FullName ),
                 ScheduledTransaction = transaction.ScheduledTransaction != null
                     ? GetScheduledTransactionBag( transaction.ScheduledTransaction )
                     : null,
@@ -524,9 +527,17 @@ namespace Rock.Blocks.Finance
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var parentPageParams = new Dictionary<string, string>();
+
+            var batchId = PageParameter( PageParameterKey.BatchId );
+            if ( batchId.IsNotNullOrWhiteSpace() )
+            {
+                parentPageParams.Add( PageParameterKey.BatchId, batchId );
+            }
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( parentPageParams )
             };
         }
 
@@ -586,13 +597,7 @@ namespace Rock.Blocks.Finance
             {
                 OriginalTransactionId = refundDetails.OriginalTransactionId,
                 OriginalTransactionIdKey = refundDetails.OriginalTransactionId.HasValue ? IdHasher.Instance.GetHash( refundDetails.OriginalTransactionId.Value ) : null,
-                RefundReason = refundReasonDefinedValue == null
-                    ? null
-                    : new ListItemBag
-                    {
-                        Value = refundReasonDefinedValue.Guid.ToString(),
-                        Text = refundReasonDefinedValue.Value
-                    },
+                RefundReason = refundReasonDefinedValue.ToListItemBag(),
                 RefundReasonSummary = refundDetails.RefundReasonSummary
             };
         }
@@ -676,11 +681,7 @@ namespace Rock.Blocks.Finance
                     {
                         Guid = d.Guid,
                         Id = d.Id,
-                        Account = d.Account == null ? null : new ListItemBag
-                        {
-                            Text = d.Account.Name,
-                            Value = d.Account.Guid.ToString()
-                        },
+                        Account = d.Account?.ToListItemBag( d.Account.Name ),
                         Amount = d.FeeCoverageAmount.HasValue
                             ? d.Amount - d.FeeCoverageAmount.Value
                             : d.Amount,
@@ -812,19 +813,8 @@ namespace Rock.Blocks.Finance
 
             return new PaymentDetailBag
             {
-                CurrencyType = currencyType == null
-                    ? null
-                    : new ListItemBag {
-                        Text = currencyType.Value,
-                        Value = currencyType.Guid.ToString()
-                    },
-                CreditCardType = creditCardType == null
-                    ? null
-                    : new ListItemBag
-                    {
-                        Text = creditCardType.Value,
-                        Value = creditCardType.Guid.ToString()
-                    },
+                CurrencyType = currencyType.ToListItemBag(),
+                CreditCardType = creditCardType.ToListItemBag(),
                 NameOnCard = paymentDetail.NameOnCard,
                 AccountNumberMasked = paymentDetail.AccountNumberMasked,
                 ExpirationDate = paymentDetail.ExpirationDate,
@@ -864,13 +854,15 @@ namespace Rock.Blocks.Finance
         }
 
         /// <summary>
-        /// Maps a <see cref="Person"/> to an <see cref="AuthorizedPersonBag"/> that provides
+        /// Maps a <see cref="PersonAlias"/> to an <see cref="AuthorizedPersonBag"/> that provides
         /// display data for the authorized-by section of the view panel.
         /// </summary>
-        /// <param name="person">The person; may be <c>null</c>.</param>
-        /// <returns>An <see cref="AuthorizedPersonBag"/>, or <c>null</c> if <paramref name="person"/> is <c>null</c>.</returns>
-        private AuthorizedPersonBag GetAuthorizedPersonBag( Person person )
+        /// <param name="personAlias">The authorized person alias; may be <c>null</c>.</param>
+        /// <returns>An <see cref="AuthorizedPersonBag"/>, or <c>null</c> if <paramref name="personAlias"/> or its person is <c>null</c>.</returns>
+        private AuthorizedPersonBag GetAuthorizedPersonBag( PersonAlias personAlias )
         {
+            var person = personAlias?.Person;
+
             if ( person == null )
             {
                 return null;
@@ -880,7 +872,7 @@ namespace Rock.Blocks.Finance
 
             var authorizedPersonBag = new AuthorizedPersonBag
             {
-                Guid = person.Guid,
+                Guid = personAlias.Guid,
                 Id = person.Id,
                 Name = person.FullName,
                 Email = person.Email,
@@ -1139,17 +1131,19 @@ namespace Rock.Blocks.Finance
                 entity.FinancialPaymentDetail = new FinancialPaymentDetail();
             }
 
-            if( box.Bag.AuthorizedPerson != null)
+            box.IfValidProperty( nameof( box.Bag.PersonOrBusiness ), () =>
             {
-                box.Bag.AuthorizedPersonAliasId = new PersonAliasService( RockContext ).GetId( box.Bag.AuthorizedPerson.Guid);
+                var personAliasId = box.Bag.PersonOrBusiness != null
+                    ? new PersonAliasService( RockContext ).GetId( box.Bag.PersonOrBusiness.Value.AsGuid() )
+                    : null;
 
-                if ( box.Bag.AuthorizedPersonAliasId.HasValue )
+                if ( personAliasId.HasValue )
                 {
-                    entity.AuthorizedPersonAliasId = box.Bag.AuthorizedPersonAliasId;
+                    entity.AuthorizedPersonAliasId = personAliasId;
                 }
-            }
+            } );
 
-            if( box.Bag.BatchId != null )
+            if ( entity.Id == 0 && box.Bag.BatchId != null )
             {
                 entity.BatchId = box.Bag.BatchId;
             }
@@ -1573,10 +1567,29 @@ namespace Rock.Blocks.Finance
                 return actionError;
             }
 
+            // Guard against edits to an existing transaction whose batch is closed or automated.
+            // The UI hides the Edit button in this case; this enforces the same rule server-side.
+            if ( !IsBatchEditAllowed( entity ) )
+            {
+                return ActionBadRequest( "This transaction cannot be edited because its batch is closed or automated." );
+            }
+
             // Update the entity instance from the information in the bag.
             if ( !UpdateEntityFromBox( entity, box ) )
             {
                 return ActionBadRequest( "Invalid data." );
+            }
+
+            // For a new transaction the target batch is only known after the bag has been applied.
+            // Reject adding into a closed or automated batch (mirrors WebForms hiding the Add button).
+            if ( entity.Id == 0 && entity.BatchId.HasValue )
+            {
+                var targetBatch = new FinancialBatchService( RockContext ).Get( entity.BatchId.Value );
+
+                if ( targetBatch != null && ( targetBatch.Status == BatchStatus.Closed || targetBatch.IsAutomated ) )
+                {
+                    return ActionBadRequest( "A transaction cannot be added to a closed or automated batch." );
+                }
             }
 
             // Ensure everything is valid before saving.
@@ -1620,32 +1633,6 @@ namespace Rock.Blocks.Finance
                 Bag = bag,
                 ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
             } );
-        }
-
-        /// <summary>
-        /// Deletes the specified entity.
-        /// </summary>
-        /// <param name="key">The identifier of the entity to be deleted.</param>
-        /// <returns>A string that contains the URL to be redirected to on success.</returns>
-        [BlockAction]
-        public BlockActionResult Delete( string key )
-        {
-            var entityService = new FinancialTransactionService( RockContext );
-
-            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
-            {
-                return actionError;
-            }
-
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
-            {
-                return ActionBadRequest( errorMessage );
-            }
-
-            entityService.Delete( entity );
-            RockContext.SaveChanges();
-
-            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>
@@ -1805,11 +1792,6 @@ namespace Rock.Blocks.Finance
             if ( !IsOrganizationCurrency( transaction.ForeignCurrencyCodeValueId ) )
             {
                 return ActionBadRequest( "Refunds are not supported for transactions in foreign currencies." );
-            }
-
-            if ( transaction.Batch != null && ( transaction.Batch.Status == BatchStatus.Closed || transaction.Batch.IsAutomated ) )
-            {
-                return ActionBadRequest( "Refunds are not allowed for transactions in a closed or automated batch." );
             }
 
             var canProcess = !string.IsNullOrWhiteSpace( transaction.TransactionCode ) && transaction.FinancialGateway != null;

@@ -188,6 +188,7 @@ namespace Rock.Model
             target.LearningCourseId = source.LearningCourseId;
             target.LearningGradingSystemId = source.LearningGradingSystemId;
             target.LearningSemesterId = source.LearningSemesterId;
+            target.MeetingStyle = source.MeetingStyle;
             target.Name = source.Name;
             target.NonLeaderToLeaderRelationshipMultiplierOverride = source.NonLeaderToLeaderRelationshipMultiplierOverride;
             target.NonLeaderToNonLeaderRelationshipMultiplierOverride = source.NonLeaderToNonLeaderRelationshipMultiplierOverride;

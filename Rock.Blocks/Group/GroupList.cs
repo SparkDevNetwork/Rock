@@ -31,6 +31,7 @@ using Rock.ViewModels.Blocks.Group.GroupList;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using System.Data.Entity;
 
 namespace Rock.Blocks.Group
 {
@@ -182,6 +183,13 @@ namespace Rock.Blocks.Group
     [Rock.SystemGuid.BlockTypeGuid( "3D7FB6BE-6BBD-49F7-96B4-96310AF3048A" )]
     public class GroupList : RockListBlockType<GroupListRowBag>
     {
+        /// <summary>
+        /// The maximum number of candidate groups allowed before the add-member drop-down falls
+        /// back to the tree group picker. Above this a drop-down is both a slow query (per-group
+        /// authorization) and unusable UI, so the modal renders the picker instead.
+        /// </summary>
+        private const int DropdownGroupCountThreshold = 1000;
+
         #region Keys
 
         private static class AttributeKey
@@ -329,16 +337,12 @@ namespace Rock.Blocks.Group
                 }
             }
 
-            // Populate the available groups for the Dropdown add-member picker in person mode.
-            if ( isPersonMode && GetAttributeValue( AttributeKey.GroupPickerType ) != "GroupPicker" )
-            {
-                options.AvailableGroups = GetAvailableGroupsForDropdown( groupTypeIds );
-            }
-
             // Restrict the tree picker to the configured group types. Mirrors the
             // WebForms gpGroup.IncludedGroupTypeIds = groupTypeIds setup so users
             // can only browse groups of the block's configured types when adding.
-            if ( isPersonMode && GetAttributeValue( AttributeKey.GroupPickerType ) == "GroupPicker" )
+            // Populated for all person mode (not just GroupPicker) so the drop-down
+            // can fall back to the tree picker when its dataset is too large.
+            if ( isPersonMode )
             {
                 options.IncludedGroupTypeGuids = groupTypeIds
                     .Select( id => GroupTypeCache.Get( id )?.Guid )
@@ -497,8 +501,6 @@ namespace Rock.Blocks.Group
                 UseRolePrefix = useRolePrefix && g.GroupTypeId != roleGroupTypeId,
                 GroupTypeId = g.GroupTypeId,
                 GroupTypeName = g.GroupType.Name,
-                GroupTypeOrder = g.GroupType.Order,
-                GroupOrder = g.Order,
                 Description = g.Description,
                 IsSystem = g.IsSystem,
                 IsActive = g.IsActive,
@@ -561,8 +563,6 @@ namespace Rock.Blocks.Group
                 UseRolePrefix = false,
                 GroupTypeId = x.Group.GroupTypeId,
                 GroupTypeName = x.Group.GroupType.Name,
-                GroupTypeOrder = x.Group.GroupType.Order,
-                GroupOrder = x.Group.Order,
                 Description = x.Group.Description,
                 IsSystem = x.Group.IsSystem,
                 IsActive = x.Group.IsActive && x.GroupMember.GroupMemberStatus == GroupMemberStatus.Active,
@@ -658,6 +658,8 @@ namespace Rock.Blocks.Group
             // Compute per-row CanDelete, NeedsArchive, path, and display name.
             var showGroupPath = GetAttributeValue( AttributeKey.DisplayGroupPath ).AsBoolean();
 
+            var hasBlockEditAuth = BlockCache.IsAuthorized( Authorization.EDIT, currentPerson );
+
             foreach ( var row in rows )
             {
                 // Apply "GROUP - " prefix for security role groups shown alongside other types.
@@ -685,7 +687,8 @@ namespace Rock.Blocks.Group
                 if ( !IsPersonMode )
                 {
                     row.HasChatChannel = chatChannelGroupIds != null && chatChannelGroupIds.Contains( row.Id );
-                    row.CanDelete = !row.IsSystem
+                    row.CanDelete = hasBlockEditAuth
+                        && !row.IsSystem
                         && !row.IsArchived
                         && group != null
                         && group.IsAuthorized( Authorization.EDIT, currentPerson );
@@ -856,15 +859,17 @@ namespace Rock.Blocks.Group
 
         /// <summary>
         /// Gets available groups for the dropdown add-member picker in person mode.
-        /// Mirrors the source block's BindModelDropDown logic.
+        /// Mirrors the source block's BindModelDropDown logic. Called on demand from
+        /// the <see cref="GetAvailableGroups"/> block action, not during initialization.
         /// </summary>
-        private List<ListItemBag> GetAvailableGroupsForDropdown( List<int> groupTypeIds )
+        private GroupListAvailableGroupsBag GetAvailableGroupsForDropdown( List<int> groupTypeIds )
         {
             var onlySecurityGroups = GetAttributeValue( AttributeKey.LimitToSecurityRoleGroups ).AsBoolean();
             var limitToActiveStatus = GetAttributeValue( AttributeKey.LimitToActiveStatus );
 
             var qry = new GroupService( RockContext )
                 .Queryable()
+                .AsNoTracking()
                 .Where( g => groupTypeIds.Contains( g.GroupTypeId ) && ( !onlySecurityGroups || g.IsSecurityRole ) );
 
             if ( limitToActiveStatus == "active" )
@@ -872,14 +877,41 @@ namespace Rock.Blocks.Group
                 qry = qry.Where( g => g.IsActive );
             }
 
+            // Guard against loading an unbounded dataset into a drop-down. The count is a cheap SQL
+            // aggregate that never triggers the per-group authorization walk below. Above the threshold
+            // the modal falls back to the tree group picker, which loads one level at a time.
+            if ( qry.Count() > DropdownGroupCountThreshold )
+            {
+                return new GroupListAvailableGroupsBag { IsDatasetTooLarge = true };
+            }
+
             var currentPerson = RequestContext.CurrentPerson;
-            return qry
+
+            var personActiveRoleIdsByGroupId = new Dictionary<int, List<int>>();
+            if ( currentPerson != null )
+            {
+                var candidateGroupIdQuery = qry.Select( g => g.Id );
+                personActiveRoleIdsByGroupId = new GroupMemberService( RockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( m => m.PersonId == currentPerson.Id
+                        && candidateGroupIdQuery.Contains( m.GroupId )
+                        && m.GroupMemberStatus == GroupMemberStatus.Active )
+                    .Select( m => new { m.GroupId, m.GroupRoleId } )
+                    .ToList()
+                    .GroupBy( m => m.GroupId )
+                    .ToDictionary( g => g.Key, g => g.Select( m => m.GroupRoleId ).ToList() );
+            }
+
+            var groups = qry
                 .OrderBy( g => g.Name )
                 .ToList()
-                .Where( g => g.IsAuthorized( Authorization.EDIT, currentPerson )
-                    || g.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson ) )
+                .Where( g => g.IsAuthorized( Authorization.EDIT, currentPerson, personActiveRoleIdsByGroupId )
+                    || g.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson, personActiveRoleIdsByGroupId ) )
                 .Select( g => new ListItemBag { Value = g.IdKey, Text = g.Name } )
                 .ToList();
+
+            return new GroupListAvailableGroupsBag { Groups = groups };
         }
 
         #endregion
@@ -906,7 +938,8 @@ namespace Rock.Blocks.Group
                 return ActionBadRequest( "System groups cannot be deleted." );
             }
 
-            if ( !group.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                || !group.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( "You are not authorized to delete this group." );
             }
@@ -999,6 +1032,24 @@ namespace Rock.Blocks.Group
             RockContext.SaveChanges();
 
             return ActionOk();
+        }
+
+        /// <summary>
+        /// Gets the groups the current person may add the context person to, for the
+        /// Dropdown add-member picker. Loaded on demand when the Add modal opens so the
+        /// (potentially large) group query stays off the initial page render.
+        /// </summary>
+        [BlockAction]
+        public BlockActionResult GetAvailableGroups()
+        {
+            if ( !IsPersonMode )
+            {
+                return ActionBadRequest( "Available groups are only applicable in person mode." );
+            }
+
+            var groupTypeIds = GetAvailableGroupTypeIds( RockContext );
+
+            return ActionOk( GetAvailableGroupsForDropdown( groupTypeIds ) );
         }
 
         /// <summary>

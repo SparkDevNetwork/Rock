@@ -9,13 +9,33 @@
             {{ errorMessage }}
         </NotificationBox>
 
-        <GroupPicker v-if="isGroupPickerMode"
-                     v-model="selectedGroup"
-                     label="Group"
-                     rules="required"
-                     :includedGroupTypeGuids="options.includedGroupTypeGuids ?? []"
-                     :rootGroupGuid="options.rootGroupGuid ?? null"
-                     @update:modelValue="onGroupChanged" />
+        <NotificationBox v-if="isDatasetTooLarge"
+                         alertType="info">
+            The group dataset is too large for a drop-down list, so the group picker is being used instead. This is a block setting that can be toggled.
+        </NotificationBox>
+
+        <div class="row">
+            <div class="col-xs-12 col-md-4">
+                <GroupPicker v-if="isGroupPickerMode"
+                             v-model="selectedGroup"
+                             label="Group"
+                             rules="required"
+                             :includedGroupTypeGuids="options.includedGroupTypeGuids ?? []"
+                             :rootGroupGuid="options.rootGroupGuid ?? null"
+                             @update:modelValue="onGroupChanged" />
+
+                <DropDownList v-else
+                              v-model="selectedGroupIdKey"
+                              label="Group"
+                              rules="required"
+                              :enhanceForLongLists="true"
+                              :items="availableGroups"
+                              :loading="isLoadingGroups"
+                              :showBlankItem="true"
+                              blankValue=""
+                              @update:modelValue="onGroupIdKeyChanged" />
+            </div>
+        </div>
 
         <NotificationBox v-if="hasSyncedRoles"
                          alertType="info"
@@ -24,23 +44,17 @@
             Please make sure this person needs to be added manually instead of meeting the sync conditions.
         </NotificationBox>
 
-        <DropDownList v-else
-                      v-model="selectedGroupIdKey"
-                      label="Group"
-                      rules="required"
-                      :items="options.availableGroups ?? []"
-                      :showBlankItem="true"
-                      blankValue=""
-                      @update:modelValue="onGroupIdKeyChanged" />
-
-
-        <DropDownList v-model="selectedRoleIdKey"
-                      label="Role"
-                      rules="required"
-                      :items="availableRoles"
-                      :showBlankItem="true"
-                      blankValue=""
-                      :disabled="availableRoles.length === 0" />
+        <div class="row">
+            <div class="col-xs-12 col-md-4">
+                <DropDownList v-model="selectedRoleIdKey"
+                              label="Role"
+                              rules="required"
+                              :items="availableRoles"
+                              :showBlankItem="true"
+                              blankValue=""
+                              :disabled="availableRoles.length === 0" />
+            </div>
+        </div>
     </Modal>
 
     <Modal v-model="isRestoreVisible"
@@ -61,9 +75,10 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { ref, computed, PropType } from "vue";
+    import { ref, computed, watch, PropType } from "vue";
     import { GroupListOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupList/groupListOptionsBag";
     import { GroupListAddGroupMemberRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupList/groupListAddGroupMemberRequestBag";
+    import { GroupListAvailableGroupsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupList/groupListAvailableGroupsBag";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -113,6 +128,9 @@
     const selectedGroup = ref<ListItemBag | null>(null);
     const selectedGroupIdKey = ref("");
     const selectedRoleIdKey = ref("");
+    const availableGroups = ref<ListItemBag[]>([]);
+    const isLoadingGroups = ref(false);
+    let hasLoadedGroups = false;
     const availableRoles = ref<ListItemBag[]>([]);
     const hasSyncedRoles = ref(false);
     const errorMessage = ref("");
@@ -122,7 +140,48 @@
     const archivedMemberIdKey = ref("");
     let pendingBag: GroupListAddGroupMemberRequestBag | null = null;
 
-    const isGroupPickerMode = computed(() => props.options.groupPickerType === "GroupPicker");
+    // Whether the block is configured to use the tree group picker rather than the drop-down.
+    const isConfiguredForGroupPicker = computed(() => props.options.groupPickerType === "GroupPicker");
+
+    // Set when the drop-down's candidate dataset is too large; forces the tree picker as a fallback.
+    const isDatasetTooLarge = ref(false);
+
+    // Effective picker mode: the configured picker, or the drop-down's too-large fallback.
+    const isGroupPickerMode = computed(() => isConfiguredForGroupPicker.value || isDatasetTooLarge.value);
+
+    /**
+     * Loads the groups the current person may add to, on demand when the modal first
+     * opens in Dropdown mode. Deferring this keeps the (potentially large) group query
+     * off the initial page render, matching the WebForms block's Add-click behavior.
+     */
+    async function loadAvailableGroups(): Promise<void> {
+        if (hasLoadedGroups || isConfiguredForGroupPicker.value) {
+            return;
+        }
+
+        isLoadingGroups.value = true;
+
+        try {
+            const result = await invokeBlockAction<GroupListAvailableGroupsBag>("GetAvailableGroups");
+            if (result.isSuccess && result.data) {
+                if (result.data.isDatasetTooLarge) {
+                    // Too many groups for a drop-down; fall back to the tree picker.
+                    isDatasetTooLarge.value = true;
+                }
+                else {
+                    availableGroups.value = result.data.groups ?? [];
+                }
+
+                hasLoadedGroups = true;
+            }
+            else {
+                errorMessage.value = result.errorMessage ?? "An error occurred while loading the available groups.";
+            }
+        }
+        finally {
+            isLoadingGroups.value = false;
+        }
+    }
 
     async function loadRoles(groupIdKey: string): Promise<void> {
         selectedRoleIdKey.value = "";
@@ -233,6 +292,13 @@
             isVisible.value = true;
         }
     }
+
+    // Load the dropdown's groups the first time the modal is opened in Dropdown mode.
+    watch(isVisible, (visible) => {
+        if (visible) {
+            loadAvailableGroups();
+        }
+    });
 
     function resetForm(): void {
         selectedGroup.value = null;

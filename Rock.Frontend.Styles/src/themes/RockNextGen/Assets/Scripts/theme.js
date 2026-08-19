@@ -85,6 +85,15 @@ function topHeaderOffset() {
   //  document.body.style.setProperty('--sticky-element-offset', '0px');
   //}
 }
+// Glass Nav on/off is fixed for the page's lifetime, so detect it once via a variable the theme only sets when the feature is on.
+var isGlassNavCached = null;
+function getIsGlassNavOn() {
+  if (isGlassNavCached === null) {
+    isGlassNavCached = getComputedStyle(document.documentElement).getPropertyValue('--nav-glass-gap').trim() !== '';
+  }
+  return isGlassNavCached;
+}
+
 function navMouseEvents() {
   var hoverDelay = 50,
   hideDelay = 100;
@@ -104,6 +113,8 @@ function navMouseEvents() {
       } else if (!$this.data('navHoverTimeout')) {
         const openLi = navbarSide.find('li.open');
         if (openLi.length > 0) {
+          // A flyout is already open, so this is a switch: mark it so the entrance animation is suppressed and the panel just swaps content.
+          bodyElement.addClass('nav-flyout-switching');
           navbarSideLi.removeClass('open');
           navbarStaticSide.addClass('open-secondary-nav');
           $this.addClass('open');
@@ -132,11 +143,26 @@ function navMouseEvents() {
         $this.removeData('navHoverTimeout');
       } else if (!$this.data('navUnHoverTimeout')) {
         $this.data('navUnHoverTimeout', setTimeout(function() {
+          // Clear the switch marker before closing so this flyout's exit animation can play; a direct switch re-adds it on mouseenter.
+          bodyElement.removeClass('nav-flyout-switching');
           $this.removeClass('open');
           if (navbarSide.find('li.open').length < 1) {
-            navbarStaticSide.removeClass('open-secondary-nav');
-            bodyElement.removeClass('nav-open').css('padding-right', '');
-            navbarFixedTop.css('right', '');
+            const resetRail = function() {
+              navbarStaticSide.removeClass('open-secondary-nav');
+              bodyElement.removeClass('nav-open').css('padding-right', '');
+              navbarFixedTop.css('right', '');
+            };
+            // Wait for the flyout's exit animation before dropping the rail (otherwise it hides the exiting flyout behind the header), but skip the wait when Glass Nav is off or reduced motion removed the animation so the rail resets immediately with no delayed layout shift.
+            const hasFlyoutExitAnimation = getIsGlassNavOn() && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (hasFlyoutExitAnimation) {
+              setTimeout(function() {
+                if (navbarSide.find('li.open').length < 1) {
+                  resetRail();
+                }
+              }, 320);
+            } else {
+              resetRail();
+            }
           }
           $this.removeData('navUnHoverTimeout');
         }, hideDelay));

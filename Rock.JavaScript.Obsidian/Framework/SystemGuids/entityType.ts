@@ -517,11 +517,11 @@ export const EntityType = {
     MobileCommunicationCommunicationviewBlockType: "4AF5FCEF-CBF6-486B-A04D-920E31356B7F",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.AddConnectionRequest. */
     MobileConnectionAddConnectionRequest: "F41E7BE3-2854-40FF-82C8-1FDEA12B8B2F",
-    /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionOpportunityList. */
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionOpportunityList". */
     MobileConnectionConnectionOpportunityListBlockType: "CB151D80-DBEF-4A1E-A816-3DF4CD2DE45A",
-    /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionRequestDetail. */
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionRequestDetail". */
     MobileConnectionConnectionRequestDetailBlockType: "6C9B8E2A-A0B1-4E52-B419-250A77AFBCBF",
-    /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionRequestList. */
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionRequestList". */
     MobileConnectionConnectionRequestListBlockType: "E1C52624-898F-46EF-98B0-3C06B6D81654",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionTypeList. */
     MobileConnectionConnectionTypeListBlockType: "F30667AC-5FAA-429C-AD7F-D4B7C0C5C293",

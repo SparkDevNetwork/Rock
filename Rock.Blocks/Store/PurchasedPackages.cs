@@ -46,19 +46,19 @@ namespace Rock.Blocks.Store
     [LinkedPage( "Detail Page",
         Key = AttributeKey.DetailPage,
         Description = "Page reference to use for the detail page.",
-        IsRequired = true,
+        IsRequired = false,
         Order = 0 )]
 
     [LinkedPage( "Install Page",
         Key = AttributeKey.InstallPage,
         Description = "Page reference to use for the install / update page.",
-        IsRequired = true,
+        IsRequired = false,
         Order = 1 )]
 
     [LinkedPage( "Link Organization Page",
         Key = AttributeKey.LinkOrganizationPage,
         Description = "Page to allow the user to link an organization to the store.",
-        IsRequired = true,
+        IsRequired = false,
         Order = 2 )]
 
     #endregion Block Attributes

@@ -20,6 +20,8 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
+using Humanizer;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -408,7 +410,7 @@ namespace Rock.Blocks.Event
 
             if( errorMessage.IsNullOrWhiteSpace())
             {
-                return ActionOk( $"Wait List Transition emails have been sent to {sendCount} individuals." );
+                return ActionOk( $"Wait List Transition emails have been sent to {"individuals".ToQuantity( sendCount )}." );
             }
             else
             {

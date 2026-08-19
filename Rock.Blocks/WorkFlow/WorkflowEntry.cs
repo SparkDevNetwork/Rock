@@ -49,7 +49,7 @@ namespace Rock.Blocks.Workflow
     /// </summary>
 
     [DisplayName( "Workflow Entry" )]
-    [Category( "Worfklow" )]
+    [Category( "Workflow" )]
     [Description( "Used to enter information for a workflow that has interactive elements." )]
     [IconCssClass( "ti ti-settings-cog" )]
     [ConfigurationChangedReload( BlockReloadMode.Block )]
@@ -272,7 +272,6 @@ namespace Rock.Blocks.Workflow
 
             public const string GroupId = "GroupId";
             public const string PersonId = "PersonId";
-            public const string InteractionStartDateTime = "InteractionStartDateTime";
 
             // NOTE that the actual parameter for CampusId and CampusGuid is just 'Campus', but making them different internally to make it clearer
             public const string CampusId = "Campus";
@@ -721,7 +720,7 @@ namespace Rock.Blocks.Workflow
             // CompletedDateTime on the workflow and its activities (Issue #6897).
             if ( workflow.CompletedDateTime.HasValue )
             {
-                return GetEndOfWorkflowBag( workflow, null, null, null );
+                return GetEndOfWorkflowBag( workflow, null, null, null, true );
             }
 
             if ( workflow.Id == 0 )
@@ -741,7 +740,7 @@ namespace Rock.Blocks.Workflow
                         WriteInteraction( false, workflow, null, RockDateTime.Now );
                     }
 
-                    return GetEndOfWorkflowBag( workflow, actionTypeGuid, actionResult, errorMessage );
+                    return GetEndOfWorkflowBag( workflow, actionTypeGuid, actionResult, errorMessage, true );
                 }
 
                 /*
@@ -759,7 +758,7 @@ namespace Rock.Blocks.Workflow
                 {
                     if ( actionResult != null && actionResult.IsSuccess )
                     {
-                        return GetEndOfWorkflowBag( workflow, lastActionTypeGuid, actionResult, null );
+                        return GetEndOfWorkflowBag( workflow, lastActionTypeGuid, actionResult, null, false );
                     }
 
                     return CreateErrorMessage( workflow, workflow.WorkflowTypeCache, "Invalid action", "We detected an invalid action state that prevents further processing." );
@@ -918,8 +917,9 @@ namespace Rock.Blocks.Workflow
         /// <param name="lastActionTypeGuid">The unique identifier of the last interactive action type that was executed.</param>
         /// <param name="lastActionResult">The result object of the last interactive action that was executed.</param>
         /// <param name="errorMessage">The error message that might have been generated during processing.</param>
+        /// <param name="hasNoRemainingActions">Determines if there is truly nothing left for the individual to do. This is <c>false</c> when a result is being displayed but the workflow still has an interactive action waiting, such as a form "Update" button that has no target activity.</param>
         /// <returns>The data that describes the workflow UI to display.</returns>
-        private InteractiveActionBag GetEndOfWorkflowBag( Model.Workflow workflow, Guid? lastActionTypeGuid, InteractiveActionResult lastActionResult, InteractiveMessageBag errorMessage )
+        private InteractiveActionBag GetEndOfWorkflowBag( Model.Workflow workflow, Guid? lastActionTypeGuid, InteractiveActionResult lastActionResult, InteractiveMessageBag errorMessage, bool hasNoRemainingActions )
         {
             // If the block is specifically configured to show the summary
             // view after the workflow has finished processing then ignore
@@ -949,6 +949,26 @@ namespace Rock.Blocks.Workflow
             // to display its data on the page.
             if ( lastActionResult != null )
             {
+                /*
+                    8/13/26 - PS
+
+                    The mobile-only Completion Action setting is only applied by
+                    GetCompletionMessage(), which this early return skips. An
+                    interactive entry form almost always supplies its own response
+                    message, so "Show Completion Xaml" and "Redirect to Page" were
+                    silently ignored once the unified Web + Mobile block replaced
+                    the dedicated mobile block. The legacy GetNextForm() path
+                    already routes the form's message through GetCompletionMessage(),
+                    so match it here.
+
+                    Reason: Completion Action was ignored on the mobile Workflow
+                    Entry block.
+                */
+                if ( hasNoRemainingActions && errorMessage == null && IsMobileCompletionMessageUsed( lastActionResult.ActionData ) )
+                {
+                    lastActionResult.ActionData.Message = GetCompletionMessage( workflow, lastActionResult.ActionData.Message?.Content );
+                }
+
                 return CreateInteractiveActionBag( workflow, lastActionTypeGuid, lastActionResult );
             }
 
@@ -998,6 +1018,38 @@ namespace Rock.Blocks.Workflow
             }
 
             return workflow.GetNextInteractiveAction( RequestContext.CurrentPerson, actionId, BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) );
+        }
+
+        /// <summary>
+        /// Determines if the mobile only Completion Action block setting should
+        /// replace the message that was supplied by the last interactive action.
+        /// </summary>
+        /// <param name="actionData">The data returned by the last interactive action.</param>
+        /// <returns><c>true</c> if the block's completion message should be used instead; otherwise <c>false</c>.</returns>
+        private bool IsMobileCompletionMessageUsed( InteractiveActionDataBag actionData )
+        {
+            // Completion Action is a mobile only setting and will always
+            // evaluate to 0 on web, but guard on the site type anyway so the
+            // intent is explicit.
+            if ( PageCache?.Layout?.Site?.SiteType != SiteType.Mobile )
+            {
+                return false;
+            }
+
+            var completionAction = GetAttributeValue( AttributeKey.CompletionAction ).AsInteger();
+
+            // 1 is Show Completion Xaml and 2 is Redirect to Page. Any other
+            // value means the message from the workflow should be displayed.
+            if ( completionAction != 1 && completionAction != 2 )
+            {
+                return false;
+            }
+
+            // Only a plain displayable message may be replaced. Component
+            // payloads and exceptions must be passed through untouched.
+            return actionData != null
+                && actionData.ComponentUrl.IsNullOrWhiteSpace()
+                && actionData.Exception == null;
         }
 
         /// <summary>

@@ -139,7 +139,7 @@ namespace Rock.Blocks.Cms
                 .AddTextField( "description", a => a.Description )
                 .AddTextField( "layout", a => a.Layout?.Name )
                 .AddField( "isSystem", a => a.IsSystem )
-                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddField( "isSecurityDisabled", a => !( PageCache.Get( a.Id )?.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) ?? true ) )
                 .AddAttributeFields( GetGridAttributes() );
         }
 
@@ -168,7 +168,9 @@ namespace Rock.Blocks.Cms
                 return ActionBadRequest( $"Not authorized to delete ${Page.FriendlyTypeName}." );
             }
 
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            // Pass includeSecondLvl so the delete is blocked when a Site references this page
+            // as its Default/Login/Registration/PageNotFound page; the base CanDelete misses that.
+            if ( !entityService.CanDelete( entity, out var errorMessage, includeSecondLvl: true ) )
             {
                 return ActionBadRequest( errorMessage );
             }

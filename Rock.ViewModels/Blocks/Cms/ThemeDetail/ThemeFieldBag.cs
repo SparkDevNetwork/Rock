@@ -75,5 +75,11 @@ namespace Rock.ViewModels.Blocks.Cms.ThemeDetail
         /// Specifies the input width of the text input box.
         /// </summary>
         public string InputWidth { get; set; }
+
+        /// <summary>
+        /// Determines if the "Reset to default" button should be hidden for
+        /// this field in the theme editor UI.
+        /// </summary>
+        public bool HideReset { get; set; }
     }
 }

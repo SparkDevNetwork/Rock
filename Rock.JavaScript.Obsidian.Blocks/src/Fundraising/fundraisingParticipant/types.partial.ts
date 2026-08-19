@@ -16,7 +16,6 @@
 //
 
 export const enum NavigationUrlKey {
-    DonationPage = "DonationPage",
     MainPage = "MainPage"
 }
 

@@ -172,7 +172,7 @@ namespace Rock.Blocks.Finance
 
     [BooleanField( "Group Additional Accounts by Hierarchy",
         Key = AttributeKey.GroupAdditionalAccountsByHierarchy,
-        Description = "When additional accounts are enabled, groups them under their parent accounts. Note: campus-mapped accounts still appear in the hierarchy when campus mapping is on.",
+        Description = "When additional accounts are enabled, groups them under their parent accounts. Note: accounts mapped to campuses are still displayed within the hierarchy when campus mapping is on.",
         TrueText = "Enable",
         FalseText = "Disable",
         DefaultBooleanValue = false,
@@ -218,7 +218,7 @@ namespace Rock.Blocks.Finance
 
     [BooleanField( "Show Confirmation Step",
         Key = AttributeKey.ShowConfirmationStep,
-        Description = "Whether a confirmation step is shown before the transaction is processed.",
+        Description = "Displays a review step where the giver can verify their information before the transaction is submitted.",
         DefaultBooleanValue = true,
         Category = AttributeCategory.BasicSettings_GeneralSettings,
         Order = 18,
@@ -589,13 +589,13 @@ namespace Rock.Blocks.Finance
 
     [CodeEditorField( "Confirmation Body",
         Key = AttributeKey.ConfirmationBody,
-        Description = "Body content rendered on the confirmation step. Supports Lava.",
+        Description = "HTML displayed as the main body of the confirmation section. Supports Lava.",
         EditorMode = CodeEditorMode.Lava,
         EditorHeight = 200,
         DefaultValue = AttributeDefault.ConfirmationBody,
         Category = AttributeCategory.CustomizeText_ConfirmationPage,
         Order = 2,
-        IsRequired = false )]
+        IsRequired = true )]
 
     [CodeEditorField( "Confirmation Footer",
         Key = AttributeKey.ConfirmationFooter,
@@ -618,7 +618,7 @@ namespace Rock.Blocks.Finance
         DefaultValue = AttributeDefault.SuccessPageTemplate,
         Category = AttributeCategory.CustomizeText_SuccessPage,
         Order = 0,
-        IsRequired = false )]
+        IsRequired = true )]
 
     [TextField( "Save Payment Method Section Heading",
         Key = AttributeKey.SavePaymentMethodSectionHeading,
@@ -738,7 +738,7 @@ namespace Rock.Blocks.Finance
 
     [BooleanField( "Text-to-Give Mode",
         Key = AttributeKey.TextToGiveMode,
-        Description = "Enables the Text-to-Give account setup flow. Not compatible with scheduled transactions.",
+        Description = "Switches the block into Text-to-Give setup mode, where the payer registers a payment method that will be charged when they send a keyword via SMS. Scheduled transactions are not supported in this mode.",
         DefaultBooleanValue = false,
         Category = AttributeCategory.Advanced,
         Order = 9,
@@ -1048,6 +1048,12 @@ namespace Rock.Blocks.Finance
         /// The message shown at submit when the CAPTCHA token is missing or invalid.
         /// </summary>
         private const string CaptchaValidationMessage = "Please complete the verification again to continue.";
+
+        /// <summary>
+        /// The strings a first name may not contain, blocking combined names such as "Ted &amp; Cindy". Must stay in
+        /// sync with the list the First Name field enforces client-side (firstNameTextBox.obs).
+        /// </summary>
+        private static readonly string[] FirstNameNotAllowedStrings = new[] { "&", " and ", "-and-", "_and_", " plus ", "+", "/" };
 
         #endregion Keys & Constants
 
@@ -1999,11 +2005,11 @@ namespace Rock.Blocks.Finance
         }
 
         /// <summary>
-        /// Resolves the accounts presented to the giver (name and Guid), mirroring the shared accounts
-        /// endpoint: active, in-date accounts ordered by account order, each label resolved from the
-        /// Account Label Template. Public accounts only, unless private accounts are allowed (URL
-        /// account options with the public-only restriction off). An empty selectable list resolves to
-        /// every eligible account.
+        /// Resolves the accounts presented to the giver (name and Guid): active, in-date accounts ordered
+        /// by their depth-first position in the account hierarchy, each label resolved from the Account
+        /// Label Template. Public accounts only, unless private accounts are allowed (URL account options
+        /// with the public-only restriction off). An empty selectable list resolves to every eligible
+        /// account.
         /// </summary>
         /// <param name="accountGuidsToDisplay">The Guids of the accounts to resolve, or empty for all.</param>
         /// <param name="allowPrivateAccounts">Whether non-public accounts are included.</param>
@@ -2013,15 +2019,16 @@ namespace Rock.Blocks.Finance
             var today = RockDateTime.Today;
             var accountGuidSet = new HashSet<Guid>( accountGuidsToDisplay );
             var hasSpecificAccounts = accountGuidSet.Count > 0;
+            var hierarchyOrderIndexes = GetAccountHierarchyOrderIndexes();
 
-            var accounts = FinancialAccountCache.All()
+            var eligibleAccounts = FinancialAccountCache.All()
                 .Where( a => ( !hasSpecificAccounts || accountGuidSet.Contains( a.Guid ) )
                     && a.IsActive
                     && ( allowPrivateAccounts || ( a.IsPublic ?? false ) )
                     && ( a.StartDate == null || a.StartDate.Value <= today )
-                    && ( a.EndDate == null || a.EndDate.Value >= today ) )
-                .OrderBy( a => a.Order )
-                .ToList();
+                    && ( a.EndDate == null || a.EndDate.Value >= today ) );
+
+            var accounts = OrderByHierarchyPosition( eligibleAccounts, hierarchyOrderIndexes ).ToList();
 
             var resolveAccountLabel = GetAccountLabelResolver();
 
@@ -2032,6 +2039,78 @@ namespace Rock.Blocks.Finance
                     Value = account.Guid.ToString()
                 } )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Builds each account's position in a depth-first walk of the account hierarchy, siblings ordered
+        /// by order, then public name, then id. Sorting displayed accounts by this position keeps child
+        /// accounts directly after their parent (an account's Order value only positions it among its
+        /// siblings, so a flat Order sort interleaves unrelated accounts), and a sibling-only selection
+        /// reduces to plain order-then-name sorting.
+        /// </summary>
+        /// <returns>Each account id's depth-first position in the account hierarchy.</returns>
+        private static Dictionary<int, int> GetAccountHierarchyOrderIndexes()
+        {
+            var accountsByParentId = FinancialAccountCache.All().ToLookup( account => account.ParentAccountId );
+            var hierarchyOrderIndexes = new Dictionary<int, int>();
+
+            AddAccountHierarchyOrderIndexes( accountsByParentId, null, hierarchyOrderIndexes );
+
+            return hierarchyOrderIndexes;
+        }
+
+        /// <summary>
+        /// Adds the depth-first position of each account under the given parent, recursing into each
+        /// account's children as it is visited.
+        /// </summary>
+        /// <param name="accountsByParentId">Every account, grouped by parent account id.</param>
+        /// <param name="parentAccountId">The parent whose child accounts are visited, or null for the roots.</param>
+        /// <param name="hierarchyOrderIndexes">The map each visited account's position is added to.</param>
+        private static void AddAccountHierarchyOrderIndexes( ILookup<int?, FinancialAccountCache> accountsByParentId, int? parentAccountId, Dictionary<int, int> hierarchyOrderIndexes )
+        {
+            foreach ( var account in OrderSiblingAccounts( accountsByParentId[parentAccountId] ) )
+            {
+                // A repeat visit means the parent chain contains a cycle; skip to avoid infinite recursion.
+                if ( hierarchyOrderIndexes.ContainsKey( account.Id ) )
+                {
+                    continue;
+                }
+
+                hierarchyOrderIndexes.Add( account.Id, hierarchyOrderIndexes.Count );
+
+                AddAccountHierarchyOrderIndexes( accountsByParentId, account.Id, hierarchyOrderIndexes );
+            }
+        }
+
+        /// <summary>
+        /// Orders sibling accounts for display: by order, then public name, then id, so ties never fall
+        /// back to an unpredictable cache sequence.
+        /// </summary>
+        /// <param name="accounts">The sibling accounts to order.</param>
+        /// <returns>The ordered sibling accounts.</returns>
+        private static IEnumerable<FinancialAccountCache> OrderSiblingAccounts( IEnumerable<FinancialAccountCache> accounts )
+        {
+            return accounts
+                .OrderBy( account => account.Order )
+                .ThenBy( account => account.PublicName )
+                .ThenBy( account => account.Id );
+        }
+
+        /// <summary>
+        /// Orders accounts by their depth-first position in the account hierarchy, so any mix of levels
+        /// reads in the same sequence as the Accounts administration tree. Accounts with no position (a
+        /// cyclic parent chain) sort last, by order, then public name, then id.
+        /// </summary>
+        /// <param name="accounts">The accounts to order.</param>
+        /// <param name="hierarchyOrderIndexes">Each account id's depth-first position in the account hierarchy.</param>
+        /// <returns>The ordered accounts.</returns>
+        private static IEnumerable<FinancialAccountCache> OrderByHierarchyPosition( IEnumerable<FinancialAccountCache> accounts, Dictionary<int, int> hierarchyOrderIndexes )
+        {
+            return accounts
+                .OrderBy( account => hierarchyOrderIndexes.TryGetValue( account.Id, out var hierarchyOrderIndex ) ? hierarchyOrderIndex : int.MaxValue )
+                .ThenBy( account => account.Order )
+                .ThenBy( account => account.PublicName )
+                .ThenBy( account => account.Id );
         }
 
         /// <summary>
@@ -2062,8 +2141,9 @@ namespace Rock.Blocks.Finance
         /// unless additional accounts are allowed and a specific account list is configured (an empty
         /// configured list already shows every account). Applies to both single- and multiple-account
         /// entry. When Group Additional Accounts by Hierarchy is enabled the accounts are nested under
-        /// their parent; otherwise they are returned as a flat list of roots ordered by account order.
-        /// Every account, parents included, is selectable.
+        /// their parent; otherwise they are returned as a flat list of roots. Either way the accounts
+        /// follow their depth-first position in the account hierarchy, and every account, parents
+        /// included, is selectable.
         /// </summary>
         /// <param name="configuredAccountGuids">The Guids of the accounts already shown to the giver.</param>
         /// <returns>The addable accounts as a tree: nested in hierarchy mode, flat roots otherwise.</returns>
@@ -2094,11 +2174,11 @@ namespace Rock.Blocks.Finance
 
             var resolveAccountLabel = GetAccountLabelResolver();
             var isHierarchyEnabled = GetAttributeValue( AttributeKey.GroupAdditionalAccountsByHierarchy ).AsBoolean();
+            var hierarchyOrderIndexes = GetAccountHierarchyOrderIndexes();
 
             if ( !isHierarchyEnabled )
             {
-                return availableAccounts
-                    .OrderBy( account => account.Order )
+                return OrderByHierarchyPosition( availableAccounts, hierarchyOrderIndexes )
                     .Select( account => new TreeItemBag
                     {
                         Value = account.Guid.ToString(),
@@ -2109,17 +2189,21 @@ namespace Rock.Blocks.Finance
             }
 
             // Hierarchy mode: nest each account under its parent. An account whose parent is not in the
-            // pool is a root. The tree control makes every node selectable, parents included.
+            // pool is a root; the pool's root tier can mix hierarchy levels (a configured parent promotes
+            // its children), so it is ordered by hierarchy position rather than by sibling order. The
+            // tree control makes every node selectable, parents included.
             var availableAccountIds = new HashSet<int>( availableAccounts.Select( account => account.Id ) );
 
             var childrenByParentId = availableAccounts
                 .Where( account => account.ParentAccountId.HasValue && availableAccountIds.Contains( account.ParentAccountId.Value ) )
                 .GroupBy( account => account.ParentAccountId.Value )
-                .ToDictionary( group => group.Key, group => group.OrderBy( account => account.PublicName ).ToList() );
+                .ToDictionary( group => group.Key, group => OrderSiblingAccounts( group ).ToList() );
 
-            return availableAccounts
-                .Where( account => !account.ParentAccountId.HasValue || !availableAccountIds.Contains( account.ParentAccountId.Value ) )
-                .OrderBy( account => account.PublicName )
+            var rootAccounts = availableAccounts.Where( account =>
+                !account.ParentAccountId.HasValue
+                || !availableAccountIds.Contains( account.ParentAccountId.Value ) );
+
+            return OrderByHierarchyPosition( rootAccounts, hierarchyOrderIndexes )
                 .Select( rootAccount => BuildAccountTreeItem( rootAccount, childrenByParentId, resolveAccountLabel ) )
                 .ToList();
         }
@@ -3041,14 +3125,14 @@ namespace Rock.Blocks.Finance
             if ( currencyTypeValueId == creditCardCurrencyTypeId )
             {
                 var cardType = paymentDetail?.CreditCardTypeValue?.Value;
-                var lastFour = paymentDetail?.AccountNumberMasked.Right( 4 );
+                var lastFour = paymentDetail?.AccountNumberMasked?.Right( 4 );
 
                 return $"Text-To-Give - {cardType} (ending in {lastFour})";
             }
 
             if ( currencyTypeValueId == achCurrencyTypeId )
             {
-                var lastFour = paymentDetail?.AccountNumberMasked.Right( 4 );
+                var lastFour = paymentDetail?.AccountNumberMasked?.Right( 4 );
 
                 return $"Text-To-Give - ACH (ending in {lastFour})";
             }
@@ -4359,6 +4443,30 @@ namespace Rock.Blocks.Finance
             {
                 errorMessages.Add( "Make sure to enter a first and last name that does not contain emojis or special fonts." );
             }
+
+            ValidateFirstNameNotAllowedStrings( firstName, errorMessages );
+        }
+
+        /// <summary>
+        /// Adds an error when the first name contains a string that joins two names (for example "Ted &amp; Cindy"),
+        /// so each individual is entered as their own record. The client-side First Name field flags the same
+        /// strings; this is the server-side enforcement that actually stops the submit.
+        /// </summary>
+        /// <param name="firstName">The entered first name.</param>
+        /// <param name="errorMessages">The list the error is added to.</param>
+        private static void ValidateFirstNameNotAllowedStrings( string firstName, List<string> errorMessages )
+        {
+            var foundStrings = FirstNameNotAllowedStrings
+                .Where( notAllowed => ( firstName ?? string.Empty ).IndexOf( notAllowed, StringComparison.InvariantCultureIgnoreCase ) >= 0 )
+                .Select( notAllowed => $"\"{notAllowed}\"" )
+                .ToList();
+
+            if ( !foundStrings.Any() )
+            {
+                return;
+            }
+
+            errorMessages.Add( $"First Name cannot contain {foundStrings.AsDelimited( ", ", " or " )}" );
         }
 
         /// <summary>
@@ -4394,6 +4502,8 @@ namespace Rock.Blocks.Finance
             {
                 errorMessages.Add( "Make sure to enter a first and last name that does not contain emojis or special fonts for Business Contact." );
             }
+
+            ValidateFirstNameNotAllowedStrings( request.BusinessContactFirstName, errorMessages );
 
             if ( GetAttributeValue( AttributeKey.PromptForEmail ).AsBoolean() && request.BusinessContactEmail.IsNullOrWhiteSpace() )
             {

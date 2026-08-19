@@ -514,6 +514,9 @@
      * Event handler for the "Edit Category" button.
      */
     function onEditCategory(): void {
+        // Reset the add-as-child flag so a previous (e.g. canceled) add-child action
+        // cannot cause the edit to send the category itself as its own parent.
+        addNewCategoryAsChild.value = false;
         blockState.value = BlockState.EditCategory;
     }
 

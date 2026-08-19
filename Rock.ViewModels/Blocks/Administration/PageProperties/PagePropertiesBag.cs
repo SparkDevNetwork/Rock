@@ -144,11 +144,6 @@ namespace Rock.ViewModels.Blocks.Administration.PageProperties
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating the length of time (in seconds) in that rendered output is cached. This property is required.
-        /// </summary>
-        public int OutputCacheDuration { get; set; }
-
-        /// <summary>
         /// Gets or sets a flag indicating whether breadcrumbs are displayed on Page
         /// </summary>
         public bool PageDisplayBreadCrumb { get; set; }

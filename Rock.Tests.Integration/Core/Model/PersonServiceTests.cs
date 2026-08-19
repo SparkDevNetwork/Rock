@@ -5,6 +5,7 @@ using System.Threading;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Bus;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -265,10 +266,10 @@ namespace Rock.Tests.Integration.Core.Model
         [DataRow( PersonGuid.PersonWithPrimaryEmailExtremeAccountProtectionProfileGuid, Email.PrimaryEmailExtreme, AccountProtectionProfile.Extreme )]
         public void PersonWithPrimaryEmailShouldHandleAccountProtectionProfileCorrectly( string personGuid, string emailSearch, AccountProtectionProfile accountProtectionProfile )
         {
-            if ( !Bus.RockMessageBus.IsRockStarted )
+            if ( !RockMessageBus.IsRockStarted )
             {
-                Bus.RockMessageBus.IsRockStarted = true;
-                Bus.RockMessageBus.StartAsync().Wait();
+                RockMessageBus.IsRockStarted = true;
+                RockMessageBus.StartAsync().Wait();
             }
 
             var securitySettingService = new SecuritySettingsService();

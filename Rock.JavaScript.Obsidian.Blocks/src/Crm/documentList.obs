@@ -43,8 +43,6 @@
                       :hideAvatar="true"
                       :showAsLink="true"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getCreatedByFilterValue"
-                      :quickFilterValue="getCreatedByFilterValue"
                       visiblePriority="md" />
 
         <DateTimeColumn name="createdDateTime"
@@ -98,7 +96,6 @@
     import { DocumentBag } from "@Obsidian/ViewModels/Blocks/Crm/DocumentList/documentBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { reactive, ref } from "vue";
 
     const config = useConfigurationValues<ListBlockBox<DocumentListOptionsBag>>();
@@ -142,17 +139,6 @@
      */
     function findRow(key: string): Record<string, unknown> | undefined {
         return gridData?.rows?.find(r => r["idKey"] === key);
-    }
-
-    /**
-     * Gets the value to use when filtering the Created By person column.
-     *
-     * @param row The row to be filtered.
-     */
-    function getCreatedByFilterValue(row: Record<string, unknown>): string {
-        const person = row.createdBy as PersonFieldBag | undefined;
-
-        return !person ? "" : `${person.nickName ?? ""} ${person.lastName ?? ""}`;
     }
 
     /**

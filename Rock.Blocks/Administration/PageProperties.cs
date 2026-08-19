@@ -20,7 +20,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Web;
 
 using Rock.Attribute;
 using Rock.Cms;
@@ -1068,7 +1067,7 @@ namespace Rock.Blocks.Administration
                 }
             }
 
-            string parentPageId = entity.ParentPage.IdKey;
+            string parentPageId = entity.ParentPage?.IdKey;
 
             pageService.Delete( entity );
 

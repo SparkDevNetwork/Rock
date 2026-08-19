@@ -40,8 +40,6 @@
                       :hideAvatar="true"
                       :showAsLink="true"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getPersonNameFilterValue"
-                      :quickFilterValue="getPersonNameFilterValue"
                       :exportValue="getPersonNameExportValue"
                       visiblePriority="xs" />
 
@@ -74,7 +72,6 @@
                       :hideAvatar="true"
                       :showAsLink="true"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getAssignedToFilterValue"
                       visiblePriority="md" />
 
         <TextColumn name="resultSummary"
@@ -303,32 +300,6 @@
         }
 
         return filterValue;
-    }
-
-    /**
-    * Gets the filter value text to use for the name column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getPersonNameFilterValue(row: Record<string, unknown>): string {
-        const requestedBy = row.requestedBy as PersonFieldBag;
-
-        if (requestedBy) {
-            return row.requestedByFullName + ` ${row.connectionStatus}` as string;
-        }
-        else {
-            return `${row.firstName} ${row.lastName} ${row.connectionStatus}`;
-        }
-    }
-
-    /**
-    * Gets the filter value text to use for the assigned to column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getAssignedToFilterValue(row: Record<string, unknown>): string {
-        const person = row["caseWorker"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     /**

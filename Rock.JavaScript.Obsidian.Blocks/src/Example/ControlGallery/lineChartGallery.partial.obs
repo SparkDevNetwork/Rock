@@ -3,6 +3,7 @@
 
         <LineChart :labels="labels"
                    :series="series"
+                   :categoryHideAxisLine="categoryHideAxisLine"
                    :categoryLabel="categoryLabel"
                    :categoryMaxTickCount="categoryMaxTickCount"
                    :categoryShowGridLines="categoryShowGridLines"
@@ -13,6 +14,7 @@
                    :legendPosition="legendPosition"
                    :linear="isLinear"
                    :lineStyle="lineStyle"
+                   :showPoints="showPoints"
                    :stack="isStacked"
                    :title="title"
                    :titleAlign="titleAlign"
@@ -20,6 +22,7 @@
                    :tooltipTitle="tooltipTitle"
                    :type="isPercent ? 'percent' : isPercent === false ? 'number' : undefined"
                    :unfilled="isUnfilled"
+                   :valueHideAxisLine="valueHideAxisLine"
                    :valueHideGridLines="valueHideGridLines"
                    :valueLabel="valueLabel"
                    :valueMaxTickCount="valueMaxTickCount"
@@ -106,6 +109,11 @@
                                     label="Linear"
                                     @update:modelValue="isLinear = $event" />
 
+                            <Switch :modelValue="showPoints ?? false"
+                                    help="Shows a point marker at every data point instead of only on hover."
+                                    label="Show Points"
+                                    @update:modelValue="showPoints = $event" />
+
                             <Switch :modelValue="isPercent ?? false"
                                     help="For 'percent', the data must be in decimal form (e.g., 0.1 for 10%)."
                                     label="Percent"
@@ -145,6 +153,10 @@
                             <NumberBox v-model="categoryMaxTickCount"
                                        label="Max Tick Count" />
 
+                            <Switch :modelValue="categoryHideAxisLine ?? false"
+                                    label="Hide Axis Line"
+                                    @update:modelValue="categoryHideAxisLine = $event" />
+
                             <Switch :modelValue="categoryShowGridLines ?? false"
                                     label="Show Grid Lines"
                                     @update:modelValue="categoryShowGridLines = $event" />
@@ -157,6 +169,10 @@
                             <TextBox :modelValue="valueLabel ?? ''"
                                      label="Label"
                                      @update:modelValue="valueLabel = $event" />
+
+                            <Switch :modelValue="valueHideAxisLine ?? false"
+                                    label="Hide Axis Line"
+                                    @update:modelValue="valueHideAxisLine = $event" />
 
                             <Switch :modelValue="valueHideGridLines ?? false"
                                     label="Hide Grid Lines"
@@ -283,7 +299,9 @@
     const minValue = ref<number>(0);
     const maxValue = ref<number>(100);
     const hasCustomTooltip = ref<boolean | undefined>();
+    const categoryHideAxisLine = ref<boolean | undefined>();
     const categoryShowGridLines = ref<boolean | undefined>();
+    const valueHideAxisLine = ref<boolean | undefined>();
     const valueHideGridLines = ref<boolean | undefined>();
     const categoryMaxTickCount = ref<number | undefined>();
     const valueMaxTickCount = ref<number | undefined>();
@@ -292,6 +310,7 @@
     const width = ref<string | undefined>();
     const isUnfilled = ref<boolean | undefined>();
     const isLinear = ref<boolean | undefined>();
+    const showPoints = ref<boolean | undefined>();
     const isStacked = ref<boolean | undefined>();
     const seriesCount = ref<number>(4);
     const legendPosition = ref<LegendPosition | undefined>();
@@ -335,6 +354,9 @@
             `:series="series"`
         ];
 
+        if (!isNullish(categoryHideAxisLine.value)) {
+            lineChartProps.push(`:categoryHideAxisLine="${categoryHideAxisLine.value}"`);
+        }
         if (categoryLabel.value) {
             lineChartProps.push(`categoryLabel="${categoryLabel.value}"`);
         }
@@ -368,6 +390,9 @@
         if (!isNullish(lineStyle.value)) {
             lineChartProps.push(`lineStyle="${lineStyle.value}"`);
         }
+        if (!isNullish(showPoints.value)) {
+            lineChartProps.push(`:showPoints="${showPoints.value}"`);
+        }
         if (!isNullish(isStacked.value)) {
             lineChartProps.push(`:stack="${isStacked.value}"`);
         }
@@ -387,6 +412,9 @@
         }
         if (!isNullish(isUnfilled.value)) {
             lineChartProps.push(`unfilled="${isUnfilled.value}"`);
+        }
+        if (!isNullish(valueHideAxisLine.value)) {
+            lineChartProps.push(`:valueHideAxisLine="${valueHideAxisLine.value}"`);
         }
         if (!isNullish(valueHideGridLines.value)) {
             lineChartProps.push(`valueHideGridLines="${valueHideGridLines.value}"`);

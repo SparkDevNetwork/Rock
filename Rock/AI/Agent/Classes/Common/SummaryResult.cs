@@ -22,7 +22,7 @@ namespace Rock.AI.Agent.Classes.Common
     /// <summary>
     /// The result of a summarize operation with all the grouped result data.
     /// </summary>
-    internal class SummaryResult
+    public class SummaryResult
     {
         /// <summary>
         /// The dimensions used to group the data in the summary results.

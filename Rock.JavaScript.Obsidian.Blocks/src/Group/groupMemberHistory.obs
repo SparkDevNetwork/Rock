@@ -14,8 +14,7 @@
                       field="person"
                       :enableHoverInfo="true"
                       :showAsLink="true"
-                      :filter="pickExistingValueFilter"
-                      :filterValue="getPersonNameFilterValue" />
+                      :filter="pickExistingValueFilter" />
 
         <DateColumn name="dateAdded"
                     title="Date Added"
@@ -159,7 +158,6 @@
     import { GroupMemberHistoryBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberHistory/groupMemberHistoryBag";
     import { GroupMemberHistoryOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberHistory/groupMemberHistoryOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     // #region Types
 
@@ -307,16 +305,6 @@
     // #endregion Event Handlers
 
     // #region Functions
-
-    /**
-     * Gets the filter value text to use for the name column.
-     *
-     * @param row The row to be filtered.
-     */
-    function getPersonNameFilterValue(row: Record<string, unknown>): string {
-        const person = row["person"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
-    }
 
     /**
      * Called when the grid is requesting the row data be loaded.

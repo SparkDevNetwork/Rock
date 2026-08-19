@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -74,6 +75,21 @@ namespace Rock.Blocks.Event
         #region Fields
 
         private RegistrationTemplate _registrationTemplate;
+
+        /// <summary>
+        /// Non-wait-list registrant counts keyed by registration instance Id, populated once per grid load in <see cref="GetListItems"/>.
+        /// </summary>
+        private Dictionary<int, int> _registrantCounts = new Dictionary<int, int>();
+
+        /// <summary>
+        /// Wait-list registrant counts keyed by registration instance Id, populated once per grid load in <see cref="GetListItems"/>.
+        /// </summary>
+        private Dictionary<int, int> _waitListCounts = new Dictionary<int, int>();
+
+        /// <summary>
+        /// The set of registration instance Ids that have at least one active payment plan, populated once per grid load in <see cref="GetListItems"/>.
+        /// </summary>
+        private HashSet<int> _instancesWithActivePaymentPlan = new HashSet<int>();
 
         #endregion
 
@@ -205,6 +221,39 @@ namespace Rock.Blocks.Event
         }
 
         /// <inheritdoc/>
+        protected override List<RegistrationInstance> GetListItems( IQueryable<RegistrationInstance> queryable, RockContext rockContext )
+        {
+            var items = base.GetListItems( queryable, RockContext );
+
+            if ( items.Count == 0 )
+            {
+                return items;
+            }
+
+            var instanceIds = items.ConvertAll( i => i.Id );
+
+            // Registrant and wait-list counts, grouped in SQL so each is one query, not one per row.
+            var counts = new RegistrationRegistrantService( RockContext ).Queryable().AsNoTracking()
+                .Where( rr => !rr.Registration.IsTemporary && instanceIds.Contains( rr.Registration.RegistrationInstanceId ) )
+                .GroupBy( rr => new { rr.Registration.RegistrationInstanceId, rr.OnWaitList } )
+                .Select( g => new { g.Key.RegistrationInstanceId, g.Key.OnWaitList, Count = g.Count() } )
+                .ToList();
+
+            _registrantCounts = counts.Where( c => !c.OnWaitList ).ToDictionary( c => c.RegistrationInstanceId, c => c.Count );
+            _waitListCounts = counts.Where( c => c.OnWaitList ).ToDictionary( c => c.RegistrationInstanceId, c => c.Count );
+
+            _instancesWithActivePaymentPlan = new HashSet<int>( new RegistrationService( RockContext ).Queryable().AsNoTracking()
+                .Where( r => instanceIds.Contains( r.RegistrationInstanceId )
+                    && r.PaymentPlanFinancialScheduledTransaction != null
+                    && r.PaymentPlanFinancialScheduledTransaction.IsActive )
+                .Select( r => r.RegistrationInstanceId )
+                .Distinct()
+                .ToList() );
+
+            return items;
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<RegistrationInstance> GetGridBuilder()
         {
             return new GridBuilder<RegistrationInstance>()
@@ -214,9 +263,9 @@ namespace Rock.Blocks.Event
                 .AddDateTimeField( "startDate", a => a.StartDateTime )
                 .AddDateTimeField( "endDate", a => a.EndDateTime )
                 .AddField( "isActive", a => a.IsActive )
-                .AddField( "registrants", a => a.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Count( r => !r.OnWaitList ) )
-                .AddField( "waitList", a => a.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Count( r => r.OnWaitList ) )
-                .AddField( "hasPaymentPlans", a => a.Registrations.Any( r => r.PaymentPlanFinancialScheduledTransaction != null && r.PaymentPlanFinancialScheduledTransaction.IsActive ) )
+                .AddField( "registrants", a => _registrantCounts.GetValueOrDefault( a.Id, 0 ) )
+                .AddField( "waitList", a => _waitListCounts.GetValueOrDefault( a.Id, 0 ) )
+                .AddField( "hasPaymentPlans", a => _instancesWithActivePaymentPlan.Contains( a.Id ) )
                 .AddAttributeFields( GetGridAttributes() );
         }
 

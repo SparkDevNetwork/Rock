@@ -402,6 +402,12 @@ namespace Rock.Blocks.Finance
 
                 var defaultViewMode = GetAttributeValue( AttributeKey.DefaultTransactionView );
 
+                // The WebForms block stored the Accounts default under the legacy "Transaction Details" value; honor it so a pre-conversion default view is preserved.
+                if ( defaultViewMode == ViewMode.LegacyAccounts )
+                {
+                    defaultViewMode = ViewMode.Accounts;
+                }
+
                 return ( defaultViewMode == ViewMode.Accounts )
                     ? ViewMode.Accounts
                     : ViewMode.Transactions;

@@ -226,15 +226,9 @@
                 const editAreaContainer = toolbarContainer.nextElementSibling as HTMLElement;
 
                 if (editAreaContainer) {
-                    const editAreaContainerHeight = editAreaContainer.clientHeight;
-                    const editorHeightBeforeHidden = editorContainer.style.height;
-                    const heightBeforeAsNumber = editorHeightBeforeHidden.endsWith("px") ? parseInt(editorHeightBeforeHidden) : 0;
-
-                    if (heightBeforeAsNumber > editAreaContainerHeight) {
-                        editorContainer.style.height = `${heightBeforeAsNumber - editAreaContainerHeight}px`;
-                    }
-
+                    // Hide the edit area and clear the container's explicit height so it collapses to just the toolbar
                     editAreaContainer.style.display = "none";
+                    editorContainer.style.height = "";
                 }
             }
         }

@@ -688,6 +688,12 @@ namespace Rock.SystemGuid
         public const string CONTENT_ITEM_DETAIL = "ABF26679-1051-4F4F-8A67-5958E5BF71F8";
 
         /// <summary>
+        /// Gets the Content Item Metrics page guid
+        /// ParentPage: Content Channel Detail
+        /// </summary>
+        public const string CONTENT_ITEM_METRICS = "B917B620-C172-4E52-9695-917E3833DB09";
+
+        /// <summary>
         /// Gets the Content Type Detail page guid
         /// ParentPage: Content Channel Types
         /// </summary>
@@ -1854,6 +1860,12 @@ namespace Rock.SystemGuid
         /// ParentPage: Communications
         /// </summary>
         public const string SMS_PHONE_NUMBERS = "3F1EA6E5-6C61-444A-A80E-5B66F96F521B";
+
+        /// <summary>
+        /// The Spark Connected SErvices page guid.
+        /// ParentPage: System Settings
+        /// </summary>
+        public const string SPARK_CONNECTED_SERVICES = "42c6994a-76e0-48e1-87a3-a011e238b906";
 
         /// <summary>
         /// Gets the SQL Command page guid

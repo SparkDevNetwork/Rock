@@ -1,0 +1,131 @@
+<template>
+    <GalleryAndResult :value="{ title, visibleCount, itemTerm, isTotalBadgeShown, barColor, isDefaultStatsHidden, overflowText }"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <RankedListBarChart :title="title"
+                            :items="items"
+                            :visibleCount="visibleCount"
+                            :barColor="barColor || undefined"
+                            :itemTerm="itemTerm || undefined"
+                            :isTotalBadgeShown="isTotalBadgeShown"
+                            :isDefaultStatsHidden="isDefaultStatsHidden"
+                            :overflowText="overflowText || undefined">
+            <template v-if="useHeaderActions" #headerActions>
+                <HighlightLabel labelType="info">Last 30 Days</HighlightLabel>
+            </template>
+            <template v-if="useCustomStats" #stats="{ item }">
+                <HighlightLabel labelType="success">{{ item.count.toLocaleString() }} clicks</HighlightLabel>
+            </template>
+            <template v-if="useCustomBar" #bar="{ width }">
+                <div :style="{ width, height: '8px', borderRadius: '9999px', backgroundColor: 'var(--color-info-strong)' }"></div>
+            </template>
+            <template v-if="useCustomEmpty" #empty>
+                <NotificationBox :alertType="AlertType.Info">No referrers were recorded for this period.</NotificationBox>
+            </template>
+        </RankedListBarChart>
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <TextBox label="Title" v-model="title" />
+                </div>
+                <div class="col-md-3">
+                    <NumberBox label="Rows" v-model="rowCount" help="How many of the sample rows to feed the control. Set to 0 to see the empty state." />
+                </div>
+                <div class="col-md-3">
+                    <NumberBox label="Visible Count" v-model="visibleCount" help="Rows shown before the rest move into the Show More overflow." />
+                </div>
+                <div class="col-md-3">
+                    <TextBox label="Bar Color" v-model="barColor" help="Any CSS color, e.g. var(--color-categorical-2)." />
+                </div>
+                <div class="col-md-3">
+                    <TextBox label="Overflow Text" v-model="overflowText" help="Show More toggle label. Blank shows 'Show N More'." />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Custom Bar Slot" v-model="useCustomBar" help="Replaces the default bar, reusing the exposed scaled width." />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <TextBox label="Item Term" v-model="itemTerm" help="Singular noun for the total badge, e.g. Referrer." />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Show Total Badge" v-model="isTotalBadgeShown" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Custom Stats Slot" v-model="useCustomStats" help="Adds a custom label alongside the default stats." />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Hide Default Stats" v-model="isDefaultStatsHidden" help="Hides the built-in percent + total, leaving only the slot content." />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Custom Empty Slot" v-model="useCustomEmpty" help="Overrides the default Nothing To Show (set Rows to 0 to see it)." />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Header Actions Slot" v-model="useHeaderActions" help="Injects custom content into the section header, alongside the badge." />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import RankedListBarChart from "@Obsidian/Controls/rankedListBarChart.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    // A representative "top referrers" style dataset, ordered highest to lowest.
+    const sampleItems = [
+        { label: "google.com", count: 4820 },
+        { label: "facebook.com", count: 2610 },
+        { label: "instagram.com", count: 1943 },
+        { label: "youtube.com", count: 1205 },
+        { label: "t.co", count: 764 },
+        { label: "linkedin.com", count: 540 },
+        { label: "bing.com", count: 421 },
+        { label: "reddit.com", count: 356 },
+        { label: "Direct / None", count: 312 },
+        { label: "duckduckgo.com", count: 208 }
+    ];
+
+    const title = ref("Top Known Referrers");
+    const rowCount = ref<number>(8);
+    const visibleCount = ref<number>(5);
+    const barColor = ref("");
+    const overflowText = ref("");
+    const itemTerm = ref("Referrer");
+    const isTotalBadgeShown = ref(true);
+    const useCustomStats = ref(false);
+    const isDefaultStatsHidden = ref(false);
+    const useCustomEmpty = ref(false);
+    const useHeaderActions = ref(false);
+    const useCustomBar = ref(false);
+
+    const items = computed(() => sampleItems.slice(0, rowCount.value ?? 0));
+
+    const importCode = getSfcControlImportPath("rankedListBarChart");
+    const exampleCode = computed((): string => {
+        const attributes = [
+            `title="${title.value}"`,
+            ":items=\"items\"",
+            `:visibleCount="${visibleCount.value}"`,
+            barColor.value ? `barColor="${barColor.value}"` : "",
+            itemTerm.value ? `itemTerm="${itemTerm.value}"` : "",
+            isTotalBadgeShown.value ? "isTotalBadgeShown" : "",
+            isDefaultStatsHidden.value ? "isDefaultStatsHidden" : "",
+            overflowText.value ? `overflowText="${overflowText.value}"` : ""
+        ].filter(attribute => attribute !== "");
+
+        return `<RankedListBarChart ${attributes.join("\n                    ")} />`;
+    });
+</script>

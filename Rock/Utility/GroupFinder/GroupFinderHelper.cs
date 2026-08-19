@@ -128,10 +128,35 @@ namespace Rock.Utility.GroupFinder
                             groupQuery = ApplyFilterTimeOfDay( groupQuery, setting );
                             break;
                         }
+                    // Meeting style (in-person / online / hybrid)
+                    case "meetingstyle":
+                        {
+                            groupQuery = ApplyFilterMeetingStyle( groupQuery, setting );
+                            break;
+                        }
                 }
             }
 
             return groupQuery;
+        }
+
+        /// <summary>
+        /// Applies the meeting style filter to the group query.
+        /// </summary>
+        /// <param name="groupQuery">The group location query to filter.</param>
+        /// <param name="setting">The filter whose <see cref="GroupFinderFilter.Content"/> is a comma separated list of <see cref="MeetingStyle"/> values.</param>
+        /// <returns>The query filtered to groups whose meeting style is one of the specified values, or the original query when none are valid.</returns>
+        private IQueryable<GroupLocation> ApplyFilterMeetingStyle( IQueryable<GroupLocation> groupQuery, GroupFinderFilter setting )
+        {
+            // Content is a comma separated list of MeetingStyle values (names or numeric values).
+            var meetingStyles = setting.Content.SplitDelimitedValues().AsEnumList<MeetingStyle>();
+
+            if ( !meetingStyles.Any() )
+            {
+                return groupQuery;
+            }
+
+            return groupQuery.Where( gl => gl.Group.MeetingStyle.HasValue && meetingStyles.Contains( gl.Group.MeetingStyle.Value ) );
         }
 
         /// <summary>

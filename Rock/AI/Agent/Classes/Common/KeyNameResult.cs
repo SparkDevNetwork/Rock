@@ -27,7 +27,7 @@ namespace Rock.AI.Agent.Classes.Common
     /// <remarks>
     /// Use the key for tool calls and internal lookups; prefer the name for user-facing text.
     /// </remarks>
-    internal class KeyNameResult
+    public class KeyNameResult
     {
         #region Properties
 
@@ -111,6 +111,7 @@ namespace Rock.AI.Agent.Classes.Common
         public KeyNameResult( int id, Guid guid, string name )
         {
             Id = id;
+            Guid = guid;
             Name = name;
         }
 

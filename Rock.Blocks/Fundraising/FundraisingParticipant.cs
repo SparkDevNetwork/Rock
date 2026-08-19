@@ -190,7 +190,6 @@ namespace Rock.Blocks.Fundraising
 
         private static class NavigationUrlKey
         {
-            public const string DonationPage = "DonationPage";
             public const string MainPage = "MainPage";
         }
 
@@ -418,15 +417,15 @@ namespace Rock.Blocks.Fundraising
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
             var group = GetGroup();
-            var groupId = group?.Id.ToString() ?? string.Empty;
+
+            // Emit the IdKey when predictable ids are disabled, otherwise the raw Id, mirroring the read side.
+            var groupId = group == null
+                ? string.Empty
+                : ( PageCache.Layout.Site.DisablePredictableIds ? group.IdKey : group.Id.ToString() );
 
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.MainPage] = this.GetLinkedPageUrl( AttributeKey.MainPage, new Dictionary<string, string>
-                {
-                    { PageParameterKey.GroupId, groupId }
-                } ),
-                [NavigationUrlKey.DonationPage] = this.GetLinkedPageUrl( AttributeKey.DonationPage, new Dictionary<string, string>
                 {
                     { PageParameterKey.GroupId, groupId }
                 } )
@@ -588,11 +587,12 @@ namespace Rock.Blocks.Fundraising
             mergeFields.Add( "PercentMet", percentMet );
 
             // The donation page link carries the participation mode so the donation block can
-            // attribute the gift correctly.
+            // attribute the gift correctly. Emit IdKeys when predictable ids are disabled so the donation block can still resolve the group and member.
+            var predictableIdsDisabled = PageCache.Layout.Site.DisablePredictableIds;
             var donationQueryParams = new Dictionary<string, string>
             {
-                { PageParameterKey.GroupId, group.Id.ToString() },
-                { PageParameterKey.GroupMemberId, groupMember.Id.ToString() },
+                { PageParameterKey.GroupId, predictableIdsDisabled ? group.IdKey : group.Id.ToString() },
+                { PageParameterKey.GroupMemberId, predictableIdsDisabled ? groupMember.IdKey : groupMember.Id.ToString() },
                 { "ParticipationMode", participationMode.ToString( "D" ) }
             };
             mergeFields.Add( "MakeDonationUrl", this.GetLinkedPageUrl( AttributeKey.DonationPage, donationQueryParams ) );
@@ -689,8 +689,10 @@ namespace Rock.Blocks.Fundraising
                     .Where( d => d.EntityTypeId == entityTypeIdGroupMember && d.EntityId == groupMember.Id )
                     .Sum( a => ( decimal? ) a.Amount ) ?? 0.00M;
 
+                // Fall back to the group goal, then to 0, so a goal-less opportunity matches the family branch and the original block.
                 fundraisingGoal = groupMember.GetAttributeValue( FundraisingAttributeKey.IndividualFundraisingGoal ).AsDecimalOrNull()
-                    ?? group.GetAttributeValue( FundraisingAttributeKey.IndividualFundraisingGoal ).AsDecimalOrNull();
+                    ?? group.GetAttributeValue( FundraisingAttributeKey.IndividualFundraisingGoal ).AsDecimalOrNull()
+                    ?? 0;
             }
         }
 
@@ -713,7 +715,7 @@ namespace Rock.Blocks.Fundraising
 
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="groupMember"></param>
         /// <param name="group"></param>

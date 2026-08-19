@@ -81,9 +81,6 @@ export type GroupListRowBag = {
      */
     groupMemberIdKey?: string | null;
 
-    /** Gets or sets the display order of the group within its type. Used for default grid sorting. */
-    groupOrder: number;
-
     /**
      * Gets or sets the name of the person's role within the group.
      * Only populated in GroupsPersonMemberOf mode; empty string in GroupList mode.
@@ -98,9 +95,6 @@ export type GroupListRowBag = {
 
     /** Gets or sets the name of the group's GroupType, shown in the Group Type column. */
     groupTypeName?: string | null;
-
-    /** Gets or sets the display order of the group's GroupType. Used for default grid sorting. */
-    groupTypeOrder: number;
 
     /**
      * Gets or sets a value indicating whether the group has a linked chat channel.

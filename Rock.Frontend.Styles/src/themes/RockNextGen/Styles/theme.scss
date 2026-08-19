@@ -658,7 +658,16 @@ a.rock-bookmark {
       &.open {
         .nav-childpages {
           display: inline-block;
-          box-shadow: var(--popup-box-shadow);
+          // Glass Nav adds a two-part inset rim (bright top-left, soft bottom-right) over the popup shadow to give the glass a beveled edge; off resolves to just the popup shadow.
+          box-shadow: var(--nav-glass-shadow, var(--popup-box-shadow));
+          // Glass Nav: visible end-state. Paired with the closed state's transition (allow-discrete on display) and @starting-style, the flyout slides + fades on open and reverses on close.
+          opacity: 1;
+          transform: translateX(0);
+
+          @starting-style {
+            opacity: var(--nav-glass-flyout-opacity, 1);
+            transform: var(--nav-glass-flyout-transform, none);
+          }
         }
         .item-title,
         .nav-childpages li.title {
@@ -743,7 +752,8 @@ a.rock-bookmark {
         display: flex;
         align-items: center;
         margin: 0;
-        color: var(--color-interface-strong);
+        // Glass Nav nudges the resting item text a little darker in light mode and lighter in dark for more contrast.
+        color: var(--nav-glass-item-color, var(--color-interface-strong));
         transition: all ease 0.05s;
 
         &:last-child{
@@ -756,8 +766,9 @@ a.rock-bookmark {
         }
 
         &:hover {
-          color: var(--color-primary);
-          background-color:  var(--color-primary-soft);
+          // Glass Nav softens the hover to a neutral well with unchanged text, matching the design.
+          color: var(--nav-glass-item-hover-color, var(--color-primary));
+          background-color: var(--nav-glass-item-hover-bg, var(--color-primary-soft));
           border-radius: var(--rounded-medium);
 
           &::before {
@@ -771,8 +782,9 @@ a.rock-bookmark {
       &.current {
         .nav-link {
           font-weight: var(--font-weight-semibold);
-          color: #FFFFFF;
-          background-color: var(--color-primary);
+          // Glass Nav marks the selected item with primary text over a translucent primary tint, matching the design.
+          color: var(--nav-glass-item-active-color, #FFFFFF);
+          background-color: var(--nav-glass-item-active-bg, var(--color-primary));
           border-radius: var(--rounded-medium);
 
           &::before {
@@ -819,7 +831,8 @@ a.rock-bookmark {
         font-size: var(--font-size-xsmall);
         font-weight: var(--font-weight-semibold);
         line-height: 1;
-        color: var(--color-interface-medium);
+        // Glass Nav lifts the section eyebrow to a higher-contrast color so it stays legible over the translucent panel.
+        color: var(--nav-glass-header-color, var(--color-interface-medium));
         text-transform: uppercase;
         letter-spacing: 2px;
         border-top: 1px solid var(--color-interface-soft);
@@ -877,7 +890,8 @@ a.rock-bookmark {
 
     .nav-open & {
       z-index: 2000;
-      border-radius: 0 0 0 var(--rounded-large);
+      // Glass Nav keeps the rail's bottom-right corner rounded when a flyout is open.
+      border-radius: var(--nav-glass-rail-radius, 0 0 0 var(--rounded-large));
     }
 
     .navbar-side:first-child {
@@ -902,10 +916,11 @@ a.rock-bookmark {
       &.current {
         background-color: #ffffff30;
         border-radius:    var(--rounded-medium) var(--rounded-medium) var(--rounded-medium) var(--rounded-medium);
-        border: 0;
+        // Glass Nav outlines the active rail icon's highlight with a subtle white border, matching the design.
+        border: var(--nav-glass-rail-active-border, 0);
         &:hover {
           background-color: transparent;
-          border-radius: var(--rounded-medium) 0 0 var(--rounded-medium);
+          border-radius: var(--nav-glass-rail-hover-radius, var(--rounded-medium) 0 0 var(--rounded-medium));
         }
       }
 
@@ -920,8 +935,19 @@ a.rock-bookmark {
         top:0;
         left:0;
         height: 100%;
-        width: calc($navbarside-width - 8px);
-        border-radius:    var(--rounded-medium) 0 0 var(--rounded-medium);
+        // Glass Nav contains the hover highlight to the icon instead of extending it to the rail's right edge.
+        width: var(--nav-glass-rail-hover-width, calc(#{$navbarside-width} - 8px));
+        border-radius: var(--nav-glass-rail-hover-radius, var(--rounded-medium) 0 0 var(--rounded-medium));
+      }
+
+      // Glass Nav: invisible bridge from the icon's right edge across the detached gap so hovering between the rail and flyout keeps it open.
+      &.open::after {
+        position: fixed;
+        content: "";
+        top: 0;
+        bottom: 0;
+        left: $navbarside-width;
+        width: var(--nav-glass-bridge-width, 0);
       }
     }
 
@@ -929,9 +955,27 @@ a.rock-bookmark {
       top: 0;
       left: calc($navbarside-width + 8px);
       width: 280px;
-      border-radius: 0 14px 14px 0;
+      // Glass Nav turns the flyout into a translucent glass surface, kept desktop-only so mobile avoids a full-viewport backdrop blur.
+      background-color: var(--nav-glass-bg, var(--color-interface-softer));
+      background-image: var(--nav-glass-image, none);
+      backdrop-filter: var(--nav-glass-blur, none);
+      -webkit-backdrop-filter: var(--nav-glass-blur, none);
+      // Glass Nav detaches the flyout from the rail with an extra left gap and fully rounded corners.
+      margin-left: var(--nav-glass-gap, 0);
+      border-radius: var(--nav-glass-radius, 0 14px 14px 0);
+      // Glass Nav gives the panel a bright rim border so it reads as a floating glass surface.
+      border: var(--nav-glass-border, 1px solid var(--color-interface-soft));
       margin-top:     var(--spacing-xsmall);
       margin-bottom:  var(--spacing-xsmall);
+      // Glass Nav: closed resting state for the flyout slide + fade. It stays display:none when idle (no wasted blur); allow-discrete on the transition keeps it rendered through the exit animation. Off resolves to none, so display just toggles.
+      opacity: var(--nav-glass-flyout-opacity, 1);
+      transform: var(--nav-glass-flyout-transform, none);
+      transition: var(--nav-glass-flyout-transition, none);
+
+      // Glass Nav: during a direct switch between open flyouts, drop the transition so the panel swaps instantly with no exit/enter.
+      body.nav-flyout-switching & {
+        transition: none;
+      }
 
       .title {
         padding-top: var(--spacing-large);
@@ -1086,7 +1130,8 @@ $hamburger-spacing: 4px;
   .nav-open {
     & .rock-top-header .navbar-brand-corner {
       background-color: var(--color-primary);
-      border-radius: var(--rounded-large) 0 0 0;
+      // Glass Nav keeps the brand corner's top-right rounded since the detached flyout no longer meets it.
+      border-radius: var(--nav-glass-brand-radius, var(--rounded-large) 0 0 0);
     }
   }
 }

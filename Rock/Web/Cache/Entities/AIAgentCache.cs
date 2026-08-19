@@ -132,7 +132,7 @@ namespace Rock.Web.Cache.Entities
 
             foreach ( var tool in tools )
             {
-                if ( agentSkillSettings.DisabledTools?.Contains( tool.Guid ) == true )
+                if ( !agentSkillSettings.EnabledTools.Contains( tool.Guid ) )
                 {
                     continue;
                 }

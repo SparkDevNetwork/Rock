@@ -155,7 +155,7 @@
 
     const selectedKeys = ref<string[]>(bag.selectedCategoryGuids ?? []);
     const initiallyExpanded = ref<string[]>(bag.expandedCategoryGuids ?? []);
-    const expandedKeys = ref<string[]>([...( bag.expandedCategoryGuids ?? [] )]);
+    const expandedKeys = ref<string[]>([...(bag.expandedCategoryGuids ?? [])]);
 
     // The tree never auto-navigates on load; a category is selected only by an explicit click or a
     // deep link. This matches the WebForms block, which did not jump to the first category.
@@ -226,7 +226,8 @@
     /** Adds a new entity parented to the selected node's category. */
     async function onAddEntity(): Promise<void> {
         const result = await invokeBlockAction<string>("GetAddEntityUrl", {
-            selectedGuid: (selectedKeys.value[0] as Guid) ?? emptyGuid
+            selectedGuid: (selectedKeys.value[0] as Guid) ?? emptyGuid,
+            expandedGuids: expandedKeys.value
         });
 
         if (result.isSuccess && result.data) {

@@ -499,12 +499,14 @@ namespace Rock.Blocks.CheckIn
     </div>
     <div class='col-md-6 rapid-attendance-entry-phone-numbers'>
         {% for phone in Person.PhoneNumbers -%}
-            {% if phone.IsUnlisted != true -%}
-                <a href='tel:{{ phone.NumberFormatted }}'>{{ phone.NumberFormatted }}</a>
-            {%- else -%}
-                Unlisted
+            {% if phone.NumberTypeValue.IsActive == true -%}
+                {% if phone.IsUnlisted != true -%}
+                    <a href='tel:{{ phone.NumberFormatted }}'>{{ phone.NumberFormatted }}</a>
+                {%- else -%}
+                    Unlisted
+                {%- endif %}
+                <small>({{ phone.NumberTypeValue.Value }})</small><br>
             {%- endif %}
-            <small>({{ phone.NumberTypeValue.Value }})</small><br>
         {%- endfor %}
     </div>
 </div>";
@@ -780,7 +782,9 @@ namespace Rock.Blocks.CheckIn
 
             var inactiveRecordStatusId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id;
             var homeLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME ).Id;
-            var mobilePhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+            var mobilePhoneType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+            var mobilePhoneTypeId = mobilePhoneType.Id;
+            var isMobilePhoneTypeActive = mobilePhoneType.IsActive;
 
             // A campus label only means something when more than one exists.
             var isCampusNameShown = CampusCache.All( false ).Count > 1;
@@ -831,7 +835,7 @@ namespace Rock.Blocks.CheckIn
 
             var mobilePhoneByPersonId = new PhoneNumberService( RockContext )
                 .Queryable()
-                .Where( ph => personIds.Contains( ph.PersonId ) && ph.NumberTypeValueId == mobilePhoneTypeId )
+                .Where( ph => personIds.Contains( ph.PersonId ) && ph.NumberTypeValueId == mobilePhoneTypeId && !ph.IsUnlisted)
                 .ToList()
                 .GroupBy( ph => ph.PersonId )
                 .ToDictionary( g => g.Key, g => g.First().NumberFormatted );
@@ -861,7 +865,12 @@ namespace Rock.Blocks.CheckIn
 
                 familyMemberNamesByFamilyId.TryGetValue( familyId, out var familyMemberNames );
                 homeAddressHtmlByFamilyId.TryGetValue( familyId, out var addressHtml );
-                mobilePhoneByPersonId.TryGetValue( person.Id, out var mobilePhone );
+
+                string mobilePhone = null;
+                if ( isMobilePhoneTypeActive )
+                {
+                    mobilePhoneByPersonId.TryGetValue( person.Id, out mobilePhone );
+                }
 
                 results.Add( new RapidAttendanceEntrySearchResultBag
                 {

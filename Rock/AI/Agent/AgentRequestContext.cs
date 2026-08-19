@@ -23,7 +23,7 @@ namespace Rock.AI.Agent
     /// <summary>
     /// Provides access to information about the current agent request.
     /// </summary>
-    internal abstract class AgentRequestContext
+    public abstract class AgentRequestContext
     {
         #region Properties
 
@@ -63,11 +63,6 @@ namespace Rock.AI.Agent
         /// <c>RockApp.Current.CreateRockContext()</c>.
         /// </summary>
         public abstract RockContext RockContext { get; }
-
-        /// <summary>
-        /// The chat agent instance that this request is being processed by.
-        /// </summary>
-        public abstract ChatAgent ChatAgent { get; }
 
         #endregion
 

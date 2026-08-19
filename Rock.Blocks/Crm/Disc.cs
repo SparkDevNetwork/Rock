@@ -350,6 +350,10 @@ namespace Rock.Blocks.Crm
                 }
             }
 
+            // Carry the resolved assessment id back to the client so a completed test updates this
+            // record on save, even when it was not identified by an AssessmentId page parameter.
+            box.AssessmentId = assessment.Id;
+
             // If assessment is completed show the results
             if ( assessment.Status == AssessmentRequestStatus.Complete )
             {
@@ -476,18 +480,24 @@ namespace Rock.Blocks.Crm
                     } );
 
                 var assessmentService = new AssessmentService( RockContext );
+                var assessmentType = new AssessmentTypeService( RockContext ).Get( Rock.SystemGuid.AssessmentType.DISC.AsGuid() );
                 Assessment assessment = null;
 
-                // On a retake, ignore the page parameter's assessment so a brand new assessment
-                // is created rather than overwriting the previously completed one.
-                if ( !box.IsRetake && AssessmentId.ToIntSafe() > 0 )
+                // On a retake, ignore the resolved assessment so a brand new assessment is created
+                // rather than overwriting the previously completed one. The lookup is scoped to the
+                // target person and the DISC type so a forged or foreign id cannot overwrite another
+                // person's assessment.
+                if ( !box.IsRetake && box.AssessmentId > 0 )
                 {
-                    assessment = assessmentService.Get( AssessmentId.Value );
+                    assessment = assessmentService.Queryable()
+                        .FirstOrDefault( a => a.Id == box.AssessmentId
+                            && a.PersonAlias != null
+                            && a.PersonAlias.PersonId == targetPerson.Id
+                            && a.AssessmentTypeId == assessmentType.Id );
                 }
 
                 if ( assessment == null )
                 {
-                    var assessmentType = new AssessmentTypeService( RockContext ).Get( Rock.SystemGuid.AssessmentType.DISC.AsGuid() );
                     assessment = new Assessment()
                     {
                         AssessmentTypeId = assessmentType.Id,
@@ -609,7 +619,7 @@ namespace Rock.Blocks.Crm
                              && a.PersonAlias.PersonId == targetPerson.Id
                              && a.AssessmentTypeId == assessmentType.Id );
 
-            if ( AssessmentId.GetValueOrDefault() == 0 && assessmentType.RequiresRequest && !hasAssessment )
+            if ( box.AssessmentId == 0 && assessmentType.RequiresRequest && !hasAssessment )
             {
                 return ActionBadRequest( "Sorry, this test requires a request from someone before it can be taken." );
             }

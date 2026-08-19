@@ -91,6 +91,8 @@ namespace Rock.Workflow.Action
         Description = "The name to use for the new document that is created. <span class='tip tip-lava'></span>",
         Key = AttributeKey.SignatureDocumentName,
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 7 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "41491689-00BD-49A1-A3CD-A59FBBD2B2F8" )]
@@ -472,6 +474,13 @@ namespace Rock.Workflow.Action
                         ?? BinaryFileTypeCache.GetId( Rock.SystemGuid.BinaryFiletype.DIGITALLY_SIGNED_DOCUMENTS.AsGuid() );
 
                     pdfFile = pdfGenerator.GetAsBinaryFileFromHtml( binaryFileTypeId ?? 0, document.Name, signedSignatureDocumentHtml );
+                    // Link the BinaryFile back to its SignatureDocumentTemplate so that downstream security checks
+                    // (e.g., BinaryFile.ParentEntityAllowsView used by GetFile.ashx) can delegate authorization to
+                    // the template's ACL. Without these, the file's authorization falls back to the BinaryFileType
+                    // security only, which does not honor the template's Deny/Allow settings. Matches the pattern
+                    // in Rock.Blocks/Event/RegistrationEntry.cs (see issue #5599 fix from Rock v16.1).
+                    pdfFile.ParentEntityId = template.Id;
+                    pdfFile.ParentEntityTypeId = EntityTypeCache.Get<SignatureDocumentTemplate>().Id;
                 }
             }
             catch ( PdfGeneratorException pdfGeneratorException )

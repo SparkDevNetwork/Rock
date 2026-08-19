@@ -1654,12 +1654,12 @@ namespace Rock.Blocks.Mobile.Connection
         }
 
         /// <summary>
-        /// Determines whether the current person may edit the request, porting
-        /// the web Connections Hub <c>CanEditSpecifiedConnectionRequest</c>: an
-        /// EnableRequestSecurity-aware EDIT check plus the connector and
-        /// connector-group fallback grant (with the campus rule). Sets
+        /// Determines whether the current person may edit the request, and sets
         /// <paramref name="error"/> to an <see cref="ActionForbidden"/> result
-        /// when the person may not edit.
+        /// when they may not. The rules live in
+        /// <see cref="ConnectionRequestAuthorization.CanEditRequest"/>, which is
+        /// the shared port of the web Connections Hub's
+        /// <c>CanEditSpecifiedConnectionRequests</c>.
         /// </summary>
         /// <param name="connectionRequest">The request being authorized.</param>
         /// <param name="error">On return, the forbidden result when not authorized.</param>
@@ -1668,54 +1668,7 @@ namespace Rock.Blocks.Mobile.Connection
         {
             error = null;
 
-            var currentPerson = RequestContext.CurrentPerson;
-            var opportunity = connectionRequest.ConnectionOpportunity;
-            var enableRequestSecurity = opportunity?.ConnectionType?.EnableRequestSecurity == true;
-
-            bool canEdit;
-
-            if ( enableRequestSecurity )
-            {
-                canEdit = connectionRequest.IsAuthorized( Authorization.EDIT, currentPerson );
-            }
-            else
-            {
-                canEdit = opportunity.IsAuthorized( Authorization.EDIT, currentPerson );
-
-                // Fall back to the connector / connector-group grant.
-                if ( !canEdit && currentPerson != null )
-                {
-                    if ( connectionRequest.ConnectorPersonAlias != null
-                        && connectionRequest.ConnectorPersonAlias.PersonId == currentPerson.Id )
-                    {
-                        canEdit = true;
-                    }
-                    else
-                    {
-                        var connectorGroups = new ConnectionOpportunityConnectorGroupService( RockContext ).Queryable()
-                            .AsNoTracking()
-                            .Where( g => g.ConnectionOpportunityId == connectionRequest.ConnectionOpportunityId
-                                && g.ConnectorGroup != null
-                                && g.ConnectorGroup.IsActive
-                                && !g.ConnectorGroup.IsArchived
-                                && g.ConnectorGroup.Members.Any( m => m.PersonId == currentPerson.Id
-                                    && m.GroupMemberStatus == GroupMemberStatus.Active
-                                    && !m.IsArchived ) )
-                            .Select( g => new { g.CampusId } )
-                            .ToList();
-
-                        if ( connectorGroups.Any() )
-                        {
-                            var activeCampusCount = CampusCache.All().Count( c => c.IsActive ?? true );
-
-                            canEdit = activeCampusCount == 1
-                                || connectorGroups.Any( g => !g.CampusId.HasValue )
-                                || !connectionRequest.CampusId.HasValue
-                                || connectorGroups.Any( g => g.CampusId == connectionRequest.CampusId.Value );
-                        }
-                    }
-                }
-            }
+            var canEdit = ConnectionRequestAuthorization.CanEditRequest( RockContext, connectionRequest, RequestContext.CurrentPerson );
 
             if ( !canEdit )
             {

@@ -15,31 +15,19 @@
             </div>
 
             <template v-if="isLastStatus">
-                <p class="text-interface-stronger mb-spacing-none">This request has reached its final status. Would you like to mark it as Complete?</p>
+                <p>This request has reached its final status. Would you like to mark it as Complete?</p>
             </template>
             <template v-else>
                 <template v-if="connectionTypeOptions?.isSequentialStatusMode">
-                    <p class="text-interface-stronger mb-spacing-sm">Are you sure you want to advance to the next status for this request?</p>
-                    <div class="row mb-spacing-sm">
+                    <p>Are you sure you want to advance to the next status for this request?</p>
+                    <div class="row">
                         <div class="col-md-6">
-                            <RockLabel>
-                                <div class="text-interface-medium font-size-sm font-weight-regular">
-                                    Current Status
-                                </div>
-                            </RockLabel>
-                            <div class="text-interface-stronger">
-                                {{ currentStatus?.text }}
-                            </div>
+                            <StaticFormControl :modelValue="currentStatus?.text ?? ''"
+                                               label="Current Status" />
                         </div>
                         <div class="col-md-6">
-                            <RockLabel>
-                                <div class="text-interface-medium font-size-sm font-weight-regular">
-                                    Next Status
-                                </div>
-                            </RockLabel>
-                            <div class="text-interface-stronger">
-                                {{ nextStatus?.text }}
-                            </div>
+                            <StaticFormControl :modelValue="nextStatus?.text ?? ''"
+                                               label="Next Status" />
                         </div>
                     </div>
                 </template>
@@ -57,7 +45,7 @@
         </template>
         <template #footer>
             <div v-if="isLastStatus"
-                 class="d-flex justify-content-end align-items-center">
+                 class="flyout-footer-actions-laststatus">
                 <RockButton @click="completeRequest"
                             :btnSize="BtnSize.Small"
                             :btnType="BtnType.Primary"
@@ -73,7 +61,7 @@
                 </RockButton>
             </div>
             <div v-else
-                 class="d-flex justify-content-between align-items-center">
+                 class="flyout-footer-actions">
                 <RockButton @click="completeRequest"
                             :btnSize="BtnSize.Small"
                             :disabled="!connectionRequestUpdateBag.canCompleteRequest || isSaving"
@@ -99,17 +87,12 @@
     </Flyout>
 </template>
 
-<style scoped>
-.font-weight-regular {
-    font-weight: var(--font-weight-regular);
-}
-</style>
 
 <script setup lang="ts">
     import Flyout from "@Obsidian/Controls/flyout.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { ref, PropType, watch, computed } from "vue";
