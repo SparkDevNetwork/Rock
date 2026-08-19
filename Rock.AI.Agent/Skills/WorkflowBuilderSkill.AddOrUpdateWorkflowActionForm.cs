@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -203,22 +204,115 @@ internal sealed partial class WorkflowBuilderSkill
 
         var result = GetActionFormResult( savedActionType ?? actionType, rockContext, clipLongValues: false );
 
+        var instructions = isNewForm ? "The form has been created." : "The form has been updated.";
+        var storageWarning = GetUnstoredFormDataWarning( workflowTypeId.Value, rockContext );
+
+        if ( storageWarning.IsNotNullOrWhiteSpace() )
+        {
+            instructions += " " + storageWarning;
+        }
+
         return Success( result )
-            .WithInstructions( isNewForm ? "The form has been created." : "The form has been updated." )
+            .WithInstructions( instructions )
             .WithHistoryContent( new KeyNameResult( actionType.Id, actionType.Guid, actionType.Name ) );
     }
+
+    #endregion
+
+    #region Constants
+
+    /// <summary>
+    /// The entity type of <c>Rock.Workflow.Action.PersistWorkflow</c>, used to detect
+    /// whether a workflow already saves itself somewhere in its own structure.
+    /// </summary>
+    private static readonly Guid PersistWorkflowEntityTypeGuid = new Guid( "F1A39347-6FE0-43D4-89FB-544195088ECF" );
 
     #endregion
 
     #region Helper Methods
 
     /// <summary>
+    /// Warns when a form collects data that nothing will store.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A workflow with a single form is never persisted by Rock. The submit creates a
+    /// fresh workflow, replays it, applies the submitted values, and finishes, and
+    /// nothing is written. Whatever an action does with the values during that pass
+    /// still happens, but the values themselves are gone. Rock only persists on its
+    /// own when it reaches a second interactive action inside one request, which a
+    /// single-form workflow never does.
+    /// </para>
+    /// <para>
+    /// This is the failure mode this warning exists for, and it is the reason the
+    /// warning is returned rather than documented. The workflow appears to work: the
+    /// form renders, submits, and completes. Only later does anyone notice there is no
+    /// record of what was entered, and by then the form has been in use for weeks.
+    /// </para>
+    /// <para>
+    /// Warn rather than refuse. A form whose actions write the values somewhere else,
+    /// onto a person, a group member, or an interaction, is a legitimate design and
+    /// needs no persistence. Only the caller knows which case this is.
+    /// </para>
+    /// </remarks>
+    /// <param name="workflowTypeId">The workflow type the form belongs to.</param>
+    /// <param name="rockContext">The context to read through.</param>
+    /// <returns>The warning, or <c>null</c> when the workflow already persists.</returns>
+    private static string GetUnstoredFormDataWarning( int workflowTypeId, RockContext rockContext )
+    {
+        var workflowType = new WorkflowTypeService( rockContext ).Get( workflowTypeId );
+
+        if ( workflowType?.IsPersisted == true )
+        {
+            return null;
+        }
+
+        // A Workflow Persist action anywhere in the type is enough. Where it sits
+        // decides which submissions get saved, which is the caller's call rather than
+        // this check's.
+        var persistEntityTypeId = EntityTypeCache.GetId( PersistWorkflowEntityTypeGuid );
+
+        var hasPersistAction = persistEntityTypeId.HasValue
+            && new WorkflowActionTypeService( rockContext ).Queryable()
+                .Any( at => at.ActivityType.WorkflowTypeId == workflowTypeId
+                    && at.EntityTypeId == persistEntityTypeId.Value );
+
+        if ( hasPersistAction )
+        {
+            return null;
+        }
+
+        return "This workflow does not persist, so anything entered on this form is discarded once processing finishes. "
+            + "If an action writes the values somewhere else, onto a person, a group member, or an interaction, that is fine and nothing more is needed. "
+            + "If not, the submission leaves no record. Add a Workflow Persist action (Rock.Workflow.Action.PersistWorkflow) to the activity that runs after this form is submitted, "
+            + "which saves the entered values without creating a row for people who open the form and never finish. "
+            + "Prefer that over the workflow type's isPersisted setting, which saves every instance the moment someone lands on the form.";
+    }
+
+    /// <summary>
     /// Builds the stored representation of a form's buttons.
     /// </summary>
     /// <remarks>
-    /// Buttons live in one delimited column rather than in rows, so they are written
-    /// with the same serializer that reads them. Each button's target activity is
-    /// stored as a unique identifier so the form survives an export.
+    /// <para>
+    /// Buttons live in one delimited column rather than in rows, joined with a pipe
+    /// and split internally by a caret. Each button's target activity is stored as a
+    /// unique identifier so the form survives an export.
+    /// </para>
+    /// <para>
+    /// Written raw rather than through <c>RockSerializableList.ToUriEncodedString</c>.
+    /// That helper escapes every entry, which turns the caret separators into
+    /// <c>%5E</c>, and the code that renders a form splits on a raw caret without
+    /// unescaping first, in <c>WorkflowActionFormCache.GetFormActionButtons</c>. An
+    /// escaped button therefore yields one field instead of four, fails that method's
+    /// length check, and is dropped silently, so the form renders with no buttons at
+    /// all.
+    /// </para>
+    /// <para>
+    /// Rock has two readers for this column and only one of them unescapes, so a round
+    /// trip through <c>WorkflowActionFormUserAction.FromUriEncodedString</c> looks
+    /// correct while the form itself stays broken. Match what Rock's own workflow type
+    /// editor writes, which is a plain pipe delimited string.
+    /// </para>
     /// </remarks>
     /// <param name="buttons">The buttons the caller supplied.</param>
     /// <param name="workflowTypeId">The workflow type whose activities a button may activate.</param>
@@ -280,7 +374,7 @@ internal sealed partial class WorkflowBuilderSkill
             buttonValues.Add( $"{button.Name}^{buttonStyleGuid}^{activateActivityGuid}^{button.ResponseText}" );
         }
 
-        return RockSerializableList.ToUriEncodedString( buttonValues );
+        return buttonValues.AsDelimited( "|" );
     }
 
     /// <summary>

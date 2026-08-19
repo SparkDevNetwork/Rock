@@ -214,6 +214,7 @@ internal sealed partial class WorkflowBuilderSkill
         if ( settings != null && settings.Any() )
         {
             ValidateSettingKeys( settings, settingAttributes, helper );
+            NormalizeSettingValues( settings, settingAttributes, helper );
 
             if ( helper.HasErrors )
             {
@@ -431,6 +432,125 @@ internal sealed partial class WorkflowBuilderSkill
                 helper.AddError( $"'{setting.Key}' is not a setting this action accepts." );
             }
         }
+    }
+
+    /// <summary>
+    /// Rewrites a setting supplied as a label into the value the setting actually
+    /// stores, and refuses one that matches neither.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// 8/18/26 - CLAUDE
+    ///
+    /// A select-backed setting stores the value side of its list, which for an
+    /// enum-backed setting is a number. Writing the label instead saved cleanly and
+    /// even ran correctly, because the actions parse these with ConvertToEnum, which
+    /// accepts the name. What it broke was Rock's own editor: its dropdown holds the
+    /// numbers, so a stored label matched no item and the setting rendered empty and
+    /// reported itself as missing on a required field.
+    ///
+    /// Reason: A value Rock's editor cannot show is a value that gets silently lost
+    /// the first time a person opens that screen.
+    /// </para>
+    /// <para>
+    /// The label is translated rather than refused. It is the natural thing to write,
+    /// Rock accepts it at run time, and the only thing wrong with it is where it
+    /// lands. A value matching neither side is refused with the list, because at that
+    /// point there is nothing to infer.
+    /// </para>
+    /// <para>
+    /// Values are split on commas so a multi-select setting is checked entry by
+    /// entry. An option cannot itself contain a comma, because the list these are
+    /// read from is comma separated.
+    /// </para>
+    /// <para>
+    /// Anything holding Lava is left alone. Its value is not known until the workflow
+    /// runs, so there is nothing here to compare against.
+    /// </para>
+    /// </remarks>
+    /// <param name="settings">The settings the caller supplied.</param>
+    /// <param name="settingAttributes">The settings the component declares.</param>
+    /// <param name="helper">The helper to record errors on.</param>
+    private static void NormalizeSettingValues( List<AttributeValueResult> settings, List<AttributeCache> settingAttributes, AgentToolHelper helper )
+    {
+        const int MaximumReportedSettingValues = 25;
+
+        var attributesByKey = settingAttributes
+            .GroupBy( a => a.Key, StringComparer.OrdinalIgnoreCase )
+            .ToDictionary( g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase );
+
+        foreach ( var setting in settings )
+        {
+            if ( setting.Key.IsNullOrWhiteSpace() || setting.Value.IsNullOrWhiteSpace() )
+            {
+                continue;
+            }
+
+            if ( setting.Value.Contains( "{{" ) || setting.Value.Contains( "{%" ) )
+            {
+                continue;
+            }
+
+            if ( !attributesByKey.TryGetValue( setting.Key, out var attribute ) )
+            {
+                continue;
+            }
+
+            var selectableValues = GetSelectableValues( attribute );
+
+            if ( selectableValues == null )
+            {
+                continue;
+            }
+
+            var normalizedParts = new List<string>();
+            var unmatchedParts = new List<string>();
+
+            foreach ( var suppliedPart in setting.Value.Split( ',' ).Select( p => p.Trim() ).Where( p => p.IsNotNullOrWhiteSpace() ) )
+            {
+                var match = selectableValues.FirstOrDefault( v => v.Value.Equals( suppliedPart, StringComparison.OrdinalIgnoreCase ) )
+                    ?? selectableValues.FirstOrDefault( v => CollapseSpaces( v.Text ).Equals( CollapseSpaces( suppliedPart ), StringComparison.OrdinalIgnoreCase ) );
+
+                if ( match == null )
+                {
+                    unmatchedParts.Add( suppliedPart );
+                }
+                else
+                {
+                    normalizedParts.Add( match.Value );
+                }
+            }
+
+            if ( unmatchedParts.Any() )
+            {
+                // Capped because a setting whose list comes from SQL can return
+                // thousands of rows, and an error naming every one of them is not an
+                // error anyone can read.
+                var options = string.Join( ", ", selectableValues.Take( MaximumReportedSettingValues ).Select( v => $"'{v.Value}' for {v.Text}" ) );
+
+                if ( selectableValues.Count > MaximumReportedSettingValues )
+                {
+                    options += $", and {selectableValues.Count - MaximumReportedSettingValues} more";
+                }
+
+                helper.AddError( $"'{string.Join( "', '", unmatchedParts )}' is not something the '{attribute.Name}' setting accepts. It stores one of: {options}." );
+
+                continue;
+            }
+
+            setting.Value = string.Join( ",", normalizedParts );
+        }
+    }
+
+    /// <summary>
+    /// Removes every space from a value so a label is matched the way a person would
+    /// read it rather than the way it happens to be spaced.
+    /// </summary>
+    /// <param name="value">The value to collapse.</param>
+    /// <returns>The value without spaces.</returns>
+    private static string CollapseSpaces( string value )
+    {
+        return ( value ?? string.Empty ).Replace( " ", string.Empty );
     }
 
     /// <summary>

@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Utility;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills;
@@ -84,6 +85,66 @@ internal sealed partial class WorkflowBuilderSkill : AgentSkillComponent
     /// </remarks>
     private static readonly HashSet<string> VestigialSettingKeys =
         new HashSet<string>( StringComparer.OrdinalIgnoreCase ) { "Active", "Order" };
+
+    /// <summary>
+    /// Gets the values a setting accepts, when its field type keeps a fixed list.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// 8/18/26 - CLAUDE
+    ///
+    /// Read from the attribute's own configuration rather than from the field type,
+    /// because the framework's field hints are implemented by only a handful of field
+    /// types and the select family is not among them. That left the settings tool
+    /// promising "allowed values" while reporting none for exactly the settings whose
+    /// values cannot be guessed.
+    ///
+    /// Reason: The select field types describe their values in configuration and
+    /// nothing was reading it.
+    /// </para>
+    /// <para>
+    /// Parsing is left to Rock's own helper rather than done here, because the
+    /// configuration has three forms and only one of them is obvious. It is a comma
+    /// separated list where each entry is either <c>value^label</c> or a bare value
+    /// serving as both, and it is never pipe separated. But it may instead hold a SQL
+    /// SELECT returning Value and Text columns, optionally with Lava in it, which a
+    /// naive split would turn into nonsense options. Roughly a quarter of the select
+    /// settings in a normal Rock database are that third form.
+    /// </para>
+    /// </remarks>
+    /// <param name="attribute">The setting to describe.</param>
+    /// <returns>The values, or <c>null</c> when the field type does not keep a list.</returns>
+    private static List<ListItemBag> GetSelectableValues( AttributeCache attribute )
+    {
+        if ( attribute?.ConfigurationValues == null || !attribute.ConfigurationValues.ContainsKey( "values" ) )
+        {
+            return null;
+        }
+
+        Dictionary<string, string> configuredValues;
+
+        try
+        {
+            configuredValues = Rock.Field.Helper.GetConfiguredValues( attribute.ConfigurationValues );
+        }
+        catch
+        {
+            // Intentionally swallowed: a SQL backed list runs a query, and a list this
+            // code cannot read is only a list it cannot describe or check against. The
+            // caller treats that the same as a field type that keeps no list, which
+            // leaves the setting exactly as permissive as it was before.
+            return null;
+        }
+
+        if ( configuredValues == null || !configuredValues.Any() )
+        {
+            return null;
+        }
+
+        return configuredValues
+            .Select( v => new ListItemBag { Value = v.Key, Text = v.Value } )
+            .ToList();
+    }
 
     /// <summary>
     /// The point at which a single setting value, form header, or form footer is
