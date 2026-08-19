@@ -33,7 +33,7 @@
     import { PropType } from "vue";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { ellipsisTooltip as vEllipsisTooltip } from "./ellipsisTooltipDirective.partial";
+    import { vEllipsisTooltip } from "@Obsidian/Directives/ellipsisTooltip";
 
     defineProps({
         disabled: {

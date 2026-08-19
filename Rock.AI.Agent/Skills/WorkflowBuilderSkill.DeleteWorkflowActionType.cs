@@ -43,7 +43,7 @@ internal sealed partial class WorkflowBuilderSkill
     [Description( "Removes one action from a workflow activity, along with its form and its execution history across every existing workflow instance." )]
     [AgentUsage( "Report the execution history count to the person before calling this. It is the only signal that history is about to disappear." )]
     [AgentGuardrail( "This permanently deletes the action and its execution history across all existing workflow instances. Confirm with the person before proceeding." )]
-    [AgentToolPrerequisite( "Call GetWorkflowType to determine the actionTypeIdKey." )]
+    [AgentToolPrerequisite( "Call GetWorkflowTypeConfiguration to determine the actionTypeIdKey." )]
     [AgentToolGuid( "31D70F62-B03A-47F7-8086-1C00637847CB" )]
     public AgentToolResult DeleteWorkflowActionType( string actionTypeIdKey )
     {
@@ -58,7 +58,7 @@ internal sealed partial class WorkflowBuilderSkill
         if ( actionType == null )
         {
             return helper.ErrorResult
-                .WithInstructions( $"Call the {nameof( GetWorkflowType )} function to determine the available actions." );
+                .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the available actions." );
         }
 
         var actionName = actionType.Name;

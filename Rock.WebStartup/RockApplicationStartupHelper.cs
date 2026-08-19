@@ -367,6 +367,22 @@ namespace Rock.WebStartup
             sc.AddSingleton<ILavaEngineFactory, LavaEngineFactory>();
             sc.AddSingleton<DebugTraceObserver>();
 
+            // Distributed locking primitive. Registered as a singleton; the
+            // SQL Server implementation is the default. If the
+            // DisableDistributedLocking app setting is true, register the
+            // no-op provider instead. This is a break-glass fallback that
+            // restores Rock's pre-distributed-locking behavior (every acquire
+            // succeeds, no cross-node coordination) and is not intended for
+            // normal operation.
+            if ( ConfigurationManager.AppSettings["DisableDistributedLocking"].AsBoolean() )
+            {
+                sc.AddSingleton<Rock.Bus.Locking.IDistributedLockProvider, Rock.Bus.Locking.NoOpDistributedLockProvider>();
+            }
+            else
+            {
+                sc.AddSingleton<Rock.Bus.Locking.IDistributedLockProvider, Rock.Bus.Locking.SqlServerDistributedLockProvider>();
+            }
+
             sc.AddScoped<RockContext>();
 
             sc.AddRockLogging();

@@ -66,7 +66,6 @@ internal class WorkflowFormFieldInput
     /// <summary>
     /// Whether the field's label is hidden.
     /// </summary>
-    [Description( "Whether the field's label is hidden." )]
     public bool? HideLabel { get; set; }
 
     /// <summary>

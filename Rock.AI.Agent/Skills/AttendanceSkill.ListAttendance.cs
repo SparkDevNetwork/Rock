@@ -75,6 +75,11 @@ internal partial class AttendanceSkill
             return helper.ErrorResult;
         }
 
+        // All five KeyNameResult projections below must set the same properties
+        // in the same order ({ Id, Guid, Name }). EF translates this whole Select
+        // to a single query, and it throws "structurally incompatible
+        // initializations" if one KeyNameResult is shaped differently from
+        // another in the same query. Keep them identical when editing.
         var orderedQry = qry
             .Select( a => new AttendanceResult
             {

@@ -1,58 +1,19 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="completion-metrics-grid">
-        <div v-for="tile in tiles"
-             :key="tile.label"
-             class="kpi-tile">
-            <div class="kpi-tile-header" v-ellipsis-tooltip>
-                {{ tile.label }}
-                <i class="ti ti-info-circle kpi-tile-help" v-tooltip="tile.help"></i>
-            </div>
-
-            <div class="kpi-tile-value" v-ellipsis-tooltip>
-                {{ tile.value }}
-            </div>
-
-            <div class="kpi-tile-footer" v-ellipsis-tooltip>
+        <KpiTile v-for="tile in tiles"
+                 isBorderless
+                 :key="tile.label"
+                 variant="light"
+                 :label="tile.label"
+                 :help="tile.help"
+                 :value="tile.value">
+            <template #footer>
                 <span :style="{ color: tile.color }">{{ tile.difference || '-' }}</span> {{ footerSuffix }}
-            </div>
-        </div>
+            </template>
+        </KpiTile>
     </div>
 </template>
-
-<style scoped>
-.kpi-tile {
-    display: flex;
-    flex-direction: column;
-    padding: var(--spacing-large);
-
-    background: var(--color-interface-softest);
-    border-radius: var(--rounded-medium);
-}
-
-.kpi-tile-header {
-    font-size: var(--font-size-small);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-interface-strong);
-    margin-bottom: var(--spacing-medium);
-}
-
-.kpi-tile-help {
-    color: var(--color-interface-medium);
-    cursor: pointer;
-}
-
-.kpi-tile-value {
-    font-size: var(--font-size-h3);
-    font-weight: var(--font-weight-bold);
-    margin-bottom: var(--spacing-xsmall);
-}
-
-.kpi-tile-footer {
-    font-size: var(--font-size-xsmall);
-    color: var(--color-interface-medium);
-}
-</style>
 
 <script setup lang="ts">
     /**
@@ -61,15 +22,12 @@
      * Connections Hub snapshot, each showing a current value and a color-coded delta versus
      * the comparison period.
      *
-     * Self-contained: the trend coloring, delta formatting, and ellipsis tooltip behavior are
-     * defined locally so this partial has no dependency on any other block's partials. This
-     * intentionally duplicates the equivalent display logic in the ConnectionOperationalSnapshot
-     * block rather than sharing a component.
+     * The tile presentation comes from the shared KpiTile control; this partial owns only the
+     * metric-to-tile mapping (value/delta formatting and trend coloring).
      */
-    import { computed, Directive, PropType } from "vue";
-    import { destroyTooltip, tooltip } from "@Obsidian/Utility/tooltip";
+    import { computed, PropType } from "vue";
+    import KpiTile from "@Obsidian/Controls/kpiTile.obs";
     import { CompletionMetricsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/completionMetricsBag";
-    import { vTooltip } from "@Obsidian/Directives/tooltip";
 
     const props = defineProps({
         /**
@@ -208,59 +166,4 @@
             }
         ];
     });
-
-    // Adds a tooltip to an element only when its content is truncated with an ellipsis.
-    function updateEllipsisTooltip(el: HTMLElement): void {
-        if (!el.style.whiteSpace) {
-            el.style.whiteSpace = "nowrap";
-        }
-
-        if (!el.style.overflow) {
-            el.style.overflow = "hidden";
-        }
-
-        if (!el.style.textOverflow) {
-            el.style.textOverflow = "ellipsis";
-        }
-
-        const isOverflowing = el.scrollWidth > el.clientWidth;
-        const text = el.textContent ?? "";
-        const currentTitle = el.getAttribute("data-original-title") ?? "";
-        const hasTooltip = currentTitle.length > 0;
-
-        if (isOverflowing) {
-            if (!hasTooltip || currentTitle !== text) {
-                el.setAttribute("data-original-title", text);
-                tooltip(el);
-            }
-        }
-        else if (hasTooltip) {
-            el.removeAttribute("data-original-title");
-            destroyTooltip(el);
-        }
-    }
-
-    const vEllipsisTooltip: Directive = {
-        mounted(el) {
-            updateEllipsisTooltip(el);
-
-            const resizeObserver = new ResizeObserver(() => updateEllipsisTooltip(el));
-            resizeObserver.observe(el);
-
-            const mutationObserver = new MutationObserver(() => updateEllipsisTooltip(el));
-            mutationObserver.observe(el, { characterData: true, childList: true, subtree: true });
-
-            el._ellipsisResizeObserver = resizeObserver;
-            el._ellipsisMutationObserver = mutationObserver;
-        },
-
-        updated(el) {
-            updateEllipsisTooltip(el);
-        },
-
-        unmounted(el) {
-            el._ellipsisResizeObserver?.disconnect();
-            el._ellipsisMutationObserver?.disconnect();
-        }
-    };
 </script>

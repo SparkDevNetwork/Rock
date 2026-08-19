@@ -37,7 +37,6 @@ internal class WorkflowFormButtonInput
     /// The key of the defined value for the button's visual style. Defaults to
     /// the primary style when omitted.
     /// </summary>
-    [Description( "The key of the defined value for the button's visual style." )]
     public string ButtonStyleDefinedValueIdKey { get; set; }
 
     /// <summary>

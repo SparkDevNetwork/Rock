@@ -37,7 +37,7 @@ internal sealed partial class WorkflowBuilderSkill
     /// </remarks>
     [Description( "Gets one configured workflow action with its settings and form markup returned in full, not clipped." )]
     [AgentPurpose( "Retrieves the complete value of a setting or form markup that the workflow type read reported as truncated." )]
-    [AgentToolPrerequisite( "Call GetWorkflowType to determine the actionTypeIdKey." )]
+    [AgentToolPrerequisite( "Call GetWorkflowTypeConfiguration to determine the actionTypeIdKey." )]
     [AgentToolGuid( "B6EB95E5-80EA-4E77-A4DE-89BB327D382F" )]
     public AgentToolResult GetWorkflowActionType( string actionTypeIdKey )
     {
@@ -49,7 +49,7 @@ internal sealed partial class WorkflowBuilderSkill
         if ( actionType == null )
         {
             return helper.ErrorResult
-                .WithInstructions( $"Call the {nameof( GetWorkflowType )} function to determine the available actions." );
+                .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the available actions." );
         }
 
         // Setting values that point at an activity or attribute in the same workflow

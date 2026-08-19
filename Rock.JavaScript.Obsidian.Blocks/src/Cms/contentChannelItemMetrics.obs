@@ -26,7 +26,7 @@
             </template>
             <template v-else>
                 <div class="col-md-4">
-                    <KpiTile label="Total Views" :value="kpis.totalViews.value">
+                    <KpiTile variant="light" label="Total Views" :value="kpis.totalViews.value" isValueAnimated>
                         <template #footer>
                             <template v-if="kpis.totalViews.hasPrevious">
                                 <span :style="{ color: kpis.totalViews.deltaColor }">{{ kpis.totalViews.deltaText }}</span> vs. Previous Period
@@ -37,7 +37,7 @@
                 </div>
 
                 <div class="col-md-4">
-                    <KpiTile label="Unique Views" :help="uniqueViewsHelp" :value="kpis.uniqueViews.value">
+                    <KpiTile variant="light" label="Unique Views" :help="uniqueViewsHelp" :value="kpis.uniqueViews.value" isValueAnimated>
                         <template #footer>
                             <template v-if="kpis.uniqueViews.hasPrevious">
                                 <span :style="{ color: kpis.uniqueViews.deltaColor }">{{ kpis.uniqueViews.deltaText }}</span> vs. Previous Period
@@ -48,7 +48,7 @@
                 </div>
 
                 <div class="col-md-4">
-                    <KpiTile label="Known People" :help="knownPeopleHelp" :value="kpis.knownPeople.value">
+                    <KpiTile variant="light" label="Known People" :help="knownPeopleHelp" :value="kpis.knownPeople.value" isValueAnimated>
                         <template #footer>
                             <template v-if="kpis.knownPeople.hasPrevious">
                                 <span :style="{ color: kpis.knownPeople.deltaColor }">{{ kpis.knownPeople.deltaText }}</span> vs. Previous Period
@@ -76,6 +76,7 @@
                                :valueHideGridLines="true"
                                :valueHideAxisLine="true"
                                :categoryHideAxisLine="true"
+                               :valuePrecision="0"
                                height="300px" />
                 </Panel>
             </div>
@@ -123,11 +124,13 @@
             </div>
         </div>
 
-        <Panel title="Top Known Referrers" panelHeaderCssClass="border-bottom-0">
-            <div v-if="isLoading" class="skeleton metric-skeleton"></div>
-            <NothingToShow v-else-if="topReferrers.length === 0" />
-            <RankedListBarChart v-else :items="topReferrers" />
-        </Panel>
+        <div style="margin-bottom: var(--spacing-large);">
+            <RankedListBarChart title="Top Known Referrers" :items="topReferrers">
+                <template v-if="isLoading" #empty>
+                    <div class="skeleton metric-skeleton"></div>
+                </template>
+            </RankedListBarChart>
+        </div>
 
         <UtmMetricsCard :breakdowns="utmBreakdowns" :isLoading="isLoading" />
     </Panel>
@@ -216,9 +219,9 @@
 
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
-    import KpiTile from "./ContentChannelItemMetrics/kpiTile.partial.obs";
+    import KpiTile from "@Obsidian/Controls/kpiTile.obs";
     import NothingToShow from "./ContentChannelItemMetrics/nothingToShow.partial.obs";
-    import RankedListBarChart from "./ContentChannelItemMetrics/rankedListBarChart.partial.obs";
+    import RankedListBarChart from "@Obsidian/Controls/rankedListBarChart.obs";
     import UtmMetricsCard from "./ContentChannelItemMetrics/utmMetricsCard.partial.obs";
     import GridSettingsModal from "./ContentChannelItemMetrics/gridSettingsModal.partial.obs";
     import BarChart from "@Obsidian/Controls/barChart.obs";

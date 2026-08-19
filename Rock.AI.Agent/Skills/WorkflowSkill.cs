@@ -35,9 +35,9 @@ namespace Rock.AI.Agent.Skills;
 [Description( "This skill provides access to working with workflows." )]
 [AgentSkillGuid( "018b20f6-95f8-4942-aa3c-0cd68c4896a5" )]
 [EntityTypeGuid( "32f6c37b-86ef-4873-8293-86beb54a1a59" )]
-[WorkflowTypeField( "Workflow Types",
-    Description = "The workflow types that this skill can execute.",
-    IsRequired = true,
+[WorkflowTypeField( "Launchable Workflow Types",
+    Description = "The workflow types this skill is allowed to launch. This only restricts launching; the agent can still look up and read any workflow type the person is authorized to view. Leave empty to allow the agent to launch any workflow type the person is authorized to view.",
+    IsRequired = false,
     AllowMultiple = true,
     Key = ConfigurationKey.WorkflowTypes,
     Order = 0 )]

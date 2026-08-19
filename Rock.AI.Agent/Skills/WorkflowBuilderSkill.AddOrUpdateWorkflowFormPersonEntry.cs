@@ -59,7 +59,7 @@ internal sealed partial class WorkflowBuilderSkill
     [Description( "Turns on the person entry block of a user entry form, or updates its settings. Person entry collects a real person, matching or creating the record, rather than collecting plain attribute values." )]
     [AgentPurpose( "Configures a form to collect a person record rather than loose text fields." )]
     [AgentUsage( "Turning person entry on requires personAttributeIdKey and connectionStatusDefinedValueIdKey, and requires spouseAttributeIdKey as well whenever spouseOption is not Hidden. There is no default connection status, so ask which one new people should be given rather than guessing. Every parameter merges, so send only what is changing." )]
-    [AgentToolPrerequisite( "Call GetWorkflowType to determine the actionTypeIdKey and the workflow attributes the person, spouse, and family can be written to." )]
+    [AgentToolPrerequisite( "Call GetWorkflowTypeConfiguration to determine the actionTypeIdKey and the workflow attributes the person, spouse, and family can be written to." )]
     [AgentToolGuid( "3E7B1A4C-5D26-4F98-9C03-8B41D5E6720F" )]
     public AgentToolResult AddOrUpdateWorkflowFormPersonEntry(
         [Description( "The user entry action whose form this is. Always required." )]
@@ -74,23 +74,14 @@ internal sealed partial class WorkflowBuilderSkill
         [Description( "The workflow attribute the family group is written to. Must use the Group field type. Optional. Accepts the attribute's idKey or its guid." )]
         SetOrClear<string> familyAttributeIdKey = null,
 
-        [Description( "Whether the address is Hidden, Optional, or Required." )]
         WorkflowActionFormPersonEntryOption? addressOption = null,
-        [Description( "Whether the birthdate is Hidden, Optional, or Required." )]
         WorkflowActionFormPersonEntryOption? birthdateOption = null,
-        [Description( "Whether the email address is Hidden, Optional, or Required." )]
         WorkflowActionFormPersonEntryOption? emailOption = null,
-        [Description( "Whether ethnicity is Hidden, Optional, or Required." )]
         WorkflowActionFormPersonEntryOption? ethnicityOption = null,
-        [Description( "Whether gender is Hidden, Optional, or Required." )]
         WorkflowActionFormPersonEntryOption? genderOption = null,
-        [Description( "Whether marital status is Hidden, Optional, or Required." )]
         WorkflowActionFormPersonEntryOption? maritalStatusOption = null,
-        [Description( "Whether the mobile phone number is Hidden, Optional, or Required." )]
         WorkflowActionFormPersonEntryOption? mobilePhoneOption = null,
-        [Description( "Whether race is Hidden, Optional, or Required." )]
         WorkflowActionFormPersonEntryOption? raceOption = null,
-        [Description( "Whether the spouse fields are Hidden, Optional, or Required." )]
         WorkflowActionFormPersonEntryOption? spouseOption = null,
         [Description( "Whether the SMS opt-in checkbox is Show or Hide. A different set of values from the other options, because opt-in cannot be required." )]
         WorkflowActionFormShowHideOption? smsOptInOption = null,
@@ -141,7 +132,7 @@ internal sealed partial class WorkflowBuilderSkill
         if ( actionTypeIdKey.IsNullOrWhiteSpace() )
         {
             return Error( $"{nameof( actionTypeIdKey )} is required." )
-                .WithInstructions( $"Call the {nameof( GetWorkflowType )} function to determine the user entry action this form belongs to." );
+                .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the user entry action this form belongs to." );
         }
 
         var actionType = helper.GetRequiredEntity<WorkflowActionType>( actionTypeIdKey );
@@ -149,7 +140,7 @@ internal sealed partial class WorkflowBuilderSkill
         if ( actionType == null )
         {
             return helper.ErrorResult
-                .WithInstructions( $"Call the {nameof( GetWorkflowType )} function to determine the available actions." );
+                .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the available actions." );
         }
 
         var activityType = actionType.ActivityType;
@@ -292,72 +283,6 @@ internal sealed partial class WorkflowBuilderSkill
     #region Helper Methods
 
     /// <summary>
-    /// Refuses a person entry block that is missing something it cannot work without.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Each of these is checked against the value the form will actually hold rather
-    /// than against the parameter, so enabling person entry in one call and supplying
-    /// the missing piece in an earlier one is accepted.
-    /// </para>
-    /// <para>
-    /// All three are gathered before returning rather than reported one at a time. A
-    /// caller that has to make three round trips to learn three things tends to fix the
-    /// first and stop, and the remaining two are exactly the failures that save cleanly
-    /// and only show up later.
-    /// </para>
-    /// <para>
-    /// Connection status is refused rather than defaulted for the reason given on
-    /// <see cref="ApplyPersonEntryDefaults"/>: its list is configured per organization,
-    /// so any value this code picked would be wrong somewhere, and it would be wrong
-    /// silently on every person the form creates.
-    /// </para>
-    /// <para>
-    /// Record status, address type, campus type, and campus status are deliberately not
-    /// here. Those have a defensible default and get one.
-    /// </para>
-    /// </remarks>
-    /// <param name="form">The form being configured.</param>
-    /// <returns>An error describing everything missing, or <c>null</c> when the block is complete.</returns>
-    private AgentToolResult GetMissingRequirementsResult( WorkflowActionForm form )
-    {
-        if ( !form.AllowPersonEntry )
-        {
-            return null;
-        }
-
-        var problems = new System.Collections.Generic.List<string>();
-        var instructions = new System.Collections.Generic.List<string>();
-
-        if ( !form.PersonEntryPersonAttributeGuid.HasValue )
-        {
-            problems.Add( "Person entry has no person attribute to write its result to, so the form would collect a person that nothing in the workflow can reach." );
-            instructions.Add( $"Add a Person attribute with {nameof( AddOrUpdateWorkflowAttribute )}, then pass it as personAttributeIdKey." );
-        }
-
-        if ( !form.PersonEntryConnectionStatusValueId.HasValue )
-        {
-            problems.Add( "Person entry has no connection status, so every person this form creates would be saved without one." );
-            instructions.Add( $"Ask which connection status new people should be given. The list is configured per organization, so there is no value that is right everywhere and none is assumed. Call {nameof( CoreAdministrationSkill.ListDefinedValues )} for the Person Connection Status defined type and pass the choice as connectionStatusDefinedValueIdKey." );
-        }
-
-        if ( form.PersonEntrySpouseEntryOption != WorkflowActionFormPersonEntryOption.Hidden && !form.PersonEntrySpouseAttributeGuid.HasValue )
-        {
-            problems.Add( "The spouse fields are shown but no spouse attribute is bound, so the spouse would be collected and then unreachable." );
-            instructions.Add( "Add a second Person attribute and pass it as spouseAttributeIdKey, or set spouseOption to Hidden if the form does not need a spouse." );
-        }
-
-        if ( !problems.Any() )
-        {
-            return null;
-        }
-
-        problems.Add( "Nothing was saved." );
-
-        return Error( problems ).WithInstructions( string.Join( " ", instructions ) );
-    }
-
-    /// <summary>
     /// Fills in the settings that have a sensible default when a caller did not supply
     /// one.
     /// </summary>
@@ -390,7 +315,6 @@ internal sealed partial class WorkflowBuilderSkill
     /// Connection status deliberately has no default. Unlike these its list is
     /// configured per organization, so there is no value that is right everywhere and
     /// guessing would apply a wrong status silently to every person the form creates.
-    /// It is refused instead, in <see cref="GetMissingRequirementsResult"/>.
     /// </para>
     /// <para>
     /// All are applied only when person entry is on and only when nothing is already
@@ -500,33 +424,11 @@ internal sealed partial class WorkflowBuilderSkill
     /// Sets one of person entry's three attribute bindings.
     /// </summary>
     /// <remarks>
-    /// <para>
     /// These are raw Guid columns rather than foreign keys, so there is no navigation
     /// property and <c>UpdateNavigationProperty</c> cannot be used. The attribute is
     /// still validated against the same scope a form field is, the workflow's own
     /// attributes plus the containing activity's, so a binding cannot point at an
     /// attribute this form could never reach.
-    /// </para>
-    /// <para>
-    /// 8/18/26 - CLAUDE
-    ///
-    /// The parameter is accepted as either an idKey or a guid. Everywhere else in this
-    /// skill an attribute referenced from a second place is named by its guid, because
-    /// that is what an action's settings actually store, so a caller arriving here with
-    /// a guid in hand is following the pattern rather than misusing the tool. Taking
-    /// only the idKey produced an error saying the attribute did not belong to the
-    /// workflow, which was false and read as "create another one".
-    ///
-    /// Reason: Accept either identifier and stop reporting a format mismatch as a
-    /// missing attribute.
-    /// </para>
-    /// <para>
-    /// The field type is checked as well. Rock writes a person alias guid into the
-    /// person and spouse bindings and a family group guid into the family binding, and
-    /// its own form editor lists only attributes of the matching field type. A binding
-    /// pointing at, say, a Text attribute therefore saves cleanly, renders as an empty
-    /// picker in Rock's UI, and is cleared the next time someone saves that screen.
-    /// </para>
     /// </remarks>
     /// <param name="form">The form being configured.</param>
     /// <param name="propertyExpression">The Guid property to set.</param>
@@ -591,9 +493,16 @@ internal sealed partial class WorkflowBuilderSkill
     /// is likely to be holding.
     /// </summary>
     /// <remarks>
-    /// A guid is tried first because it is unambiguous. An idKey is a short opaque
-    /// string that could in principle look like anything, so a value that parses as a
-    /// guid is treated as one.
+    /// 8/18/26 - CLAUDE
+    ///
+    /// Everywhere else in this skill an attribute referenced from a second place is
+    /// named by its guid, because that is what an action's settings actually store, so
+    /// a caller arriving here with a guid is following the pattern rather than misusing
+    /// the tool. Taking only the idKey produced an error saying the attribute did not
+    /// belong to the workflow, which was false and read as "create another one".
+    ///
+    /// Reason: Accept either identifier and stop reporting a format mismatch as a
+    /// missing attribute.
     /// </remarks>
     /// <param name="idKeyOrGuid">The attribute's idKey or guid.</param>
     /// <param name="activityType">The activity the form's action belongs to.</param>
@@ -614,6 +523,67 @@ internal sealed partial class WorkflowBuilderSkill
         return attributeId.HasValue
             ? referenceableAttributes.FirstOrDefault( a => a.Id == attributeId.Value )
             : null;
+    }
+
+    /// <summary>
+    /// Refuses a person entry block that is missing something it cannot work without.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Each is checked against the value the form will actually hold rather than
+    /// against the parameter, so enabling person entry in one call and supplying the
+    /// missing piece in an earlier one is accepted.
+    /// </para>
+    /// <para>
+    /// All three are gathered before returning rather than reported one at a time. A
+    /// caller that has to make three round trips to learn three things tends to fix the
+    /// first and stop, and the remaining two are exactly the failures that save cleanly
+    /// and only show up later.
+    /// </para>
+    /// <para>
+    /// Connection status is refused rather than defaulted because its list is
+    /// configured per organization, so any value this code picked would be wrong
+    /// somewhere, and wrong silently on every person the form creates.
+    /// </para>
+    /// </remarks>
+    /// <param name="form">The form being configured.</param>
+    /// <returns>An error describing everything missing, or <c>null</c> when the block is complete.</returns>
+    private AgentToolResult GetMissingRequirementsResult( WorkflowActionForm form )
+    {
+        if ( !form.AllowPersonEntry )
+        {
+            return null;
+        }
+
+        var problems = new System.Collections.Generic.List<string>();
+        var instructions = new System.Collections.Generic.List<string>();
+
+        if ( !form.PersonEntryPersonAttributeGuid.HasValue )
+        {
+            problems.Add( "Person entry has no person attribute to write its result to, so the form would collect a person that nothing in the workflow can reach." );
+            instructions.Add( $"Add a Person attribute with {nameof( AddOrUpdateWorkflowAttribute )}, then pass it as personAttributeIdKey." );
+        }
+
+        if ( !form.PersonEntryConnectionStatusValueId.HasValue )
+        {
+            problems.Add( "Person entry has no connection status, so every person this form creates would be saved without one." );
+            instructions.Add( $"Ask which connection status new people should be given. The list is configured per organization, so there is no value that is right everywhere and none is assumed. Call {nameof( CoreAdministrationSkill.ListDefinedValues )} for the Person Connection Status defined type and pass the choice as connectionStatusDefinedValueIdKey." );
+        }
+
+        if ( form.PersonEntrySpouseEntryOption != WorkflowActionFormPersonEntryOption.Hidden && !form.PersonEntrySpouseAttributeGuid.HasValue )
+        {
+            problems.Add( "The spouse fields are shown but no spouse attribute is bound, so the spouse would be collected and then unreachable." );
+            instructions.Add( "Add a second Person attribute and pass it as spouseAttributeIdKey, or set spouseOption to Hidden if the form does not need a spouse." );
+        }
+
+        if ( !problems.Any() )
+        {
+            return null;
+        }
+
+        problems.Add( "Nothing was saved." );
+
+        return Error( problems ).WithInstructions( string.Join( " ", instructions ) );
     }
 
     #endregion

@@ -730,7 +730,7 @@ namespace Rock.Web.UI.Controls
             {
                 ID = "_dvpPersonEntryRecordSource",
                 Label = "Record Source",
-                Required = true,
+                Required = false,
                 DefinedTypeId = DefinedTypeCache.GetId( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() )
             };
 

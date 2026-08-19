@@ -47,25 +47,29 @@
                     </template>
                 </ContentSection>
 
-                <ContentSection v-if="totalLinksCount"
-                                title="Top Performing Links"
-                                overflowText="See All Links"
-                                light
-                                disableCollapse>
-                    <template v-if="totalLinksCountLabel" #headerActions>
-                        <HighlightLabel>
-                            {{ totalLinksCountLabel }}
+                <RankedListBarChart v-if="linkItems.length"
+                                    title="Top Performing Links"
+                                    :items="linkItems"
+                                    :visibleCount="topLinksCount"
+                                    itemTerm="Link"
+                                    isTotalBadgeShown
+                                    isDefaultStatsHidden
+                                    overflowText="See All Links">
+                    <template #stats="{ item }">
+                        <HighlightLabel labelType="info">
+                            Click-Through Rate: {{ asFormattedString(item.link.clickThroughRate, 1) }}%
+                        </HighlightLabel>
+                        <HighlightLabel labelType="success">
+                            Total: {{ asFormattedString(item.link.totalClicksCount) }} &bullet; Unique: {{ asFormattedString(item.link.uniqueClicksCount) }}
                         </HighlightLabel>
                     </template>
 
-                    <template #default>
-                        <LinkPerformances :linksAnalytics="topLinks" />
+                    <template #bar="{ item }">
+                        <div :style="{ width: `${item.link.percentOfTopLink}%` }">
+                            <ProgressBar :percent="getUniqueOfTotalPercent(item.link)" progressBarType="success" />
+                        </div>
                     </template>
-
-                    <template v-if="overflowLinks.length" #overflow>
-                        <LinkPerformances :linksAnalytics="overflowLinks" />
-                    </template>
-                </ContentSection>
+                </RankedListBarChart>
 
                 <div class="communication-detail-gender-and-age-chart-sections row">
 
@@ -135,7 +139,6 @@
     import { computed, ref, watch } from "vue";
     import DeliveryBreakdown from "./deliveryBreakdown.partial.obs";
     import Kpis from "./kpis.partial.obs";
-    import LinkPerformances from "./linkPerformances.partial.obs";
     import TopClients from "./topClients.partial.obs";
     import { TabItem } from "./types.partial";
     import UniqueActivityFlow from "./uniqueActivityFlow.partial.obs";
@@ -147,6 +150,8 @@
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import ProgressBar from "@Obsidian/Controls/progressBar.obs";
+    import RankedListBarChart from "@Obsidian/Controls/rankedListBarChart.obs";
     import Toggle from "@Obsidian/Controls/toggle.obs";
     import { CommunicationType, CommunicationTypeDescription } from "@Obsidian/Enums/Communication/communicationType";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
@@ -155,7 +160,7 @@
     import { CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
     import { asFormattedString } from "@Obsidian/Utility/numberUtils";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
-    import { debounceAsync } from "@Obsidian/Utility/util";
+    import { debounceAsync, isNullish } from "@Obsidian/Utility/util";
     import { CommunicationAnalyticsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationAnalyticsRequestBag";
     import { CommunicationAnalyticsResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationAnalyticsResponseBag";
     import { CommunicationDeliveryBreakdownBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationDeliveryBreakdownBag";
@@ -224,28 +229,22 @@
         return analytics.value?.allLinksAnalytics ?? [];
     });
 
-    const totalLinksCount = computed((): number => {
-        return allLinks.value.length;
-    });
-
-    const totalLinksCountLabel = computed((): string => {
-        if (!totalLinksCount.value) {
-            return "";
-        }
-
-        return `${asFormattedString(totalLinksCount.value)} Total ${pluralize("Link", totalLinksCount.value)}`;
-    });
-
-    const topLinks = computed((): CommunicationLinkAnalyticsBag[] => {
-        return allLinks.value.length > topLinksCount
-            ? [...allLinks.value.slice(0, topLinksCount)]
-            : [...allLinks.value];
-    });
-
-    const overflowLinks = computed((): CommunicationLinkAnalyticsBag[] => {
-        return allLinks.value.length > topLinksCount
-            ? [...allLinks.value.slice(topLinksCount)]
-            : [];
+    // The links to chart, filtered to those with complete analytics and shaped for the ranked
+    // list. The full link bag rides along on each item so the stats and bar slots can read it.
+    const linkItems = computed(() => {
+        return allLinks.value
+            .filter(link =>
+                link.url
+                && !isNullish(link.totalClicksCount)
+                && !isNullish(link.uniqueClicksCount)
+                && !isNullish(link.clickThroughRate)
+                && !isNullish(link.percentOfTopLink)
+            )
+            .map(link => ({
+                label: link.url,
+                count: link.totalClicksCount,
+                link
+            }));
     });
 
     const allClients = computed((): ChartNumericDataPointBag[] => {
@@ -275,6 +274,19 @@
     // #endregion Computed Values
 
     // #region Functions
+
+    /**
+     * Gets the unique-of-total click percentage for a link, used to fill its progress bar.
+     *
+     * @param link The link whose unique/total ratio is needed.
+     */
+    function getUniqueOfTotalPercent(link: CommunicationLinkAnalyticsBag): number {
+        if (link.totalClicksCount <= 0) {
+            return 0;
+        }
+
+        return Math.round(link.uniqueClicksCount / link.totalClicksCount * 100);
+    }
 
     /**
      * Gets the analytics data.

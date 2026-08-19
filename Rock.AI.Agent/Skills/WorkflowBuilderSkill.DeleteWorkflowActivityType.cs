@@ -49,7 +49,7 @@ internal sealed partial class WorkflowBuilderSkill
     [Description( "Removes an activity from a workflow type, along with every action inside it and its execution history across every existing workflow instance." )]
     [AgentUsage( "Offer deactivation first. Setting isActive to false on the activity stops it running and is fully reversible, which is usually what someone means by getting rid of a step." )]
     [AgentGuardrail( "This permanently deletes the activity, every action inside it, and the execution history of that activity across all existing workflow instances. Deactivating the activity is the non-destructive alternative. Confirm with the person before proceeding." )]
-    [AgentToolPrerequisite( "Call GetWorkflowType to determine the activityTypeIdKey and to see what the activity contains." )]
+    [AgentToolPrerequisite( "Call GetWorkflowTypeConfiguration to determine the activityTypeIdKey and to see what the activity contains." )]
     [AgentToolGuid( "02164475-C6BB-4F8A-822C-BC37FEA77F03" )]
     public AgentToolResult DeleteWorkflowActivityType( string activityTypeIdKey )
     {
@@ -64,7 +64,7 @@ internal sealed partial class WorkflowBuilderSkill
         if ( activityType == null )
         {
             return helper.ErrorResult
-                .WithInstructions( $"Call the {nameof( GetWorkflowType )} function to determine the available activities." );
+                .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the available activities." );
         }
 
         var activityName = activityType.Name;

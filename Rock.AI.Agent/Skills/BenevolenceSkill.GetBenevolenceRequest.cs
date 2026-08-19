@@ -66,6 +66,7 @@ internal sealed partial class BenevolenceSkill
                 ? new KeyNameResult
                 {
                     Id = benevolenceRequest.RequestStatusValueId,
+                    Guid = benevolenceRequest.RequestStatusValue.Guid,
                     Name = benevolenceRequest.RequestStatusValue.Value,
                 }
                 : null,
@@ -79,15 +80,21 @@ internal sealed partial class BenevolenceSkill
                 } )
                 .ToList(),
             Results = benevolenceRequest.BenevolenceResults
-                .Select( br => new BenevolenceResultResult
+                .Select( br =>
                 {
-                    Amount = br.Amount,
-                    Details = br.ResultSummary.IfEmpty( null ),
-                    ResultType = new KeyNameResult
+                    var resultType = DefinedValueCache.Get( br.ResultTypeValueId, AgentRequestContext.RockContext );
+
+                    return new BenevolenceResultResult
                     {
-                        Id = br.ResultTypeValueId,
-                        Name = DefinedValueCache.Get( br.ResultTypeValueId, AgentRequestContext.RockContext ).Value,
-                    }
+                        Amount = br.Amount,
+                        Details = br.ResultSummary.IfEmpty( null ),
+                        ResultType = new KeyNameResult
+                        {
+                            Id = resultType.Id,
+                            Guid = resultType.Guid,
+                            Name = resultType.Value,
+                        }
+                    };
                 } )
                 .ToList(),
         };

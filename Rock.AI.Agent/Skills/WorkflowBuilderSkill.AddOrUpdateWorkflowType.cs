@@ -101,7 +101,7 @@ internal sealed partial class WorkflowBuilderSkill
             if ( workflowType == null )
             {
                 return helper.ErrorResult
-                    .WithInstructions( $"Call the {nameof( ListWorkflowTypes )} function to determine the available workflow types." );
+                    .WithInstructions( $"Call the {nameof( WorkflowSkill.LookupWorkflowTypes )} function to determine the available workflow types." );
             }
         }
         else
@@ -137,8 +137,7 @@ internal sealed partial class WorkflowBuilderSkill
 
                 Rock's own workflow type screen seeds 28800 (8 hours) for the same
                 reason. A day is used here instead because a caller who cared about the
-                interval would have said so, and the ones who say nothing are building
-                request-and-approve workflows where a daily sweep is plenty.
+                interval would have said so.
 
                 Reason: A default nobody chose should be the cheap one.
             */

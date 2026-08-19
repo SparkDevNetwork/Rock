@@ -108,7 +108,7 @@ internal sealed partial class WorkflowBuilderSkill
             if ( attribute == null )
             {
                 return helper.ErrorResult
-                    .WithInstructions( $"Call the {nameof( GetWorkflowType )} function to determine the workflow's attributes." );
+                    .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the workflow's attributes." );
             }
 
             // This resolves the owner, tells us which scope the attribute is in, and
@@ -154,7 +154,7 @@ internal sealed partial class WorkflowBuilderSkill
             if ( !hasWorkflowParent && !hasActivityParent )
             {
                 return Error( $"Either {nameof( workflowTypeIdKey )} or {nameof( activityTypeIdKey )} is required when adding an attribute." )
-                    .WithInstructions( $"Call the {nameof( ListWorkflowTypes )} function to determine the available workflow types, or supply {nameof( attributeIdKey )} to update an existing attribute instead." );
+                    .WithInstructions( $"Call the {nameof( WorkflowSkill.LookupWorkflowTypes )} function to determine the available workflow types, or supply {nameof( attributeIdKey )} to update an existing attribute instead." );
             }
 
             if ( hasActivityParent )
@@ -166,7 +166,7 @@ internal sealed partial class WorkflowBuilderSkill
                 if ( activityType == null )
                 {
                     return helper.ErrorResult
-                        .WithInstructions( $"Call the {nameof( GetWorkflowType )} function to determine the available activities." );
+                        .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the available activities." );
                 }
 
                 workflowType = activityType.WorkflowType;
@@ -178,7 +178,7 @@ internal sealed partial class WorkflowBuilderSkill
                 if ( workflowType == null )
                 {
                     return helper.ErrorResult
-                        .WithInstructions( $"Call the {nameof( ListWorkflowTypes )} function to determine the available workflow types." );
+                        .WithInstructions( $"Call the {nameof( WorkflowSkill.LookupWorkflowTypes )} function to determine the available workflow types." );
                 }
             }
 

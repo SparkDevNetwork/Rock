@@ -44,10 +44,19 @@ internal partial class WorkflowSkill
 
         var workflowType = helper.GetRequiredEntity<Model.WorkflowType>( workflowTypeIdKey, checkSecurity: true );
 
-        if ( !GetConfiguredWorkflowTypes().Any( wt => wt.Id == workflowType.Id ) )
+        // An empty configuration means the agent may launch any workflow type the
+        // person is authorized to view (security was already checked above). When
+        // specific types are configured, launching is limited to that list.
+        var launchableWorkflowTypes = GetConfiguredWorkflowTypes();
+
+        if ( launchableWorkflowTypes.Any() && !launchableWorkflowTypes.Any( wt => wt.Id == workflowType.Id ) )
         {
-            helper.AddError( "The specified workflow type is not configured for use with this skill." );
-            helper.AddInstructions( $"The specified workflow type is not configured for use with this skill. Call the {nameof( LookupWorkflowTypes )} function to determine available workflow types." );
+            // The workflow type is valid; the agent simply has not been granted
+            // permission to launch it. This is a configuration choice, not a
+            // mistake in the request, so the instructions point at the fix
+            // rather than suggesting the caller try a different type.
+            helper.AddError( "This workflow type exists, but this agent is not configured to launch it." );
+            helper.AddInstructions( "This workflow type exists and the request was well formed, but the agent's settings do not allow it to launch this type. To permit it, add this workflow type to the Launchable Workflow Types setting on the agent's Workflow skill configuration." );
         }
 
         if ( helper.HasErrors )

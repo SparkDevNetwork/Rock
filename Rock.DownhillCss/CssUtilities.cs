@@ -1209,7 +1209,23 @@ formfield.required .required-indicator,
 ^editor,
 ^personpicker {
     color: ?color-interface-strong;
+}
+
+^datepicker,
+^picker,
+^personpicker {
     rock-placeholder-text-color: ?color-interface-medium;
+}
+
+/*
+    The InputView types use MAUI's own placeholder property so that a PlaceholderColor
+    set in page XAML still wins. The shell's rock-placeholder-text-color bridge assigns
+    PlaceholderColor directly, and a manual assignment outranks any stylesheet value.
+*/
+^borderlessentry,
+^entry,
+^editor {
+    -maui-placeholder-color: ?color-interface-medium;
 }
 
 .dark-mode ^borderlessentry,
