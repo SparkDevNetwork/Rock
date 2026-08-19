@@ -230,12 +230,16 @@ namespace RockWeb.Blocks.Crm
             var assessmentService = new AssessmentService( rockContext );
             var query = assessmentService.Queryable( "RequesterPersonAlias.Person, AssessmentType" );
 
-            // Filter by the person id in the context
-            var personId = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+            // Filter by the person key (Id, Guid or IdKey) in the context
+            var personKey = PageParameter( PageParameterKey.PersonId );
 
-            if ( personId.HasValue )
+            if ( personKey.IsNotNullOrWhiteSpace() )
             {
-                query = query.Where( a => a.PersonAlias.PersonId == personId.Value );
+                var personId = new PersonService( rockContext ).GetSelect( personKey, p => ( int? ) p.Id, !PageCache.Layout.Site.DisablePredictableIds );
+
+                // If a person key was provided but could not be resolved, filter to no
+                // results rather than showing every assessment in the database.
+                query = query.Where( a => a.PersonAlias.PersonId == personId );
             }
 
             // Filter by assessment type if specified by the user
