@@ -196,6 +196,8 @@ namespace Rock.Blocks.Crm.PersonDetail
             box.PersonIdKey = person.IdKey;
             box.IsEditAllowed = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
             box.CancelUrl = RequestContext.ResolveRockUrl( $"~/Person/{person.IdKey}" );
+            box.FamilyName = person.PrimaryFamily?.Name;
+            box.CampusName = person.PrimaryCampus?.Name;
             box.Options = GetOptions( person );
             box.Person = GetPersonBag( person );
 

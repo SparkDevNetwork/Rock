@@ -4,35 +4,164 @@
         The person you are trying to edit could not be found.
     </NotificationBox>
 
-    <Panel v-else
-           type="block"
-           :title="panelTitle"
-           titleIconCssClass="ti ti-user">
+    <RockForm v-else @submit="onSave">
+        <Panel type="block"
+               :title="panelTitle"
+               titleIconCssClass="ti ti-user">
 
-        <NotificationBox v-if="config.accountProtectionProfileMessage"
-                         :alertType="protectionProfileAlertType"
-                         class="mb-3">
-            {{ config.accountProtectionProfileMessage }}
-        </NotificationBox>
+            <template #headerActions>
+                <ExperienceModePicker />
 
-        <!-- Sections (status sidebar, demographics, contact, advanced) will be added here. -->
+                <HighlightLabel v-if="config.familyName"
+                                labelType="default"
+                                iconCssClass="ti ti-users">
+                    {{ config.familyName }}
+                </HighlightLabel>
 
-    </Panel>
+                <HighlightLabel v-if="config.campusName"
+                                labelType="campus"
+                                iconCssClass="ti ti-building">
+                    {{ config.campusName }}
+                </HighlightLabel>
+            </template>
+
+            <NotificationBox v-if="config.accountProtectionProfileMessage"
+                             :alertType="protectionProfileAlertType"
+                             class="mb-3">
+                {{ config.accountProtectionProfileMessage }}
+            </NotificationBox>
+
+            <NotificationBox v-if="saveErrorMessage" alertType="danger" class="mb-3">
+                {{ saveErrorMessage }}
+            </NotificationBox>
+
+            <div class="row">
+                <div class="col-md-3 mb-4">
+                    <ContentSection light>
+                    </ContentSection>
+                </div>
+                <div class="col-md-9">
+                    <ContentSectionContainer :sidebar="false">
+                        <ContentSection title="Personal Information"
+                                        icon="ti ti-user-circle"
+                                        disableCollapse>
+                            <ContentStack title="Name"
+                                          description="Enter the person's legal name, plus the name they go by. Rock shows the nickname wherever their name appears.">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <DefinedValuePicker v-model="title"
+                                                            :definedTypeGuid="DefinedType.PersonTitle"
+                                                            label="Title"
+                                                            class="input-width-md"
+                                                            :showBlankItem="true" />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <FirstNameTextBox v-model="firstName"
+                                                          label="First Name"
+                                                          rules="nospecialcharacters|noemojisorspecialfonts" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <TextBox v-model="nickName"
+                                                 label="Nickname"
+                                                 rules="nospecialcharacters|noemojisorspecialfonts" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <TextBox v-model="middleName"
+                                                 label="Middle Name"
+                                                 rules="nospecialcharacters|noemojisorspecialfonts" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <TextBox v-model="lastName"
+                                                 label="Last Name"
+                                                 rules="nospecialcharacters|noemojisorspecialfonts" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <DefinedValuePicker v-model="suffix"
+                                                            :definedTypeGuid="DefinedType.PersonSuffix"
+                                                            label="Suffix"
+                                                            class="input-width-md"
+                                                            :showBlankItem="true" />
+                                    </div>
+                                </div>
+                            </ContentStack>
+                        </ContentSection>
+                    </ContentSectionContainer>
+                </div>
+            </div>
+
+            <template #footerActions>
+                <RockButton btnType="primary"
+                            type="submit"
+                            :isLoading="isSaving"
+                            :disabled="!config.isEditAllowed">
+                    Save
+                </RockButton>
+                <RockButton btnType="link"
+                            :disabled="isSaving"
+                            @click="onCancel">
+                    Cancel
+                </RockButton>
+            </template>
+
+        </Panel>
+    </RockForm>
 </template>
 
 <script setup lang="ts">
-    import { computed } from "vue";
+    import { computed, ref } from "vue";
     import Panel from "@Obsidian/Controls/panel.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import ExperienceModePicker from "@Obsidian/Controls/experienceModePicker.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
-    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
+    import { EmailPreference } from "@Obsidian/Enums/Crm/emailPreference";
+    import { Gender } from "@Obsidian/Enums/Crm/gender";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EditPersonBox } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/EditPerson/editPersonBox";
+    import { EditPersonSaveRequestBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/EditPerson/editPersonSaveRequestBag";
+    import { EditPersonSaveResponseBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/EditPerson/editPersonSaveResponseBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     // #region Values
 
     const config = useConfigurationValues<EditPersonBox>();
+    const invokeBlockAction = useInvokeBlockAction();
 
-    console.log("config", config);
+    // Personal Information > Name
+    const title = ref<ListItemBag | null>(config.person?.title ?? null);
+    const firstName = ref(config.person?.firstName ?? "");
+    const nickName = ref(config.person?.nickName ?? "");
+    const middleName = ref(config.person?.middleName ?? "");
+    const lastName = ref(config.person?.lastName ?? "");
+    const suffix = ref<ListItemBag | null>(config.person?.suffix ?? null);
+
+    // Required fields not yet surfaced in the UI; sourced from the server until their inputs are built.
+    const gender = ref(config.person?.gender ?? Gender.Unknown);
+    const communicationPreference = ref(config.person?.communicationPreference ?? CommunicationType.RecipientPreference);
+    const emailPreference = ref(config.person?.emailPreference ?? EmailPreference.EmailAllowed);
+    const isEmailActive = ref(config.person?.isEmailActive ?? true);
+    const isLockedAsChild = ref(config.person?.isLockedAsChild ?? false);
+
+    const isSaving = ref(false);
+    const saveErrorMessage = ref<string | null>(null);
 
     // #endregion Values
 
@@ -42,7 +171,7 @@
         const person = config.person;
 
         if (!person) {
-            return "Edit Person";
+            return "Person";
         }
 
         const displayName = [person.nickName || person.firstName, person.lastName]
@@ -50,7 +179,7 @@
             .join(" ")
             .trim();
 
-        return displayName ? `Edit: ${displayName}` : "Edit Person";
+        return displayName || "Person";
     });
 
     const protectionProfileAlertType = computed<AlertType>(() => {
@@ -60,6 +189,61 @@
     });
 
     // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Assembles the edited values and saves the person, redirecting on success.
+     */
+    async function onSave(): Promise<void> {
+        isSaving.value = true;
+        saveErrorMessage.value = null;
+
+        try {
+            const bag: EditPersonSaveRequestBag = {
+                personIdKey: config.personIdKey ?? null,
+                isGivingEnvelopeNumberConfirmed: false,
+                person: {
+                    title: title.value,
+                    firstName: firstName.value,
+                    nickName: nickName.value,
+                    middleName: middleName.value,
+                    lastName: lastName.value,
+                    suffix: suffix.value,
+                    gender: gender.value,
+                    communicationPreference: communicationPreference.value,
+                    emailPreference: emailPreference.value,
+                    isEmailActive: isEmailActive.value,
+                    isLockedAsChild: isLockedAsChild.value
+                }
+            };
+
+            const result = await invokeBlockAction<EditPersonSaveResponseBag>("Save", { bag });
+
+            if (!result.isSuccess || !result.data) {
+                saveErrorMessage.value = result.errorMessage || "An error occurred while saving. Please try again.";
+                return;
+            }
+
+            if (result.data.redirectUrl) {
+                window.location.href = result.data.redirectUrl;
+            }
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    /**
+     * Returns to the person profile without saving.
+     */
+    function onCancel(): void {
+        if (config.cancelUrl) {
+            window.location.href = config.cancelUrl;
+        }
+    }
+
+    // #endregion Event Handlers
 
     onConfigurationValuesChanged(useReloadBlock());
 </script>

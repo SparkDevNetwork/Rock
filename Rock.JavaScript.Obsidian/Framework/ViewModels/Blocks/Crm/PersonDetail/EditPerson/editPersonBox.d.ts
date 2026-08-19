@@ -35,6 +35,9 @@ export type EditPersonBox = {
     /** Gets or sets the account protection profile warning message, when applicable. */
     accountProtectionProfileMessage?: string | null;
 
+    /** Gets or sets the name of the person's primary campus, shown as a panel header label. */
+    campusName?: string | null;
+
     /** Gets or sets the URL to redirect to when the user cancels editing. */
     cancelUrl?: string | null;
 
@@ -43,6 +46,9 @@ export type EditPersonBox = {
      * an error is preventing the block from being displayed.
      */
     errorMessage?: string | null;
+
+    /** Gets or sets the name of the person's primary family, shown as a panel header label. */
+    familyName?: string | null;
 
     /** Gets or sets a value indicating whether the current user is authorized to save changes. */
     isEditAllowed: boolean;

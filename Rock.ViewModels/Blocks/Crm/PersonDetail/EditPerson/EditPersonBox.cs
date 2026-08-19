@@ -63,5 +63,15 @@ namespace Rock.ViewModels.Blocks.Crm.PersonDetail.EditPerson
         /// Gets or sets the URL to redirect to when the user cancels editing.
         /// </summary>
         public string CancelUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the person's primary family, shown as a panel header label.
+        /// </summary>
+        public string FamilyName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the person's primary campus, shown as a panel header label.
+        /// </summary>
+        public string CampusName { get; set; }
     }
 }
