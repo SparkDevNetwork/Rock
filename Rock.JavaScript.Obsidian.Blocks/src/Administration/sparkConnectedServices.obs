@@ -28,22 +28,39 @@
             </p>
         </NotificationBox>
 
-        <NotificationBox v-else-if="!config.creditCardSummary?.isCardOnFile"
-                         alertType="warning">
-            <p><strong>Credit Card Required</strong></p>
-            <p>Services are billed monthly based on usage. A credit card is required to get started and can also be used for Rock Shop purchases.</p>
-        </NotificationBox>
-
-        <NotificationBox v-else-if="config.creditCardSummary?.isCardExpired"
-                         alertType="danger">
-            <p><strong>Payment Method Expired</strong></p>
-            <p>Your payment method has expired. Update it now to avoid service interruption.</p>
-        </NotificationBox>
-
         <template v-else>
             <h4>Payment Method</h4>
 
-            <DisplayCard iconCssClass="ti ti-credit-card"
+            <NotificationBox v-if="!config.creditCardSummary?.isCardOnFile"
+                             alertType="warning">
+                <p><strong>Credit Card Required</strong></p>
+                <p>Services are billed monthly based on usage. A credit card is required to get started and can also be used for Rock Shop purchases.</p>
+                <p>
+                    <a :href="changeCardUrl"
+                       class="btn btn-default btn-sm"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        Add Card
+                    </a>
+                </p>
+            </NotificationBox>
+
+            <NotificationBox v-else-if="config.creditCardSummary?.isCardExpired"
+                             alertType="danger">
+                <p><strong>Payment Method Expired</strong></p>
+                <p>Your payment method has expired. Update it now to avoid service interruption.</p>
+                <p>
+                    <a :href="changeCardUrl"
+                       class="btn btn-default btn-sm"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        Change Card
+                    </a>
+                </p>
+            </NotificationBox>
+
+            <DisplayCard v-else
+                         iconCssClass="ti ti-credit-card"
                          :iconLabelType="creditCardLabelType"
                          :title="creditCardTitle"
                          :description="creditCardDescription">
@@ -53,6 +70,12 @@
                             <span v-if="config.creditCardSummary?.isCardExpired"
                                   class="badge badge-danger">
                                 Card Expired
+                            </span>
+
+                            <span v-else-if="config.creditCardSummary?.isCardExpiringSoon">
+                                <span class="badge badge-warning">
+                                    Card Expiring Soon
+                                </span>
                             </span>
                         </div>
 
@@ -68,7 +91,8 @@
 
             <h4>Services</h4>
 
-            <RockIntelligence v-model:configuration="rockIntelligenceConfiguration" />
+            <RockIntelligence v-if="isRockIntelligenceVisible"
+                              v-model:configuration="rockIntelligenceConfiguration" />
         </template>
     </Panel>
 </template>
@@ -189,6 +213,14 @@
             dateStyle: "medium",
             timeStyle: "short"
         });
+    });
+
+    const isCreditCardValid = computed((): boolean => {
+        return !!config.creditCardSummary?.isCardOnFile && !config.creditCardSummary?.isCardExpired;
+    });
+
+    const isRockIntelligenceVisible = computed((): boolean => {
+        return isCreditCardValid.value || !!rockIntelligenceConfiguration.value;
     });
 
     // #endregion
