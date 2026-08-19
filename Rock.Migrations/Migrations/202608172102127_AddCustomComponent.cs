@@ -87,6 +87,16 @@ namespace Rock.Migrations
         /// </summary>
         private const string CustomComponentEntityTypeGuid = "4C833FA4-A7EF-4D49-9549-B24CBB629A73";
 
+        /// <summary>
+        /// The AISkill Guid of the Community Knowledge Base skill.
+        /// </summary>
+        private const string CommunityKnowledgeBaseSkillGuid = "DFCBFDE8-6BF2-4DDF-81FE-FDD436E5FD90";
+
+        /// <summary>
+        /// The EntityType Guid of <c>Rock.AI.Agent.Skills.CommunityKnowledgeBaseSkill</c>.
+        /// </summary>
+        private const string CommunityKnowledgeBaseEntityTypeGuid = "959F0B92-A3BB-4AAA-9143-CF7D77895392";
+
         #endregion Constants
 
         #region Instructions
@@ -149,7 +159,7 @@ A successful save means the source compiled. It does not mean the component work
 
 # Control Discovery
 
-You cannot look up Rock control documentation from this chat. Never guess a control's props: only use controls whose API you can see in the block's existing source, and build everything else with plain HTML and Rock utility classes. When a richer Rock control probably exists that you cannot verify from here, tell the user what you are doing instead and why.
+Use the Community Knowledge Base tools before writing a component. Call GetKnowledgeBaseOverview once to learn the stores and filters, SearchKnowledge for guidance and patterns, and SearchCode with sourceType 'obs' to find controls by concept, then read a control's real API with GetCodeFile. The defineProps block is the authoritative list of props; never infer a control's props from its name or from a different control, and scope lookups to the version GetRockVersion reports. If the knowledge base tools are unavailable or failing, say so, do not guess props, and build with plain HTML and Rock utility classes instead.
 
 # Build Order
 
@@ -213,6 +223,7 @@ Give the user the page URL and tell them to check it as a normal member, not as 
             AddCmsSkill_Up();
             AddLavaApplicationSkill_Up();
             AddCustomComponentSkill_Up();
+            AddCommunityKnowledgeBaseSkill_Up();
             AddVibeMcpAgent_Up();
             AddVibeChatAgent_Up();
             AttachSkillsToAgents_Up();
@@ -295,6 +306,12 @@ Give the user the page URL and tell them to check it as a normal member, not as 
             RockMigrationHelper.AddOrUpdateEntityType(
                 "Rock.AI.Agent.Skills.CustomComponentSkill",
                 CustomComponentEntityTypeGuid,
+                false,
+                false );
+
+            RockMigrationHelper.AddOrUpdateEntityType(
+                "Rock.AI.Agent.Skills.CommunityKnowledgeBaseSkill",
+                CommunityKnowledgeBaseEntityTypeGuid,
                 false,
                 false );
         }
@@ -544,6 +561,81 @@ Give the user the page URL and tell them to check it as a normal member, not as 
         }
 
         /// <summary>
+        /// Registers the Community Knowledge Base skill and its tools. The skill
+        /// itself carries no security rules: every tool is read-only and both
+        /// agents that receive it are already administrator-gated.
+        /// </summary>
+        private void AddCommunityKnowledgeBaseSkill_Up()
+        {
+            /*
+                8/18/2026 - CLAUDE
+
+                This skill ships in core, but core registers it only at startup and
+                startup runs after migrations, so at this migration's point in time
+                its AISkill row does not exist and attaching it below would
+                silently no-op. Seeding it here is idempotent: the names and
+                descriptions match the class exactly, so startup re-registration
+                is a no-op, and if core later seeds it in its own migration that
+                upsert lands on the same rows.
+
+                Reason: Attach depends on rows that startup has not created yet.
+            */
+            AddOrUpdateCodeAISkill(
+                "Community Knowledge Base Skill",
+                "Provides access to the Rock community knowledge base: product documentation, community content, the Rock source code, and curated topic guides.",
+                CommunityKnowledgeBaseEntityTypeGuid,
+                CommunityKnowledgeBaseSkillGuid );
+
+            AddOrUpdateCodeAISkillTool(
+                CommunityKnowledgeBaseSkillGuid,
+                "Get Knowledge Base Overview",
+                "Describes everything the Rock community knowledge base holds: its knowledge sources and their document counts, which Rock releases have source code indexed, the curated topics available and how to open them, the valid values for every search filter, and guidance on which store answers which kind of question.",
+                "7D3ED0C6-6B02-42F5-AB34-4815FE7FF00C" );
+
+            AddOrUpdateCodeAISkillTool(
+                CommunityKnowledgeBaseSkillGuid,
+                "Search Knowledge",
+                "Searches Rock documentation, guides, and community content using combined keyword and meaning-based matching. This is the right first move for almost every question about Rock.",
+                "2A6D26DA-F889-4AD7-B9F2-B26B80902229" );
+
+            AddOrUpdateCodeAISkillTool(
+                CommunityKnowledgeBaseSkillGuid,
+                "Search Code",
+                "Searches the Rock source code by meaning, to find which files implement a given behavior. Returns file locations and metadata only, never code.",
+                "A60CA1BC-5E68-481B-8561-27F6AE57D500" );
+
+            AddOrUpdateCodeAISkillTool(
+                CommunityKnowledgeBaseSkillGuid,
+                "Grep Code",
+                "Finds exact text or a regular expression in the Rock source, returning each matching line with its line number and surrounding context.",
+                "D0EA7BC3-3DAF-4481-A1B0-483FE1A4834E" );
+
+            AddOrUpdateCodeAISkillTool(
+                CommunityKnowledgeBaseSkillGuid,
+                "Get Code File",
+                "Reads one Rock source file in full.",
+                "90764482-BA27-4FC0-B9CE-1585F07A6C64" );
+
+            AddOrUpdateCodeAISkillTool(
+                CommunityKnowledgeBaseSkillGuid,
+                "Get Code Lines",
+                "Reads a range of lines from one Rock source file.",
+                "DB33743D-B2A7-4CD8-A6BA-9576EA83DD35" );
+
+            AddOrUpdateCodeAISkillTool(
+                CommunityKnowledgeBaseSkillGuid,
+                "Get Topic",
+                "Returns one topic's table of contents: its guidance plus its top-level articles, each with the key needed to retrieve it.",
+                "F0179643-6979-416B-8D30-E45CBD96E49E" );
+
+            AddOrUpdateCodeAISkillTool(
+                CommunityKnowledgeBaseSkillGuid,
+                "Get Article",
+                "Returns one article's full content along with the keys of its child articles.",
+                "BCE7AD22-3768-4DEE-A2E1-71BC324905EE" );
+        }
+
+        /// <summary>
         /// Removes the seeded skill links, security, tools, and skills. Runs before
         /// the block type and table are removed.
         /// </summary>
@@ -551,10 +643,14 @@ Give the user the page URL and tell them to check it as a normal member, not as 
         {
             var skillGuids = $"'{CmsSkillGuid}', '{LavaApplicationSkillGuid}', '{CustomComponentSkillGuid}'";
 
+            // The Community Knowledge Base skill's links are removed with the
+            // others, but its AISkill and AISkillTool rows are deliberately NOT
+            // deleted below: the skill belongs to core, and another agent may
+            // have attached it by the time this migration is rolled back.
             Sql( $@"
 DELETE FROM [AIAgentSkill]
 WHERE [AIAgentId] IN (SELECT [Id] FROM [AIAgent] WHERE [Guid] IN ('{VibeMcpAgentGuid}', '{VibeChatAgentGuid}'))
-    AND [AISkillId] IN (SELECT [Id] FROM [AISkill] WHERE [Guid] IN ({skillGuids}))" );
+    AND [AISkillId] IN (SELECT [Id] FROM [AISkill] WHERE [Guid] IN ({skillGuids}, '{CommunityKnowledgeBaseSkillGuid}'))" );
 
             RockMigrationHelper.DeleteSecurityAuth( "4A95B31D-A629-4F76-B68A-6D74B7C578EE" );
             RockMigrationHelper.DeleteSecurityAuth( "C2D66CDA-336D-4D1E-BF29-B2960A25AAB6" );
@@ -648,20 +744,6 @@ END" );
         /// </summary>
         private void AddVibeChatAgent_Up()
         {
-            /*
-                8/18/2026 - CLAUDE
-
-                The knowledge base skill is not attached yet. Rock-side knowledge
-                base access is being built separately (the connected services
-                ApiKey plumbing exists; the skill and its tools do not), so the
-                chat agent ships honestly degraded: its instructions tell it that
-                it cannot look up control APIs and must never guess props. When
-                that skill lands, attach it in AttachSkillsToAgents_Up with an
-                explicit EnabledTools list and replace the Control Discovery
-                section of VibeChatAgentInstructions.
-
-                Reason: Ship the chat agent honestly degraded until the knowledge base skill exists.
-            */
             Sql( $@"
 IF NOT EXISTS (SELECT [Id] FROM [AIAgent] WHERE [Guid] = '{VibeChatAgentGuid}')
 BEGIN
@@ -746,7 +828,22 @@ END" );
         };
 
         /// <summary>
-        /// Attaches the three skills to both agents with explicit enabled-tool
+        /// The enabled tools of the Community Knowledge Base skill, shared by both agents.
+        /// </summary>
+        private static readonly string[] CommunityKnowledgeBaseSkillEnabledTools = new[]
+        {
+            "7D3ED0C6-6B02-42F5-AB34-4815FE7FF00C", // Get Knowledge Base Overview
+            "2A6D26DA-F889-4AD7-B9F2-B26B80902229", // Search Knowledge
+            "A60CA1BC-5E68-481B-8561-27F6AE57D500", // Search Code
+            "D0EA7BC3-3DAF-4481-A1B0-483FE1A4834E", // Grep Code
+            "90764482-BA27-4FC0-B9CE-1585F07A6C64", // Get Code File
+            "DB33743D-B2A7-4CD8-A6BA-9576EA83DD35", // Get Code Lines
+            "F0179643-6979-416B-8D30-E45CBD96E49E", // Get Topic
+            "BCE7AD22-3768-4DEE-A2E1-71BC324905EE"  // Get Article
+        };
+
+        /// <summary>
+        /// Attaches the four skills to both agents with explicit enabled-tool
         /// lists. Attaching a skill alone does not expose its tools.
         /// </summary>
         private void AttachSkillsToAgents_Up()
@@ -754,10 +851,12 @@ END" );
             AttachSkillToAgent( VibeMcpAgentGuid, CmsSkillGuid, CmsSkillEnabledTools );
             AttachSkillToAgent( VibeMcpAgentGuid, LavaApplicationSkillGuid, LavaApplicationSkillEnabledTools );
             AttachSkillToAgent( VibeMcpAgentGuid, CustomComponentSkillGuid, CustomComponentSkillEnabledTools );
+            AttachSkillToAgent( VibeMcpAgentGuid, CommunityKnowledgeBaseSkillGuid, CommunityKnowledgeBaseSkillEnabledTools );
 
             AttachSkillToAgent( VibeChatAgentGuid, CmsSkillGuid, CmsSkillEnabledTools );
             AttachSkillToAgent( VibeChatAgentGuid, LavaApplicationSkillGuid, LavaApplicationSkillEnabledTools );
             AttachSkillToAgent( VibeChatAgentGuid, CustomComponentSkillGuid, CustomComponentSkillEnabledTools );
+            AttachSkillToAgent( VibeChatAgentGuid, CommunityKnowledgeBaseSkillGuid, CommunityKnowledgeBaseSkillEnabledTools );
         }
 
         #endregion Agent

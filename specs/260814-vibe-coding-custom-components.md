@@ -79,8 +79,8 @@ The payoff is disproportionate to the new surface because the hard rendering pro
 ```mermaid
 flowchart TD
     User["User in a chat"] --> Client["MCP client (Claude)"]
-    Client -->|"coding guide, controls catalog"| KB["Rock knowledge base MCP<br/>(outside Rock)"]
     Client -->|"/api/v2/mcp/vibe-coding"| Agent["Vibe MCP Agent<br/>AIAgent, AgentType.Mcp"]
+    Agent --> KBS["CommunityKnowledgeBase<br/>coding guide, controls catalog, source"]
     Agent --> PB["Cms<br/>site, page and block tools"]
     Agent --> LD["LavaApplication<br/>AddOrUpdate/Get application,<br/>AddOrUpdate/Get/Delete endpoint"]
     Agent --> VC["CustomComponent<br/>GetRockVersion, GetCustomComponent, AddOrUpdateCustomComponent"]
@@ -113,7 +113,7 @@ Each layer is independently testable and depends only on those above it.
 
 Layers 1 and 7 ship in the same EF migration. Scaffold the migration once, late, after the skills exist, so the table creation and the seeding land as one file with one timestamp that sorts after every existing migration.
 
-**All nine layers are built**, with one pending attachment: the chat agent ships honestly degraded until the Rock-side knowledge base skill lands and is attached by editing the seeding migration in place ([Layer 9](#layer-9-internal-chat-agent)).
+**All nine layers are built.** The core `CommunityKnowledgeBaseSkill` closed the chat agent's control-discovery gap: the migration seeds it (core only startup-registers it, which runs after migrations) and attaches it to **both** agents, so neither transport needs a second MCP server for control discovery anymore.
 
 ### Layer 1: Data model
 
@@ -345,7 +345,7 @@ Steps 2 and 5 are the pair that prove the defect fixed. Step 4 is the one that m
 
 ### Layer 9: Internal chat agent
 
-**What it is.** A second `AIAgent` row with `AgentType.Chat`, attached to the same three skills, so an administrator runs the whole authoring loop from Rock's own chat UI with no external MCP client at all. The MCP agent stays; this is a sibling on a different transport, not a replacement. As built, the two agents are named **Vibe MCP Agent** (renamed from the pre-release "Vibe Agent"; the migration renames an existing row only while it still carries that untuned default name) and **Vibe Chat Agent**.
+**What it is.** A second `AIAgent` row with `AgentType.Chat`, attached to the same four skills (the three vibe skills plus the core `CommunityKnowledgeBaseSkill`), so an administrator runs the whole authoring loop from Rock's own chat UI with no external MCP client at all. The MCP agent stays; this is a sibling on a different transport, not a replacement. As built, the two agents are named **Vibe MCP Agent** (renamed from the pre-release "Vibe Agent"; the migration renames an existing row only while it still carries that untuned default name) and **Vibe Chat Agent**.
 
 **What carries over free.** Everything below the agent row. The skills are transport-agnostic `AgentSkillComponent`s: `AgentRequestContext.CurrentPerson` is the signed-in person in chat exactly as it is the authenticated person over MCP, so every EDIT and ADMINISTRATE gate, the provenance stamp model, and the server compile path work unchanged. Attachment mechanics are identical too, including the `EnabledTools` allowlist (and its trap: attaching without populating it yields an agent that sees nothing).
 
@@ -357,8 +357,8 @@ Steps 2 and 5 are the pair that prove the defect fixed. Step 4 is the one that m
 **The control-discovery decision is the heart of this layer.**
 
 - **MUST: honest degradation. Shipped.** The chat agent's instructions carry a Control Discovery section stating that it cannot verify control APIs on this transport, must never guess a control's props, must restrict itself to controls visible in the block's existing source plus plain HTML with Rock utility classes, and must tell the user what it is not able to do.
-- **PENDING: the Rock-side knowledge base skill.** Rock-side knowledge base access is being built separately on the connected-services plumbing (a `knowledge-base` manifest entry with a per-instance API key already parses in core; the skill and tools that consume it are in flight). When that skill lands, attach it to the Vibe Chat Agent in `AttachSkillsToAgents_Up` with an explicit `EnabledTools` list and replace the instructions' Control Discovery section; the migration carries an engineering note marking that exact seam. This supersedes the earlier idea of a local `.d.ts`-scraping tool, which remains a fallback only if the knowledge base skill never ships.
-- **Out of scope still: proxying the knowledge base to MCP clients.** External clients keep connecting knowledge.rockrms.com as a second MCP server for now; the incoming skill may eventually collapse that too, since skills are transport-agnostic and would surface on the MCP agent as well.
+- **SHIPPED: the Rock-side knowledge base skill.** Core's `CommunityKnowledgeBaseSkill` (built on the connected-services plumbing, 8 read-only tools: overview, knowledge search, semantic and exact code search, file and line reads, topics and articles) is seeded by this migration and attached to **both** agents with an explicit `EnabledTools` list. Core only startup-registers the skill and never seeds it, and startup runs after migrations, so the migration seeds it idempotently with class-matching names before attaching; the engineering note on the seeding method records that reasoning. The chat instructions' Control Discovery section now walks the real tools (`GetKnowledgeBaseOverview`, `SearchKnowledge`, `SearchCode` with `sourceType 'obs'`, `GetCodeFile`), keeping the honest-degradation rule for when the tools themselves fail. The earlier `.d.ts`-scraping idea is dead.
+- **Resolved with it: the second-MCP-server dependency.** Because skills are transport-agnostic, the MCP agent carries the same knowledge base tools, so external clients no longer need to connect knowledge.rockrms.com separately; `CustomComponentSkill`'s usage guidance now names the in-Rock tools (`SearchCode`/`GetCodeFile`) instead of the external server's (`search_code`/`file_url`).
 
 **Seeding.** Same single migration, honoring the one-migration requirement. The branch is unmerged, so amending `202608172102127_AddCustomComponent` is legitimate; any dev database that already applied it must re-run the new seeding method by hand or roll the migration back and forward. Pinned values:
 
@@ -378,7 +378,7 @@ The instructions are NOT a copy of the MCP agent's. Same persona, guardrails, bu
 1. Apply the amended migration on a clean database. Both agents exist; the chat agent's skills, tools, and security match the MCP agent's row for row.
 2. With no AI provider configured, open the chat agent as an administrator. It responds with its not-configured message rather than erroring.
 3. Configure an AI provider. As an administrator, ask it to build a small dashboard. It walks the build order (`SearchPages`, `AddOrUpdatePage`, `AddOrUpdateBlock`, `AddOrUpdateLavaApplication`, `AddOrUpdateLavaEndpoint`, `AddOrUpdateCustomComponent`), and the resulting page renders for a normal member.
-4. Ask it to use a Rock control it has no source for. It declines to guess the props, says why, and builds with plain HTML instead. Once the knowledge base skill is attached, this step upgrades from a refusal to a real lookup.
+4. Ask it to use a Rock control it has not seen. It resolves the control with `SearchCode`, reads the real props with `GetCodeFile`, and uses them. With the knowledge base tools failing (for example, no Connected Services key), it declines to guess props, says why, and builds with plain HTML instead.
 5. As a person who is not a Rock administrator, confirm the agent is not visible in chat at all (the deny auth), and separately, as a person who can see the agent but lacks EDIT on a target block, confirm `AddOrUpdateCustomComponent` refuses with the authorization message. The transport changed; the gates must not have.
 6. Restart the application. Skill and tool names and descriptions are unchanged (the startup re-registration parity check, re-proven with two agents attached).
 7. Re-run the migration's seeding on an instance where an administrator has retuned the chat agent's instructions. The tuning survives.
@@ -387,11 +387,9 @@ Step 5 is the one that matters most: it proves authorization is enforced per act
 
 ### Knowledge base dependency
 
-Control APIs and build patterns come from a Spark-curated coding guide on the Rock knowledge base, reached through its `coding_guide` topic: component anatomy, a catalog of all 247 controls with verified props and gotchas, endpoint patterns, hard rules, and worked recipes.
+Control APIs and build patterns come from the Spark-curated Rock knowledge base: component anatomy, a catalog of all 247 controls with verified props and gotchas, endpoint patterns, hard rules, and worked recipes.
 
-**Today the client must connect the knowledge base as a second MCP server.** Rock cannot see, verify or version-check it, and a client that connects only Rock gets no guidance at all, silently.
-
-The decided direction is for Rock to proxy it so the client configures one server, but it is **out of scope here** (see [Out of Scope](#out-of-scope)).
+**Both agents now reach it through core's `CommunityKnowledgeBaseSkill`**, attached by the seeding migration, so control discovery is a first-party tool call on either transport and no client has to connect a second MCP server. The original design's two-server composition (the client connecting knowledge.rockrms.com alongside Rock) still works but is no longer required, and the skills' usage guidance names the in-Rock tools.
 
 ## Security Model
 
