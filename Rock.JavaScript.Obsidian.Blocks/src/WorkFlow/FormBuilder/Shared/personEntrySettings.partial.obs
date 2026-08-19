@@ -24,8 +24,7 @@
                 <div :class="columnClass">
                     <DropDownList v-model="recordSource"
                                   label="Record Source"
-                                  :items="recordSourceOptions"
-                                  rules="required" />
+                                  :items="recordSourceOptions" />
                 </div>
 
                 <div :class="columnClass">
