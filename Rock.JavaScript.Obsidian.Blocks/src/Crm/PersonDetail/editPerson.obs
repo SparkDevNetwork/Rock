@@ -1,0 +1,65 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="!config.isPersonFound" :alertType="AlertType.Warning">
+        The person you are trying to edit could not be found.
+    </NotificationBox>
+
+    <Panel v-else
+           type="block"
+           :title="panelTitle"
+           titleIconCssClass="ti ti-user">
+
+        <NotificationBox v-if="config.accountProtectionProfileMessage"
+                         :alertType="protectionProfileAlertType"
+                         class="mb-3">
+            {{ config.accountProtectionProfileMessage }}
+        </NotificationBox>
+
+        <!-- Sections (status sidebar, demographics, contact, advanced) will be added here. -->
+
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EditPersonBox } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/EditPerson/editPersonBox";
+
+    // #region Values
+
+    const config = useConfigurationValues<EditPersonBox>();
+
+    console.log("config", config);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const panelTitle = computed<string>(() => {
+        const person = config.person;
+
+        if (!person) {
+            return "Edit Person";
+        }
+
+        const displayName = [person.nickName || person.firstName, person.lastName]
+            .filter(name => !!name)
+            .join(" ")
+            .trim();
+
+        return displayName ? `Edit: ${displayName}` : "Edit Person";
+    });
+
+    const protectionProfileAlertType = computed<AlertType>(() => {
+        return config.accountProtectionProfileAlertType?.toLowerCase() === "danger"
+            ? AlertType.Danger
+            : AlertType.Warning;
+    });
+
+    // #endregion Computed Values
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>
