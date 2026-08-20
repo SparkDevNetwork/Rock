@@ -233,9 +233,9 @@ export type DoughnutSeries = {
  * // Example for a single linear gauge composed of three sections
  * // representing request health (On Track, Due Soon, Overdue)
  * const series: LinearGaugeSeries[] = [
- *   { label: "On Track", data: [55], color: "var(--color-success-strong)" },
- *   { label: "Due Soon", data: [18], color: "#F59E0B" },
- *   { label: "Overdue", data: [8], color: "#EF4444" }
+ *   { label: "On Track", data: [55], color: "var(--color-positive-primary)" },
+ *   { label: "Due Soon", data: [18], color: "var(--color-caution-primary)" },
+ *   { label: "Overdue", data: [8], color: "var(--color-negative-primary)" }
  * ];
  * ```
  *
@@ -244,9 +244,9 @@ export type DoughnutSeries = {
  * // Example for multiple linear gauges using the same sections.
  * // Each index across the data arrays forms a complete gauge.
  * const series: LinearGaugeSeries[] = [
- *   { label: "On Track", data: [55, 42], color: "var(--color-success-strong)" },
- *   { label: "Due Soon", data: [18, 25], color: "#F59E0B" },
- *   { label: "Overdue", data: [8, 13], color: "#EF4444" }
+ *   { label: "On Track", data: [55, 42], color: "var(--color-positive-primary)" },
+ *   { label: "Due Soon", data: [18, 25], color: "var(--color-caution-primary)" },
+ *   { label: "Overdue", data: [8, 13], color: "var(--color-negative-primary)" }
  * ];
  * ```
  */
