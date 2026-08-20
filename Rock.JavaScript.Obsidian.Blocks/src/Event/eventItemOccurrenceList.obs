@@ -49,7 +49,7 @@
                 visiblePriority="xs"
                 width="12%">
             <template #format="{ row }">
-                <a v-if="row.registration" :href="`${config.options?.registrationInstancePageUrl}?RegistrationInstanceId=${row.registrationInstanceId}`">{{ row.registration }}</a>
+                <a v-if="row.registration" :href="getRegistrationInstanceUrl(row.registrationInstanceId)">{{ row.registration }}</a>
             </template>
 
             <template #skeleton>
@@ -66,7 +66,7 @@
                 visiblePriority="xs"
                 width="5%">
             <template #format="{ row }">
-                <a v-if="row.group" :href="`${config.options?.groupDetailPageUrl}?GroupId=${row.groupId}`">{{ row.group }}</a>
+                <a v-if="row.group" :href="getGroupDetailUrl(row.groupId)">{{ row.group }}</a>
             </template>
 
             <template #skeleton>
@@ -217,6 +217,32 @@
     */
     function getGroupColumnFilterValue(row: Record<string, unknown>): string {
         return row.group as string ?? "";
+    }
+
+    /**
+     * Gets the URL for the registration instance detail page of the row's linked registration instance.
+     *
+     * @param key The identifier key of the registration instance.
+     */
+    function getRegistrationInstanceUrl(key: string): string {
+        if (config.options?.registrationInstancePageUrl) {
+            return config.options.registrationInstancePageUrl.replace("((Key))", key);
+        }
+
+        return "";
+    }
+
+    /**
+     * Gets the URL for the group detail page of the row's linked group.
+     *
+     * @param key The identifier key of the group.
+     */
+    function getGroupDetailUrl(key: string): string {
+        if (config.options?.groupDetailPageUrl) {
+            return config.options.groupDetailPageUrl.replace("((Key))", key);
+        }
+
+        return "";
     }
 
     /**
