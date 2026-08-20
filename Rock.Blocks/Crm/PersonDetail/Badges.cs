@@ -93,7 +93,8 @@ namespace Rock.Blocks.Crm.PersonDetail
 
     [Rock.Web.UI.ContextAware( typeof( Person ) )]
     [Rock.SystemGuid.EntityTypeGuid( "86e12a6c-2086-4562-b50e-3ea1e8b5b017" )]
-    [Rock.SystemGuid.BlockTypeGuid( "2412c653-9369-4772-955e-80ee8fa051e3" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "2412c653-9369-4772-955e-80ee8fa051e3" )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.BADGES )]
     public class Badges : RockBlockType
     {
         #region Keys
