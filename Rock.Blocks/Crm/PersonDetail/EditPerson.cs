@@ -27,6 +27,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Crm.PersonDetail.EditPerson;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -251,6 +252,12 @@ namespace Rock.Blocks.Crm.PersonDetail
                 IsGivingSectionVisible = canAdministrate || BlockCache.IsAuthorized( SecurityActionKey.EditFinancials, RequestContext.CurrentPerson ),
             };
 
+            // Grade and Graduation Year are two views of the same stored value
+            var currentGraduationDate = PersonService.GetCurrentGraduationDate();
+            var gradeTransitionDate = new System.DateTime( RockDateTime.Now.Year, currentGraduationDate.Month, currentGraduationDate.Day );
+            options.GradeTransitionYear = RockDateTime.Now.Year;
+            options.GradeOffsetAdjustment = RockDateTime.Today < gradeTransitionDate ? 0 : 1;
+
             if ( person != null )
             {
                 options.FamilyName = person.PrimaryFamily?.Name;
@@ -297,6 +304,8 @@ namespace Rock.Blocks.Crm.PersonDetail
                 return null;
             }
 
+            var gradeFormatted = Person.GradeFormattedFromGradeOffset( person.GradeOffset );
+
             var bag = new EditPersonBag
             {
                 IdKey = person.IdKey,
@@ -305,20 +314,40 @@ namespace Rock.Blocks.Crm.PersonDetail
                 MiddleName = person.MiddleName,
                 LastName = person.LastName,
                 Suffix = ToDefinedValueListItemBag( person.SuffixValueId ),
-                Photo = GetPhotoListItem( person ),
+                Photo = person.Photo?.ToListItemBag( person.Photo.FileName ),
                 ConnectionStatus = ToDefinedValueListItemBag( person.ConnectionStatusValueId ),
                 RecordStatus = ToDefinedValueListItemBag( person.RecordStatusValueId ),
                 RecordStatusReason = ToDefinedValueListItemBag( person.RecordStatusReasonValueId ),
                 DeceasedDate = person.DeceasedDate?.ToString( "yyyy-MM-dd" ),
                 RecordSource = ToDefinedValueListItemBag( person.RecordSourceValueId ),
                 Gender = person.Gender,
+                BirthDate = person.BirthDate != null
+                    ? new BirthdayPickerBag
+                    {
+                        Day = person.BirthDate.Value.Day,
+                        Month = person.BirthDate.Value.Month,
+                        Year = person.BirthDate.Value.Year
+                    }
+                    : null,
+                Grade = gradeFormatted.IsNotNullOrWhiteSpace()
+                    ? new ListItemBag
+                    {
+                        // The GradePicker (with useGuidAsValue off) keys its items by grade offset.
+                        Value = person.GradeOffset.Value.ToString(),
+                        Text = gradeFormatted
+                    }
+                    : null,
+                GraduationYear = person.GraduationYear,
+                MaritalStatus = ToDefinedValueListItemBag( person.MaritalStatusValueId ),
+                AnniversaryDate = person.AnniversaryDate?.ToString( "yyyy-MM-dd" ),
+                Race = ToDefinedValueListItemBag( person.RaceValueId ),
+                Ethnicity = ToDefinedValueListItemBag( person.EthnicityValueId ),
                 Email = person.Email,
                 IsEmailActive = person.IsEmailActive,
                 EmailPreference = person.EmailPreference,
 
                 // Cast the model's Rock.Model.CommunicationType to the Rock.Enums.Communication.CommunicationType the bag exposes (same underlying values).
                 CommunicationPreference = ( Rock.Enums.Communication.CommunicationType ) person.CommunicationPreference,
-                GraduationYear = person.GraduationYear,
                 InactiveReasonNote = person.InactiveReasonNote,
                 IsLockedAsChild = person.IsLockedAsChild,
             };
@@ -333,8 +362,6 @@ namespace Rock.Blocks.Crm.PersonDetail
 
                 The following still need to be mapped from the person as their inputs are built
                 (see EditPerson.ascx.cs ShowDetails around lines 877-1049):
-                  - Defined-value ListItemBags: MaritalStatus, Race, Ethnicity, Grade.
-                  - BirthDate (BirthdayPickerBag), AnniversaryDate.
                   - Chat tri-state values (when chat is enabled and the person has a chat alias).
                   - GivingGroupGuid and GivingEnvelopeNumber (person attribute value).
                   - PhoneNumbers, PreviousLastNames, AlternateIds, SearchKeys.
@@ -456,14 +483,63 @@ namespace Rock.Blocks.Crm.PersonDetail
                     }
                 } );
 
+            box.IfValidProperty( nameof( box.Bag.Gender ),
+                () => entity.Gender = box.Bag.Gender );
+
+            box.IfValidProperty( nameof( box.Bag.BirthDate ),
+                () =>
+                {
+                    var birthDate = box.Bag.BirthDate;
+
+                    // A birth date needs at least a month and day; the year is optional.
+                    if ( birthDate != null && birthDate.Month > 0 && birthDate.Day > 0 )
+                    {
+                        entity.BirthMonth = birthDate.Month;
+                        entity.BirthDay = birthDate.Day;
+                        entity.BirthYear = birthDate.Year > 0 ? birthDate.Year : ( int? ) null;
+                    }
+                    else
+                    {
+                        entity.SetBirthDate( null );
+                    }
+                } );
+
+            // Only Graduation Year is persisted; the client keeps the Grade picker in sync with it,
+            // and Person.GradeOffset is derived from GraduationYear (matches WebForms).
+            box.IfValidProperty( nameof( box.Bag.GraduationYear ),
+                () => entity.GraduationYear = box.Bag.GraduationYear );
+
+            box.IfValidProperty( nameof( box.Bag.MaritalStatus ),
+                () => entity.MaritalStatusValueId = GetDefinedValueId( box.Bag.MaritalStatus ) );
+
+            box.IfValidProperty( nameof( box.Bag.AnniversaryDate ),
+                () =>
+                {
+                    var maritalStatusMarriedId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() )?.Id;
+
+                    // The anniversary date only applies when the person is married.
+                    entity.AnniversaryDate = entity.MaritalStatusValueId == maritalStatusMarriedId
+                        ? box.Bag.AnniversaryDate.AsDateTime()
+                        : null;
+                } );
+
+            box.IfValidProperty( nameof( box.Bag.Race ),
+                () => entity.RaceValueId = GetDefinedValueId( box.Bag.Race ) );
+
+            box.IfValidProperty( nameof( box.Bag.Ethnicity ),
+                () => entity.EthnicityValueId = GetDefinedValueId( box.Bag.Ethnicity ) );
+
+            box.IfValidProperty( nameof( box.Bag.IsLockedAsChild ),
+                () => entity.IsLockedAsChild = box.Bag.IsLockedAsChild );
+
             /*
                 8/19/26 - CLAUDE
 
-                Fields without an IfValidProperty here (gender, communication/email preference,
-                lock-as-child, and every unbuilt section) are intentionally never written, so the
-                server cannot clobber values the client did not edit. Each gets its IfValidProperty
-                as its client input is built, along with the WebForms per-field security re-checks,
-                soft validations, phone SMS single-select, and family re-evaluation.
+                Fields without an IfValidProperty here (communication/email preference and every
+                unbuilt section) are intentionally never written, so the server cannot clobber
+                values the client did not edit. Each gets its IfValidProperty as its client input
+                is built, along with the WebForms per-field security re-checks, soft validations,
+                phone SMS single-select, and family re-evaluation.
 
                 Reason: Mutation grows field-by-field with the client sections.
             */
@@ -547,22 +623,6 @@ namespace Rock.Blocks.Crm.PersonDetail
             }
 
             return DefinedValueCache.Get( guid.Value )?.Id;
-        }
-
-        /// <summary>
-        /// Gets the person's current photo as a list item (binary file guid + name), or null.
-        /// </summary>
-        /// <param name="person">The person being edited.</param>
-        /// <returns>The photo list item, or null when the person has no photo.</returns>
-        private ListItemBag GetPhotoListItem( Person person )
-        {
-            if ( !person.PhotoId.HasValue )
-            {
-                return null;
-            }
-
-            var photo = new BinaryFileService( RockContext ).Get( person.PhotoId.Value );
-            return photo?.ToListItemBag( photo.FileName );
         }
 
         /// <summary>

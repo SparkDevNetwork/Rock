@@ -61,6 +61,22 @@ namespace Rock.ViewModels.Blocks.Crm.PersonDetail.EditPerson
 
         #endregion Block Setting Flags
 
+        #region Demographics
+
+        /// <summary>
+        /// Gets or sets the base year used to convert between grade offset and graduation year on the client
+        /// (the current year at the grade transition). Grade and Graduation Year stay in sync from this.
+        /// </summary>
+        public int GradeTransitionYear { get; set; }
+
+        /// <summary>
+        /// Gets or sets the offset added when converting grade to graduation year (1 once this year's grade
+        /// transition date has passed, otherwise 0), so the two fields agree with the server's grade logic.
+        /// </summary>
+        public int GradeOffsetAdjustment { get; set; }
+
+        #endregion Demographics
+
         #region Security / Visibility
 
         /// <summary>

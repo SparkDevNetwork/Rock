@@ -46,6 +46,18 @@ export type EditPersonOptionsBag = {
     /** Gets or sets the families whose giving this person's gifts may be combined with. */
     givingGroups?: ListItemBag[] | null;
 
+    /**
+     * Gets or sets the offset added when converting grade to graduation year (1 once this year's grade
+     * transition date has passed, otherwise 0), so the two fields agree with the server's grade logic.
+     */
+    gradeOffsetAdjustment: number;
+
+    /**
+     * Gets or sets the base year used to convert between grade offset and graduation year on the client
+     * (the current year at the grade transition). Grade and Graduation Year stay in sync from this.
+     */
+    gradeTransitionYear: number;
+
     /** Gets or sets a value indicating whether the anniversary date field is hidden. */
     isAnniversaryDateHidden: boolean;
 

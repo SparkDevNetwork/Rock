@@ -25,12 +25,6 @@
 
             <NotificationBox v-if="errorMessage" alertType="danger" class="mb-3" v-html="errorMessage" />
 
-            <NotificationBox v-if="options.accountProtectionProfileMessage"
-                             :alertType="protectionProfileAlertType"
-                             class="mb-3">
-                {{ options.accountProtectionProfileMessage }}
-            </NotificationBox>
-
             <div class="row">
                 <div class="col-md-3 mb-4">
                     <ContentSection light>
@@ -96,6 +90,11 @@
                     </ContentSection>
                 </div>
                 <div class="col-md-9">
+                    <NotificationBox v-if="options.accountProtectionProfileMessage"
+                                     :alertType="protectionProfileAlertType"
+                                     class="mb-3">
+                        {{ options.accountProtectionProfileMessage }}
+                    </NotificationBox>
                     <ContentSectionContainer :sidebar="false">
                         <ContentSection title="Personal Information"
                                         icon="ti ti-user-circle"
@@ -149,6 +148,67 @@
                                     </div>
                                 </div>
                             </ContentStack>
+
+                            <ContentStack title="Demographics"
+                                          description="Provide the details Rock uses for check-in, ministry placement, and reporting.">
+                                <RadioButtonList v-model="gender"
+                                                 label="Gender"
+                                                 :items="genderItems"
+                                                 :showBlankItem="false" />
+
+                                <BirthdayPicker v-model="birthDate"
+                                                label="Birth Date"
+                                                :rules="birthDateRules" />
+
+                                <CheckBox v-model="isLockedAsChild"
+                                          label=""
+                                          text="Consider Person as Child">
+                                    <template #textAppend>
+                                        <HelpBlock text="Overrides the usual age and family-role logic and always treats this person as a child, regardless of their age or role in a family." />
+                                    </template>
+                                </CheckBox>
+
+                                <div v-if="isGradeShown" class="row">
+                                    <div class="col-md-6">
+                                        <GradePicker v-model="grade"
+                                                     label="Grade"
+                                                     :showBlankItem="true" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <YearPicker v-model="graduationYear"
+                                                    label="Graduation Year" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <DefinedValuePicker v-model="maritalStatus"
+                                                            :definedTypeGuid="DefinedType.PersonMaritalStatus"
+                                                            label="Marital Status"
+                                                            :showBlankItem="true" />
+                                    </div>
+                                    <div v-if="isAnniversaryShown" class="col-md-6">
+                                        <DatePicker v-model="anniversaryDate"
+                                                    label="Anniversary" />
+                                    </div>
+                                </div>
+
+                                <div v-if="isRaceShown" class="row">
+                                    <div class="col-md-6">
+                                        <RacePicker v-model="race"
+                                                    :rules="isRaceRequired ? 'required' : ''"
+                                                    :showBlankItem="true" />
+                                    </div>
+                                </div>
+
+                                <div v-if="isEthnicityShown" class="row">
+                                    <div class="col-md-6">
+                                        <EthnicityPicker v-model="ethnicity"
+                                                         :rules="isEthnicityRequired ? 'required' : ''"
+                                                         :showBlankItem="true" />
+                                    </div>
+                                </div>
+                            </ContentStack>
                         </ContentSection>
                     </ContentSectionContainer>
                 </div>
@@ -190,7 +250,16 @@
     import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
+    import GradePicker from "@Obsidian/Controls/gradePicker.obs";
+    import YearPicker from "@Obsidian/Controls/yearPicker.obs";
+    import RacePicker from "@Obsidian/Controls/racePicker.obs";
+    import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { Gender, GenderDescription } from "@Obsidian/Enums/Crm/gender";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { setPropertiesBoxValue, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
@@ -202,6 +271,8 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { BirthdayPickerBag } from "@Obsidian/ViewModels/Controls/birthdayPickerBag";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
     import { EditPersonBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/EditPerson/editPersonBag";
     import { EditPersonOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/EditPerson/editPersonOptionsBag";
 
@@ -233,6 +304,23 @@
     const deceasedDate = ref(config.entity?.deceasedDate ?? "");
     const inactiveReasonNote = ref(config.entity?.inactiveReasonNote ?? "");
     const photo = ref<ListItemBag | null>(config.entity?.photo ?? null);
+
+    // Demographics
+    // Ordered to match the design (Unknown last), which the shared GenderPicker cannot do.
+    const genderItems: ListItemBag[] = [
+        { text: GenderDescription[Gender.Male], value: Gender.Male.toString() },
+        { text: GenderDescription[Gender.Female], value: Gender.Female.toString() },
+        { text: GenderDescription[Gender.Unknown], value: Gender.Unknown.toString() }
+    ];
+    const gender = ref((config.entity?.gender ?? Gender.Unknown).toString());
+    const birthDate = ref<BirthdayPickerBag | null>(config.entity?.birthDate ?? null);
+    const grade = ref<ListItemBag | null>(config.entity?.grade ?? null);
+    const graduationYear = ref(config.entity?.graduationYear?.toString() ?? "");
+    const maritalStatus = ref<ListItemBag | null>(config.entity?.maritalStatus ?? null);
+    const anniversaryDate = ref(config.entity?.anniversaryDate ?? "");
+    const race = ref<ListItemBag | null>(config.entity?.race ?? null);
+    const ethnicity = ref<ListItemBag | null>(config.entity?.ethnicity ?? null);
+    const isLockedAsChild = ref(config.entity?.isLockedAsChild ?? false);
 
     // #endregion Values
 
@@ -271,7 +359,77 @@
         return `${personName} is the only active member of the ${family}. Saving will also mark the family inactive.`;
     });
 
+    const isGradeShown = computed<boolean>(() => !options.value.isGradeHidden);
+
+    const isMarried = computed<boolean>(() => {
+        return areEqual(maritalStatus.value?.value, DefinedValue.PersonMaritalStatusMarried);
+    });
+
+    const isAnniversaryShown = computed<boolean>(() => isMarried.value && !options.value.isAnniversaryDateHidden);
+
+    const isRaceShown = computed<boolean>(() => (options.value.raceOption ?? "Hide") !== "Hide");
+    const isRaceRequired = computed<boolean>(() => options.value.raceOption === "Required");
+
+    const isEthnicityShown = computed<boolean>(() => (options.value.ethnicityOption ?? "Hide") !== "Hide");
+    const isEthnicityRequired = computed<boolean>(() => options.value.ethnicityOption === "Required");
+
+    // Mirror the block setting (WebForms parity): once a birth month and day are present, the year
+    // becomes required. The rule reads the birthDate ref directly because RockFormField hands it a
+    // date-key string, not the BirthdayPickerBag.
+    const birthDateRules = computed<ValidationRule[]>(() => {
+        if (!options.value.isCompleteBirthDateRequired) {
+            return [];
+        }
+
+        return [(): string | boolean => {
+            const value = birthDate.value;
+            if (value && value.month && value.day && !value.year) {
+                return "Birth Date requires a year.";
+            }
+            return true;
+        }];
+    });
+
     // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Keeps the Graduation Year in step with the selected Grade, matching the WebForms grade picker.
+     * Grade and Graduation Year are two views of the same stored value.
+     */
+    function syncGraduationYearFromGrade(): void {
+        const offsetText = grade.value?.value;
+
+        if (!offsetText) {
+            return;
+        }
+
+        const expectedYear = (options.value.gradeTransitionYear + options.value.gradeOffsetAdjustment + Number(offsetText)).toString();
+
+        // Guard against a feedback loop with the reverse watcher; only write when it actually differs.
+        if (graduationYear.value !== expectedYear) {
+            graduationYear.value = expectedYear;
+        }
+    }
+
+    /**
+     * Keeps the Grade in step with the entered Graduation Year, matching the WebForms grade picker.
+     */
+    function syncGradeFromGraduationYear(): void {
+        let expectedOffset = "";
+
+        if (graduationYear.value) {
+            const offset = Number(graduationYear.value) - options.value.gradeTransitionYear - options.value.gradeOffsetAdjustment;
+            expectedOffset = offset >= 0 ? offset.toString() : "";
+        }
+
+        if ((grade.value?.value ?? "") !== expectedOffset) {
+            grade.value = expectedOffset ? { value: expectedOffset } : null;
+        }
+    }
+
+    // #endregion Functions
 
     // #region Watchers
 
@@ -290,6 +448,10 @@
             deceasedDate.value = "";
         }
     });
+
+    // Keep Grade and Graduation Year in sync (they represent the same stored value).
+    watch(grade, syncGraduationYearFromGrade);
+    watch(graduationYear, syncGradeFromGraduationYear);
 
     // #endregion Watchers
 
@@ -322,6 +484,17 @@
             setPropertiesBoxValue(box, "deceasedDate", deceasedDate.value);
             setPropertiesBoxValue(box, "inactiveReasonNote", inactiveReasonNote.value);
             setPropertiesBoxValue(box, "photo", photo.value);
+
+            // Demographics. Grade is not sent; only Graduation Year is persisted (the two are the same
+            // stored value, kept in sync client-side).
+            setPropertiesBoxValue(box, "gender", Number(gender.value) as Gender);
+            setPropertiesBoxValue(box, "birthDate", birthDate.value);
+            setPropertiesBoxValue(box, "graduationYear", graduationYear.value ? Number(graduationYear.value) : null);
+            setPropertiesBoxValue(box, "maritalStatus", maritalStatus.value);
+            setPropertiesBoxValue(box, "anniversaryDate", anniversaryDate.value);
+            setPropertiesBoxValue(box, "race", race.value);
+            setPropertiesBoxValue(box, "ethnicity", ethnicity.value);
+            setPropertiesBoxValue(box, "isLockedAsChild", isLockedAsChild.value);
 
             const result = await invokeBlockAction<ValidPropertiesBox<EditPersonBag> | string>("Save", { box });
 
