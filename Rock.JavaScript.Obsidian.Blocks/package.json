@@ -1,6 +1,10 @@
 {
   "private": true,
   "description": "Project for all core blocks in Rock.",
+  "engines": {
+    "node": ">=24.5.0",
+    "npm": ">=11.5.0"
+  },
   "scripts": {
     "build-fast": "node build/build-fast.js",
     "build": "npm run build:types && node ../Rock.JavaScript.Obsidian/Build/rollup-mt.js rollup.config.cjs && echo '' > dist/.buildstamp && echo DONE",

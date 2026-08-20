@@ -1,6 +1,10 @@
 {
   "private": true,
   "description": "Project for all Rock Obsidian UI functionality.",
+  "engines": {
+    "node": ">=24.5.0",
+    "npm": ">=11.5.0"
+  },
   "scripts": {
     "build-fast": "node Build/build-fast.js",
     "build": "npm run build-core && npm run build-framework && npm run copy-webforms-core && echo '' > dist/.buildstamp && echo DONE",
