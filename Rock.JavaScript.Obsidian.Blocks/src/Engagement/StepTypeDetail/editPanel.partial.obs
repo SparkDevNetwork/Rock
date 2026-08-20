@@ -624,6 +624,7 @@
         rowItem["attributeName"] = stepAttribute.attribute?.name;
         rowItem["fieldType"] = stepAttribute.fieldType;
         rowItem["allowSearch"] = stepAttribute.attribute?.isAllowSearch;
+        rowItem["isSystem"] = stepAttribute.attribute?.isSystem;
 
         if (stepAttribute.attribute?.key && !reservedKeyNames.value.includes(stepAttribute.attribute?.key)) {
             reservedKeyNames.value.push(stepAttribute.attribute.key);
