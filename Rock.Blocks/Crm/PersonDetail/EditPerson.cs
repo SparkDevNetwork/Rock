@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Communication.Chat;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -264,6 +265,10 @@ namespace Rock.Blocks.Crm.PersonDetail
                 options.CampusName = person.PrimaryCampus?.Name;
                 options.NoPictureUrl = RequestContext.ResolveRockUrl( Person.GetPersonPhotoUrl( person, 400 ) );
                 options.IsOnlyActiveFamilyMember = IsOnlyActiveFamilyMember( person );
+
+                // The chat preferences only apply once chat is configured and the person has a chat presence.
+                options.IsChatVisible = ChatHelper.IsChatEnabled && person.HasChatAlias;
+
                 SetAccountProtectionProfileMessage( options, person );
             }
 
@@ -271,7 +276,7 @@ namespace Rock.Blocks.Crm.PersonDetail
                 8/19/26 - CLAUDE
 
                 Remaining option sources still to wire as their sections come online:
-                  - IsChatVisible, IsEnvelopeNumberVisible feature flags.
+                  - IsEnvelopeNumberVisible feature flag.
                   - GivingGroups and SearchKeyTypes option lists.
 
                 Reason: Options grow with the client sections.
@@ -349,6 +354,8 @@ namespace Rock.Blocks.Crm.PersonDetail
 
                 // Cast the model's Rock.Model.CommunicationType to the Rock.Enums.Communication.CommunicationType the bag exposes (same underlying values).
                 CommunicationPreference = ( Rock.Enums.Communication.CommunicationType ) person.CommunicationPreference,
+                IsChatProfilePublic = person.IsChatProfilePublic,
+                IsChatOpenDirectMessageAllowed = person.IsChatOpenDirectMessageAllowed,
                 InactiveReasonNote = person.InactiveReasonNote,
                 IsLockedAsChild = person.IsLockedAsChild,
             };
@@ -363,7 +370,6 @@ namespace Rock.Blocks.Crm.PersonDetail
 
                 The following still need to be mapped from the person as their inputs are built
                 (see EditPerson.ascx.cs ShowDetails around lines 877-1049):
-                  - Chat tri-state values (when chat is enabled and the person has a chat alias).
                   - GivingGroupGuid and GivingEnvelopeNumber (person attribute value).
                   - PreviousLastNames, AlternateIds, SearchKeys.
 
@@ -585,14 +591,39 @@ namespace Rock.Blocks.Crm.PersonDetail
             box.IfValidProperty( nameof( box.Bag.IsEmailActive ),
                 () => entity.IsEmailActive = box.Bag.IsEmailActive );
 
+            box.IfValidProperty( nameof( box.Bag.EmailPreference ),
+                () => entity.EmailPreference = box.Bag.EmailPreference );
+
+            box.IfValidProperty( nameof( box.Bag.CommunicationPreference ),
+                // The bag exposes Rock.Enums.Communication.CommunicationType; cast to the model enum (same values).
+                () => entity.CommunicationPreference = ( Rock.Model.CommunicationType ) box.Bag.CommunicationPreference );
+
+            box.IfValidProperty( nameof( box.Bag.IsChatProfilePublic ),
+                () =>
+                {
+                    // Chat preferences are only editable once chat is configured and the person has a chat presence.
+                    if ( ChatHelper.IsChatEnabled && entity.HasChatAlias )
+                    {
+                        entity.IsChatProfilePublic = box.Bag.IsChatProfilePublic;
+                    }
+                } );
+
+            box.IfValidProperty( nameof( box.Bag.IsChatOpenDirectMessageAllowed ),
+                () =>
+                {
+                    if ( ChatHelper.IsChatEnabled && entity.HasChatAlias )
+                    {
+                        entity.IsChatOpenDirectMessageAllowed = box.Bag.IsChatOpenDirectMessageAllowed;
+                    }
+                } );
+
             /*
                 8/19/26 - CLAUDE
 
-                Fields without an IfValidProperty here (communication/email preference, chat, and every
-                unbuilt section) are intentionally never written, so the server cannot clobber
-                values the client did not edit. Each gets its IfValidProperty as its client input
-                is built, along with the WebForms per-field security re-checks, soft validations,
-                and family re-evaluation.
+                Fields without an IfValidProperty here (every unbuilt section) are intentionally never
+                written, so the server cannot clobber values the client did not edit. Each gets its
+                IfValidProperty as its client input is built, along with the WebForms per-field security
+                re-checks, soft validations, and family re-evaluation.
 
                 Reason: Mutation grows field-by-field with the client sections.
             */
@@ -858,6 +889,13 @@ namespace Rock.Blocks.Crm.PersonDetail
                 && entity.DeceasedDate.Value < entity.BirthDate.Value )
             {
                 return ActionBadRequest( "Deceased Date must be on or after the birth date." );
+            }
+
+            // An SMS communication preference requires a phone number with SMS enabled (matches WebForms).
+            if ( entity.CommunicationPreference == Rock.Model.CommunicationType.SMS
+                && !entity.PhoneNumbers.Any( pn => pn.IsMessagingEnabled ) )
+            {
+                return ActionBadRequest( "A phone number with SMS enabled is required when Communication Preference is set to SMS." );
             }
 
             RockContext.WrapTransaction( () =>

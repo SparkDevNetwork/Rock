@@ -23,7 +23,7 @@
                 </HighlightLabel>
             </template>
 
-            <NotificationBox v-if="errorMessage" alertType="danger" class="mb-3" v-html="errorMessage" />
+            <NotificationBox v-if="errorMessage" ref="errorNotificationBox" alertType="danger" class="mb-3" v-html="errorMessage" />
 
             <div class="row">
                 <div class="col-md-3 mb-4">
@@ -256,6 +256,35 @@
                                     </div>
                                 </div>
                             </ContentStack>
+
+                            <ContentStack title="Preferences"
+                                          description="Set how this person is reached and who can reach them.">
+                                <RadioButtonList v-model="emailPreference"
+                                                 label="Email Preference"
+                                                 help="What kind of email this person has agreed to receive."
+                                                 :items="emailPreferenceItems"
+                                                 :showBlankItem="false" />
+
+                                <RadioButtonList v-model="communicationPreference"
+                                                 label="Communication Preference"
+                                                 help="How this person prefers to be contacted. SMS requires a phone number with SMS enabled."
+                                                 :items="communicationPreferenceItems"
+                                                 :showBlankItem="false" />
+
+                                <RadioButtonList v-if="isChatVisible"
+                                                 v-model="chatProfileVisibility"
+                                                 label="Chat Profile Visibility"
+                                                 help="Whether this person's profile can be found in chat."
+                                                 :items="chatProfileVisibilityItems"
+                                                 :showBlankItem="false" />
+
+                                <RadioButtonList v-if="isChatVisible"
+                                                 v-model="chatDirectMessages"
+                                                 label="Chat Direct Messages"
+                                                 help="Who can start a direct message with this person in chat."
+                                                 :items="chatDirectMessagesItems"
+                                                 :showBlankItem="false" />
+                            </ContentStack>
                         </ContentSection>
                     </ContentSectionContainer>
                 </div>
@@ -280,7 +309,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref, watch } from "vue";
+    import { computed, nextTick, ref, watch } from "vue";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
@@ -310,6 +339,9 @@
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { Gender, GenderDescription } from "@Obsidian/Enums/Crm/gender";
+    import { EmailPreference, EmailPreferenceDescription } from "@Obsidian/Enums/Crm/emailPreference";
+    import { CommunicationType, CommunicationTypeDescription } from "@Obsidian/Enums/Communication/communicationType";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { setPropertiesBoxValue, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
@@ -334,6 +366,9 @@
 
     const blockError = ref("");
     const errorMessage = ref("");
+
+    // The top-of-block error banner, scrolled into view when a save fails (it only exists while errorMessage is set).
+    const errorNotificationBox = ref<InstanceType<typeof NotificationBox> | null>(null);
 
     const isSaving = ref(false);
     const isNavigating = ref(false);
@@ -383,6 +418,33 @@
     })));
     const email = ref(config.entity?.email ?? "");
     const isEmailActive = ref(config.entity?.isEmailActive ?? false);
+
+    // Communication > Preferences
+    const emailPreferenceItems = enumToListItemBag(EmailPreferenceDescription);
+
+    // Only Email and SMS are offered here so use exlicit subset of the enum instead of enumToListItemBag().
+    const communicationPreferenceItems: ListItemBag[] = [
+        { text: CommunicationTypeDescription[CommunicationType.Email], value: CommunicationType.Email.toString() },
+        { text: CommunicationTypeDescription[CommunicationType.SMS], value: CommunicationType.SMS.toString() }
+    ];
+
+    const chatProfileVisibilityItems: ListItemBag[] = [
+        { text: "Inherit From System Default", value: "" },
+        { text: "Hidden", value: "false" },
+        { text: "Visible to Everyone", value: "true" }
+    ];
+
+    const chatDirectMessagesItems: ListItemBag[] = [
+        { text: "Inherit From System Default", value: "" },
+        { text: "Only People in Shared Channel", value: "false" },
+        { text: "Anyone Can Start a Conversation", value: "true" }
+    ];
+    const emailPreference = ref((config.entity?.emailPreference ?? EmailPreference.EmailAllowed).toString());
+
+    // Match WebForms: only SMS maps to SMS; every other value (RecipientPreference, Email, Push) shows and saves as Email.
+    const communicationPreference = ref((config.entity?.communicationPreference === CommunicationType.SMS ? CommunicationType.SMS : CommunicationType.Email).toString());
+    const chatProfileVisibility = ref(config.entity?.isChatProfilePublic == null ? "" : config.entity.isChatProfilePublic.toString());
+    const chatDirectMessages = ref(config.entity?.isChatOpenDirectMessageAllowed == null ? "" : config.entity.isChatOpenDirectMessageAllowed.toString());
 
     // #endregion Values
 
@@ -434,6 +496,8 @@
 
     const isEthnicityShown = computed<boolean>(() => (options.value.ethnicityOption ?? "Hide") !== "Hide");
     const isEthnicityRequired = computed<boolean>(() => options.value.ethnicityOption === "Required");
+
+    const isChatVisible = computed<boolean>(() => options.value.isChatVisible ?? false);
 
     // Mirror the block setting (WebForms parity): once a birth month and day are present, the year
     // becomes required. The rule reads the birthDate ref directly because RockFormField hands it a
@@ -612,6 +676,14 @@
             setPropertiesBoxValue(box, "email", email.value);
             setPropertiesBoxValue(box, "isEmailActive", isEmailActive.value);
 
+            // Communication > Preferences.
+            setPropertiesBoxValue(box, "emailPreference", Number(emailPreference.value) as EmailPreference);
+            setPropertiesBoxValue(box, "communicationPreference", Number(communicationPreference.value) as CommunicationType);
+            if (isChatVisible.value) {
+                setPropertiesBoxValue(box, "isChatProfilePublic", chatProfileVisibility.value === "" ? null : chatProfileVisibility.value === "true");
+                setPropertiesBoxValue(box, "isChatOpenDirectMessageAllowed", chatDirectMessages.value === "" ? null : chatDirectMessages.value === "true");
+            }
+
             const result = await invokeBlockAction<ValidPropertiesBox<EditPersonBag> | string>("Save", { box });
 
             if (result.isSuccess && result.data) {
@@ -622,6 +694,11 @@
             }
             else {
                 errorMessage.value = result.errorMessage ?? "Unknown error while trying to save the person.";
+
+                // Bring the error banner into view; the user may have scrolled down to the Save button.
+                nextTick(() => {
+                    errorNotificationBox.value?.$el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                });
             }
         }
         finally {
