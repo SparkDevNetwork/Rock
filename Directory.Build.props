@@ -9,7 +9,7 @@
 
   <!-- Versioning information -->
   <PropertyGroup>
-    <Version>19.4.2</Version>
+    <Version>19.4.3</Version>
     <InformationalVersion>Rock McKinley 19.4</InformationalVersion>
 
     <FileVersion>$(Version)</FileVersion>
