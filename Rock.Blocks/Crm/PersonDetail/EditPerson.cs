@@ -466,8 +466,8 @@ namespace Rock.Blocks.Crm.PersonDetail
                     {
                         var reasonDeceasedId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() )?.Id;
 
-                        // NOTE: The deceased-date-before-birth-date validation is added with the Birth Date field.
                         // The deceased date only applies when the inactive reason is deceased.
+                        // Save() rejects a deceased date that precedes the birth date.
                         entity.DeceasedDate = entity.RecordStatusReasonValueId == reasonDeceasedId
                             ? box.Bag.DeceasedDate.AsDateTime()
                             : null;
@@ -733,6 +733,14 @@ namespace Rock.Blocks.Crm.PersonDetail
             if ( !UpdateEntityFromBox( entity, box ) )
             {
                 return ActionBadRequest( "Invalid data." );
+            }
+
+            // A deceased date may not precede the birth date (matches WebForms). Only checked when a
+            // complete birth date (with year) is present.
+            if ( entity.DeceasedDate.HasValue && entity.BirthYear.HasValue && entity.BirthDate.HasValue
+                && entity.DeceasedDate.Value < entity.BirthDate.Value )
+            {
+                return ActionBadRequest( "Deceased Date must be on or after the birth date." );
             }
 
             RockContext.WrapTransaction( () =>

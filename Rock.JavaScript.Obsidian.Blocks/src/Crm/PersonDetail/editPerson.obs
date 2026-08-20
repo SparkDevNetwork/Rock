@@ -67,7 +67,8 @@
                                 <DatePicker v-if="isReasonDeceased && options.isRecordStatusEditable"
                                             v-model="deceasedDate"
                                             label="Deceased Date"
-                                            help="The date this person passed away. Must be on or after their birth date." />
+                                            help="The date this person passed away. Must be on or after their birth date."
+                                            :rules="deceasedDateRules" />
                                 <StaticFormControl v-else-if="isReasonDeceased" label="Deceased Date" :modelValue="deceasedDate" />
 
                                 <TextBox v-if="options.isRecordStatusEditable"
@@ -390,9 +391,49 @@
         }];
     });
 
+    // A deceased date, once entered, may not precede a complete birth date (matches WebForms).
+    // Only enforced when the birth date has a year; the server re-checks authoritatively.
+    const deceasedDateRules = computed<ValidationRule[]>(() => {
+        return [(): string | boolean => {
+            const bd = birthDate.value;
+            if (!deceasedDate.value || !bd || !bd.year || !bd.month || !bd.day) {
+                return true;
+            }
+
+            const deceased = toComparableDate(deceasedDate.value);
+            if (deceased === null) {
+                return true;
+            }
+
+            const birth = bd.year * 10000 + bd.month * 100 + bd.day;
+            if (deceased < birth) {
+                return "Deceased Date must be on or after the birth date.";
+            }
+            return true;
+        }];
+    });
+
     // #endregion Computed Values
 
     // #region Functions
+
+    /**
+     * Parses a date string (ISO "yyyy-MM-dd" or US "M/D/yyyy") into a comparable yyyymmdd number,
+     * or null when the format is unrecognized (in which case the server performs the check).
+     */
+    function toComparableDate(dateString: string): number | null {
+        const iso = dateString.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+        if (iso) {
+            return Number(iso[1]) * 10000 + Number(iso[2]) * 100 + Number(iso[3]);
+        }
+
+        const us = dateString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+        if (us) {
+            return Number(us[3]) * 10000 + Number(us[1]) * 100 + Number(us[2]);
+        }
+
+        return null;
+    }
 
     /**
      * Keeps the Graduation Year in step with the selected Grade, matching the WebForms grade picker.
