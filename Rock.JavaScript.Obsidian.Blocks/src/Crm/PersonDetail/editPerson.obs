@@ -163,9 +163,9 @@
 
                                 <CheckBox v-model="isLockedAsChild"
                                           label=""
-                                          text="Consider Person as Child">
+                                          text="Consider Person As Child">
                                     <template #textAppend>
-                                        <HelpBlock text="Overrides the usual age and family-role logic and always treats this person as a child, regardless of their age or role in a family." />
+                                        <HelpBlock text="Whether this person is classified as a child, even when their age or family role would make them an adult. Also keeps data automation from moving them into their own family." />
                                     </template>
                                 </CheckBox>
 
@@ -207,6 +207,52 @@
                                         <EthnicityPicker v-model="ethnicity"
                                                          :rules="isEthnicityRequired ? 'required' : ''"
                                                          :showBlankItem="true" />
+                                    </div>
+                                </div>
+                            </ContentStack>
+                        </ContentSection>
+
+                        <ContentSection title="Communication"
+                                        icon="ti ti-message"
+                                        disableCollapse>
+                            <ContentStack title="Contact Info"
+                                          description="Enter this person's phone numbers and email address. Only one number can be SMS enabled. Select ‘Unlisted’ to hide a number from directories and other shared listings.">
+                                <div v-for="phoneNumber in phoneNumbers" :key="phoneNumber.phoneTypeGuid" class="row">
+                                    <div class="col-xs-6">
+                                        <PhoneNumberBox v-model="phoneNumber.number"
+                                                        v-model:countryCode="phoneNumber.countryCode"
+                                                        :label="phoneNumber.phoneTypeLabel ?? ''" />
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <div class="form-group">
+                                            <label class="control-label">&nbsp;</label>
+                                            <div class="control-wrapper d-flex gap-4 align-items-center">
+                                                <InlineCheckBox v-if="phoneNumber.isSmsEditable"
+                                                                :modelValue="phoneNumber.isMessagingEnabled"
+                                                                label="SMS"
+                                                                @update:modelValue="value => onSmsChanged(phoneNumber, value)" />
+                                                <InlineCheckBox v-model="phoneNumber.isUnlisted"
+                                                                label="Unlisted" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <EmailBox v-model="email"
+                                                  label="Email" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <!-- Spacer label aligns the checkbox with the email input below its label. -->
+                                            <label class="control-label">&nbsp;</label>
+                                            <div class="control-wrapper">
+                                                <InlineCheckBox v-model="isEmailActive"
+                                                                label="Email Is Deliverable"
+                                                                help="Whether this address can receive mail. Rock clears this automatically after a hard bounce." />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </ContentStack>
@@ -258,7 +304,10 @@
     import RacePicker from "@Obsidian/Controls/racePicker.obs";
     import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
     import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { Gender, GenderDescription } from "@Obsidian/Enums/Crm/gender";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
@@ -276,6 +325,7 @@
     import { ValidationRule } from "@Obsidian/ValidationRules";
     import { EditPersonBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/EditPerson/editPersonBag";
     import { EditPersonOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/EditPerson/editPersonOptionsBag";
+    import { EditPersonPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/EditPerson/editPersonPhoneNumberBag";
 
     const config = useConfigurationValues<DetailBlockBox<EditPersonBag, EditPersonOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -322,6 +372,17 @@
     const race = ref<ListItemBag | null>(config.entity?.race ?? null);
     const ethnicity = ref<ListItemBag | null>(config.entity?.ethnicity ?? null);
     const isLockedAsChild = ref(config.entity?.isLockedAsChild ?? false);
+
+    // Communication > Contact Info
+    // Coerce the number and country code to strings so the PhoneNumberBox formatter never receives null.
+    // No ref type annotation: inference keeps number/countryCode as non-null strings from the map below.
+    const phoneNumbers = ref((config.entity?.phoneNumbers ?? []).map(phoneNumber => ({
+        ...phoneNumber,
+        number: phoneNumber.number ?? "",
+        countryCode: phoneNumber.countryCode ?? ""
+    })));
+    const email = ref(config.entity?.email ?? "");
+    const isEmailActive = ref(config.entity?.isEmailActive ?? false);
 
     // #endregion Values
 
@@ -499,6 +560,15 @@
     // #region Event Handlers
 
     /**
+     * Enforces a single SMS-enabled number: turning SMS on for one row turns it off for every other.
+     */
+    function onSmsChanged(changed: EditPersonPhoneNumberBag, isEnabled: boolean): void {
+        phoneNumbers.value.forEach(phoneNumber => {
+            phoneNumber.isMessagingEnabled = isEnabled && phoneNumber.phoneTypeGuid === changed.phoneTypeGuid;
+        });
+    }
+
+    /**
      * Saves the edited person and redirects to the person profile on success.
      */
     async function onSave(): Promise<void> {
@@ -536,6 +606,11 @@
             setPropertiesBoxValue(box, "race", race.value);
             setPropertiesBoxValue(box, "ethnicity", ethnicity.value);
             setPropertiesBoxValue(box, "isLockedAsChild", isLockedAsChild.value);
+
+            // Communication > Contact Info.
+            setPropertiesBoxValue(box, "phoneNumbers", phoneNumbers.value);
+            setPropertiesBoxValue(box, "email", email.value);
+            setPropertiesBoxValue(box, "isEmailActive", isEmailActive.value);
 
             const result = await invokeBlockAction<ValidPropertiesBox<EditPersonBag> | string>("Save", { box });
 

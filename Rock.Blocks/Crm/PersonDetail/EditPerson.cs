@@ -342,6 +342,7 @@ namespace Rock.Blocks.Crm.PersonDetail
                 AnniversaryDate = person.AnniversaryDate?.ToString( "yyyy-MM-dd" ),
                 Race = ToDefinedValueListItemBag( person.RaceValueId ),
                 Ethnicity = ToDefinedValueListItemBag( person.EthnicityValueId ),
+                PhoneNumbers = GetPhoneNumberBags( person ),
                 Email = person.Email,
                 IsEmailActive = person.IsEmailActive,
                 EmailPreference = person.EmailPreference,
@@ -364,12 +365,55 @@ namespace Rock.Blocks.Crm.PersonDetail
                 (see EditPerson.ascx.cs ShowDetails around lines 877-1049):
                   - Chat tri-state values (when chat is enabled and the person has a chat alias).
                   - GivingGroupGuid and GivingEnvelopeNumber (person attribute value).
-                  - PhoneNumbers, PreviousLastNames, AlternateIds, SearchKeys.
+                  - PreviousLastNames, AlternateIds, SearchKeys.
 
                 Reason: Person value mapping grows with the client sections.
             */
 
             return bag;
+        }
+
+        /// <summary>
+        /// Builds one editable phone number row per active phone number type, filling in the person's
+        /// existing values where present (mirrors the WebForms contact info repeater).
+        /// </summary>
+        /// <param name="person">The person being edited.</param>
+        /// <returns>The editable phone number rows, ordered by phone type.</returns>
+        private List<EditPersonPhoneNumberBag> GetPhoneNumberBags( Person person )
+        {
+            var canEditSms = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson )
+                || BlockCache.IsAuthorized( SecurityActionKey.EditSMS, RequestContext.CurrentPerson );
+            var isMobileSmsEnabledByDefault = GetAttributeValue( AttributeKey.DefaultMobileSMSChecked ).AsBoolean();
+            var mobilePhoneTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+            var phoneNumberType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() );
+
+            var bags = new List<EditPersonPhoneNumberBag>();
+
+            // Only show active phone types. An admin can reactivate a type to view or edit a value stored against it.
+            var activePhoneNumberTypes = phoneNumberType.DefinedValues.Where( dv => dv.IsActive ).ToList();
+
+            foreach ( var phoneType in activePhoneNumberTypes )
+            {
+                var phoneNumber = person.PhoneNumbers?.FirstOrDefault( n => n.NumberTypeValueId == phoneType.Id );
+                var isMobile = phoneType.Id == mobilePhoneTypeId;
+                var hasNumber = phoneNumber != null && phoneNumber.Number.IsNotNullOrWhiteSpace();
+
+                bags.Add( new EditPersonPhoneNumberBag
+                {
+                    PhoneTypeGuid = phoneType.Guid,
+                    PhoneTypeLabel = phoneType.Value,
+                    CountryCode = phoneNumber?.CountryCode,
+                    Number = hasNumber ? PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number ) : null,
+
+                    // A blank mobile number defaults its SMS flag to the block setting (matches WebForms).
+                    IsMessagingEnabled = hasNumber ? phoneNumber.IsMessagingEnabled : ( isMobile && isMobileSmsEnabledByDefault ),
+                    IsUnlisted = phoneNumber?.IsUnlisted ?? false,
+                    IsSmsEditable = canEditSms,
+                    IsMobile = isMobile
+                } );
+            }
+
+            return bags;
         }
 
         /// <inheritdoc/>
@@ -532,19 +576,92 @@ namespace Rock.Blocks.Crm.PersonDetail
             box.IfValidProperty( nameof( box.Bag.IsLockedAsChild ),
                 () => entity.IsLockedAsChild = box.Bag.IsLockedAsChild );
 
+            box.IfValidProperty( nameof( box.Bag.PhoneNumbers ),
+                () => UpdatePhoneNumbers( entity, box.Bag.PhoneNumbers ) );
+
+            box.IfValidProperty( nameof( box.Bag.Email ),
+                () => entity.Email = box.Bag.Email?.Trim() );
+
+            box.IfValidProperty( nameof( box.Bag.IsEmailActive ),
+                () => entity.IsEmailActive = box.Bag.IsEmailActive );
+
             /*
                 8/19/26 - CLAUDE
 
-                Fields without an IfValidProperty here (communication/email preference and every
+                Fields without an IfValidProperty here (communication/email preference, chat, and every
                 unbuilt section) are intentionally never written, so the server cannot clobber
                 values the client did not edit. Each gets its IfValidProperty as its client input
                 is built, along with the WebForms per-field security re-checks, soft validations,
-                phone SMS single-select, and family re-evaluation.
+                and family re-evaluation.
 
                 Reason: Mutation grows field-by-field with the client sections.
             */
 
             return true;
+        }
+
+        /// <summary>
+        /// Writes the edited phone number rows back onto the person, enforcing the WebForms rules:
+        /// only one number may have SMS enabled, the SMS flag is honored only when the user may edit it,
+        /// and empty or duplicate numbers are removed.
+        /// </summary>
+        /// <param name="person">The person being edited.</param>
+        /// <param name="phoneNumberBags">The edited phone number rows from the client.</param>
+        private void UpdatePhoneNumbers( Person person, List<EditPersonPhoneNumberBag> phoneNumberBags )
+        {
+            if ( phoneNumberBags == null )
+            {
+                return;
+            }
+
+            var canEditSms = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson )
+                || BlockCache.IsAuthorized( SecurityActionKey.EditSMS, RequestContext.CurrentPerson );
+
+            var keptPhoneTypeIds = new List<int>();
+            var isSmsSelected = false;
+
+            foreach ( var phoneNumberBag in phoneNumberBags )
+            {
+                var cleanNumber = PhoneNumber.CleanNumber( phoneNumberBag.Number );
+                if ( cleanNumber.IsNullOrWhiteSpace() )
+                {
+                    continue;
+                }
+
+                var phoneTypeId = DefinedValueCache.GetId( phoneNumberBag.PhoneTypeGuid );
+                if ( !phoneTypeId.HasValue )
+                {
+                    continue;
+                }
+
+                var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneTypeId.Value );
+                if ( phoneNumber == null )
+                {
+                    phoneNumber = new PhoneNumber { NumberTypeValueId = phoneTypeId.Value };
+                    person.PhoneNumbers.Add( phoneNumber );
+                }
+
+                phoneNumber.CountryCode = PhoneNumber.CleanNumber( phoneNumberBag.CountryCode );
+                phoneNumber.Number = cleanNumber;
+
+                var desiredSms = canEditSms ? phoneNumberBag.IsMessagingEnabled : phoneNumber.IsMessagingEnabled;
+
+                // Only one number may have SMS enabled.
+                if ( isSmsSelected )
+                {
+                    phoneNumber.IsMessagingEnabled = false;
+                }
+                else
+                {
+                    phoneNumber.IsMessagingEnabled = desiredSms;
+                    isSmsSelected = desiredSms;
+                }
+
+                phoneNumber.IsUnlisted = phoneNumberBag.IsUnlisted;
+                keptPhoneTypeIds.Add( phoneTypeId.Value );
+            }
+
+            new PersonService( RockContext ).RemoveEmptyAndDuplicatePhoneNumbers( person, keptPhoneTypeIds, RockContext );
         }
 
         /// <inheritdoc/>
