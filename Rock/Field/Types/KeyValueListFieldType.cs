@@ -384,12 +384,20 @@ namespace Rock.Field.Types
                 is the only thing worth describing, and it is the thing most likely to
                 be got wrong.
 
+                The escaping half was added after a caller stored Lava containing a
+                pipe, which the parser then read as the end of the pair. Saying the
+                delimiters "cannot appear" in a key or value was wrong: they can, and
+                the read path already undoes the encoding, so the rule to state is how
+                to encode them rather than that they are forbidden. The three
+                characters named here are the ones KeyValueList.Encode escapes, so a
+                value built from this hint matches what the editing screen writes.
+
                 Reason: An unguessable format that fails silently is exactly what
                 ValueFormat is for.
             */
             var hints = new FieldTypeHints
             {
-                ValueFormat = "Key and value pairs in one string. Pairs are separated from each other by a pipe, and within a pair the key is separated from the value by a caret, as in key1^value1|key2^value2. Neither character can appear inside a key or a value."
+                ValueFormat = "Key and value pairs in one string. Pairs are separated from each other by a pipe, and within a pair the key is separated from the value by a caret, as in key1^value1|key2^value2. A key or value that itself contains a caret, a pipe, or a comma must percent encode that character, writing '^' as %5E, '|' as %7C, and ',' as %2C, otherwise the pair is split in the wrong place and the value is silently stored wrong. Leave every other character as it is. For example the value {{ Workflow | Attribute:'Name','RawValue' }} is stored as {{ Workflow %7C Attribute:'Name'%2C'RawValue' }}."
             };
 
             // When the values come from a defined type the value half is constrained,

@@ -49,7 +49,7 @@ internal sealed partial class CoreAdministrationSkill
 
         if ( partialName.IsNotNullOrWhiteSpace() )
         {
-            fieldTypes = fieldTypes.Where( ft => ft.Name != null && ft.Name.Contains( partialName ) );
+            fieldTypes = fieldTypes.Where( ft => ft.Name.ContainsIgnoreCase( partialName ) );
         }
 
         var results = fieldTypes
