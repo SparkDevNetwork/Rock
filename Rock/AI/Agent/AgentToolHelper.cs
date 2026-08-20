@@ -22,6 +22,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 using Microsoft.Extensions.Logging;
 
@@ -55,6 +56,12 @@ namespace Rock.AI.Agent
         #endregion
 
         #region Fields
+
+        /// <summary>
+        /// Matches a single Lava output block or tag, non greedy so that two blocks
+        /// in one value stay separate rather than merging into one match.
+        /// </summary>
+        private static readonly Regex _lavaBlockExpression = new Regex( @"\{\{.*?\}\}|\{%.*?%\}", RegexOptions.Singleline );
 
         /// <summary>
         /// The database context to use for reading and writing to the database.
@@ -606,7 +613,7 @@ namespace Rock.AI.Agent
                         continue;
                     }
 
-                    var value = kvp.Value ?? string.Empty;
+                    var value = NormalizeValueForFieldType( attribute, kvp.Value ?? string.Empty );
 
                     if ( !TryValidateAgainstFieldHints( attribute, ref value ) )
                     {
@@ -694,6 +701,83 @@ namespace Rock.AI.Agent
         /// <param name="attribute">The attribute being written.</param>
         /// <param name="value">The value to check. Trimmed in place when it passes.</param>
         /// <returns><c>true</c> when the value may be written; otherwise <c>false</c> and an error has been recorded.</returns>
+        /// <summary>
+        /// Repairs a supplied value into the form the attribute's field type stores,
+        /// where that form is something a caller writing the raw value is likely to
+        /// get wrong.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The callers here are models composing a raw stored value by hand, without
+        /// the editing screen that normally does the packing and escaping for them.
+        /// Where a field type's stored form has a mechanical rule that is easy to
+        /// state and easy to forget, applying it here is more reliable than
+        /// describing it in a hint and hoping, which was tried first and did not
+        /// hold.
+        /// </para>
+        /// <para>
+        /// Only repair what can be derived with certainty from the value itself. A
+        /// fix that has to guess at intent belongs in validation, where a caller can
+        /// be told what was wrong, rather than here, where a wrong guess silently
+        /// rewrites a value that was already correct.
+        /// </para>
+        /// <para>
+        /// One field type today. Add another as its own method below and dispatch to
+        /// it from here. If this grows past a handful, that is the point to promote
+        /// it to a virtual on <see cref="Field.FieldType"/> alongside
+        /// <c>GetFieldHints</c>, so the knowledge sits with the field type rather
+        /// than in a type test here.
+        /// </para>
+        /// </remarks>
+        /// <param name="attribute">The attribute being written, used to select the repair.</param>
+        /// <param name="value">The value supplied by the caller.</param>
+        /// <returns>The repaired value, or the original value when no repair applies.</returns>
+        private static string NormalizeValueForFieldType( AttributeCache attribute, string value )
+        {
+            if ( value.IsNullOrWhiteSpace() )
+            {
+                return value;
+            }
+
+            if ( attribute?.FieldType?.Field is Field.Types.KeyValueListFieldType )
+            {
+                return EncodeLavaInDelimitedValue( value );
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Percent encodes the Key Value List delimiters that appear inside a Lava
+        /// block, so Lava written into one of those values survives being parsed.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// A delimiter inside <c>{{ }}</c> or <c>{% %}</c> is unambiguously part of
+        /// the Lava rather than a separator, which is what makes the repair safe to
+        /// apply without knowing the caller's intent. Text outside a Lava block is
+        /// left alone, because there a delimiter really may be a delimiter, and
+        /// guessing would corrupt values that were correct.
+        /// </para>
+        /// <para>
+        /// Idempotent. A caller that already encoded correctly has no bare delimiter
+        /// left inside the Lava for this to find, so running it again changes
+        /// nothing.
+        /// </para>
+        /// </remarks>
+        /// <param name="value">The packed value supplied by the caller.</param>
+        /// <returns>The value with Lava-internal delimiters encoded.</returns>
+        private static string EncodeLavaInDelimitedValue( string value )
+        {
+            return _lavaBlockExpression.Replace( value, match =>
+            {
+                return match.Value
+                    .Replace( "^", "%5E" )
+                    .Replace( "|", "%7C" )
+                    .Replace( ",", "%2C" );
+            } );
+        }
+
         private bool TryValidateAgainstFieldHints( AttributeCache attribute, ref string value )
         {
             if ( value.IsNullOrWhiteSpace() )
