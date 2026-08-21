@@ -70,7 +70,11 @@ namespace Rock.AI.Agent
 
         /// <summary>
         /// Create a new instance of <see cref="AgentRequestContext"/>. The
-        /// constructor is internal to prevent plugins from inheriting.
+        /// constructor is internal to prevent plugins from inheriting. Unit
+        /// tests construct a derived context through
+        /// <c>Rock.Tests.Shared.TestAccess.AI.Agent.TestAgentRequestContext</c>,
+        /// which has access to this constructor; keep that type in sync with
+        /// this class.
         /// </summary>
         internal AgentRequestContext()
         {

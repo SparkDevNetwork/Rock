@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+using System.Runtime.CompilerServices;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -86,19 +87,43 @@ namespace Rock.Configuration
                 // EF 6 (EF Core has them), which means we can't initialize a proper
                 // RockApp. So this is a special case where we manually initialize
                 // the current instance.
-                var sc = new ServiceCollection();
-
-                sc.AddSingleton<IConnectionStringProvider, WebFormsConnectionStringProvider>();
-                sc.AddSingleton<IInitializationSettings, WebFormsInitializationSettings>();
-                sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
-                sc.AddSingleton<IHostingSettings, HostingSettings>();
-                sc.AddSingleton<IChatProvider, StreamChatProvider>();
-                sc.AddSingleton<IRockContextFactory, RockContextFactory>();
-
-                Current = new RockApp( sc.BuildServiceProvider() );
+                //
+                // The body lives in a separate, non-inlined method on purpose.
+                // The JIT resolves every type referenced by a method when that
+                // method is compiled, so if the StreamChatProvider registration
+                // lived directly in this static constructor it would force the
+                // loader to resolve the stream-chat-net assembly the moment any
+                // code touched RockApp - even outside the ef6 design-time case.
+                // Keeping it in a method that is only jitted when this branch
+                // actually runs limits that dependency to the ef6 process.
+                InitializeForEntityFrameworkDesignTime();
             }
 #endif
         }
+
+#if WEBFORMS
+        /// <summary>
+        /// Builds the minimal <see cref="RockApp"/> used during EF6 design-time
+        /// operations (migrations run from the CLI). Intentionally not inlined
+        /// so the JIT does not pull its type references - notably
+        /// <c>StreamChatProvider</c> and therefore the stream-chat-net assembly -
+        /// into the static constructor. See <see cref="RockApp()"/>.
+        /// </summary>
+        [MethodImpl( MethodImplOptions.NoInlining )]
+        private static void InitializeForEntityFrameworkDesignTime()
+        {
+            var sc = new ServiceCollection();
+
+            sc.AddSingleton<IConnectionStringProvider, WebFormsConnectionStringProvider>();
+            sc.AddSingleton<IInitializationSettings, WebFormsInitializationSettings>();
+            sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
+            sc.AddSingleton<IHostingSettings, HostingSettings>();
+            sc.AddSingleton<IChatProvider, StreamChatProvider>();
+            sc.AddSingleton<IRockContextFactory, RockContextFactory>();
+
+            Current = new RockApp( sc.BuildServiceProvider() );
+        }
+#endif
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RockApp"/> class.
