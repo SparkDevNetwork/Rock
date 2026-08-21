@@ -225,8 +225,9 @@
                                     </div>
                                     <div class="col-xs-6">
                                         <div class="form-group">
+                                            <!-- Spacer label aligns the checkbox row with the phone input below its label. -->
                                             <label class="control-label">&nbsp;</label>
-                                            <div class="control-wrapper d-flex gap-4 align-items-center">
+                                            <div class="control-wrapper phone-number-options">
                                                 <InlineCheckBox v-if="phoneNumber.isSmsEditable"
                                                                 :modelValue="phoneNumber.isMessagingEnabled"
                                                                 label="SMS"
@@ -286,6 +287,44 @@
                                                  :showBlankItem="false" />
                             </ContentStack>
                         </ContentSection>
+
+                        <ContentSection v-if="isGivingSectionVisible"
+                                        title="Giving"
+                                        icon="ti ti-cash">
+                            <ContentStack description="Set how this person's giving is grouped on contribution statements.">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <DropDownList v-model="givingGroup"
+                                                      label="Giving Group"
+                                                      help="The family this person's giving is combined with on contribution statements. If blank, their giving is kept separate."
+                                                      :items="givingGroupItems"
+                                                      :showBlankItem="true" />
+                                    </div>
+                                </div>
+
+                                <div v-if="isEnvelopeNumberVisible" class="row">
+                                    <div class="col-md-4">
+                                        <TextBox v-model="givingEnvelopeNumber"
+                                                 label="Envelope Number"
+                                                 rules="integer"
+                                                 help="The giving envelope number assigned to this person." />
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="form-group">
+                                            <!-- Spacer label aligns the button with the envelope input below its label. -->
+                                            <label class="control-label">&nbsp;</label>
+                                            <div class="control-wrapper">
+                                                <RockButton :btnType="BtnType.Default"
+                                                            :isLoading="isGeneratingEnvelopeNumber"
+                                                            @click="onGenerateEnvelopeNumber">
+                                                    <i class="ti ti-refresh"></i> Generate
+                                                </RockButton>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ContentStack>
+                        </ContentSection>
                     </ContentSectionContainer>
                 </div>
             </div>
@@ -307,6 +346,18 @@
         </Panel>
     </RockForm>
 </template>
+
+<style scoped>
+.phone-number-options {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.phone-number-options :deep(.checkbox) {
+    margin: 0;
+}
+</style>
 
 <script setup lang="ts">
     import { computed, nextTick, ref, watch } from "vue";
@@ -337,6 +388,8 @@
     import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { confirm } from "@Obsidian/Utility/dialogs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { Gender, GenderDescription } from "@Obsidian/Enums/Crm/gender";
     import { EmailPreference, EmailPreferenceDescription } from "@Obsidian/Enums/Crm/emailPreference";
@@ -345,7 +398,7 @@
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { setPropertiesBoxValue, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
-    import { areEqual } from "@Obsidian/Utility/guid";
+    import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
@@ -446,6 +499,11 @@
     const chatProfileVisibility = ref(config.entity?.isChatProfilePublic == null ? "" : config.entity.isChatProfilePublic.toString());
     const chatDirectMessages = ref(config.entity?.isChatOpenDirectMessageAllowed == null ? "" : config.entity.isChatOpenDirectMessageAllowed.toString());
 
+    // Giving
+    const givingGroup = ref<string>(config.entity?.givingGroupGuid ?? "");
+    const givingEnvelopeNumber = ref(config.entity?.givingEnvelopeNumber ?? "");
+    const isGeneratingEnvelopeNumber = ref(false);
+
     // #endregion Values
 
     // #region Computed Values
@@ -498,6 +556,10 @@
     const isEthnicityRequired = computed<boolean>(() => options.value.ethnicityOption === "Required");
 
     const isChatVisible = computed<boolean>(() => options.value.isChatVisible ?? false);
+
+    const isGivingSectionVisible = computed<boolean>(() => options.value.isGivingSectionVisible ?? false);
+    const isEnvelopeNumberVisible = computed<boolean>(() => options.value.isEnvelopeNumberVisible ?? false);
+    const givingGroupItems = computed<ListItemBag[]>(() => options.value.givingGroups ?? []);
 
     // Mirror the block setting (WebForms parity): once a birth month and day are present, the year
     // becomes required. The rule reads the birthDate ref directly because RockFormField hands it a
@@ -633,6 +695,49 @@
     }
 
     /**
+     * Fills the envelope number with the next available value from the server.
+     */
+    async function onGenerateEnvelopeNumber(): Promise<void> {
+        isGeneratingEnvelopeNumber.value = true;
+
+        try {
+            const result = await invokeBlockAction<string>("GenerateGivingEnvelopeNumber");
+
+            if (result.isSuccess && result.data) {
+                givingEnvelopeNumber.value = result.data;
+            }
+        }
+        finally {
+            isGeneratingEnvelopeNumber.value = false;
+        }
+    }
+
+    /**
+     * Warns before reusing an envelope number already assigned to others. Returns false only when the
+     * number is in use and the user declines, in which case the save should be aborted.
+     */
+    async function confirmEnvelopeNumberInUse(): Promise<boolean> {
+        const envelopeNumber = givingEnvelopeNumber.value.trim();
+        const originalEnvelopeNumber = (config.entity?.givingEnvelopeNumber ?? "").trim();
+
+        // Only check when the number changed to a non-blank value.
+        if (!envelopeNumber || envelopeNumber === originalEnvelopeNumber) {
+            return true;
+        }
+
+        const result = await invokeBlockAction<string>("CheckGivingEnvelopeNumberInUse", {
+            idKey: config.entity?.idKey,
+            envelopeNumber
+        });
+
+        if (result.isSuccess && result.data) {
+            return confirm(result.data);
+        }
+
+        return true;
+    }
+
+    /**
      * Saves the edited person and redirects to the person profile on success.
      */
     async function onSave(): Promise<void> {
@@ -684,15 +789,27 @@
                 setPropertiesBoxValue(box, "isChatOpenDirectMessageAllowed", chatDirectMessages.value === "" ? null : chatDirectMessages.value === "true");
             }
 
-            const result = await invokeBlockAction<ValidPropertiesBox<EditPersonBag> | string>("Save", { box });
+            // Giving.
+            if (isGivingSectionVisible.value) {
+                setPropertiesBoxValue(box, "givingGroupGuid", toGuidOrNull(givingGroup.value));
 
-            if (result.isSuccess && result.data) {
-                if (result.statusCode === 200 && typeof result.data === "string") {
-                    isNavigating.value = true;
-                    window.location.href = makeUrlRedirectSafe(result.data);
+                if (isEnvelopeNumberVisible.value) {
+                    setPropertiesBoxValue(box, "givingEnvelopeNumber", givingEnvelopeNumber.value);
+
+                    // Warn before reusing an envelope number already assigned to someone else.
+                    if (!(await confirmEnvelopeNumberInUse())) {
+                        return;
+                    }
                 }
             }
-            else {
+
+            const result = await invokeBlockAction<string>("Save", { box });
+
+            if (result.isSuccess && result.statusCode === 200 && typeof result.data === "string") {
+                isNavigating.value = true;
+                window.location.href = makeUrlRedirectSafe(result.data);
+            }
+            else if (!result.isSuccess) {
                 errorMessage.value = result.errorMessage ?? "Unknown error while trying to save the person.";
 
                 // Bring the error banner into view; the user may have scrolled down to the Save button.

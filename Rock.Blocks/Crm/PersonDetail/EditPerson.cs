@@ -251,6 +251,10 @@ namespace Rock.Blocks.Crm.PersonDetail
                 IsRecordStatusEditable = canAdministrate || BlockCache.IsAuthorized( SecurityActionKey.EditRecordStatus, RequestContext.CurrentPerson ),
                 IsRecordSourceEditable = canAdministrate,
                 IsGivingSectionVisible = canAdministrate || BlockCache.IsAuthorized( SecurityActionKey.EditFinancials, RequestContext.CurrentPerson ),
+
+                // The envelope number field only applies when the global setting is on and its attribute exists.
+                IsEnvelopeNumberVisible = GlobalAttributesCache.Get().EnableGivingEnvelopeNumber
+                    && AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() ) != null,
             };
 
             // Grade and Graduation Year are two views of the same stored value
@@ -269,6 +273,8 @@ namespace Rock.Blocks.Crm.PersonDetail
                 // The chat preferences only apply once chat is configured and the person has a chat presence.
                 options.IsChatVisible = ChatHelper.IsChatEnabled && person.HasChatAlias;
 
+                options.GivingGroups = GetGivingGroupItems( person );
+
                 SetAccountProtectionProfileMessage( options, person );
             }
 
@@ -276,8 +282,7 @@ namespace Rock.Blocks.Crm.PersonDetail
                 8/19/26 - CLAUDE
 
                 Remaining option sources still to wire as their sections come online:
-                  - IsEnvelopeNumberVisible feature flag.
-                  - GivingGroups and SearchKeyTypes option lists.
+                  - SearchKeyTypes option list.
 
                 Reason: Options grow with the client sections.
             */
@@ -358,7 +363,20 @@ namespace Rock.Blocks.Crm.PersonDetail
                 IsChatOpenDirectMessageAllowed = person.IsChatOpenDirectMessageAllowed,
                 InactiveReasonNote = person.InactiveReasonNote,
                 IsLockedAsChild = person.IsLockedAsChild,
+                GivingGroupGuid = person.GivingGroup?.Guid,
             };
+
+            // The giving envelope number is stored as a person attribute, not an entity property.
+            var envelopeAttribute = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            if ( envelopeAttribute != null )
+            {
+                if ( person.Attributes == null )
+                {
+                    person.LoadAttributes( RockContext );
+                }
+
+                bag.GivingEnvelopeNumber = person.GetAttributeValue( envelopeAttribute.Key );
+            }
 
             // Blank the nick name when it merely echoes the first name (matches WebForms behavior).
             bag.NickName = person.NickName.IsNotNullOrWhiteSpace() && !person.NickName.Equals( person.FirstName, System.StringComparison.OrdinalIgnoreCase )
@@ -370,7 +388,6 @@ namespace Rock.Blocks.Crm.PersonDetail
 
                 The following still need to be mapped from the person as their inputs are built
                 (see EditPerson.ascx.cs ShowDetails around lines 877-1049):
-                  - GivingGroupGuid and GivingEnvelopeNumber (person attribute value).
                   - PreviousLastNames, AlternateIds, SearchKeys.
 
                 Reason: Person value mapping grows with the client sections.
@@ -435,6 +452,7 @@ namespace Rock.Blocks.Crm.PersonDetail
             var canEditConnectionStatus = canAdministrate || BlockCache.IsAuthorized( SecurityActionKey.EditConnectionStatus, RequestContext.CurrentPerson );
             var canEditRecordStatus = canAdministrate || BlockCache.IsAuthorized( SecurityActionKey.EditRecordStatus, RequestContext.CurrentPerson );
             var canEditRecordSource = canAdministrate;
+            var canEditFinancials = canAdministrate || BlockCache.IsAuthorized( SecurityActionKey.EditFinancials, RequestContext.CurrentPerson );
 
             box.IfValidProperty( nameof( box.Bag.Title ),
                 () => entity.TitleValueId = GetDefinedValueId( box.Bag.Title ) );
@@ -617,6 +635,21 @@ namespace Rock.Blocks.Crm.PersonDetail
                     }
                 } );
 
+            box.IfValidProperty( nameof( box.Bag.GivingGroupGuid ),
+                () =>
+                {
+                    if ( canEditFinancials )
+                    {
+                        // The giving group is one of the person's families; resolve its guid back to the group id.
+                        entity.GivingGroupId = box.Bag.GivingGroupGuid.HasValue
+                            ? new GroupService( RockContext ).Get( box.Bag.GivingGroupGuid.Value )?.Id
+                            : null;
+                    }
+                } );
+
+            // The giving envelope number is a person attribute handled in Save() (it needs SaveAttributeValues
+            // and may prompt the user to confirm reusing a number already assigned to someone else).
+
             /*
                 8/19/26 - CLAUDE
 
@@ -693,6 +726,100 @@ namespace Rock.Blocks.Crm.PersonDetail
             }
 
             new PersonService( RockContext ).RemoveEmptyAndDuplicatePhoneNumbers( person, keptPhoneTypeIds, RockContext );
+        }
+
+        /// <summary>
+        /// Builds the giving group options: the families this person belongs to, each labeled with its
+        /// members' first names (mirrors the WebForms "Combine Giving With" dropdown).
+        /// </summary>
+        /// <param name="person">The person being edited.</param>
+        /// <returns>The families whose giving this person's gifts may be combined with.</returns>
+        private List<ListItemBag> GetGivingGroupItems( Person person )
+        {
+            var items = new List<ListItemBag>();
+
+            foreach ( var family in new PersonService( RockContext ).GetFamilies( person.Id ) )
+            {
+                items.Add( new ListItemBag
+                {
+                    Value = family.Guid.ToString(),
+                    Text = GetFamilyNameWithFirstNames( family.Name, family.Members )
+                } );
+            }
+
+            return items;
+        }
+
+        /// <summary>
+        /// Formats a family name with its members' first names in parentheses, adults first
+        /// (mirrors the WebForms GetFamilyNameWithFirstNames helper).
+        /// </summary>
+        /// <param name="familyName">The family group name.</param>
+        /// <param name="familyMembers">The family members.</param>
+        /// <returns>The family name with its members' first names appended.</returns>
+        private string GetFamilyNameWithFirstNames( string familyName, ICollection<GroupMember> familyMembers )
+        {
+            var adultRoleGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
+
+            // Adults first (by role, not age), then by gender and nick name.
+            var firstNames = familyMembers
+                .OrderByDescending( m => m.GroupRole.Guid == adultRoleGuid )
+                .ThenBy( m => m.Person.Gender ).ThenBy( m => m.Person.NickName )
+                .Select( m => m.Person.NickName ?? m.Person.FirstName )
+                .ToList();
+
+            return firstNames.Any()
+                ? $"{familyName} ({firstNames.AsDelimited( ", ", " and " )})"
+                : $"{familyName} (no family members)";
+        }
+
+        /// <summary>
+        /// Applies the edited giving envelope number, stored as a person attribute. The duplicate-number
+        /// warning is handled separately by the CheckGivingEnvelopeNumberInUse action before the save.
+        /// </summary>
+        /// <param name="entity">The person being edited.</param>
+        /// <param name="box">The box that contains the edited values.</param>
+        private void ApplyGivingEnvelopeNumber( Person entity, ValidPropertiesBox<EditPersonBag> box )
+        {
+            // Only act when the field was shown and edited on the client and the user may edit financials.
+            if ( !box.IsValidProperty( nameof( box.Bag.GivingEnvelopeNumber ) ) )
+            {
+                return;
+            }
+
+            var canEditFinancials = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson )
+                || BlockCache.IsAuthorized( SecurityActionKey.EditFinancials, RequestContext.CurrentPerson );
+
+            var envelopeAttribute = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            if ( !canEditFinancials || !GlobalAttributesCache.Get().EnableGivingEnvelopeNumber || envelopeAttribute == null )
+            {
+                return;
+            }
+
+            if ( entity.Attributes == null )
+            {
+                entity.LoadAttributes( RockContext );
+            }
+
+            entity.SetAttributeValue( envelopeAttribute.Key, box.Bag.GivingEnvelopeNumber );
+        }
+
+        /// <summary>
+        /// Joins names for a prompt, summarizing any past the cap (e.g. "Ted, Cindy and 3 other people").
+        /// </summary>
+        /// <param name="names">The names to join.</param>
+        /// <param name="maxCount">The most names to list before summarizing the rest.</param>
+        /// <returns>The formatted, comma-delimited list.</returns>
+        private static string FormatNameList( List<string> names, int maxCount )
+        {
+            if ( names.Count <= maxCount )
+            {
+                return names.AsDelimited( ", ", " and " );
+            }
+
+            var otherCount = names.Count - maxCount;
+            return names.Take( maxCount ).ToList().AsDelimited( ", " )
+                + $" and {otherCount} other " + "person".PluralizeIf( otherCount > 1 );
         }
 
         /// <inheritdoc/>
@@ -898,9 +1025,18 @@ namespace Rock.Blocks.Crm.PersonDetail
                 return ActionBadRequest( "A phone number with SMS enabled is required when Communication Preference is set to SMS." );
             }
 
+            // The duplicate-number warning was already confirmed client-side via CheckGivingEnvelopeNumberInUse.
+            ApplyGivingEnvelopeNumber( entity, box );
+
             RockContext.WrapTransaction( () =>
             {
                 RockContext.SaveChanges();
+
+                // Persist the giving envelope number attribute value, if it was loaded and set above.
+                if ( entity.AttributeValues != null )
+                {
+                    entity.SaveAttributeValues( RockContext );
+                }
 
                 // Flag the previous photo as temporary so it gets cleaned up later.
                 if ( originalPhotoId.HasValue && originalPhotoId != entity.PhotoId )
@@ -917,6 +1053,72 @@ namespace Rock.Blocks.Crm.PersonDetail
             } );
 
             return ActionOk( RequestContext.ResolveRockUrl( $"~/Person/{entity.IdKey}" ) );
+        }
+
+        /// <summary>
+        /// Generates the next available giving envelope number (one greater than the current maximum).
+        /// Mirrors the WebForms Generate Envelope # button.
+        /// </summary>
+        /// <returns>The next envelope number as a string.</returns>
+        [BlockAction]
+        public BlockActionResult GenerateGivingEnvelopeNumber()
+        {
+            var canEditFinancials = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson )
+                || BlockCache.IsAuthorized( SecurityActionKey.EditFinancials, RequestContext.CurrentPerson );
+
+            var envelopeAttribute = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            if ( !canEditFinancials || envelopeAttribute == null )
+            {
+                return ActionForbidden();
+            }
+
+            var maxEnvelopeNumber = new AttributeValueService( RockContext ).Queryable()
+                .Where( av => av.AttributeId == envelopeAttribute.Id && av.ValueAsNumeric.HasValue )
+                .Max( av => ( int? ) av.ValueAsNumeric );
+
+            return ActionOk( ( ( maxEnvelopeNumber ?? 0 ) + 1 ).ToString() );
+        }
+
+        /// <summary>
+        /// Returns a confirmation prompt when the given envelope number is already assigned to other people,
+        /// or an empty string when it is free. Used to warn before reusing a number (mirrors WebForms).
+        /// </summary>
+        /// <param name="idKey">The identifier key of the person being edited (excluded from the search).</param>
+        /// <param name="envelopeNumber">The envelope number to check.</param>
+        /// <returns>The confirmation prompt, or an empty string when the number is not already in use.</returns>
+        [BlockAction]
+        public BlockActionResult CheckGivingEnvelopeNumberInUse( string idKey, string envelopeNumber )
+        {
+            var canEditFinancials = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson )
+                || BlockCache.IsAuthorized( SecurityActionKey.EditFinancials, RequestContext.CurrentPerson );
+
+            var envelopeAttribute = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            if ( !canEditFinancials || envelopeAttribute == null || envelopeNumber.IsNullOrWhiteSpace() )
+            {
+                return ActionOk( string.Empty );
+            }
+
+            var person = new PersonService( RockContext ).Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+            var personId = person?.Id ?? 0;
+
+            var otherPersonIds = new AttributeValueService( RockContext ).Queryable()
+                .Where( av => av.AttributeId == envelopeAttribute.Id && av.Value == envelopeNumber && av.EntityId != personId )
+                .Select( av => av.EntityId );
+
+            // Subquery on the unexecuted IQueryable so EF filters in SQL rather than a large WHERE IN.
+            var otherNames = new PersonService( RockContext ).Queryable()
+                .Where( p => otherPersonIds.Contains( p.Id ) )
+                .ToList()
+                .Select( p => p.FullName )
+                .ToList();
+
+            if ( !otherNames.Any() )
+            {
+                return ActionOk( string.Empty );
+            }
+
+            var personName = person?.FullName ?? "this person";
+            return ActionOk( $"The envelope #{envelopeNumber} is already assigned to {FormatNameList( otherNames, 5 )}. Do you want to also assign this number to {personName}?" );
         }
 
         #endregion Block Actions
