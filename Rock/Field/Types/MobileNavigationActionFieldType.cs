@@ -199,6 +199,43 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// <para>
+        /// JSON rather than a reference, which the surrounding field types do not
+        /// prepare a reader for.
+        /// </para>
+        /// <para>
+        /// The stored shape and the editor's shape differ, and the difference is the
+        /// part most likely to be got wrong. What is stored is
+        /// <see cref="Mobile.MobileNavigationAction"/>, carrying PageGuid, while the
+        /// client works in MobileNavigationActionBag, carrying a Page list item that
+        /// is converted to that guid on the way in. Anything copied out of a client
+        /// payload will have the wrong property.
+        /// </para>
+        /// <para>
+        /// Type is written as its number because nothing applies a string enum
+        /// converter, so the names never appear in a stored value.
+        /// </para>
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A JSON object with three possible properties: Type, PopCount and PageGuid, as in {\"Type\":4,\"PageGuid\":\"a1b2c3d4-0000-0000-0000-000000000000\"}. "
+                    + "Type is a number, not a name: 0 does nothing, 1 pops pages off the stack, 2 resets to a page, 3 replaces the current page, 4 pushes a page, and 5 dismisses a cover sheet. "
+                    + "PopCount applies only when Type is 1 and is how many pages to pop, defaulting to one when absent. "
+                    + "PageGuid applies when Type is 2, 3 or 4, and is the guid of a row in the Page table, not its id or idKey and not a route or url. Types 0 and 5 use neither. "
+                    + "The property is PageGuid holding a bare guid; a Page object of the kind the editor sends is the client shape and is not what gets stored.",
+                Instructions = "To find the correct PageGuid, read the pages and take the guid of the one the action should navigate to."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

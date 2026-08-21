@@ -244,6 +244,21 @@ namespace Rock.Field.Types
             return Helper.GetBlockTemplateContent( value );
         }
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Two parts separated by a pipe, the guid of the DefinedValue holding the block template first and the template content second, as in a3b1c2d4-0000-0000-0000-000000000000|{% raw %}. Either part may be empty, and a value with no pipe is read as the guid alone with no content.",
+                Instructions = "The template guid comes from the block templates defined for the template block value this field is configured against. When the template is a custom one rather than a defined one, the second part carries the Lava itself."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

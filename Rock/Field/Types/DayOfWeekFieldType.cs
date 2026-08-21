@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Attribute;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -77,6 +78,33 @@ namespace Rock.Field.Types
                 return ( System.DayOfWeek ) intValue.Value;
             }
             return null;
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// One day rather than several, which is what separates this from
+        /// <see cref="DaysOfWeekFieldType"/>, and a number rather than a name. A name
+        /// parses to zero, so 'Monday' stores what reads back as Sunday.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = true,
+                Values = Enum.GetValues( typeof( DayOfWeek ) )
+                    .Cast<DayOfWeek>()
+                    .Select( d => new ListItemBag
+                    {
+                        Value = ( ( int ) d ).ToString(),
+                        Text = d.ToString()
+                    } )
+                    .ToList(),
+                ValueFormat = "A single day number, not a day name and not a list. Sunday is 0 through Saturday is 6."
+            };
         }
 
         #endregion

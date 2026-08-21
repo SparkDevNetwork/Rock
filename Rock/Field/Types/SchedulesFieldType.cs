@@ -221,6 +221,21 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "One or more guids identifying rows in the Schedule table, separated by commas. Only named schedules can be chosen here. Not their ids or idKeys.",
+                Instructions = "To find the correct values, read the named schedules and take the guid of each one you want."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

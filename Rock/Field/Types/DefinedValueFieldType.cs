@@ -755,19 +755,21 @@ namespace Rock.Field.Types
 
         #region Field Type Hints
 
-        /// <summary>
-        /// The largest list this field type will enumerate in its hints.
-        /// </summary>
-        /// <remarks>
-        /// Chosen for the reader rather than for the payload. Nearly every defined
-        /// type in a normal Rock database sits well under this, and the handful that
-        /// do not are lists like Countries and Currency Code, where showing part of
-        /// the list helps nobody and invites picking the nearest of the wrong subset.
-        /// Those are pointed at the defined type instead.
-        /// </remarks>
-        private const int MaximumEnumeratedValues = 25;
-
         /// <inheritdoc/>
+        /// <remarks>
+        /// <para>
+        /// No Values, deliberately. DefinedValues are rows a caller can look up, and
+        /// the defined type is named here along with its IdKey so that lookup takes
+        /// one call. Listing them instead would repeat that data on every attribute
+        /// described.
+        /// </para>
+        /// <para>
+        /// It would also be less safe than the lookup. A defined type can turn on
+        /// security for its values, and this has no person to authorize against, so
+        /// anything enumerated here would skip a filter the lookup applies. The
+        /// configured filters are described rather than applied for the same reason.
+        /// </para>
+        /// </remarks>
         internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
         {
             var definedType = DefinedTypeCache.Get( privateConfigurationValues.GetValueOrNull( DEFINED_TYPE_KEY ).AsInteger() );
@@ -777,53 +779,31 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            var selectableValueIds = privateConfigurationValues.GetValueOrNull( SELECTABLE_VALUES_KEY ).IsNotNullOrWhiteSpace()
-                ? privateConfigurationValues[SELECTABLE_VALUES_KEY].SplitDelimitedValues().AsIntegerList()
-                : null;
-
-            var includeInactive = privateConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
             var allowMultiple = privateConfigurationValues.GetValueOrNull( ALLOW_MULTIPLE_KEY ).AsBooleanOrNull() ?? false;
-
-            // The same filtering the picker applies, so the hint describes the values
-            // that can actually be chosen rather than everything in the defined type.
-            var definedValues = definedType.DefinedValues
-                .Where( v => ( includeInactive || v.IsActive )
-                    && ( selectableValueIds == null || selectableValueIds.Contains( v.Id ) ) )
-                .OrderBy( v => v.Order )
-                .ToList();
+            var includeInactive = privateConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
+            var hasSelectableValues = privateConfigurationValues.GetValueOrNull( SELECTABLE_VALUES_KEY ).IsNotNullOrWhiteSpace();
 
             var valueFormat = allowMultiple
-                ? $"One or more guids identifying DefinedValues from the '{definedType.Name}' defined type, separated by commas."
-                : $"A guid identifying a single DefinedValue from the '{definedType.Name}' defined type.";
+                ? $"One or more guids identifying DefinedValues from the '{definedType.Name}' defined type, separated by commas. Not their ids or idKeys and not their values."
+                : $"A guid identifying a single DefinedValue from the '{definedType.Name}' defined type. Not its id or idKey and not its value.";
 
-            var instructions = $"To find the correct values look them up using the Defined Type IdKey of {definedType.IdKey}.";
+            if ( !includeInactive )
+            {
+                valueFormat += " Inactive defined values cannot be chosen.";
+            }
 
-            /*
-                8/19/26 - CLAUDE
-
-                Past the cap the values are omitted rather than trimmed to a sample.
-                ValueFormat already names the defined type and Instructions already say
-                how to reach it, so a partial list adds nothing a consumer can rely on
-                and quite a lot it can be misled by. Reporting an incomplete list is
-                also what stops a consumer from rejecting a value that simply was not
-                in the part it was shown.
-
-                Reason: A truncated list is worse than no list, because it looks
-                authoritative.
-            */
-            var isCompleteList = definedValues.Count <= MaximumEnumeratedValues;
+            if ( hasSelectableValues )
+            {
+                valueFormat += " This field is further limited to an explicit subset of that defined type, so not every value in it can be chosen.";
+            }
 
             return new FieldTypeHints
             {
-                Values = isCompleteList
-                    ? definedValues.Select( v => new ListItemBag { Value = v.Guid.ToString(), Text = v.Value } ).ToList()
-                    : null,
-                IsCompleteList = isCompleteList,
+                IsCompleteList = false,
                 ValueFormat = valueFormat,
-                Instructions = instructions
+                Instructions = $"To find the correct values look them up using the Defined Type IdKey of {definedType.IdKey}."
             };
         }
-
         #endregion
 
         #region WebForms

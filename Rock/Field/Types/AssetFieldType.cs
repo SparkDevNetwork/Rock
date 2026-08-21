@@ -175,6 +175,40 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// <para>
+        /// The provider is identified by its id rather than its guid, which is the
+        /// opposite of nearly every other field type and the detail most likely to be
+        /// got wrong.
+        /// </para>
+        /// <para>
+        /// Url and Type are described as ignored rather than left unmentioned. Both
+        /// appear in the value the editor writes and in the value read back, so
+        /// silence would imply that storing them matters, and a caller preserving an
+        /// existing value needs to know they do not.
+        /// </para>
+        /// <para>
+        /// The Key's form is a property of the provider rather than of this field
+        /// type, so it is described as coming from the provider's own listing. That
+        /// is a statement about where the data lives, not about what any particular
+        /// caller is able to reach.
+        /// </para>
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A JSON object identifying a file that already exists in an asset storage provider, as in {\"AssetStorageProviderId\":\"3\",\"Key\":\"Images/banner.jpg\",\"Name\":\"banner.jpg\"}. AssetStorageProviderId and Key together identify the asset and both are required; a value whose AssetStorageProviderId is missing or not greater than zero resolves to nothing. AssetStorageProviderId is the integer id of a row in the AssetStorageProvider table, not a guid and not an idKey. Key is the file's path inside that provider, including any folders and the file name, and its form depends on the kind of provider: a file system provider uses a Rock virtual path beginning with ~/, while Amazon S3, Azure and Google use an object key relative to the provider's configured root folder with no leading ~/. Name is display only. Url is refreshed on every read because download links expire, and Type is always forced to file, so whatever is stored in either is ignored.",
+                Instructions = "The Key comes from the provider's own listing of its contents rather than from any table in Rock, and it is only meaningful alongside the AssetStorageProviderId it was taken from. A key composed from a file name, or one taken from a different provider, will not resolve."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

@@ -95,6 +95,46 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Silent unless the configuration makes the value something other than
+        /// ordinary multi line text, on the same reasoning as the single line text
+        /// field type. Saying "text" on every memo attribute in a Rock database would
+        /// be noise, and noise teaches a reader to skim past the hints that matter.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var allowsHtml = privateConfigurationValues.GetValueOrDefault( ALLOW_HTML, string.Empty ).AsBoolean();
+            var maximumCharacters = privateConfigurationValues.GetValueOrNull( MAX_CHARACTERS ).AsIntegerOrNull();
+
+            if ( !allowsHtml && !maximumCharacters.HasValue )
+            {
+                return null;
+            }
+
+            var notes = new List<string>();
+
+            if ( allowsHtml )
+            {
+                notes.Add( "HTML is kept rather than stripped" );
+            }
+
+            if ( maximumCharacters.HasValue )
+            {
+                notes.Add( $"it is limited to {maximumCharacters.Value} characters" );
+            }
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = $"Text, stored exactly as supplied, and may span multiple lines. On this field {notes.JoinStrings( ", " )}."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

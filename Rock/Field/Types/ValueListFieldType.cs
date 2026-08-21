@@ -287,6 +287,38 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Three things here are easy to get wrong and none of them raise an error:
+        /// the delimiter is a pipe rather than the usual comma, each entry is url
+        /// encoded, and when a defined type is configured the entries are defined
+        /// value ids rather than the guids nearly every other field type stores.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var definedType = DefinedTypeCache.Get( privateConfigurationValues.GetValueOrNull( "definedtype" ).AsInteger() );
+
+            if ( definedType != null )
+            {
+                return new FieldTypeHints
+                {
+                    IsCompleteList = false,
+                    ValueFormat = $"One or more ids of DefinedValues from the '{definedType.Name}' defined type, separated by pipes rather than commas, as in 12|15|19. These are ids, not guids and not idKeys. Each entry is url encoded when read back, so a value containing a pipe or a percent sign must be percent encoded.",
+                    Instructions = $"To find the correct values look them up using the Defined Type IdKey of {definedType.IdKey} and take the id of each one you want."
+                };
+            }
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "One or more text entries separated by pipes rather than commas, as in first|second|third. Each entry is url encoded, so an entry that itself contains a pipe or a percent sign must be percent encoded."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

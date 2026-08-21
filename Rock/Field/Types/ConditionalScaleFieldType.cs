@@ -323,6 +323,77 @@ namespace Rock.Field.Types
 
         #endregion Filter Control
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// What the screen shows is a label, and what is stored is a number, so a
+        /// caller working from the displayed value will try to store the label. The
+        /// out of range behaviour is worth as much again: a number matching no rule
+        /// displays as nothing at all rather than falling back to the number or
+        /// reporting a problem, so a wrong value looks like an empty field.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = BuildValueFormat( privateConfigurationValues )
+            };
+        }
+
+        /// <summary>
+        /// Builds the description of the value, naming the configured ranges when
+        /// they can be read so a caller knows which numbers are meaningful.
+        /// </summary>
+        /// <param name="privateConfigurationValues">The private configuration values that describe the field type settings.</param>
+        /// <returns>The value format description.</returns>
+        private static string BuildValueFormat( Dictionary<string, string> privateConfigurationValues )
+        {
+            var valueFormat = "A number, not the label shown on screen. The number is rounded to a whole number and then matched against the ranges configured on this field, and the matching range's label and colour are what get displayed. A number that falls outside every range displays as nothing at all, so an out of range value looks the same as an empty one.";
+
+            var rangeRules = privateConfigurationValues
+                .GetValueOrNull( ConfigurationKey.ConfigurationJSON )
+                .FromJsonOrNull<List<ConditionalScaleRangeRule>>();
+
+            if ( rangeRules == null || !rangeRules.Any() )
+            {
+                return valueFormat;
+            }
+
+            var describedRanges = rangeRules
+                .Select( r =>
+                {
+                    string bounds;
+
+                    if ( r.LowValue.HasValue && r.HighValue.HasValue )
+                    {
+                        bounds = $"{r.LowValue.Value} to {r.HighValue.Value}";
+                    }
+                    else if ( r.LowValue.HasValue )
+                    {
+                        bounds = $"{r.LowValue.Value} and above";
+                    }
+                    else if ( r.HighValue.HasValue )
+                    {
+                        bounds = $"{r.HighValue.Value} and below";
+                    }
+                    else
+                    {
+                        bounds = "any number";
+                    }
+
+                    return $"{bounds} is '{r.Label}'";
+                } )
+                .JoinStrings( ", " );
+
+            // Ranges are matched in the order they are configured rather than by
+            // closeness of fit, so the first match wins where two overlap.
+            return $"{valueFormat} The ranges configured here are {describedRanges}. Where two ranges overlap the earlier one wins.";
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

@@ -28,6 +28,7 @@ using Newtonsoft.Json;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 using static Rock.Web.UI.Controls.ListItems;
@@ -293,6 +294,57 @@ namespace Rock.Field.Types
         {
             var values = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
             return keyValuePairs.Where( a => values.Contains( a.Key ) ).Select( a => a.Value ).ToList().AsDelimited( "," );
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// The keys are guids invented by whoever configured the list rather than
+        /// references to any table, so they cannot be looked up anywhere. Listing them
+        /// is the only way a caller can supply a valid value.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var serializedItems = privateConfigurationValues.GetValueOrNull( VALUES_KEY );
+
+            if ( serializedItems.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            List<KeyValuePair> listItems;
+
+            try
+            {
+                listItems = JsonConvert.DeserializeObject<List<KeyValuePair>>( serializedItems );
+            }
+            catch
+            {
+                // Intentionally ignored: malformed configuration is not something this
+                // can describe, and failing here would take the caller down with it.
+                return null;
+            }
+
+            if ( listItems == null || !listItems.Any() )
+            {
+                return null;
+            }
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = true,
+                Values = listItems
+                    .Select( i => new ListItemBag
+                    {
+                        Value = i.Key.ToString(),
+                        Text = i.Value
+                    } )
+                    .ToList(),
+                ValueFormat = "The guids of the checked items, separated by commas. Only the listed guids are recognized, and they identify entries in this field's own configured list rather than rows in any table, so they cannot be looked up elsewhere. Unchecked items are left out rather than recorded as unchecked."
+            };
         }
 
         #endregion
