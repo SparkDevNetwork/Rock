@@ -37,6 +37,12 @@ export type EditPersonOptionsBag = {
     /** Gets or sets the name of the person's primary campus, shown as a panel header label. */
     campusName?: string | null;
 
+    /**
+     * Gets or sets the deceased date as an elapsed string (e.g., "3 yrs ago"), shown in the
+     * read-only view when the current user cannot edit the record status.
+     */
+    deceasedDateText?: string | null;
+
     /** Gets or sets whether the ethnicity field is hidden, optional, or required ("Hide", "Optional", "Required"). */
     ethnicityOption?: string | null;
 

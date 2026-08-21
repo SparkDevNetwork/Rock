@@ -269,7 +269,8 @@ namespace Rock.Blocks.Crm.PersonDetail
             {
                 options.FamilyName = person.PrimaryFamily?.Name;
                 options.CampusName = person.PrimaryCampus?.Name;
-                options.NoPictureUrl = RequestContext.ResolveRockUrl( Person.GetPersonPhotoUrl( person, 400 ) );
+                options.NoPictureUrl = RequestContext.ResolveRockUrl( Person.GetPersonNoPictureUrl( person, 400, 400 ) );
+                options.DeceasedDateText = person.DeceasedDate.ToElapsedString();
                 options.IsOnlyActiveFamilyMember = IsOnlyActiveFamilyMember( person );
 
                 // The chat preferences only apply once chat is configured and the person has a chat presence.

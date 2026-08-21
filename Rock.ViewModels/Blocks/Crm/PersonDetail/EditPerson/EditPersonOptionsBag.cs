@@ -154,6 +154,12 @@ namespace Rock.ViewModels.Blocks.Crm.PersonDetail.EditPerson
         public string NoPictureUrl { get; set; }
 
         /// <summary>
+        /// Gets or sets the deceased date as an elapsed string (e.g., "3 yrs ago"), shown in the
+        /// read-only view when the current user cannot edit the record status.
+        /// </summary>
+        public string DeceasedDateText { get; set; }
+
+        /// <summary>
         /// Gets or sets the account protection profile warning message, when applicable.
         /// </summary>
         public string AccountProtectionProfileMessage { get; set; }

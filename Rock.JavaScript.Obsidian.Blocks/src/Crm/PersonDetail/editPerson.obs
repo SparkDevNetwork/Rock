@@ -8,7 +8,9 @@
                titleIconCssClass="ti ti-user">
 
             <template #headerActions>
-                <ExperienceModePicker />
+                <div class="panel-experience-mode">
+                    <ExperienceModePicker />
+                </div>
 
                 <HighlightLabel v-if="options.familyName"
                                 labelType="default"
@@ -51,7 +53,7 @@
                                                 :showBlankItem="false" />
                             <StaticFormControl v-else label="Record Status" :modelValue="recordStatus?.text ?? ''" />
 
-                            <p v-if="isRecordInactive && options.isOnlyActiveFamilyMember" class="text-muted mb-3">
+                            <p v-if="isRecordInactive && options.isOnlyActiveFamilyMember && options.isRecordStatusEditable" class="text-muted mb-3">
                                 {{ familyInactiveMessage }}
                             </p>
 
@@ -68,8 +70,9 @@
                                             v-model="deceasedDate"
                                             label="Deceased Date"
                                             help="The date this person passed away. Must be on or after their birth date."
+                                            :disallowFutureDateSelection="true"
                                             :rules="deceasedDateRules" />
-                                <StaticFormControl v-else-if="isReasonDeceased" label="Deceased Date" :modelValue="deceasedDate" />
+                                <StaticFormControl v-else-if="isReasonDeceased" label="Deceased Date" :modelValue="options.deceasedDateText ?? ''" />
 
                                 <TextBox v-if="options.isRecordStatusEditable"
                                          v-model="inactiveReasonNote"
@@ -336,7 +339,8 @@
                                 <div @focusout="onAlternateIdsFocusOut">
                                     <ValueList v-model="alternateIds"
                                                label="Alternate Identifiers"
-                                               help="Identifiers such as barcodes or fingerprints that check-in can use to find this person. Each must be unique across all people." />
+                                               help="Identifiers such as barcodes or fingerprints that check-in can use to find this person. Each must be unique across all people."
+                                               trailblazerField />
 
                                     <NotificationBox v-for="duplicate in alternateIdDuplicates"
                                                      :key="duplicate"
@@ -366,7 +370,8 @@
                                               label="Search Keys"
                                               help="Additional values that will find this person in a search, such as a maiden name or a legacy system ID."
                                               :keyOptions="searchKeyTypeItems"
-                                              valuePlaceholder="Value" />
+                                              valuePlaceholder="Value"
+                                              trailblazerField />
                             </ContentStack>
                         </ContentSection>
                     </ContentSectionContainer>
