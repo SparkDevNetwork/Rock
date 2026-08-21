@@ -21,14 +21,10 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** A single search key (search type + value) in the Edit Person block. */
 export type EditPersonSearchKeyBag = {
-    /** Gets or sets the unique identifier used to track the row across add/remove operations. */
-    guid: Guid;
-
     /** Gets or sets the search type defined value. */
     searchType?: ListItemBag | null;
 

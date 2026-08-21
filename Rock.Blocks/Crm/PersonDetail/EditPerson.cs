@@ -255,6 +255,8 @@ namespace Rock.Blocks.Crm.PersonDetail
                 // The envelope number field only applies when the global setting is on and its attribute exists.
                 IsEnvelopeNumberVisible = GlobalAttributesCache.Get().EnableGivingEnvelopeNumber
                     && AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() ) != null,
+
+                SearchKeyTypes = GetSearchKeyTypeItems(),
             };
 
             // Grade and Graduation Year are two views of the same stored value
@@ -277,15 +279,6 @@ namespace Rock.Blocks.Crm.PersonDetail
 
                 SetAccountProtectionProfileMessage( options, person );
             }
-
-            /*
-                8/19/26 - CLAUDE
-
-                Remaining option sources still to wire as their sections come online:
-                  - SearchKeyTypes option list.
-
-                Reason: Options grow with the client sections.
-            */
 
             return options;
         }
@@ -383,15 +376,28 @@ namespace Rock.Blocks.Crm.PersonDetail
                 ? person.NickName
                 : string.Empty;
 
-            /*
-                8/19/26 - CLAUDE
+            bag.PreviousLastNames = person.GetPreviousNames().Select( pn => pn.LastName ).ToList();
 
-                The following still need to be mapped from the person as their inputs are built
-                (see EditPerson.ascx.cs ShowDetails around lines 877-1049):
-                  - PreviousLastNames, AlternateIds, SearchKeys.
+            // Alternate ids and search keys are both PersonSearchKey rows, split by their search type.
+            var alternateIdValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
+            var validSearchTypeGuids = GetValidSearchKeyTypeGuids();
+            var searchKeys = person.GetPersonSearchKeys()
+                .Where( sk => validSearchTypeGuids.Contains( sk.SearchTypeValue.Guid ) )
+                .ToList();
 
-                Reason: Person value mapping grows with the client sections.
-            */
+            bag.AlternateIds = searchKeys
+                .Where( sk => sk.SearchTypeValueId == alternateIdValueId && !sk.IsValuePrivate )
+                .Select( sk => sk.SearchValue )
+                .ToList();
+
+            bag.SearchKeys = searchKeys
+                .Where( sk => sk.SearchTypeValueId != alternateIdValueId )
+                .Select( sk => new EditPersonSearchKeyBag
+                {
+                    SearchType = DefinedValueCache.Get( sk.SearchTypeValueId )?.ToListItemBag(),
+                    SearchValue = sk.SearchValue
+                } )
+                .ToList();
 
             return bag;
         }
@@ -647,19 +653,17 @@ namespace Rock.Blocks.Crm.PersonDetail
                     }
                 } );
 
-            // The giving envelope number is a person attribute handled in Save() (it needs SaveAttributeValues
-            // and may prompt the user to confirm reusing a number already assigned to someone else).
+            // The giving envelope number is a person attribute handled in Save() (it needs SaveAttributeValues);
+            // the duplicate-number warning is confirmed client-side via CheckGivingEnvelopeNumberInUse.
 
-            /*
-                8/19/26 - CLAUDE
+            box.IfValidProperty( nameof( box.Bag.PreviousLastNames ),
+                () => UpdatePreviousNames( entity, box.Bag.PreviousLastNames ) );
 
-                Fields without an IfValidProperty here (every unbuilt section) are intentionally never
-                written, so the server cannot clobber values the client did not edit. Each gets its
-                IfValidProperty as its client input is built, along with the WebForms per-field security
-                re-checks, soft validations, and family re-evaluation.
+            box.IfValidProperty( nameof( box.Bag.AlternateIds ),
+                () => UpdateAlternateIds( entity, box.Bag.AlternateIds ) );
 
-                Reason: Mutation grows field-by-field with the client sections.
-            */
+            box.IfValidProperty( nameof( box.Bag.SearchKeys ),
+                () => UpdateSearchKeys( entity, box.Bag.SearchKeys ) );
 
             return true;
         }
@@ -820,6 +824,211 @@ namespace Rock.Blocks.Crm.PersonDetail
             var otherCount = names.Count - maxCount;
             return names.Take( maxCount ).ToList().AsDelimited( ", " )
                 + $" and {otherCount} other " + "person".PluralizeIf( otherCount > 1 );
+        }
+
+        /// <summary>
+        /// Gets the search key type guids that may be managed here: the Alternate Id type plus the
+        /// user-selectable types, limited to the "Search Key Types" block setting when it has selections.
+        /// </summary>
+        /// <returns>The valid search key type guids.</returns>
+        private List<System.Guid> GetValidSearchKeyTypeGuids()
+        {
+            var validGuids = new List<System.Guid> { Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() };
+
+            var searchKeyDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS.AsGuid() );
+            if ( searchKeyDefinedType == null )
+            {
+                return validGuids;
+            }
+
+            var configuredTypeGuids = GetAttributeValue( AttributeKey.SearchKeyTypes ).SplitDelimitedValues().AsGuidList();
+
+            var typeGuids = configuredTypeGuids.Any()
+                ? searchKeyDefinedType.DefinedValues.Where( dv => configuredTypeGuids.Contains( dv.Guid ) )
+                : searchKeyDefinedType.DefinedValues.Where( dv => dv.GetAttributeValue( "UserSelectable" ).AsBoolean() );
+
+            validGuids.AddRange( typeGuids.Select( dv => dv.Guid ) );
+
+            return validGuids;
+        }
+
+        /// <summary>
+        /// Gets the selectable search key types for the Search Keys list (the valid types, excluding the
+        /// Alternate Id type, which has its own list).
+        /// </summary>
+        /// <returns>The selectable search key types as list items.</returns>
+        private List<ListItemBag> GetSearchKeyTypeItems()
+        {
+            var alternateIdGuid = Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid();
+
+            return GetValidSearchKeyTypeGuids()
+                .Where( guid => guid != alternateIdGuid )
+                .Select( guid => DefinedValueCache.Get( guid )?.ToListItemBag() )
+                .Where( item => item != null )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Reconciles the person's previous last names with the submitted list, adding new names and
+        /// removing ones no longer present (mirrors the WebForms previous-names save).
+        /// </summary>
+        /// <param name="person">The person being edited.</param>
+        /// <param name="previousLastNames">The submitted previous last names.</param>
+        private void UpdatePreviousNames( Person person, List<string> previousLastNames )
+        {
+            var submitted = ( previousLastNames ?? new List<string>() )
+                .Select( name => name?.Trim() )
+                .Where( name => name.IsNotNullOrWhiteSpace() )
+                .Distinct()
+                .ToList();
+
+            var service = new PersonPreviousNameService( RockContext );
+            var existing = service.Queryable().Where( pn => pn.PersonAlias.PersonId == person.Id ).ToList();
+
+            foreach ( var removed in existing.Where( e => !submitted.Contains( e.LastName ) ) )
+            {
+                service.Delete( removed );
+            }
+
+            foreach ( var added in submitted.Where( name => !existing.Any( e => e.LastName == name ) ) )
+            {
+                service.Add( new PersonPreviousName { LastName = added, PersonAliasId = person.PrimaryAliasId.Value } );
+            }
+        }
+
+        /// <summary>
+        /// Reconciles the person's alternate identifiers (Alternate Id search keys) with the submitted list.
+        /// </summary>
+        /// <param name="person">The person being edited.</param>
+        /// <param name="alternateIds">The submitted alternate identifiers.</param>
+        private void UpdateAlternateIds( Person person, List<string> alternateIds )
+        {
+            var alternateIdValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
+            if ( !alternateIdValueId.HasValue )
+            {
+                return;
+            }
+
+            var submitted = ( alternateIds ?? new List<string>() )
+                .Select( id => id?.Trim() )
+                .Where( id => id.IsNotNullOrWhiteSpace() )
+                .Distinct()
+                .ToList();
+
+            var service = new PersonSearchKeyService( RockContext );
+            var existing = service.Queryable()
+                .Where( sk => sk.SearchTypeValueId == alternateIdValueId.Value && !sk.IsValuePrivate && sk.PersonAlias.PersonId == person.Id )
+                .ToList();
+
+            foreach ( var removed in existing.Where( e => !submitted.Contains( e.SearchValue ) ) )
+            {
+                service.Delete( removed );
+            }
+
+            foreach ( var added in submitted.Where( value => !existing.Any( e => e.SearchValue == value ) ) )
+            {
+                service.Add( new PersonSearchKey { SearchValue = added, SearchTypeValueId = alternateIdValueId.Value, PersonAliasId = person.PrimaryAliasId.Value } );
+            }
+        }
+
+        /// <summary>
+        /// Reconciles the person's search keys (search type + value, excluding Alternate Id) with the
+        /// submitted list. Rows are matched by type and value, so unchanged rows are left in place.
+        /// </summary>
+        /// <param name="person">The person being edited.</param>
+        /// <param name="searchKeys">The submitted search keys.</param>
+        private void UpdateSearchKeys( Person person, List<EditPersonSearchKeyBag> searchKeys )
+        {
+            var alternateIdGuid = Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid();
+
+            var validTypeIds = GetValidSearchKeyTypeGuids()
+                .Where( guid => guid != alternateIdGuid )
+                .Select( guid => DefinedValueCache.GetId( guid ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            // Resolve the submitted keys to (type id, value) pairs, dropping blanks and invalid types.
+            var submitted = ( searchKeys ?? new List<EditPersonSearchKeyBag>() )
+                .Select( sk => new
+                {
+                    TypeId = DefinedValueCache.GetId( sk.SearchType?.Value.AsGuidOrNull() ?? System.Guid.Empty ),
+                    Value = sk.SearchValue?.Trim()
+                } )
+                .Where( sk => sk.TypeId.HasValue && validTypeIds.Contains( sk.TypeId.Value ) && sk.Value.IsNotNullOrWhiteSpace() )
+                .Select( sk => new { TypeId = sk.TypeId.Value, sk.Value } )
+                .ToList();
+
+            var service = new PersonSearchKeyService( RockContext );
+            var existing = service.Queryable()
+                .Where( sk => sk.PersonAlias.PersonId == person.Id
+                    && validTypeIds.Contains( sk.SearchTypeValueId ) )
+                .ToList();
+
+            foreach ( var removed in existing.Where( e => !submitted.Any( s => s.TypeId == e.SearchTypeValueId && s.Value == e.SearchValue ) ) )
+            {
+                service.Delete( removed );
+            }
+
+            foreach ( var added in submitted.Where( s => !existing.Any( e => e.SearchTypeValueId == s.TypeId && e.SearchValue == s.Value ) ) )
+            {
+                service.Add( new PersonSearchKey { SearchTypeValueId = added.TypeId, SearchValue = added.Value, PersonAliasId = person.PrimaryAliasId.Value } );
+            }
+        }
+
+        /// <summary>
+        /// Returns the submitted alternate identifiers that are already assigned to a different person,
+        /// mapped to that person's name (one representative owner per identifier).
+        /// </summary>
+        /// <param name="personId">The id of the person being edited (excluded from the search).</param>
+        /// <param name="alternateIds">The submitted alternate identifiers.</param>
+        /// <returns>A map of conflicting identifier to the name of a person already using it.</returns>
+        private Dictionary<string, string> GetAlternateIdConflicts( int personId, List<string> alternateIds )
+        {
+            var conflicts = new Dictionary<string, string>();
+
+            var alternateIdValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
+            if ( !alternateIdValueId.HasValue || alternateIds == null )
+            {
+                return conflicts;
+            }
+
+            var values = alternateIds
+                .Select( id => id?.Trim() )
+                .Where( id => id.IsNotNullOrWhiteSpace() )
+                .Distinct()
+                .ToList();
+
+            if ( !values.Any() )
+            {
+                return conflicts;
+            }
+
+            var matches = new PersonSearchKeyService( RockContext ).Queryable()
+                .Where( sk => sk.SearchTypeValueId == alternateIdValueId.Value
+                    && values.Contains( sk.SearchValue )
+                    && sk.PersonAlias.PersonId != personId )
+                .Select( sk => new { sk.SearchValue, sk.PersonAlias.PersonId } )
+                .ToList();
+
+            if ( !matches.Any() )
+            {
+                return conflicts;
+            }
+
+            // FullName is a computed property, so resolve the owning people's names in one query.
+            var ownerIds = matches.Select( m => m.PersonId ).Distinct().ToList();
+            var namesById = new PersonService( RockContext ).Queryable()
+                .Where( p => ownerIds.Contains( p.Id ) )
+                .ToList()
+                .ToDictionary( p => p.Id, p => p.FullName );
+
+            foreach ( var group in matches.GroupBy( m => m.SearchValue ) )
+            {
+                conflicts[group.Key] = namesById.TryGetValue( group.First().PersonId, out var name ) ? name : "another person";
+            }
+
+            return conflicts;
         }
 
         /// <inheritdoc/>
@@ -1025,6 +1234,17 @@ namespace Rock.Blocks.Crm.PersonDetail
                 return ActionBadRequest( "A phone number with SMS enabled is required when Communication Preference is set to SMS." );
             }
 
+            // Server-side backstop: an alternate identifier may not be shared with another person. The client
+            // shows the detailed inline messages (CheckAlternateIdsInUse); this only guards a bypassed client.
+            if ( box.IsValidProperty( nameof( box.Bag.AlternateIds ) ) )
+            {
+                var alternateIdConflicts = GetAlternateIdConflicts( entity.Id, box.Bag.AlternateIds );
+                if ( alternateIdConflicts.Any() )
+                {
+                    return ActionBadRequest( $"The identifier '{alternateIdConflicts.Keys.ToList().AsDelimited( "', '", "' and '" )}' is already assigned to another person. Each identifier must be unique." );
+                }
+            }
+
             // The duplicate-number warning was already confirmed client-side via CheckGivingEnvelopeNumberInUse.
             ApplyGivingEnvelopeNumber( entity, box );
 
@@ -1119,6 +1339,21 @@ namespace Rock.Blocks.Crm.PersonDetail
 
             var personName = person?.FullName ?? "this person";
             return ActionOk( $"The envelope #{envelopeNumber} is already assigned to {FormatNameList( otherNames, 5 )}. Do you want to also assign this number to {personName}?" );
+        }
+
+        /// <summary>
+        /// Returns the submitted alternate identifiers already assigned to other people, mapped to the
+        /// name of a person using each. Drives the inline uniqueness validation on the client.
+        /// </summary>
+        /// <param name="idKey">The identifier key of the person being edited (excluded from the search).</param>
+        /// <param name="alternateIds">The alternate identifiers to check.</param>
+        /// <returns>A map of conflicting identifier to the name of a person already using it.</returns>
+        [BlockAction]
+        public BlockActionResult CheckAlternateIdsInUse( string idKey, List<string> alternateIds )
+        {
+            var person = new PersonService( RockContext ).Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+            return ActionOk( GetAlternateIdConflicts( person?.Id ?? 0, alternateIds ) );
         }
 
         #endregion Block Actions

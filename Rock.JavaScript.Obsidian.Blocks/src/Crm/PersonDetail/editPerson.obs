@@ -325,6 +325,50 @@
                                 </div>
                             </ContentStack>
                         </ContentSection>
+
+                        <ContentSection title="Search & Lookup"
+                                        icon="ti ti-search">
+                            <ContentStack description="Set additional values that will find this person in a search or at check-in.">
+                                <ValueList v-model="previousLastNames"
+                                           label="Previous Last Names"
+                                           help="Former last names for this person. Rock searches these alongside the current name." />
+
+                                <div @focusout="onAlternateIdsFocusOut">
+                                    <ValueList v-model="alternateIds"
+                                               label="Alternate Identifiers"
+                                               help="Identifiers such as barcodes or fingerprints that check-in can use to find this person. Each must be unique across all people." />
+
+                                    <NotificationBox v-for="duplicate in alternateIdDuplicates"
+                                                     :key="duplicate"
+                                                     alertType="warning"
+                                                     class="mt-2">
+                                        <strong>{{ duplicate }}</strong> was entered more than once in this list. Each identifier must be unique.
+                                    </NotificationBox>
+
+                                    <NotificationBox v-if="alternateIdsInUseList.length === 1"
+                                                     alertType="warning"
+                                                     class="mt-2">
+                                        The identifier <strong>{{ alternateIdsInUseList[0].identifier }}</strong> is already assigned to {{ alternateIdsInUseList[0].name }}. Each identifier must be unique.
+                                    </NotificationBox>
+                                    <NotificationBox v-else-if="alternateIdsInUseList.length > 1"
+                                                     alertType="warning"
+                                                     class="mt-2">
+                                        These identifiers are already assigned to other people. Each must be unique.
+                                        <ul class="mb-0">
+                                            <li v-for="conflict in alternateIdsInUseList" :key="conflict.identifier">
+                                                <strong>{{ conflict.identifier }}</strong> - {{ conflict.name }}
+                                            </li>
+                                        </ul>
+                                    </NotificationBox>
+                                </div>
+
+                                <KeyValueList v-model="searchKeys"
+                                              label="Search Keys"
+                                              help="Additional values that will find this person in a search, such as a maiden name or a legacy system ID."
+                                              :keyOptions="searchKeyTypeItems"
+                                              valuePlaceholder="Value" />
+                            </ContentStack>
+                        </ContentSection>
                     </ContentSectionContainer>
                 </div>
             </div>
@@ -389,6 +433,9 @@
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ValueList from "@Obsidian/Controls/valueList.obs";
+    import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
+    import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
     import { confirm } from "@Obsidian/Utility/dialogs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { Gender, GenderDescription } from "@Obsidian/Enums/Crm/gender";
@@ -504,6 +551,21 @@
     const givingEnvelopeNumber = ref(config.entity?.givingEnvelopeNumber ?? "");
     const isGeneratingEnvelopeNumber = ref(false);
 
+    // Search & Lookup
+    const previousLastNames = ref<string[]>(config.entity?.previousLastNames ?? []);
+    const alternateIds = ref<string[]>(config.entity?.alternateIds ?? []);
+
+    // Alternate identifier inline validation: values entered twice in this list, and values already
+    // assigned to other people (identifier -> owner name from the server).
+    const alternateIdDuplicates = ref<string[]>([]);
+    const alternateIdsInUse = ref<Record<string, string>>({});
+
+    // The KeyValueList models each search key as { key: search type guid, value: search value }.
+    const searchKeys = ref<KeyValueItem[]>((config.entity?.searchKeys ?? []).map(searchKey => ({
+        key: searchKey.searchType?.value ?? "",
+        value: searchKey.searchValue ?? ""
+    })));
+
     // #endregion Values
 
     // #region Computed Values
@@ -560,6 +622,15 @@
     const isGivingSectionVisible = computed<boolean>(() => options.value.isGivingSectionVisible ?? false);
     const isEnvelopeNumberVisible = computed<boolean>(() => options.value.isEnvelopeNumberVisible ?? false);
     const givingGroupItems = computed<ListItemBag[]>(() => options.value.givingGroups ?? []);
+
+    // A leading blank option lets a new search key row start with no type selected (matches WebForms).
+    const searchKeyTypeItems = computed<ListItemBag[]>(() => [
+        { value: "", text: "" },
+        ...(options.value.searchKeyTypes ?? [])
+    ]);
+
+    const alternateIdsInUseList = computed<{ identifier: string; name: string }[]>(() =>
+        Object.entries(alternateIdsInUse.value).map(([identifier, name]) => ({ identifier, name })));
 
     // Mirror the block setting (WebForms parity): once a birth month and day are present, the year
     // becomes required. The rule reads the birthDate ref directly because RockFormField hands it a
@@ -695,6 +766,67 @@
     }
 
     /**
+     * Validates the alternate identifiers inline: flags values entered twice in this list and values
+     * already assigned to other people. Returns whether the identifiers are valid.
+     */
+    async function validateAlternateIds(): Promise<boolean> {
+        // Same-list duplicates (client-side).
+        const seen = new Set<string>();
+        const duplicates: string[] = [];
+
+        for (const alternateId of alternateIds.value) {
+            const trimmed = alternateId.trim();
+
+            if (!trimmed) {
+                continue;
+            }
+
+            if (seen.has(trimmed)) {
+                if (!duplicates.includes(trimmed)) {
+                    duplicates.push(trimmed);
+                }
+            }
+            else {
+                seen.add(trimmed);
+            }
+        }
+
+        alternateIdDuplicates.value = duplicates;
+
+        // Already assigned to other people (server-side).
+        const distinctValues = [...seen];
+
+        if (distinctValues.length === 0) {
+            alternateIdsInUse.value = {};
+        }
+        else {
+            const result = await invokeBlockAction<Record<string, string>>("CheckAlternateIdsInUse", {
+                idKey: config.entity?.idKey,
+                alternateIds: distinctValues
+            });
+
+            alternateIdsInUse.value = (result.isSuccess && result.data) ? result.data : {};
+        }
+
+        return duplicates.length === 0 && Object.keys(alternateIdsInUse.value).length === 0;
+    }
+
+    /**
+     * Re-validates the alternate identifiers when focus leaves the whole field (not while moving
+     * between its own rows).
+     */
+    function onAlternateIdsFocusOut(event: FocusEvent): void {
+        const field = event.currentTarget as HTMLElement;
+        const movingTo = event.relatedTarget as Node | null;
+
+        if (movingTo && field.contains(movingTo)) {
+            return;
+        }
+
+        validateAlternateIds();
+    }
+
+    /**
      * Fills the envelope number with the next available value from the server.
      */
     async function onGenerateEnvelopeNumber(): Promise<void> {
@@ -802,6 +934,18 @@
                     }
                 }
             }
+
+            // Search & Lookup. Block the save when alternate identifiers fail the inline validation
+            // (the messages render beneath the field, including when Save is clicked from a row).
+            if (!(await validateAlternateIds())) {
+                return;
+            }
+
+            setPropertiesBoxValue(box, "previousLastNames", previousLastNames.value);
+            setPropertiesBoxValue(box, "alternateIds", alternateIds.value);
+            setPropertiesBoxValue(box, "searchKeys", searchKeys.value
+                .filter(searchKey => searchKey.key && searchKey.value)
+                .map(searchKey => ({ searchType: { value: searchKey.key }, searchValue: searchKey.value })));
 
             const result = await invokeBlockAction<string>("Save", { box });
 

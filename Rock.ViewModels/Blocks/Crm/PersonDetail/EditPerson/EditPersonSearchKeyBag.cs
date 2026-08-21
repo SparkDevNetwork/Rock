@@ -15,8 +15,6 @@
 // </copyright>
 //
 
-using System;
-
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Crm.PersonDetail.EditPerson
@@ -26,11 +24,6 @@ namespace Rock.ViewModels.Blocks.Crm.PersonDetail.EditPerson
     /// </summary>
     public class EditPersonSearchKeyBag
     {
-        /// <summary>
-        /// Gets or sets the unique identifier used to track the row across add/remove operations.
-        /// </summary>
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Gets or sets the search type defined value.
         /// </summary>
