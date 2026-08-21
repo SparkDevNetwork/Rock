@@ -126,11 +126,17 @@ internal sealed partial class CmsSkill
 
         if ( route != null && !route.ClearValue )
         {
+            // The page identifier is resolved to a plain value before the
+            // query is built. Referencing the page entity inside the
+            // expression tree makes Entity Framework try to translate the
+            // entity itself into a constant, which it cannot do.
+            var currentPageId = page?.Id ?? 0;
+
             if ( normalizedRoute.IsNullOrWhiteSpace() || normalizedRoute.Contains( " " ) )
             {
                 helper.AddError( "The route must be a URL path with no spaces, such as 'serving-dashboard'." );
             }
-            else if ( new PageRouteService( rockContext ).Queryable().Any( r => r.Route == normalizedRoute && r.PageId != ( page != null ? page.Id : 0 ) ) )
+            else if ( new PageRouteService( rockContext ).Queryable().Any( r => r.Route == normalizedRoute && r.PageId != currentPageId ) )
             {
                 helper.AddError( $"The route '{normalizedRoute}' is already used by another page. Choose a different route." );
             }
