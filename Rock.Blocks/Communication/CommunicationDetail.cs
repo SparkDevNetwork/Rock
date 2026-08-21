@@ -2385,7 +2385,7 @@ namespace Rock.Blocks.Communication
 
             var uniqueOpensByAgeRange = new List<ChartNumericDataPointBag>();
 
-            var knownAgeColor = "--color-positive-primary";
+            var knownAgeColor = "--color-metric-primary";
             var unknownAgeColor = "--color-neutral-primary";
 
             for ( var i = 0; i < labels.Length; i++ )
@@ -2465,19 +2465,13 @@ namespace Rock.Blocks.Communication
             //  2. Otherwise, show the top 3 + "Others" where "Others" = sum of all remaining clients' percentages.
             clients.top = new List<ChartNumericDataPointBag>();
 
-            // Ensure we've defined enough colors, up to the max number of bars.
             var maxNumberOfBars = 4;
-            var colorQueue = new Queue<string>( new[] {
-                "--color-categorical-7",
-                "--color-categorical-6",
-                "--color-categorical-3",
-                "--color-categorical-2"
-            } );
+            var knownClientColor = "--color-metric-primary";
 
             string GetColor( string label ) =>
                 label.Equals( unknownLabel )
                     ? unknownColor
-                    : colorQueue.Count > 0 ? colorQueue.Dequeue() : "--color-interface-soft";
+                    : knownClientColor;
 
             decimal GetRoundedValue( decimal value ) => Math.Round( value, 1, MidpointRounding.AwayFromZero );
 

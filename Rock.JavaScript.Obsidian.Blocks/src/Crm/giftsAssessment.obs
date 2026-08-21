@@ -121,7 +121,7 @@
 .gifts-chart-bar {
     min-width: 2em;
     padding: 2px 8px;
-    background-color: #709AC7;
+    background-color: var(--color-metric-primary);
     color: #fff;
     text-align: right;
     white-space: nowrap;

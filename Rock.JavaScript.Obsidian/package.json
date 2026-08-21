@@ -1,6 +1,10 @@
 {
   "private": true,
   "description": "Project for all Rock Obsidian UI functionality.",
+  "engines": {
+    "node": ">=24.5.0",
+    "npm": ">=11.5.0"
+  },
   "scripts": {
     "build-fast": "node Build/build-fast.js",
     "build": "npm run build-core && npm run build-framework && npm run copy-webforms-core && echo '' > dist/.buildstamp && echo DONE",
@@ -42,6 +46,7 @@
     "jest": "^29.7.0",
     "jest-editor-support": "^31.1.2",
     "jest-environment-jsdom": "^29.7.0",
+    "jest-util": "^29.7.0",
     "less": "^4.4.2",
     "rimraf": "^5.0.10",
     "rollup": "^3.29.5",

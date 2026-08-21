@@ -39,7 +39,7 @@ namespace Rock.Blocks.Workflow
     [Category( "Workflow" )]
     [Description( "Displays a list of workflow triggers." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the workflow trigger details.",

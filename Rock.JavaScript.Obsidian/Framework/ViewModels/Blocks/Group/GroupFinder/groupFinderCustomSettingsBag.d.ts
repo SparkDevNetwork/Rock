@@ -22,8 +22,8 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The settings edited in the custom settings panel for the Group Finder block. */
 export type GroupFinderCustomSettingsBag = {
@@ -36,17 +36,10 @@ export type GroupFinderCustomSettingsBag = {
     /** Gets or sets the color of the "you are here" proximity marker on the map. */
     currentLocationMarkerColor?: string | null;
 
-    /**
-     * Gets or sets the attributes surfaced in the "More Filters" modal.
-     * Mutually exclusive with FeaturedAttributes.
-     */
+    /** Gets or sets the attributes surfaced in the "More Filters" modal. */
     displayAttributeFilters?: Guid[] | null;
 
-    /**
-     * Gets or sets the attributes surfaced as "What" filter pills.
-     * Mutually exclusive with DisplayAttributeFilters, and limited to Single-select,
-     * Multi-select, and Boolean field types.
-     */
+    /** Gets or sets the attributes surfaced as "What" filter pills. */
     featuredAttributes?: Guid[] | null;
 
     /** Gets or sets the Lava template that renders the content of each result card. Blank falls back to the built-in default. */
