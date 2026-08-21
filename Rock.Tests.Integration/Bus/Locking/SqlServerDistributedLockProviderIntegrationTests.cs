@@ -46,6 +46,8 @@ namespace Rock.Tests.Integration.Bus.Locking;
 /// </remarks>
 [TestClass]
 [TestCategory( "Distributed Locking" )]
+[DeploymentItem( "Microsoft.Data.SqlClient.SNI.x86.dll" )]
+[DeploymentItem( "Microsoft.Data.SqlClient.SNI.x64.dll" )]
 public class SqlServerDistributedLockProviderIntegrationTests
 {
     public TestContext TestContext { get; set; }
