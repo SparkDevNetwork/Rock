@@ -115,8 +115,8 @@ namespace Rock.Blocks.Crm.PersonDetail
 
     [Rock.Web.UI.ContextAware( typeof( Person ) )]
     [Rock.SystemGuid.EntityTypeGuid( "E295AD66-880C-4FB8-954B-36D11B8C2E92" )]
-    [Rock.SystemGuid.BlockTypeGuid( "3A036FB2-366E-4F8A-AF7F-2044230CAADA" )]
-    //[Rock.SystemGuid.BlockTypeGuid( "0A15F28C-4828-4B38-AF66-58AC5BDE48E0" )]
+    // WAS [Rock.SystemGuid.BlockTypeGuid( "3A036FB2-366E-4F8A-AF7F-2044230CAADA" )]
+    [Rock.SystemGuid.BlockTypeGuid( "0A15F28C-4828-4B38-AF66-58AC5BDE48E0" )]
     public class EditPerson : RockEntityDetailBlockType<Person, EditPersonBag>
     {
         #region Keys
