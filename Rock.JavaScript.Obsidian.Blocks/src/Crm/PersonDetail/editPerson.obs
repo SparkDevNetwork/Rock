@@ -112,13 +112,13 @@
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-xs-6">
                                         <FirstNameTextBox v-model="firstName"
                                                           label="First Name"
                                                           help="The person's legal first name."
                                                           rules="nospecialcharacters|noemojisorspecialfonts" />
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-xs-6">
                                         <TextBox v-model="nickName"
                                                  label="Nickname"
                                                  help="The name this person goes by. Rock uses it wherever their name is displayed. When blank, the first name is used."
@@ -127,7 +127,7 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-xs-6">
                                         <TextBox v-model="middleName"
                                                  label="Middle Name"
                                                  rules="nospecialcharacters|noemojisorspecialfonts" />
@@ -135,12 +135,12 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-xs-6">
                                         <TextBox v-model="lastName"
                                                  label="Last Name"
                                                  rules="nospecialcharacters|noemojisorspecialfonts" />
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-xs-6">
                                         <DefinedValuePicker v-model="suffix"
                                                             :definedTypeGuid="DefinedType.PersonSuffix"
                                                             label="Suffix"
@@ -170,32 +170,32 @@
                                 </CheckBox>
 
                                 <div v-if="isGradeShown" class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-xs-6">
                                         <GradePicker v-model="grade"
                                                      label="Grade"
                                                      :showBlankItem="true" />
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-xs-6">
                                         <YearPicker v-model="graduationYear"
                                                     label="Graduation Year" />
                                     </div>
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-xs-6">
                                         <DefinedValuePicker v-model="maritalStatus"
                                                             :definedTypeGuid="DefinedType.PersonMaritalStatus"
                                                             label="Marital Status"
                                                             :showBlankItem="true" />
                                     </div>
-                                    <div v-if="isAnniversaryShown" class="col-md-6">
+                                    <div v-if="isAnniversaryShown" class="col-xs-6">
                                         <DatePicker v-model="anniversaryDate"
                                                     label="Anniversary" />
                                     </div>
                                 </div>
 
                                 <div v-if="isRaceShown" class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-xs-6">
                                         <RacePicker v-model="race"
                                                     :rules="isRaceRequired ? 'required' : ''"
                                                     :showBlankItem="true" />
@@ -203,7 +203,7 @@
                                 </div>
 
                                 <div v-if="isEthnicityShown" class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-xs-6">
                                         <EthnicityPicker v-model="ethnicity"
                                                          :rules="isEthnicityRequired ? 'required' : ''"
                                                          :showBlankItem="true" />
@@ -240,11 +240,11 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-xs-6">
                                         <EmailBox v-model="email"
                                                   label="Email" />
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-xs-6">
                                         <div class="form-group">
                                             <!-- Spacer label aligns the checkbox with the email input below its label. -->
                                             <label class="control-label">&nbsp;</label>
@@ -303,13 +303,13 @@
                                 </div>
 
                                 <div v-if="isEnvelopeNumberVisible" class="row">
-                                    <div class="col-md-4">
+                                    <div class="col-xs-6 col-sm-6 col-md-4">
                                         <TextBox v-model="givingEnvelopeNumber"
                                                  label="Envelope Number"
                                                  rules="integer"
                                                  help="The giving envelope number assigned to this person." />
                                     </div>
-                                    <div class="col-md-8">
+                                    <div class="col-xs-6 col-sm-6 col-md-8">
                                         <div class="form-group">
                                             <!-- Spacer label aligns the button with the envelope input below its label. -->
                                             <label class="control-label">&nbsp;</label>
