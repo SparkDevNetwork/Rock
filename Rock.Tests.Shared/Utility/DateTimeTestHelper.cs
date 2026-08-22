@@ -20,8 +20,6 @@ using System.Diagnostics;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Lava;
-
 namespace Rock.Tests.Shared.Utility
 {
     /// <summary>
@@ -229,17 +227,6 @@ namespace Rock.Tests.Shared.Utility
             {
                 throw new Exception( "Expected DateTime must be expressed in UTC." );
             }
-        }
-
-        /// <summary>
-        /// Write the results of template rendering to the debug output, with some additional configuration details.
-        /// Useful to document the result of a test that would otherwise produce no output.
-        /// </summary>
-        /// <param name="outputString"></param>
-        public void DebugWriteRenderResult( ILavaEngine engine, string inputString, string outputString )
-        {
-            Debug.Print( $"\n** [{engine.EngineName}] Input:\n{inputString}" );
-            Debug.Print( $"\n** [{engine.EngineName}] Output:\n{outputString}" );
         }
 
         /// <summary>
