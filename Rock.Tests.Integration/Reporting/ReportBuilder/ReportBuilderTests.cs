@@ -128,9 +128,15 @@ namespace Rock.Tests.Integration.Reporting.ReportBuilder
             person.LoadAttributes();
 
             var unauthorizedAttribute = person.Attributes
-                 .Select( x => x.Value ).FirstOrDefault( a => !a.IsAuthorized( Rock.Security.Authorization.VIEW, unauthorizedPerson ) );
+                 .Select( x => x.Value )
+                 .FirstOrDefault( a => a.Key == "BackgroundCheckDate" && !a.IsAuthorized( Rock.Security.Authorization.VIEW, unauthorizedPerson ) );
 
             Assert.IsNotNull( unauthorizedAttribute, "Test User must have at least one unauthorized Attribute." );
+
+            // Ensure the unauthorized Person has a value for the unauthorized Attribute.
+            unauthorizedPerson.LoadAttributes( dataContext );
+            unauthorizedPerson.SetAttributeValue( unauthorizedAttribute.Key, "2026-06-01" );
+            unauthorizedPerson.SaveAttributeValues( dataContext );
 
             // Create a report template containing the test Attribute.
             var templateBuilder = new ReportTemplateBuilder( typeof( Person ) );

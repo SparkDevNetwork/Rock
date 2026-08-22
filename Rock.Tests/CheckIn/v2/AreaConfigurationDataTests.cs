@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.CheckIn.v2;
+using Rock.Configuration;
 using Rock.Enums.CheckIn;
 using Rock.Model;
 using Rock.Tests.Shared.TestFramework;
@@ -19,7 +18,7 @@ namespace Rock.Tests.CheckIn.v2
     /// </summary>
     /// <seealso cref="AreaConfigurationData"/>
     [TestClass]
-    public class AreaConfigurationDataTests : MockDatabaseTestsBase
+    public class AreaConfigurationDataTests
     {
         #region Constructor Tests
 
@@ -31,8 +30,8 @@ namespace Rock.Tests.CheckIn.v2
             var expectedPrintTo = PrintTo.Location;
             var expectedLocationSelectionStrategy = LocationSelectionStrategy.Balance;
 
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
             var groupType = new GroupType
             {
@@ -51,20 +50,17 @@ namespace Rock.Tests.CheckIn.v2
                 Value = expectedLocationSelectionStrategy.ConvertToInt().ToString()
             } );
 
-            rockContextMock.Object.Set<GroupType>().Add( groupType );
+            rockContext.Set<GroupType>().Add( groupType );
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var groupTypeCache = GroupTypeCache.Get( groupType.Id, rockContextMock.Object );
-                var instance = new AreaConfigurationData( groupTypeCache, rockContextMock.Object );
+            var groupTypeCache = GroupTypeCache.Get( groupType.Id, rockContext );
+            var instance = new AreaConfigurationData( groupTypeCache, rockContext );
 
-                Assert.AreEqual( expectedAttendanceRule, instance.AttendanceRule );
-                Assert.AreEqual( expectedAlreadyEnrolledMatchingLogic, instance.AlreadyEnrolledMatchingLogic );
-                Assert.IsTrue( instance.IsConcurrentCheckInPrevented );
-                Assert.IsTrue( instance.IsSchedulingEnabled );
-                Assert.AreEqual( expectedPrintTo, instance.PrintTo );
-                Assert.AreEqual( expectedLocationSelectionStrategy, instance.LocationSelectionStrategy );
-            }
+            Assert.AreEqual( expectedAttendanceRule, instance.AttendanceRule );
+            Assert.AreEqual( expectedAlreadyEnrolledMatchingLogic, instance.AlreadyEnrolledMatchingLogic );
+            Assert.IsTrue( instance.IsConcurrentCheckInPrevented );
+            Assert.IsTrue( instance.IsSchedulingEnabled );
+            Assert.AreEqual( expectedPrintTo, instance.PrintTo );
+            Assert.AreEqual( expectedLocationSelectionStrategy, instance.LocationSelectionStrategy );
         }
 
         [TestMethod]

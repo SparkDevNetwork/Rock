@@ -107,7 +107,7 @@ namespace Rock.Configuration
         /// operations (migrations run from the CLI). Intentionally not inlined
         /// so the JIT does not pull its type references - notably
         /// <c>StreamChatProvider</c> and therefore the stream-chat-net assembly -
-        /// into the static constructor. See <see cref="RockApp()"/>.
+        /// into the static constructor.
         /// </summary>
         [MethodImpl( MethodImplOptions.NoInlining )]
         private static void InitializeForEntityFrameworkDesignTime()
