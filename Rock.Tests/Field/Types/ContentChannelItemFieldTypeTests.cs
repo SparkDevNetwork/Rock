@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,15 +20,15 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Field;
 using Rock.Field.Types;
-using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Core.Field.Types
+namespace Rock.Tests.Field.Types
 {
     /// <summary>
     /// Test methods for Content Channel Item Field Types.
     /// </summary>
     [TestClass]
-    public class ContentChannelItemFieldTypeTests : DatabaseTestsBase
+    public class ContentChannelItemFieldTypeTests
     {
         /// <summary>
         /// Test whether the configuration values are required in order to get the edit value.
@@ -36,6 +36,11 @@ namespace Rock.Tests.Integration.Core.Field.Types
         [TestMethod]
         public void GetEditValue_AreConfigurationValuesRequired()
         {
+            // A scope is required because building the ContentChannelItemPicker
+            // loads the content channel list from the cache, which resolves a
+            // context from RockApp.Current.
+            using var app = TestHelper.CreateScopedRockApp();
+
             var configValues = new Dictionary<string, ConfigurationValue>
             {
                 { ContentChannelItemFieldType.CONTENT_CHANNEL_KEY, new ConfigurationValue(string.Empty) }

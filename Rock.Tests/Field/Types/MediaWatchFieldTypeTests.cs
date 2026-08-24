@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,12 +19,11 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Field.Types;
-using Rock.Tests.Integration.TestFramework.Database;
 
-namespace Rock.Tests.Integration.Core.Field.Types
+namespace Rock.Tests.Field.Types
 {
     [TestClass]
-    public class MediaWatchFieldTypeTests : DatabaseTestsBase
+    public class MediaWatchFieldTypeTests
     {
         /// <summary>
         /// Given an empty string the text value should be an empty string.

@@ -21,20 +21,50 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
+using Rock.Data;
 using Rock.Financial;
 using Rock.Jobs;
 using Rock.Model;
-using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Utility.Settings.Giving;
 using Rock.Web.Cache;
 
 using static Rock.Jobs.GivingAutomation;
 
-namespace Rock.Tests.Integration.Core.Jobs
+namespace Rock.Tests.Jobs
 {
     [TestClass]
-    public class GivingAutomationClassificationTests : DatabaseTestsBase
+    public class GivingAutomationClassificationTests
     {
+        /// <summary>
+        /// The scoped RockApp providing the DI container and mocked context. The
+        /// classification tests construct a <c>GivingAutomationContext</c> (which
+        /// reads SystemSettings) and resolve currency/source defined values through
+        /// the cache, so a scope must be active for each test.
+        /// </summary>
+        private TestHelper.RockAppScope _rockAppScope;
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            _rockAppScope = TestHelper.CreateScopedRockApp();
+
+            // Seed the currency and transaction-source defined values that the
+            // classification tests resolve through DefinedValueCache.
+            var rockContext = _rockAppScope.App.CreateRockContext();
+            MockData.CreateDefinedValue( rockContext, new System.Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CASH ), "Cash" );
+            MockData.CreateDefinedValue( rockContext, new System.Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ), "Credit Card" );
+            MockData.CreateDefinedValue( rockContext, new System.Guid( Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE ), "Website" );
+            MockData.CreateDefinedValue( rockContext, new System.Guid( Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_MOBILE_APPLICATION ), "Mobile Application" );
+        }
+
+        [TestCleanup]
+        public void TestCleanup()
+        {
+            _rockAppScope?.Dispose();
+        }
+
         #region SplitQuartileRanges
 
         [TestMethod]

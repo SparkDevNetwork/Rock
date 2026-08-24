@@ -1,18 +1,18 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Data;
+using Rock.Configuration;
 using Rock.Model;
-using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 using Rock.Workflow.Action;
 
-namespace Rock.Tests.Integration.Core.Workflow.Action
+namespace Rock.Tests.Core.Workflow.Action
 {
     [TestClass]
     [TestCategory( "Core.Workflow" )]
-    public class BackgroundCheckRequestTests : DatabaseTestsBase
+    public class BackgroundCheckRequestTests
     {
         [TestMethod]
         public void CanBeInstantiated()
@@ -30,37 +30,42 @@ namespace Rock.Tests.Integration.Core.Workflow.Action
         [TestMethod]
         public void ReturnsFalse()
         {
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+
             var BackgroundAction = new BackgroundCheckRequest();
             var action = new WorkflowAction
             {
                 ActionType = new WorkflowActionType()
                 {
-                    // add in the expected objects so we don't make a db request
-                    // in the future the db connection should be mocked
+                    // Add in the expected objects so we don't make a db request.
                     Attributes = new Dictionary<string, AttributeCache>(),
                     AttributeValues = new Dictionary<string, AttributeValueCache>()
                 }
             };
             var errors = new List<string>();
-            var result = BackgroundAction.Execute( new RockContext(), action, null, out errors );
+            var result = BackgroundAction.Execute( rockContext, action, null, out errors );
             Assert.IsFalse( result );
         }
 
         [TestMethod]
         public void InvalidProviderGuidError()
         {
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+
             var BackgroundAction = new BackgroundCheckRequest();
             var action = new WorkflowAction
             {
                 ActionType = new WorkflowActionType()
                 {
-                    // add in the expected objects so we don't make a db request
+                    // Add in the expected objects so we don't make a db request.
                     Attributes = new Dictionary<string, AttributeCache>(),
                     AttributeValues = new Dictionary<string, AttributeValueCache>()
                 }
             };
             var errors = new List<string>();
-            var result = BackgroundAction.Execute( new RockContext(), action, null, out errors );
+            var result = BackgroundAction.Execute( rockContext, action, null, out errors );
             Assert.ContainsSingle( errors );
             Assert.AreEqual( "Invalid Background Check Provider Guid!", errors[0] );
         }

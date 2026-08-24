@@ -23,6 +23,7 @@ using System.Web.UI;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -57,7 +58,8 @@ namespace Rock.Field.Types
 
             var metricGuids = guidPairs.Select( a => a.MetricGuid );
 
-            using ( var rockContext = new RockContext() )
+            // Resolve the context from the factory so tests can supply a mocked context.
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var metrics = new MetricService( rockContext ).Queryable().AsNoTracking().Where( a => metricGuids.Contains( a.Guid ) );
                 if ( metrics.Any() )

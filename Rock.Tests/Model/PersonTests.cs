@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,29 +19,24 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Model;
-using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Core.Model
+namespace Rock.Tests.Model
 {
     [TestClass]
     [TestCategory( "Core.Crm.Person" )]
-    public class PersonTests : DatabaseTestsBase
+    public class PersonTests
     {
-        /// <summary>
-        /// Runs before any tests in this class are executed.
-        /// </summary>
-        [ClassInitialize]
-        public static void ClassInitialize( TestContext testContext )
-        {
-            GlobalAttributesCache globalAttributes = GlobalAttributesCache.Get();
-        }
-
         #region Graduation
 
         [TestMethod]
         public void GraduatesThisYear()
         {
+            // A scope is required so GlobalAttributesCache resolves against the
+            // mocked context; the transition date is then overridden in memory.
+            using var app = TestHelper.CreateScopedRockApp();
+
             DateTime tomorrow = RockDateTime.Now.AddDays( 1 );
             SetGradeTransitionDateGlobalAttribute( tomorrow.Month, tomorrow.Day );
 
@@ -58,6 +53,10 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void GraduatesNextYear()
         {
+            // A scope is required so GlobalAttributesCache resolves against the
+            // mocked context; the transition date is then overridden in memory.
+            using var app = TestHelper.CreateScopedRockApp();
+
             DateTime yesterday = RockDateTime.Now.AddDays( -1 );
             SetGradeTransitionDateGlobalAttribute( yesterday.Month, yesterday.Day );
 

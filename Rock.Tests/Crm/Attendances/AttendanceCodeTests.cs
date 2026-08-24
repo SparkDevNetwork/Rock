@@ -9,25 +9,36 @@ using Moq;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Crm.Attendance
+namespace Rock.Tests.Crm.Attendance
 {
     /// <summary>
-    /// Used for testing anything regarding AttendanceCode.
-    /// NOTE on IDisposable: We'd like to be able to use IDisposble to perform automatic Cleanup() after
-    /// each test method but we can't do this until we can safely run tests that have a db (ie, we don't
-    /// want to break other teams CI environments that are running these tests w/o a db.
+    /// Used for testing anything regarding AttendanceCode. These tests use a
+    /// mocked <see cref="RockContext"/> and do not require a database.
     /// </summary>
-    /// <seealso cref="System.IDisposable" />
     [TestClass]
-    public class AttendanceCodeTests : DatabaseTestsBase
+    public class AttendanceCodeTests
     {
+        /// <summary>
+        /// The scoped RockApp that provides the dependency injection container
+        /// and mocked context factory. Some code paths exercised by
+        /// AttendanceCodeService (e.g. RockWebFarm.IsEnabled) resolve a context
+        /// from RockApp.Current, so a scope must be active for each test.
+        /// </summary>
+        private TestHelper.RockAppScope _rockAppScope;
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            _rockAppScope = TestHelper.CreateScopedRockApp();
+        }
+
         [TestCleanup]
         public void TestCleanup()
         {
             AttendanceCodeService.FlushTodaysCodes();
+            _rockAppScope?.Dispose();
         }
 
         #region Tests that don't require a database/context

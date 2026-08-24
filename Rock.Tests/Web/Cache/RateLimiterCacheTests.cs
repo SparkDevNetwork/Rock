@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Web.Cache
+namespace Rock.Tests.Web.Cache
 {
     [TestClass]
     public class RateLimiterCacheTests
@@ -13,21 +13,26 @@ namespace Rock.Tests.Integration.Web.Cache
         [TestMethod]
         public async Task CanProcessPage_ShouldResetAfterPeriodExpires()
         {
+            // A short period is used so the test does not spend several seconds
+            // waiting. The delay is longer than the period so the rate-limit
+            // window is guaranteed to have expired and the counter reset.
+            var period = TimeSpan.FromSeconds( 1 );
+
             var result = RateLimiterCache.CanProcessPage(
                 1,
                 nameof( CanProcessPage_ShouldResetAfterPeriodExpires ),
-                TimeSpan.FromSeconds( 5 ),
+                period,
                 1,
                 null );
 
             Assert.IsTrue( result );
 
-            await Task.Delay( 6000 );
+            await Task.Delay( 1500 );
 
             result = RateLimiterCache.CanProcessPage(
                 1,
                 nameof( CanProcessPage_ShouldResetAfterPeriodExpires ),
-                TimeSpan.FromSeconds( 5 ),
+                period,
                 1,
                 null );
 

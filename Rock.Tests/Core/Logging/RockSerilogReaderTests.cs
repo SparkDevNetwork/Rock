@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,12 +20,11 @@ using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Logging;
-using Rock.Tests.Integration.TestFramework.Database;
 
-namespace Rock.Tests.Integration.Core.Logging
+namespace Rock.Tests.Core.Logging
 {
     [TestClass]
-    public class RockSerilogReaderTests : DatabaseTestsBase
+    public class RockSerilogReaderTests
     {
         private readonly string LogFolder = $"TestData\\logs\\{Guid.NewGuid()}";
 
@@ -223,16 +222,6 @@ namespace Rock.Tests.Integration.Core.Logging
             while ( currentByteCount < maxByteCount )
             {
                 var guid = Guid.NewGuid();
-                //var logEvent = new LogEvent( DateTimeOffset.Now,
-                //    LogEventLevel.Information,
-                //    null,
-                //    new MessageTemplate( $"Test - {guid}", new Serilog.Parsing.MessageTemplateToken[0] ),
-                //    new[]
-                //    {
-                //        new LogEventProperty( "SourceContext", new ScalarValue( TestCategory ) )
-                //    } );
-
-                //logger.Write( logEvent );
                 logger.Information( $"Test - {guid}" );
 
                 expectedLogs.Add( guid.ToString() );

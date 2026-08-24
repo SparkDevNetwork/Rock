@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,21 +14,39 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Collections.Generic;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
+using Rock.Data;
 using Rock.Field.Types;
-using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Model;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Core.Field.Types
+namespace Rock.Tests.Field.Types
 {
     /// <summary>
     /// Unit tests for the <see cref="EventCalendarFieldType"/> field type
     /// </summary>
     [TestClass]
-    public class EventCalendarFieldTypeTests : DatabaseTestsBase
+    public class EventCalendarFieldTypeTests
     {
+        private const string PublicCalendarGuid = "8A444668-19AF-4417-9C74-09F842572974";
+        private const string InternalCalendarGuid = "8C7F7F4E-1C51-41D3-9AC3-02B3F4054798";
+
+        /// <summary>
+        /// Seeds the two sample event calendars that the tests resolve by Guid.
+        /// The field type reads these through <see cref="Rock.Web.Cache.EventCalendarCache"/>,
+        /// which loads from the scoped mock context.
+        /// </summary>
+        private static void SeedEventCalendars( RockContext rockContext )
+        {
+            rockContext.Set<EventCalendar>().Add( new EventCalendar { Id = 1, Guid = new Guid( PublicCalendarGuid ), Name = "Public" } );
+            rockContext.Set<EventCalendar>().Add( new EventCalendar { Id = 2, Guid = new Guid( InternalCalendarGuid ), Name = "Internal" } );
+        }
+
         /// <summary>
         /// Given an empty string the text value should be an empty string.
         /// </summary>
@@ -59,6 +77,8 @@ namespace Rock.Tests.Integration.Core.Field.Types
         [TestMethod]
         public void GetTextValue_NoValidEventCalendarForTheGuid()
         {
+            using var app = TestHelper.CreateScopedRockApp();
+
             var eventCalendarFieldType = new EventCalendarFieldType();
             string expectedResult = System.Guid.NewGuid().ToString();
             var result = eventCalendarFieldType.GetTextValue( expectedResult, new Dictionary<string, string>() );
@@ -71,9 +91,12 @@ namespace Rock.Tests.Integration.Core.Field.Types
         [TestMethod]
         public void GetTextValue_ValidEventCalendarForGuid()
         {
+            using var app = TestHelper.CreateScopedRockApp();
+            SeedEventCalendars( app.App.CreateRockContext() );
+
             var eventCalendarFieldType = new EventCalendarFieldType();
             string expectedResult = "Public";
-            var result = eventCalendarFieldType.GetTextValue( "8A444668-19AF-4417-9C74-09F842572974", new Dictionary<string, string>() );
+            var result = eventCalendarFieldType.GetTextValue( PublicCalendarGuid, new Dictionary<string, string>() );
             Assert.AreEqual( expectedResult, result );
         }
 
@@ -83,9 +106,12 @@ namespace Rock.Tests.Integration.Core.Field.Types
         [TestMethod]
         public void GetTextValue_ValidEventCalendarForGuids()
         {
+            using var app = TestHelper.CreateScopedRockApp();
+            SeedEventCalendars( app.App.CreateRockContext() );
+
             var eventCalendarFieldType = new EventCalendarFieldType();
             string expectedResult = "Public, Internal";
-            var result = eventCalendarFieldType.GetTextValue( "8A444668-19AF-4417-9C74-09F842572974, 8C7F7F4E-1C51-41D3-9AC3-02B3F4054798", new Dictionary<string, string>() );
+            var result = eventCalendarFieldType.GetTextValue( $"{PublicCalendarGuid}, {InternalCalendarGuid}", new Dictionary<string, string>() );
             Assert.AreEqual( expectedResult, result );
         }
     }

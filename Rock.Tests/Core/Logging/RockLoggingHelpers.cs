@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,7 +15,7 @@
 // </copyright>
 using System.Threading;
 
-namespace Rock.Tests.Integration.Core.Logging
+namespace Rock.Tests.Core.Logging
 {
     public static class RockLoggingHelpers
     {

@@ -29,19 +29,6 @@ namespace Rock.Tests.Integration.Core.Model
         }
 
         [TestMethod]
-        public void BenevolenceRequestDateKeyGetsSetCorrectly()
-        {
-            var testList = TestDataHelper.GetAnalyticsSourceDateTestData();
-
-            foreach ( var keyValue in testList )
-            {
-                BenevolenceRequest benevolenceRequest = new BenevolenceRequest();
-                benevolenceRequest.RequestDateTime = keyValue.Value;
-                Assert.AreEqual( keyValue.Key, benevolenceRequest.RequestDateKey );
-            }
-        }
-
-        [TestMethod]
         public void BenevolenceRequestDateKeySavesCorrectly()
         {
             var rockContext = new RockContext();

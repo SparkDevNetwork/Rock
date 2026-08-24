@@ -22,6 +22,7 @@ using System.Web.UI;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -50,7 +51,8 @@ namespace Rock.Field.Types
                 return value;
             }
 
-            using ( var rockContext = new RockContext() )
+            // Resolve the context from the factory so tests can supply a mocked context.
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var mergeTemplate = new MergeTemplateService( rockContext ).GetNoTracking( value.AsGuid() );
                 if ( mergeTemplate != null )

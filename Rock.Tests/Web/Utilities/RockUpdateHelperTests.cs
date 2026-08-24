@@ -1,12 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Web;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock;
 using Rock.Configuration;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Web.Utilities
+namespace Rock.Tests.Web.Utilities
 {
     [TestClass]
     public class RockUpdateHelperTests
@@ -14,6 +16,8 @@ namespace Rock.Tests.Integration.Web.Utilities
         [TestMethod]
         public void GetEnvDataAsJsonShouldReturnCorrectData()
         {
+            using var app = TestHelper.CreateScopedRockApp();
+
             var request = new HttpRequest( "test", "http://localhost/test", "" );
             var data = Rock.Web.Utilities.RockUpdateHelper.GetEnvDataAsJson( request, "test" );
 
@@ -39,7 +43,7 @@ namespace Rock.Tests.Integration.Web.Utilities
         [DataRow( 378388, "Unknown" )]
         public void GetDotNetVersionShouldReturnCorrectString( int releaseNumber, string expectedResult )
         {
-            var actualResult = Configuration.HostingSettings.GetDotNetVersion( releaseNumber );
+            var actualResult = Rock.Configuration.HostingSettings.GetDotNetVersion( releaseNumber );
             Assert.AreEqual( expectedResult, actualResult );
         }
     }

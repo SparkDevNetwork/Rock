@@ -8,6 +8,14 @@ namespace Rock.Tests.Shared.TestFramework
     /// <summary>
     /// Helper methods for working with mock databases.
     /// </summary>
+    /// <remarks>
+    /// This is the low-level seam for mocking a <see cref="RockContext"/> and is
+    /// rarely used directly. Most tests should use the higher-level
+    /// <c>TestHelper.CreateScopedRockApp()</c>, which builds the mocked context
+    /// through this helper, registers it with the dependency injection system as an
+    /// <see cref="IRockContextFactory"/>, and clears the cache when the scope is
+    /// disposed after each test.
+    /// </remarks>
     internal static class MockDatabaseHelper
     {
         /// <summary>

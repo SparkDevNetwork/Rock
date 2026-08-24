@@ -45,6 +45,24 @@ namespace Rock.Tests.Shared.Utility
         }
 
         /// <summary>
+        /// Gets a set of DateTime values paired with the integer "date key"
+        /// (yyyyMMdd) they are expected to produce. Used to verify the computed
+        /// <c>*DateKey</c> properties on entities that participate in analytics joins.
+        /// </summary>
+        /// <returns>A dictionary keyed by the expected date key with the source date as the value.</returns>
+        public static Dictionary<int, DateTime> GetDateKeyTestData()
+        {
+            return new Dictionary<int, DateTime>
+            {
+                { 20100131, Convert.ToDateTime( "2010-1-31" ) },
+                { 20101231, Convert.ToDateTime( "2010-12-31" ) },
+                { 20101201, Convert.ToDateTime( "2010-12-1" ) },
+                { 20100101, Convert.ToDateTime( "2010-1-1" ) },
+                { 20160229, Convert.ToDateTime( "2016-02-29" ) },
+            };
+        }
+
+        /// <summary>
         /// Sets the RockDateTime timezone to a region that is ahead of UTC time (UTC+HH:MM).
         /// This configuration simulates a Rock server hosted in a different timezone to the Rock organization.
         /// </summary>

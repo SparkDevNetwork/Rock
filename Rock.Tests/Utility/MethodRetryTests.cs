@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -13,7 +16,13 @@ namespace Rock.Tests.Utility
         public void ExecuteShouldReturnAfterMaxNumberOfTries()
         {
             var expectedCallCount = 5;
-            var methodRetry = new MethodRetry( 10, 10, 5000, expectedCallCount );
+
+            // This test only cares about the call count, so use a non-blocking
+            // wait to avoid the real back-off delays between tries.
+            var methodRetry = new MethodRetry( 10, 10, 5000, expectedCallCount )
+            {
+                WaitBetweenTries = _ => { }
+            };
 
             var actualCallCount = 0;
             var result = methodRetry.Execute( () => actualCallCount++, ( callCount ) => false );
@@ -50,33 +59,35 @@ namespace Rock.Tests.Utility
         {
             var expectedCallCount = 4;
             var expectedWait = 1000;
-            var methodRetry = new MethodRetry( 1, expectedWait, expectedWait, expectedCallCount );
+
+            // Substitute a non-blocking wait that records the requested intervals
+            // instead of actually sleeping, so we can assert that Execute waits
+            // between every try (and for how long) without the wall-clock cost.
+            var recordedWaits = new List<TimeSpan>();
+            var methodRetry = new MethodRetry( 1, expectedWait, expectedWait, expectedCallCount )
+            {
+                WaitBetweenTries = recordedWaits.Add
+            };
 
             var actualCallCount = 0;
-            var stopWatch = System.Diagnostics.Stopwatch.StartNew();
-            var result = methodRetry.Execute( () => actualCallCount++, _ => false );
-            stopWatch.Stop();
+            methodRetry.Execute( () => actualCallCount++, _ => false );
 
-            // Shave off a little time from the expected 4,000ms to account
-            // for slight clock drift or other timing issues that might cause
-            // the async to finish in just under 4,000ms.
-            var minExpectedRuntime = 3900;
-            if ( minExpectedRuntime > stopWatch.ElapsedMilliseconds )
-            {
-                Assert.Fail( $"Execute did not take long enough to run. Expected a minimum of {minExpectedRuntime}ms, but only for {stopWatch.ElapsedMilliseconds}ms" );
-            }
-
-            // Testing the maximum expected runtime is more complex and random
-            // in the results. The language only guarantees that a sleep will
-            // last _at least_ as long as the requested time, it could lost a
-            // good deal longer. Therefore we don't test the maximum.
+            Assert.AreEqual( expectedCallCount, actualCallCount );
+            Assert.HasCount( expectedCallCount, recordedWaits, "Execute should wait once between each try." );
+            Assert.IsTrue( recordedWaits.All( w => w.TotalMilliseconds == expectedWait ), "Each wait should match the configured back-off interval." );
         }
 
         [TestMethod]
         public async Task ExecuteAsyncShouldReturnAfterMaxNumberOfTries()
         {
             var expectedCallCount = 5;
-            var methodRetry = new MethodRetry( 10, 10, 5000, expectedCallCount );
+
+            // This test only cares about the call count, so use a non-blocking
+            // wait to avoid the real back-off delays between tries.
+            var methodRetry = new MethodRetry( 10, 10, 5000, expectedCallCount )
+            {
+                WaitBetweenTriesAsync = _ => Task.CompletedTask
+            };
 
             var actualCallCount = 0;
             var result = await methodRetry.ExecuteAsync( async () => await Task.FromResult( actualCallCount++ ), ( callCount ) => false ).ConfigureAwait( false );
@@ -113,26 +124,26 @@ namespace Rock.Tests.Utility
         {
             var expectedCallCount = 4;
             var expectedWait = 1000;
-            var methodRetry = new MethodRetry( 1, expectedWait, expectedWait, expectedCallCount );
+
+            // Substitute a non-blocking wait that records the requested intervals
+            // instead of actually delaying, so we can assert that ExecuteAsync waits
+            // between every try (and for how long) without the wall-clock cost.
+            var recordedWaits = new List<TimeSpan>();
+            var methodRetry = new MethodRetry( 1, expectedWait, expectedWait, expectedCallCount )
+            {
+                WaitBetweenTriesAsync = duration =>
+                {
+                    recordedWaits.Add( duration );
+                    return Task.CompletedTask;
+                }
+            };
 
             var actualCallCount = 0;
-            var stopWatch = System.Diagnostics.Stopwatch.StartNew();
-            var result = await methodRetry.ExecuteAsync( () => Task.FromResult( actualCallCount++ ), _ => false );
-            stopWatch.Stop();
+            await methodRetry.ExecuteAsync( () => Task.FromResult( actualCallCount++ ), _ => false );
 
-            // Shave off a little time from the expected 4,000ms to account
-            // for slight clock drift or other timing issues that might cause
-            // the async to finish in just under 4,000ms.
-            var minExpectedRuntime = 3900;
-            if ( minExpectedRuntime > stopWatch.ElapsedMilliseconds )
-            {
-                Assert.Fail( $"Execute did not take long enough to run. Expected a minimum of {minExpectedRuntime}ms, but only for {stopWatch.ElapsedMilliseconds}ms" );
-            }
-
-            // Testing the maximum expected runtime is more complex and random
-            // in the results. The language only guarantees that a sleep will
-            // last _at least_ as long as the requested time, it could lost a
-            // good deal longer. Therefore we don't test the maximum.
+            Assert.AreEqual( expectedCallCount, actualCallCount );
+            Assert.HasCount( expectedCallCount, recordedWaits, "ExecuteAsync should wait once between each try." );
+            Assert.IsTrue( recordedWaits.All( w => w.TotalMilliseconds == expectedWait ), "Each wait should match the configured back-off interval." );
         }
     }
 }

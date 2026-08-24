@@ -107,15 +107,54 @@ namespace Rock.Tests.Shared.TestFramework
             var autoDbSets = ( Dictionary<Type, IEnumerable> ) rockContextMock.CustomData["AutoDbSets"];
             int modifiedCount = 0;
 
+            /*
+                8/23/26 - CLAUDE
+
+                This runs once per SaveChanges() call, and some tests (e.g. the
+                AttendanceCode generation tests) call SaveChanges() thousands of
+                times against a set that grows into the thousands. The previous
+                implementation scanned each set twice per call - once in the outer
+                loop to find new entities and again via Max() for every new entity -
+                which made those tests O(N^2) and dominated the entire unit-test run.
+
+                We now assign Ids in a single pass: track the highest existing Id
+                while collecting the new (Id == 0) entities, then hand out sequential
+                Ids from that maximum. The resulting Ids are identical to before.
+
+                Reason: Avoid O(N^2) Id assignment in high-volume SaveChanges loops.
+            */
             foreach ( var kvp in autoDbSets )
             {
+                int maxId = 0;
+                List<IEntity> newEntities = null;
+
                 foreach ( var obj in kvp.Value )
                 {
-                    if ( obj is IEntity entity && entity.Id == 0 )
+                    if ( !( obj is IEntity entity ) )
                     {
-                        entity.Id = kvp.Value.OfType<IEntity>().Max( a => a.Id ) + 1;
-                        modifiedCount++;
+                        continue;
                     }
+
+                    if ( entity.Id == 0 )
+                    {
+                        newEntities = newEntities ?? new List<IEntity>();
+                        newEntities.Add( entity );
+                    }
+                    else if ( entity.Id > maxId )
+                    {
+                        maxId = entity.Id;
+                    }
+                }
+
+                if ( newEntities == null )
+                {
+                    continue;
+                }
+
+                foreach ( var entity in newEntities )
+                {
+                    entity.Id = ++maxId;
+                    modifiedCount++;
                 }
             }
 

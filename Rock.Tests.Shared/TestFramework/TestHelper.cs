@@ -83,9 +83,19 @@ namespace Rock.Tests.Shared.TestFramework
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
+            // Provide a mocked IDatabaseConfiguration. The real implementation
+            // queries a live database in its constructor to determine the
+            // platform, version, edition and size - none of which is available
+            // when running against a mocked context. Using the real one would
+            // open a connection to a non-existent server and block until the
+            // connection timeout elapsed.
+            var databaseConfigurationMock = new Mock<IDatabaseConfiguration>( MockBehavior.Loose );
+            databaseConfigurationMock.Setup( m => m.IsDatabaseAvailable ).Returns( true );
+
             var app = CreateRockApp( "Server=localhost\\MockInstance;Database=Rock", sc =>
             {
                 sc.AddSingleton( rockContextFactory );
+                sc.AddSingleton<IDatabaseConfiguration>( databaseConfigurationMock.Object );
                 configureApp?.Invoke( sc );
             } );
 

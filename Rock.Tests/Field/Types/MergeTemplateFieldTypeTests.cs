@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,18 +14,32 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Collections.Generic;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
+using Rock.Data;
 using Rock.Field.Types;
-using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Model;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Core.Field.Types
+namespace Rock.Tests.Field.Types
 {
     [TestClass]
-    public class MergeTemplateFieldTypeTests : DatabaseTestsBase
+    public class MergeTemplateFieldTypeTests
     {
+        private const string SampleLetterGuid = "9FEE4B0F-E5A4-6997-4620-60CAA0964D19";
+
+        /// <summary>
+        /// Seeds the "Sample Letter" merge template that the valid test resolves by Guid.
+        /// </summary>
+        private static void SeedMergeTemplate( RockContext rockContext )
+        {
+            rockContext.Set<MergeTemplate>().Add( new MergeTemplate { Id = 1, Guid = new Guid( SampleLetterGuid ), Name = "Sample Letter" } );
+        }
+
         /// <summary>
         /// Given an empty string value return an empty string.
         /// </summary>
@@ -56,6 +70,8 @@ namespace Rock.Tests.Integration.Core.Field.Types
         [TestMethod]
         public void GetTextValue_NoValidMergeTemplateForGuid()
         {
+            using var app = TestHelper.CreateScopedRockApp();
+
             var mergeTemplateFieldType = new MergeTemplateFieldType();
             string expectedResult = System.Guid.NewGuid().ToString();
             var result = mergeTemplateFieldType.GetTextValue( expectedResult, new Dictionary<string, string>() );
@@ -68,9 +84,12 @@ namespace Rock.Tests.Integration.Core.Field.Types
         [TestMethod]
         public void GetTextValue_ValidMetricForGuid()
         {
+            using var app = TestHelper.CreateScopedRockApp();
+            SeedMergeTemplate( app.App.CreateRockContext() );
+
             var mergeTemplateFieldType = new MergeTemplateFieldType();
             string expectedResult = "Sample Letter";
-            var result = mergeTemplateFieldType.GetTextValue( "9FEE4B0F-E5A4-6997-4620-60CAA0964D19", new Dictionary<string, string>() );
+            var result = mergeTemplateFieldType.GetTextValue( SampleLetterGuid, new Dictionary<string, string>() );
             Assert.AreEqual( expectedResult, result );
         }
     }
