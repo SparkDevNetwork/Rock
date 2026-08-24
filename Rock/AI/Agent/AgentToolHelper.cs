@@ -666,42 +666,6 @@ namespace Rock.AI.Agent
         }
 
         /// <summary>
-        /// Checks a value against the field type's own description of what it
-        /// accepts, when that description is complete enough to judge by.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// 8/19/26 - CLAUDE
-        ///
-        /// A value outside a select-backed attribute's list saves cleanly and then
-        /// cannot be shown: Rock's own editors bind the list, so a stored value that
-        /// matches no entry renders as an empty control and reports itself missing on
-        /// a required field. The next person to open and save that screen writes the
-        /// blank back. Nothing in that sequence produces an error, which is why it
-        /// needs catching at the point of writing.
-        ///
-        /// Reason: A value Rock's editors cannot display is a value that quietly
-        /// disappears.
-        /// </para>
-        /// <para>
-        /// This only judges a list the field type reports as complete. A sample, which
-        /// is what <see cref="FieldTypeHints.IsCompleteList"/> being false means, is not
-        /// grounds to reject anything, so those attributes pass through untouched.
-        /// </para>
-        /// <para>
-        /// The value is rejected rather than corrected, even when it is recognisably
-        /// the label of a valid entry. The error names the value to use, so a caller
-        /// is one step from right, and the helper never stores something other than
-        /// what it was handed. Whitespace around a value is the single exception, and
-        /// is trimmed rather than refused, because Rock's own readers split these on
-        /// commas without trimming and a stray space would break the value in a way
-        /// no one could see.
-        /// </para>
-        /// </remarks>
-        /// <param name="attribute">The attribute being written.</param>
-        /// <param name="value">The value to check. Trimmed in place when it passes.</param>
-        /// <returns><c>true</c> when the value may be written; otherwise <c>false</c> and an error has been recorded.</returns>
-        /// <summary>
         /// Repairs a supplied value into the form the attribute's field type stores,
         /// where that form is something a caller writing the raw value is likely to
         /// get wrong.
@@ -778,6 +742,42 @@ namespace Rock.AI.Agent
             } );
         }
 
+        /// <summary>
+        /// Checks a value against the field type's own description of what it
+        /// accepts, when that description is complete enough to judge by.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// 8/19/26 - CLAUDE
+        ///
+        /// A value outside a select-backed attribute's list saves cleanly and then
+        /// cannot be shown: Rock's own editors bind the list, so a stored value that
+        /// matches no entry renders as an empty control and reports itself missing on
+        /// a required field. The next person to open and save that screen writes the
+        /// blank back. Nothing in that sequence produces an error, which is why it
+        /// needs catching at the point of writing.
+        ///
+        /// Reason: A value Rock's editors cannot display is a value that quietly
+        /// disappears.
+        /// </para>
+        /// <para>
+        /// This only judges a list the field type reports as complete. A sample, which
+        /// is what <see cref="Field.FieldTypeHints.IsCompleteList"/> being false means, is not
+        /// grounds to reject anything, so those attributes pass through untouched.
+        /// </para>
+        /// <para>
+        /// The value is rejected rather than corrected, even when it is recognisably
+        /// the label of a valid entry. The error names the value to use, so a caller
+        /// is one step from right, and the helper never stores something other than
+        /// what it was handed. Whitespace around a value is the single exception, and
+        /// is trimmed rather than refused, because Rock's own readers split these on
+        /// commas without trimming and a stray space would break the value in a way
+        /// no one could see.
+        /// </para>
+        /// </remarks>
+        /// <param name="attribute">The attribute being written.</param>
+        /// <param name="value">The value to check. Trimmed in place when it passes.</param>
+        /// <returns><c>true</c> when the value may be written; otherwise <c>false</c> and an error has been recorded.</returns>
         private bool TryValidateAgainstFieldHints( AttributeCache attribute, ref string value )
         {
             if ( value.IsNullOrWhiteSpace() )
@@ -848,8 +848,8 @@ namespace Rock.AI.Agent
         /// Composed from the hints rather than written per field type, so a defined
         /// value and a single select produce appropriately different messages from the
         /// same code. Whatever a field type puts in
-        /// <see cref="FieldTypeHints.ValueFormat"/> and
-        /// <see cref="FieldTypeHints.Instructions"/> is what makes the message specific.
+        /// <see cref="Field.FieldTypeHints.ValueFormat"/> and
+        /// <see cref="Field.FieldTypeHints.Instructions"/> is what makes the message specific.
         /// </remarks>
         /// <param name="attribute">The attribute being written.</param>
         /// <param name="hints">The field type's description of what it accepts.</param>
