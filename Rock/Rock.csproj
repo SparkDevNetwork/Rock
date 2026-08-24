@@ -185,6 +185,12 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>HotFixMigrationResource.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <!--
+      Crawler pattern list consumed by Rock.Net.CrawlerUserAgents. Vendored from
+      https://github.com/monperrus/crawler-user-agents (MIT) and refreshed as a
+      step in the release packaging process.
+    -->
+    <EmbeddedResource Include="Net\crawler-user-agents.json" />
   </ItemGroup>
 
   <Import Project="..\Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems" Label="Shared" />
