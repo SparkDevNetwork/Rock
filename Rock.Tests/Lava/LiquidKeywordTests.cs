@@ -507,6 +507,31 @@ The answer is {{ x }}.
         }
 
         /// <summary>
+        /// Verify that the {% liquid %} tag correctly parses comments within its content.
+        /// </summary>
+        [TestMethod]
+        public void LiquidTag_WithComment_ShouldParseCorrectly()
+        {
+            var template = @"
+{% 
+   liquid 
+    comment
+      this is a comment
+    endcomment
+
+   echo 
+      'welcome ' | Upcase 
+   echo 'to the liquid tag' 
+    | Upcase 
+%}";
+            var expectedOutput = @"
+WELCOME TO THE LIQUID TAG
+";
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+        }
+
+        /// <summary>
         /// Verify that the {% lava %} tag is correctly aliased to the default {% liquid %} tag.
         /// </summary>
         [TestMethod]
@@ -815,6 +840,57 @@ WELCOME TO THE LAVA TAG
 
                 TestHelper.AssertTemplateOutput( engine, expectedOutput, template, ignoreWhitespace: true );
             } );
+        }
+
+
+        /// <summary>
+        /// Verifies the resolution of Issue #6993 (Part 1).
+        /// Verify that a {% comment %}...{% endcomment %} block written in line-delimited form
+        /// inside a {% lava %} tag parses correctly (this regressed in v19 when Fluid was upgraded).
+        /// The comment body should be skipped, and the statements after it should still run.
+        /// </summary>
+        [TestMethod]
+        public void LavaTag_WithAssignmentCommenttedOut_IsProcessedCorrectly()
+        {
+            var template = @"
+{% lava
+    assign fruit = 'x,y,z' | Split:','
+    comment
+        assign fruit = 'apple,banana,cherry' | Split:','
+    endcomment
+
+    for i in fruit
+        echo i
+    endfor
+%}
+";
+            // If the parser mistakenly executed the commented assignment we would see 'applebananacherry'.
+            // The correct behavior is that only the assignment AFTER the comment block takes effect.
+            var expectedOutput = @"xyz";
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// Verifies the resolution of Issue #6993 (Part 2).
+        /// Control test: the same {% lava %} body without the surrounding {% comment %} block
+        /// should execute normally and echo every value.
+        /// </summary>
+        [TestMethod]
+        public void LavaTag_WithAssignmentWithoutComment_IsProcessedCorrectly()
+        {
+            var template = @"
+{% lava
+    assign fruit = 'x,y,z' | Split:','
+    assign fruit = 'apple,banana,cherry' | Split:','
+    for i in fruit
+        echo i
+    endfor
+%}
+";
+            var expectedOutput = @"applebananacherry";
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
         }
 
         #endregion
